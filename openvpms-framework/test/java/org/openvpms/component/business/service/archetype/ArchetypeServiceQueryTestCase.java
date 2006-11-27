@@ -30,7 +30,6 @@ import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinType;
 import org.openvpms.component.system.common.query.IPage;
@@ -38,6 +37,7 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.util.Arrays;
@@ -103,11 +103,11 @@ public class ArchetypeServiceQueryTestCase extends
                                                   true).add(
                 new NodeConstraint("name", RelationalOp.EQ, "Belarus"));
 
-        int acount = service.get(query).getRows().size();
+        int acount = service.get(query).getResults().size();
         Lookup lookup = (Lookup) service.create("lookup.country");
         lookup.setCode("Belarus");
         service.save(lookup);
-        int acount1 = service.get(query).getRows().size();
+        int acount1 = service.get(query).getResults().size();
         assertTrue(acount1 == acount + 1);
     }
 
@@ -120,11 +120,11 @@ public class ArchetypeServiceQueryTestCase extends
                                                   true).add(
                 new NodeConstraint("name", RelationalOp.EQ, "Bel*"));
 
-        int acount = service.get(query).getRows().size();
+        int acount = service.get(query).getResults().size();
         Lookup lookup = (Lookup) service.create("lookup.country");
         lookup.setCode("Belarus");
         service.save(lookup);
-        int acount1 = service.get(query).getRows().size();
+        int acount1 = service.get(query).getResults().size();
         assertTrue(acount1 == acount + 1);
     }
 
@@ -137,11 +137,11 @@ public class ArchetypeServiceQueryTestCase extends
                                                   true).add(
                 new NodeConstraint("name", RelationalOp.EQ, "Bel*"));
 
-        int acount = service.get(query).getRows().size();
+        int acount = service.get(query).getResults().size();
         Lookup lookup = (Lookup) service.create("lookup.country");
         lookup.setCode("Belarus");
         service.save(lookup);
-        int acount1 = service.get(query).getRows().size();
+        int acount1 = service.get(query).getResults().size();
         assertTrue(acount1 == acount + 1);
     }
 
@@ -154,11 +154,11 @@ public class ArchetypeServiceQueryTestCase extends
                 .add(new NodeConstraint("name", RelationalOp.EQ, "Bel*"))
                 .add(new NodeSortConstraint("name", true));
 
-        int acount = service.get(query).getRows().size();
+        int acount = service.get(query).getResults().size();
         Lookup lookup = (Lookup) service.create("lookup.country");
         lookup.setCode("Belarus");
         service.save(lookup);
-        int acount1 = service.get(query).getRows().size();
+        int acount1 = service.get(query).getResults().size();
         assertTrue(acount1 == acount + 1);
     }
 
@@ -168,8 +168,8 @@ public class ArchetypeServiceQueryTestCase extends
     public void testOVPMS245()
             throws Exception {
         ArchetypeQuery query = new ArchetypeQuery(
-                new ArchetypeShortNameConstraint("product.product", false,
-                                                 true))
+                new ShortNameConstraint("product.product", false,
+                                        true))
                 .add(new CollectionNodeConstraint("classifications", true)
                         .setJoinType(JoinType.LeftOuterJoin)
                         .add(new OrConstraint()
@@ -219,8 +219,8 @@ public class ArchetypeServiceQueryTestCase extends
 
         // verify that the page only has a single element, and that the node
         // set has the expected nodes
-        assertEquals(1, page.getRows().size());
-        NodeSet nodes = page.getRows().get(0);
+        assertEquals(1, page.getResults().size());
+        NodeSet nodes = page.getResults().get(0);
         assertEquals(3, nodes.getNames().size());
         assertTrue(nodes.getNames().contains("firstName"));
         assertTrue(nodes.getNames().contains("lastName"));
@@ -277,8 +277,8 @@ public class ArchetypeServiceQueryTestCase extends
 
         // verify that the page only has a single element, and that the
         // contacts node has been loaded.
-        assertEquals(1, page.getRows().size());
-        Party person2 = (Party) page.getRows().get(0);
+        assertEquals(1, page.getResults().size());
+        Party person2 = (Party) page.getResults().get(0);
         Set<Contact> contacts = person2.getContacts();
         assertEquals(1, contacts.size());
 

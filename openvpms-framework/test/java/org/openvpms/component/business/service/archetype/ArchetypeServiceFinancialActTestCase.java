@@ -19,13 +19,6 @@
 package org.openvpms.component.business.service.archetype;
 
 // java-core
-import java.math.BigDecimal;
-import java.util.Date;
-
-//spring-context
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
-
-//openvpms-framework
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -34,7 +27,11 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.ObjectRefArchetypeConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * Test that ability to create and query on Documentss.
@@ -264,11 +261,11 @@ public class ArchetypeServiceFinancialActTestCase extends
         service.save(act);
         
         // retrieve it
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefArchetypeConstraint(
+        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
                 act.getObjectReference())));
-        assertTrue(page.getTotalNumOfRows() == 1);
+        assertTrue(page.getTotalResults() == 1);
         
-        FinancialAct newAct = (FinancialAct)page.getRows().iterator().next();
+        FinancialAct newAct = (FinancialAct)page.getResults().iterator().next();
         assertTrue(newAct.getObjectReference().equals(act.getObjectReference()));
     }
     
@@ -282,11 +279,11 @@ public class ArchetypeServiceFinancialActTestCase extends
         service.save(act);
         
         // retrieve it
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefArchetypeConstraint(
+        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
                 act.getObjectReference())));
-        assertTrue(page.getTotalNumOfRows() == 1);
+        assertTrue(page.getTotalResults() == 1);
         
-        FinancialAct newAct = (FinancialAct)page.getRows().iterator().next();
+        FinancialAct newAct = (FinancialAct)page.getResults().iterator().next();
         newAct.setCredit(false);
         newAct.setQuantity(new BigDecimal(123));
         service.save(act);
@@ -302,18 +299,18 @@ public class ArchetypeServiceFinancialActTestCase extends
         service.save(act);
         
         // retrieve it
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefArchetypeConstraint(
+        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
                 act.getObjectReference())));
-        assertTrue(page.getTotalNumOfRows() == 1);
+        assertTrue(page.getTotalResults() == 1);
     
         // delete it
-        FinancialAct newAct = (FinancialAct)page.getRows().iterator().next();
+        FinancialAct newAct = (FinancialAct)page.getResults().iterator().next();
         service.remove(newAct);
         
         // try and retrieve it again
-        page = service.get(new ArchetypeQuery(new ObjectRefArchetypeConstraint(
+        page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
                 act.getObjectReference())));
-        assertTrue(page.getTotalNumOfRows() == 0);
+        assertTrue(page.getTotalResults() == 0);
     }
     
     /**
@@ -329,10 +326,10 @@ public class ArchetypeServiceFinancialActTestCase extends
         service.save(act);
         
         // retrieve the act
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefArchetypeConstraint(
+        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
                 act.getObjectReference())));
-        assertTrue(page.getTotalNumOfRows() == 1);
-        act = (FinancialAct)page.getRows().iterator().next();
+        assertTrue(page.getTotalResults() == 1);
+        act = (FinancialAct)page.getResults().iterator().next();
         
         // use the descriptors to set the value of endTime
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor("financial.act");

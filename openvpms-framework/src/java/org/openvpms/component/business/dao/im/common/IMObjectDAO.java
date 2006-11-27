@@ -28,23 +28,23 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * This interface provides data access object (DAO) support for objects of 
+ * This interface provides data access object (DAO) support for objects of
  * type {@link IMObject}, which is the most generic type of object in the model.
  * This class should be able to save, delete and retrieve any type of object. It
  * will use the ArchetypeId and in particular the entity name to map the request
  * to the appropriate table. To achieve this there needs to be a one-to-one
- * mapping between entity name and the associated table name. (i.e if the 
+ * mapping between entity name and the associated table name. (i.e if the
  * entity is address then it will look at the address table etc
  * <p>
  * TODO Use annotation to derive this information.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public interface IMObjectDAO {
     /**
-     * This method can be used to do a insert or an update of the object. 
-     * 
+     * This method can be used to do a insert or an update of the object.
+     *
      * @param object
      *            the imobject to save
      * @throws IMObjectDAOException
@@ -53,19 +53,19 @@ public interface IMObjectDAO {
     public void save(IMObject object);
 
     /**
-     * This will save an array of {@link IMObject} instances in a single 
+     * This will save an array of {@link IMObject} instances in a single
      * transaction. This is an all or nothing proposition.
-     * 
+     *
      * @param objects
      *            a collection of objects
      * @throws IMObjectDAOException
-     *            a runtime exception if the request cannot complete            
+     *            a runtime exception if the request cannot complete
      */
     public void save(Collection objects);
 
     /**
      * Delete the specified {@link IMObject}
-     * 
+     *
      * @param object
      *            the imobject to delete
      * @throws IMObjectDAOException
@@ -83,7 +83,7 @@ public interface IMObjectDAO {
      * @param firstRow    the first row to retrieve
      * @param numOfRows   the maximum number of rows to return
      * @param count       if <code>true</code> counts the total no. of rows,
-     *                    returning it in {@link IPage#getTotalNumOfRows()}
+     *                    returning it in {@link IPage#getTotalResults()}
      * @return IPage<IMObject>
      * @throws IMObjectDAOException a runtime exception, raised if the request
      *                              cannot complete.
@@ -109,7 +109,7 @@ public interface IMObjectDAO {
      * @param firstRow    the first row to retrieve
      * @param numOfRows   the maximum number of rows to return
      * @param count       if <code>true</code> counts the total no. of rows,
-     *                    returning it in {@link IPage#getTotalNumOfRows()}
+     *                    returning it in {@link IPage#getTotalResults()}
      * @return the nodes for each object that matches the query criteria
      * @throws IMObjectDAOException a runtime exception, raised if the request
      *                              cannot complete.
@@ -131,7 +131,7 @@ public interface IMObjectDAO {
      * @param firstRow    the first row to retrieve
      * @param numOfRows   the maximum number of rows to return
      * @param count       if <code>true</code> counts the total no. of rows,
-     *                    returning it in {@link IPage#getTotalNumOfRows()}
+     *                    returning it in {@link IPage#getTotalResults()} 
      * @return the nodes for each object that matches the query criteria
      * @throws IMObjectDAOException a runtime exception, raised if the request
      *                              cannot complete.
@@ -143,11 +143,11 @@ public interface IMObjectDAO {
 
     /**
      * Retrieve the objects that matches the specified search criteria.
-     * This is a very generic method that provides a mechanism to return 
+     * This is a very generic method that provides a mechanism to return
      * objects based on, one or more criteria.
      * <p>
      * All parameters are optional and can either denote an exact or partial
-     * match semantics. If a parameter has a '*' at the start or end of the 
+     * match semantics. If a parameter has a '*' at the start or end of the
      * value then it will perform a wildcard match.  If not '*' is specified in
      * the value then it will only return objects with the exact value.
      * <p>
@@ -155,9 +155,9 @@ public interface IMObjectDAO {
      * that matching all criteria.
      * <p>
      * The results will be returned in a {@link Page} object, which may contain
-     * a subset of the total result set. The caller can then use the context 
+     * a subset of the total result set. The caller can then use the context
      * information in the {@link Page} object to make subsequent calls.
-     * 
+     *
      * @param rmName
      *            the reference model name
      * @param entityName
@@ -165,47 +165,47 @@ public interface IMObjectDAO {
      * @param conceptName
      *            the concept name
      * @param instanceName
-     *            the instance name   
+     *            the instance name
      * @param clazz
-     *            the fully qualified name of the class to search for  
+     *            the fully qualified name of the class to search for
      * @param activeOnly
      *            indicates whether to return active objects.
      * @param firstRow
      *            the first row to retrieve
      * @param numOfRows
-     *            the maximum number of rows to return            
+     *            the maximum number of rows to return
      * @return IPage<IMObject>
      *            the results and associated context information
      * @throws IMObjectDAOException
      *             a runtime exception if the request cannot complete
      */
-    public IPage<IMObject> get(String rmName, String entityName, 
-            String conceptName, String instanceName, String clazz, 
+    public IPage<IMObject> get(String rmName, String entityName,
+            String conceptName, String instanceName, String clazz,
             boolean activeOnly, int firstRow, int numOfRows);
-    
+
     /**
-     * Return an object with the specified uid for the nominated clazz and null 
+     * Return an object with the specified uid for the nominated clazz and null
      * if it does not exists
-     * 
+     *
      * @param clazz
      *            the clazz of objects to search for
      * @param id
      *            the uid of the object
-     * @return IMObject           
+     * @return IMObject
      * @throws IMObjectDAOException
      *             a runtime exception if the request cannot complete
      */
     public IMObject getById(String clazz, long id);
 
     /**
-     * Return an object with the specified linkID for the nominated clazz and 
+     * Return an object with the specified linkID for the nominated clazz and
      * null if the associated object does not exist
-     * 
+     *
      * @param clazz
      *            the clazz of objects to search for
      * @param linkId
      *            the uid object linkId
-     * @return IMObject           
+     * @return IMObject
      * @throws IMObjectDAOException
      *             a runtime exception if the request cannot complete
      */
@@ -220,12 +220,12 @@ public interface IMObjectDAO {
      * @param firstRow  the first row to retrieve
      * @param numOfRows the maximum number of rows to return
      * @param count       if <code>true</code> counts the total no. of rows,
-     *                    returning it in {@link IPage#getTotalNumOfRows()}
+     *                    returning it in {@link IPage#getTotalResults()}
      * @return IPage<IMObject>
      *         the results and associated context information
      * @throws IMObjectDAOException if there is an error processing the request
      */
-    public IPage<IMObject> getByNamedQuery(String name, 
+    public IPage<IMObject> getByNamedQuery(String name,
                                            Map<String, Object> params,
                                            int firstRow, int numOfRows,
                                            boolean count);

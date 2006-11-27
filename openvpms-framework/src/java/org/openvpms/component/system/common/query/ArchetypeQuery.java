@@ -19,133 +19,104 @@
 
 package org.openvpms.component.system.common.query;
 
-// commons-lang
-import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
+
 /**
- * Create a query against an archetype
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * Create a query against an archetype.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class ArchetypeQuery implements IConstraintContainer {
+public class ArchetypeQuery extends AbstractArchetypeQuery
+        implements IConstraintContainer {
 
     /**
-     * Default SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * Indicates that all the rows should be returned
-     */
-    public final static int ALL_ROWS = -1;
-
-    /**
-     * Define the first row to be retrieve if paging is being used
-     */
-    private int firstRow = 0;
-
-    /**
-     * Define the maximum number of rows to be retrieve
-     */
-    private int numOfRows = ALL_ROWS;
-
-    /**
-     * Determines if the total no. of rows should be counted and returned
-     * in the resulting {@link IPage}.
-     */
-    private boolean count = true;
-
-    /**
-     * indicates whether to select distinct rows only
+     * indicates whether to select distinct results only.
      */
     private boolean distinct;
 
     /**
-     * Indicates whether to search only for active entities
+     * Indicates whether to search only for active entities.
      */
     private boolean activeOnly = false;
 
     /**
-     * Define the {@link BaseArchetypeConstraint}. mandatory.
+     * Define the {@link BaseArchetypeConstraint}. Mandatory.
      */
     private BaseArchetypeConstraint archetypeConstraint;
 
+
     /**
-     * Construct a query with the specified constraint
+     * Construct a query with the specified constraint.
      *
-     * @param constraint
-     *            the constraint to use
+     * @param constraint the constraint to use
      */
     public ArchetypeQuery(BaseArchetypeConstraint constraint) {
         try {
-            this.archetypeConstraint = (BaseArchetypeConstraint)constraint.clone();
+            archetypeConstraint = (BaseArchetypeConstraint) constraint.clone();
         } catch (CloneNotSupportedException exception) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.CloneNotSupported,
-                            new Object[] {constraint.getClass()},
-                            exception);
+                    exception, constraint.getClass()
+            );
         }
-
     }
 
     /**
-     * Create a query for the specified archetype id
+     * Create a query for the specified archetype id.
      *
-     * @param archetypeId
-     *            a valid archetype identity
+     * @param archetypeId a valid archetype identity
      */
     public ArchetypeQuery(ArchetypeId archetypeId) {
         this(archetypeId, false);
     }
 
     /**
-     * Create a query for the specified archetype id
+     * Create a query for the specified archetype id.
      *
-     * @param archetypeId
-     *            a valid archetype identity
-     * @param activeOnly
-     *            constraint to active only objects
+     * @param archetypeId a valid archetype identity
+     * @param activeOnly  constraint to active only objects
      */
     public ArchetypeQuery(ArchetypeId archetypeId, boolean activeOnly) {
-        this.archetypeConstraint = new ArchetypeIdConstraint(archetypeId, activeOnly);
+        archetypeConstraint = new ArchetypeIdConstraint(archetypeId,
+                                                        activeOnly);
     }
 
     /**
      * Create an instance of this query specifying one or more elements.
      * Any of the parameters can be null or may  include the wild card character
      *
-     * @param rmName
-     *            the reference model name (optional)
-     * @param entityName
-     *            the entity name (optional)
-     * @param conceptName
-     *            the concept name (optional)
-     * @param primaryOnly
-     *            only deal with the primary archetypes
-     * @param activeOnly
-     *            constraint to active only objects
+     * @param rmName      the reference model name (optional)
+     * @param entityName  the entity name (optional)
+     * @param conceptName the concept name (optional)
+     * @param primaryOnly only deal with the primary archetypes
+     * @param activeOnly  constraint to active only objects
      */
     public ArchetypeQuery(String rmName, String entityName,
-            String conceptName, boolean primaryOnly, boolean activeOnly) {
-        this.archetypeConstraint = new ArchetypeLongNameConstraint(rmName,
-                entityName, conceptName, primaryOnly, activeOnly);
+                          String conceptName, boolean primaryOnly,
+                          boolean activeOnly) {
+        archetypeConstraint = new LongNameConstraint(
+                rmName, entityName, conceptName, primaryOnly, activeOnly);
     }
 
     /**
      * Create an instance of this constraint with the specified short name
      *
-     * @param shortName
-     *            the short name
-     * @param primaryOnly
-     *            only deal with the primary archetypes
-     * @param activeOnly
-     *            constraint to active only objects
+     * @param shortName   the short name
+     * @param primaryOnly only deal with the primary archetypes
+     * @param activeOnly  constraint to active only objects
      */
-    public ArchetypeQuery(String shortName, boolean primaryOnly, boolean activeOnly) {
-        this.archetypeConstraint = new ArchetypeShortNameConstraint(
+    public ArchetypeQuery(String shortName, boolean primaryOnly,
+                          boolean activeOnly) {
+        archetypeConstraint = new ShortNameConstraint(
                 shortName, primaryOnly, activeOnly);
     }
 
@@ -153,93 +124,80 @@ public class ArchetypeQuery implements IConstraintContainer {
      * Create an instance of this class with the specified archetype
      * short names
      *
-     * @param shortNames
-     *            an array of archetype short names
-     * @param primaryOnly
-     *            only deal with the primary archetypes
-     * @param activeOnly
-     *            constraint to active only objects
+     * @param shortNames  an array of archetype short names
+     * @param primaryOnly only deal with the primary archetypes
+     * @param activeOnly  constraint to active only objects
      */
     public ArchetypeQuery(String[] shortNames, boolean primaryOnly,
-            boolean activeOnly) {
-        this.archetypeConstraint = new ArchetypeShortNameConstraint(
+                          boolean activeOnly) {
+        this.archetypeConstraint = new ShortNameConstraint(
                 shortNames, primaryOnly, activeOnly);
     }
 
     /**
-     * Create a query based on the specified {@link org.openvpms.component.business.domain.im.common.IMObjectReference}.
+     * Create a query based on the specified {@link IMObjectReference}.
      *
-     * @param reference
-     *            the object reference
+     * @param reference the object reference
      */
     public ArchetypeQuery(IMObjectReference reference) {
-        this.archetypeConstraint = new ObjectRefArchetypeConstraint(reference);
+        this.archetypeConstraint = new ObjectRefConstraint(reference);
     }
 
     /**
-     * @return Returns the firstRow.
-     */
-    public int getFirstRow() {
-        return firstRow;
-    }
-
-    /**
-     * @param firstRow The firstRow to set.
-     * @return ArchetypeQuery
-     */
-    public ArchetypeQuery setFirstRow(int firstRow) {
-        this.firstRow = firstRow;
-        return this;
-    }
-
-    /**
-     * @return Returns the numOfRows.
-     */
-    public int getNumOfRows() {
-        return numOfRows;
-    }
-
-    /**
-     * @param numOfRows The numOfRows to set.
-     */
-    public ArchetypeQuery setNumOfRows(int numOfRows) {
-        this.numOfRows = numOfRows;
-        return this;
-    }
-
-    /**
-     * Determines if the total no. of rows should be counted and returned
-     * in the resulting {@link IPage}.
+     * Sets the first result.
      *
-     * @param count if <code>true</code> count the no. of rows
+     * @param firstResult the first result
      * @return this query
      */
-    public ArchetypeQuery setCountTotalRows(boolean count) {
-        this.count = count;
+    @Override
+    public ArchetypeQuery setFirstResult(int firstResult) {
+        super.setFirstResult(firstResult);
         return this;
     }
 
     /**
-     * Determines if the total no. of rows should be counted and returned
-     * in the resulting {@link IPage}.
-     * Only applies when <code>getNumOfRows() != ALL_ROWS</code>.
+     * Sets the maximum number of results to retrieve.  If not set,
+     * there is no limit to the number of results retrieved.
      *
-     * @return <code>true</code> if the total no. of rows should be counted,
-     * otherwise <code>false</code>. Defaults to <code>true</code>
+     * @param maxResults the maximum no. of results to retrieve
+     * @return this query
      */
-    public boolean countTotalRows() {
-        return count;
+    @Override
+    public ArchetypeQuery setMaxResults(int maxResults) {
+        super.setMaxResults(maxResults);
+        return this;
     }
 
     /**
-     * @return Returns the activeOnly.
+     * Determines if the total no. of results should be counted and returned
+     * in the resulting {@link IPage}.
+     *
+     * @param count if <code>true</code> count the no. of results
+     * @return this query
+     */
+    @Override
+    public ArchetypeQuery setCountResults(boolean count) {
+        super.setCountResults(count);
+        return this;
+    }
+
+    /**
+     * Determines if only active objects should be returned.
+     *
+     * @return <code>true</code> if only active objects will be returned;
+     *         otherwise both active and inactive objects will be returned
      */
     public boolean isActiveOnly() {
         return activeOnly;
     }
 
     /**
-     * @param activeOnly The activeOnly to set.
+     * Determines if only active objects should be returned.
+     *
+     * @param activeOnly if <code>true</code> only active objects will be
+     *                   returned; otherwise both active and inactive objects
+     *                   will be returned
+     * @return this query
      */
     public ArchetypeQuery setActiveOnly(boolean activeOnly) {
         this.activeOnly = activeOnly;
@@ -247,62 +205,55 @@ public class ArchetypeQuery implements IConstraintContainer {
     }
 
     /**
-     * @return Returns the distinct.
+     * Determines if duplicate results should be excluded.
+     *
+     * @return <code>true</code> if duplicate results should be excluded.
      */
     public boolean isDistinct() {
         return distinct;
     }
 
     /**
-     * @param distinct The distinct to set.
+     * Determines if duplicate results should be excluded. If not set,
+     * any duplicates will be returned.
+     *
+     * @param distinct if <code>true</code> exclude duplicate results
+     * @return this query
      */
-    public void setDistinct(boolean distinct) {
+    public ArchetypeQuery setDistinct(boolean distinct) {
         this.distinct = distinct;
+        return this;
     }
 
     /**
-     * @return Returns the archetypeConstraint.
+     * Returns the archetype constraint.
+     *
+     * @return the archetypeConstraint.
      */
     public BaseArchetypeConstraint getArchetypeConstraint() {
         return archetypeConstraint;
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.query.IConstraintContainer#add(org.openvpms.component.system.common.query.IConstraint)
+    /**
+     * Adds the specified constraint to the query.
+     *
+     * @param constraint the constraint to add
+     * @return this query
      */
     public ArchetypeQuery add(IConstraint constraint) {
-        this.archetypeConstraint.add(constraint);
+        archetypeConstraint.add(constraint);
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.query.IConstraintContainer#remove(org.openvpms.component.system.common.query.IConstraint)
+    /**
+     * Remove the specified constraint from query.
+     *
+     * @param constraint the constraint to remove
+     * @return this query
      */
     public ArchetypeQuery remove(IConstraint constraint) {
-        this.archetypeConstraint.remove(constraint);
+        archetypeConstraint.remove(constraint);
         return this;
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-
-        if (!(obj instanceof ArchetypeQuery)) {
-            return false;
-        }
-
-        ArchetypeQuery rhs = (ArchetypeQuery) obj;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(rhs))
-                .append(firstRow, rhs.firstRow)
-                .append(numOfRows, rhs.numOfRows)
-                .append(count, rhs.count)
-                .isEquals();
     }
 
     /* (non-Javadoc)
@@ -311,23 +262,9 @@ public class ArchetypeQuery implements IConstraintContainer {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(super.toString())
-            .append("firstRow", firstRow)
-            .append("numOfRows", numOfRows)
-            .append("constraints", archetypeConstraint)
-            .toString();
+                .appendSuper(super.toString())
+                .append("constraints", archetypeConstraint)
+                .toString();
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        ArchetypeQuery copy = (ArchetypeQuery) super.clone();
-        copy.firstRow = this.firstRow;
-        copy.numOfRows = this.numOfRows;
-        copy.count = this.count;
-
-        return copy;
-    }
 }

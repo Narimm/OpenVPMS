@@ -22,60 +22,88 @@ package org.openvpms.component.system.common.query;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+
 /**
- * This is a sort constraint placed on a node
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * This is a sort constraint placed on a node.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class NodeSortConstraint extends SortConstraint {
+
     /**
-     * Default SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
-    
+
     /**
-     * The name of the node
+     * The name of the node.
      */
     private String nodeName;
-    
+
+
     /**
-     * Construct an instance of this sort constraint specifying a node name 
+     * Constructs a new <code>NodeSortConstraint</code> specifying a node name
+     * sorted in ascending order.
+     *
+     * @param nodeName the name of the node to sort on
+     */
+    public NodeSortConstraint(String nodeName) {
+        this(nodeName, true);
+    }
+
+    /**
+     * Construct an instance of this sort constraint specifying a node name
      * and whether it is ascending or not.
-     * 
-     * @param nodeName
-     *            the name of the node to sort on
-     * @param ascending
-     *            whether to sort in ascending order   
+     *
+     * @param nodeName  the name of the node to sort on
+     * @param ascending whether to sort in ascending or descending order
      */
     public NodeSortConstraint(String nodeName, boolean ascending) {
-        super(ascending);
+        this(null, nodeName, ascending);
+    }
+
+    /**
+     * Construct an instance of this sort constraint specifying a node name
+     * sorted in ascending order.
+     *
+     * @param alias     the type alias. May be <code>null</code>
+     * @param nodeName  the name of the node to sort on
+     */
+    public NodeSortConstraint(String alias, String nodeName) {
+        this(alias, nodeName, true);
+    }
+
+    /**
+     * Construct an instance of this sort constraint specifying a node name
+     * and whether it is ascending or not.
+     *
+     * @param alias     the type alias. May be <code>null</code>
+     * @param nodeName  the name of the node to sort on
+     * @param ascending whether to sort in ascending or descending order
+     */
+    public NodeSortConstraint(String alias, String nodeName,
+                              boolean ascending) {
+        super(alias, ascending);
         this.nodeName = nodeName;
     }
 
     /**
-     * @return Returns the nodeName.
+     * Returns the node name.
+     *
+     * @return the node name
      */
     public String getNodeName() {
         return nodeName;
     }
 
     /**
-     * @param nodeName The nodeName to set.
+     * Sets the node name.
+     *
+     * @param nodeName the node name
      */
     public void setNodeName(String nodeName) {
         this.nodeName = nodeName;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.query.SortConstraint#clone()
-     */
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        NodeSortConstraint copy = (NodeSortConstraint)super.clone();
-        copy.nodeName = this.nodeName;
-        
-        return copy;
     }
 
     /* (non-Javadoc)
@@ -90,12 +118,12 @@ public class NodeSortConstraint extends SortConstraint {
         if (!(obj instanceof NodeSortConstraint)) {
             return false;
         }
-        
+
         NodeSortConstraint rhs = (NodeSortConstraint) obj;
         return new EqualsBuilder()
-            .appendSuper(super.equals(obj))
-            .append(nodeName, rhs.nodeName)
-            .isEquals();
+                .appendSuper(super.equals(obj))
+                .append(nodeName, rhs.nodeName)
+                .isEquals();
     }
 
     /* (non-Javadoc)
@@ -104,8 +132,8 @@ public class NodeSortConstraint extends SortConstraint {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(super.toString())
-            .append("nodeName", nodeName)
-            .toString();
+                .appendSuper(super.toString())
+                .append("nodeName", nodeName)
+                .toString();
     }
 }

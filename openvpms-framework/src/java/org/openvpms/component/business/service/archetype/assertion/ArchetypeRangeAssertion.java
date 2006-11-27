@@ -19,16 +19,8 @@
 package org.openvpms.component.business.service.archetype.assertion;
 
 // java core
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-// log4j
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
@@ -44,6 +36,11 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.util.StringUtilities;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * These assertions are applied to archetype and parts of archetypes. These are
@@ -108,7 +105,7 @@ public class ArchetypeRangeAssertion {
                 List<IMObject> objects = ArchetypeQueryHelper.get(
                         ArchetypeServiceHelper.getArchetypeService(),
                         aid.getRmName(), aid.getEntityName(), aid.getConcept(),
-                        type.defaultValue, true, 0, ArchetypeQuery.ALL_ROWS).getRows();
+                        type.defaultValue, true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
                     
                     // if can not find a matching entity
                     if (objects.size() == 0) {

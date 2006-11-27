@@ -19,24 +19,23 @@
 
 package org.openvpms.component.system.common.query;
 
-// commons-lang
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
+
 /**
- * Definee a constraint on a collection node, where the elements of the 
+ * Defines a constraint on a collection node, where the elements of the
  * collection are archetyped instances.
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class CollectionNodeConstraint implements IConstraintContainer {
+
     /**
-     * How to join with the outer table
+     * How to join with the outer table.
      */
     public enum JoinType {
         None,
@@ -44,152 +43,131 @@ public class CollectionNodeConstraint implements IConstraintContainer {
         LeftOuterJoin,
         RightOuterJoin
     }
-    
+
     /**
-     * Default SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
-    
+
     /**
-     * The node name
+     * The node name.
      */
-    private String nodeName;
-    
+    private final String nodeName;
+
     /**
-     * The join type (defaults to InnerJoin
+     * The join type. Defaults to <code>InnerJoin</code>.
      */
     private JoinType joinType = JoinType.InnerJoin;
-    
-    
+
+
     /**
      * The archetype constraint associated with this collection
-     * node
+     * node.
      */
     private BaseArchetypeConstraint archetypeConstraint;
 
+
     /**
-     * Constructor to initialize the node name
-     * 
-     * @param nodeName
-     *            the node name
-     * @param activeOnly
-     *            constraint to active only instances            
+     * Constructor to initialize the node name.
+     *
+     * @param nodeName   the node name, optionaly prefixed by the type alias
+     * @param activeOnly constraint to active only instances
      */
     public CollectionNodeConstraint(String nodeName, boolean activeOnly) {
-        if (StringUtils.isEmpty(nodeName)) {
-            throw new ArchetypeQueryException(
-                    ArchetypeQueryException.ErrorCode.MustSpecifyNodeName);
-        }
-        this.nodeName = nodeName; 
-        this.archetypeConstraint = new ArchetypeConstraint(activeOnly);
+        this(nodeName, new ArchetypeConstraint(activeOnly));
     }
-    
+
     /**
      * Constructor to initialize the node name. It implies that activeOnly is
-     * false
-     * 
-     * @param nodeName
-     *            the node name
+     * false.
+     *
+     * @param nodeName the node name, optionaly prefixed by the type alias
      */
     public CollectionNodeConstraint(String nodeName) {
         this(nodeName, false);
     }
-    
+
+    /**
+     * Create a query for the specified archetype id.
+     *
+     * @param nodeName    the node name, optionaly prefixed by the type alias
+     * @param archetypeId a valid archetype identity
+     * @param activeOnly  constraint to active only objects
+     */
+    public CollectionNodeConstraint(String nodeName, ArchetypeId archetypeId,
+                                    boolean activeOnly) {
+        this(nodeName, new ArchetypeIdConstraint(archetypeId, activeOnly));
+    }
+
+    /**
+     * Create an instance of this query specifying one or more elements.
+     * Any of the parameters can be null or may  include the wild card
+     * character.
+     *
+     * @param nodeName    the node name, optionaly prefixed by the type alias
+     * @param rmName      the reference model name (optional)
+     * @param entityName  the entity name (optional)
+     * @param conceptName the concept name (optional)
+     * @param primaryOnly only deal with primary archetypes
+     * @param activeOnly  constraint to active only objects
+     */
+    public CollectionNodeConstraint(String nodeName, String rmName,
+                                    String entityName, String conceptName,
+                                    boolean primaryOnly, boolean activeOnly) {
+        this(nodeName, new LongNameConstraint(rmName, entityName, conceptName,
+                                              primaryOnly, activeOnly));
+    }
+
+    /**
+     * Create an instance of this constraint with the specified short name.
+     *
+     * @param nodeName    the node name, optionaly prefixed by the type alias
+     * @param shortName   the short name
+     * @param primaryOnly only deal with primary archetypes
+     * @param activeOnly  constraint to active only objects
+     */
+    public CollectionNodeConstraint(String nodeName, String shortName,
+                                    boolean primaryOnly, boolean activeOnly) {
+        this(nodeName,
+             new ShortNameConstraint(shortName, primaryOnly, activeOnly));
+    }
+
+    /**
+     * Create an instance of this class with the specified archetype
+     * short names.
+     *
+     * @param nodeName    the node name, optionaly prefixed by the type alias
+     * @param shortNames  an array of archetype short names
+     * @param primaryOnly only deal with primary archetypes
+     * @param activeOnly  constraint to active only objects
+     */
+    public CollectionNodeConstraint(String nodeName, String[] shortNames,
+                                    boolean primaryOnly, boolean activeOnly) {
+        this(nodeName, new ShortNameConstraint(shortNames, primaryOnly,
+                                               activeOnly));
+    }
+
     /**
      * Construct a constraint on a collection node with the specified
-     * constraint
-     * 
-     * @param nodeName
-     *            the name of the node descriptor     
-     * @param constraint
-     *            the archetype constraint to use for the collection node
+     * constraint.
+     *
+     * @param nodeName   the node name, optionaly prefixed by the type alias
+     * @param constraint the archetype constraint to use for the collection node
      */
-    public CollectionNodeConstraint(String nodeName, BaseArchetypeConstraint constraint) {
+    public CollectionNodeConstraint(String nodeName,
+                                    BaseArchetypeConstraint constraint) {
+        if (StringUtils.isEmpty(nodeName)) {
+            throw new ArchetypeQueryException(
+                    ArchetypeQueryException.ErrorCode.MustSpecifyNodeName);
+        }
         this.nodeName = nodeName;
         this.archetypeConstraint = constraint;
     }
 
     /**
-     * Create a query for the specified archetype id
-     * 
-     * @param nodeName
-     *            the name of the node descriptor     
-     * @param archetypeId 
-     *            a valid archetype identity
-     * @param activeOnly
-     *            constraint to active only objects            
-     */
-    public CollectionNodeConstraint(String nodeName, ArchetypeId archetypeId,
-            boolean activeOnly) {
-        this.nodeName = nodeName;
-        this.archetypeConstraint = new ArchetypeIdConstraint(archetypeId, activeOnly);
-    }
-    
-    /**
-     * Create an instance of this query specifying one or more elements.
-     * Any of the parameters can be null or may  include the wild card character
-     *  
-     * @param nodeName
-     *            the name of the node descriptor     
-     * @param rmName 
-     *            the reference model name (optional)
-     * @param entityName
-     *            the entity name (optional)         
-     * @param conceptName
-     *            the concept name (optional)   
-     * @param primaryOnly
-     *            only deal with primary archetypes                       
-     * @param activeOnly
-     *            constraint to active only objects            
-     */
-    public CollectionNodeConstraint(String nodeName, String rmName, String entityName, 
-            String conceptName, boolean primaryOnly, boolean activeOnly) {
-        this.nodeName = nodeName;
-        this.archetypeConstraint = new ArchetypeLongNameConstraint(rmName, 
-                entityName, conceptName, primaryOnly, activeOnly);
-    }
-
-    /**
-     * Create an instance of this constraint with the specified short name
-     * 
-     * @param nodeName
-     *            the name of the node descriptor     
-     * @param shortName
-     *            the short name
-     * @param primaryOnly
-     *            only deal with primary archetypes                       
-     * @param activeOnly
-     *            constraint to active only objects            
-     */
-    public CollectionNodeConstraint(String nodeName, String shortName, 
-            boolean primaryOnly, boolean activeOnly) {
-        this.nodeName = nodeName;
-        this.archetypeConstraint = new ArchetypeShortNameConstraint(
-                shortName, primaryOnly, activeOnly);
-    }
-    
-    /**
-     * Create an instance of this class with the specified archetype
-     * short names
-     * 
-     * @param nodeName
-     *            the name of the node descriptor     
-     * @param shortNames
-     *            an array of archetype short names
-     * @param primaryOnly
-     *            only deal with primary archetypes                       
-     * @param activeOnly
-     *            constraint to active only objects            
-     */
-    public CollectionNodeConstraint(String nodeName, String[] shortNames,
-            boolean primaryOnly, boolean activeOnly) {
-        this.nodeName = nodeName;
-        this.archetypeConstraint = new ArchetypeShortNameConstraint(
-                shortNames, primaryOnly, activeOnly);
-    }
-    
-    /**
-     * @return Returns the archetypeConstraint.
+     * Returns the archetype constraint.
+     *
+     * @return the archetype constraint
      */
     public BaseArchetypeConstraint getArchetypeConstraint() {
         return archetypeConstraint;
@@ -212,21 +190,27 @@ public class CollectionNodeConstraint implements IConstraintContainer {
     }
 
     /**
-     * @return Returns the nodeName.
+     * Returns the node name.
+     *
+     * @return the node name
      */
     public String getNodeName() {
         return nodeName;
     }
-    
+
     /**
-     * @return Returns the joinType.
+     * Returns the join type.
+     *
+     * @return the join type
      */
     public JoinType getJoinType() {
         return joinType;
     }
 
     /**
-     * @param joinType The joinType to set.
+     * Sets the join type.
+     *
+     * @param joinType the join type
      */
     public CollectionNodeConstraint setJoinType(JoinType joinType) {
         this.joinType = joinType;
@@ -245,13 +229,13 @@ public class CollectionNodeConstraint implements IConstraintContainer {
         if (!(obj instanceof CollectionNodeConstraint)) {
             return false;
         }
-        
+
         CollectionNodeConstraint rhs = (CollectionNodeConstraint) obj;
         return new EqualsBuilder()
-            .appendSuper(super.equals(rhs))
-            .append(nodeName, rhs.nodeName)
-            .append(archetypeConstraint, rhs.archetypeConstraint)
-            .isEquals();
+                .appendSuper(super.equals(rhs))
+                .append(nodeName, rhs.nodeName)
+                .append(archetypeConstraint, rhs.archetypeConstraint)
+                .isEquals();
     }
 
     /* (non-Javadoc)
@@ -260,10 +244,9 @@ public class CollectionNodeConstraint implements IConstraintContainer {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(super.toString())
-            .append("nodeName", nodeName)
-            .append("archetypeConstraint", archetypeConstraint)
-            .toString();
+                .appendSuper(super.toString())
+                .append("nodeName", nodeName)
+                .append("archetypeConstraint", archetypeConstraint).toString();
     }
 
     /* (non-Javadoc)
@@ -271,10 +254,9 @@ public class CollectionNodeConstraint implements IConstraintContainer {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        CollectionNodeConstraint copy = (CollectionNodeConstraint)super.clone();
-        copy.nodeName = this.nodeName;
-        copy.archetypeConstraint = (BaseArchetypeConstraint)this.archetypeConstraint.clone();
-        
+        CollectionNodeConstraint copy = (CollectionNodeConstraint) super.clone();
+        copy.archetypeConstraint = (BaseArchetypeConstraint) this.archetypeConstraint.clone();
+
         return copy;
     }
 }

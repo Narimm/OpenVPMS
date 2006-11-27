@@ -19,39 +19,54 @@
 
 package org.openvpms.component.system.common.query;
 
-// openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
+
 /**
- * An object reference constraint is a linkId constraint on a specific 
- * archetypeId
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * An object reference constraint is a linkId constraint on a specific
+ * archetypeId.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class ObjectRefArchetypeConstraint extends ArchetypeIdConstraint {
+public class ObjectRefConstraint extends ArchetypeIdConstraint {
+
     /**
-     * Default SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
-    
+
     /**
-     * The linkId
+     * The link id.
      */
     private String linkId;
-    
+
+
     /**
-     * Construct a constraint usin the specified reference
-     * @param reference
-     *            the object reference
+     * Construct a constraint using the specified reference.
+     *
+     * @param reference the object reference
      */
-    public ObjectRefArchetypeConstraint(IMObjectReference reference) {
-        super(reference.getArchetypeId(), false);
+    public ObjectRefConstraint(IMObjectReference reference) {
+        this(null, reference);
+    }
+
+    /**
+     * Construct a constraint using the specified reference.
+     *
+     * @param alias     the type alias. May be <code>null</code>
+     * @param reference the object reference
+     */
+    public ObjectRefConstraint(String alias,
+                               IMObjectReference reference) {
+        super(alias, reference.getArchetypeId(), false);
         this.linkId = reference.getLinkId();
     }
 
     /**
-     * @return Returns the linkId.
+     * Returns the link id.
+     *
+     * @return the link id
      */
     public String getLinkId() {
         return linkId;

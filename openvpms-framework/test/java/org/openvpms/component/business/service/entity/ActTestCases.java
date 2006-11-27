@@ -115,7 +115,7 @@ public class ActTestCases extends
         List<Participation> participations = ArchetypeQueryHelper.getParticipations(
                 archetypeService, new IMObjectReference(person), "participation.simple",
                 null, null,
-                null, null, true, 0, ArchetypeQuery.ALL_ROWS).getRows();
+                null, null, true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
         assertTrue(participations.size() == 3);
     }
 
@@ -144,7 +144,7 @@ public class ActTestCases extends
         List<Act> acts = ArchetypeQueryHelper.getActs(archetypeService,
                 new IMObjectReference(person), "participation.simple",
                 "act", null, null, null, null, null, null, true, 0,
-                ArchetypeQuery.ALL_ROWS).getRows();
+                ArchetypeQuery.ALL_RESULTS).getResults();
         assertTrue(acts.size() == 2);
     }
 
@@ -179,14 +179,14 @@ public class ActTestCases extends
         // get the initial act count
         int actCount = ArchetypeQueryHelper.getActs(archetypeService,
                 "act", null, null, null, null, null, null, false, 1,
-                ArchetypeQuery.ALL_ROWS).getRows().size();
+                ArchetypeQuery.ALL_RESULTS).getResults().size();
 
         // create an act and check the count again
         Act act1 = createAct("wake up");
         archetypeService.save(act1);
         int actCount1 = ArchetypeQueryHelper.getActs(archetypeService,
                 "act", null, null, null, null, null, null, false, 1,
-                ArchetypeQuery.ALL_ROWS).getRows().size();
+                ArchetypeQuery.ALL_RESULTS).getResults().size();
         assertTrue(actCount1 == (actCount + 1));
 
         // create multiple acts and check the count again
@@ -196,14 +196,14 @@ public class ActTestCases extends
         archetypeService.save(act1);
         actCount1 = ArchetypeQueryHelper.getActs(archetypeService,
                 "act", null, null, null, null, null, null, false, 1,
-                ArchetypeQuery.ALL_ROWS).getRows().size();
+                ArchetypeQuery.ALL_RESULTS).getResults().size();
         assertTrue(actCount1 == (actCount + 3));
 
         // check that it retrieves null result set correctly
         try {
             ArchetypeQueryHelper.getActs(archetypeService, "jimmya-act", null,
-                null, null, null, null, null, false, 1, ArchetypeQuery.ALL_ROWS)
-                .getRows().size();
+                null, null, null, null, null, false, 1, ArchetypeQuery.ALL_RESULTS)
+                .getResults().size();
             fail("This request should not have completed");
         } catch (ArchetypeServiceException exception) {
             if (exception.getErrorCode() != ArchetypeServiceException.ErrorCode.FailedToExecuteQuery) {
@@ -221,14 +221,14 @@ public class ActTestCases extends
         // get the initial act count
         int actCount = ArchetypeQueryHelper.getActs(archetypeService,
                 "act", null, null, null, null, null, null, false, 1,
-                ArchetypeQuery.ALL_ROWS).getRows().size();
+                ArchetypeQuery.ALL_RESULTS).getResults().size();
 
         // create an act and check the count again
         Act act1 = createAct("wake up jim");
         archetypeService.save(act1);
         int actCount1 = ArchetypeQueryHelper.getActs(archetypeService,
                 "act", null, null, null, null, null, null, false, 1,
-                ArchetypeQuery.ALL_ROWS).getRows().size();
+                ArchetypeQuery.ALL_RESULTS).getResults().size();
         assertTrue(actCount1 == (actCount + 1));
     }
 

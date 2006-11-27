@@ -19,17 +19,15 @@
 package org.openvpms.component.business.service.archetype;
 
 // spring-context
-import java.util.HashSet;
-import java.util.Set;
-
+import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
-// log4j
-import org.apache.log4j.Logger;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Test that pagination works on the IArchetypeService
@@ -82,26 +80,26 @@ public class ArchetypeServicePaginationTestCase extends
             int rowsPerPage = index + 1;
             IPage<IMObject> objects = ArchetypeQueryHelper.get(service,
                     "entity", "act", null, null, false, 0, rowsPerPage);
-            int totalCount = objects.getTotalNumOfRows();
-            int rowCount = objects.getRows().size();
+            int totalCount = objects.getTotalResults();
+            int rowCount = objects.getResults().size();
             int pages = (totalCount % rowsPerPage) == 0 ? totalCount/rowsPerPage : totalCount /rowsPerPage + 1;
             if (logger.isDebugEnabled()) {
                 logger.debug("Page 0 numofRows " 
-                        + objects.getRows().size() 
+                        + objects.getResults().size()
                         + " totalCount " + totalCount + " rowCount " + rowCount);
             }
             
             for (int page = 1; page < pages; page++) {
                 objects = ArchetypeQueryHelper.get(service, "entity", "act", 
                         null, null, false, page*rowsPerPage, rowsPerPage);
-                rowCount += objects.getRows().size();
+                rowCount += objects.getResults().size();
                 if (logger.isDebugEnabled()) {
                     logger.debug("Page " + page + " numofRows " 
-                            + objects.getRows().size() 
+                            + objects.getResults().size()
                             + " totalCount " + totalCount + " rowCount " + rowCount);
                 }
                 assertTrue(objects != null);
-                assertTrue(objects.getRows().size() <= rowsPerPage);
+                assertTrue(objects.getResults().size() <= rowsPerPage);
             }
             assertTrue(rowCount == totalCount);
         }
@@ -114,10 +112,10 @@ public class ArchetypeServicePaginationTestCase extends
     throws Exception {
         IPage<IMObject> objects = ArchetypeQueryHelper.get(service, "entity", 
                 "act", null, null, false, 0, 1);
-        int totalCount = objects.getTotalNumOfRows();
+        int totalCount = objects.getTotalResults();
         objects = ArchetypeQueryHelper.get(service, "entity", "act", null, null, 
                 false, 0, totalCount*2);
-        assertTrue(objects.getTotalNumOfRows() == totalCount);
+        assertTrue(objects.getTotalResults() == totalCount);
     }
 
     /**
@@ -132,14 +130,14 @@ public class ArchetypeServicePaginationTestCase extends
             IPage<IMObject> objects = ArchetypeQueryHelper.get(service,
                     "common", "entityRelationship", "a*", null, false, 
                     startRow, rowsPerPage);
-            for (IMObject object : objects.getRows()) {
+            for (IMObject object : objects.getResults()) {
                 if (linkIds.contains(object.getLinkId())) {
                     fail("This row has already been returned");
                 }
                 linkIds.add(object.getLinkId());
             }
             
-            if ((startRow + rowsPerPage) >= objects.getTotalNumOfRows()) {
+            if ((startRow + rowsPerPage) >= objects.getTotalResults()) {
                 break;
             }
         }
@@ -152,10 +150,10 @@ public class ArchetypeServicePaginationTestCase extends
     throws Exception {
         IPage<IMObject> objects = ArchetypeQueryHelper.get(service, "entity", 
                 "act", null, null, false, 0, 1);
-        int totalCount = objects.getTotalNumOfRows();
+        int totalCount = objects.getTotalResults();
         objects = ArchetypeQueryHelper.get(service, "entity", "act", null, null, 
-                false, 0, ArchetypeQuery.ALL_ROWS);
-        assertTrue(objects.getTotalNumOfRows() == totalCount);
+                false, 0, ArchetypeQuery.ALL_RESULTS);
+        assertTrue(objects.getTotalResults() == totalCount);
     }
 
     /* (non-Javadoc)

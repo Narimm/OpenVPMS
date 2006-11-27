@@ -225,8 +225,8 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      */
     @SuppressWarnings("unchecked")
     protected List<Lookup> getLookups(ArchetypeQuery query) {
-        query.setCountTotalRows(false);
-        List result = service.get(query).getRows();
+        query.setCountResults(false);
+        List result = service.get(query).getResults();
         return (List<Lookup>) result;
     }
 
@@ -241,8 +241,8 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
     @SuppressWarnings("unchecked")
     protected List<Lookup> getLookups(Collection<String> nodes,
                                       ArchetypeQuery query) {
-        query.setCountTotalRows(false);
-        List result = service.get(query, nodes).getRows();
+        query.setCountResults(false);
+        List result = service.get(query, nodes).getResults();
         return (List<Lookup>) result;
     }
 
@@ -269,12 +269,12 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
         NodeSet result = null;
         ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true)
                 .add(new NodeConstraint("code", code))
-                .setFirstRow(0)
-                .setNumOfRows(1)
-                .setCountTotalRows(false);
+                .setFirstResult(0)
+                .setMaxResults(1)
+                .setCountResults(false);
         IPage<NodeSet> page = service.getNodes(query, nodes);
-        if (!page.getRows().isEmpty()) {
-            result = page.getRows().get(0);
+        if (!page.getResults().isEmpty()) {
+            result = page.getResults().get(0);
         }
         return result;
     }

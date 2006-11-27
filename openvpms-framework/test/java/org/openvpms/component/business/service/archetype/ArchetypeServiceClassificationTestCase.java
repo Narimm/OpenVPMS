@@ -19,10 +19,7 @@
 package org.openvpms.component.business.service.archetype;
 
 // spring-context
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-
+import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Classification;
@@ -32,8 +29,9 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
-// log4j
-import org.apache.log4j.Logger;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Test classification related functions through the 
@@ -82,7 +80,7 @@ public class ArchetypeServiceClassificationTestCase extends
         
         List<IMObject> purposes = ArchetypeQueryHelper.get(service,
                 new String[]{"classification.contactPurpose"}, true, 
-                0, ArchetypeQuery.ALL_ROWS).getRows();
+                0, ArchetypeQuery.ALL_RESULTS).getResults();
         int acount = purposes.size(); 
         
         ndesc.addChildToCollection(contact, purposes.get(0));
@@ -112,7 +110,7 @@ public class ArchetypeServiceClassificationTestCase extends
         assertTrue(contact.getClassifications().size() == 0);
         purposes = ArchetypeQueryHelper.get(service,
                 new String[]{"classification.contactPurpose"}, true, 
-                0, ArchetypeQuery.ALL_ROWS).getRows();
+                0, ArchetypeQuery.ALL_RESULTS).getResults();
         assertTrue(acount == purposes.size()); 
         
     }
@@ -126,7 +124,7 @@ public class ArchetypeServiceClassificationTestCase extends
         // reload the classification and verify equals == true
         String[] shortNames = {"classification.contactPurpose"};
         List<IMObject> class1 = ArchetypeQueryHelper.get(service, shortNames,
-                                 true, 0, ArchetypeQuery.ALL_ROWS).getRows();
+                                 true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
         IMObject purpose2 = get(name, class1);
         assertNotNull(purpose2);
         assertEquals(purpose, purpose2);
@@ -141,7 +139,7 @@ public class ArchetypeServiceClassificationTestCase extends
         // reload the purpose
         String[] shortNames = {"classification.contactPurpose"};
         List<IMObject> purposes = ArchetypeQueryHelper.get(service, shortNames,
-                                 true, 0, ArchetypeQuery.ALL_ROWS).getRows();
+                                 true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
         purpose = (Classification) get(name, purposes);
         assertNotNull(purpose);
 

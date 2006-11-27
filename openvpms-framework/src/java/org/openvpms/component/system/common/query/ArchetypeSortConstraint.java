@@ -22,12 +22,13 @@ package org.openvpms.component.system.common.query;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+
 /**
- * This class is used to specify a sort constraint on a portion of the 
+ * This class is used to specify a sort constraint on a portion of the
  * archetype such as the entity name or the concept name.
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ArchetypeSortConstraint extends SortConstraint {
 
@@ -40,44 +41,48 @@ public class ArchetypeSortConstraint extends SortConstraint {
      * Holds the archetype sort property type
      */
     private ArchetypeProperty property;
-    
-    
+
+
     /**
      * Construct an instance of this class with the specified parameters.
-     * 
-     * @param property
-     *            the archetype sort property
-     * @param ascending
-     *            whether to sort in ascending order            
+     *
+     * @param property  the archetype sort property
+     * @param ascending whether to sort in ascending or descending order
      */
-    public ArchetypeSortConstraint(ArchetypeProperty property, boolean ascending) {
-        super(ascending);
+    public ArchetypeSortConstraint(ArchetypeProperty property,
+                                   boolean ascending) {
+        this(null, property, ascending);
+    }
+
+    /**
+     * Construct an instance of this class with the specified parameters.
+     *
+     * @param alias     the type alias. May be <code>null</code>
+     * @param property  the archetype sort property
+     * @param ascending whether to sort in ascending or descending order
+     */
+    public ArchetypeSortConstraint(String alias, ArchetypeProperty property,
+                                   boolean ascending) {
+        super(alias, ascending);
         this.property = property;
     }
 
     /**
-     * @return Returns the property.
+     * Returns the archetype sort property.
+     *
+     * @return the sort property
      */
     public ArchetypeProperty getProperty() {
         return property;
     }
 
     /**
-     * @param property The property to set.
+     * Sets the archetype sort property.
+     *
+     * @param property the sort property
      */
     public void setProperty(ArchetypeProperty property) {
         this.property = property;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.query.SortConstraint#clone()
-     */
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        ArchetypeSortConstraint copy = (ArchetypeSortConstraint)super.clone();
-        copy.property = this.property;
-        
-        return copy;
     }
 
     /* (non-Javadoc)
@@ -92,12 +97,12 @@ public class ArchetypeSortConstraint extends SortConstraint {
         if (!(obj instanceof ArchetypeSortConstraint)) {
             return false;
         }
-        
+
         ArchetypeSortConstraint rhs = (ArchetypeSortConstraint) obj;
         return new EqualsBuilder()
-            .appendSuper(super.equals(obj))
-            .append(property, rhs.property)
-            .isEquals();
+                .appendSuper(super.equals(obj))
+                .append(property, rhs.property)
+                .isEquals();
     }
 
     /* (non-Javadoc)
@@ -106,8 +111,8 @@ public class ArchetypeSortConstraint extends SortConstraint {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(super.toString())
-            .append("property", property)
-            .toString();
+                .appendSuper(super.toString())
+                .append("property", property)
+                .toString();
     }
 }

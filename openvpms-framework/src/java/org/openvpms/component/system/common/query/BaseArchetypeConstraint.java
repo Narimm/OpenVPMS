@@ -22,68 +22,105 @@ package org.openvpms.component.system.common.query;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+
 /**
  * This is the base archetype constraint that is the root of all archetype
  * queries. Currently it is a marker class.
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public abstract class BaseArchetypeConstraint extends ConstraintContainer {
+
     /**
-     * Constraint to active only entities
+     * The type name alias. May be <code>null</code>.
+     */
+    private String alias;
+
+    /**
+     * If <code>true</code> only query active instances.
      */
     private boolean activeOnly;
-    
+
     /**
-     * Whether to search for primary instances only 
+     * If <code>true</code>, only query primary instances.
      */
     private boolean primaryOnly;
-    
+
+
     /**
-     * Base class constructor
-     * 
-     * @param primaryOnly
-     *            only process primary archetypes
-     * @param activeOnly
-     *            only process active archetypes            
+     * Constructs a new <code>BaseArchetypeConstraint</code>.
+     *
+     * @param alias       the type alias. May be <code>null</code>
+     * @param primaryOnly if <code>true</code> only deal with primary archetypes
+     * @param activeOnly  if <code>true</code> only deal with active entities
      */
-    BaseArchetypeConstraint(boolean primaryOnly, boolean activeOnly) {
+    BaseArchetypeConstraint(String alias, boolean primaryOnly,
+                            boolean activeOnly) {
+        this.alias = alias;
         this.primaryOnly = primaryOnly;
         this.activeOnly = activeOnly;
     }
-    
+
     /**
-     * @return Returns the primaryOnly.
+     * Sets the type name alias.
+     *
+     * @param alias the type name alias. May be <code>null</code>
+     */
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    /**
+     * Returns the type name alias.
+     *
+     * @return the type name alias. May be <code>null</code>
+     */
+    public String getAlias() {
+        return alias;
+    }
+
+    /**
+     * Determines if only primary instances will be queried.
+     *
+     * @return <code>true</code> if only primary instances will be queried
      */
     public boolean isPrimaryOnly() {
         return primaryOnly;
     }
-    
+
     /**
-     * @param primaryOnly The primaryOnly to set.
+     * Determines if only primary instances will be queried.
+     *
+     * @param primaryOnly if <code>true</code>, only primary instances will be
+     *                    queried
      */
     public void setPrimaryOnly(boolean primaryOnly) {
         this.primaryOnly = primaryOnly;
     }
-    
+
     /**
-     * @return Returns the activeOnly.
+     * Determines if only active instances will be queried.
+     *
+     * @return </code>true</code> if only active instances will be queried.
      */
     public boolean isActiveOnly() {
         return activeOnly;
     }
-    
+
     /**
-     * @param activeOnly The activeOnly to set.
+     * Determines if only active instances will be queried.
+     *
+     * @param activeOnly if <code>true</code>, only active instances will be
+     *                   queried
      */
     public void setActiveOnly(boolean activeOnly) {
         this.activeOnly = activeOnly;
     }
-    
+
     /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
@@ -93,13 +130,14 @@ public abstract class BaseArchetypeConstraint extends ConstraintContainer {
         if (!(obj instanceof BaseArchetypeConstraint)) {
             return false;
         }
-        
+
         BaseArchetypeConstraint rhs = (BaseArchetypeConstraint) obj;
         return new EqualsBuilder()
-            .appendSuper(super.equals(rhs))
-            .append(activeOnly, rhs.activeOnly)
-            .append(primaryOnly, rhs.primaryOnly)
-            .isEquals();
+                .appendSuper(super.equals(rhs))
+                .append(alias, rhs.alias)
+                .append(activeOnly, rhs.activeOnly)
+                .append(primaryOnly, rhs.primaryOnly)
+                .isEquals();
     }
 
     /* (non-Javadoc)
@@ -108,10 +146,11 @@ public abstract class BaseArchetypeConstraint extends ConstraintContainer {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(super.toString())
-            .append("activeOnly", activeOnly)
-            .append("primaryOnly", primaryOnly)
-            .toString();
+                .appendSuper(super.toString())
+                .append("alias", alias)
+                .append("activeOnly", activeOnly)
+                .append("primaryOnly", primaryOnly)
+                .toString();
     }
 
     /* (non-Javadoc)
@@ -119,10 +158,6 @@ public abstract class BaseArchetypeConstraint extends ConstraintContainer {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        BaseArchetypeConstraint copy = (BaseArchetypeConstraint)super.clone();
-        copy.activeOnly = this.activeOnly;
-        copy.primaryOnly = this.primaryOnly;
-        
-        return copy;
+        return super.clone();
     }
 }

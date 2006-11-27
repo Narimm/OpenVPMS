@@ -19,83 +19,105 @@
 
 package org.openvpms.component.system.common.query;
 
-// commons-lang
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+
 /**
- * This is the base class for all node descriptors. It contains the sort 
- * order, the node name, the operator and the set of parameters,
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * This is the base class for all node contraints. It contains the node name,
+ * the operator and the set of parameters,
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public abstract class AbstractNodeConstraint implements IConstraint {
 
     /**
-     * Default SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * The name of the node descriptor
+     * The type alias. May be <code>null</code>.
      */
-    protected String nodeName;
-    
+    private String alias;
+
+    /**
+     * The name of the node descriptor.
+     */
+    private String nodeName;
+
     /**
      * The operator to apply
      */
-    protected RelationalOp operator;
-    
+    private RelationalOp operator;
+
     /**
-     * The parameters for the constraint
+     * The parameters for the constraint.
      */
-    protected Object[] parameters;
-    
-    
+    private Object[] parameters;
+
+
     /**
-     * Construct a constraint on the specified node with the associated relational
-     * operator and parameters
-     * 
-     * @param nodeName
-     *            the name of the node descriptor
-     * @param operator
-     *            the relational operator
-     * @param parameters
-     *            the parameters that are used to constrain the value of the
-     *            node                         
+     * Construct a constraint on the specified node with the associated
+     * relational operator and parameters.
+     *
+     * @param nodeName   the name of the node descriptor. May be prefixed by the
+     *                   type alias
+     * @param operator   the relational operator
+     * @param parameters the parameters that are used to constrain the value of
+     *                   the node
      */
-    AbstractNodeConstraint(String nodeName, RelationalOp operator, Object[] parameters) {
+    AbstractNodeConstraint(String nodeName, RelationalOp operator,
+                           Object[] parameters) {
         if (StringUtils.isEmpty(nodeName)) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.MustSpecifyNodeName);
         }
-        this.nodeName = nodeName;
-        
+        int index = nodeName.indexOf(".");
+        if (index != -1) {
+            alias = nodeName.substring(0, index);
+            this.nodeName = nodeName.substring(index + 1);
+        } else {
+            this.nodeName = nodeName;
+        }
+
         if (operator == null) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.MustSpecifyOperator);
         }
         this.operator = operator;
-        
-        if ((parameters == null && operator != RelationalOp.IsNULL) ||
-            (parameters != null && parameters.length != operator.getParamCount())) {
+
+        if ((parameters == null && operator != RelationalOp.IsNULL)
+                || (parameters != null
+                && parameters.length != operator.getParamCount())) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.ParameterCountMismatch,
-                    new Object[] {operator, operator.getParamCount(), 
-                            (parameters == null ? 0 : parameters.length)});
+                    operator, operator.getParamCount(),
+                    (parameters == null ? 0 : parameters.length));
         }
         this.parameters = parameters;
     }
 
     /**
-     * @return Returns the nodeName.
+     * Returns the type alias.
+     *
+     * @return the type alias. May be <code>null</code>
+     */
+    public String getAlias() {
+        return alias;
+    }
+
+    /**
+     * Returns the node name.
+     *
+     * @return the node name
      */
     public String getNodeName() {
         return nodeName;
     }
-    
+
     /**
      * @return Returns the operator.
      */
@@ -122,14 +144,14 @@ public abstract class AbstractNodeConstraint implements IConstraint {
         if (!(obj instanceof AbstractNodeConstraint)) {
             return false;
         }
-        
+
         AbstractNodeConstraint rhs = (AbstractNodeConstraint) obj;
         return new EqualsBuilder()
-            .appendSuper(super.equals(rhs))
-            .append(nodeName, rhs.nodeName)
-            .append(operator, rhs.operator)
-            .append(parameters, rhs.parameters)
-            .isEquals();
+                .appendSuper(super.equals(rhs))
+                .append(nodeName, rhs.nodeName)
+                .append(operator, rhs.operator)
+                .append(parameters, rhs.parameters)
+                .isEquals();
     }
 
     /* (non-Javadoc)
@@ -138,11 +160,11 @@ public abstract class AbstractNodeConstraint implements IConstraint {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(super.toString())
-            .append("nodeName", nodeName)
-            .append("operator", operator)
-            .append("parameters", parameters)
-            .toString();
+                .appendSuper(super.toString())
+                .append("nodeName", nodeName)
+                .append("operator", operator)
+                .append("parameters", parameters)
+                .toString();
     }
 
     /* (non-Javadoc)
@@ -150,14 +172,14 @@ public abstract class AbstractNodeConstraint implements IConstraint {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        AbstractNodeConstraint copy = (AbstractNodeConstraint)super.clone();
+        AbstractNodeConstraint copy = (AbstractNodeConstraint) super.clone();
         copy.nodeName = this.nodeName;
         copy.operator = this.operator;
-        
+
         copy.parameters = new Object[this.parameters.length];
-        System.arraycopy(this.parameters, 0, copy.parameters, 0, 
-                this.parameters.length);
-        
+        System.arraycopy(this.parameters, 0, copy.parameters, 0,
+                         this.parameters.length);
+
         return copy;
     }
 
