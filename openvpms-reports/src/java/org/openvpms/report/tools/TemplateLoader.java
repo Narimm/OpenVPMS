@@ -111,9 +111,9 @@ public class TemplateLoader {
         ArchetypeQuery query
                 = new ArchetypeQuery("act.documentTemplate", false, true);
         query.add(new NodeConstraint("name", document.getName()));
-        query.setFirstRow(0);
-        query.setNumOfRows(1);
-        List<IMObject> rows = _service.get(query).getRows();
+        query.setFirstResult(0);
+        query.setMaxResults(1);
+        List<IMObject> rows = _service.get(query).getResults();
         if (!rows.isEmpty()) {
             act = (DocumentAct) rows.get(0);
             ActBean bean = new ActBean(act);
