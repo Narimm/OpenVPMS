@@ -11,11 +11,10 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
-
 
 package org.openvpms.component.system.common.query;
 
@@ -24,35 +23,34 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 
 /**
- * The base class for all sort constraints. A sort constraint defines the
- * order of the returned records.
+ * The base class for all select constraints. Select constraints determine
+ * what is returned by a query.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class SortConstraint implements IConstraint {
+public abstract class SelectConstraint implements IConstraint {
 
     /**
-     * The type alias. May be <code>null</code>.
+     * The type alias.
      */
-    private String alias;
+    private final String alias;
 
     /**
-     * Determines whether to sort in asending or descending order.
+     * The node name.
      */
-    private boolean ascending;
+    private final String nodeName;
 
 
     /**
-     * Construct an instance of this constraint indicating whether to sort
-     * in ascending or descending order.
+     * Constructs a new <code>SelectConstraint</code>.
      *
-     * @param alias     the type alias. May be <code>null</code>
-     * @param ascending true if sorting in ascending order
+     * @param alias    the type alias. May be <code>null</code>
+     * @param nodeName the node name. May be <code>null</code>
      */
-    protected SortConstraint(String alias, boolean ascending) {
+    protected SelectConstraint(String alias, String nodeName) {
         this.alias = alias;
-        this.ascending = ascending;
+        this.nodeName = nodeName;
     }
 
     /**
@@ -65,23 +63,12 @@ public abstract class SortConstraint implements IConstraint {
     }
 
     /**
-     * Determines if the sort is ascending.
+     * Returns the node name.
      *
-     * @return <code>true</code> if the sort is ascending; <code>false</code>
-     *         if it is descending.
+     * @return the node name
      */
-    public boolean isAscending() {
-        return ascending;
-    }
-
-    /**
-     * Determines if the sort is ascending.
-     *
-     * @param ascending if <code>true</code> the sort is ascending; if
-     *                  <code>false</code> it is descending.
-     */
-    public void setAscending(boolean ascending) {
-        this.ascending = ascending;
+    public String getNodeName() {
+        return nodeName;
     }
 
     /* (non-Javadoc)
@@ -93,14 +80,14 @@ public abstract class SortConstraint implements IConstraint {
             return true;
         }
 
-        if (!(obj instanceof SortConstraint)) {
+        if (!(obj instanceof SelectConstraint)) {
             return false;
         }
 
-        SortConstraint rhs = (SortConstraint) obj;
+        SelectConstraint rhs = (SelectConstraint) obj;
         return new EqualsBuilder()
                 .append(alias, rhs.alias)
-                .append(ascending, rhs.ascending)
+                .append(nodeName, rhs.nodeName)
                 .isEquals();
     }
 
@@ -111,8 +98,15 @@ public abstract class SortConstraint implements IConstraint {
     public String toString() {
         return new ToStringBuilder(this)
                 .append("alias", alias)
-                .append("ascending", ascending)
+                .append("nodeName", nodeName)
                 .toString();
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
 }

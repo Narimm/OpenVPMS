@@ -28,13 +28,13 @@ import org.openvpms.component.business.service.archetype.helper.lookup.LookupAss
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -217,12 +217,12 @@ public class LookupHelper  {
 
         ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true)
                 .add(new NodeConstraint("code", code))
-                .setFirstRow(0)
-                .setNumOfRows(1)
-                .setCountTotalRows(false);
+                .setFirstResult(0)
+                .setMaxResults(1)
+                .setCountResults(false);
         IPage<IMObject> page = service.get(query);
-        if (!page.getRows().isEmpty()) {
-            lookup = (Lookup) page.getRows().get(0);
+        if (!page.getResults().isEmpty()) {
+            lookup = (Lookup) page.getResults().get(0);
         }
 
         return lookup;
@@ -249,10 +249,10 @@ public class LookupHelper  {
                                           String shortName,
                                           int firstRow, int numOfRows) {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true)
-            .setFirstRow(firstRow)
-            .setNumOfRows(numOfRows);
+            .setFirstResult(firstRow)
+            .setMaxResults(numOfRows);
 
-        return new ArrayList<Lookup>((List)service.get(query).getRows());
+        return new ArrayList<Lookup>((List)service.get(query).getResults());
     }
 
     /**
@@ -273,7 +273,7 @@ public class LookupHelper  {
                                                 Lookup source,
                                                 String[] target) {
         ArchetypeQuery query = new ArchetypeQuery(
-                new ArchetypeShortNameConstraint(
+                new ShortNameConstraint(
                         target, false, false))
                 .add(new CollectionNodeConstraint("target", false)
                         .add(new ObjectRefNodeConstraint("source",
@@ -281,7 +281,7 @@ public class LookupHelper  {
                 .add(new NodeSortConstraint("name", true))
                 .setActiveOnly(true);
 
-        return new ArrayList<Lookup>((List) service.get(query).getRows());
+        return new ArrayList<Lookup>((List) service.get(query).getResults());
     }
 
     /**
@@ -302,7 +302,7 @@ public class LookupHelper  {
                                                 Lookup target,
                                                 String[] source) {
         ArchetypeQuery query = new ArchetypeQuery(
-                new ArchetypeShortNameConstraint(
+                new ShortNameConstraint(
                         source, false, false))
                 .add(new CollectionNodeConstraint("source", false)
                         .add(new ObjectRefNodeConstraint("target",
@@ -310,7 +310,7 @@ public class LookupHelper  {
                 .add(new NodeSortConstraint("name", true))
                 .setActiveOnly(true);
 
-        return new ArrayList<Lookup>((List) service.get(query).getRows());
+        return new ArrayList<Lookup>((List) service.get(query).getResults());
     }
 
     /**
@@ -330,11 +330,11 @@ public class LookupHelper  {
     public static Lookup getDefaultLookup(IArchetypeService service, String lookup) {
         ArchetypeQuery query = new ArchetypeQuery(lookup, false, false)
                 .add(new NodeConstraint("defaultLookup", RelationalOp.EQ, true))
-                .setNumOfRows(1)
-                .setCountTotalRows(false);
+                .setMaxResults(1)
+                .setCountResults(false);
         IPage<IMObject> results = service.get(query);
 
-        return (results.getRows().size() == 1) ? (Lookup) results.getRows().get(0) : null;
+        return (results.getResults().size() == 1) ? (Lookup) results.getResults().get(0) : null;
 
     }
 

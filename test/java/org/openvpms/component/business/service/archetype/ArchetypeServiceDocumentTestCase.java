@@ -28,7 +28,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.ObjectRefArchetypeConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 /**
@@ -156,7 +156,7 @@ public class ArchetypeServiceDocumentTestCase extends
         
         // retrieve the last document
         assertTrue(service.get(new ArchetypeQuery(
-                new ObjectRefArchetypeConstraint(ref))).getTotalNumOfRows() == 1);
+                new ObjectRefConstraint(ref))).getTotalResults() == 1);
     }
     
     /**
@@ -182,11 +182,11 @@ public class ArchetypeServiceDocumentTestCase extends
         DocumentAct docAct = createDocumentAct(document);
         service.save(docAct);
         
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefArchetypeConstraint(
+        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
                 docAct.getObjectReference())));
-        assertTrue(page.getTotalNumOfRows() == 1);
+        assertTrue(page.getTotalResults() == 1);
         
-        docAct = (DocumentAct)page.getRows().iterator().next();
+        docAct = (DocumentAct)page.getResults().iterator().next();
         assertTrue(docAct.getDocReference().equals(document.getObjectReference()));
     }
     
@@ -201,11 +201,11 @@ public class ArchetypeServiceDocumentTestCase extends
         DocumentAct docAct = createDocumentAct(document);
         service.save(docAct);
         
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefArchetypeConstraint(
+        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
                 docAct.getObjectReference())));
-        assertTrue(page.getTotalNumOfRows() == 1);
+        assertTrue(page.getTotalResults() == 1);
         
-        docAct = (DocumentAct)page.getRows().iterator().next();
+        docAct = (DocumentAct)page.getResults().iterator().next();
         assertTrue(docAct.getDocReference().equals(document.getObjectReference()));
         
         // create a new document reference
@@ -216,10 +216,10 @@ public class ArchetypeServiceDocumentTestCase extends
         service.save(docAct);
         
         // retrieve and check again
-        page = service.get(new ArchetypeQuery(new ObjectRefArchetypeConstraint(
+        page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
                 docAct.getObjectReference())));
-        assertTrue(page.getTotalNumOfRows() == 1);
-        docAct = (DocumentAct)page.getRows().iterator().next();
+        assertTrue(page.getTotalResults() == 1);
+        docAct = (DocumentAct)page.getResults().iterator().next();
         assertTrue(docAct.getDocReference().equals(document.getObjectReference()));
     }
     
@@ -238,14 +238,14 @@ public class ArchetypeServiceDocumentTestCase extends
         service.remove(docAct);
         
         // ensure that we can still retrieve the document
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefArchetypeConstraint(
+        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
                 document.getObjectReference())));
-        assertTrue(page.getTotalNumOfRows() == 1);
+        assertTrue(page.getTotalResults() == 1);
         
         // check that we can't retrieve the document act
-        page = service.get(new ArchetypeQuery(new ObjectRefArchetypeConstraint(
+        page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
                 docAct.getObjectReference())));
-        assertTrue(page.getTotalNumOfRows() == 0);
+        assertTrue(page.getTotalResults() == 0);
     }
     
     /**

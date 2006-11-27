@@ -29,11 +29,11 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -118,7 +118,7 @@ class TargetLookup extends AbstractLookupAssertion {
         if (lookup != null) {
             String[] target = getArchetypeShortNames(relationship, "target");
             ArchetypeQuery query = new ArchetypeQuery(
-                    new ArchetypeShortNameConstraint(
+                    new ShortNameConstraint(
                             target, false, false))
                     .add(new CollectionNodeConstraint("target", false)
                             .add(new ObjectRefNodeConstraint("source", lookup)))
@@ -170,7 +170,7 @@ class TargetLookup extends AbstractLookupAssertion {
             ArchetypeQuery query = createQuery(lookup, code);
             List<String> nodes = Arrays.asList("name");
             IArchetypeService service = getArchetypeService();
-            List<NodeSet> rows = service.getNodes(query, nodes).getRows();
+            List<NodeSet> rows = service.getNodes(query, nodes).getResults();
             if (!rows.isEmpty()) {
                 result = (String) rows.get(0).get("name");
             }
@@ -188,13 +188,13 @@ class TargetLookup extends AbstractLookupAssertion {
     private ArchetypeQuery createQuery(IMObjectReference lookup, String code) {
         String[] target = getArchetypeShortNames(relationship, "target");
         return new ArchetypeQuery(
-                new ArchetypeShortNameConstraint(
+                new ShortNameConstraint(
                         target, false, false))
                 .add(new CollectionNodeConstraint("target", false)
                         .add(new ObjectRefNodeConstraint("source", lookup)))
                 .add(new NodeConstraint("code", code))
                 .setActiveOnly(true)
-                .setCountTotalRows(false);
+                .setCountResults(false);
     }
 
     /**

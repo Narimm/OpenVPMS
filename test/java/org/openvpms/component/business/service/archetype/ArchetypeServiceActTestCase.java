@@ -141,8 +141,8 @@ public class ArchetypeServiceActTestCase extends
                                                        "act", "simple",
                                                        null, null, null, null,
                                                        null, false, 0,
-                                                       ArchetypeQuery.ALL_ROWS);
-        assertTrue(acts.getTotalNumOfRows() == 5);
+                                                       ArchetypeQuery.ALL_RESULTS);
+        assertTrue(acts.getTotalResults() == 5);
 
         // now look at the paging aspects
         acts = ArchetypeQueryHelper.getActs(service,
@@ -150,9 +150,9 @@ public class ArchetypeServiceActTestCase extends
                                             "participation.simple", "act",
                                             "simple", null, null, null, null,
                                             null, false, 0, 1);
-        assertTrue(acts.getTotalNumOfRows() == 5);
-        assertTrue(acts.getRows().size() == 1);
-        assertFalse(StringUtils.isEmpty(acts.getRows().get(0).getName()));
+        assertTrue(acts.getTotalResults() == 5);
+        assertTrue(acts.getResults().size() == 1);
+        assertFalse(StringUtils.isEmpty(acts.getResults().get(0).getName()));
     }
 
     /**
@@ -166,15 +166,15 @@ public class ArchetypeServiceActTestCase extends
                                    new Date(
                                            System.currentTimeMillis() + 2 * 60 * 60 * 1000))).add(
                 new NodeConstraint("name", "between"));
-        int acount = service.get(query).getRows().size();
+        int acount = service.get(query).getResults().size();
         service.save(createSimpleAct("between", "start"));
-        int acount1 = service.get(query).getRows().size();
+        int acount1 = service.get(query).getResults().size();
         assertTrue(acount1 == acount + 1);
 
         for (int index = 0; index < 5; index++) {
             service.save(createSimpleAct("between", "start"));
         }
-        acount1 = service.get(query).getRows().size();
+        acount1 = service.get(query).getResults().size();
         assertTrue(acount1 == acount + 6);
     }
 

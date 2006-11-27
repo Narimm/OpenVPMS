@@ -122,7 +122,7 @@
 			test-case="normal">
 			<params>
 				<param name="recordCount1" type="java.lang.Integer">
-					71
+					75
 				</param>
 			</params>
 		</method>
@@ -131,7 +131,7 @@
 		<method name="testRetrievalByShortName" test-case="normal">
 			<params>
 				<param name="recordCount1" type="java.lang.Integer">
-					3
+					4
 				</param>
 				<param name="recordCount2" type="java.lang.Integer">
 					1
@@ -150,10 +150,10 @@
 			test-case="normal">
 			<params>
 				<param name="recordCount1" type="java.lang.Integer">
-					13
+					14
 				</param>
 				<param name="recordCount2" type="java.lang.Integer">
-					16
+					19
 				</param>
 				<param name="recordCount3" type="java.lang.Integer">
 					13

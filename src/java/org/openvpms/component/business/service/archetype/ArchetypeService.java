@@ -391,9 +391,9 @@ public class ArchetypeService implements IArchetypeService {
            }
 
            return dao.get(context.getQueryString(), context.getValueMap(),
-                                          query.getFirstRow(),
-                                          query.getNumOfRows(),
-                                          query.countTotalRows());
+                                          query.getFirstResult(),
+                                          query.getMaxResults(),
+                                          query.countResults());
        } catch (Exception exception) {
            throw new ArchetypeServiceException(
                    ArchetypeServiceException.ErrorCode.FailedToExecuteQuery,
@@ -434,8 +434,8 @@ public class ArchetypeService implements IArchetypeService {
             }
             return dao.get(getArchetypes(context), nodes,
                            context.getQueryString(),
-                           context.getValueMap(), query.getFirstRow(),
-                           query.getNumOfRows(), query.countTotalRows());
+                           context.getValueMap(), query.getFirstResult(),
+                           query.getMaxResults(), query.countResults());
         } catch (ArchetypeServiceException exception) {
             throw exception;
         } catch (Exception exception) {
@@ -452,6 +452,7 @@ public class ArchetypeService implements IArchetypeService {
      * @param query the archetype query
      * @param nodes the node names
      * @return the nodes for each object that matches the query criteria
+     * @throws ArchetypeServiceException if the query fails
      */
     public IPage<NodeSet> getNodes(ArchetypeQuery query,
                                    Collection<String> nodes) {
@@ -471,8 +472,8 @@ public class ArchetypeService implements IArchetypeService {
             }
             return dao.getNodes(getArchetypes(context), nodes,
                                 context.getQueryString(),
-                                context.getValueMap(), query.getFirstRow(),
-                                query.getNumOfRows(), query.countTotalRows());
+                                context.getValueMap(), query.getFirstResult(),
+                                query.getMaxResults(), query.countResults());
         } catch (ArchetypeServiceException exception) {
             throw exception;
         } catch (Exception exception) {
@@ -483,8 +484,18 @@ public class ArchetypeService implements IArchetypeService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getByNamedQuery(java.lang.String, java.util.Map)
+    /**
+     * Return a list of {@link IMObject} instances that satisfy the specified
+     * named query. The query name must map to a valid query in the target
+     * database. The params are key-value pairs that are required for the
+     * query to execute correctly.
+     *
+     * @param name      the query name
+     * @param params    a map holding key value pairs
+     * @param firstRow  the firstRow to retrieve
+     * @param numOfRows the maximum number of rows to retrieve
+     * @return a list of objects that match the query criteria
+     * @throws ArchetypeServiceException if the query fails
      */
     public IPage<IMObject> getByNamedQuery(String name, Map<String, Object> params,
                                            int firstRow, int numOfRows) {
@@ -1009,7 +1020,7 @@ public class ArchetypeService implements IArchetypeService {
     }
 
     /**
-     * Helper to get the archetype descriptors from an {@link QueryContext},
+     * Helper to get the archetype descriptors from a {@link QueryContext},
      * and return them in a map keyed on short name.
      *
      * @param context the query context

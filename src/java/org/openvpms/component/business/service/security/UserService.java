@@ -66,7 +66,7 @@ public class UserService implements UserDetailsService {
 
         ArchetypeQuery query = new ArchetypeQuery("security.user", true, true);
         query.add(new NodeConstraint("username", username));
-        List<IMObject> users = service.get(query).getRows();
+        List<IMObject> users = service.get(query).getResults();
         if (users.isEmpty()) {
             throw new UsernameNotFoundException("User: " + username +
                     " is invalid.");

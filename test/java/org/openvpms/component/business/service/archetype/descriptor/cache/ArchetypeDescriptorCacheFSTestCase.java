@@ -19,15 +19,12 @@
 package org.openvpms.component.business.service.archetype.descriptor.cache;
 
 // java-core
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.system.common.test.BaseTestCase;
+
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
-
-// openvpms-framework
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-
-// openvpms-test-component
-import org.openvpms.component.system.common.test.BaseTestCase;
 
 /**
  * Test the
@@ -199,20 +196,20 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
                 (String) cparams.get("assertionFile"));
 
         // test retrieval of all records that start with entityRelationship
-        assertTrue(cache.getArchetypeDescriptors("entityRelationship.*").size() == ((Integer) params
-                .get("recordCount1")).intValue());
+        assertEquals(((Integer) params.get("recordCount1")).intValue(),
+                     cache.getArchetypeDescriptors("entityRelationship.*").size());
 
         // test retrieval for anything with animal
-        assertTrue(cache.getArchetypeDescriptors("animal.*pet*").size() == ((Integer) params
-                .get("recordCount2")).intValue());
+        assertEquals(((Integer) params.get("recordCount2")).intValue(),
+                     cache.getArchetypeDescriptors("animal.*pet*").size());
 
         // test retrieval for anything that starts with person
-        assertTrue(cache.getArchetypeDescriptors("person.*").size() == ((Integer) params
-                .get("recordCount3")).intValue());
+        assertEquals(((Integer) params.get("recordCount3")).intValue(),
+                   cache.getArchetypeDescriptors("person.*").size());
 
-        // test retrieval for anything that matchers person\\.person
-        assertTrue(cache.getArchetypeDescriptors("person.person").size() == ((Integer) params
-                .get("recordCount4")).intValue());
+        // test retrieval for anything that matches person.person
+        assertEquals(((Integer) params.get("recordCount4")).intValue(),
+                     cache.getArchetypeDescriptors("person.person").size());
     }
 
     /**
@@ -228,20 +225,16 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
                 new String[] { (String) cparams.get("extension") },
                 (String) cparams.get("assertionFile"));
 
-        // test retrieval of all records that start with entityRelationship
-        assertTrue("Party Records should be " 
-                +cache.getArchetypeDescriptorsByRmName("party").size(),
-                cache.getArchetypeDescriptorsByRmName("party").size() == ((Integer) params
-                .get("recordCount1")).intValue());
+        // test retrieval of all records that start with party
+        assertEquals(((Integer) params.get("recordCount1")).intValue(),
+                cache.getArchetypeDescriptorsByRmName("party").size());
 
-        // test retrieval for anything with animal
-        assertTrue(cache.getArchetypeDescriptorsByRmName("common").size() == ((Integer) params
-                .get("recordCount2")).intValue());
+        // test retrieval for anything with common
+        assertEquals(((Integer) params.get("recordCount2")).intValue(),
+                   cache.getArchetypeDescriptorsByRmName("common").size());
 
-        // test retrieval for anything that starts with person
-        assertTrue("Lookup Records should be " 
-                + cache.getArchetypeDescriptorsByRmName("lookup").size(),
-                cache.getArchetypeDescriptorsByRmName("lookup").size() == ((Integer) params
-                .get("recordCount3")).intValue()); 
+        // test retrieval for anything that starts with lookup
+        assertEquals(((Integer) params.get("recordCount3")).intValue(),
+                     cache.getArchetypeDescriptorsByRmName("lookup").size());
     }
 }

@@ -219,9 +219,9 @@ public class LookupTestCase extends
             throws Exception {
         ArchetypeQuery query = new ArchetypeQuery(
                 new String[]{"lookupRelationship.common"}, true, true)
-                .setFirstRow(0)
-                .setNumOfRows(ArchetypeQuery.ALL_ROWS);
-        List<IMObject> objects = service.get(query).getRows();
+                .setFirstResult(0)
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> objects = service.get(query).getResults();
         assertTrue(objects != null);
     }
 

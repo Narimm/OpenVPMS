@@ -256,6 +256,7 @@ public interface IArchetypeService {
      * @param query the archetype query
      * @param nodes the collection node names
      * @return a list of objects that match the query criteria
+     * @throws ArchetypeServiceException if the query fails
      */
     IPage<IMObject> get(ArchetypeQuery query, Collection<String> nodes);
 
@@ -265,29 +266,26 @@ public interface IArchetypeService {
      * @param query the archetype query
      * @param nodes the node names
      * @return the nodes for each object that matches the query criteria
+     * @throws ArchetypeServiceException if the query fails
      */
     IPage<NodeSet> getNodes(ArchetypeQuery query, Collection<String> nodes);
 
     /**
-     * Retrun a list of {@link IMObject} instances that satisfy the specified
+     * Return a list of {@link IMObject} instances that satisfy the specified
      * named query. The query name must map to a valid query in the target
-     * database. That params are key-value pairs that are required for the
-     * query to execute correctly
+     * database. The params are key-value pairs that are required for the
+     * query to execute correctly.
      *
-     * @param name
-     *            the query name
-     * @param params
-     *            a map holding key value pairs.
-     * @param firstRow
-     *            the firstRow to retrieve
-     * @param numOfRows
-     *            the maximum number of rows to retrieve
-     * @return IPage<IMObject>
-     * @throws ArchetypeServiceException
-     *            a runtime exception
+     * @param name      the query name
+     * @param params    a map holding key value pairs
+     * @param firstRow  the firstRow to retrieve
+     * @param numOfRows the maximum number of rows to retrieve
+     * @return a list of objects that match the query criteria
+     * @throws ArchetypeServiceException if the query fails
      */
-    public IPage<IMObject> getByNamedQuery(String name, Map<String, Object>params,
-            int firstRow, int numOfRows);
+    public IPage<IMObject> getByNamedQuery(String name,
+                                           Map<String, Object>params,
+                                           int firstRow, int numOfRows);
 
     /**
      * Return a list of archtype short names (i.e strings) given the

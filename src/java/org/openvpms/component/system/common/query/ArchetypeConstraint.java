@@ -19,46 +19,58 @@
 
 package org.openvpms.component.system.common.query;
 
+
 /**
  * Defines an archetype constraint, which can be constrained by primaryOnly and
- * activeOnly attributes
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * activeOnly attributes.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ArchetypeConstraint extends BaseArchetypeConstraint {
 
     /**
-     * Default SUID
+     * Default SUID.
      */
-    private static final long serialVersionUID = 1L; 
+    private static final long serialVersionUID = 1L;
+
 
     /**
-     * Default construcctor
+     * Default constructor.
      */
     public ArchetypeConstraint() {
-        super(false, false);
+        this(false);
     }
 
     /**
-     * Define a constraint using the specified parameters
-     * 
-     * @param activeOnly
-     *            constraint to archetype instance which are active
+     * Define a constraint using the specified parameter.
+     *
+     * @param activeOnly if <code>true</code> only deal with active entities
      */
     ArchetypeConstraint(boolean activeOnly) {
-        super(false, activeOnly);
+        this(false, activeOnly);
     }
 
     /**
-     * Define a constraint using the specified parameters
-     * 
-     * @param primaryOnly
-     *            constraint to archetypes marked as primary only
-     * @param activeOnly
-     *            constraint to archetype instance which are active
+     * Define a constraint using the specified parameters.
+     *
+     * @param primaryOnly if <code>true</code> only deal with primary archetypes
+     * @param activeOnly  if <code>true</code> only deal with active entities
      */
     public ArchetypeConstraint(boolean primaryOnly, boolean activeOnly) {
-        super(primaryOnly, activeOnly);
+        this(null, primaryOnly, activeOnly);
     }
+
+    /**
+     * Constructs a new <code>ArchetypeConstraint</code>.
+     *
+     * @param alias       the type alias. May be <code>null</code>
+     * @param primaryOnly if <code>true</code> only deal with primary archetypes
+     * @param activeOnly  if <code>true</code> only deal with active entities
+     */
+    public ArchetypeConstraint(String alias, boolean primaryOnly,
+                               boolean activeOnly) {
+        super(alias, primaryOnly, activeOnly);
+    }
+
 }

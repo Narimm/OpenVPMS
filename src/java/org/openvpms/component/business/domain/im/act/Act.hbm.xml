@@ -70,7 +70,7 @@
         class="org.openvpms.component.business.domain.im.act.ActRelationship" />
     </set>
     <set name="participations" access="property" inverse="true"
-         cascade="all,delete-orphan">
+         cascade="all,delete-orphan" batch-size="50">
       <key column="act_linkId" not-null="true" property-ref="linkId" />
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.Participation" />

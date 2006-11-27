@@ -23,39 +23,38 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 
 /**
- * This is applicable to node descriptors that point to an object reference
- * 
+ * This is applicable to node descriptors that point to an object reference.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ObjectRefNodeConstraint extends AbstractNodeConstraint {
 
     /**
-     * Default SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
 
+
     /**
      * Construct a constraint on the specified node and the passed in
-     * object reference
-     * 
-     * @param nodeName
-     *            the name of the node descriptor
-     * @param reference
-     *            the object reference                         
+     * object reference.
+     *
+     * @param nodeName  the name of the node descriptor
+     * @param reference the object reference
      */
-    public ObjectRefNodeConstraint(String nodeName, IMObjectReference reference) {
-        super(nodeName, RelationalOp.EQ, new Object[] {reference});
+    public ObjectRefNodeConstraint(String nodeName,
+                                   IMObjectReference reference) {
+        super(nodeName, RelationalOp.EQ, new Object[]{reference});
     }
-
 
     /**
-     * Return the object reference
-     * 
-     * @return IMObjectReference
+     * Returns the object reference.
+     *
+     * @return the object reference
      */
     public IMObjectReference getObjectReference() {
-        return  (IMObjectReference)this.parameters[0];
+        return (IMObjectReference) getParameters()[0];
     }
+
 }

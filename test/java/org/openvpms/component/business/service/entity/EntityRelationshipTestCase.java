@@ -310,7 +310,7 @@ public class EntityRelationshipTestCase extends
     throws Exception {
         String[] shortNames = {"entityRelationship.animal*"};
         int aCount = ArchetypeQueryHelper.get(service, shortNames, false, 0,
-                ArchetypeQuery.ALL_ROWS).getRows().size();
+                ArchetypeQuery.ALL_RESULTS).getResults().size();
 
         // create a new entity relationsip and save it
         Party person = createPerson("MR", "Jim", "Alateras");
@@ -337,7 +337,7 @@ public class EntityRelationshipTestCase extends
 
         // now check that the get actually works
         int aCount1 = ArchetypeQueryHelper.get(service, shortNames, false,
-                0, ArchetypeQuery.ALL_ROWS).getRows().size();
+                0, ArchetypeQuery.ALL_RESULTS).getResults().size();
         assertTrue(aCount1 == aCount + 2);
     }
 

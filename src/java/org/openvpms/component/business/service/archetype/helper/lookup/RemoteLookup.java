@@ -150,8 +150,8 @@ class RemoteLookup extends AbstractLookupAssertion {
     public String getName(String code) {
         ArchetypeQuery query = new ArchetypeQuery(source, false, true)
                 .add(new NodeConstraint("code", code))
-                .setFirstRow(0)
-                .setNumOfRows(1);
+                .setFirstResult(0)
+                .setMaxResults(1);
         List<Lookup> lookups = getLookups(Arrays.asList("name"), query);
         if (!lookups.isEmpty()) {
             Lookup lookup = lookups.get(0);

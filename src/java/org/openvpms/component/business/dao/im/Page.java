@@ -20,150 +20,171 @@
 package org.openvpms.component.business.dao.im;
 
 // java core
-import java.io.Serializable;
-import java.util.List;
 
-// openvpms-framework
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.system.common.query.IPage;
 
+import java.io.Serializable;
+import java.util.List;
+
 /**
- * This object is used to support pagination, where a subset of the query 
- * result set is returned to the caller. The object contains the first row
- * and number of rows in the page. In addition it also contains the total number
- * of rows that the query would return if pagination was not used.
+ * This object is used to support pagination, where a subset of the query
+ * result set is returned to the caller. The object contains the first result
+ * and number of results in the page. In addition it also contains the total
+ * number of results that the query would return if pagination was not used.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class Page<T> implements Serializable, IPage<T> {
+
     /**
-     * Default UID
+     * Default UID.
      */
     private static final long serialVersionUID = 1L;
-    
+
     /**
-     * The first row in the page
+     * The results matching the criteria.
      */
-    private int firstRow;
-    
+    private List<T> results;
+
     /**
-     * The number of rows that were requested
+     * The first row in the page.
      */
-    private int numOfRows;
-    
+    private int firstResult;
+
     /**
-     * The total number of rows, which is must be equal or greater than 
-     * {@link #numOfRows}.
+     * The number of results that were requested.
      */
-    private int totalNumOfRows;
-    
+    private int pageSize;
+
     /**
-     * The list of rows
+     * The total number of results matching the query criteria, or
+     * <code>-1</code> if it was.
      */
-    private List<T> rows;
-    
+    private int totalResults;
+
+
     /**
-     * Default constructor
+     * Default constructor.
      */
     public Page() {
         // do nothing
     }
-    
+
     /**
-     * Instantiate an instance of this object using the specified parameters
-     * 
-     * @param rows
-     *            the rows that are part of this  page
-     * @param firstRow
-     *            the first row to return            
-     * @param numOfRows
-     *            the number of rows requested, which may not always be equal
-     *            to the number of tows in the list.              
-     * @param totalNumOfRows
-     *            the total number of rows in the result set.                                     
+     * Constructs a new <code>Page</code>.
+     *
+     * @param results      the results matching the query criteria
+     * @param firstResult  the first result
+     * @param pageSize     the number of results requested, which may not always
+     *                     be equal to the number of results
+     * @param totalResults the total number of results matching the criteria,
+     *                     or <code>-1</code> if not calculated
      */
-    public Page(List<T> rows, int firstRow, int numOfRows, int totalNumOfRows) {
-        this.rows = rows;
-        this.firstRow = firstRow;
-        this.numOfRows = numOfRows;
-        this.totalNumOfRows = totalNumOfRows;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.search.IPage#getRows()
-     */
-    public List<T> getRows() {
-        return rows;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.search.IPage#getTotalNumOfRows()
-     */
-    public int getTotalNumOfRows() {
-        return totalNumOfRows;
+    public Page(List<T> results, int firstResult, int pageSize,
+                int totalResults) {
+        this.results = results;
+        this.firstResult = firstResult;
+        this.pageSize = pageSize;
+        this.totalResults = totalResults;
     }
 
     /**
-     * @param rows The rows to set.
+     * Returns the query results.
+     *
+     * @return the results
      */
-    public void setRows(List<T> rows) {
-        this.rows = rows;
+    public List<T> getResults() {
+        return results;
     }
 
     /**
-     * @param totalNumOfRows The totalNumOfRows to set.
+     * Sets the query results.
+     *
+     * @param results the query results
      */
-    public void setTotalNumOfRows(int totalNumOfRows) {
-        this.totalNumOfRows = totalNumOfRows;
+    public void setResults(List<T> results) {
+        this.results = results;
     }
 
     /**
-     * @return Returns the firstRow.
+     * Return the first result requested.
+     *
+     * @return the first result requested
      */
-    public int getFirstRow() {
-        return firstRow;
+    public int getFirstResult() {
+        return firstResult;
     }
 
     /**
-     * @param firstRow The firstRow to set.
+     * Sets the first result.
+     *
+     * @param firstResult the first result
      */
-    public void setFirstRow(int firstRow) {
-        this.firstRow = firstRow;
+    public void setFirstResult(int firstResult) {
+        this.firstResult = firstResult;
     }
 
     /**
-     * @return Returns the numOfRows.
+     * Returns the number of results requested.
+     * The {@link #getResults()} method will return up to this count.
+     *
+     * @return the number of results requested
      */
-    public int getNumOfRows() {
-        return numOfRows;
+    public int getPageSize() {
+        return pageSize;
     }
 
     /**
-     * @param numOfRows The numOfRows to set.
+     * Sets the page size.
+     *
+     * @param size the page size
      */
-    public void setNumOfRows(int numOfRows) {
-        this.numOfRows = numOfRows;
+    public void setPageSize(int size) {
+        pageSize = size;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
+    /**
+     * Returns the total no. of results matching the query criteria.
+     *
+     * @return the total no. of results matching the query criteria, or
+     *         <code>-1</code> if not calculated
+     */
+    public int getTotalResults() {
+        return totalResults;
+    }
+
+    /**
+     * Sets the total no. of results matching the query criteria.
+     *
+     * @param total the total no. of results matching the query criteria, or
+     *              <code>-1</code> if not calculated
+     */
+    public void setTotalResults(int total) {
+        totalResults = total;
+    }
+
+    /**
+     * (non-Javadoc)
+     *
+     * @see Object#toString()
      */
     @Override
     public String toString() {
-        ToStringBuilder str =  new ToStringBuilder(this)
-        .appendSuper(null)
-        .append("firstRow", firstRow)
-        .append("numOfRows", numOfRows)
-        .append("totalNumOfRows", totalNumOfRows);
-        
+        ToStringBuilder str = new ToStringBuilder(this)
+                .appendSuper(null)
+                .append("firstResult", firstResult)
+                .append("pageSize", pageSize)
+                .append("totalResults", totalResults);
+
         // now display the name of each entity in the row
         int index = 0;
-        for (T obj : rows) {
+        for (T obj : results) {
             str.append("obj-" + index++, obj.toString());
         }
-        
+
         return str.toString();
     }
-    
+
 }

@@ -22,110 +22,48 @@ package org.openvpms.component.system.common.query;
 
 /**
  * Used to construct a query constraint on a particular node of the enclosed
- * {@link BaseArchetypeConstraint}. A constraint required a node name, a relational
- * operator and one or more values. The number of values will depend on the 
- * select operator type. For example a 'GT' operator requires a single parameter
- * where an 'BTW' operator requires two parameters.
+ * {@link BaseArchetypeConstraint}. A constraint requirs a node name, a
+ * relational operator and one or more values. The number of values will depend
+ * on the select operator type. For example a 'GT' operator requires a single
+ * parameter where an 'BTW' operator requires two parameters.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class NodeConstraint extends AbstractNodeConstraint {
 
     /**
-     * Default SUID
-     */ 
+     * Default SUID.
+     */
     private static final long serialVersionUID = 1L;
+
 
     /**
      * Construct a constraint on the specified node with the equal relational
-     * operator and the specified value
-     * 
-     * @param nodeName
-     *            the name of the node descriptor
-     * @param parameter
-     *            the parameter that is used to constrain the value of the
-     *            node                         
+     * operator and the specified value.
+     *
+     * @param nodeName  the name of the node descriptor, optionaly prefixed by
+     *                  the type alias
+     * @param parameter the parameter that is used to constrain the value of the
+     *                  node
      */
-    public NodeConstraint(String nodeName, Object parameters) {
-        super(nodeName, RelationalOp.EQ, new Object[] {parameters});
+    public NodeConstraint(String nodeName, Object parameter) {
+        this(nodeName, RelationalOp.EQ, parameter);
     }
 
     /**
-     * Construct a constraint on the specified node with a relational operator 
-     * the takes zero parameters. Convenience constructor.
-     * 
-     * @param nodeName
-     *            the name of the node descriptor
-     * @param operator
-     *            the relational operator            
+     * Construct a constraint on the specified node with the associated
+     * relational operator and parameters.
+     *
+     * @param nodeName  the name of the node descriptor, optionaly prefixed by
+     *                  the type alias
+     * @param operator   the relational operator
+     * @param parameters the parameters that are used to constrain the value of
+     *                   the node
      */
-    public NodeConstraint(String nodeName, RelationalOp operator) {
-        this(nodeName, operator, null);
-    }
-    
-    /**
-     * Construct a constraint on the specified node with the associated relational
-     * operator and parameter
-     * 
-     * @param nodeName
-     *            the name of the node descriptor
-     * @param operator
-     *            the relational operator
-     * @param parameter
-     *            the parameter that is used to constrain the value of the
-     *            node                         
-     */
-    public NodeConstraint(String nodeName, RelationalOp operator, Object parameters) {
-        super(nodeName, operator, new Object[] {parameters});
-    }
-
-    /**
-     * Construct a constraint on the specified node with the associated relational
-     * operator and parameters
-     * 
-     * @param nodeName
-     *            the name of the node descriptor
-     * @param operator
-     *            the relational operator
-     * @param parameters
-     *            the parameters that are used to constrain the value of the
-     *            node                         
-     */
-    public NodeConstraint(String nodeName, RelationalOp operator, Object[] parameters) {
+    public NodeConstraint(String nodeName, RelationalOp operator,
+                          Object ... parameters) {
         super(nodeName, operator, parameters);
     }
-    
-    /**
-     * Construct a constraint which takes two parameters such as in 'between'.
-     * 
-     * @param nodeName
-     *            the name of the node descriptor
-     * @param operator
-     *            the relational operator
-     * @param param1
-     *            the first parameter
-     * @param param2
-     *            the second parameter                                    
-     */
-    public NodeConstraint(String nodeName, RelationalOp operator, Object param1, 
-            Object param2) {
-        super(nodeName, operator, new Object[]{param1, param2});
-    }
 
-    /**
-     * @param operator The operator to set.
-     */
-    public NodeConstraint setOperator(RelationalOp operator) {
-        this.operator = operator;
-        return this;
-    }
-
-    /**
-     * @param parameters The parameters to set.
-     */
-    public NodeConstraint setParameters(Object[] parameters) {
-        this.parameters = parameters;
-        return this;
-    }
 }

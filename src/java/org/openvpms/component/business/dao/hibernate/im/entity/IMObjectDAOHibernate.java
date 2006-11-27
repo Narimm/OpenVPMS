@@ -18,12 +18,6 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.FlushMode;
@@ -44,6 +38,12 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -197,7 +197,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * @param firstRow    the first row to retrieve
      * @param numOfRows   the maximum number of rows to return
      * @param count       if <code>true</code> counts the total no. of rows,
-     *                    returning it in {@link IPage#getTotalNumOfRows()}
+     *                    returning it in {@link IPage#getTotalResults()}
      * @return IPage<IMObject>
      * @throws IMObjectDAOException a runtime exception, raised if the request
      *                              cannot complete.
@@ -238,7 +238,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * @param firstRow    the first row to retrieve
      * @param numOfRows   the maximum number of rows to return
      * @param count       if <code>true</code> counts the total no. of rows,
-     *                    returning it in {@link IPage#getTotalNumOfRows()}
+     *                    returning it in {@link IPage#getTotalResults()}
      * @return the nodes for each object that matches the query criteria
      * @throws IMObjectDAOException a runtime exception, raised if the request
      *                              cannot complete.
@@ -278,7 +278,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * @param firstRow    the first row to retrieve
      * @param numOfRows   the maximum number of rows to return
      * @param count       if <code>true</code> counts the total no. of rows,
-     *                    returning it in {@link IPage#getTotalNumOfRows()}
+     *                    returning it in {@link IPage#getTotalResults()}
      * @return the nodes for each object that matches the query criteria
      * @throws IMObjectDAOException a runtime exception, raised if the request
      *                              cannot complete.
@@ -534,7 +534,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * @param firstRow  the first row to retrieve
      * @param numOfRows the maximum number of rows to return
      * @param count       if <code>true</code> counts the total no. of rows,
-     *                    returning it in {@link IPage#getTotalNumOfRows()}
+     *                    returning it in {@link IPage#getTotalResults()}
      * @return IPage<IMObject>
      *         the results and associated context information
      * @throws IMObjectDAOException if there is an error processing the request
@@ -583,7 +583,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             }
 
             // set the maximum number fo rows
-            if (numOfRows != ArchetypeQuery.ALL_ROWS) {
+            if (numOfRows != ArchetypeQuery.ALL_RESULTS) {
                 query.setMaxResults(numOfRows);
                 logger.debug("The maximum number of rows is " + numOfRows);
             }
@@ -593,7 +593,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             List<IMObject> rows = query.list();
             collector.setFirstRow(firstRow);
             collector.setNumOfRows(numOfRows);
-            if (numOfRows == ArchetypeQuery.ALL_ROWS) {
+            if (numOfRows == ArchetypeQuery.ALL_RESULTS) {
                 collector.setTotalNumOfRows(rows.size());
             } else if (count) {
                 int rowCount = count(queryString, params, session);
@@ -626,7 +626,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      *            the number of rows to return
      * @param collector the collector
      * @param count       if <code>true</code> counts the total no. of rows,
-     *                    returning it in {@link IPage#getTotalNumOfRows()}
+     *                    returning it in {@link IPage#getTotalResults()}
      */
     @SuppressWarnings("unchecked")
     private void executeNamedQuery(String name, Map<String, Object> params,
@@ -646,7 +646,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             }
 
             // set maximum rows
-            if (numOfRows != ArchetypeQuery.ALL_ROWS) {
+            if (numOfRows != ArchetypeQuery.ALL_RESULTS) {
                 query.setMaxResults(numOfRows);
                 logger.debug("The maximum number of rows is " + numOfRows);
             }
@@ -654,7 +654,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             List<IMObject> rows = query.list();
             collector.setFirstRow(firstRow);
             collector.setNumOfRows(numOfRows);
-            if (numOfRows == ArchetypeQuery.ALL_ROWS) {
+            if (numOfRows == ArchetypeQuery.ALL_RESULTS) {
                 collector.setTotalNumOfRows(rows.size());
             } else if (count) {
                 int rowCount = countNamedQuery(query);
@@ -759,19 +759,19 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         private Page<T> page = new Page<T>();
 
         public void setFirstRow(int first) {
-            page.setFirstRow(first);
+            page.setFirstResult(first);
         }
 
         public void setNumOfRows(int rows) {
-            page.setNumOfRows(rows);
+            page.setPageSize(rows);
         }
 
         public void setTotalNumOfRows(int rows) {
-            page.setTotalNumOfRows(rows);
+            page.setTotalResults(rows);
         }
 
         public IPage<T> getPage() {
-            page.setRows(getRows());
+            page.setResults(getRows());
             return page;
         }
 

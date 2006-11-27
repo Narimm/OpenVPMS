@@ -172,7 +172,7 @@ public class ArchetypeServicePersistenceTestCase extends
         // get the initial count
         List before = service.get(
                 new ArchetypeQuery("party", "animal", null, false,
-                                   false)).getRows();
+                                   false)).getResults();
 
         // create and insert a new pet
         service.save(createPet("simon"));
@@ -180,7 +180,7 @@ public class ArchetypeServicePersistenceTestCase extends
         // now get a new count
         List after = service.get(
                 new ArchetypeQuery("party", "animal", null, false,
-                                   false)).getRows();
+                                   false)).getResults();
         assertTrue(after.size() == before.size() + 1);
     }
 
@@ -193,7 +193,7 @@ public class ArchetypeServicePersistenceTestCase extends
         // get the initial count
         List before = service.get(
                 new ArchetypeQuery("party", "ani*", null, false,
-                                   false)).getRows();
+                                   false)).getResults();
 
         // create and insert a new pet
         service.save(createPet("testFindWithPartialEntityName"));
@@ -201,7 +201,7 @@ public class ArchetypeServicePersistenceTestCase extends
         // now get a new count
         List after = service.get(
                 new ArchetypeQuery("party", "ani*", null, false,
-                                   false)).getRows();
+                                   false)).getResults();
         assertTrue(after.size() == before.size() + 1);
 
         for (Object entity : after) {
@@ -212,7 +212,7 @@ public class ArchetypeServicePersistenceTestCase extends
 
         // now  test with a starts with
         after = service.get(new ArchetypeQuery("party", "*mal", null, false,
-                                               false)).getRows();
+                                               false)).getResults();
         for (Object entity : after) {
             assertTrue(
                     ((Entity) entity).getArchetypeId().getEntityName().matches(
@@ -221,7 +221,7 @@ public class ArchetypeServicePersistenceTestCase extends
 
         // now  test with a start and ends with
         after = service.get(new ArchetypeQuery("party", "*nim*", null, false,
-                                               false)).getRows();
+                                               false)).getResults();
         for (Object entity : after) {
             assertTrue(
                     ((Entity) entity).getArchetypeId().getEntityName().matches(
@@ -237,14 +237,14 @@ public class ArchetypeServicePersistenceTestCase extends
 
         // get the initial count
         List before = service.get(new ArchetypeQuery("party", "animal", "pet",
-                                                     false, false)).getRows();
+                                                     false, false)).getResults();
 
         // create and insert a new pet
         service.save(createPet("jack"));
 
         // now get a new count
         List after = service.get(new ArchetypeQuery("party", "animal", "pet",
-                                                    false, false)).getRows();
+                                                    false, false)).getResults();
         assertTrue(after.size() == before.size() + 1);
     }
 
@@ -258,7 +258,7 @@ public class ArchetypeServicePersistenceTestCase extends
         // get the initial count
         List before = service.get(
                 new ArchetypeQuery("party", "animal", "p*", false,
-                                   false)).getRows();
+                                   false)).getResults();
 
         // create and insert a new pet
         service.save(createPet("testFindWithPartialConceptName"));
@@ -266,7 +266,7 @@ public class ArchetypeServicePersistenceTestCase extends
         // now get a new count
         List after = service.get(
                 new ArchetypeQuery("party", "animal", "p*", false,
-                                   false)).getRows();
+                                   false)).getResults();
         assertTrue(after.size() == before.size() + 1);
         for (Object entity : after) {
             assertTrue(((Entity) entity).getArchetypeId().getConcept().matches(
@@ -275,7 +275,7 @@ public class ArchetypeServicePersistenceTestCase extends
 
         // now test with a starts with
         after = service.get(new ArchetypeQuery("party", "animal", "*et", false,
-                                               false)).getRows();
+                                               false)).getResults();
         for (Object entity : after) {
             assertTrue(((Entity) entity).getArchetypeId().getConcept().matches(
                     ".*et"));
@@ -283,7 +283,7 @@ public class ArchetypeServicePersistenceTestCase extends
 
         // now test with a start and ends with
         after = service.get(new ArchetypeQuery("party", "animal", "*e*", false,
-                                               false)).getRows();
+                                               false)).getResults();
         for (Object entity : after) {
             assertTrue(((Entity) entity).getArchetypeId().getConcept().matches(
                     ".*et.*"));
@@ -301,7 +301,7 @@ public class ArchetypeServicePersistenceTestCase extends
         List before = service.get(
                 new ArchetypeQuery("party", "animal", "pet", false, false)
                         .add(new NodeConstraint("name", RelationalOp.EQ,
-                                                "brutus"))).getRows();
+                                                "brutus"))).getResults();
 
         // create and insert a new pet
         service.save(createPet("brutus"));
@@ -310,7 +310,7 @@ public class ArchetypeServicePersistenceTestCase extends
         List after = service.get(
                 new ArchetypeQuery("party", "animal", "pet", false, false)
                         .add(new NodeConstraint("name", RelationalOp.EQ,
-                                                "brutus"))).getRows();
+                                                "brutus"))).getResults();
         assertTrue(after.size() == before.size() + 1);
     }
 
@@ -326,7 +326,7 @@ public class ArchetypeServicePersistenceTestCase extends
         List before = service.get(
                 new ArchetypeQuery("party", "animal", "pet", false, false)
                         .add(new NodeConstraint("name", RelationalOp.EQ,
-                                                "br*"))).getRows();
+                                                "br*"))).getResults();
 
         // create and insert a new pet
         service.save(createPet("brutus"));
@@ -335,7 +335,7 @@ public class ArchetypeServicePersistenceTestCase extends
         List after = service.get(
                 new ArchetypeQuery("party", "animal", "pet", false, false)
                         .add(new NodeConstraint("name", RelationalOp.EQ,
-                                                "br*"))).getRows();
+                                                "br*"))).getResults();
         assertTrue(after.size() == before.size() + 1);
         for (Object entity : after) {
             assertTrue(((Entity) entity).getName(),
@@ -346,7 +346,7 @@ public class ArchetypeServicePersistenceTestCase extends
         after = service.get(
                 new ArchetypeQuery("party", "animal", "pet", false, false)
                         .add(new NodeConstraint("name", RelationalOp.EQ,
-                                                "*tus"))).getRows();
+                                                "*tus"))).getResults();
         for (Object entity : after) {
             assertTrue(((Entity) entity).getName().matches(".*tus"));
         }
@@ -355,7 +355,7 @@ public class ArchetypeServicePersistenceTestCase extends
         after = service.get(
                 new ArchetypeQuery("party", "animal", "pet", false, false)
                         .add(new NodeConstraint("name", RelationalOp.EQ,
-                                                "*utu*"))).getRows();
+                                                "*utu*"))).getResults();
         for (Object entity : after) {
             assertTrue(((Entity) entity).getName().matches(".*utu.*"));
         }
@@ -373,20 +373,20 @@ public class ArchetypeServicePersistenceTestCase extends
         // get the initial count
         List<IMObject> before = service.get(new ArchetypeQuery(shortNames,
                                                                false,
-                                                               false)).getRows();
+                                                               false)).getResults();
 
         // create a new person and check the count 
         service.save(createPerson("MS", "Bernadette", "Feeney"));
         service.save(createPerson("MS", "Rose", "Feeney Alateras"));
         List<IMObject> after = service.get(new ArchetypeQuery(shortNames,
                                                               false,
-                                                              false)).getRows();
+                                                              false)).getResults();
         assertTrue(after.size() == before.size() + 2);
 
         // create a new lookup
         service.save(createCountryLookup("Algeria"));
         after = service.get(new ArchetypeQuery(shortNames,
-                                               false, false)).getRows();
+                                               false, false)).getResults();
         assertTrue(after.size() == before.size() + 2);
     }
 
@@ -538,9 +538,9 @@ public class ArchetypeServicePersistenceTestCase extends
                                    true)
                         .add(new NodeConstraint("name", RelationalOp.EQ,
                                                 pet.getName()))
-                        .setNumOfRows(1));
-        assertTrue(pageOfPet.getRows().size() == 1);
-        Party retrievePet = (Party) pageOfPet.getRows().get(0);
+                        .setMaxResults(1));
+        assertTrue(pageOfPet.getResults().size() == 1);
+        Party retrievePet = (Party) pageOfPet.getResults().get(0);
         assertTrue(retrievePet != null);
         retrievePet.setActive(false);
         service.save(retrievePet);
@@ -592,7 +592,7 @@ public class ArchetypeServicePersistenceTestCase extends
         // retrieve the initial count
         int count = service.get(new ArchetypeQuery("system", "security",
                                                    "role", false,
-                                                   true)).getRows().size();
+                                                   true)).getResults().size();
         SecurityRole role = (SecurityRole) service.create("security.role");
         role.setName("administrator");
         service.save(role);
@@ -607,7 +607,7 @@ public class ArchetypeServicePersistenceTestCase extends
         // retrieve the count after the add
         int count1 = service.get(new ArchetypeQuery("system", "security",
                                                     "role", false,
-                                                    true)).getRows().size();
+                                                    true)).getResults().size();
         assertTrue(count1 == count + 1);
     }
 
@@ -667,7 +667,7 @@ public class ArchetypeServicePersistenceTestCase extends
             throws Exception {
         List<IMObject> objs = service.get(
                 new ArchetypeQuery("product.productP*",
-                                   true, true)).getRows();
+                                   true, true)).getResults();
         for (IMObject obj : objs) {
             String shortName = obj.getArchetypeId().getShortName();
             String entity = new StringTokenizer(shortName, ".").nextToken();
@@ -682,7 +682,7 @@ public class ArchetypeServicePersistenceTestCase extends
         service.save(createPriceMargin(new BigDecimal("1.0")));
         int acount1 = service.get(new ArchetypeQuery("product.productP*",
                                                      true,
-                                                     true)).getRows().size();
+                                                     true)).getResults().size();
         assertTrue(acount == acount1);
     }
 
@@ -693,7 +693,7 @@ public class ArchetypeServicePersistenceTestCase extends
             throws Exception {
         int acount = service.get(new ArchetypeQuery("product.product",
                                                     true,
-                                                    true)).getRows().size();
+                                                    true)).getResults().size();
 
         // create some products
         for (int index = 0; index < 5; index++) {
@@ -702,7 +702,7 @@ public class ArchetypeServicePersistenceTestCase extends
 
         int acount1 = service.get(new ArchetypeQuery("product.product",
                                                      true,
-                                                     true)).getRows().size();
+                                                     true)).getResults().size();
         assertTrue(acount1 == acount + 5);
     }
 

@@ -18,38 +18,45 @@
 
 package org.openvpms.component.system.common.query;
 
-// java-core
 import java.util.List;
 
 
 /**
  * This interface is used to support pagination of large result sets.
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public interface IPage<T> {
-    /**
-     * @return Returns the rows.
-     */
-    public List<T> getRows();
 
     /**
-     * @return Returns the totalNumOfRows.
+     * Returns the query results.
+     *
+     * @return the results
      */
-    public int getTotalNumOfRows();
+    public List<T> getResults();
 
     /**
-     * Return the first row requested
-     * 
-     * @return int
+     * Return the first result requested.
+     *
+     * @return the first result requested
      */
-    public int getFirstRow();
-    
+    public int getFirstResult();
+
     /**
-     * Return the number of rows requested
-     * 
-     * @return int
+     * Returns the number of results requested. The {@link #getResults()}
+     * method will return up to this count.
+     *
+     * @return the number of results requested
      */
-    public int getNumOfRows();
+    public int getPageSize();
+
+    /**
+     * Returns the total no. of results matching the query criteria.
+     *
+     * @return the total no. of results matching the query criteria, or
+     *         <code>-1</code> if not calculated
+     */
+    public int getTotalResults();
+
 }

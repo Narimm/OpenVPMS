@@ -19,52 +19,65 @@
 
 package org.openvpms.component.system.common.query;
 
-// commons-lang
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
+
 /**
- * A constraint based on a single {@link ArchetypeId}
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * A constraint based on a single {@link ArchetypeId};
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ArchetypeIdConstraint extends BaseArchetypeConstraint {
+
     /**
-     * Default SUID
+     * Default SUID.
      */
-    private static final long serialVersionUID = 1L; 
-    
+    private static final long serialVersionUID = 1L;
+
     /**
-     * The archetypeId
+     * The archetypeId.
      */
     private ArchetypeId archetypeId;
-    
+
+
     /**
      * Create a constraint for the specified archetype id
-     * 
-     * @param archetypeId 
-     *            a valid archetype identity
-     * @param activeOnly
-     *            constraint to active only            
+     *
+     * @param archetypeId a valid archetype identity
+     * @param activeOnly  constraint to active only
      */
     public ArchetypeIdConstraint(ArchetypeId archetypeId, boolean activeOnly) {
-        super(false, activeOnly);
+        this(null, archetypeId, activeOnly);
+    }
+
+    /**
+     * Create a constraint for the specified archetype id.
+     *
+     * @param alias       the type alias. May be <code>null</code>
+     * @param archetypeId a valid archetype identity
+     * @param activeOnly  constraint to active only
+     */
+    public ArchetypeIdConstraint(String alias, ArchetypeId archetypeId,
+                                 boolean activeOnly) {
+        super(alias, false, activeOnly);
         this.archetypeId = archetypeId;
     }
 
     /**
-     * @return Returns the archetypeId.
+     * Returns the archetype id.
+     * @return the archetype id.
      */
     public ArchetypeId getArchetypeId() {
         return archetypeId;
     }
 
     /**
-     * @param archetypeId The archetypeId to set.
+     * Sets the archetype id.
+     *
+     * @param archetypeId the archetype id
      */
     public void setArchetypeId(ArchetypeId archetypeId) {
         this.archetypeId = archetypeId;
@@ -82,12 +95,12 @@ public class ArchetypeIdConstraint extends BaseArchetypeConstraint {
         if (!(obj instanceof ArchetypeIdConstraint)) {
             return false;
         }
-        
+
         ArchetypeIdConstraint rhs = (ArchetypeIdConstraint) obj;
         return new EqualsBuilder()
-            .appendSuper(super.equals(rhs))
-            .append(archetypeId, rhs.archetypeId)
-            .isEquals();
+                .appendSuper(super.equals(rhs))
+                .append(archetypeId, rhs.archetypeId)
+                .isEquals();
     }
 
     /* (non-Javadoc)
@@ -96,9 +109,9 @@ public class ArchetypeIdConstraint extends BaseArchetypeConstraint {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(super.toString())
-            .append("archetypeId", archetypeId)
-            .toString();
+                .appendSuper(super.toString())
+                .append("archetypeId", archetypeId)
+                .toString();
     }
 
     /* (non-Javadoc)
@@ -106,9 +119,9 @@ public class ArchetypeIdConstraint extends BaseArchetypeConstraint {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        ArchetypeIdConstraint copy = (ArchetypeIdConstraint)super.clone();
+        ArchetypeIdConstraint copy = (ArchetypeIdConstraint) super.clone();
         copy.archetypeId = new ArchetypeId(this.archetypeId.getQualifiedName());
-        
+
         return copy;
     }
 }

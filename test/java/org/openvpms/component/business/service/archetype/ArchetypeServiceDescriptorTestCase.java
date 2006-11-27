@@ -19,28 +19,24 @@
 package org.openvpms.component.business.service.archetype;
 
 // spring-context
-import java.util.Collection;
-import java.util.List;
-
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
-
-// log4j
-import org.apache.log4j.Logger; 
+import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-
-// openvpms-framework
+import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+import java.util.Collection;
+import java.util.List;
 
 /** 
  * Test the persistence side of the archetype service
@@ -170,7 +166,7 @@ public class ArchetypeServiceDescriptorTestCase extends
         
         ArchetypeQuery query = new ArchetypeQuery("descriptor.archetype", false, true)
             .add(new NodeConstraint("type", desc.getName()));
-        List<IMObject> objs = service.get(query).getRows();
+        List<IMObject> objs = service.get(query).getResults();
         assertTrue(objs.size() > 0);
     }
     
@@ -237,7 +233,7 @@ public class ArchetypeServiceDescriptorTestCase extends
                 ArchetypeQuery query = new ArchetypeQuery("descriptor.archetype", 
                         false, true)
                         .add(new NodeConstraint("type", desc.getName()));
-                List<IMObject> results = service.get(query).getRows();
+                List<IMObject> results = service.get(query).getResults();
                 // only add if the entry does not exist
                 if (results == null || results.size() == 0) {
                     service.save(desc);

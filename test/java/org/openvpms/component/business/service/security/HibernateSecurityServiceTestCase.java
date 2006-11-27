@@ -180,7 +180,7 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
     protected void createSecurityContext(String name, String password,
             String authority) {
         List<IMObject> users = dao.get("system", "security", "user", name,
-                User.class.getName(), true, 0, ArchetypeQuery.ALL_ROWS).getRows();
+                User.class.getName(), true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
         if (users.size() != 1) {
             fail("Failed to create security context. Could not locate user "
                     + name + " in database");
@@ -202,7 +202,7 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
     throws Exception {
         // delete and recreate the user jima
         List<IMObject> users = dao.get("system", "security", "user", name,
-                User.class.getName(), true, 0, ArchetypeQuery.ALL_ROWS).getRows();
+                User.class.getName(), true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
         if (users.size() > 0) {
             for (IMObject im : users) {
                 dao.delete(im);
