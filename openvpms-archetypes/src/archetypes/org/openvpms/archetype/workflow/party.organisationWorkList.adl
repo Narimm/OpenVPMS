@@ -33,7 +33,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="entityRelationship.locationSchedule" />
+							value="entityRelationship.locationWorkList" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
