@@ -37,7 +37,7 @@
         type="string" length="100" />
       <property name="concept" access="property" column="arch_concept_name"
         type="string" length="100"
-        index="act_concept_idx,act_concept_start_time_idx" />
+        index="act_concept_idx" />
       <property name="entityName" access="property" column="arch_entity_name"
         type="string" length="100" />
       <property name="version" access="property" column="arch_version"
@@ -50,11 +50,13 @@
     <property name="mood" column="mood" type="string" />
     <property name="title" column="title" type="string" />
     <property name="activityStartTime" column="activity_start_time" type="timestamp"
-      index="act_concept_start_time_idx" />
-    <property name="activityEndTime" column="activity_end_time" type="timestamp" />
+      index="act_start_time_idx" />
+    <property name="activityEndTime" column="activity_end_time" type="timestamp" 
+      index="act_end_time_idx"/>
     <property name="reason" column="reason" type="string" />
     <property name="repeatNumber" column="repeat_number" type="int" />
-    <property name="status" column="status" type="string" />
+    <property name="status" column="status" type="string" 
+    	index="act_status_idx" />
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
     <set name="sourceActRelationships" access="property"
