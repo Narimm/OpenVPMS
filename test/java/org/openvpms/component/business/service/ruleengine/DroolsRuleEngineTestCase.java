@@ -23,7 +23,6 @@ package org.openvpms.component.business.service.ruleengine;
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -188,7 +187,7 @@ public class DroolsRuleEngineTestCase extends
         Contact contact = (Contact)archetype.create("contact.phoneNumber");
         contact.getDetails().setAttribute("areaCode", "03");
         contact.getDetails().setAttribute("telephoneNumber", "1234567");
-        contact.getDetails().setAttribute("preferred", new Boolean(true));
+        contact.getDetails().setAttribute("preferred", true);
 
         return contact;
     }
@@ -211,8 +210,8 @@ public class DroolsRuleEngineTestCase extends
 
         rel.setActiveStartTime(new Date());
         rel.setSequence(1);
-        rel.setSource(new IMObjectReference(source));
-        rel.setTarget(new IMObjectReference(target));
+        rel.setSource(source.getObjectReference());
+        rel.setTarget(target.getObjectReference());
 
         return rel;
 

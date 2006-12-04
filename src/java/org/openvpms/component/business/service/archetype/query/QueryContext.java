@@ -1,18 +1,20 @@
 package org.openvpms.component.business.service.archetype.query;
 
 import org.apache.commons.lang.WordUtils;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import static org.openvpms.component.business.service.archetype.query.QueryBuilderException.ErrorCode.OperatorNotSupported;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinType;
+import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+
 
 /**
  * This class holds the state of the HQL as it is being built.
@@ -20,13 +22,21 @@ import java.util.Stack;
 public class QueryContext {
 
     /**
-     * The select clause part of the hql query. This is used if no
+     * The default select clause part of the hql query. This is used if no
      * select constraints are specified.
      */
     private StringBuffer defaultSelectClause = new StringBuffer("select ");
     private int initSelectClauseLen = defaultSelectClause.length();
 
+    /**
+     * The select clause used when select constraints are specified
+     */
     private StringBuffer selectClause = new StringBuffer("select ");
+
+    /**
+     * The qualified names in the select clause.
+     */
+    private List<String> selectNames = new ArrayList<String>();
 
     /**
      * The from clause part of the hql query
@@ -49,14 +59,12 @@ public class QueryContext {
     /**
      * A stack of types while processing the {@link ArchetypeQuery}.
      */
-    private Stack<TypeSet> typeStack
-            = new Stack<TypeSet>();
+    private Stack<TypeSet> typeStack = new Stack<TypeSet>();
 
     /**
-     * A map of aliased types.
+     * The types, keyed on alias.
      */
-    private Map<String, TypeSet> aliasedTypes
-            = new HashMap<String, TypeSet>();
+    private Map<String, TypeSet> typesets = new HashMap<String, TypeSet>();
 
     /**
      * Name allocator for types.
@@ -83,11 +91,6 @@ public class QueryContext {
      */
     private Map<String, Object> params = new HashMap<String, Object>();
 
-    /**
-     * The archetypes being queried.
-     */
-    private Set<ArchetypeDescriptor> descriptors;
-
 
     /**
      * Default constructor. Initialize the operational stack
@@ -110,43 +113,75 @@ public class QueryContext {
     }
 
     /**
-     * Returns the HQL string.
+     * Returns the HQL query string.
      *
-     * @return String
-     *         a valid hql string
+     * @return the HQL query string
      */
     public String getQueryString() {
-        return new StringBuffer()
-                .append(defaultSelectClause.length() == initSelectClauseLen ? "" : defaultSelectClause + " ")
-                .append(fromClause.length() == initFromClauseLen ? "" : fromClause + " ")
-                .append(whereClause.length() == initWhereClauseLen ? "" : whereClause)
-                .append(orderedClause.length() == initOrderedClauseLen ? "" : orderedClause)
-                .toString();
+        StringBuffer result = new StringBuffer();
+        if (selectClause.length() != initSelectClauseLen) {
+            result.append(selectClause).append(" ");
+        } else if (defaultSelectClause.length() != initSelectClauseLen) {
+            result.append(defaultSelectClause).append(" ");
+        }
+        if (fromClause.length() != initFromClauseLen) {
+            result.append(fromClause).append(" ");
+        }
+        if (whereClause.length() != initWhereClauseLen) {
+            result.append(whereClause);
+        }
+        if (orderedClause.length() != initOrderedClauseLen) {
+            result.append(orderedClause);
+        }
+        return result.toString();
     }
 
     /**
-     * Return the value map for the query.
+     * Returns the query parameters.
      *
-     * @return Map<String, Object>
+     * @return the query parameters
      */
-    public Map<String, Object> getValueMap() {
+    public Map<String, Object> getParameters() {
         return params;
     }
 
     /**
-     * Returns the descriptors of the archetypes being queried.
+     * Returns the names in the select clause.
      *
-     * @return the archetype descriptors
+     * @return the select clause names
      */
-    public Set<ArchetypeDescriptor> getDescriptors() {
-        return descriptors;
+    public List<String> getSelectNames() {
+        return selectNames;
+    }
+
+    /**
+     * Returns the types being selected, keyed on type alias.
+     *
+     * @return a map of type aliases to their corresponding short names
+     */
+    public Map<String, Set<String>> getSelectTypes() {
+        Map<String, Set<String>> result = new HashMap<String, Set<String>>();
+        for (String name : selectNames) {
+            int index = name.indexOf(".");
+            String alias;
+            if (index == -1) {
+                alias = name;
+            } else {
+                alias = name.substring(0, index);
+            }
+            if (result.get(alias) == null) {
+                TypeSet set = typesets.get(alias);
+                result.put(alias, set.getShortNames());
+            }
+        }
+        return result;
     }
 
     /**
      * Push a logical operator on the stack
      *
      * @param op
-     * @return QueryContext
+     * @return this context
      */
     QueryContext pushLogicalOperator(LogicalOperator op) {
         appendLogicalOperator();
@@ -167,10 +202,10 @@ public class QueryContext {
     }
 
     /**
-     * Push the distinct types
+     * Push the type set.
      *
-     * @param types
-     * @return QueryContext
+     * @param types the type set
+     * @return this context
      */
     QueryContext pushTypeSet(TypeSet types) {
         String alias = addTypeSet(types, types.getAlias());
@@ -186,10 +221,6 @@ public class QueryContext {
         fromClause.append(" as ");
         fromClause.append(alias);
 
-        if (first) {
-            descriptors = types.getDescriptors();
-        }
-
         typeStack.push(types);
         varStack.push(alias);
         return this;
@@ -204,7 +235,7 @@ public class QueryContext {
      * @return QueryContext
      */
     QueryContext pushTypeSet(TypeSet types, String property,
-                             JoinType joinType) {
+                             JoinConstraint.JoinType joinType) {
         String alias = addTypeSet(types, property);
         switch (joinType) {
             case InnerJoin:
@@ -231,7 +262,6 @@ public class QueryContext {
                         .append(" as ")
                         .append(alias);
                 break;
-            case None:
             default:
                 // todo throw an exception
                 break;
@@ -242,21 +272,6 @@ public class QueryContext {
         return this;
     }
 
-    private String addTypeSet(TypeSet types,
-                              String alias) {
-        if (types.getAlias() != null) {
-            typeNames.reserve(types.getAlias());
-            alias = types.getAlias();
-        } else {
-            if (alias == null) {
-                alias = types.getClassName();
-            }
-            alias = typeNames.getName(alias);
-            types.setAlias(alias);
-        }
-        aliasedTypes.put(types.getAlias(), types);
-        return alias;
-    }
 
     /**
      * Pop the logical operator on the stack
@@ -287,7 +302,7 @@ public class QueryContext {
     TypeSet getTypeSet(String alias) {
         TypeSet result = null;
         if (alias != null) {
-            result = aliasedTypes.get(alias);
+            result = typesets.get(alias);
         } else if (!typeStack.isEmpty()) {
             result = typeStack.peek();
         }
@@ -298,7 +313,7 @@ public class QueryContext {
      * Push a variable name on the stack
      *
      * @param varName
-     * @return QueryContext
+     * @return this context
      */
     QueryContext pushVariable(String varName) {
         varStack.push(varName);
@@ -318,17 +333,26 @@ public class QueryContext {
      * Adds a select constraint.
      *
      * @param alias    the type alias. May be <code>null</code>
+     * @param node     the node name. May be <code>null</code>
      * @param property the property. May be <code>null</code>
      */
-    void addSelectConstraint(String alias, String property) {
-        if (alias != null) {
-            selectClause.append(alias);
-            if (property != null) {
-                selectClause.append('.');
-                selectClause.append(property);
-            }
-        } else if (property != null) {
+    void addSelectConstraint(String alias, String node, String property) {
+        if (alias == null) {
+            alias = varStack.peek();
+        }
+        if (selectClause.length() != initSelectClauseLen) {
+            selectClause.append(", ");
+        }
+
+        selectClause.append(alias);
+        if (property != null) {
+            selectClause.append('.');
             selectClause.append(property);
+        }
+        if (node == null) {
+            selectNames.add(alias);
+        } else {
+            selectNames.add(alias + "." + node);
         }
     }
 
@@ -360,7 +384,6 @@ public class QueryContext {
      */
     QueryContext addWhereConstraint(String property, RelationalOp op,
                                     Object value) {
-
         appendLogicalOperator();
         whereClause.append(property)
                 .append(" ")
@@ -587,10 +610,25 @@ public class QueryContext {
             return varStack.peek() + "." + property;
         }
         String prefix = property.substring(0, index);
-        if (aliasedTypes.get(prefix) == null) {
+        if (typesets.get(prefix) == null) {
             return varStack.peek() + "." + property;
         }
         return property;
+    }
+
+    private String addTypeSet(TypeSet types, String alias) {
+        if (types.getAlias() != null) {
+            typeNames.reserve(types.getAlias());
+            alias = types.getAlias();
+        } else {
+            if (alias == null) {
+                alias = types.getClassName();
+            }
+            alias = typeNames.getName(alias);
+            types.setAlias(alias);
+        }
+        typesets.put(types.getAlias(), types);
+        return alias;
     }
 
     /**

@@ -71,6 +71,13 @@ public abstract class SelectConstraint implements IConstraint {
         return nodeName;
     }
 
+    /**
+     * Returns the qualified name.
+     *
+     * @return the qualified name
+     */
+    public abstract String getName();
+
     /* (non-Javadoc)
     * @see java.lang.Object#equals(java.lang.Object)
     */
@@ -109,4 +116,5 @@ public abstract class SelectConstraint implements IConstraint {
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
+
 }

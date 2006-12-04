@@ -20,27 +20,26 @@
 package org.openvpms.component.business.service.archetype;
 
 // commons-resources
-import org.apache.commons.resources.Messages;
 
-// openvpms-common
+import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
  * This is the base exception thrown by the objects of type
- * {@link IArchetypeService} 
+ * {@link IArchetypeService}.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ArchetypeServiceException extends OpenVPMSException {
 
     /**
-     * Generated SUID
+     * Serial version identifier.
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * An enumeration of error codes
+     * An enumeration of error codes.
      */
     public enum ErrorCode {
         InvalidArchetypeDefDir,
@@ -81,6 +80,7 @@ public class ArchetypeServiceException extends OpenVPMSException {
         CanOnlySearchAgainstSingleType,
         FailedToFindObjectsMatchingShortNames,
         FailedToExecuteQuery,
+        UnsupportedQuery,
         NonNullObjectRequired,
         NonNullNodeNameRequired,
         InvalidArchetypeDescriptor,
@@ -92,7 +92,7 @@ public class ArchetypeServiceException extends OpenVPMSException {
     }
 
     /**
-     * Cache the werror code
+     * The error code.
      */
     private ErrorCode errorCode;
 
@@ -107,9 +107,8 @@ public class ArchetypeServiceException extends OpenVPMSException {
     /**
      * Instantiate an exception given an error code. The error code corresponds
      * to a message that does not require any parameters to redner
-     * 
-     * @param errorCode
-     *            the error code
+     *
+     * @param errorCode the error code
      */
     public ArchetypeServiceException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
@@ -119,14 +118,12 @@ public class ArchetypeServiceException extends OpenVPMSException {
     /**
      * Instantiate an exception given an error code and a set of associated
      * object parameters. The params are required to render the message
-     * 
-     * @param errorCode
-     *            the error code
-     * @param parama
-     *            the parameters used to render the message associated with the
-     *            error code
+     *
+     * @param errorCode the error code
+     * @param params    the parameters used to render the message associated with
+     *                  the error code
      */
-    public ArchetypeServiceException(ErrorCode errorCode, Object[] params) {
+    public ArchetypeServiceException(ErrorCode errorCode, Object ... params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -134,11 +131,9 @@ public class ArchetypeServiceException extends OpenVPMSException {
     /**
      * Create an exception with the following error code and the root exception.
      * The error code is used to render a local specific message.
-     * 
-     * @param errorCode
-     *            the error code
-     * @param cause
-     *            the root exception
+     *
+     * @param errorCode the error code
+     * @param cause     the root exception
      */
     public ArchetypeServiceException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
@@ -149,16 +144,13 @@ public class ArchetypeServiceException extends OpenVPMSException {
      * Create an exception with the following error code and the root exception.
      * The params is used to render the messsgae that is associated with the
      * error code
-     * 
-     * @param errorCode
-     *            the error code
-     * @param params
-     *            additional information required to render the message
+     *
+     * @param errorCode the error code
      * @param cause
-     *            the root exception
+     * @param params    additional information required to render the message
      */
-    public ArchetypeServiceException(ErrorCode errorCode, Object[] params,
-            Throwable cause) {
+    public ArchetypeServiceException(ErrorCode errorCode, Throwable cause,
+                                     Object ... params) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;
     }

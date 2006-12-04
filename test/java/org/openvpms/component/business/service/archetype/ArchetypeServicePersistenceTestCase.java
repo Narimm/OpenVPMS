@@ -579,7 +579,6 @@ public class ArchetypeServicePersistenceTestCase extends
                                                       party.getUid());
         assertTrue(party != null);
         assertTrue(party.getDetails() != null);
-        assertTrue(party != null);
         assertTrue(party.getDetails().getAttribute("title").equals("MR"));
     }
 
@@ -651,7 +650,7 @@ public class ArchetypeServicePersistenceTestCase extends
         person.getDetails().setAttribute("title", "MR");
         service.save(person);
 
-        IMObjectReference ref = new IMObjectReference(person);
+        IMObjectReference ref = person.getObjectReference();
         person = (Party) ArchetypeQueryHelper.getByObjectReference(service,
                                                                    ref);
         assertTrue(person.getLinkId().equals(ref.getLinkId()));

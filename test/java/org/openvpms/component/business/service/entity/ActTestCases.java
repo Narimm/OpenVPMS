@@ -23,7 +23,6 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -113,7 +112,7 @@ public class ActTestCases extends
         archetypeService.save(act3);
 
         List<Participation> participations = ArchetypeQueryHelper.getParticipations(
-                archetypeService, new IMObjectReference(person), "participation.simple",
+                archetypeService, person.getObjectReference(), "participation.simple",
                 null, null,
                 null, null, true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
         assertTrue(participations.size() == 3);
@@ -142,7 +141,7 @@ public class ActTestCases extends
         archetypeService.save(act2);
 
         List<Act> acts = ArchetypeQueryHelper.getActs(archetypeService,
-                new IMObjectReference(person), "participation.simple",
+                person.getObjectReference(), "participation.simple",
                 "act", null, null, null, null, null, null, true, 0,
                 ArchetypeQuery.ALL_RESULTS).getResults();
         assertTrue(acts.size() == 2);
@@ -292,8 +291,8 @@ public class ActTestCases extends
     private Participation createParticipation(String name, Act act, Entity entity) {
         Participation participation = (Participation)archetypeService.create("participation.simple");
         participation.setName(name);
-        participation.setEntity(new IMObjectReference(entity));
-        participation.setAct(new IMObjectReference(act));
+        participation.setEntity(entity.getObjectReference());
+        participation.setAct(act.getObjectReference());
 
         return participation;
     }
@@ -324,8 +323,8 @@ public class ActTestCases extends
      */
     private ActRelationship createActRelationship(Act source, Act target) {
         ActRelationship rel = (ActRelationship)archetypeService.create("actRelationship.simple");
-        rel.setSource(new IMObjectReference(source));
-        rel.setTarget(new IMObjectReference(target));
+        rel.setSource(source.getObjectReference());
+        rel.setTarget(target.getObjectReference());
 
         return rel;
     }

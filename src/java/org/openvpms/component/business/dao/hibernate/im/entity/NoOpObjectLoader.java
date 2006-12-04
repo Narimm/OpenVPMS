@@ -18,23 +18,21 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-
 
 /**
- * An {@link IMObjectLoader} that does nothing.
+ * An {@link ObjectLoader} that does nothing.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class NoOpIMObjectLoader implements IMObjectLoader {
+public class NoOpObjectLoader implements ObjectLoader {
 
     /**
      * Loads an object.
      *
      * @param object the object to load
      */
-    public void load(IMObject object) {
+    public void load(Object object) {
         // do nothing
     }
 }

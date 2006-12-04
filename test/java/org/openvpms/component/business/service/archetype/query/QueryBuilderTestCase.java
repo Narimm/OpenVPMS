@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.service.archetype.query;
 
+import org.hibernate.HibernateException;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -30,11 +31,13 @@ import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinType;
-import org.openvpms.component.system.common.query.LinkConstraint;
+import org.openvpms.component.system.common.query.IdConstraint;
+import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -102,8 +105,7 @@ public class QueryBuilderTestCase
         ArchetypeQuery query = new ArchetypeQuery(
                 new ArchetypeId("openvpms-party-person.person.1.0"), false)
                 .add(new NodeConstraint("uid", "1"));
-        String hql = builder.build(query).getQueryString();
-        assertEquals(expected, hql);
+        checkQuery(query, expected);
     }
 
     /**
@@ -118,8 +120,7 @@ public class QueryBuilderTestCase
                 + "party0.uid = :uid0)";
         ArchetypeQuery query = new ArchetypeQuery("person.person", false, false)
                 .add(new NodeConstraint("uid", "1"));
-        String hql = builder.build(query).getQueryString();
-        assertEquals(expected, hql);
+        checkQuery(query, expected);
     }
 
     /**
@@ -136,8 +137,7 @@ public class QueryBuilderTestCase
         ArchetypeQuery query = new ArchetypeQuery(
                 new ArchetypeId("openvpms-party-person.person.1.0"), false)
                 .add(new NodeConstraint("name", "sa*"));
-        String hql = builder.build(query).getQueryString();
-        assertEquals(expected, hql);
+        checkQuery(query, expected);
     }
 
     /**
@@ -163,8 +163,7 @@ public class QueryBuilderTestCase
                                                   new ShortNameConstraint(
                                                           "contact.location",
                                                           false, false)));
-        String hql = builder.build(query).getQueryString();
-        assertEquals(expected, hql);
+        checkQuery(query, expected);
     }
 
     /**
@@ -194,8 +193,7 @@ public class QueryBuilderTestCase
                                                   new ShortNameConstraint(
                                                           "contact.location",
                                                           false, false)));
-        String hql = builder.build(query).getQueryString();
-        assertEquals(expected, hql);
+        checkQuery(query, expected);
     }
 
     /**
@@ -225,8 +223,7 @@ public class QueryBuilderTestCase
                 .add(new CollectionNodeConstraint(
                         "contacts", new ShortNameConstraint("contact.*", false,
                                                             false)));
-        String hql = builder.build(query).getQueryString();
-        assertEquals(expected, hql);
+        checkQuery(query, expected);
     }
 
     /**
@@ -261,8 +258,7 @@ public class QueryBuilderTestCase
                                                 false))
                         .add(new ArchetypeSortConstraint(
                         ArchetypeProperty.ConceptName, false)));
-        String hql = builder.build(query).getQueryString();
-        assertEquals(expected, hql);
+        checkQuery(query, expected);
     }
 
     /**
@@ -284,8 +280,7 @@ public class QueryBuilderTestCase
                 .setFirstResult(0)
                 .setMaxResults(-1);
 
-        String hql = builder.build(query).getQueryString();
-        assertEquals(expected, hql);
+        checkQuery(query, expected);
     }
 
     /**
@@ -314,8 +309,7 @@ public class QueryBuilderTestCase
                         .add(new OrConstraint()
                         .add(new NodeConstraint("name", "equine"))
                         .add(new NodeConstraint("name", "all"))));
-        String hql = builder.build(query).getQueryString();
-        assertEquals(expected, hql);
+        checkQuery(query, expected);
     }
 
     /**
@@ -324,8 +318,7 @@ public class QueryBuilderTestCase
     public void testOVPMS245()
             throws Exception {
         final String expected = "select product0 "
-                + "from " + Product.class.getName() + " "
-                + "as product0 "
+                + "from " + Product.class.getName() + " as product0 "
                 + "left outer join product0.classifications as classifications0"
                 + " where ((product0.archetypeId.entityName = :entityName0 and "
                 + "product0.archetypeId.concept = :concept0) and "
@@ -338,7 +331,7 @@ public class QueryBuilderTestCase
                 new ShortNameConstraint("product.product", false,
                                         false))
                 .add(new CollectionNodeConstraint("classifications", false)
-                        .setJoinType(JoinType.LeftOuterJoin)
+                        .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
                         .add(new OrConstraint()
                                 .add(new NodeConstraint("active",
                                                         RelationalOp.EQ, true))
@@ -354,14 +347,13 @@ public class QueryBuilderTestCase
                                 "species"))
                         .add(new NodeConstraint("name", RelationalOp.EQ,
                                                 "Canine")))));
-        String hql = builder.build(query).getQueryString();
-        assertEquals(expected, hql);
+        checkQuery(query, expected);
     }
 
     /**
-     * Test for OBF-139.
+     * Test query across multiple tables, joined by link constraints.
      */
-    public void OBF139() {
+    public void testQueryAcrossMultipleTables() {
         final String expected = "select distinct act "
                 + "from " + Act.class.getName() + " as act "
                 + "inner join act.participations as participation, "
@@ -407,17 +399,66 @@ public class QueryBuilderTestCase
 
         query.add(new NodeConstraint("status", "IN_PROGRESS"));
         query.add(new CollectionNodeConstraint("patient", participation));
-        query.add(new LinkConstraint("act", "participation.act"));
+        query.add(new IdConstraint("act", "participation.act"));
         query.add(owner);
         query.add(patient);
         query.add(customer);
-        query.add(new LinkConstraint("participation.entity", "patient"));
-        query.add(new LinkConstraint("patient", "owner.target"));
-        query.add(new LinkConstraint("customer", "owner.source"));
+        query.add(new IdConstraint("participation.entity", "patient"));
+        query.add(new IdConstraint("patient", "owner.target"));
+        query.add(new IdConstraint("customer", "owner.source"));
         query.add(new NodeSortConstraint("customer", "name"));
         query.add(new NodeSortConstraint("patient", "name"));
 
+        checkQuery(query, expected);
+    }
+
+    public void testMultipleSelect() {
+        final String expected = "select estimation.name, "
+                + "estimation.description, estimation.status, estimationItem "
+                + "from " + Act.class.getName() + " as estimation "
+                + "inner join estimation.sourceActRelationships as items, "
+                + Act.class.getName() + " as estimationItem "
+                + "where ((estimation.archetypeId.entityName = :entityName0 and"
+                + " estimation.archetypeId.concept = :concept0) and "
+                + "estimation.active = :active0 and "
+                + "(items.archetypeId.entityName = :entityName1 and "
+                + "items.archetypeId.concept = :concept1) and "
+                + "items.active = :active1 and "
+                + "((estimationItem.archetypeId.entityName = :entityName2 and "
+                + "estimationItem.archetypeId.concept = :concept2) and "
+                + "estimationItem.active = :active2) and "
+                + "items.source.linkId = estimation.linkId and "
+                + "items.target.linkId = estimationItem.linkId)";
+        ShortNameConstraint estimation = new ShortNameConstraint(
+                "estimation", "act.customerEstimation", false, true);
+        ShortNameConstraint estimationItem = new ShortNameConstraint(
+                "estimationItem", "act.customerEstimationItem", false, true);
+        ShortNameConstraint items = new ShortNameConstraint(
+                "items", "actRelationship.customerEstimationItem", false, true);
+        ArchetypeQuery query = new ArchetypeQuery(estimation);
+        query.add(new NodeSelectConstraint("estimation.name"));
+        query.add(new NodeSelectConstraint("estimation.description"));
+        query.add(new NodeSelectConstraint("estimation.status"));
+        query.add(new ObjectSelectConstraint("estimationItem"));
+        query.add(new CollectionNodeConstraint("items", items));
+        query.add(estimationItem);
+        query.add(new IdConstraint("items.source", "estimation"));
+        query.add(new IdConstraint("items.target", "estimationItem"));
+
+        checkQuery(query, expected);
+    }
+
+    /**
+     * Verifies that a query matches that expected, and can be parsed by
+     * hibernate.
+     *
+     * @throws QueryBuilderException if the query is invalid
+     * @throws HibernateException    if the query is invalid
+     */
+    private void checkQuery(ArchetypeQuery query, String expected) {
         String hql = builder.build(query).getQueryString();
         assertEquals(expected, hql);
     }
+
+
 }

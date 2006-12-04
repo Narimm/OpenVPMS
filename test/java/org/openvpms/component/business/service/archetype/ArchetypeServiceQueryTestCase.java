@@ -25,15 +25,15 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinType;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
@@ -171,7 +171,7 @@ public class ArchetypeServiceQueryTestCase extends
                 new ShortNameConstraint("product.product", false,
                                         true))
                 .add(new CollectionNodeConstraint("classifications", true)
-                        .setJoinType(JoinType.LeftOuterJoin)
+                        .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
                         .add(new OrConstraint()
                         .add(new ArchetypeNodeConstraint(
                                 ArchetypeProperty.ConceptName,

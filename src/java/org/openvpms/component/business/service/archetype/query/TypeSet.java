@@ -56,6 +56,7 @@ class TypeSet {
      */
     private String alias;
 
+    
     /**
      * Constructs a new <code>TypeSet</code>.
      *
@@ -116,7 +117,20 @@ class TypeSet {
     public Set<ArchetypeDescriptor> getDescriptors() {
         return descriptors;
     }
-    
+
+    /**
+     * Returns the short names.
+     *
+     * @return the short names
+     */
+    public Set<String> getShortNames() {
+        Set<String> result = new HashSet<String>();
+        for (ArchetypeDescriptor descriptor :  descriptors) {
+            result.add(descriptor.getShortName());
+        }
+        return result;
+    }
+
     /**
      * Creates a new type set from an {@link ArchetypeIdConstraint}.
      *

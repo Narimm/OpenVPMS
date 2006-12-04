@@ -19,41 +19,40 @@
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.hibernate.HibernateException;
-import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
 
 /**
- * Abstract implementation of the {@link IMObjectLoader} interface.
+ * Abstract implementation of the {@link ObjectLoader} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AbstractIMObjectLoader implements IMObjectLoader {
+public class AbstractObjectLoader implements ObjectLoader {
 
     /**
      * The default loader, if none is specified.
      */
-    private static final IMObjectLoader defaultLoader
-            = new ReflectingIMObjectLoader();
+    private static final ObjectLoader defaultLoader
+            = new ReflectingObjectLoader();
 
     /**
-     * Loaders, keyed on class type.
+     * Loaders, keyed on class name.
      */
-    private Map<String, IMObjectLoader> loaders
-            = new HashMap<String, IMObjectLoader>();
+    private Map<String, ObjectLoader> loaders
+            = new HashMap<String, ObjectLoader>();
 
 
     /**
-     * Sets the loader for a particular IMObject class type.
+     * Sets the loader for a particular class name.
      *
-     * @param type   the IMObject class type
+     * @param className   the class name
      * @param loader the loader for the class
      */
-    public void setLoader(String type, IMObjectLoader loader) {
-        loaders.put(type, loader);
+    public void setLoader(String className, ObjectLoader loader) {
+        loaders.put(className, loader);
     }
 
     /**
@@ -62,8 +61,8 @@ public class AbstractIMObjectLoader implements IMObjectLoader {
      * @param object the object to load
      * @throws HibernateException for any hibernate error
      */
-    public void load(IMObject object) {
-        IMObjectLoader loader = loaders.get(object.getClass().getName());
+    public void load(Object object) {
+        ObjectLoader loader = loaders.get(object.getClass().getName());
         if (loader == null) {
             loader = defaultLoader;
         }

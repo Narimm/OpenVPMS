@@ -29,10 +29,10 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import static org.openvpms.component.business.service.archetype.helper.LookupHelperException.ErrorCode.*;
-import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSet;
 
 import java.util.Collection;
 import java.util.List;

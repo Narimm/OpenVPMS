@@ -27,7 +27,6 @@ import org.openvpms.component.business.dao.hibernate.im.party.HibernatePartyUtil
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 
 
@@ -247,7 +246,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
     private Participation createParticipation(Entity entity, Act act) {
         return new Participation(
                 new ArchetypeId("openvpms-common-participation.participation.1.0"),
-                new IMObjectReference(entity), new IMObjectReference(act), null);
+                entity.getObjectReference(), act.getObjectReference(), null);
     }
 
     /**

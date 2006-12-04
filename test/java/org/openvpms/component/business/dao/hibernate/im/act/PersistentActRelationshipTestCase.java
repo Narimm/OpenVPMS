@@ -22,14 +22,11 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 // hibernate
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-
-//openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.dao.hibernate.im.lookup.HibernateLookupUtil;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 /**
  * Exercise the act and act relationships
@@ -175,8 +172,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx = session.beginTransaction();
             actRel1 = (ActRelationship)session.load(ActRelationship.class, actRel1.getUid());
             assertTrue(actRel1 != null);
-            actRel1.setSource(new IMObjectReference(tar));
-            actRel1.setTarget(new IMObjectReference(src));
+            actRel1.setSource(tar.getObjectReference());
+            actRel1.setTarget(src.getObjectReference());
             session.saveOrUpdate(actRel1);
             tx.commit();
             
@@ -532,8 +529,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
         ActRelationship rel = new ActRelationship();
         rel.setArchetypeId(new ArchetypeId("openvpms-party-act.simpleRel.1.0"));
         rel.setName(name);
-        rel.setSource(new IMObjectReference(source));
-        rel.setTarget(new IMObjectReference(target));
+        rel.setSource(source.getObjectReference());
+        rel.setTarget(target.getObjectReference());
         
         return rel;
     }

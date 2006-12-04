@@ -27,10 +27,10 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
-import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;

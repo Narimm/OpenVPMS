@@ -19,13 +19,10 @@
 package org.openvpms.tools.data.loader;
 
 // java core
-import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-// log4j
+import com.martiansoftware.jsap.FlaggedOption;
+import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.Switch;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.BasicConfigurator;
@@ -33,33 +30,28 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
-
-// hibernate
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
-
-// spring framework
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.ValidationError;
+import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.tools.archetype.loader.ArchetypeLoader;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.martiansoftware.jsap.FlaggedOption;
-import com.martiansoftware.jsap.JSAP;
-import com.martiansoftware.jsap.JSAPResult;
-import com.martiansoftware.jsap.Switch;
+import java.io.File;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This tool will reads the specified XML document and process all of the
@@ -360,7 +352,7 @@ public class ArchetypeDataLoader {
                 if (parent == null) {
                     archetypeService.save(object);
                     if (!StringUtils.isEmpty(id)) {
-                        idCache.put(id, new IMObjectReference(object));
+                        idCache.put(id, object.getObjectReference());
                     }
 
                     if (verbose) {
