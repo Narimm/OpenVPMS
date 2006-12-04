@@ -21,16 +21,13 @@ package org.openvpms.component.business.dao.hibernate.im.party;
 // hibernate
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-
-// openvpms-framework
-import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
+import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 
 /**
@@ -47,7 +44,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
     /**
      * Constructor for PersistentRoleTestCase.
      * 
-     * @param arg0
+     * @param name
      */
     public PersistentRoleTestCase(String name) {
         super(name);
@@ -506,15 +503,15 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             Entity target) {
         return new EntityRelationship( 
                 new ArchetypeId("openvpms-common-entity.basicEntityRel.1.0"), 
-                new IMObjectReference(source), 
-                new IMObjectReference(target), null);
+                source.getObjectReference(),
+                target.getObjectReference(), null);
     }
 
     /**
      * Return a default classification.
      * 
      * @return Classification
-     * @thorws Exception
+     * @throws Exception
      */
     private Classification createClassification() throws Exception {
         return new Classification(createClassificationArchetypeId(), null, null);

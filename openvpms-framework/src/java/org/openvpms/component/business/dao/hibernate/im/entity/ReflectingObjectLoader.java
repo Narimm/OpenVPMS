@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
-import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -32,18 +31,18 @@ import java.util.Set;
 
 
 /**
- * An {@link IMObjectLoader} that uses reflection to load collections.
+ * An {@link ObjectLoader} that uses reflection to load collections.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ReflectingIMObjectLoader implements IMObjectLoader {
+public class ReflectingObjectLoader implements ObjectLoader {
 
     /**
      * The logger.
      */
     private static final Log log
-            = LogFactory.getLog(ReflectingIMObjectLoader.class);
+            = LogFactory.getLog(ReflectingObjectLoader.class);
 
     /**
      * Loads an object.
@@ -51,8 +50,8 @@ public class ReflectingIMObjectLoader implements IMObjectLoader {
      * @param object the object to load
      * @throws HibernateException for any hibernate error
      */
-    public void load(IMObject object) {
-        load(object, new HashSet<IMObject>());
+    public void load(Object object) {
+        load(object, new HashSet<Object>());
     }
 
     /**
@@ -62,7 +61,7 @@ public class ReflectingIMObjectLoader implements IMObjectLoader {
      * @param loaded the set of objects already loaded
      * @throws HibernateException for any hibernate error
      */
-    protected void load(IMObject object, Set<IMObject> loaded) {
+    protected void load(Object object, Set<Object> loaded) {
         Hibernate.initialize(object);
         loaded.add(object);
         Method[] methods = object.getClass().getMethods();
@@ -76,11 +75,8 @@ public class ReflectingIMObjectLoader implements IMObjectLoader {
                 }
                 if (collection != null) {
                     for (Object elt : collection) {
-                        if (elt instanceof IMObject) {
-                            IMObject child = (IMObject) elt;
-                            if (!loaded.contains(child)) {
-                                load(child, loaded);
-                            }
+                        if (!loaded.contains(elt)) {
+                            load(elt, loaded);
                         }
                     }
                 }

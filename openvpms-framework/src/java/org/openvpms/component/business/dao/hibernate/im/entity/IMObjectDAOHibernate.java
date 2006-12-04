@@ -27,13 +27,11 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.dao.im.common.ResultCollector;
+import org.openvpms.component.business.dao.im.common.ResultCollectorFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -56,31 +54,21 @@ import java.util.Set;
 public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                                                               IMObjectDAO {
     /**
-     * Define a logger for this class
+     * The result collector factory.
      */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(IMObjectDAOHibernate.class);
+    private ResultCollectorFactory collectorFactory;
 
     /**
-     * The loader.
+     * The logger.
      */
-    private IMObjectLoader loader = new DefaultIMObjectLoader();
+    private static final Logger logger
+            = Logger.getLogger(IMObjectDAOHibernate.class);
 
     /**
      * Default constructor
      */
     public IMObjectDAOHibernate() {
-        super();
-    }
-
-    /**
-     * Sets a loader to load {@link IMObject} instances.
-     *
-     * @param loader the loader
-     */
-    public void setIMObjectLoader(IMObjectLoader loader) {
-        this.loader = loader;
+        collectorFactory = new HibernateResultCollectorFactory();
     }
 
     /*
@@ -112,27 +100,27 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             session.saveOrUpdate(object);
             tx.commit();
         } catch (Exception exception) {
-            if (tx !=null) {
+            if (tx != null) {
                 tx.rollback();
             }
 
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToSaveIMObject,
-                    new Object[] { object.getUid() }, exception);
+                    new Object[]{object.getUid()}, exception);
 
         } finally {
             clearCache();
             session.close();
         }
         /**
-        try {
-            getHibernateTemplate().saveOrUpdate(object);
-        } catch (Exception exception) {
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.FailedToSaveIMObject,
-                    new Object[] { new Long(object.getUid()) }, exception);
-        }
-        */
+         try {
+         getHibernateTemplate().saveOrUpdate(object);
+         } catch (Exception exception) {
+         throw new IMObjectDAOException(
+         IMObjectDAOException.ErrorCode.FailedToSaveIMObject,
+         new Object[] { new Long(object.getUid()) }, exception);
+         }
+         */
     }
 
     /* (non-Javadoc)
@@ -147,13 +135,13 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             }
             tx.commit();
         } catch (Exception exception) {
-            if (tx !=null) {
+            if (tx != null) {
                 tx.rollback();
             }
 
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToSaveCollectionOfObjects,
-                    new Object[] { objects.size() }, exception);
+                    new Object[]{objects.size()}, exception);
 
         } finally {
             clearCache();
@@ -173,13 +161,13 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             session.delete(object);
             tx.commit();
         } catch (Exception exception) {
-            if (tx !=null) {
+            if (tx != null) {
                 tx.rollback();
             }
 
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToDeleteIMObject,
-                    new Object[] { object.getUid() });
+                    new Object[]{object.getUid()});
 
         } finally {
             clearCache();
@@ -188,32 +176,28 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     }
 
     /**
-     * Execute a get using the specified query string and a map of the
-     * values. The first row and the number of rows is used to control
-     * the paging of the result set.
+     * Execute a get using the specified query string, the query
+     * parameters and the result collector. The first row and the number of rows
+     * is used to control the paging of the result set.
      *
      * @param queryString the query string
-     * @param valueMap    the values applied to the query
-     * @param firstRow    the first row to retrieve
-     * @param numOfRows   the maximum number of rows to return
-     * @param count       if <code>true</code> counts the total no. of rows,
+     * @param parameters  the query parameters
+     * @param firstResult the first result to retrieve
+     * @param maxResults  the maximum number of results to return
+     * @param count       if <code>true</code> counts the total no. of results,
      *                    returning it in {@link IPage#getTotalResults()}
-     * @return IPage<IMObject>
-     * @throws IMObjectDAOException a runtime exception, raised if the request
-     *                              cannot complete.
+     * @throws IMObjectDAOException for any error
      */
-    @SuppressWarnings("unchecked")
-    public IPage<IMObject> get(String queryString, Map<String, Object> valueMap,
-                               int firstRow, int numOfRows, boolean count) {
+    public void get(String queryString, Map<String, Object> parameters,
+                    ResultCollector collector, int firstResult, int maxResults,
+                    boolean count) {
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("query=" + queryString
-                        + ", parameters=" + valueMap);
+                        + ", parameters=" + parameters);
             }
-            IMObjectCollector collector = new IMObjectCollector();
-            executeQuery(queryString, new Params(valueMap), firstRow,
-                         numOfRows, collector, count);
-            return collector.getPage();
+            executeQuery(queryString, new Params(parameters), collector,
+                         firstResult, maxResults, count);
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToExecuteQuery,
@@ -222,86 +206,21 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     }
 
     /**
-     * Execute a get using the specified query string and a map of the values.
-     * This retrieves partially populated objects and may be used to selectively
-     * load parts of object graphs to improve performance.
-     * <p/>
-     * All simple properties of the returned objects are populated - the
-     * <code>nodes</code> argument is used to specify which collection nodes to
-     * populate. If empty, no collections will be loaded, and the behaviour of
-     * accessing them is undefined.
+     * Returns the result collector factory.
      *
-     * @param archetypes
-     * @param nodes
-     * @param queryString the query string
-     * @param valueMap    the values applied to the query
-     * @param firstRow    the first row to retrieve
-     * @param numOfRows   the maximum number of rows to return
-     * @param count       if <code>true</code> counts the total no. of rows,
-     *                    returning it in {@link IPage#getTotalResults()}
-     * @return the nodes for each object that matches the query criteria
-     * @throws IMObjectDAOException a runtime exception, raised if the request
-     *                              cannot complete.
+     * @return the result collector factory
      */
-    public IPage<IMObject> get(Map<String, ArchetypeDescriptor> archetypes,
-                               Collection<String> nodes,
-                               String queryString,
-                               Map<String, Object> valueMap, int firstRow,
-                               int numOfRows, boolean count) {
-        try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("nodes=" + archetypes + ", query=" + queryString
-                        + ", parameters=" + valueMap);
-            }
-
-            IMObjectNodeCollector collector
-                    = new IMObjectNodeCollector(archetypes, nodes);
-            executeQuery(queryString, new Params(valueMap), firstRow,
-                         numOfRows, collector, count);
-            return collector.getPage();
-        } catch (Exception exception) {
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.FailedToExecuteQuery,
-                    new Object[]{queryString}, exception);
-        }
+    public ResultCollectorFactory getResultCollectorFactory() {
+        return collectorFactory;
     }
 
     /**
-     * Execute a get using the specified query string and a map of the values.
-     * The first row and the number of rows is used to control the paging of the
-     * result set.
+     * Sets the result collector factory.
      *
-     * @param archetypes  the archetype descriptors of the objects being
-     *                    queried, keyed on short name
-     * @param queryString the query string
-     * @param valueMap    the values applied to the query
-     * @param firstRow    the first row to retrieve
-     * @param numOfRows   the maximum number of rows to return
-     * @param count       if <code>true</code> counts the total no. of rows,
-     *                    returning it in {@link IPage#getTotalResults()}
-     * @return the nodes for each object that matches the query criteria
-     * @throws IMObjectDAOException a runtime exception, raised if the request
-     *                              cannot complete.
+     * @param factory the result collector factory
      */
-    public IPage<NodeSet> getNodes(Map<String, ArchetypeDescriptor> archetypes,
-                                   Collection<String> nodes, String queryString,
-                                   Map<String, Object> valueMap, int firstRow,
-                                   int numOfRows, boolean count){
-        try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("nodes=" + nodes + ", query=" + queryString
-                        + ", parameters=" + valueMap);
-            }
-
-            NodeCollector collector = new NodeCollector(archetypes, nodes);
-            executeQuery(queryString, new Params(valueMap), firstRow,
-                         numOfRows, collector, count);
-            return collector.getPage();
-        } catch (Exception exception) {
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.FailedToExecuteQuery,
-                    new Object[]{queryString}, exception);
-        }
+    public void setResultCollectorFactory(ResultCollectorFactory factory) {
+        collectorFactory = factory;
     }
 
     /*
@@ -314,14 +233,16 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     */
     @SuppressWarnings("unchecked")
     public IPage<IMObject> get(String rmName, String entityName,
-                               String conceptName, String instanceName, String clazz,
-                               boolean activeOnly, int firstRow, int numOfRows) {
+                               String conceptName, String instanceName,
+                               String clazz,
+                               boolean activeOnly, int firstRow,
+                               int numOfRows) {
         try {
             // check that rm has been specified
             if (StringUtils.isEmpty(clazz)) {
                 throw new IMObjectDAOException(
                         IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified,
-                        new Object[] {});
+                        new Object[]{});
             }
 
             StringBuffer queryString = new StringBuffer();
@@ -364,7 +285,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
 
                 names.add("entityName");
                 andRequired = true;
-                if ((entityName.endsWith("*")) || (entityName.startsWith("*"))) {
+                if ((entityName.endsWith("*")) || (entityName.startsWith("*")))
+                {
                     queryString
                             .append(" entity.archetypeId.entityName like :entityName");
                     params.add(entityName.replace("*", "%"));
@@ -424,18 +346,19 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Executing " + queryString + " with names "
-                            + names.toString() + " and params " + params.toString());
+                        + names.toString() + " and params " + params.toString());
             }
 
-            IMObjectCollector collector = new IMObjectCollector();
+            ResultCollector<IMObject> collector
+                    = collectorFactory.createIMObjectCollector();
             executeQuery(queryString.toString(), new Params(names, params),
-                         firstRow, numOfRows, collector, true);
+                         collector, firstRow, numOfRows, true);
             return collector.getPage();
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindIMObjects,
-                    new Object[] { rmName, entityName, conceptName,
-                                   instanceName, clazz }, exception);
+                    new Object[]{rmName, entityName, conceptName,
+                                 instanceName, clazz}, exception);
         }
     }
 
@@ -451,7 +374,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             if (StringUtils.isEmpty(clazz)) {
                 throw new IMObjectDAOException(
                         IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified,
-                        new Object[] {});
+                        new Object[]{});
             }
 
             StringBuffer queryString = new StringBuffer();
@@ -478,7 +401,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindIMObject,
-                    new Object[] { clazz, id }, exception);
+                    new Object[]{clazz, id}, exception);
         }
     }
 
@@ -494,7 +417,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             if (StringUtils.isEmpty(clazz)) {
                 throw new IMObjectDAOException(
                         IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified,
-                        new Object[] {});
+                        new Object[]{});
             }
 
             StringBuffer queryString = new StringBuffer();
@@ -521,38 +444,34 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindIMObjectReference,
-                    new Object[] { clazz, linkId }, exception);
+                    new Object[]{clazz, linkId}, exception);
         }
     }
 
     /**
-     * Execute the specified named query using the specified parameter
-     * list.
+     * Execute a get using the specified named query, the query
+     * parameters and the result collector. The first result and the number of
+     * results is used to control the paging of the result set.
      *
-     * @param name      the name of the query
-     * @param params    a map of param name and param value.
-     * @param firstRow  the first row to retrieve
-     * @param numOfRows the maximum number of rows to return
-     * @param count       if <code>true</code> counts the total no. of rows,
+     * @param query       the query name
+     * @param parameters  the query parameters
+     * @param collector   the result collector
+     * @param firstResult the first result to retrieve
+     * @param maxResults  the maximum number of results to return
+     * @param count       if <code>true</code> counts the total no. of results,
      *                    returning it in {@link IPage#getTotalResults()}
-     * @return IPage<IMObject>
-     *         the results and associated context information
-     * @throws IMObjectDAOException if there is an error processing the request
+     * @throws IMObjectDAOException for any error
      */
-    @SuppressWarnings("unchecked")
-    public IPage<IMObject> getByNamedQuery(String name,
-                                           Map<String, Object> params,
-                                           int firstRow, int numOfRows,
-                                           boolean count) {
+    public void getByNamedQuery(String query, Map<String, Object> parameters,
+                                ResultCollector collector, int firstResult,
+                                int maxResults, boolean count) {
         try {
-            Collector collector = new IMObjectCollector();
-            executeNamedQuery(name, params, firstRow, numOfRows, collector,
-                              count);
-            return collector.getPage();
+            executeNamedQuery(query, parameters, firstResult, maxResults,
+                              collector, count);
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToExecuteNamedQuery,
-                    new Object[] { name }, exception);
+                    new Object[]{query}, exception);
         }
     }
 
@@ -561,51 +480,50 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      *
      * @param queryString the hql query
      * @param params      the query parameters
-     * @param firstRow    the first row to return
-     * @param numOfRows   the number of rows to return
      * @param collector   the collector
+     * @param firstResult the first row to return
+     * @param maxResults  the number of rows to return
      * @param count       if <code>true</code>
      */
-    @SuppressWarnings("unchecked")
-    private void executeQuery(String queryString, Params params, int firstRow,
-                              int numOfRows, Collector collector, boolean count)
+    private void executeQuery(String queryString, Params params,
+                              ResultCollector collector, int firstResult,
+                              int maxResults, boolean count)
             throws Exception {
-
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         try {
-        	session.setFlushMode(FlushMode.NEVER);
+            session.setFlushMode(FlushMode.NEVER);
             Query query = session.createQuery(queryString);
             params.setParameters(query);
 
-            // set the first row
-            if (firstRow != 0) {
-                query.setFirstResult(firstRow);
+            // set the first result
+            if (firstResult != 0) {
+                query.setFirstResult(firstResult);
             }
 
             // set the maximum number fo rows
-            if (numOfRows != ArchetypeQuery.ALL_RESULTS) {
-                query.setMaxResults(numOfRows);
-                logger.debug("The maximum number of rows is " + numOfRows);
+            if (maxResults != ArchetypeQuery.ALL_RESULTS) {
+                query.setMaxResults(maxResults);
+                logger.debug("The maximum number of rows is " + maxResults);
             }
 
             query.setCacheable(true);
 
-            List<IMObject> rows = query.list();
-            collector.setFirstRow(firstRow);
-            collector.setNumOfRows(numOfRows);
-            if (numOfRows == ArchetypeQuery.ALL_RESULTS) {
-                collector.setTotalNumOfRows(rows.size());
+            List rows = query.list();
+            collector.setFirstResult(firstResult);
+            collector.setPageSize(maxResults);
+            if (maxResults == ArchetypeQuery.ALL_RESULTS) {
+                collector.setTotalResults(rows.size());
             } else if (count) {
                 int rowCount = count(queryString, params, session);
                 if (rowCount < rows.size()) {
                     // rows deleted since initial query
                     rowCount = rows.size();
                 }
-                collector.setTotalNumOfRows(rowCount);
+                collector.setTotalResults(rowCount);
             } else {
-                collector.setTotalNumOfRows(-1);
+                collector.setTotalResults(-1);
             }
-            for (IMObject object : rows) {
+            for (Object object : rows) {
                 collector.collect(object);
             }
         } finally {
@@ -616,29 +534,25 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     /**
      * This method will execute a query and paginate the result set
      *
-     * @param name
-     *            the name of query
-     * @param params
-     *            the name and value of the parameters
-     * @param firstRow
-     *            the first row to return
-     * @param numOfRows
-     *            the number of rows to return
+     * @param name      the name of query
+     * @param params    the name and value of the parameters
+     * @param firstRow  the first row to return
+     * @param numOfRows the number of rows to return
      * @param collector the collector
-     * @param count       if <code>true</code> counts the total no. of rows,
-     *                    returning it in {@link IPage#getTotalResults()}
+     * @param count     if <code>true</code> counts the total no. of rows,
+     *                  returning it in {@link IPage#getTotalResults()}
      */
     @SuppressWarnings("unchecked")
     private void executeNamedQuery(String name, Map<String, Object> params,
-                                    int firstRow, int numOfRows,
-                                    Collector collector, boolean count) throws Exception {
+                                   int firstRow, int numOfRows,
+                                   ResultCollector collector,
+                                   boolean count) throws Exception {
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         try {
-        	session.setFlushMode(FlushMode.NEVER);
+            session.setFlushMode(FlushMode.NEVER);
             Query query = session.getNamedQuery(name);
-            for (String key : params.keySet()) {
-                query.setParameter(key, params.get(key));
-            }
+            Params p = new Params(params);
+            p.setParameters(query);
 
             // set first row
             if (firstRow != 0) {
@@ -651,22 +565,22 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 logger.debug("The maximum number of rows is " + numOfRows);
             }
 
-            List<IMObject> rows = query.list();
-            collector.setFirstRow(firstRow);
-            collector.setNumOfRows(numOfRows);
+            List<Object> rows = query.list();
+            collector.setFirstResult(firstRow);
+            collector.setPageSize(numOfRows);
             if (numOfRows == ArchetypeQuery.ALL_RESULTS) {
-                collector.setTotalNumOfRows(rows.size());
+                collector.setTotalResults(rows.size());
             } else if (count) {
-                int rowCount = countNamedQuery(query);
+                int rowCount = countNamedQuery(name, p, session);
                 if (rowCount < rows.size()) {
                     // rows deleted since initial query
                     rowCount = rows.size();
                 }
-                collector.setTotalNumOfRows(rowCount);
+                collector.setTotalResults(rowCount);
             } else {
-                collector.setTotalNumOfRows(-1);
+                collector.setTotalResults(-1);
             }
-            for (IMObject object : rows) {
+            for (Object object : rows) {
                 collector.collect(object);
             }
         } finally {
@@ -678,7 +592,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * Counts the total no. of rows that would be returned by a query.
      *
      * @param queryString the query string
-     * @param params    the query parameters
+     * @param params      the query parameters
      * @return the total no. of rows that would be returned by the query
      * @throws IMObjectDAOException a runtime exception, raised if the request
      *                              cannot complete.
@@ -701,12 +615,17 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     /**
      * Counts the total no. of rows that would be returned by a named query.
      *
-     * @param query the named query
+     * @param name    the query name
+     * @param params  the query parameters
+     * @param session the session
      * @return the total no. of rows that would be returned by the query
      * @throws IMObjectDAOException a runtime exception, raised if the request
      *                              cannot complete.
      */
-    private int countNamedQuery(Query query) {
+    private int countNamedQuery(String name, Params params, Session session) {
+        Query query = session.getNamedQuery(name);
+        params.setParameters(query);
+
         int result = 0;
         ScrollableResults results = null;
         try {
@@ -741,140 +660,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         }
     }
 
-    private interface Collector<T> {
-
-        void setFirstRow(int first);
-
-        void setNumOfRows(int rows);
-
-        void setTotalNumOfRows(int rows);
-
-        void collect(IMObject object);
-
-        IPage<T> getPage();
-    }
-
-    private static abstract class AbstractCollector<T> implements Collector<T> {
-
-        private Page<T> page = new Page<T>();
-
-        public void setFirstRow(int first) {
-            page.setFirstResult(first);
-        }
-
-        public void setNumOfRows(int rows) {
-            page.setPageSize(rows);
-        }
-
-        public void setTotalNumOfRows(int rows) {
-            page.setTotalResults(rows);
-        }
-
-        public IPage<T> getPage() {
-            page.setResults(getRows());
-            return page;
-        }
-
-        protected abstract List<T> getRows();
-
-    }
-
-    private class IMObjectCollector extends AbstractCollector<IMObject> {
-
-        private List<IMObject> result = new ArrayList<IMObject>();
-
-        public void collect(IMObject object) {
-            loader.load(object);
-            result.add(object);
-        }
-
-        protected List<IMObject> getRows() {
-            return result;
-        }
-    }
-
-    private abstract class AbstractNodeCollector<T>
-            extends AbstractCollector<T> {
-
-        private final Map<String, ArchetypeDescriptor> archetypes;
-        private final Collection<String> names;
-
-        public AbstractNodeCollector(Map<String, ArchetypeDescriptor> archetypes,
-                                     Collection<String> nodes) {
-            this.archetypes = archetypes;
-            this.names = nodes;
-        }
-
-        protected List<NodeDescriptor> getDescriptors(IMObject object) {
-            String shortName = object.getArchetypeId().getShortName();
-            ArchetypeDescriptor archetype = archetypes.get(shortName);
-            List<NodeDescriptor> nodes = new ArrayList<NodeDescriptor>();
-            for (String name : names) {
-                nodes.add(archetype.getNodeDescriptor(name));
-            }
-            return nodes;
-        }
-
-        protected Object loadValue(NodeDescriptor descriptor, IMObject object) {
-            Object value = descriptor.getValue(object);
-            if (value instanceof Collection) {
-                for (Object elt : (Collection) value) {
-                    if (elt instanceof IMObject) {
-                        loader.load((IMObject) elt);
-                    }
-                }
-            }
-            return value;
-        }
-
-    }
-
-    private class NodeCollector extends AbstractNodeCollector<NodeSet> {
-
-        private List<NodeSet> result = new ArrayList<NodeSet>();
-
-        public NodeCollector(Map<String, ArchetypeDescriptor> archetypes,
-                             Collection<String> nodes) {
-            super(archetypes, nodes);
-        }
-
-        public void collect(IMObject object) {
-            NodeSet nodes = new NodeSet(object.getObjectReference());
-            for (NodeDescriptor descriptor : getDescriptors(object)) {
-                Object value = loadValue(descriptor, object);
-                nodes.set(descriptor.getName(), value);
-            }
-            result.add(nodes);
-        }
-
-        protected List<NodeSet> getRows() {
-            return result;
-        }
-    }
-
-    private class IMObjectNodeCollector
-            extends AbstractNodeCollector<IMObject> {
-
-        private List<IMObject> result = new ArrayList<IMObject>();
-
-        public IMObjectNodeCollector(
-                Map<String, ArchetypeDescriptor> archetypes,
-                Collection<String> nodes) {
-            super(archetypes, nodes);
-        }
-
-        public void collect(IMObject object) {
-            for (NodeDescriptor descriptor : getDescriptors(object)) {
-                loadValue(descriptor, object);
-            }
-            result.add(object);
-        }
-
-        protected List<IMObject> getRows() {
-            return result;
-        }
-    }
-
     /**
      * Helper to map query parameters into a form used by hibernate.
      */
@@ -902,7 +687,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             }
         }
 
-        public String[]  getNames() {
+        public String[] getNames() {
             return names;
         }
 

@@ -18,23 +18,31 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import org.hibernate.HibernateException;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 
 
 /**
- * Loads an IMObject to avoid hibernate LazyInitializationExceptions.
+ * Default implementation of the {@link ObjectLoader} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectLoader {
+public class DefaultObjectLoader extends AbstractObjectLoader {
 
     /**
-     * Loads an object.
-     *
-     * @param object the object to load
-     * @throws HibernateException for any hibernate error
+     * No-op loader.
      */
-    void load(IMObject object);
+    private static final ObjectLoader NO_OP = new NoOpObjectLoader();
+
+
+    /**
+     * Constructs a new <code>DefaultObjectLoader</code>.
+     */
+    public DefaultObjectLoader() {
+        setLoader(ActRelationship.class.getName(), NO_OP);
+        setLoader(EntityRelationship.class.getName(), NO_OP);
+        setLoader(LookupRelationship.class.getName(), NO_OP);
+    }
 }

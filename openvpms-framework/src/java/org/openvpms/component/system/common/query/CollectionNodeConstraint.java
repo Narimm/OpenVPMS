@@ -20,8 +20,6 @@
 package org.openvpms.component.system.common.query;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
@@ -32,39 +30,12 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class CollectionNodeConstraint implements IConstraintContainer {
-
-    /**
-     * How to join with the outer table.
-     */
-    public enum JoinType {
-        None,
-        InnerJoin,
-        LeftOuterJoin,
-        RightOuterJoin
-    }
-
-    /**
-     * Default SUID.
-     */
-    private static final long serialVersionUID = 1L;
+public class CollectionNodeConstraint extends JoinConstraint {
 
     /**
      * The node name.
      */
     private final String nodeName;
-
-    /**
-     * The join type. Defaults to <code>InnerJoin</code>.
-     */
-    private JoinType joinType = JoinType.InnerJoin;
-
-
-    /**
-     * The archetype constraint associated with this collection
-     * node.
-     */
-    private BaseArchetypeConstraint archetypeConstraint;
 
 
     /**
@@ -156,37 +127,12 @@ public class CollectionNodeConstraint implements IConstraintContainer {
      */
     public CollectionNodeConstraint(String nodeName,
                                     BaseArchetypeConstraint constraint) {
+        super(constraint);
         if (StringUtils.isEmpty(nodeName)) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.MustSpecifyNodeName);
         }
         this.nodeName = nodeName;
-        this.archetypeConstraint = constraint;
-    }
-
-    /**
-     * Returns the archetype constraint.
-     *
-     * @return the archetype constraint
-     */
-    public BaseArchetypeConstraint getArchetypeConstraint() {
-        return archetypeConstraint;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.query.IConstraintContainer#add(org.openvpms.component.system.common.query.IConstraint)
-     */
-    public CollectionNodeConstraint add(IConstraint constraint) {
-        this.archetypeConstraint.add(constraint);
-        return this;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.query.IConstraintContainer#remove(org.openvpms.component.system.common.query.IConstraint)
-     */
-    public CollectionNodeConstraint remove(IConstraint constraint) {
-        this.archetypeConstraint.remove(constraint);
-        return this;
     }
 
     /**
@@ -199,64 +145,27 @@ public class CollectionNodeConstraint implements IConstraintContainer {
     }
 
     /**
-     * Returns the join type.
+     * Add the specified constraint to the container.
      *
-     * @return the join type
+     * @param constraint the constraint to add
+     * @return this constraint
      */
-    public JoinType getJoinType() {
-        return joinType;
-    }
-
-    /**
-     * Sets the join type.
-     *
-     * @param joinType the join type
-     */
-    public CollectionNodeConstraint setJoinType(JoinType joinType) {
-        this.joinType = joinType;
+    @Override
+    public CollectionNodeConstraint add(IConstraint constraint) {
+        super.add(constraint);
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
+    /**
+     * Remove the specified constraint from the container.
+     *
+     * @param constraint the constraint to remove
+     * @return this constraint
      */
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-
-        if (!(obj instanceof CollectionNodeConstraint)) {
-            return false;
-        }
-
-        CollectionNodeConstraint rhs = (CollectionNodeConstraint) obj;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(rhs))
-                .append(nodeName, rhs.nodeName)
-                .append(archetypeConstraint, rhs.archetypeConstraint)
-                .isEquals();
+    public CollectionNodeConstraint remove(IConstraint constraint) {
+        super.remove(constraint);
+        return this;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this)
-                .appendSuper(super.toString())
-                .append("nodeName", nodeName)
-                .append("archetypeConstraint", archetypeConstraint).toString();
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        CollectionNodeConstraint copy = (CollectionNodeConstraint) super.clone();
-        copy.archetypeConstraint = (BaseArchetypeConstraint) this.archetypeConstraint.clone();
-
-        return copy;
-    }
 }

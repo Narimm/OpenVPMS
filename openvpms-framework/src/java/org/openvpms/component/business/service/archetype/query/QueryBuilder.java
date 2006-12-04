@@ -36,7 +36,7 @@ import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.LinkConstraint;
+import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -87,6 +87,7 @@ public class QueryBuilder {
      * @return QueryContext the built hql
      */
     public QueryContext build(ArchetypeQuery query) {
+        select.clear();
         if ((query == null) ||
                 (query.getArchetypeConstraint() == null)) {
             throw new QueryBuilderException(
@@ -112,20 +113,28 @@ public class QueryBuilder {
         if (StringUtils.isEmpty(constraint.getNodeName())
                 && StringUtils.isEmpty(constraint.getAlias())) {
             throw new QueryBuilderException(
-                    InvalidQualifiedName);
+                    InvalidQualifiedName, constraint.getName());
         }
 
-        NodeDescriptor ndesc = getMatchingNodeDescriptor(
-                context.getTypeSet(constraint.getAlias()).getDescriptors(),
-                constraint.getNodeName());
-        if (ndesc == null) {
-            throw new QueryBuilderException(NoNodeDescriptorForName,
-                                            constraint.getNodeName());
+        TypeSet types = context.getTypeSet(constraint.getAlias());
+        if (types == null) {
+            throw new QueryBuilderException(
+                    InvalidQualifiedName, constraint.getName());
+        }
+        String property = null;
+        if (constraint.getNodeName() != null) {
+            NodeDescriptor ndesc = getMatchingNodeDescriptor(
+                    types.getDescriptors(), constraint.getNodeName());
+            if (ndesc == null) {
+                throw new QueryBuilderException(NoNodeDescriptorForName,
+                                                constraint.getNodeName());
+            }
+            // get the name of the attribute
+            property = getProperty(ndesc);
         }
 
-        // get the name of the attribute
-        String property = getProperty(ndesc);
-        context.addSelectConstraint(constraint.getAlias(), property);
+        context.addSelectConstraint(types.getAlias(), constraint.getNodeName(),
+                                    property);
     }
 
     /**
@@ -496,10 +505,10 @@ public class QueryBuilder {
      * @param constraint the link constraint
      * @param context    the query context
      */
-    private void process(LinkConstraint constraint, QueryContext context) {
-        String source = getAliasOrQualifiedName(constraint.getSourceLink(),
+    private void process(IdConstraint constraint, QueryContext context) {
+        String source = getAliasOrQualifiedName(constraint.getSourceName(),
                                                 context);
-        String target = getAliasOrQualifiedName(constraint.getTargetLink(),
+        String target = getAliasOrQualifiedName(constraint.getTargetName(),
                                                 context);
         context.addPropertyWhereConstraint(source + ".linkId",
                                            constraint.getOperator(),
@@ -768,8 +777,8 @@ public class QueryBuilder {
             process((NodeConstraint) constraint, context);
         } else if (constraint instanceof ObjectRefNodeConstraint) {
             process((ObjectRefNodeConstraint) constraint, context);
-        } else if (constraint instanceof LinkConstraint) {
-            process((LinkConstraint) constraint, context);
+        } else if (constraint instanceof IdConstraint) {
+            process((IdConstraint) constraint, context);
         } else if (constraint instanceof AndConstraint) {
             process((AndConstraint) constraint, context);
         } else if (constraint instanceof OrConstraint) {
@@ -789,7 +798,8 @@ public class QueryBuilder {
      * Returns a property name for a node name, qualified by its type alias.
      *
      * @param nodeName the node name
-     * @param alias    the type alias. if <code>null</code> uses the current type
+     * @param alias    the type alias. If <code>null</code> uses the current
+     *                 type
      * @param context  the query context
      * @return the property corresponding to <code>name</code> prefixed with
      *         the type alias

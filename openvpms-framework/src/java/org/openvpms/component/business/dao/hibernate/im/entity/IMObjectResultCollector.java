@@ -18,31 +18,30 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
- * Default implementation of the {@link IMObjectLoader} interface.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DefaultIMObjectLoader extends AbstractIMObjectLoader {
+class IMObjectResultCollector extends HibernateResultCollector<IMObject> {
 
-    /**
-     * No-op loader.
-     */
-    private static final IMObjectLoader NO_OP = new NoOpIMObjectLoader();
+    private List<IMObject> result = new ArrayList<IMObject>();
 
+    public void collect(Object object) {
+        if (object instanceof IMObject) {
+            getLoader().load(object);
+            result.add((IMObject) object);
+        }
+    }
 
-    /**
-     * Constructs a new <code>DefaultIMObjectLoader</code>.
-     */
-    public DefaultIMObjectLoader() {
-        setLoader(ActRelationship.class.getName(), NO_OP);
-        setLoader(EntityRelationship.class.getName(), NO_OP);
-        setLoader(LookupRelationship.class.getName(), NO_OP);
+    protected List<IMObject> getResults() {
+        return result;
     }
 }

@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.service.archetype.query;
+package org.openvpms.component.system.common.query;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -52,7 +52,7 @@ public class NodeSet implements Serializable {
 
 
     /**
-     * Constructs  a new <code>NodeSet</code>.
+     * Constructs a new <code>NodeSet</code>.
      *
      * @param reference a reference to the object that the nodes belong to.
      */
@@ -86,9 +86,9 @@ public class NodeSet implements Serializable {
     }
 
     /**
-     * Sets the value of a node.
+     * Adds a node.
      *
-     * @param name  the node name
+     * @param name  the  node name
      * @param value the node value
      */
     public void set(String name, Object value) {

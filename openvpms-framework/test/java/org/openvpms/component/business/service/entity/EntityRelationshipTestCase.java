@@ -23,7 +23,6 @@ package org.openvpms.component.business.service.entity;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.ServiceBaseTestCase;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
@@ -399,8 +398,8 @@ public class EntityRelationshipTestCase extends
 
         rel.setActiveStartTime(new Date());
         rel.setSequence(1);
-        rel.setSource(new IMObjectReference(source));
-        rel.setTarget(new IMObjectReference(target));
+        rel.setSource(source.getObjectReference());
+        rel.setTarget(target.getObjectReference());
 
         return rel;
 

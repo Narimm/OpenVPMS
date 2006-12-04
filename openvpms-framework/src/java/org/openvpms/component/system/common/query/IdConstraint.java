@@ -27,49 +27,55 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-04-05 06:11:15Z $
  */
-public class LinkConstraint implements IConstraint {
+public class IdConstraint implements IConstraint {
 
     /**
      * Default SUID.
      */
     private static final long serialVersionUID = 1L;
 
-    private final String sourceLink;
+    /**
+     * The source name. May be a type alias or fully qualified node name.
+     */
+    private final String sourceName;
 
-    private final String targetLink;
+    /**
+     * The target name. May be a type alias or fully qualified node name.
+     */
+    private final String targetName;
 
 
     /**
      * Construct a constraint on the specified nodes.
      *
-     * @param sourceLink the source link name. May be a type alias or fully
-     *                   qualified node name
-     * @param targetLink the target link name. May be a type alias or fully
-     *                   qualified node name
+     * @param source the source name. May be a type alias or fully qualified
+     *               node name
+     * @param target the target name. May be a type alias or fully qualified
+     *               node name
      */
-    public LinkConstraint(String sourceLink, String targetLink) {
-        this.sourceLink = sourceLink;
-        this.targetLink = targetLink;
+    public IdConstraint(String source, String target) {
+        this.sourceName = source;
+        this.targetName = target;
     }
 
     /**
-     * Returns the source link name. This may be a type alias or fully qualified
+     * Returns the source name. This may be a type alias or fully qualified
+     * node name.
+     *
+     * @return the source name
+     */
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    /**
+     * Returns the target name. This may be a type alias or fully qualified
      * node name.
      *
      * @return the source link name
      */
-    public String getSourceLink() {
-        return sourceLink;
-    }
-
-    /**
-     * Returns the target link name. This may be a type alias or fully qualified
-     * node name.
-     *
-     * @return the source link name
-     */
-    public String getTargetLink() {
-        return targetLink;
+    public String getTargetName() {
+        return targetName;
     }
 
     public RelationalOp getOperator() {
