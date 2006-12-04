@@ -134,6 +134,12 @@
       user where user.name = :name
     ]]>
   </query>
+  <query name="user.getByUserName">
+    <![CDATA[
+      from org.openvpms.component.business.domain.im.security.User as 
+      user where user.username = :name
+    ]]>
+  </query>
 
   <query name="product.getRowCount">
     <![CDATA[

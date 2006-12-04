@@ -21,16 +21,14 @@ package org.openvpms.component.business.service.security;
 
 // java core
 
+import java.util.List;
+
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.business.dao.im.security.IUserDAO;
+import org.openvpms.component.business.domain.im.security.User;
 import org.springframework.dao.DataAccessException;
-
-import java.util.List;
 
 
 /**
@@ -44,29 +42,39 @@ import java.util.List;
 public class UserService implements UserDetailsService {
 
     /**
-     * The archetype service to use.
+     * The DAO used for persisting records
      */
-    private IArchetypeService service;
-
-
+    private IUserDAO dao;
+    
     /**
      * Constructs a new <code>UserService</code.
      *
      * @param service the archetype service to use
      */
-    public UserService(IArchetypeService service) {
-        this.service = service;
+    public UserService(IUserDAO dao) {
+        this.dao = dao;
     }
 
-    /* (non-Javadoc)
+	public IUserDAO getDao() {
+		return dao;
+	}
+
+	public void setDao(IUserDAO dao) {
+		this.dao = dao;
+	}
+
+	/* (non-Javadoc)
     * @see org.acegisecurity.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
     */
     public UserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException, DataAccessException {
-
-        ArchetypeQuery query = new ArchetypeQuery("security.user", true, true);
-        query.add(new NodeConstraint("username", username));
-        List<IMObject> users = service.get(query).getResults();
+    	List<User> users = null;
+    	try {
+            users = dao.getByUserName(username);    		
+    	} catch (Exception exception) {
+            throw new UsernameNotFoundException("User: " + username +
+            " is invalid.");    		
+    	}
         if (users.isEmpty()) {
             throw new UsernameNotFoundException("User: " + username +
                     " is invalid.");
@@ -77,4 +85,5 @@ public class UserService implements UserDetailsService {
 
         return (UserDetails) users.get(0);
     }
+
 }
