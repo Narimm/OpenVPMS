@@ -17,32 +17,4 @@
 		<data collection="roles" archetype="security.role" childId="id:ROLE1" />
 		<data collection="classifications" archetype="classification.userType" childId="id:Clinician" />    
 	</data>
-	<data id="AT" archetype="security.user" username="aturner" name="Andrew Turner" password="At"  >
-		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
-		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
-	</data>
-	<data id="CB" archetype="security.user" username="cbarton" name="Chris Barton" password="Cb"  >
-		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
-		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
-	</data>
-	<data id="JG" archetype="security.user" username="jgalbally" name="Joseph Galbally" password="Jg"  >
-		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
-		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
-	</data>
-	<data id="JM" archetype="security.user" username="jmoody" name="John Moody" password="Jm"  >
-		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
-		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
-	</data>
-	<data id="RC" archetype="security.user" username="rconsult" name="Routine Consultations" password="Rc"  >
-		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
-		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
-	</data>
-	<data id="RH" archetype="security.user" username="hospapp" name="Hospital Appointments" password="Rh"  >
-		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
-		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
-	</data>
-	<data id="SC" archetype="security.user" username="scraddock" name="Susanne Craddock" password="Sc"  >
-		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
-		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
-	</data>
 </archetype>
