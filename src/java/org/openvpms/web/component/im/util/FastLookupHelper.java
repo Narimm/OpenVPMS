@@ -27,7 +27,9 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -47,6 +49,7 @@ public class FastLookupHelper {
      * Return a list of lookups for the specified {@link NodeDescriptor}.
      *
      * @param descriptor the node descriptor
+     * @return the list of lookups associated with the descriptor
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
@@ -56,10 +59,38 @@ public class FastLookupHelper {
                                 descriptor, nodes);
     }
 
+    /**
+     * Return a list of lookups for the specified {@link NodeDescriptor}
+     * and context.
+     *
+     * @param descriptor the node descriptor
+     * @param context    the context object
+     * @return the list of lookups associated with the descriptor
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws LookupHelperException     if the lookup is incorrectly specified
+     */
     public static List<Lookup> getLookups(NodeDescriptor descriptor,
                                           IMObject context) {
         List<String> nodes = Arrays.asList("code", "name");
         return LookupHelper.get(ArchetypeServiceHelper.getArchetypeService(),
                                 descriptor, context, nodes);
+    }
+
+    /**
+     * Returns a map of lookup codes to lookup names for the specified
+     * {@link NodeDescriptor}.
+     *
+     * @param descriptor the node descriptor
+     * @return a map of lookup codes to lookup names
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws LookupHelperException     if the lookup is incorrectly specified
+     */
+    public static Map<String, String> getLookupNames(
+            NodeDescriptor descriptor) {
+        Map<String, String> result = new HashMap<String, String>();
+        for (Lookup lookup : getLookups(descriptor)) {
+            result.put(lookup.getCode(), lookup.getName());
+        }
+        return result;
     }
 }

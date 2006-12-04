@@ -68,7 +68,7 @@ public class PaymentWorkspace extends CustomerFinancialActWorkspace {
      * @param customer the customer to query acts for
      * @return a new query
      */
-    protected ActQuery createQuery(Party customer) {
+    protected ActQuery<Act> createQuery(Party customer) {
         String[] statuses = {FinancialActStatus.IN_PROGRESS,
                              FinancialActStatus.ON_HOLD};
         return new DefaultActQuery(customer, "customer",

@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.customer;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -65,7 +66,7 @@ public class EstimationWorkspace extends CustomerFinancialActWorkspace {
      * @param customer the customer to query acts for
      * @return a new query
      */
-    protected ActQuery createQuery(Party customer) {
+    protected ActQuery<Act> createQuery(Party customer) {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.customerEstimation");

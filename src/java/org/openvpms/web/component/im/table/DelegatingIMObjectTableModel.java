@@ -18,32 +18,18 @@
 
 package org.openvpms.web.component.im.table;
 
-import nextapp.echo2.app.event.TableModelEvent;
-import nextapp.echo2.app.event.TableModelListener;
-import nextapp.echo2.app.table.AbstractTableModel;
-import nextapp.echo2.app.table.TableColumnModel;
-import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.SortConstraint;
-
-import java.util.List;
 
 
 /**
- * IMObjectTableModel that delegates to another.
+ * An <code>IMObjectTableModel</code> that delegates to another.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class DelegatingIMObjectTableModel<T extends IMObject,
         K extends IMObject>
-        extends AbstractTableModel
-        implements IMObjectTableModel<T> {
-
-    /**
-     * The model to delegate to.
-     */
-    private IMObjectTableModel<K> _model;
+        extends DelegatingIMTableModel<T, K> implements IMObjectTableModel<T> {
 
     /**
      * Constructs a new <code>DelegatingIMObjectTableModel</code>.
@@ -57,181 +43,7 @@ public abstract class DelegatingIMObjectTableModel<T extends IMObject,
      * @param model the model to delegate to
      */
     public DelegatingIMObjectTableModel(IMObjectTableModel<K> model) {
-        setModel(model);
-    }
-
-    /**
-     * Returns the number of columns in the table.
-     *
-     * @return the column count
-     */
-    public int getColumnCount() {
-        return _model.getColumnCount();
-    }
-
-    /**
-     * Returns the most-specific class of objects found in a given table
-     * column.  Every object in the specified column must be an instance
-     * of the returned class.
-     *
-     * @see TableModel#getColumnClass(int)
-     */
-    @Override
-    public Class getColumnClass(int column) {
-        return _model.getColumnClass(column);
-    }
-
-    /**
-     * Returns the name of the specified column number.
-     *
-     * @param column the column index (0-based)
-     * @return the column name
-     */
-    @Override
-    public String getColumnName(int column) {
-        return _model.getColumnName(column);
-    }
-
-    /**
-     * Returns the number of rows in the table.
-     *
-     * @return the row count
-     */
-    public int getRowCount() {
-        return _model.getRowCount();
-    }
-
-    /**
-     * Returns the value found at the given coordinate within the table.
-     * Column and row values are 0-based.
-     * <strong>WARNING: Take note that the column is the first parameter
-     * passed to this method, and the row is the second parameter.</strong>
-     *
-     * @param column the column index (0-based)
-     * @param row    the row index (0-based)
-     */
-    public Object getValueAt(int column, int row) {
-        return _model.getValueAt(column, row);
-    }
-
-    /**
-     * @see TableModel#addTableModelListener(TableModelListener)
-     */
-    public void addTableModelListener(TableModelListener l) {
-        _model.addTableModelListener(l);
-    }
-
-    /**
-     * @see TableModel#removeTableModelListener(TableModelListener)
-     */
-    public void removeTableModelListener(TableModelListener l) {
-        _model.removeTableModelListener(l);
-    }
-
-    /**
-     * Returns the objects being displayed.
-     *
-     * @return the objects being displayed
-     */
-    public List<T> getObjects() {
-        return convertFrom(_model.getObjects());
-    }
-
-    /**
-     * Sets the objects to display.
-     *
-     * @param objects the objects to display
-     */
-    public void setObjects(List<T> objects) {
-        _model.setObjects(convertTo(objects));
-    }
-
-    /**
-     * Returns the column model.
-     *
-     * @return the column model
-     */
-    public TableColumnModel getColumnModel() {
-        return _model.getColumnModel();
-    }
-
-    /**
-     * Returns the sort criteria.
-     *
-     * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
-     * @return the sort criteria, or <code>null</code> if the column isn't
-     *         sortable
-     */
-    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-        return _model.getSortConstraints(column, ascending);
-    }
-
-    /**
-     * Determines if selection should be enabled.
-     *
-     * @return <code>true</code> if selection should be enabled; otherwise
-     *         <code>false</code>
-     */
-    public boolean getEnableSelection() {
-        return _model.getEnableSelection();
-    }
-
-    /**
-     * Sets the model to delegate to.
-     *
-     * @param model the model to delegate to
-     */
-    protected void setModel(IMObjectTableModel<K> model) {
-        _model = model;
-        _model.addTableModelListener(new TableModelListener() {
-            public void tableChanged(TableModelEvent event) {
-                notifyListeners(event);
-            }
-        });
-    }
-
-    /**
-     * Returns the model to delegate to.
-     *
-     * @return the model
-     */
-    protected IMObjectTableModel<K> getModel() {
-        return _model;
-    }
-
-    /**
-     * Notify listeners of an update to the underlying table.
-     *
-     * @param event the event
-     */
-    protected void notifyListeners(TableModelEvent event) {
-        if (event.getType() == TableModelEvent.STRUCTURE_CHANGED) {
-            fireTableStructureChanged();
-        } else {
-            fireTableDataChanged();
-        }
-    }
-
-    /**
-     * Converts to the delegate type. This implementation does a simple cast.
-     *
-     * @param list the list to convert
-     * @return the converted list
-     */
-    protected List<K> convertTo(List<T> list) {
-        return (List<K>) list;
-    }
-
-    /**
-     * Converts from the delegate type. This implementation does a simple cast.
-     *
-     * @param list the list to convert
-     * @return the converted list
-     */
-    protected List<T> convertFrom(List<K> list) {
-        return (List<T>) list;
+        super(model);
     }
 
 }

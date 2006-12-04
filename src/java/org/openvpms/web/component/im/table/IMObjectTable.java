@@ -18,11 +18,7 @@
 
 package org.openvpms.web.component.im.table;
 
-import nextapp.echo2.app.Table;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.table.EvenOddTableCellRenderer;
-
-import java.util.List;
 
 
 /**
@@ -31,12 +27,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class IMObjectTable<T extends IMObject> extends Table {
-
-    /**
-     * IMObject table model.
-     */
-    private final IMObjectTableModel<T> _model;
+public class IMObjectTable<T extends IMObject> extends IMTable<T> {
 
     /**
      * Construct a new <code>IMObjectTable</code>.
@@ -51,62 +42,7 @@ public class IMObjectTable<T extends IMObject> extends Table {
      * @param model the table model
      */
     public IMObjectTable(IMObjectTableModel<T> model) {
-        _model = model;
-        setStyleName("default");
-        setAutoCreateColumnsFromModel(false);
-        setSelectionEnabled(model.getEnableSelection());
-        setRolloverEnabled(model.getEnableSelection());
-        setModel(model);
-        setColumnModel(model.getColumnModel());
-        setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
-    }
-
-    /**
-     * Sets the objects to display in the table.
-     *
-     * @param objects the objects to display
-     */
-    public void setObjects(List<T> objects) {
-        _model.setObjects(objects);
-    }
-
-    /**
-     * Returns the objects displayed in the table.
-     *
-     * @return the object being displayed.
-     */
-    public List<T> getObjects() {
-        return _model.getObjects();
-    }
-
-    /**
-     * Returns the selected object.
-     *
-     * @return the selected object, or <code>null</code> if no object is
-     *         selected
-     */
-    public T getSelected() {
-        T result = null;
-        int index = getSelectionModel().getMinSelectedIndex();
-        if (index != -1) {
-            List<T> objects = _model.getObjects();
-            if (index < objects.size()) {
-                result = objects.get(index);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Sets the selected object.
-     *
-     * @param object the object to select
-     */
-    public void setSelected(T object) {
-        int index = getObjects().indexOf(object);
-        if (index != -1) {
-            getSelectionModel().setSelectedIndex(index, true);
-        }
+        super(model);
     }
 
 }

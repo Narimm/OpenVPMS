@@ -34,8 +34,8 @@ import org.openvpms.web.component.util.CollectionHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 
 /**
@@ -44,42 +44,42 @@ import java.util.ListIterator;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class ActQuery extends AbstractQuery<Act> {
+public abstract class ActQuery<T> extends AbstractQuery<T> {
 
     /**
      * The participant node name.
      */
-    private final String _participant;
+    private final String participant;
 
     /**
      * The entity participation short name;
      */
-    private final String _participation;
+    private final String participation;
 
     /**
      * The id of the entity to search for.
      */
-    private IMObjectReference _entityId;
+    private IMObjectReference entityId;
 
     /**
      * Short names which are always queried on.
      */
-    private String[] _requiredShortNames;
+    private String[] requiredShortNames;
 
     /**
      * The statuses to query on.
      */
-    private String[] _statuses;
+    private String[] statuses;
 
     /**
      * The act status lookups.
      */
-    private final List<Lookup> _statusLookups;
+    private final List<Lookup> statusLookups;
 
     /**
      * Status to exclude. May be <code>null</code>
      */
-    private final String _excludeStatus;
+    private final String excludeStatus;
 
 
     /**
@@ -98,23 +98,11 @@ public abstract class ActQuery extends AbstractQuery<Act> {
                     List<Lookup> statusLookups, String excludeStatus) {
         super(null, entityName, conceptName);
         setEntity(entity);
-        _participant = participant;
-        _participation = participation;
-        _excludeStatus = excludeStatus;
-        if (_excludeStatus != null) {
-            _statusLookups = new ArrayList<Lookup>(statusLookups);
-            for (ListIterator<Lookup> iterator = _statusLookups.listIterator();
-                 iterator.hasNext();) {
-                Lookup lookup = iterator.next();
-                if (lookup.getCode().equals(_excludeStatus)) {
-                    iterator.remove();
-                }
-            }
-        } else {
-            _statusLookups = statusLookups;
-        }
-        _statuses = new String[0];
-        QueryFactory.initialise(this);
+        this.participant = participant;
+        this.participation = participation;
+        this.excludeStatus = excludeStatus;
+        this.statusLookups = getStatusLookups(statusLookups, excludeStatus);
+        statuses = new String[0];
     }
 
     /**
@@ -132,23 +120,11 @@ public abstract class ActQuery extends AbstractQuery<Act> {
                     String excludeStatus) {
         super(shortNames);
         setEntity(entity);
-        _participant = participant;
-        _participation = participation;
-        _excludeStatus = excludeStatus;
-        if (_excludeStatus != null) {
-            _statusLookups = new ArrayList<Lookup>(statusLookups);
-            for (ListIterator<Lookup> iterator = _statusLookups.listIterator();
-                 iterator.hasNext();) {
-                Lookup lookup = iterator.next();
-                if (lookup.getCode().equals(_excludeStatus)) {
-                    iterator.remove();
-                }
-            }
-        } else {
-            _statusLookups = statusLookups;
-        }
-        _statuses = new String[0];
-        QueryFactory.initialise(this);
+        this.participant = participant;
+        this.participation = participation;
+        this.excludeStatus = excludeStatus;
+        this.statusLookups = getStatusLookups(statusLookups, excludeStatus);
+        statuses = new String[0];
     }
 
     /**
@@ -166,12 +142,11 @@ public abstract class ActQuery extends AbstractQuery<Act> {
                     String entityName, String conceptName, String status) {
         super(null, entityName, conceptName);
         setEntity(entity);
-        _participant = participant;
-        _participation = participation;
-        _statuses = new String[]{status};
-        _statusLookups = null;
-        _excludeStatus = null;
-        QueryFactory.initialise(this);
+        this.participant = participant;
+        this.participation = participation;
+        statuses = new String[]{status};
+        statusLookups = null;
+        excludeStatus = null;
     }
 
     /**
@@ -188,12 +163,11 @@ public abstract class ActQuery extends AbstractQuery<Act> {
                     String[] shortNames, String[] statuses) {
         super(shortNames);
         setEntity(entity);
-        _participant = participant;
-        _participation = participation;
-        _statuses = statuses;
-        _statusLookups = null;
-        _excludeStatus = null;
-        QueryFactory.initialise(this);
+        this.participant = participant;
+        this.participation = participation;
+        this.statuses = statuses;
+        statusLookups = null;
+        excludeStatus = null;
     }
 
     /**
@@ -202,7 +176,7 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      * @param entity the entity to search for. May be <code>null</code>
      */
     public void setEntity(Entity entity) {
-        _entityId = (entity != null) ? entity.getObjectReference() : null;
+        entityId = (entity != null) ? entity.getObjectReference() : null;
     }
 
     /**
@@ -223,7 +197,7 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      * @param shortNames the short names. May be <code>null</code>
      */
     public void setRequiredShortNames(String[] shortNames) {
-        _requiredShortNames = shortNames;
+        requiredShortNames = shortNames;
     }
 
     /**
@@ -233,9 +207,9 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      */
     public void setStatus(String status) {
         if (status == null) {
-            _statuses = new String[0];
+            statuses = new String[0];
         } else {
-            _statuses = new String[]{status};
+            statuses = new String[]{status};
         }
     }
 
@@ -246,25 +220,25 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      * @return the query result set. May be <code>null</code>
      */
     @Override
-    public ResultSet<Act> query(SortConstraint[] sort) {
-        ResultSet<Act> result = null;
+    public ResultSet<T> query(SortConstraint[] sort) {
+        ResultSet<T> result = null;
 
-        if (_entityId != null) {
+        if (entityId != null) {
             result = createResultSet(sort);
         }
         return result;
     }
 
     /**
-     * Returns the archetype constraint.
+     * Returns the archetypes to select from.
      *
-     * @return the archetype constraint
+     * @return the archetypes to select from
      */
     @Override
-    public BaseArchetypeConstraint getArchetypeConstraint() {
+    public BaseArchetypeConstraint getArchetypes() {
         BaseArchetypeConstraint result;
-        BaseArchetypeConstraint archetype = super.getArchetypeConstraint();
-        if (_requiredShortNames == null) {
+        BaseArchetypeConstraint archetype = super.getArchetypes();
+        if (requiredShortNames == null) {
             result = archetype;
         } else {
             // need to add the required short names
@@ -279,35 +253,28 @@ public abstract class ActQuery extends AbstractQuery<Act> {
                 shortNames = snc.getShortNames();
             }
             shortNames = CollectionHelper.concat(shortNames,
-                                                 _requiredShortNames);
+                                                 requiredShortNames);
             result = new ShortNameConstraint(shortNames, true, true);
         }
         return result;
     }
 
     /**
-     * Creates a new result set.
-     *
-     * @param sort the sort constraint. May be <code>null</code>
-     * @return a new result set
-     */
-    protected abstract ResultSet<Act> createResultSet(SortConstraint[] sort);
-
-    /**
      * Returns the archetypes to query, based on whether a short name has been
-     * selected or not.
+     * selected or not. The constraint alias is set to 'act'.
      *
      * @return the archetypes to query
      */
-    protected BaseArchetypeConstraint getArchetypes() {
+    protected BaseArchetypeConstraint getArchetypeConstraint() {
         BaseArchetypeConstraint archetypes;
         String type = getShortName();
 
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
-            archetypes = getArchetypeConstraint();
+            archetypes = getArchetypes();
         } else {
             archetypes = getArchetypeConstraint(type);
         }
+        archetypes.setAlias("act");
         return archetypes;
     }
 
@@ -317,7 +284,7 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      * @return the participant constraint
      */
     protected ParticipantConstraint getParticipantConstraint() {
-        return new ParticipantConstraint(_participant, _participation,
+        return new ParticipantConstraint(participant, participation,
                                          getEntityId());
     }
 
@@ -330,14 +297,14 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      */
     protected BaseArchetypeConstraint getArchetypeConstraint(String shortName) {
         BaseArchetypeConstraint result;
-        if (_requiredShortNames == null) {
+        if (requiredShortNames == null) {
             ArchetypeDescriptor archetype
                     = DescriptorHelper.getArchetypeDescriptor(shortName);
             ArchetypeId id = new ArchetypeId(archetype.getName());
             result = new LongNameConstraint(
                     null, id.getEntityName(), id.getConcept(), true, true);
         } else {
-            String[] shortNames = CollectionHelper.concat(_requiredShortNames,
+            String[] shortNames = CollectionHelper.concat(requiredShortNames,
                                                           shortName);
             result = new ShortNameConstraint(shortNames, true, true);
         }
@@ -350,7 +317,7 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      * @return the entity reference
      */
     protected IMObjectReference getEntityId() {
-        return _entityId;
+        return entityId;
     }
 
     /**
@@ -377,7 +344,7 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      * @return the act status lookups. May be <code>null</code>
      */
     protected List<Lookup> getStatusLookups() {
-        return _statusLookups;
+        return statusLookups;
     }
 
     /**
@@ -387,10 +354,10 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      */
     protected String[] getStatuses() {
         String[] statuses;
-        if (_excludeStatus != null) {
-            statuses = new String[]{_excludeStatus};
+        if (excludeStatus != null) {
+            statuses = new String[]{excludeStatus};
         } else {
-            statuses = _statuses;
+            statuses = this.statuses;
         }
         return statuses;
     }
@@ -402,7 +369,34 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      *         {@link #getStatuses()} ; otherwise include them.
      */
     protected boolean excludeStatuses() {
-        return _excludeStatus != null;
+        return excludeStatus != null;
     }
 
+    /**
+     * Helper to return a list of status lookups with, with the lookup with
+     * the specified code removed.
+     *
+     * @param lookups the lookups
+     * @param code    the code of the lookup to be removed.
+     *                May be <code>null</code>
+     * @return a copy of the source list with the code removed, or the source
+     *         list if <code>code>code> is null
+     */
+    private List<Lookup> getStatusLookups(List<Lookup> lookups,
+                                          String code) {
+        List<Lookup> result;
+        if (code != null) {
+            result = new ArrayList<Lookup>(lookups);
+            for (Iterator<Lookup> i = result.listIterator(); i.hasNext();) {
+                Lookup lookup = i.next();
+                if (lookup.getCode().equals(code)) {
+                    i.remove();
+                    break;
+                }
+            }
+        } else {
+            result = lookups;
+        }
+        return result;
+    }
 }

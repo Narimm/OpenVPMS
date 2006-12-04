@@ -41,7 +41,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaskQuery extends WorkflowQuery {
+public class TaskQuery extends WorkflowQuery<Act> {
 
     /**
      * Construct a new <code>AppointmentQuery</code>.
@@ -51,6 +51,20 @@ public class TaskQuery extends WorkflowQuery {
     public TaskQuery(Party schedule) {
         super(schedule, "worklist", "participation.worklist",
               new String[]{"act.customerTask"}, new String[0]);
+    }
+
+    /**
+     * Performs the query.
+     *
+     * @param sort the sort constraint. May be <code>null</code>
+     * @return the query result set. May be <code>null</code>
+     */
+    @Override
+    public ResultSet<Act> query(SortConstraint[] sort) {
+        if (getEntityId() != null && getClinician() != INVALID_CLINICIAN) {
+            return createResultSet(sort);
+        }
+        return null;
     }
 
     /**
@@ -71,7 +85,7 @@ public class TaskQuery extends WorkflowQuery {
         or.add(overlapStart);
         or.add(overlapEnd);
 
-        return new ActResultSet(participants, getArchetypes(), or,
+        return new ActResultSet(participants, getArchetypeConstraint(), or,
                                 getStatuses(), excludeStatuses(),
                                 getConstraints(), ArchetypeQuery.ALL_RESULTS,
                                 sort);

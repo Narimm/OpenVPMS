@@ -53,7 +53,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DefaultActQuery extends ActQuery {
+public class DefaultActQuery extends ActQuery<Act> {
 
     /**
      * Determines if acts should be filtered on type.
@@ -138,6 +138,7 @@ public class DefaultActQuery extends ActQuery {
         super(entity, participant, participation, entityName, conceptName,
               statusLookups, excludeStatus);
         _selectType = false;
+        QueryFactory.initialise(this);
     }
 
     /**
@@ -158,6 +159,7 @@ public class DefaultActQuery extends ActQuery {
         super(entity, participant, participation, shortNames, statusLookups,
               excludeStatus);
         _selectType = true;
+        QueryFactory.initialise(this);
     }
 
     /**
@@ -177,6 +179,7 @@ public class DefaultActQuery extends ActQuery {
         super(entity, participant, participation, entityName, conceptName,
               status);
         _selectType = true;
+        QueryFactory.initialise(this);
     }
 
     /**
@@ -194,6 +197,7 @@ public class DefaultActQuery extends ActQuery {
                            String[] statuses) {
         super(entity, participant, participation, shortNames, statuses);
         _selectType = true;
+        QueryFactory.initialise(this);
     }
 
     /**
@@ -330,10 +334,11 @@ public class DefaultActQuery extends ActQuery {
      * @return a new result set
      */
     protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
-        return new ActResultSet(getParticipantConstraint(), getArchetypes(),
+        return new ActResultSet(getParticipantConstraint(),
+                                getArchetypeConstraint(),
                                 getStartFrom(), getStartTo(), getStatuses(),
                                 excludeStatuses(), getConstraints(),
-                                getMaxRows(), sort);
+                                getMaxResults(), sort);
     }
 
 

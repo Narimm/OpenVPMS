@@ -52,7 +52,7 @@ public class SummaryTableCellRenderer extends AbstractTableCellRenderer {
     protected String getStyle(Table table, Object value, int column, int row) {
         String style = DEFAULT_STYLE;
         if (table instanceof IMObjectTable) {
-            style = getStyle((IMObjectTable<IMObject>) table, row);
+            style = getStyle((IMObjectTable) table, row);
         }
         return style;
     }

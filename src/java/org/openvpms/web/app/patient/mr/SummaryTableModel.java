@@ -31,13 +31,12 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.ErrorHelper;
@@ -73,14 +72,13 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
     /**
      * Returns the value found at the given coordinate within the table.
      *
-     * @param object the object
+     * @param act    the object
      * @param column the column
      * @param row    the row
      * @return the value at the given coordinate.
      */
-    protected Object getValue(IMObject object, int column, int row) {
+    protected Object getValue(Act act, int column, int row) {
         Object result = null;
-        Act act = (Act) object;
         try {
             if (TypeHelper.isA(act, "act.patientClinicalEvent")) {
                 result = formatEvent(act);

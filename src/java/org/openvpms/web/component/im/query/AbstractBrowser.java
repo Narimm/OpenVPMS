@@ -23,7 +23,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -39,29 +38,28 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractBrowser<T extends IMObject>
-        implements Browser<T> {
+public abstract class AbstractBrowser<T> implements Browser<T> {
 
     /**
      * The query object.
      */
-    private final Query<T> _query;
+    private final Query<T> query;
 
     /**
      * The sort criteria. May be <code>null</code>
      */
-    private SortConstraint[] _sort;
+    private SortConstraint[] sort;
 
     /**
      * The browser component.
      */
-    private Component _component;
+    private Component component;
 
     /**
      * The event listener list.
      */
-    private List<QueryBrowserListener> _listeners
-            = new ArrayList<QueryBrowserListener>();
+    private List<QueryBrowserListener<T>> listeners
+            = new ArrayList<QueryBrowserListener<T>>();
 
     /**
      * Query button id.
@@ -87,9 +85,9 @@ public abstract class AbstractBrowser<T extends IMObject>
      * @param sort  the sort criteria. May be <code>null</code>
      */
     public AbstractBrowser(Query<T> query, SortConstraint[] sort) {
-        _query = query;
-        _sort = sort;
-        _query.addQueryListener(new QueryListener() {
+        this.query = query;
+        this.sort = sort;
+        this.query.addQueryListener(new QueryListener() {
             public void query() {
                 onQuery();
             }
@@ -101,8 +99,8 @@ public abstract class AbstractBrowser<T extends IMObject>
      *
      * @param listener the listener to add
      */
-    public void addQueryListener(QueryBrowserListener listener) {
-        _listeners.add(listener);
+    public void addQueryListener(QueryBrowserListener<T> listener) {
+        listeners.add(listener);
     }
 
     /**
@@ -111,10 +109,10 @@ public abstract class AbstractBrowser<T extends IMObject>
      * @return the query component
      */
     public Component getComponent() {
-        if (_component == null) {
+        if (component == null) {
             doLayout();
         }
-        return _component;
+        return component;
     }
 
     /**
@@ -122,7 +120,7 @@ public abstract class AbstractBrowser<T extends IMObject>
      */
     protected void doLayout() {
         // query component
-        Component component = _query.getComponent();
+        Component component = query.getComponent();
 
         // query button
         Button query = ButtonFactory.create(QUERY_ID, new ActionListener() {
@@ -132,9 +130,9 @@ public abstract class AbstractBrowser<T extends IMObject>
         });
 
         Row row = RowFactory.create(CELLSPACING_STYLE, component, query);
-        _component = ColumnFactory.create(STYLE, row);
+        this.component = ColumnFactory.create(STYLE, row);
 
-        if (_query.isAuto()) {
+        if (this.query.isAuto()) {
             query();
         }
     }
@@ -145,7 +143,7 @@ public abstract class AbstractBrowser<T extends IMObject>
      * @return the query result set. May be <code>null</code>
      */
     protected ResultSet<T> doQuery() {
-        return _query.query(_sort);
+        return query.query(sort);
     }
 
     /**
@@ -153,9 +151,10 @@ public abstract class AbstractBrowser<T extends IMObject>
      *
      * @param selected the selected object
      */
+    @SuppressWarnings("unchecked")
     protected void notifySelected(T selected) {
         QueryBrowserListener<T>[] listeners
-                = (QueryBrowserListener<T>[]) _listeners.toArray(
+                = (QueryBrowserListener<T>[]) this.listeners.toArray(
                 new QueryBrowserListener[0]);
         for (QueryBrowserListener<T> listener : listeners) {
             listener.selected(selected);
@@ -169,17 +168,19 @@ public abstract class AbstractBrowser<T extends IMObject>
     private void onQuery() {
         query();
         QueryBrowserListener[] listeners
-                = _listeners.toArray(new QueryBrowserListener[0]);
+                = this.listeners.toArray(new QueryBrowserListener[0]);
         for (QueryBrowserListener listener : listeners) {
             listener.query();
         }
     }
 
     /**
-     * @return Returns the _query.
+     * Returns the query.
+     *
+     * @return the query
      */
     public Query<T> getQuery() {
-        return _query;
+        return query;
     }
 
 }

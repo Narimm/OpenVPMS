@@ -19,14 +19,25 @@
 package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.table.TableColumn;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.table.DescriptorTableColumn;
-import org.openvpms.web.component.im.table.act.AbstractActTableModel;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.AbstractIMTableModel;
+import org.openvpms.web.component.im.util.FastLookupHelper;
+import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
 
 import java.util.Date;
+import java.util.Map;
 
 
 /**
@@ -35,57 +46,194 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentTableModel extends AbstractActTableModel {
+public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
+
+    /**
+     * The layout context.
+     */
+    private final LayoutContext context;
+
+    /**
+     * The start time index.
+     */
+    private static final int START_TIME_INDEX = 0;
+
+    /**
+     * The end time index.
+     */
+    private static final int END_TIME_INDEX = 1;
+
+    /**
+     * The status index.
+     */
+    private static final int STATUS_INDEX = 2;
+
+    /**
+     * The appointment name index.
+     */
+    private static final int APPOINTMENT_INDEX = 3;
+
+    /**
+     * The customer name index.
+     */
+    private static final int CUSTOMER_INDEX = 4;
+
+    /**
+     * The patient name index.
+     */
+    private static final int PATIENT_INDEX = 5;
+
+    /**
+     * The reason index.
+     */
+    private static final int REASON_INDEX = 6;
+
+    /**
+     * The description index.
+     */
+    private static final int DESCRIPTION_INDEX = 7;
 
     /**
      * The nodes to display.
      */
-    public static final String[] NODE_NAMES
-            = new String[]{"startTime", "endTime", "status", "appointmentType",
-                           "customer", "patient", "reason", "description"};
+    public static final String[][] NODE_NAMES
+            = new String[][]{{"startTime", "act.startTime"},
+                             {"endTime", "act.endTime"},
+                             {"status", "act.status"},
+                             {"appointmentType", "appointmentType"},
+                             {"customer", "customer"},
+                             {"patient", "patient"},
+                             {"reason", "act.reason"},
+                             {"description", "act.description"}};
+
+    /**
+     * The colunm names.
+     */
+    private String[] columnNames;
+
+    /**
+     * Cached lookup names.
+     */
+    private Map<String, String> statuses;
 
     /**
      * Creates a new <code>AppointmentTableModel</code>.
      */
     public AppointmentTableModel() {
-        super(new String[]{"act.customerAppointment"});
+        DefaultTableColumnModel model = new DefaultTableColumnModel();
+        for (int i = 0; i < NODE_NAMES.length; ++i) {
+            model.addColumn(new TableColumn(i));
+        }
+        setTableColumnModel(model);
+
+        context = new DefaultLayoutContext();
+        TableComponentFactory factory = new TableComponentFactory(context);
+        context.setComponentFactory(factory);
+
+        columnNames = new String[NODE_NAMES.length];
+        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
+                "act.customerAppointment");
+        if (archetype != null) {
+            for (int i = 0; i < NODE_NAMES.length; ++i) {
+                NodeDescriptor descriptor = archetype.getNodeDescriptor(
+                        NODE_NAMES[i][0]);
+                if (descriptor != null) {
+                    columnNames[i] = descriptor.getDisplayName();
+                }
+            }
+        }
     }
 
     /**
-     * Returns a value for a given column.
+     * Returns the name of the specified column number.
      *
-     * @param object the object to operate on
-     * @param column the column
-     * @return the value for the column
+     * @param column the column index (0-based)
+     * @return the column name
      */
     @Override
-    protected Object getValue(IMObject object, DescriptorTableColumn column) {
-        Object result;
-        NodeDescriptor descriptor = column.getDescriptor();
-        String name = descriptor.getName();
-        if (name.equals("startTime") || name.equals("endTime")) {
-            Date time = (Date) descriptor.getValue(object);
-            String text = null;
-            if (time != null) {
-                text = DateFormatter.formatTime(time, false);
-            }
-            Label label = LabelFactory.create();
-            label.setText(text);
-            result = label;
-        } else {
-            result = super.getValue(object, column);
+    public String getColumnName(int column) {
+        return columnNames[column];
+    }
+
+    /**
+     * Returns the value found at the given coordinate within the table.
+     *
+     * @param object the object
+     * @param column the column
+     * @param row    the row
+     * @return the value at the given coordinate.
+     */
+    protected Object getValue(ObjectSet object, int column, int row) {
+        Object result = null;
+        int index = getColumn(column).getModelIndex();
+        Object value = object.get(NODE_NAMES[index][1]);
+        switch (index) {
+            case START_TIME_INDEX:
+            case END_TIME_INDEX:
+                Date date = (Date) value;
+                Label label = LabelFactory.create();
+                if (date != null) {
+                    label.setText(DateFormatter.formatDate(date, false));
+                }
+                result = label;
+                break;
+            case STATUS_INDEX:
+                if (value instanceof String) {
+                    result = getStatus((String) value);
+                }
+                break;
+            case REASON_INDEX:
+            case DESCRIPTION_INDEX:
+                result = value;
+                break;
+            case APPOINTMENT_INDEX:
+            case CUSTOMER_INDEX:
+            case PATIENT_INDEX:
+                String refKey = NODE_NAMES[index][1] + ".objectReference";
+                String refName = NODE_NAMES[index][1] + ".name";
+                IMObjectReference ref = (IMObjectReference) object.get(refKey);
+                String name = (String) object.get(refName);
+                IMObjectReferenceViewer viewer
+                        = new IMObjectReferenceViewer(ref, name,
+                                                      !context.isEdit());
+                result = viewer.getComponent();
+                break;
         }
         return result;
     }
 
     /**
-     * Returns a list of descriptor names to include in the table.
+     * Returns the sort criteria.
      *
-     * @return the list of descriptor names to include in the table
+     * @param column    the primary sort column
+     * @param ascending if <code>true</code> sort in ascending order; otherwise
+     *                  sort in <code>descending</code> order
+     * @return the sort criteria, or <code>null</code> if the column isn't
+     *         sortable
      */
-    @Override
-    protected String[] getDescriptorNames() {
-        return NODE_NAMES;
+    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+        return new SortConstraint[0];
+    }
+
+    /**
+     * Returns a status name given its code.
+     *
+     * @param code the status code
+     * @return the status name
+     */
+    private String getStatus(String code) {
+        if (statuses == null) {
+            ArchetypeDescriptor archetype
+                    = DescriptorHelper.getArchetypeDescriptor(
+                    "act.customerAppointment");
+            if (archetype != null) {
+                NodeDescriptor node = archetype.getNodeDescriptor("status");
+                if (node != null) {
+                    statuses = FastLookupHelper.getLookupNames(node);
+                }
+            }
+        }
+        return (statuses != null) ? statuses.get(code) : null;
     }
 
 }

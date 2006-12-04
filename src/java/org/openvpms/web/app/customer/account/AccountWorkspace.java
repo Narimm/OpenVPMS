@@ -61,7 +61,7 @@ public class AccountWorkspace extends CustomerFinancialActWorkspace {
      * @param customer the customer to query acts for
      * @return a new query
      */
-    protected ActQuery createQuery(Party customer) {
+    protected ActQuery<Act> createQuery(Party customer) {
         String[] shortNames = {"act.customerAccountCharges*",
                                "act.customerAccountPayment",
                                "act.customerAccountRefund",

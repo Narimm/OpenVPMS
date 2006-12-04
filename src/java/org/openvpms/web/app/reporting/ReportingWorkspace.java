@@ -37,6 +37,7 @@ import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.app.OpenVPMSApp;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
@@ -65,11 +66,6 @@ public class ReportingWorkspace extends AbstractWorkspace {
      * The selected report. May be <code>null</code>.
      */
     private Entity _object;
-
-    /**
-     * The root component.
-     */
-    private SplitPane root;
 
     /**
      * The workspace component.
@@ -152,7 +148,7 @@ public class ReportingWorkspace extends AbstractWorkspace {
      */
     @Override
     protected Component doLayout() {
-        root = SplitPaneFactory.create(
+        Component root = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL,
                 "MessagingWorkspace.MainLayout");
         Component heading = super.doLayout();
@@ -185,12 +181,12 @@ public class ReportingWorkspace extends AbstractWorkspace {
     protected void layoutWorkspace(User user, Component container) {
         ReportQuery query = createQuery(user);
         browser = createBrowser(query);
-        browser.addQueryListener(new QueryBrowserListener() {
+        browser.addQueryListener(new QueryBrowserListener<Entity>() {
             public void query() {
                 selectFirst();
             }
 
-            public void selected(IMObject object) {
+            public void selected(Entity object) {
                 setObject(object);
             }
         });
@@ -228,7 +224,7 @@ public class ReportingWorkspace extends AbstractWorkspace {
      * @return a new act browser
      */
     private TableBrowser<Entity> createBrowser(ReportQuery query) {
-        return new TableBrowser<Entity>(query, null);
+        return new IMObjectTableBrowser<Entity>(query, null);
     }
 
     /**

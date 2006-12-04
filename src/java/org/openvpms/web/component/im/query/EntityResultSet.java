@@ -24,8 +24,8 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import static org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinType.LeftOuterJoin;
 import org.openvpms.component.system.common.query.IConstraint;
+import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
@@ -98,7 +98,7 @@ public class EntityResultSet extends NameResultSet<Entity> {
             query.setCountResults(true);
             CollectionNodeConstraint constraint
                     = new CollectionNodeConstraint("identities");
-            constraint.setJoinType(LeftOuterJoin);
+            constraint.setJoinType(JoinConstraint.JoinType.LeftOuterJoin);
             constraint.add(new NodeConstraint("name", name));
             query.add(constraint);
 

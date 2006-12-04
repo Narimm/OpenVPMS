@@ -27,7 +27,6 @@ import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
@@ -46,89 +45,88 @@ import java.util.List;
 
 
 /**
- * Abstract implementation of the {@link Query} interface that queries {@link
- * IMObject} instances on short name, instance name, and active/inactive
- * status.
+ * Abstract implementation of the {@link Query} interface that queries objects
+ * on short name, instance name, and active/inactive status.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
+public abstract class AbstractQuery<T> implements Query<T> {
 
     /**
      * The archetypes to query.
      */
-    private final BaseArchetypeConstraint _archetypes;
+    private final BaseArchetypeConstraint archetypes;
 
     /**
      * Archetype short names to matches on.
      */
-    private final String[] _shortNames;
+    private final String[] shortNames;
 
     /**
      * Archetype reference model name. May be <code>null</code>
      */
-    private final String _refModelName;
+    private final String refModelName;
 
     /**
      * Archetype entity name. May be <code>null</code>
      */
-    private final String _entityName;
+    private final String entityName;
 
     /**
      * Archetype concept name. May be <code>null</code>
      */
-    private final String _conceptName;
+    private final String conceptName;
 
     /**
      * Additional constraints to associate with the query. May be
      * <code>null</code>
      */
-    private IConstraint _constraints;
+    private IConstraint constraints;
 
     /**
      * Determines if the query should be run automatically.
      */
-    private boolean _auto;
+    private boolean auto;
 
     /**
      * Determines if duplicate rows should be filtered.
      */
-    private boolean _distinct;
+    private boolean distinct;
 
     /**
      * The instance name field. If the text is <code>null</code> or empty, indicates
      * to query all instances.
      */
-    private TextField _instanceName;
+    private TextField instanceName;
 
     /**
      * The inactive check box. If selected, deactived instances will be returned
      * along with the active ones.
      */
-    private CheckBox _inactive;
+    private CheckBox inactive;
 
     /**
      * The selected archetype short name. If <code>null</code>, or {@link
      * ArchetypeShortNameListModel#ALL}, indicates to query using all matching
      * short names.
      */
-    private String _shortName;
+    private String shortName;
 
     /**
      * The component representing the query.
      */
-    private Component _component;
+    private Component component;
 
     /**
      * The event listener list.
      */
-    private List<QueryListener> _listeners = new ArrayList<QueryListener>();
+    private List<QueryListener> listeners = new ArrayList<QueryListener>();
 
     /**
-     * The maxmimum no. of rows to return per page.
+     * The maxmimum no. of results to return per page.
      */
-    private int _maxRows = 20;
+    private int maxResults = 20;
 
     /**
      * Type label id.
@@ -152,7 +150,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
 
 
     /**
-     * Construct a new <code>AbstractQuery</code> that queries IMObjects with
+     * Construct a new <code>AbstractQuery</code> that queries objects with
      * the specified short names.
      *
      * @param shortNames the short names
@@ -160,15 +158,15 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      *                                 archetypes
      */
     public AbstractQuery(String[] shortNames) {
-        _shortNames = DescriptorHelper.getShortNames(shortNames);
-        _archetypes = new ShortNameConstraint(shortNames, true, true);
-        _refModelName = null;
-        _entityName = null;
-        _conceptName = null;
+        this.shortNames = DescriptorHelper.getShortNames(shortNames);
+        archetypes = new ShortNameConstraint(shortNames, true, true);
+        refModelName = null;
+        entityName = null;
+        conceptName = null;
     }
 
     /**
-     * Construct a new <code>AbstractQuery</code> that queries IMObjects with
+     * Construct a new <code>AbstractQuery</code> that queries objects with
      * the specified criteria.
      *
      * @param refModelName the archetype reference model name
@@ -177,13 +175,13 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      */
     public AbstractQuery(String refModelName, String entityName,
                          String conceptName) {
-        _shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
-                                                     conceptName);
-        _archetypes = new LongNameConstraint(
+        shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
+                                                    conceptName);
+        archetypes = new LongNameConstraint(
                 refModelName, entityName, conceptName, true, true);
-        _refModelName = refModelName;
-        _entityName = entityName;
-        _conceptName = conceptName;
+        this.refModelName = refModelName;
+        this.entityName = entityName;
+        this.conceptName = conceptName;
     }
 
     /**
@@ -192,29 +190,29 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @return the query component
      */
     public Component getComponent() {
-        if (_component == null) {
-            _component = RowFactory.create(ROW_STYLE);
-            doLayout(_component);
+        if (component == null) {
+            component = RowFactory.create(ROW_STYLE);
+            doLayout(component);
         }
-        return _component;
+        return component;
     }
 
     /**
-     * Sets the maximum no. of rows to return per page.
+     * Sets the maximum no. of results to return per page.
      *
-     * @param rows the maxiomum no. of rows per page
+     * @param maxResults the maxiomum no. of rows per page
      */
-    public void setMaxRows(int rows) {
-        _maxRows = rows;
+    public void setMaxResults(int maxResults) {
+        this.maxResults = maxResults;
     }
 
     /**
-     * Returns the maximum no. of rows to return per page.
+     * Returns the maximum no. of results to return per page.
      *
-     * @return the maximum no. of rows to return per page
+     * @return the maximum no. of results to return per page
      */
-    public int getMaxRows() {
-        return _maxRows;
+    public int getMaxResults() {
+        return maxResults;
     }
 
     /**
@@ -224,19 +222,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @return the query result set
      */
     public ResultSet<T> query(SortConstraint[] sort) {
-        String type = getShortName();
-        String name = getName();
-        boolean activeOnly = !includeInactive();
-
-        BaseArchetypeConstraint archetypes;
-        if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
-            archetypes = _archetypes;
-            archetypes.setActiveOnly(activeOnly);
-        } else {
-            archetypes = new ShortNameConstraint(type, true, activeOnly);
-        }
-        return new DefaultResultSet<T>(archetypes, name, _constraints, sort,
-                                       _maxRows, _distinct);
+        return createResultSet(sort);
     }
 
     /**
@@ -245,7 +231,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @return the short names being queried
      */
     public String[] getShortNames() {
-        return _shortNames;
+        return shortNames;
     }
 
     /**
@@ -281,9 +267,8 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @param auto if <code>true</code> the query should be run automatically
      */
     public void setAuto(boolean auto) {
-        _auto = auto;
+        this.auto = auto;
     }
-
 
     /**
      * Determines if the query should be run automatically.
@@ -292,7 +277,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      *         otherwise <code>false</code>
      */
     public boolean isAuto() {
-        return _auto;
+        return auto;
     }
 
     /**
@@ -301,7 +286,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @param distinct if true, remove duplicate rows
      */
     public void setDistinct(boolean distinct) {
-        _distinct = distinct;
+        this.distinct = distinct;
     }
 
     /**
@@ -311,7 +296,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      *         otherwise <code>false</code>
      */
     public boolean isDistinct() {
-        return _distinct;
+        return distinct;
     }
 
     /**
@@ -320,7 +305,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @param listener the listener to add
      */
     public void addQueryListener(QueryListener listener) {
-        _listeners.add(listener);
+        listeners.add(listener);
     }
 
     /**
@@ -329,7 +314,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @param listener the listener to remove
      */
     public void removeQueryListener(QueryListener listener) {
-        _listeners.remove(listener);
+        listeners.remove(listener);
     }
 
     /**
@@ -338,7 +323,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @param constraints the constraints
      */
     public void setConstraints(IConstraint constraints) {
-        _constraints = constraints;
+        this.constraints = constraints;
     }
 
     /**
@@ -347,16 +332,16 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @return the constraints
      */
     public IConstraint getConstraints() {
-        return _constraints;
+        return constraints;
     }
 
     /**
-     * Returns the archetype constraint.
+     * Returns the archetypes to select from.
      *
-     * @return the archetype constraint
+     * @return the archetypes to select from
      */
-    public BaseArchetypeConstraint getArchetypeConstraint() {
-        return _archetypes;
+    public BaseArchetypeConstraint getArchetypes() {
+        return archetypes;
     }
 
     /**
@@ -365,7 +350,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @return the archetype reference model name. May be <code>null</code>
      */
     public String getRefModelName() {
-        return _refModelName;
+        return refModelName;
     }
 
     /**
@@ -374,7 +359,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @return the archetype entity name. May be <code>null</code>
      */
     public String getEntityName() {
-        return _entityName;
+        return entityName;
     }
 
     /**
@@ -383,7 +368,34 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @return the archetype concept name. May be <code>null</code>
      */
     public String getConceptName() {
-        return _conceptName;
+        return conceptName;
+    }
+
+    /**
+     * Creates the result set.
+     *
+     * @param sort the sort criteria. May be <code>null</code>
+     * @return a new result set
+     */
+    protected abstract ResultSet<T> createResultSet(SortConstraint[] sort);
+
+    /**
+     * Returns the archetypes to query, based on whether a short name has been
+     * selected or not.
+     *
+     * @return the archetypes to query
+     */
+    protected BaseArchetypeConstraint getArchetypeConstraint() {
+        String type = getShortName();
+        boolean activeOnly = !includeInactive();
+        BaseArchetypeConstraint result;
+        if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
+            result = getArchetypes();
+            result.setActiveOnly(activeOnly);
+        } else {
+            result = new ShortNameConstraint(type, true, activeOnly);
+        }
+        return result;
     }
 
     /**
@@ -393,7 +405,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      *         <code>false</code>
      */
     protected boolean includeInactive() {
-        return (_inactive != null && _inactive.isSelected());
+        return (inactive != null && inactive.isSelected());
     }
 
     /**
@@ -402,7 +414,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @return the archetype short name. May be <code>null</code>
      */
     protected String getShortName() {
-        return _shortName;
+        return shortName;
     }
 
     /**
@@ -412,7 +424,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      *             query using all matching short names.
      */
     protected void setShortName(String name) {
-        _shortName = name;
+        shortName = name;
     }
 
     /**
@@ -435,9 +447,9 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @param container the container
      */
     protected void addShortNameSelector(Component container) {
-        if (_shortNames.length > 1) {
+        if (shortNames.length > 1) {
             final ArchetypeShortNameListModel model
-                    = new ArchetypeShortNameListModel(_shortNames, true);
+                    = new ArchetypeShortNameListModel(shortNames, true);
             final SelectField shortNameSelector = SelectFieldFactory.create(
                     model);
             shortNameSelector.addActionListener(new ActionListener() {
@@ -460,15 +472,15 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @return the instance name field
      */
     protected TextField getInstanceName() {
-        if (_instanceName == null) {
-            _instanceName = TextComponentFactory.create();
-            _instanceName.addActionListener(new ActionListener() {
+        if (instanceName == null) {
+            instanceName = TextComponentFactory.create();
+            instanceName.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     onQuery();
                 }
             });
         }
-        return _instanceName;
+        return instanceName;
     }
 
     /**
@@ -488,11 +500,11 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @return the inactive field
      */
     protected CheckBox getInactive() {
-        if (_inactive == null) {
-            _inactive = new CheckBox();
-            _inactive.setSelected(false);
+        if (inactive == null) {
+            inactive = new CheckBox();
+            inactive.setSelected(false);
         }
-        return _inactive;
+        return inactive;
     }
 
     /**
@@ -510,7 +522,8 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * Notify listnerss to perform a query.
      */
     protected void onQuery() {
-        QueryListener[] listeners = _listeners.toArray(new QueryListener[0]);
+        QueryListener[] listeners = this.listeners.toArray(
+                new QueryListener[0]);
         for (QueryListener listener : listeners) {
             listener.query();
         }

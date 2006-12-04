@@ -18,12 +18,7 @@
 
 package org.openvpms.web.component.im.table;
 
-import nextapp.echo2.app.table.TableColumnModel;
-import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.SortConstraint;
-
-import java.util.List;
 
 
 /**
@@ -32,46 +27,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface IMObjectTableModel<T extends IMObject> extends TableModel {
-
-    /**
-     * Returns the objects being displayed.
-     *
-     * @return the objects being displayed
-     */
-    List<T> getObjects();
-
-    /**
-     * Sets the objects to display.
-     *
-     * @param objects the objects to display
-     */
-    void setObjects(List<T> objects);
-
-    /**
-     * Returns the column model.
-     *
-     * @return the column model
-     */
-    TableColumnModel getColumnModel();
-
-    /**
-     * Returns the sort criteria.
-     *
-     * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
-     * @return the sort criteria, or <code>null</code> if the column isn't
-     *         sortable
-     */
-    SortConstraint[] getSortConstraints(int column, boolean ascending);
-
-    /**
-     * Determines if selection should be enabled.
-     *
-     * @return <code>true</code> if selection should be enabled; otherwise
-     *         <code>false</code>
-     */
-    boolean getEnableSelection();
+public interface IMObjectTableModel<T extends IMObject>
+        extends IMTableModel<T> {
 
 }

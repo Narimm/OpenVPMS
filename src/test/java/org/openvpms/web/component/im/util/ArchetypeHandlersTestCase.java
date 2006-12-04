@@ -74,7 +74,7 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
         Query query = (Query) patient.create(
                 new Object[]{shortNames, new LocalContext()});
         assertNotNull(query);
-        assertEquals(25, query.getMaxRows());
+        assertEquals(25, query.getMaxResults());
     }
 
     /**

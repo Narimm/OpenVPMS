@@ -46,10 +46,10 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -252,7 +252,8 @@ public abstract class AbstractIMObjectReferenceEditor
             query.setAuto(runQuery);
         }
         try {
-            final Browser<IMObject> browser = new TableBrowser<IMObject>(query);
+            final Browser<IMObject> browser
+                    = new IMObjectTableBrowser<IMObject>(query);
             String title = Messages.get("imobject.select.title",
                                         getDescriptor().getDisplayName());
             final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(

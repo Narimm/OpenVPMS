@@ -145,7 +145,7 @@ public class PatientQuery extends AbstractEntityQuery {
             if (objects == null) {
                 objects = Collections.emptyList();
             }
-            result = new PreloadedResultSet<Entity>(objects, getMaxRows());
+            result = new PreloadedResultSet<Entity>(objects, getMaxResults());
             if (sort != null) {
                 result.sort(sort);
             }

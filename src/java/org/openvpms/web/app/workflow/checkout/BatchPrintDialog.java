@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
+import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.util.CheckBoxFactory;
 
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class BatchPrintDialog extends PopupDialog {
     /**
      * The table of objects to print.
      */
-    private final IMObjectTable<IMObject> table;
+    private final IMTable<IMObject> table;
 
 
     /**

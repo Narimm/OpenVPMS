@@ -53,7 +53,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     /**
      * The query.
      */
-    private ActQuery query;
+    private ActQuery<Act> query;
 
     /**
      * The act browser.
@@ -171,7 +171,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param party the party to query acts for
      * @return a new query
      */
-    protected abstract ActQuery createQuery(Party party);
+    protected abstract ActQuery<Act> createQuery(Party party);
 
     /**
      * Creates a new browser to query and display acts.
@@ -179,7 +179,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param query the query
      * @return a new browser
      */
-    protected Browser<Act> createBrowser(ActQuery query) {
+    protected Browser<Act> createBrowser(ActQuery<Act> query) {
         return new TableBrowser<Act>(query, null, createTableModel());
     }
 
@@ -197,7 +197,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @param query the new query
      */
-    protected void setQuery(ActQuery query) {
+    protected void setQuery(ActQuery<Act> query) {
         this.query = query;
     }
 
@@ -217,13 +217,13 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      */
     protected void setBrowser(Browser<Act> browser) {
         acts = browser;
-        acts.addQueryListener(new QueryBrowserListener() {
+        acts.addQueryListener(new QueryBrowserListener<Act>() {
             public void query() {
                 onQuery();
             }
 
-            public void selected(IMObject object) {
-                actSelected((Act) object);
+            public void selected(Act object) {
+                actSelected(object);
             }
         });
     }

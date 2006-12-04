@@ -25,7 +25,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.query.NodeSet;
+import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -48,10 +48,15 @@ public class IMObjectReferenceViewer {
     private final IMObjectReference reference;
 
     /**
+     * The name.
+     */
+    private final String name;
+
+    /**
      * Determines if a hyperlink should be created, to launch a view of the
      * object.
      */
-    private final boolean _link;
+    private final boolean link;
 
 
     /**
@@ -61,8 +66,20 @@ public class IMObjectReferenceViewer {
      * @param link      if <code>true</code> enable an hyperlink to the object
      */
     public IMObjectReferenceViewer(IMObjectReference reference, boolean link) {
+        this(reference, null, link);
+    }
+
+    /**
+     * Construct a new <code>IMObjectReferenceViewer</code>.
+     *
+     * @param reference the reference to view
+     * @param link      if <code>true</code> enable an hyperlink to the object
+     */
+    public IMObjectReferenceViewer(IMObjectReference reference, String name,
+                                   boolean link) {
         this.reference = reference;
-        _link = link;
+        this.name = name;
+        this.link = link;
     }
 
     /**
@@ -72,10 +89,17 @@ public class IMObjectReferenceViewer {
      */
     public Component getComponent() {
         Component result;
-        final NodeSet nodes = IMObjectHelper.getNodes(reference, "name");
-        if (nodes != null) {
-            String text = Messages.get("imobject.name", nodes.get("name"));
-            if (_link) {
+        String text = name;
+        if (text == null) {
+            final NodeSet nodes = IMObjectHelper.getNodes(reference, "name");
+            if (nodes != null) {
+                text = Messages.get("imobject.name", nodes.get("name"));
+            } else {
+                text = Messages.get("imobject.none");
+            }
+        }
+        if (text != null) {
+            if (link) {
                 Button button = ButtonFactory.create();
                 button.setStyleName("hyperlink");
                 button.setText(text);

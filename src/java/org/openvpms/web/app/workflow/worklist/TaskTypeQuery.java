@@ -23,7 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.query.AbstractQuery;
+import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.PreloadedResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -39,7 +39,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaskTypeQuery extends AbstractQuery<IMObject> {
+public class TaskTypeQuery extends AbstractIMObjectQuery<IMObject> {
 
     /**
      * The work list to constraint task types to.
@@ -75,7 +75,7 @@ public class TaskTypeQuery extends AbstractQuery<IMObject> {
             if (objects == null) {
                 objects = Collections.emptyList();
             }
-            result = new PreloadedResultSet<IMObject>(objects, getMaxRows());
+            result = new PreloadedResultSet<IMObject>(objects, getMaxResults());
             if (sort != null) {
                 result.sort(sort);
             }
