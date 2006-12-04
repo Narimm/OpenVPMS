@@ -60,7 +60,7 @@ public class AccountWorkspace extends SupplierFinancialActWorkspace {
      * @param party the party to query acts for
      * @return a new query
      */
-    protected ActQuery createQuery(Party party) {
+    protected ActQuery<Act> createQuery(Party party) {
         String[] shortNames = {"act.supplierAccountCharges*",
                                "act.supplierAccountPayment",
                                "act.supplierAccountRefund"};

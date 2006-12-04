@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-
 
 /**
  * Query browser event listener.
@@ -27,8 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface QueryBrowserListener<T extends IMObject>
-        extends QueryListener {
+public interface QueryBrowserListener<T> extends QueryListener {
 
     /**
      * Invoked when an object is selected.

@@ -35,6 +35,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.util.FastLookupHelper;
@@ -157,14 +158,14 @@ public class MessagingWorkspace extends AbstractWorkspace {
      * @param container the container
      */
     protected void layoutWorkspace(User user, Component container) {
-        ActQuery query = createQuery(user);
+        ActQuery<Act> query = createQuery(user);
         browser = createBrowser(query);
-        browser.addQueryListener(new QueryBrowserListener() {
+        browser.addQueryListener(new QueryBrowserListener<Act>() {
             public void query() {
                 selectFirst();
             }
 
-            public void selected(IMObject object) {
+            public void selected(Act object) {
                 window.setObject(object);
             }
         });
@@ -224,8 +225,8 @@ public class MessagingWorkspace extends AbstractWorkspace {
      * @param query the act query
      * @return a new act browser
      */
-    private TableBrowser<Act> createBrowser(ActQuery query) {
-        return new TableBrowser<Act>(query, null);
+    private TableBrowser<Act> createBrowser(ActQuery<Act> query) {
+        return new IMObjectTableBrowser<Act>(query, null);
     }
 
     /**
@@ -234,7 +235,7 @@ public class MessagingWorkspace extends AbstractWorkspace {
      * @param user the user to query
      * @return a new query
      */
-    private ActQuery createQuery(User user) {
+    private ActQuery<Act> createQuery(User user) {
         String shortName = "act.userMessage";
         String[] shortNames = {shortName};
         ArchetypeDescriptor archetype

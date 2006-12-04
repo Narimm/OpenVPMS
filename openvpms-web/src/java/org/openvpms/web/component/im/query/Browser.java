@@ -18,20 +18,18 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.util.List;
-
 import nextapp.echo2.app.Component;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
+import java.util.List;
 
 
 /**
- * Browser of IMObject instances.
+ * Browser for objects matching query criteria.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface Browser<T extends IMObject> {
+public interface Browser<T> {
 
     /**
      * Returns the browser component.
@@ -67,7 +65,7 @@ public interface Browser<T extends IMObject> {
      *
      * @param listener the listener to add
      */
-    void addQueryListener(QueryBrowserListener listener);
+    void addQueryListener(QueryBrowserListener<T> listener);
 
     /**
      * Query using the specified criteria, and populate the table with matches.

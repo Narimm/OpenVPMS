@@ -21,7 +21,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
-import org.openvpms.web.component.im.query.AbstractQuery;
+import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.EntityResultSet;
 import org.openvpms.web.component.im.query.PreloadedResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -35,16 +35,12 @@ import java.util.List;
 /**
  * @author tony
  */
-public class ReportQuery extends AbstractQuery<Entity> {
+public class ReportQuery extends AbstractIMObjectQuery<Entity> {
+
     /**
      * The user to use to limit acces to reports.
      */
     private final Entity _user;
-
-    /**
-     * The Report Types to query on.
-     */
-    private List<Lookup> _reportTypes;
 
     /**
      * The selected report type. If <code>null</code> indicates to
@@ -137,23 +133,23 @@ public class ReportQuery extends AbstractQuery<Entity> {
         getComponent();  // ensure the component is rendered
 
         // Get the current users reportlevel
-        if (_user == null)
+        if (_user == null) {
             userReportLevel = 0;
-        else {
+        } else {
             EntityBean userBean = new EntityBean(_user);
             userReportLevel = userBean.getInt("userLevel", 0);
         }
         // Do the initial archetype query
         BaseArchetypeConstraint archetypes;
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
-            archetypes = getArchetypeConstraint();
+            archetypes = getArchetypes();
             archetypes.setActiveOnly(activeOnly);
         } else {
             archetypes = new ShortNameConstraint(type, true, activeOnly);
         }
         templates = new EntityResultSet(archetypes, name, getConstraints(),
                                         sort,
-                                        getMaxRows(), isDistinct());
+                                        getMaxResults(), isDistinct());
 
         // Now filter for Reports, user Level and selected type
         while (templates.hasNext()) {
@@ -172,7 +168,7 @@ public class ReportQuery extends AbstractQuery<Entity> {
             }
         }
 
-        return new PreloadedResultSet<Entity>(result, getMaxRows());
+        return new PreloadedResultSet<Entity>(result, getMaxResults());
     }
 
 
@@ -193,10 +189,6 @@ public class ReportQuery extends AbstractQuery<Entity> {
 
     public void setReportType(String type) {
         _reportType = type;
-    }
-
-    public List<Lookup> getReportTypes() {
-        return _reportTypes;
     }
 
 }

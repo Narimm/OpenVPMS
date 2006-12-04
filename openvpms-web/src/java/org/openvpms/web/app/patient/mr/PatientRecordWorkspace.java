@@ -18,14 +18,8 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
-
-import java.util.List;
-
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
-
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -38,6 +32,8 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
@@ -53,6 +49,8 @@ import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
+import java.util.List;
+
 
 /**
  * Patient medical record workspace.
@@ -66,19 +64,19 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * Patient Document shortnames supported by the workspace.
      */
     private static final String[] DOCUMENT_SHORT_NAMES = {"act.patientDocumentForm",
-                                                 "act.patientDocumentLetter",
-                                                 "act.patientDocumentAttachment",
-                                                 "act.patientDocumentImage"};
+                                                          "act.patientDocumentLetter",
+                                                          "act.patientDocumentAttachment",
+                                                          "act.patientDocumentImage"};
 
     /**
      * Patient Investigation shortnames supported by the workspace.
      */
     private static final String[] INVESTIGATION_SHORT_NAMES = {"act.patientInvestigationRadiology",
-                                                 "act.patientInvestigationBiochemistry",
-                                                 "act.patientInvestigationHaematology",
-                                                 "act.patientInvestigationCytology"};
+                                                               "act.patientInvestigationBiochemistry",
+                                                               "act.patientInvestigationHaematology",
+                                                               "act.patientInvestigationCytology"};
 
-/**
+    /**
      * Construct a new <code>PatientRecordWorkspace</code>.
      */
     public PatientRecordWorkspace() {
@@ -205,7 +203,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @param party the party to query acts for
      * @return a new query
      */
-    protected ActQuery createQuery(Party party) {
+    protected ActQuery<Act> createQuery(Party party) {
         return createQuery(party, new String[]{CLINICAL_EVENT});
     }
 
@@ -216,7 +214,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @return a new browser
      */
     @Override
-    protected Browser<Act> createBrowser(ActQuery query) {
+    protected Browser<Act> createBrowser(ActQuery<Act> query) {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
         Party patient = (Party) getObject();
         RecordBrowser browser = new RecordBrowser(query, createQuery(patient),
@@ -266,13 +264,12 @@ public class PatientRecordWorkspace extends ActWorkspace {
         } else if (view == RecordBrowser.View.MEDICATION) {
             window = new MedicationRecordCRUDWindow();
         } else if (view == RecordBrowser.View.DOCUMENTS) {
-            String type = Messages.get("patient.document.createtype");		
-        	window = new DocumentCRUDWindow(type,DOCUMENT_SHORT_NAMES);
-	    } else if (view == RecordBrowser.View.INVESTIGATIONS) {
-	        String type = Messages.get("patient.investigation.createtype");		
-	    	window = new DocumentCRUDWindow(type,INVESTIGATION_SHORT_NAMES);
-	    }
-        else {      
+            String type = Messages.get("patient.document.createtype");
+            window = new DocumentCRUDWindow(type, DOCUMENT_SHORT_NAMES);
+        } else if (view == RecordBrowser.View.INVESTIGATIONS) {
+            String type = Messages.get("patient.investigation.createtype");
+            window = new DocumentCRUDWindow(type, INVESTIGATION_SHORT_NAMES);
+        } else {
             window = new ReminderCRUDWindow();
         }
         Act selected = browser.getSelected();
@@ -337,11 +334,8 @@ public class PatientRecordWorkspace extends ActWorkspace {
                 "act.patientDocumentLetter");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        DefaultActQuery query = new DefaultActQuery(patient, "patient",
-                                                    "participation.patient",
-                                                    DOCUMENT_SHORT_NAMES, lookups, null);
-        //query.setStatus(ActStatus.IN_PROGRESS);
-        return query;
+        return new DefaultActQuery(patient, "patient", "participation.patient",
+                                   DOCUMENT_SHORT_NAMES, lookups, null);
     }
 
     /**
@@ -356,11 +350,8 @@ public class PatientRecordWorkspace extends ActWorkspace {
                 "act.patientInvestigationRadiology");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        DefaultActQuery query = new DefaultActQuery(patient, "patient",
-                                                    "participation.patient",
-                                                    INVESTIGATION_SHORT_NAMES, lookups, null);
-        //query.setStatus(ActStatus.IN_PROGRESS);
-        return query;
+        return new DefaultActQuery(patient, "patient", "participation.patient",
+                                   INVESTIGATION_SHORT_NAMES, lookups, null);
     }
 
     /**

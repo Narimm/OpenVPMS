@@ -32,7 +32,8 @@ import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractEntityQuery extends AbstractQuery<Entity> {
+public abstract class AbstractEntityQuery
+        extends AbstractIMObjectQuery<Entity> {
 
     /**
      * Construct a new <code>AbstractEntityQuery</code> that queries Entity instances
@@ -73,12 +74,12 @@ public abstract class AbstractEntityQuery extends AbstractQuery<Entity> {
 
         BaseArchetypeConstraint archetypes;
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
-            archetypes = getArchetypeConstraint();
+            archetypes = getArchetypes();
             archetypes.setActiveOnly(activeOnly);
         } else {
             archetypes = new ShortNameConstraint(type, true, activeOnly);
         }
         return new EntityResultSet(archetypes, name, getConstraints(), sort,
-                                   getMaxRows(), isDistinct());
+                                   getMaxResults(), isDistinct());
     }
 }

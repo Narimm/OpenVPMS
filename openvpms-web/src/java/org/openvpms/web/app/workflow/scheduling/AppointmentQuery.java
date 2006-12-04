@@ -18,11 +18,16 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.archetype.rules.workflow.AppointmentQueryHelper;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.workflow.WorkflowQuery;
+import org.openvpms.web.component.im.query.AbstractArchetypeServiceResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -31,7 +36,7 @@ import org.openvpms.web.component.im.query.ResultSet;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentQuery extends WorkflowQuery {
+public class AppointmentQuery extends WorkflowQuery<ObjectSet> {
 
     /**
      * Construct a new <code>AppointmentQuery</code>.
@@ -50,10 +55,31 @@ public class AppointmentQuery extends WorkflowQuery {
      * @return a new result set
      */
     @Override
-    protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
-        ResultSet<Act> set = super.createResultSet(sort);
-        set.setNodes(AppointmentTableModel.NODE_NAMES);
-        return set;
+    protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
+        return new ActObjectResultSet(sort);
     }
 
+    private class ActObjectResultSet
+            extends AbstractArchetypeServiceResultSet<ObjectSet> {
+
+        public ActObjectResultSet(SortConstraint[] sort) {
+            super(ArchetypeQuery.ALL_RESULTS, sort);
+        }
+
+        /**
+         * Returns the specified page.
+         *
+         * @param firstResult the first result of the page to retrieve
+         * @param maxResults  the maximun no of results in the page
+         * @return the page corresponding to <code>firstResult</code>, or
+         *         <code>null</code> if none exists
+         */
+        protected IPage<ObjectSet> getPage(int firstResult, int maxResults) {
+            Party schedule = (Party) IMObjectHelper.getObject(getEntityId());
+            return AppointmentQueryHelper.query(schedule,
+                                                getStartFrom(),
+                                                getStartTo());
+        }
+
+    }
 }

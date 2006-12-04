@@ -83,12 +83,12 @@ public class DepositWorkspace extends ActWorkspace {
      * @param till the till to query acts for
      * @return a new query
      */
-    protected ActQuery createQuery(Party till) {
+    protected ActQuery<Act> createQuery(Party till) {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor("act.bankDeposit");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        ActQuery query = new DefaultActQuery(
+        ActQuery<Act> query = new DefaultActQuery(
                 till, "depositAccount", "participation.deposit", "act",
                 "bankDeposit", lookups, null);
         query.setStatus(DepositStatus.UNDEPOSITED);

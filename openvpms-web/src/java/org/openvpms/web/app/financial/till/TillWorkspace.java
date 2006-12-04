@@ -84,12 +84,12 @@ public class TillWorkspace extends ActWorkspace {
      * @param till the till to query acts for
      * @return a new query
      */
-    protected ActQuery createQuery(Party till) {
+    protected ActQuery<Act> createQuery(Party till) {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor("act.tillBalance");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        ActQuery query = new DefaultActQuery(
+        ActQuery<Act> query = new DefaultActQuery(
                 till, "till", "participation.till", "act", "tillBalance",
                 lookups, null);
         query.setStatus(TillBalanceStatus.UNCLEARED);

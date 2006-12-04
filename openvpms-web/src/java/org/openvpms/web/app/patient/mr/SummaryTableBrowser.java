@@ -19,11 +19,13 @@
 package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.TableBrowser;
-import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.IMTable;
+import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
+import org.openvpms.web.component.im.table.PagedIMTable;
 
 
 /**
@@ -32,7 +34,7 @@ import org.openvpms.web.component.im.table.PagedIMObjectTable;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SummaryTableBrowser extends TableBrowser<Act> {
+public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
 
     /**
      * Construct a new <code>Browser</code> that queries IMObjects using the
@@ -51,11 +53,10 @@ public class SummaryTableBrowser extends TableBrowser<Act> {
      * @return a new paged table
      */
     @Override
-    protected PagedIMObjectTable<Act> createTable(
-            IMObjectTableModel<Act> model) {
+    protected PagedIMTable<Act> createTable(IMTableModel<Act> model) {
         PagedIMObjectTable<Act> result = new PagedIMObjectTable<Act>(
-                new PagedSummaryTableModel(model));
-        IMObjectTable<Act> table = result.getTable();
+                new PagedSummaryTableModel((IMObjectTableModel<Act>) model));
+        IMTable<Act> table = result.getTable();
         table.setDefaultRenderer(Object.class, new SummaryTableCellRenderer());
         table.setHeaderVisible(false);
         table.setStyleName("plain");

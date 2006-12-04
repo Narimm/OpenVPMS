@@ -19,18 +19,17 @@
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 
 /**
- * Query facility for {@link IMObject} instances.
+ * Queries objects for display by an {@link Browser}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface Query<T extends IMObject> {
+public interface Query<T> {
 
     /**
      * Returns the query component.
@@ -40,18 +39,18 @@ public interface Query<T extends IMObject> {
     Component getComponent();
 
     /**
-     * Sets the maximum no. of rows to return per page.
+     * Sets the maximum no. of results to return per page.
      *
-     * @param rows the maxiomum no. of rows per page
+     * @param maxResults the maximum no. of results per page
      */
-    void setMaxRows(int rows);
+    void setMaxResults(int maxResults);
 
     /**
-     * Returns the maximum no. of rows to return per page.
+     * Returns the maximum no. of results to return per page.
      *
-     * @return the maximum no. of rows to return per page
+     * @return the maximum no. of results to return per page
      */
-    int getMaxRows();
+    int getMaxResults();
 
     /**
      * Performs the query.

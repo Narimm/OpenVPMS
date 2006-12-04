@@ -75,7 +75,7 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace {
      * @param supplier the customer to query acts for
      * @return a new query
      */
-    protected ActQuery createQuery(Party supplier) {
+    protected ActQuery<Act> createQuery(Party supplier) {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.supplierDocumentLetter");

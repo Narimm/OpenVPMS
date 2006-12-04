@@ -40,12 +40,12 @@ public class IMObjectTableModelFactory {
     /**
      * Table model implementations.
      */
-    private static ArchetypeHandlers<IMObjectTableModel> _models;
+    private static ArchetypeHandlers<IMObjectTableModel> models;
 
     /**
      * The logger.
      */
-    private static final Log _log
+    private static final Log log
             = LogFactory.getLog(IMObjectTableModelFactory.class);
 
     /**
@@ -110,7 +110,7 @@ public class IMObjectTableModelFactory {
             } catch (NoSuchMethodException ignore) {
                 // no-op
             } catch (Throwable exception) {
-                _log.error(exception, exception);
+                log.error(exception, exception);
             }
         }
         return null;
@@ -122,12 +122,12 @@ public class IMObjectTableModelFactory {
      * @return the table models
      */
     private static synchronized ArchetypeHandlers getTableModels() {
-        if (_models == null) {
-            _models = new ArchetypeHandlers<IMObjectTableModel>(
+        if (models == null) {
+            models = new ArchetypeHandlers<IMObjectTableModel>(
                     "IMObjectTableModelFactory.properties",
                     IMObjectTableModel.class);
         }
-        return _models;
+        return models;
     }
 
 }

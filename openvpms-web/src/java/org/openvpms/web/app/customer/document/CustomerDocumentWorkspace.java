@@ -74,7 +74,7 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
      * @param customer the customer to query acts for
      * @return a new query
      */
-    protected ActQuery createQuery(Party customer) {
+    protected ActQuery<Act> createQuery(Party customer) {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.customerDocumentLetter");

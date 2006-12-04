@@ -35,9 +35,9 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -258,7 +258,7 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
         Query<IMObject> query = createQuery(refModelName, entityName,
                                             conceptName);
         SortConstraint[] sort = {new NodeSortConstraint("name", true)};
-        return new TableBrowser<IMObject>(query, sort);
+        return new IMObjectTableBrowser<IMObject>(query, sort);
     }
 
     /**

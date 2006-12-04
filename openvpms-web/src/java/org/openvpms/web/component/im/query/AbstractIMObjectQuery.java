@@ -18,52 +18,56 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 
 /**
- * Simple query implementation that indicates that the query should be run
- * automatically.
+ * Abstract implementation of the {@link Query} interface that queries
+ * {@link IMObject}s on short name, instance name, and active/inactive status.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-11-27 05:30:20Z $
  */
-public class AutoQuery extends AbstractIMObjectQuery {
+public abstract class AbstractIMObjectQuery<T extends IMObject>
+        extends AbstractQuery<T> {
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects with the
-     * specified short names.
+     * Construct a new <code>AbstractIMObjectQuery</code> that queries IMObjects
+     * with the specified short names.
      *
      * @param shortNames the short names
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    public AutoQuery(String[] shortNames) {
+    public AbstractIMObjectQuery(String[] shortNames) {
         super(shortNames);
     }
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects with the
-     * specified criteria.
+     * Construct a new <code>AbstractQuery</code> that queries IMObjects with
+     * the specified criteria.
      *
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
      */
-    public AutoQuery(String refModelName, String entityName,
-                     String conceptName) {
+    public AbstractIMObjectQuery(String refModelName, String entityName,
+                                 String conceptName) {
         super(refModelName, entityName, conceptName);
     }
 
     /**
-     * Determines if the query should be run automatically.
+     * Creates the result set.
      *
-     * @return <code>true</code> if the query should be run automaticaly;
-     *         otherwie <code>false</code>
+     * @param sort the sort criteria. May be <code>null</code>
+     * @return a new result set
      */
-    @Override
-    public boolean isAuto() {
-        return true;
+    protected ResultSet<T> createResultSet(
+            SortConstraint[] sort) {
+        return new DefaultResultSet<T>(getArchetypeConstraint(), getName(),
+                                       getConstraints(), sort, getMaxResults(),
+                                       isDistinct());
     }
-
 }

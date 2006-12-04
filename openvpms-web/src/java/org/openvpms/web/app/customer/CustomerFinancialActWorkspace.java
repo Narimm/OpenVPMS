@@ -32,20 +32,22 @@ import org.openvpms.web.component.im.query.TableBrowser;
  * @version $LastChangedDate$
  */
 
-public abstract class CustomerFinancialActWorkspace extends CustomerActWorkspace {
+public abstract class CustomerFinancialActWorkspace
+        extends CustomerActWorkspace {
 
-	/**
-	 * @param subsystemId
-	 * @param workspaceId
-	 * @param refModelName
-	 * @param entityName
-	 * @param conceptName
-	 */
-	public CustomerFinancialActWorkspace(String subsystemId,
-			String workspaceId, String refModelName, String entityName,
-			String conceptName) {
-		super(subsystemId, workspaceId, refModelName, entityName, conceptName);
-	}
+    /**
+     * @param subsystemId
+     * @param workspaceId
+     * @param refModelName
+     * @param entityName
+     * @param conceptName
+     */
+    public CustomerFinancialActWorkspace(String subsystemId,
+                                         String workspaceId,
+                                         String refModelName, String entityName,
+                                         String conceptName) {
+        super(subsystemId, workspaceId, refModelName, entityName, conceptName);
+    }
 
     /**
      * Creates a new browser to query and display acts.
@@ -54,8 +56,8 @@ public abstract class CustomerFinancialActWorkspace extends CustomerActWorkspace
      * @param query the query
      * @return a new browser
      */
-	@Override
-    protected Browser<Act> createBrowser(ActQuery query) {
+    @Override
+    protected Browser<Act> createBrowser(ActQuery<Act> query) {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
         return new TableBrowser<Act>(query, sort, createTableModel());
     }

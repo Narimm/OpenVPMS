@@ -18,15 +18,13 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
-
+import echopointng.TabbedPane;
+import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.Component;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
@@ -36,8 +34,9 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import echopointng.TabbedPane;
-import echopointng.tabbedpane.DefaultTabModel;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
 
 
 /**
@@ -51,58 +50,59 @@ public class RecordBrowser implements Browser<Act> {
     /**
      * The tabbed pane.
      */
-    private TabbedPane _tab;
+    private TabbedPane tab;
 
     /**
      * The summary browser.
      */
-    private Browser<Act> _summary;
+    private Browser<Act> summary;
 
     /**
      * The visits browser.
      */
-    private TableBrowser<Act> _visits;
+    private TableBrowser<Act> visits;
 
     /**
      * The problems browser.
      */
-    private TableBrowser<Act> _problems;
+    private TableBrowser<Act> problems;
 
     /**
      * The medication browser.
      */
-    private TableBrowser<Act> _medication;
+    private TableBrowser<Act> medication;
 
     /**
      * The reminders/alerts browser.
      */
-    private TableBrowser<Act> _reminderAlert;
+    private TableBrowser<Act> reminderAlert;
 
     /**
      * The documents browser.
      */
-    private TableBrowser<Act> _document;
+    private TableBrowser<Act> document;
 
     /**
      * The investigations browser.
      */
-    private TableBrowser<Act> _investigation;
+    private TableBrowser<Act> investigation;
 
     /**
      * The event listener.
      */
-    private RecordBrowserListener _listener;
+    private RecordBrowserListener listener;
 
     /**
      * The selected tab.
      */
-    private int _selected = 0;
+    private int selected = 0;
 
     /**
      * The browser view.
      */
     public enum View {
-        SUMMARY, VISITS, PROBLEMS, MEDICATION, REMINDER_ALERT, DOCUMENTS, INVESTIGATIONS
+        SUMMARY, VISITS, PROBLEMS, MEDICATION, REMINDER_ALERT, DOCUMENTS,
+        INVESTIGATIONS
     }
 
 
@@ -121,21 +121,22 @@ public class RecordBrowser implements Browser<Act> {
                          Query<Act> problems, Query<Act> medication,
                          Query<Act> reminderAlert, Query<Act> document,
                          Query<Act> investigation, SortConstraint[] sort) {
-        _summary = new SummaryTableBrowser(summary);
-        _visits = new TableBrowser<Act>(visits, sort);
-        _problems = new TableBrowser<Act>(problems, sort);
-        _medication = new TableBrowser<Act>(medication, sort);
+        this.summary = new SummaryTableBrowser(summary);
+        this.visits = new IMObjectTableBrowser<Act>(visits, sort);
+        this.problems = new IMObjectTableBrowser<Act>(problems, sort);
+        this.medication = new IMObjectTableBrowser<Act>(medication, sort);
 
         // todo - should be able to register ReminderActTableModel in
         // IMObjectTableFactory.properties for act.patientReminder and
         // act.patientAlert
         IMObjectTableModel<Act> model = new ReminderActTableModel(
                 reminderAlert.getShortNames());
-        _reminderAlert = new TableBrowser<Act>(reminderAlert, sort, model);
+        this.reminderAlert = new TableBrowser<Act>(reminderAlert, sort, model);
         IMObjectTableModel<Act> docModel = new ActAmountTableModel(true, false);
-        _document = new TableBrowser<Act>(document, sort, docModel);
+        this.document = new TableBrowser<Act>(document, sort, docModel);
         IMObjectTableModel<Act> invModel = new ActAmountTableModel(true, false);
-        _investigation = new TableBrowser<Act>(investigation, sort, invModel);
+        this.investigation = new TableBrowser<Act>(investigation, sort,
+                                                   invModel);
     }
 
     /**
@@ -144,29 +145,29 @@ public class RecordBrowser implements Browser<Act> {
      * @return the query component
      */
     public Component getComponent() {
-        if (_tab == null) {
+        if (tab == null) {
             DefaultTabModel model = new DefaultTabModel();
-            addTab("button.summary", model, _summary);
-            addTab("button.visit", model, _visits);
-            addTab("button.problem", model, _problems);
-            addTab("button.medication", model, _medication);
-            addTab("button.reminder", model, _reminderAlert);
-            addTab("button.document", model, _document);
-            addTab("button.investigation", model, _investigation);
-            _tab = TabbedPaneFactory.create(model);
-            _tab.setSelectedIndex(_selected);
+            addTab("button.summary", model, summary);
+            addTab("button.visit", model, visits);
+            addTab("button.problem", model, problems);
+            addTab("button.medication", model, medication);
+            addTab("button.reminder", model, reminderAlert);
+            addTab("button.document", model, document);
+            addTab("button.investigation", model, investigation);
+            tab = TabbedPaneFactory.create(model);
+            tab.setSelectedIndex(selected);
 
-            _tab.addPropertyChangeListener(new PropertyChangeListener() {
+            tab.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    int index = _tab.getSelectedIndex();
-                    if (index != _selected) {
-                        _selected = index;
-                        _listener.onViewChanged();
+                    int index = tab.getSelectedIndex();
+                    if (index != selected) {
+                        selected = index;
+                        listener.onViewChanged();
                     }
                 }
             });
         }
-        return _tab;
+        return tab;
     }
 
     /**
@@ -202,27 +203,27 @@ public class RecordBrowser implements Browser<Act> {
      *
      * @param listener the listener to add
      */
-    public void addQueryListener(QueryBrowserListener listener) {
-        _summary.addQueryListener(listener);
-        _visits.addQueryListener(listener);
-        _problems.addQueryListener(listener);
-        _medication.addQueryListener(listener);
-        _reminderAlert.addQueryListener(listener);
-        _document.addQueryListener(listener);
-        _investigation.addQueryListener(listener);
+    public void addQueryListener(QueryBrowserListener<Act> listener) {
+        summary.addQueryListener(listener);
+        visits.addQueryListener(listener);
+        problems.addQueryListener(listener);
+        medication.addQueryListener(listener);
+        reminderAlert.addQueryListener(listener);
+        document.addQueryListener(listener);
+        investigation.addQueryListener(listener);
     }
 
     /**
      * Query using the specified criteria, and populate the table with matches.
      */
     public void query() {
-        query(_summary);
-        query(_visits);
-        query(_problems);
-        query(_medication);
-        query(_reminderAlert);
-        query(_document);
-        query(_investigation);
+        query(summary);
+        query(visits);
+        query(problems);
+        query(medication);
+        query(reminderAlert);
+        query(document);
+        query(investigation);
     }
 
     /**
@@ -235,25 +236,25 @@ public class RecordBrowser implements Browser<Act> {
         Browser<Act> result;
         switch (view) {
             case SUMMARY:
-                result = _summary;
+                result = summary;
                 break;
             case VISITS:
-                result = _visits;
+                result = visits;
                 break;
             case PROBLEMS:
-                result = _problems;
+                result = problems;
                 break;
             case MEDICATION:
-                result = _medication;
+                result = medication;
                 break;
             case REMINDER_ALERT:
-                result = _reminderAlert;
+                result = reminderAlert;
                 break;
             case DOCUMENTS:
-                result = _document;
+                result = document;
                 break;
             default:
-                result = _investigation;
+                result = investigation;
         }
         return result;
     }
@@ -265,7 +266,7 @@ public class RecordBrowser implements Browser<Act> {
      */
     public View getView() {
         View result;
-        switch (_selected) {
+        switch (selected) {
             case 0:
                 result = View.SUMMARY;
                 break;
@@ -279,11 +280,11 @@ public class RecordBrowser implements Browser<Act> {
                 result = View.MEDICATION;
                 break;
             case 4:
-            	result = View.REMINDER_ALERT;
-            	break;
+                result = View.REMINDER_ALERT;
+                break;
             case 5:
-            	result = View.DOCUMENTS;
-            	break;
+                result = View.DOCUMENTS;
+                break;
             default:
                 result = View.INVESTIGATIONS;
         }
@@ -296,7 +297,7 @@ public class RecordBrowser implements Browser<Act> {
      * @param listener the listener. May be <code>null</code>
      */
     public void setListener(RecordBrowserListener listener) {
-        _listener = listener;
+        this.listener = listener;
     }
 
     /**

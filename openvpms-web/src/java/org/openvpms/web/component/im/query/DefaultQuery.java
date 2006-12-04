@@ -29,7 +29,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DefaultQuery<T extends IMObject> extends AbstractQuery<T> {
+public class DefaultQuery<T extends IMObject> extends AbstractIMObjectQuery<T> {
 
     /**
      * Construct a new <code>DefaultQuery</code> that queries IMObjects with the
@@ -55,5 +55,6 @@ public class DefaultQuery<T extends IMObject> extends AbstractQuery<T> {
                         String conceptName) {
         super(refModelName, entityName, conceptName);
     }
+
 
 }

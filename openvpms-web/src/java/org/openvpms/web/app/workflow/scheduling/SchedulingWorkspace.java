@@ -20,17 +20,27 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.subsystem.ActWorkspace;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryBrowserListener;
+import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
+import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.List;
 
 
 /**
@@ -39,7 +49,28 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SchedulingWorkspace extends ActWorkspace {
+public class SchedulingWorkspace extends AbstractViewWorkspace {
+
+    /**
+     * The workspace.
+     */
+    private Component workspace;
+
+    /**
+     * The query.
+     */
+    private ActQuery<ObjectSet> query;
+
+    /**
+     * The act browser.
+     */
+    private Browser<ObjectSet> acts;
+
+    /**
+     * The CRUD window.
+     */
+    private CRUDWindow window;
+
 
     /**
      * Construct a new <code>SchedulingWorkspace</code>.
@@ -47,6 +78,221 @@ public class SchedulingWorkspace extends ActWorkspace {
     public SchedulingWorkspace() {
         super("workflow", "scheduling", "party", "party",
               "organisationSchedule");
+    }
+
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    protected void onSaved(IMObject object, boolean isNew) {
+        acts.query();
+        // acts.setSelected((Act) object); todo
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Invoked when the object has been deleted.
+     *
+     * @param object the object
+     */
+    protected void onDeleted(IMObject object) {
+        acts.query();
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Invoked when the object needs to be refreshed.
+     *
+     * @param object the object
+     */
+    protected void onRefresh(IMObject object) {
+        acts.query();
+        // acts.setSelected((Act) object); todo
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Invoked when an act is selected.
+     *
+     * @param act the act
+     */
+    protected void actSelected(ObjectSet act) {
+        IMObjectReference actRef
+                = (IMObjectReference) act.get("act.objectReference");
+        IMObject object = IMObjectHelper.getObject(actRef);
+        window.setObject(object);
+    }
+
+    /**
+     * Lays out the workspace.
+     *
+     * @param party the party
+     */
+    protected void layoutWorkspace(Party party) {
+        setQuery(createQuery(party));
+        setBrowser(createBrowser(query));
+        setCRUDWindow(createCRUDWindow());
+        setWorkspace(createWorkspace());
+    }
+
+    /**
+     * Returns a component representing the acts.
+     * This implementation returns the acts displayed in a group box.
+     *
+     * @param acts the act browser
+     * @return a component representing the acts
+     */
+    protected Component getActs(Browser acts) {
+        return GroupBoxFactory.create(this.acts.getComponent());
+    }
+
+    /**
+     * Creates the workspace split pane.
+     *
+     * @return a new workspace split pane
+     */
+    protected Component createWorkspace() {
+        Component acts = getActs(getBrowser());
+        Component window = getCRUDWindow().getComponent();
+        return SplitPaneFactory.create(
+                SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
+                "WorkflowWorkspace.Layout", window, acts);
+    }
+
+    /**
+     * Creates a new browser to query and display acts.
+     *
+     * @param query the query
+     * @return a new browser
+     */
+    protected Browser<ObjectSet> createBrowser(Query<ObjectSet> query) {
+        return new TableBrowser<ObjectSet>(query, null, createTableModel());
+    }
+
+    /**
+     * Registers a new query.
+     *
+     * @param query the new query
+     */
+    protected void setQuery(ActQuery<ObjectSet> query) {
+        this.query = query;
+    }
+
+    /**
+     * Returns the query.
+     *
+     * @return the query
+     */
+    protected Query<ObjectSet> getQuery() {
+        return query;
+    }
+
+    /**
+     * Registers a new browser.
+     *
+     * @param browser the new browser
+     */
+    protected void setBrowser(Browser<ObjectSet> browser) {
+        acts = browser;
+        acts.addQueryListener(new QueryBrowserListener<ObjectSet>() {
+            public void query() {
+                onQuery();
+            }
+
+            public void selected(ObjectSet object) {
+                actSelected(object);
+            }
+        });
+    }
+
+    /**
+     * Returns the browser.
+     *
+     * @return the browser
+     */
+    protected Browser<ObjectSet> getBrowser() {
+        return acts;
+    }
+
+    /**
+     * Registers a new workspace.
+     *
+     * @param workspace the workspace
+     */
+    protected void setWorkspace(Component workspace) {
+        SplitPane root = getRootComponent();
+        if (this.workspace != null) {
+            root.remove(this.workspace);
+        }
+        this.workspace = workspace;
+        root.add(this.workspace);
+    }
+
+    /**
+     * Registers a new CRUD window.
+     *
+     * @param window the window
+     */
+    protected void setCRUDWindow(CRUDWindow window) {
+        this.window = window;
+        this.window.setListener(new CRUDWindowListener() {
+            public void saved(IMObject object, boolean isNew) {
+                onSaved(object, isNew);
+            }
+
+            public void deleted(IMObject object) {
+                onDeleted(object);
+            }
+
+            public void refresh(IMObject object) {
+                onRefresh(object);
+            }
+        });
+    }
+
+    /**
+     * Returns the CRUD window.
+     *
+     * @return the CRUD window
+     */
+    protected CRUDWindow getCRUDWindow() {
+        return window;
+    }
+
+    /**
+     * Perform an initial query, selecting the first available act.
+     *
+     * @param party the party
+     */
+    protected void initQuery(Party party) {
+        query.setEntity(party);
+        acts.query();
+        onQuery();
+    }
+
+    /**
+     * Returns the workspace.
+     *
+     * @return the workspace. May be <code>null</code>
+     */
+    protected Component getWorkspace() {
+        return workspace;
+    }
+
+    /**
+     * Selects the first available act, if any.
+     */
+    private void selectFirst() {
+        List<ObjectSet> objects = acts.getObjects();
+        if (!objects.isEmpty()) {
+            ObjectSet current = objects.get(0);
+            acts.setSelected(current);
+            // window.setObject(current) TODO;
+        } else {
+            window.setObject(null);
+        }
     }
 
     /**
@@ -61,19 +307,6 @@ public class SchedulingWorkspace extends ActWorkspace {
         Party party = (Party) object;
         layoutWorkspace(party);
         initQuery(party);
-    }
-
-    /**
-     * Creates the workspace split pane.
-     *
-     * @return a new workspace split pane
-     */
-    protected Component createWorkspace() {
-        Component acts = getActs(getBrowser());
-        Component window = getCRUDWindow().getComponent();
-        return SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                "WorkflowWorkspace.Layout", window, acts);
     }
 
     /**
@@ -93,16 +326,15 @@ public class SchedulingWorkspace extends ActWorkspace {
      * @param party the party to query acts for
      * @return a new query
      */
-    protected ActQuery createQuery(Party party) {
+    protected ActQuery<ObjectSet> createQuery(Party party) {
         return new AppointmentQuery(party);
     }
 
     /**
      * Invoked when acts are queried. Selects the first available act, if any.
      */
-    @Override
     protected void onQuery() {
-        super.onQuery();
+        selectFirst();
         AppointmentQuery query = (AppointmentQuery) getQuery();
         if (query != null) {
             GlobalContext.getInstance().setScheduleDate(query.getDate());
@@ -114,9 +346,7 @@ public class SchedulingWorkspace extends ActWorkspace {
      *
      * @return a new table model.
      */
-    @Override
-    protected IMObjectTableModel<Act> createTableModel() {
-        // todo - replace this method with call to IMObjectTableModelFactory
+    protected IMTableModel<ObjectSet> createTableModel() {
         return new AppointmentTableModel();
     }
 

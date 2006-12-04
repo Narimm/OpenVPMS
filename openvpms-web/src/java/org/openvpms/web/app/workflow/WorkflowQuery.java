@@ -33,7 +33,6 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -42,20 +41,16 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ShortcutHelper;
 import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.DateFieldFactory;
@@ -79,32 +74,32 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class WorkflowQuery extends ActQuery {
+public abstract class WorkflowQuery<T> extends ActQuery<T> {
 
     /**
      * The date.
      */
-    private DateField _date;
+    private DateField date;
 
     /**
      * The clinician name.
      */
-    private TextField _name;
+    private TextField name;
 
     /**
      * The clinician name listener.
      */
-    private DocumentListener _nameListener;
+    private DocumentListener nameListener;
 
     /**
      * The selected clinician. May be <code>null</code>
      */
-    private IMObjectReference _clinician;
+    private IMObjectReference clinician;
 
     /**
      * Indicates no valid clinician selected.
      */
-    private static final IMObjectReference INVALID_CLINICIAN
+    protected static final IMObjectReference INVALID_CLINICIAN
             = new IMObjectReference();
 
 
@@ -124,26 +119,12 @@ public abstract class WorkflowQuery extends ActQuery {
     }
 
     /**
-     * Performs the query.
-     *
-     * @param sort the sort constraint. May be <code>null</code>
-     * @return the query result set. May be <code>null</code>
-     */
-    @Override
-    public ResultSet<Act> query(SortConstraint[] sort) {
-        if (getEntityId() != null && _clinician != INVALID_CLINICIAN) {
-            return createResultSet(sort);
-        }
-        return null;
-    }
-
-    /**
      * Returns the selected date.
      *
      * @return the selected date
      */
     public Date getDate() {
-        Date datetime = _date.getDateChooser().getSelectedDate().getTime();
+        Date datetime = date.getDateChooser().getSelectedDate().getTime();
         return DateFormatter.getDayMonthYear(datetime);
     }
 
@@ -167,7 +148,7 @@ public abstract class WorkflowQuery extends ActQuery {
                 addDays(-1);
             }
         });
-        _date = DateFieldFactory.create();
+        date = DateFieldFactory.create();
         Button currentDay = ButtonFactory.create(
                 null, "date.currentDay", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -186,7 +167,7 @@ public abstract class WorkflowQuery extends ActQuery {
                 addDays(7);
             }
         });
-        _date.getDateChooser().addPropertyChangeListener(
+        date.getDateChooser().addPropertyChangeListener(
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent event) {
                         onDateChanged();
@@ -194,17 +175,17 @@ public abstract class WorkflowQuery extends ActQuery {
                 });
 
         Label label = LabelFactory.create("clinician");
-        _name = TextComponentFactory.create();
-        _nameListener = new DocumentListener() {
+        name = TextComponentFactory.create();
+        nameListener = new DocumentListener() {
             public void documentUpdate(DocumentEvent event) {
                 onNameChanged();
             }
         };
-        _name.getDocument().addDocumentListener(_nameListener);
+        name.getDocument().addDocumentListener(nameListener);
 
         // add an action listener so document updates get propagated in a
         // timely fashion
-        _name.addActionListener(new ActionListener() {
+        name.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
             }
         });
@@ -214,11 +195,11 @@ public abstract class WorkflowQuery extends ActQuery {
             }
         });
         select.setText(ShortcutHelper.getLocalisedText("button.select"));
-        Row row = RowFactory.create("CellSpacing", prevWeek, prevDay, _date,
+        Row row = RowFactory.create("CellSpacing", prevWeek, prevDay, date,
                                     currentDay, nextDay, nextWeek);
         container.add(row);
         container.add(label);
-        container.add(_name);
+        container.add(name);
         container.add(select);
     }
 
@@ -231,7 +212,8 @@ public abstract class WorkflowQuery extends ActQuery {
             String shortName = "security.user";
             Query<IMObject> query = QueryFactory.create(
                     shortName, GlobalContext.getInstance());
-            final Browser<IMObject> browser = new TableBrowser<IMObject>(query);
+            final Browser<IMObject> browser
+                    = new IMObjectTableBrowser<IMObject>(query);
 
             String title = Messages.get(
                     "imobject.select.title",
@@ -277,18 +259,13 @@ public abstract class WorkflowQuery extends ActQuery {
     }
 
     /**
-     * Creates a new result set.
+     * Returns the selected clinician.
      *
-     * @param sort the sort constraint. May be <code>null</code>
-     * @return a new result set
+     * @return the selected clinician, or {@link #INVALID_CLINICIAN} if none
+     *         is selected
      */
-    @Override
-    protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
-        ParticipantConstraint[] participants = getParticipantConstraints();
-        return new ActResultSet(participants, getArchetypes(), getStartFrom(),
-                                getStartTo(), getStatuses(), excludeStatuses(),
-                                getConstraints(), ArchetypeQuery.ALL_RESULTS,
-                                sort);
+    protected IMObjectReference getClinician() {
+        return clinician;
     }
 
     /**
@@ -300,9 +277,9 @@ public abstract class WorkflowQuery extends ActQuery {
         ParticipantConstraint[] participants;
         ParticipantConstraint participation = getParticipantConstraint();
 
-        if (_clinician != null) {
+        if (clinician != null) {
             ParticipantConstraint clinician = new ParticipantConstraint(
-                    "clinician", "participation.clinician", _clinician);
+                    "clinician", "participation.clinician", this.clinician);
             participants = new ParticipantConstraint[]{participation,
                                                        clinician};
         } else {
@@ -317,7 +294,7 @@ public abstract class WorkflowQuery extends ActQuery {
      * @param days the no. of days to add. <code>0</code> indicates current date
      */
     private void addDays(int days) {
-        DateChooser dateChooser = _date.getDateChooser();
+        DateChooser dateChooser = date.getDateChooser();
         Calendar calendar;
         if (days == 0) {
             calendar = new GregorianCalendar();
@@ -326,7 +303,7 @@ public abstract class WorkflowQuery extends ActQuery {
             calendar = dateChooser.getSelectedDate();
             calendar.add(Calendar.DAY_OF_MONTH, days);
         }
-        _date.getDateChooser().setSelectedDate(calendar);
+        date.getDateChooser().setSelectedDate(calendar);
     }
 
     /**
@@ -340,9 +317,9 @@ public abstract class WorkflowQuery extends ActQuery {
      * Invoked when the clinician name is updated.
      */
     private void onNameChanged() {
-        String name = _name.getText();
+        String name = this.name.getText();
         if (StringUtils.isEmpty(name)) {
-            _clinician = null;
+            clinician = null;
         } else {
             try {
                 IArchetypeService service
@@ -353,13 +330,14 @@ public abstract class WorkflowQuery extends ActQuery {
                 List<IMObject> rows = page.getResults();
                 if (rows.size() != 1) {
                     // no matches or multiple matches
-                    _clinician = INVALID_CLINICIAN;
+                    clinician = INVALID_CLINICIAN;
                 } else {
                     IMObject clinician = rows.get(0);
-                    _name.getDocument().removeDocumentListener(_nameListener);
-                    _name.setText(clinician.getName());
-                    _name.getDocument().addDocumentListener(_nameListener);
-                    _clinician = clinician.getObjectReference();
+                    this.name.getDocument().removeDocumentListener(
+                            nameListener);
+                    this.name.setText(clinician.getName());
+                    this.name.getDocument().addDocumentListener(nameListener);
+                    this.clinician = clinician.getObjectReference();
                 }
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);
@@ -376,15 +354,15 @@ public abstract class WorkflowQuery extends ActQuery {
     private void onClinicianSelected(IMObject clinician) {
         String name;
         if (clinician != null) {
-            _clinician = clinician.getObjectReference();
+            this.clinician = clinician.getObjectReference();
             name = clinician.getName();
         } else {
-            _clinician = null;
+            this.clinician = null;
             name = null;
         }
-        _name.getDocument().removeDocumentListener(_nameListener);
-        _name.setText(name);
-        _name.getDocument().addDocumentListener(_nameListener);
+        this.name.getDocument().removeDocumentListener(nameListener);
+        this.name.setText(name);
+        this.name.getDocument().addDocumentListener(nameListener);
         onQuery();
     }
 }

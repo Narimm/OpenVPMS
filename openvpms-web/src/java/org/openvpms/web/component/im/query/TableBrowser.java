@@ -21,17 +21,10 @@ package org.openvpms.web.component.im.query;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
-import org.openvpms.web.component.im.table.PagedIMObjectTable;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.im.view.TableComponentFactory;
+import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.component.im.table.PagedIMTable;
 
-import java.util.Collections;
 import java.util.List;
 
 
@@ -41,7 +34,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
+public class TableBrowser<T> extends AbstractBrowser<T> {
 
     /**
      * The selected action command.
@@ -51,37 +44,16 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
     /**
      * The paged table.
      */
-    private PagedIMObjectTable<T> _table;
+    private PagedIMTable<T> table;
 
     /**
      * The model to render results.
      */
-    private IMObjectTableModel<T> _model;
+    private IMTableModel<T> model;
 
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects using the
-     * specified query.
-     *
-     * @param query the query
-     */
-    public TableBrowser(Query<T> query) {
-        this(query, null);
-    }
-
-    /**
-     * Construct a new <code>Browser</code> that queries IMObjects using the
-     * specified query.
-     *
-     * @param query the query
-     * @param sort  the sort criteria. May be <code>null</code>
-     */
-    public TableBrowser(Query<T> query, SortConstraint[] sort) {
-        this(query, sort, createTableModel(query));
-    }
-
-    /**
-     * Construct a new <code>Browser</code> that queries IMObjects using the
+     * Construct a new <code>TableBrowser</code> that queries objects using the
      * specified query, displaying them in the table.
      *
      * @param query the query
@@ -89,9 +61,9 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
      * @param model the table model
      */
     public TableBrowser(Query<T> query, SortConstraint[] sort,
-                        IMObjectTableModel<T> model) {
+                        IMTableModel<T> model) {
         super(query, sort);
-        _model = model;
+        this.model = model;
     }
 
     /**
@@ -101,7 +73,7 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
      *         selected.
      */
     public T getSelected() {
-        return (_table != null) ? _table.getTable().getSelected() : null;
+        return (table != null) ? table.getTable().getSelected() : null;
     }
 
     /**
@@ -111,7 +83,7 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
      */
     public void setSelected(T object) {
         getComponent();
-        _table.getTable().setSelected(object);
+        table.getTable().setSelected(object);
     }
 
     /**
@@ -120,7 +92,7 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
      * @return the objects matcing the query.
      */
     public List<T> getObjects() {
-        return _model.getObjects();
+        return model.getObjects();
     }
 
     /**
@@ -130,21 +102,20 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
         Component component = getComponent();
 
         ResultSet<T> set = doQuery();
-        if (_table == null) {
-            _table = createTable(_model);
-            _table.getTable().addActionListener(new ActionListener() {
+        if (table == null) {
+            table = createTable(model);
+            table.getTable().addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     onSelect();
                 }
             });
-            component.add(_table);
+            component.add(table);
         }
 
         if (set == null) {
-            List<T> empty = Collections.emptyList();
-            set = new PreloadedResultSet<T>(empty, getQuery().getMaxRows());
+            set = new EmptyResultSet<T>(getQuery().getMaxResults());
         }
-        _table.setResultSet(set);
+        table.setResultSet(set);
     }
 
     /**
@@ -153,8 +124,8 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
      * @param model the table model
      * @return a new paged table
      */
-    protected PagedIMObjectTable<T> createTable(IMObjectTableModel<T> model) {
-        return new PagedIMObjectTable<T>(model);
+    protected PagedIMTable<T> createTable(IMTableModel<T> model) {
+        return new PagedIMTable<T>(model);
     }
 
     /**
@@ -162,19 +133,10 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
      * listeners.
      */
     private void onSelect() {
-        T selected = _table.getTable().getSelected();
+        T selected = table.getTable().getSelected();
         if (selected != null) {
             notifySelected(selected);
         }
-    }
-
-    private static <T extends IMObject> IMObjectTableModel<T>
-            createTableModel(Query<T> query) {
-        LayoutContext context = new DefaultLayoutContext();
-        IMObjectComponentFactory factory = new TableComponentFactory(context);
-        context.setComponentFactory(factory);
-        return IMObjectTableModelFactory.create(query.getShortNames(),
-                                                context);
     }
 
 }

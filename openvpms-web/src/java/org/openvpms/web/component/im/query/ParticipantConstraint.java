@@ -34,6 +34,7 @@ public class ParticipantConstraint extends CollectionNodeConstraint {
 
     /**
      * Constructs a new <code>ParticipantConstraint</code>.
+     * The constraint alias will be set to the node name.
      *
      * @param nodeName  the the participant node name
      * @param shortName the participation short name
@@ -46,6 +47,7 @@ public class ParticipantConstraint extends CollectionNodeConstraint {
 
     /**
      * Constructs a new <code>ParticipantConstraint</code>.
+     * The constraint alias will be set to the node name.
      *
      * @param nodeName  the the participant node name
      * @param shortName the participation short name
@@ -55,5 +57,6 @@ public class ParticipantConstraint extends CollectionNodeConstraint {
                                  IMObjectReference entity) {
         super(nodeName, shortName, true, true);
         add(new ObjectRefNodeConstraint("entity", entity));
+        getArchetypeConstraint().setAlias(nodeName);
     }
 }

@@ -28,7 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.query.AbstractQuery;
+import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.PreloadedResultSet;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -43,7 +43,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocumentTemplateQuery extends AbstractQuery<Entity> {
+public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
 
     /**
      * The archetype short name to filter on. May be <code>null</code>.
@@ -108,7 +108,7 @@ public class DocumentTemplateQuery extends AbstractQuery<Entity> {
                     objects.add((Entity) object);
                 }
             }
-            result = new PreloadedResultSet<Entity>(objects, getMaxRows());
+            result = new PreloadedResultSet<Entity>(objects, getMaxResults());
         }
         return result;
     }
