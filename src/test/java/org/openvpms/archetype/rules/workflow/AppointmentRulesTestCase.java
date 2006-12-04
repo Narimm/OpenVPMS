@@ -21,13 +21,8 @@ package org.openvpms.archetype.rules.workflow;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 
 import java.util.Calendar;
@@ -156,20 +151,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      */
     protected Act createAppointment(Date startTime, Date endTime,
                                     Party schedule) {
-        Act act = createAct("act.customerAppointment");
-        Lookup reason = createLookup("lookup.appointmentReason", "XReason");
-
-        ActBean bean = new ActBean(act);
-        bean.setValue("startTime", startTime);
-        bean.setValue("endTime", endTime);
-        bean.setValue("reason", reason.getCode());
-        bean.setValue("status", AppointmentStatus.IN_PROGRESS);
-        Party customer = (Party) create("party.customerperson");
-        Entity appointmentType = (Entity) create("entity.appointmentType");
-        bean.setParticipant("participation.customer", customer);
-        bean.setParticipant("participation.schedule", schedule);
-        bean.setParticipant("participation.appointmentType", appointmentType);
-        return act;
+        return AppointmentTestHelper.createAppointment(startTime, endTime,
+                                                       schedule);
     }
 
     /**
@@ -188,9 +171,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * @return a new appointment type
      */
     protected Entity createAppointmentType() {
-        Entity appointmentType = (Entity) create("entity.appointmentType");
-        appointmentType.setName("XAppointmentType");
-        return appointmentType;
+        return AppointmentTestHelper.createAppointmentType();
     }
 
     /**
@@ -204,19 +185,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      */
     protected Party createSchedule(int slotSize, String slotUnits,
                                    int noSlots, Entity appointmentType) {
-        Party schedule = (Party) create("party.organisationSchedule");
-        EntityBean bean = new EntityBean(schedule);
-        bean.setValue("name", "XSchedule");
-        bean.setValue("slotSize", slotSize);
-        bean.setValue("slotUnits", slotUnits);
-        EntityRelationship relationship = (EntityRelationship) create(
-                "entityRelationship.scheduleAppointmentType");
-        relationship.setSource(schedule.getObjectReference());
-        relationship.setTarget(appointmentType.getObjectReference());
-        IMObjectBean relBean = new IMObjectBean(relationship);
-        relBean.setValue("noSlots", noSlots);
-        schedule.addEntityRelationship(relationship);
-        return schedule;
+        return AppointmentTestHelper.createSchedule(slotSize, slotUnits,
+                                                    noSlots, appointmentType);
     }
 
     /**
@@ -229,19 +199,6 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     private Date createTime(int hour, int minutes) {
         Calendar calendar = new GregorianCalendar(2006, 8, 22, hour, minutes);
         return calendar.getTime();
-    }
-
-    /**
-     * Creates a lookup.
-     *
-     * @param shortName the lookup short name
-     * @param code      the lookup code
-     * @return a new lookup
-     */
-    private Lookup createLookup(String shortName, String code) {
-        Lookup lookup = (Lookup) create(shortName);
-        lookup.setCode(code);
-        return lookup;
     }
 
     /**
