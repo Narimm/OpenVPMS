@@ -26,7 +26,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.LinkConstraint;
+import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
@@ -158,13 +158,13 @@ public class ReminderQuery {
 
         query.add(new NodeConstraint("status", ReminderStatus.IN_PROGRESS));
         query.add(new CollectionNodeConstraint("patient", participation));
-        query.add(new LinkConstraint("act", "participation.act"));
+        query.add(new IdConstraint("act", "participation.act"));
         query.add(owner);
         query.add(patient);
         query.add(customer);
-        query.add(new LinkConstraint("participation.entity", "patient"));
-        query.add(new LinkConstraint("patient", "owner.target"));
-        query.add(new LinkConstraint("customer", "owner.source"));
+        query.add(new IdConstraint("participation.entity", "patient"));
+        query.add(new IdConstraint("patient", "owner.target"));
+        query.add(new IdConstraint("customer", "owner.source"));
         query.add(new NodeSortConstraint("customer", "name"));
         query.add(new NodeSortConstraint("patient", "name"));
 
