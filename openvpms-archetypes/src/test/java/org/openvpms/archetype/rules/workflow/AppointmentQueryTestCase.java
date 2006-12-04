@@ -26,14 +26,14 @@ import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.Date;
 
+
 /**
- * Tests the {@link AppointmentQueryHelper} class.
- * Add description here.
+ * Tests the {@link AppointmentQuery} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentQueryHelperTestCase extends ArchetypeServiceTest {
+public class AppointmentQueryTestCase extends ArchetypeServiceTest {
 
     public void testQuery() {
         final int count = 10;
@@ -49,8 +49,10 @@ public class AppointmentQueryHelperTestCase extends ArchetypeServiceTest {
         }
         Date to = new Date();
 
-        IPage<ObjectSet> page = AppointmentQueryHelper.query(schedule,
-                                                             from, to);
+        AppointmentQuery query = new AppointmentQuery();
+        query.setSchedule(schedule);
+        query.setDateRange(from, to);
+        IPage<ObjectSet> page = query.query();
         assertNotNull(page);
         assertEquals(count, page.getResults().size());
     }
