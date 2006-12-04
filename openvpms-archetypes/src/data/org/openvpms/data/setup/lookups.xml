@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetype>
-	<data id="CTY1" archetype="lookup.country" code="AU" country="Australia" defaultLookup="true"/>
+	<data id="CTY1" archetype="lookup.country" code="AU" name="Australia" defaultLookup="true"/>
 	<data id="ST1" archetype="lookup.state" code="VIC" name="Victoria" defaultLookup="true"/>
 	<data id="ST2" archetype="lookup.state" code="NSW" name="New South Wales" />
 	<data id="ST3" archetype="lookup.state" code="WA" name="Western Australia" />
