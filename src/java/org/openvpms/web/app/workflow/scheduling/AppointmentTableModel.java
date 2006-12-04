@@ -18,9 +18,11 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
+import org.openvpms.archetype.rules.workflow.AppointmentQuery;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -96,15 +98,15 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
     /**
      * The nodes to display.
      */
-    public static final String[][] NODE_NAMES
-            = new String[][]{{"startTime", "act.startTime"},
-                             {"endTime", "act.endTime"},
-                             {"status", "act.status"},
-                             {"appointmentType", "appointmentType"},
-                             {"customer", "customer"},
-                             {"patient", "patient"},
-                             {"reason", "act.reason"},
-                             {"description", "act.description"}};
+    public static final String[][] NODE_NAMES = new String[][]{
+            {"startTime", AppointmentQuery.ACT_START_TIME},
+            {"endTime", AppointmentQuery.ACT_END_TIME},
+            {"status", AppointmentQuery.ACT_STATUS},
+            {"appointmentType", AppointmentQuery.APPOINTMENT_REFERENCE},
+            {"customer", AppointmentQuery.CUSTOMER_REFERENCE},
+            {"patient", AppointmentQuery.PATIENT_REFERENCE},
+            {"reason", AppointmentQuery.ACT_REASON},
+            {"description", AppointmentQuery.ACT_DESCRIPTION}};
 
     /**
      * The colunm names.
@@ -115,6 +117,7 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
      * Cached lookup names.
      */
     private Map<String, String> statuses;
+
 
     /**
      * Creates a new <code>AppointmentTableModel</code>.
@@ -158,15 +161,15 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
     /**
      * Returns the value found at the given coordinate within the table.
      *
-     * @param object the object
+     * @param set    the object
      * @param column the column
      * @param row    the row
      * @return the value at the given coordinate.
      */
-    protected Object getValue(ObjectSet object, int column, int row) {
+    protected Object getValue(ObjectSet set, int column, int row) {
         Object result = null;
         int index = getColumn(column).getModelIndex();
-        Object value = object.get(NODE_NAMES[index][1]);
+        Object value = set.get(NODE_NAMES[index][1]);
         switch (index) {
             case START_TIME_INDEX:
             case END_TIME_INDEX:
@@ -187,16 +190,16 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
                 result = value;
                 break;
             case APPOINTMENT_INDEX:
+                result = getViewer(set, AppointmentQuery.APPOINTMENT_REFERENCE,
+                                   AppointmentQuery.APPOINTMENT_NAME);
+                break;
             case CUSTOMER_INDEX:
+                result = getViewer(set, AppointmentQuery.CUSTOMER_REFERENCE,
+                                   AppointmentQuery.CUSTOMER_NAME);
+                break;
             case PATIENT_INDEX:
-                String refKey = NODE_NAMES[index][1] + ".objectReference";
-                String refName = NODE_NAMES[index][1] + ".name";
-                IMObjectReference ref = (IMObjectReference) object.get(refKey);
-                String name = (String) object.get(refName);
-                IMObjectReferenceViewer viewer
-                        = new IMObjectReferenceViewer(ref, name,
-                                                      !context.isEdit());
-                result = viewer.getComponent();
+                result = getViewer(set, AppointmentQuery.PATIENT_REFERENCE,
+                                   AppointmentQuery.PATIENT_NAME);
                 break;
         }
         return result;
@@ -236,4 +239,19 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
         return (statuses != null) ? statuses.get(code) : null;
     }
 
+    /**
+     * Returns a viewer for an object reference.
+     *
+     * @param set     the object set
+     * @param refKey  the object reference key
+     * @param nameKey the entity name key
+     * @return a new component to view the object reference
+     */
+    private Component getViewer(ObjectSet set, String refKey, String nameKey) {
+        IMObjectReference ref = (IMObjectReference) set.get(refKey);
+        String name = (String) set.get(nameKey);
+        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
+                ref, name, !context.isEdit());
+        return viewer.getComponent();
+    }
 }

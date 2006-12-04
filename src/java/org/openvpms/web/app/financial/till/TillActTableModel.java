@@ -19,7 +19,6 @@
 package org.openvpms.web.app.financial.till;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.util.DateFormatter;
 
@@ -44,21 +43,21 @@ public class TillActTableModel extends ActAmountTableModel {
     /**
      * Returns the value found at the given coordinate within the table.
      *
-     * @param object the object the object
-     * @param column
+     * @param act    the object the object
+     * @param column the table column
      * @param row    the table row
+     * @return the value at the given coordinate
      */
     @Override
-    protected Object getValue(IMObject object, int column, int row) {
+    protected Object getValue(Act act, int column, int row) {
         Object result = null;
         if (column == DATE_INDEX) {
-            Act act = (Act) object;
             Date date = act.getActivityStartTime();
             if (date != null) {
                 result = DateFormatter.formatDateTime(date, false);
             }
         } else {
-            result = super.getValue(object, column, row);
+            result = super.getValue(act, column, row);
         }
         return result;
     }

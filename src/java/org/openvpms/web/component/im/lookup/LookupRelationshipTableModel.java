@@ -34,7 +34,8 @@ import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-04-11 04:09:07Z $
  */
-public class LookupRelationshipTableModel extends BaseIMObjectTableModel {
+public class LookupRelationshipTableModel
+        extends BaseIMObjectTableModel<LookupRelationship> {
 
     /**
      * Determines if hypelinks should be created for entities.
@@ -67,14 +68,15 @@ public class LookupRelationshipTableModel extends BaseIMObjectTableModel {
      * Returns the value found at the given coordinate within the table.
      *
      * @param object the object
-     * @param column
+     * @param column the table column
      * @param row    the table row
+     * @return the value at the specified coordinate
      */
     @Override
-    protected Object getValue(IMObject object, int column, int row) {
+    protected Object getValue(LookupRelationship object, int column, int row) {
         Object result;
         if (column == NAME_INDEX) {
-            result = getEntity((LookupRelationship) object);
+            result = getEntity(object);
         } else {
             result = super.getValue(object, column, row);
         }

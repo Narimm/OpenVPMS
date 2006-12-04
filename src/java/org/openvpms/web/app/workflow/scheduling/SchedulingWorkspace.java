@@ -327,7 +327,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace {
      * @return a new query
      */
     protected ActQuery<ObjectSet> createQuery(Party party) {
-        return new AppointmentQuery(party);
+        return new CustomerAppointmentQuery(party);
     }
 
     /**
@@ -335,7 +335,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace {
      */
     protected void onQuery() {
         selectFirst();
-        AppointmentQuery query = (AppointmentQuery) getQuery();
+        CustomerAppointmentQuery query = (CustomerAppointmentQuery) getQuery();
         if (query != null) {
             GlobalContext.getInstance().setScheduleDate(query.getDate());
         }

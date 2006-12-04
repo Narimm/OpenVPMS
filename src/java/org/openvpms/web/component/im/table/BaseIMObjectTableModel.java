@@ -142,9 +142,9 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
      * @param object the object
      * @param column the column
      * @param row    the row
-     * @return the value at the given coordinate.
+     * @return the value at the given coordinate
      */
-    protected Object getValue(IMObject object, int column, int row) {
+    protected Object getValue(T object, int column, int row) {
         Object result;
         TableColumn col = getColumn(column);
         switch (col.getModelIndex()) {

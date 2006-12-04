@@ -44,7 +44,7 @@ import java.util.Date;
 public class TaskQuery extends WorkflowQuery<Act> {
 
     /**
-     * Construct a new <code>AppointmentQuery</code>.
+     * Construct a new <code>CustomerAppointmentQuery</code>.
      *
      * @param schedule the schedule
      */

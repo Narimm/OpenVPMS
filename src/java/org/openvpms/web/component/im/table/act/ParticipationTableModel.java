@@ -34,7 +34,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ParticipationTableModel extends BaseIMObjectTableModel {
+public class ParticipationTableModel extends BaseIMObjectTableModel<IMObject> {
 
     /**
      * Construct a new <code>ParticipationTableModel</code>.
@@ -46,8 +46,9 @@ public class ParticipationTableModel extends BaseIMObjectTableModel {
      * Returns the value found at the given coordinate within the table.
      *
      * @param object the object
-     * @param column
+     * @param column the table column
      * @param row    the table row
+     * @return the value at the specified coordinate
      */
     @Override
     protected Object getValue(IMObject object, int column, int row) {

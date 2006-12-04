@@ -41,7 +41,8 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityRelationshipTableModel extends BaseIMObjectTableModel {
+public class EntityRelationshipTableModel
+        extends BaseIMObjectTableModel<EntityRelationship> {
 
     /**
      * The layout context.
@@ -113,13 +114,12 @@ public class EntityRelationshipTableModel extends BaseIMObjectTableModel {
      * @param row    the table row
      */
     @Override
-    protected Object getValue(IMObject object, int column, int row) {
+    protected Object getValue(EntityRelationship object, int column, int row) {
         Object result;
-        EntityRelationship relationship = (EntityRelationship) object;
         if (column == NAME_INDEX) {
-            result = getEntityViewer(relationship);
+            result = getEntityViewer(object);
         } else if (column == DESCRIPTION_INDEX) {
-            IMObject entity = IMObjectHelper.getObject(getEntity(relationship));
+            IMObject entity = IMObjectHelper.getObject(getEntity(object));
             result = (entity != null) ? entity.getDescription() : null;
         } else if (column == DETAIL_INDEX) {
             result = object.getDescription();
