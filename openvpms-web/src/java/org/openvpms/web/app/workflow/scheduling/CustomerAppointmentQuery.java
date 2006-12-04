@@ -18,7 +18,7 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
-import org.openvpms.archetype.rules.workflow.AppointmentQueryHelper;
+import org.openvpms.archetype.rules.workflow.AppointmentQuery;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -36,14 +36,14 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentQuery extends WorkflowQuery<ObjectSet> {
+public class CustomerAppointmentQuery extends WorkflowQuery<ObjectSet> {
 
     /**
-     * Construct a new <code>AppointmentQuery</code>.
+     * Construct a new <code>CustomerAppointmentQuery</code>.
      *
      * @param schedule the schedule
      */
-    public AppointmentQuery(Party schedule) {
+    public CustomerAppointmentQuery(Party schedule) {
         super(schedule, "schedule", "participation.schedule",
               new String[]{"act.customerAppointment"}, new String[0]);
     }
@@ -76,9 +76,12 @@ public class AppointmentQuery extends WorkflowQuery<ObjectSet> {
          */
         protected IPage<ObjectSet> getPage(int firstResult, int maxResults) {
             Party schedule = (Party) IMObjectHelper.getObject(getEntityId());
-            return AppointmentQueryHelper.query(schedule,
-                                                getStartFrom(),
-                                                getStartTo());
+            Party clinician = (Party) IMObjectHelper.getObject(getClinician());
+            AppointmentQuery query = new AppointmentQuery();
+            query.setSchedule(schedule);
+            query.setClinician(clinician);
+            query.setDateRange(getStartFrom(), getStartTo());
+            return query.query();
         }
 
     }

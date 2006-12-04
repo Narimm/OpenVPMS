@@ -27,7 +27,6 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -170,13 +169,13 @@ public class ActAmountTableModel extends BaseIMObjectTableModel<Act> {
     /**
      * Returns the value found at the given coordinate within the table.
      *
-     * @param object the object the object
-     * @param column
+     * @param act    the act
+     * @param column the table column
      * @param row    the table row
+     * @return the value at the given coordinate
      */
     @Override
-    protected Object getValue(IMObject object, int column, int row) {
-        Act act = (Act) object;
+    protected Object getValue(Act act, int column, int row) {
         Object result = null;
         switch (column) {
             case DATE_INDEX:
@@ -192,7 +191,7 @@ public class ActAmountTableModel extends BaseIMObjectTableModel<Act> {
                 result = getAmount(act);
                 break;
             default:
-                result = super.getValue(object, column, row);
+                result = super.getValue(act, column, row);
                 break;
         }
         return result;

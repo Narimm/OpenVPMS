@@ -23,7 +23,6 @@ import nextapp.echo2.app.table.TableColumnModel;
 import nextapp.echo2.app.table.TableModel;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.resource.util.Messages;
@@ -107,16 +106,16 @@ public class TaskTableModel extends AbstractActTableModel {
     /**
      * Returns the value found at the given coordinate within the table.
      *
-     * @param object the object
+     * @param act    the object
      * @param column the table column
      * @param row    the table row
+     * @return the value at the specified coordinate
      */
     @Override
-    protected Object getValue(IMObject object, int column, int row) {
+    protected Object getValue(Act act, int column, int row) {
         TableColumn col = getColumn(column);
         Object result = null;
         if (col.getModelIndex() == timeIndex) {
-            Act act = (Act) object;
             Date start = act.getActivityStartTime();
             Date end = act.getActivityEndTime();
             if (start != null) {
@@ -135,7 +134,7 @@ public class TaskTableModel extends AbstractActTableModel {
                                       mins);
             }
         } else {
-            result = super.getValue(object, column, row);
+            result = super.getValue(act, column, row);
         }
         return result;
     }

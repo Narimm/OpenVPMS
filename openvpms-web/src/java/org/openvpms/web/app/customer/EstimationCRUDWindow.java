@@ -380,7 +380,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
                 if (result == null) {
                     throw new ArchetypeServiceException(
                             ArchetypeServiceException.ErrorCode.FailedToCreateArchetype,
-                            new String[]{shortName});
+                            shortName);
                 }
             } else {
                 result = object;
