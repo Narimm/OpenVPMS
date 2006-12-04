@@ -18,6 +18,11 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -34,11 +39,6 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 
 /**
@@ -59,8 +59,9 @@ public class ActHelper {
         String[] shortNames = DescriptorHelper.getShortNames(
                 "act.customerAccount*");
         return getAccountBalance(customer.getObjectReference(), "customer",
-                                 "participation.customer", shortNames,
-                                 "act.customerAccountOpeningBalance");
+
+                                 "participation.customer", shortNames, "act.customerAccountOpeningBalance",
+                                 "act.customerAccountClosingBalance");
     }
 
     /**
@@ -73,8 +74,8 @@ public class ActHelper {
         String[] shortNames = {"act.supplierAccountCharges*",
                                "act.supplierAccountPayment"};
         return getAccountBalance(supplier.getObjectReference(), "supplier",
-                                 "participation.supplier", shortNames,
-                                 "act.supplierAccountOpeningbalance");
+                                 "participation.supplier", shortNames, "act.supplierAccountOpeningBalance",
+                                 "act.supplierAccountClosingBalance");
     }
 
     /**
@@ -89,8 +90,9 @@ public class ActHelper {
     public static BigDecimal getAccountBalance(IMObjectReference entity,
                                                String participant,
                                                String participation,
-                                               String[] shortNames,
-                                               String openingBalanceName) {
+                                               String[] shortNames, 
+                                               String openingBalanceName,
+                                               String closingBalanceName) {
         String[] statuses = {FinancialActStatus.POSTED};
         BaseArchetypeConstraint archetypes = new ShortNameConstraint(
                 shortNames, true, true);
@@ -106,17 +108,15 @@ public class ActHelper {
         while (set.hasNext()) {
             IPage<Act> acts = set.next();
             for (Act act : acts.getResults()) {
-                //Ignore first closing balance
-                if (act.getArchetypeId().getShortName().equalsIgnoreCase(
-                        "act.customerAccountClosingBalance"))
-                    continue;
+            	//Ignore first closing balance
+            	if(act.getArchetypeId().getShortName().equalsIgnoreCase(closingBalanceName))
+            		continue;
                 BigDecimal amount = getAmount(act, "amount");
                 balance = balance.add(amount);
-                if (act.getArchetypeId().getShortName().equalsIgnoreCase(
-                        "act.customerAccountOpeningBalance")) {
-                    finished = true;
-                    break;
-                }
+            	if(act.getArchetypeId().getShortName().equalsIgnoreCase(openingBalanceName)) {
+            		finished = true;
+            		break;
+            	}
             }
             if (finished)
                 break;
