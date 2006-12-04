@@ -3,6 +3,25 @@
         "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
+    <!-- ================================================================== -->
+    <!--                       USER SERVICE DEFINITIONS                   = -->
+    <!-- ================================================================== -->
+
+    <!--  The User DAO bean -->
+    <bean id="userDao"
+          class="org.openvpms.component.business.dao.hibernate.im.security.UserDAOHibernate">
+        <property name="sessionFactory">
+            <ref bean="sessionFactory"/>
+        </property>
+    </bean>
+
+    <!-- The User Details service -->
+    <bean id="userService"
+          class="org.openvpms.component.business.service.security.UserService">
+        <constructor-arg index="0">
+            <ref local="userDao"/>
+        </constructor-arg>
+    </bean>
 
     <!-- ================================================================== -->
     <!--                            FILTER CHAIN                            -->
@@ -136,7 +155,7 @@
     <bean id="daoAuthenticationProvider"
           class='org.acegisecurity.providers.dao.DaoAuthenticationProvider'>
         <property name="userDetailsService">
-            <ref bean="userDetailsService"/>
+            <ref bean="userService"/>
         </property>
     </bean>
 

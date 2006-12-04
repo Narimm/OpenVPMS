@@ -85,6 +85,7 @@
                 </prop>
             </props>
         </property>
+        <property name="schemaUpdate" value="true"/>
         <property name="mappingResources">
             <list>
                 <value>
@@ -203,14 +204,6 @@
           class="org.openvpms.component.business.service.audit.AuditService">
         <constructor-arg index="0">
             <ref local="auditDao"/>
-        </constructor-arg>
-    </bean>
-
-    <!-- The User Details service -->
-    <bean id="userDetailsService"
-          class="org.openvpms.component.business.service.security.UserService">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
         </constructor-arg>
     </bean>
 
