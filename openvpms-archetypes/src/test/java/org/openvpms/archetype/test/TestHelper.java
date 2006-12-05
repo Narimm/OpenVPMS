@@ -103,7 +103,8 @@ public class TestHelper extends Assert {
      * @return a new customer
      */
     public static Party createCustomer(boolean save) {
-        return createCustomer("J", "Zoo", save);
+
+        return createCustomer("J", "Zoo-" + System.currentTimeMillis(), save);
     }
 
     /**
@@ -125,7 +126,7 @@ public class TestHelper extends Assert {
         Party patient = (Party) create("party.patientpet");
         assertNotNull(patient);
         EntityBean bean = new EntityBean(patient);
-        bean.setValue("name", "XPatient");
+        bean.setValue("name", "XPatient-" + System.currentTimeMillis());
         bean.setValue("species", "Canine");
         if (save) {
             bean.save();
@@ -162,6 +163,15 @@ public class TestHelper extends Assert {
     }
 
     /**
+     * Creates and saves a new clinician.
+     *
+     * @return a new clinician
+     */
+    public static User createClinician() {
+        return createClinician(true);
+    }
+
+    /**
      * Creates a new clinician.
      *
      * @param save if <code>true</code> make the user persistent
@@ -171,7 +181,9 @@ public class TestHelper extends Assert {
         User user = (User) create("security.user");
         assertNotNull(user);
         EntityBean bean = new EntityBean(user);
+        bean.setValue("name", "zvet" + System.currentTimeMillis());
         bean.setValue("username", "zvet");
+        bean.setValue("password", "zvet");
         if (save) {
             bean.save();
         }

@@ -21,6 +21,7 @@ package org.openvpms.archetype.rules.workflow;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -38,7 +39,8 @@ import java.util.List;
 
 
 /**
- * Queries <em>act.customerAppointments</em>.
+ * Queries <em>act.customerAppointments</em>, returning a limited set of
+ * data for display purposes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -140,7 +142,7 @@ public class AppointmentQuery {
     /**
      * The clinician. May be <code>null</code>
      */
-    private Party clinician;
+    private User clinician;
 
     /**
      * Constructs a new <code>AppointmentQuery</code>.
@@ -172,7 +174,7 @@ public class AppointmentQuery {
      *
      * @param clinician the clinician. May be <code>null</code>
      */
-    public void setClinician(Party clinician) {
+    public void setClinician(User clinician) {
         this.clinician = clinician;
     }
 
@@ -189,14 +191,15 @@ public class AppointmentQuery {
 
     /**
      * Executes the query.
+     * Returns an empty page if any of the schedule, from or to dates are null.
      *
-     * @return the query results
+     * @return the query results.
      * @throws ArchetypeServiceException if the query fails
      */
     public IPage<ObjectSet> query() {
         if (schedule == null || from == null || to == null) {
             // return an empty set. Need these values to perform a query
-            return new Page<ObjectSet>();
+            return new Page<ObjectSet>(new ArrayList<ObjectSet>(), 0, 0, -1);
         }
         IArchetypeQuery query = createQuery();
         IPage<ObjectSet> page = service.getObjects(query);

@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -114,6 +115,24 @@ public class AppointmentTestHelper extends TestHelper {
     public static Act createAppointment(Date startTime, Date endTime,
                                         Party schedule, Party customer,
                                         Party patient) {
+        return createAppointment(startTime, endTime, schedule, customer,
+                                 patient, null);
+    }
+
+    /**
+     * Helper to create an <em>act.customerAppointment</em>.
+     *
+     * @param startTime the act start time
+     * @param endTime   the act end time
+     * @param schedule  the schedule
+     * @param customer  the customer
+     * @param patient   the patient. May be <code>null</code>
+     * @param clinician the clinician. May be <code>null</code>
+     * @return a new act
+     */
+    public static Act createAppointment(Date startTime, Date endTime,
+                                        Party schedule, Party customer,
+                                        Party patient, User clinician) {
         Act act = (Act) create("act.customerAppointment");
         Lookup reason = createLookup("lookup.appointmentReason", "XReason");
 
@@ -129,6 +148,9 @@ public class AppointmentTestHelper extends TestHelper {
         }
         bean.setParticipant("participation.schedule", schedule);
         bean.setParticipant("participation.appointmentType", appointmentType);
+        if (clinician != null) {
+            bean.setParticipant("participation.clinician", clinician);
+        }
         return act;
     }
 
