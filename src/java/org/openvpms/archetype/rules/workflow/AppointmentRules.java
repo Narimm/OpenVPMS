@@ -18,11 +18,13 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import java.util.Date;
+import java.util.List;
+
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -36,12 +38,12 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-
-import java.util.Date;
-import java.util.List;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 
 /**
@@ -120,8 +122,8 @@ public class AppointmentRules {
                                                       IMObjectReference schedule) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        ArchetypeQuery query = new ArchetypeQuery(
-                null, "act", "customerAppointment", false, true);
+        ShortNameConstraint shortName = new ShortNameConstraint("act", "act.customerAppointment", true);
+        ArchetypeQuery query = new ArchetypeQuery(shortName);
         query.setFirstResult(0);
         query.setMaxResults(1);
 
@@ -149,7 +151,8 @@ public class AppointmentRules {
         or.add(overlapIn);
         query.add(or);
 
-        List<IMObject> overlaps = service.get(query).getResults();
+        query.add(new NodeSelectConstraint("act.uid"));
+        List<ObjectSet> overlaps = service.getObjects(query).getResults();
         return !overlaps.isEmpty();
     }
 
