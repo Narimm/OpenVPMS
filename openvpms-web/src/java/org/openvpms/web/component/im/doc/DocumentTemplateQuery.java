@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.doc;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -85,6 +86,7 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
      *
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
+     * @throws ArchetypeServiceException if the query fails
      */
     @Override
     public ResultSet<Entity> query(SortConstraint[] sort) {

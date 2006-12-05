@@ -20,6 +20,7 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import org.openvpms.archetype.rules.workflow.AppointmentQuery;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -76,7 +77,7 @@ public class CustomerAppointmentQuery extends WorkflowQuery<ObjectSet> {
          */
         protected IPage<ObjectSet> getPage(int firstResult, int maxResults) {
             Party schedule = (Party) IMObjectHelper.getObject(getEntityId());
-            Party clinician = (Party) IMObjectHelper.getObject(getClinician());
+            User clinician = (User) IMObjectHelper.getObject(getClinician());
             AppointmentQuery query = new AppointmentQuery();
             query.setSchedule(schedule);
             query.setClinician(clinician);

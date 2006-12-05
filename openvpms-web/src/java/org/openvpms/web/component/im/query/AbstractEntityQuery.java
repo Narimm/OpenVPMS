@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -65,6 +66,7 @@ public abstract class AbstractEntityQuery
      *
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
+     * @throws ArchetypeServiceException if the query fails
      */
     @Override
     public ResultSet<Entity> query(SortConstraint[] sort) {

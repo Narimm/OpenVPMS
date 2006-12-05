@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.LongNameConstraint;
@@ -218,6 +219,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      *
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set. May be <code>null</code>
+     * @throws ArchetypeServiceException if the query fails
      */
     @Override
     public ResultSet<T> query(SortConstraint[] sort) {

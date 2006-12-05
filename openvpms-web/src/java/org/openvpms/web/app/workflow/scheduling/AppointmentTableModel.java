@@ -176,7 +176,7 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
                 Date date = (Date) value;
                 Label label = LabelFactory.create();
                 if (date != null) {
-                    label.setText(DateFormatter.formatDate(date, false));
+                    label.setText(DateFormatter.formatDateTime(date, false));
                 }
                 result = label;
                 break;

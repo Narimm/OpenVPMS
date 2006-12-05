@@ -12,6 +12,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
@@ -118,6 +119,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
      *
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
+     * @throws ArchetypeServiceException if the query fails
      */
     @Override
     public ResultSet<Entity> query(SortConstraint[] sort) {

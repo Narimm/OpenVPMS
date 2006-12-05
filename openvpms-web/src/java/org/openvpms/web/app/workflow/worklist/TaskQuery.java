@@ -20,6 +20,7 @@ package org.openvpms.web.app.workflow.worklist;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IConstraint;
@@ -58,6 +59,7 @@ public class TaskQuery extends WorkflowQuery<Act> {
      *
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set. May be <code>null</code>
+     * @throws ArchetypeServiceException if the query fails
      */
     @Override
     public ResultSet<Act> query(SortConstraint[] sort) {
