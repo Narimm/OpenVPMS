@@ -21,6 +21,7 @@ package org.openvpms.web.app.workflow.scheduling;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
@@ -63,6 +64,7 @@ public class AppointmentTypeQuery extends AbstractIMObjectQuery<IMObject> {
      *
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
+     * @throws ArchetypeServiceException if the query fails
      */
     @Override
     public ResultSet<IMObject> query(SortConstraint[] sort) {

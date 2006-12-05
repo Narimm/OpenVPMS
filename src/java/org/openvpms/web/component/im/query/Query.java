@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
@@ -57,6 +58,7 @@ public interface Query<T> {
      *
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set. May be <code>null</code>
+     * @throws ArchetypeServiceException if the query fails
      */
     ResultSet<T> query(SortConstraint[] sort);
 

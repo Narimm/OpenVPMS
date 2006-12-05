@@ -23,7 +23,9 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -143,7 +145,12 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      * @return the query result set. May be <code>null</code>
      */
     protected ResultSet<T> doQuery() {
-        return query.query(sort);
+        try {
+            return query.query(sort);
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+        return null;
     }
 
     /**
