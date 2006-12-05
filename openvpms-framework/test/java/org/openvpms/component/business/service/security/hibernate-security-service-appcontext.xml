@@ -123,6 +123,13 @@
     </property>
   </bean>
 
+  <!--  The User DAO bean -->
+  <bean id="userDAO"
+        class="org.openvpms.component.business.dao.hibernate.im.security.UserDAOHibernate">
+    <property name="sessionFactory">
+      <ref local="sessionFactory" />
+    </property>
+  </bean>
 
   <!--  The AuditRecord DAO bean -->
   <bean id="auditDao"
@@ -179,7 +186,7 @@
   <bean id="userDetailsService"
     class="org.openvpms.component.business.service.security.UserService">
     <constructor-arg index="0">
-      <ref local="archetypeService" />
+      <ref local="userDAO" />
     </constructor-arg>
   </bean>
 

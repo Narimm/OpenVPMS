@@ -19,12 +19,12 @@
 
 package org.openvpms.component.business.domain.im.product;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.openvpms.component.business.domain.im.common.Entity;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a product category of objects
@@ -72,6 +72,7 @@ public class Product extends Entity {
      *            the product price to add
      */
     public void addProductPrice(ProductPrice productPrice) {
+        productPrice.setProduct(this);
         this.productPrices.add(productPrice);
     }
     
