@@ -31,6 +31,11 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 public class AbstractArchetypeQuery implements IArchetypeQuery {
 
     /**
+     * The default maximum no. of results to retrieve.
+     */
+    public static final int DEFAULT_MAX_RESULTS = 25;
+
+    /**
      * Define the first result to be retrieve if paging is being used.
      */
     private int firstResult = 0;
@@ -38,13 +43,14 @@ public class AbstractArchetypeQuery implements IArchetypeQuery {
     /**
      * Define the maximum number of results to be retrieve.
      */
-    private int maxResults = ALL_RESULTS;
+    private int maxResults = DEFAULT_MAX_RESULTS;
 
     /**
      * Determines if the total no. of results should be counted and returned
      * in the resulting {@link IPage}.
      */
     private boolean count = false;
+
 
     /**
      * Returns the first result.
@@ -78,7 +84,7 @@ public class AbstractArchetypeQuery implements IArchetypeQuery {
 
     /**
      * Sets the maximum number of results to retrieve.  If not set,
-     * there is no limit to the number of results retrieved.
+     * defaults to {@link #DEFAULT_MAX_RESULTS}.
      *
      * @param maxResults the maximum no. of results to retrieve
      * @return this query

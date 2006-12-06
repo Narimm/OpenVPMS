@@ -18,6 +18,8 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
+import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.util.ArrayList;
@@ -25,22 +27,40 @@ import java.util.List;
 
 
 /**
- * Add description here.
+ * Implementation of {@link ResultCollector} that collects {@link IMObject}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 class IMObjectResultCollector extends HibernateResultCollector<IMObject> {
 
+    /**
+     * The results.
+     */
     private List<IMObject> result = new ArrayList<IMObject>();
 
+
+    /**
+     * Collects an object.
+     *
+     * @param object the object to collect. Must be an instance of
+     *               <code>IMObject</code>
+     */
     public void collect(Object object) {
-        if (object instanceof IMObject) {
-            getLoader().load(object);
-            result.add((IMObject) object);
+        if (!(object instanceof IMObject)) {
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.CannotCollectObject,
+                    object.getClass().getName());
         }
+        getLoader().load(object);
+        result.add((IMObject) object);
     }
 
+    /**
+     * Returns the results.
+     *
+     * @return the results
+     */
     protected List<IMObject> getResults() {
         return result;
     }

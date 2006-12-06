@@ -18,6 +18,8 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
+import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -29,32 +31,56 @@ import java.util.List;
 
 
 /**
- * Add description here.
+ * Implementation of the {@link ResultCollector} interface that collects
+ * {@link NodeSet}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 class NodeSetResultCollector extends AbstractNodeResultCollector<NodeSet> {
 
+    /**
+     * The results.
+     */
     private List<NodeSet> result = new ArrayList<NodeSet>();
 
+
+    /**
+     * Creates a new <code>NodeSetResultCollector</code>.
+     *
+     * @param service the archetype service
+     * @param nodes   the nodes to collect
+     */
     public NodeSetResultCollector(IArchetypeService service,
                                   Collection<String> nodes) {
         super(service, nodes);
     }
 
+    /**
+     * Collects an object.
+     *
+     * @param object the object. Must be an instance of <code>IMObject</code>
+     */
     public void collect(Object object) {
-        if (object instanceof IMObject) {
-            IMObject obj = (IMObject) object;
-            NodeSet nodes = new NodeSet(obj.getObjectReference());
-            for (NodeDescriptor descriptor : getDescriptors(obj)) {
-                Object value = loadValue(descriptor, obj);
-                nodes.set(descriptor.getName(), value);
-            }
-            result.add(nodes);
+        if (!(object instanceof IMObject)) {
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.CannotCollectObject,
+                    object.getClass().getName());
         }
+        IMObject obj = (IMObject) object;
+        NodeSet nodes = new NodeSet(obj.getObjectReference());
+        for (NodeDescriptor descriptor : getDescriptors(obj)) {
+            Object value = loadValue(descriptor, obj);
+            nodes.set(descriptor.getName(), value);
+        }
+        result.add(nodes);
     }
 
+    /**
+     * Returns the results.
+     *
+     * @return the results
+     */
     protected List<NodeSet> getResults() {
         return result;
     }

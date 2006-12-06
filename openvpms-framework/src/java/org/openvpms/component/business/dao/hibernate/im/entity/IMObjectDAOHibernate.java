@@ -106,7 +106,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
 
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToSaveIMObject,
-                    new Object[]{object.getUid()}, exception);
+                    exception);
 
         } finally {
             clearCache();
@@ -141,7 +141,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
 
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToSaveCollectionOfObjects,
-                    new Object[]{objects.size()}, exception);
+                    exception);
 
         } finally {
             clearCache();
@@ -167,7 +167,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
 
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToDeleteIMObject,
-                    new Object[]{object.getUid()});
+                    object.getUid());
 
         } finally {
             clearCache();
@@ -201,7 +201,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToExecuteQuery,
-                    new Object[]{queryString}, exception);
+                    exception);
         }
     }
 
@@ -357,8 +357,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindIMObjects,
-                    new Object[]{rmName, entityName, conceptName,
-                                 instanceName, clazz}, exception);
+                    exception);
         }
     }
 
@@ -401,7 +400,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindIMObject,
-                    new Object[]{clazz, id}, exception);
+                    exception);
         }
     }
 
@@ -444,7 +443,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindIMObjectReference,
-                    new Object[]{clazz, linkId}, exception);
+                    exception);
         }
     }
 
@@ -471,7 +470,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToExecuteNamedQuery,
-                    new Object[]{query}, exception);
+                    exception);
         }
     }
 
@@ -602,7 +601,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         if (indexOfFrom == -1) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.InvalidQueryString,
-                    new Object[]{queryString});
+                    queryString);
         }
 
         Query query = session.createQuery("select count(*) "
