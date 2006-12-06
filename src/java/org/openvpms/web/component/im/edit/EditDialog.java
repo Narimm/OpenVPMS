@@ -19,9 +19,7 @@
 package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.web.component.dialog.PopupWindow;
+import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 import java.beans.PropertyChangeEvent;
@@ -34,79 +32,59 @@ import java.beans.PropertyChangeListener;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EditDialog extends PopupWindow {
+public class EditDialog extends PopupDialog {
 
     /**
      * The editor.
      */
-    private final IMObjectEditor _editor;
+    private final IMObjectEditor editor;
 
     /**
-     * Apply button identifier.
+     * Determines if the dialog should save when apply and OK are pressed.
      */
-    private static final String APPLY_ID = "apply";
-
-    /**
-     * OK button identifier.
-     */
-    private static final String OK_ID = "ok";
-
-    /**
-     * Delete button identifier.
-     */
-    private static final String DELETE_ID = "delete";
-
-    /**
-     * Cancel button identifier.
-     */
-    private static final String CANCEL_ID = "cancel";
+    private final boolean save;
 
     /**
      * Edit window style name.
      */
     private static final String STYLE = "EditDialog";
 
-
     /**
-     * Construct a new <code>EditDialog</code>.
+     * Constructs a new <code>EditDialog</code>.
      *
      * @param editor  the editor
      * @param context the layout context
      */
     public EditDialog(IMObjectEditor editor, LayoutContext context) {
-        super(editor.getTitle(), STYLE, context.getFocusTree());
-        _editor = editor;
+        this(editor, true, context);
+    }
+
+    /**
+     * Construct a new <code>EditDialog</code>.
+     *
+     * @param editor  the editor
+     * @param save    if <code>true</code>, display an 'apply' and 'OK' button
+     *                that save the editor when pressed. If <code>false</code>
+     *                display an 'OK' and 'CANCEL' button that simply close the
+     *                dialog
+     * @param context the layout context
+     */
+    public EditDialog(IMObjectEditor editor, boolean save,
+                      LayoutContext context) {
+        super(editor.getTitle(), STYLE, getButtons(save),
+              context.getFocusTree());
+        this.editor = editor;
+        this.save = save;
         setModal(true);
 
-        getLayout().add(_editor.getComponent());
-        _editor.addPropertyChangeListener(
+        getLayout().add(this.editor.getComponent());
+        this.editor.addPropertyChangeListener(
                 IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent event) {
                         onComponentChange(event);
                     }
                 });
-
-        addButton(APPLY_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onApply();
-            }
-        });
-        addButton(OK_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onOK();
-            }
-        });
-        addButton(DELETE_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onDelete();
-            }
-        });
-        addButton(CANCEL_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onCancel();
-            }
-        });
     }
 
     /**
@@ -115,31 +93,40 @@ public class EditDialog extends PopupWindow {
      * @return the editor
      */
     protected IMObjectEditor getEditor() {
-        return _editor;
+        return editor;
     }
 
     /**
-     * Save the current object.
+     * Saves the current object, if saving is enabled.
      */
+    @Override
     protected void onApply() {
-        _editor.save();
+        if (save) {
+            editor.save();
+        }
     }
 
     /**
-     * Save the current object, and close the editor.
+     * Saves the current object, if saving is enabled, and closes the editor.
      */
+    @Override
     protected void onOK() {
-        if (_editor.save()) {
-            close();
+        if (save) {
+            if (editor.save()) {
+                close(OK_ID);
+            }
+        } else {
+            close(OK_ID);
         }
     }
 
     /**
      * Delete the current object, and close the editor.
      */
+    @Override
     protected void onDelete() {
-        if (_editor.delete()) {
-            close();
+        if (editor.delete()) {
+            close(DELETE_ID);
         }
     }
 
@@ -147,8 +134,8 @@ public class EditDialog extends PopupWindow {
      * Close the editor, discarding any unsaved changes.
      */
     protected void onCancel() {
-        _editor.cancel();
-        close();
+        editor.cancel();
+        close(CANCEL_ID);
     }
 
     /**
@@ -159,6 +146,17 @@ public class EditDialog extends PopupWindow {
     protected void onComponentChange(PropertyChangeEvent event) {
         getLayout().remove((Component) event.getOldValue());
         getLayout().add((Component) event.getNewValue());
+    }
+
+    /**
+     * Determines which buttons should be displayed.
+     *
+     * @param save if <code>true</code> provide apply, OK, delete and cancel
+     *             buttons, otherwise provide OK and cancel buttons
+     * @return the button identifiers
+     */
+    private static String[] getButtons(boolean save) {
+        return (save) ? APPLY_OK_DELETE_CANCEL : OK_CANCEL;
     }
 
 }

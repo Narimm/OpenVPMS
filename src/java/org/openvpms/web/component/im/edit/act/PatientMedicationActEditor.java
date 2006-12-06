@@ -19,10 +19,14 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -63,12 +67,21 @@ public class PatientMedicationActEditor extends AbstractActEditor {
     }
 
     /**
-     * Sets the product.
+     * Sets the product, updating the dispensing label from the product's
+     * dispensing instructions, if available.
      *
      * @param product the product reference. May be <code>null</code>
      */
     public void setProduct(IMObjectReference product) {
         setParticipant("product", product);
+        IMObject prod = IMObjectHelper.getObject(product);
+        if (prod != null) {
+            IMObjectBean bean = new IMObjectBean(prod);
+            if (bean.hasNode("dispInstructions")) {
+                Property label = getProperty("label");
+                label.setValue(bean.getValue("dispInstructions"));
+            }
+        }
     }
 
     /**
@@ -97,5 +110,6 @@ public class PatientMedicationActEditor extends AbstractActEditor {
     public IMObjectReference getPatient() {
         return getParticipantRef("patient");
     }
+
 
 }

@@ -20,6 +20,7 @@ package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.focus.FocusTree;
 
 
 /**
@@ -34,6 +35,11 @@ public abstract class PopupDialog extends PopupWindow {
      * OK button identifier.
      */
     public static final String OK_ID = "ok";
+
+    /**
+     * Apply button identifier.
+     */
+    public static final String APPLY_ID = "apply";
 
     /**
      * Cancel button identifier.
@@ -51,35 +57,56 @@ public abstract class PopupDialog extends PopupWindow {
     public static final String NO_ID = "no";
 
     /**
+     * Delete button identifier.
+     */
+    public static final String DELETE_ID = "delete";
+
+    /**
      * Skip button identifier.
      */
     public static final String SKIP_ID = "skip";
 
     /**
-     * Used to indicate which buttons to display.
-     */
-    public enum Button {
-        OK, YES, NO, CANCEL, SKIP}
-
-    /**
-     *
+     * Helper to create a button row containing the OK button.
      */
     public static final String[] OK = {OK_ID};
 
+    /**
+     * Helper to create a button row containing the CANCEL button.
+     */
     public static final String[] CANCEL = {CANCEL_ID};
 
+    /**
+     * Helper to create a button row containing the OK and CANCEL buttons.
+     */
     public static final String[] OK_CANCEL = {OK_ID, CANCEL_ID};
 
+    /**
+     * Helper to create a button row containing the OK, SKIP and CANCEL buttons.
+     */
     public static final String[] OK_SKIP_CANCEL = {OK_ID, SKIP_ID, CANCEL_ID};
 
+    /**
+     * Helper to create a button row containing the SKIP and CANCEL buttons.
+     */
     public static final String[] SKIP_CANCEL = {SKIP_ID, CANCEL_ID};
 
+    /**
+     * Helper to create a button row containing the YES, NO and CANCEL buttons.
+     */
     public static final String[] YES_NO_CANCEL = {YES_ID, NO_ID, CANCEL_ID};
+
+    /**
+     * Helper to create a button row containing the APPLY, OK, DELETE and CANCEL
+     * buttons
+     */
+    public static final String[] APPLY_OK_DELETE_CANCEL
+            = {APPLY_ID, OK_ID, DELETE_ID, CANCEL_ID};
 
     /**
      * The dialog action.
      */
-    private String _action;
+    private String action;
 
 
     /**
@@ -96,11 +123,24 @@ public abstract class PopupDialog extends PopupWindow {
      * Construct a new <code>PopupDialog</code>.
      *
      * @param title   the window title
-     * @param style   the window style
+     * @param style   the window style. May be <code>null</code>
      * @param buttons the buttons to display
      */
     public PopupDialog(String title, String style, String[] buttons) {
-        super(title, style, null);
+        this(title, style, buttons, null);
+    }
+
+    /**
+     * Construct a new <code>PopupDialog</code>.
+     *
+     * @param title   the window title. May be <code>null</code>
+     * @param style   the window style. May be <code>null</code>
+     * @param buttons the buttons to display
+     * @param tabTree the tab tree. May be <code>null</code>
+     */
+    public PopupDialog(String title, String style, String[] buttons,
+                       FocusTree tabTree) {
+        super(title, style, tabTree);
 
         for (final String button : buttons) {
             addButton(button, new ActionListener() {
@@ -117,7 +157,7 @@ public abstract class PopupDialog extends PopupWindow {
      * @return the dialog action
      */
     public String getAction() {
-        return _action;
+        return action;
     }
 
     /**
@@ -126,7 +166,7 @@ public abstract class PopupDialog extends PopupWindow {
      * @param action the action
      */
     protected void setAction(String action) {
-        _action = action;
+        this.action = action;
     }
 
     /**
@@ -147,6 +187,10 @@ public abstract class PopupDialog extends PopupWindow {
             onNo();
         } else if (SKIP_ID.equals(button)) {
             onSkip();
+        } else if (APPLY_ID.equals(button)) {
+            onApply();
+        } else if (DELETE_ID.equals(button)) {
+            onDelete();
         } else {
             setAction(button);
             close();
@@ -158,8 +202,7 @@ public abstract class PopupDialog extends PopupWindow {
      * the window.
      */
     protected void onOK() {
-        setAction(OK_ID);
-        close();
+        close(OK_ID);
     }
 
     /**
@@ -167,8 +210,7 @@ public abstract class PopupDialog extends PopupWindow {
      * closes the window.
      */
     protected void onCancel() {
-        setAction(CANCEL_ID);
-        close();
+        close(CANCEL_ID);
     }
 
     /**
@@ -176,8 +218,7 @@ public abstract class PopupDialog extends PopupWindow {
      * the window.
      */
     protected void onYes() {
-        setAction(YES_ID);
-        close();
+        close(YES_ID);
     }
 
     /**
@@ -185,8 +226,7 @@ public abstract class PopupDialog extends PopupWindow {
      * the window.
      */
     protected void onNo() {
-        setAction(NO_ID);
-        close();
+        close(NO_ID);
     }
 
     /**
@@ -194,7 +234,33 @@ public abstract class PopupDialog extends PopupWindow {
      * closes the window.
      */
     protected void onSkip() {
-        setAction(SKIP_ID);
+        close(SKIP_ID);
+    }
+
+    /**
+     * Invoked when the 'apply' button is pressed. This sets the action and
+     * closes the window.
+     */
+    protected void onApply() {
+        close(APPLY_ID);
+    }
+
+    /**
+     * Invoked when the 'delete' button is pressed. This sets the action and
+     * closes the window.
+     */
+    protected void onDelete() {
+        close(DELETE_ID);
+    }
+
+    /**
+     * Sets the action and closes the window.
+     *
+     * @param action the action
+     */
+    protected void close(String action) {
+        setAction(action);
         close();
     }
+
 }

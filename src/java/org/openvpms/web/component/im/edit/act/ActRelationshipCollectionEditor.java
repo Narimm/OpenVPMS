@@ -90,13 +90,16 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
-     * Returns the collection property editor.
+     * Creates a new editor.
      *
-     * @return the collection property editor
+     * @param object  the object to edit
+     * @param context the layout context
+     * @return an editor to edit <code>object</code>
      */
-    protected ActRelationshipCollectionPropertyEditor getEditor() {
-        return (ActRelationshipCollectionPropertyEditor)
-                getCollectionPropertyEditor();
+    @Override
+    public IMObjectEditor createEditor(IMObject object,
+                                       LayoutContext context) {
+        return super.createEditor(object, context);
     }
 
     /**
@@ -107,7 +110,7 @@ public class ActRelationshipCollectionEditor
      *         <code>false</code>
      */
     @Override
-    protected boolean addEdited(IMObjectEditor editor) {
+    public boolean addEdited(IMObjectEditor editor) {
         boolean result = false;
         Act act = (Act) editor.getObject();
         if (editor instanceof ActItemEditor
@@ -127,6 +130,23 @@ public class ActRelationshipCollectionEditor
             result = super.addEdited(editor);
         }
         return result;
+    }
+
+    /**
+     * Refreshes the table.
+     */
+    public void refresh() {
+        populateTable();
+    }
+
+    /**
+     * Returns the collection property editor.
+     *
+     * @return the collection property editor
+     */
+    protected ActRelationshipCollectionPropertyEditor getEditor() {
+        return (ActRelationshipCollectionPropertyEditor)
+                getCollectionPropertyEditor();
     }
 
     /**
