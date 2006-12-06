@@ -38,12 +38,12 @@ public abstract class PopupWindow extends WindowPane {
     /**
      * The layout pane.
      */
-    private final SplitPane _layout;
+    private final SplitPane layout;
 
     /**
      * The button row.
      */
-    private final ButtonRow _row;
+    private final ButtonRow row;
 
 
     /**
@@ -58,7 +58,7 @@ public abstract class PopupWindow extends WindowPane {
     /**
      * Construct a new <code>PopupWindow</code>
      *
-     * @param title   the window title
+     * @param title   the window title. May be <code>null</code>
      * @param style   the window style. May be <code>null</code>
      * @param tabTree the tab tree. May be <code>null</code>
      */
@@ -70,13 +70,13 @@ public abstract class PopupWindow extends WindowPane {
         style = Styles.getStyle(WindowPane.class, style);
         setStyleName(style);
 
-        _row = new ButtonRow(tabTree);
+        row = new ButtonRow(tabTree);
 
-        _layout = SplitPaneFactory.create(
+        layout = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
                 "PopupWindow.Layout");
-        _layout.add(_row);
-        add(_layout);
+        layout.add(row);
+        add(layout);
     }
 
     /**
@@ -99,7 +99,7 @@ public abstract class PopupWindow extends WindowPane {
      * Returns the layout pane.
      */
     protected SplitPane getLayout() {
-        return _layout;
+        return layout;
     }
 
     /**
@@ -108,7 +108,7 @@ public abstract class PopupWindow extends WindowPane {
      * @return the button row
      */
     protected ButtonRow getButtonRow() {
-        return _row;
+        return row;
     }
 
     /**
@@ -117,7 +117,7 @@ public abstract class PopupWindow extends WindowPane {
      * @param id the button identifier
      */
     protected void addButton(String id, ActionListener listener) {
-        _row.addButton(id, listener);
+        row.addButton(id, listener);
     }
 
 }

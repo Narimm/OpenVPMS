@@ -129,7 +129,7 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
      * Return a query contraint that restricts products to those that are
      * associated with a particular species, or have no species classification.
      *
-     * @param species the species to resttict products to
+     * @param species the species to restrict products to
      * @return a new constraint
      */
     private IConstraint getSpeciesConstraint(String species) {

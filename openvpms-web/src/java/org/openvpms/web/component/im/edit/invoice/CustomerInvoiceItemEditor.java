@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.edit.invoice;
 
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.discount.DiscountRules;
 import org.openvpms.archetype.rules.tax.TaxRuleException;
 import org.openvpms.archetype.rules.tax.TaxRules;
@@ -39,11 +41,16 @@ import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.Validator;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.PatientMedicationActEditor;
+import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -76,6 +83,12 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
     private static final NodeFilter DISPENSING_FILTER = new NamedNodeFilter(
             "dispensing");
 
+    /**
+     * The no. of medication dialogs currently popped up. The invoice item
+     * is invalid until this is <code>0</code>
+     */
+    private int medicationPopups = 0;
+
 
     /**
      * Construct a new <code>CustomerInvoiceItemEditor</code>.
@@ -100,18 +113,6 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
         IMObjectReference ref = getProduct();
         if (!TypeHelper.isA(ref, "product.medication")) {
             setFilter(DISPENSING_FILTER);
-        }
-
-        Property patient = getProperty("patient");
-        if (patient != null) {
-            // add a listener to update the dispensing act when the patient
-            // changes
-            ModifiableListener patientListener = new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    updatePatient();
-                }
-            };
-            patient.addModifiableListener(patientListener);
         }
 
         // add a listener to update the tax amount when the total changes
@@ -144,6 +145,19 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
     }
 
     /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return <code>true</code> if the object and its descendents are valid
+     *         otherwise <code>false</code>
+     */
+    @Override
+    public boolean validate(Validator validator) {
+        return (medicationPopups == 0) && super.validate(validator);
+    }
+
+
+    /**
      * Save any edits.
      *
      * @return <code>true</code> if the save was successful
@@ -167,7 +181,24 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
     }
 
     /**
-     * Invoked when the participation product is changed, to update prices.
+     * Invoked when layout has completed.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        // add a listener to update the dispensing acts when the patient
+        // changes
+        PatientParticipationEditor patient = getPatientEditor();
+        patient.addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateMedicationPatient();
+            }
+        });
+    }
+
+    /**
+     * Invoked when the participation product is changed, to update prices
+     * and dispensing acts.
      *
      * @param participation the product participation instance
      */
@@ -191,14 +222,10 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                         changeLayout(DISPENSING_FILTER);
                     }
                 } else {
-                    PatientMedicationActEditor act
-                            = getPatientMedicationActEditor();
-                    if (act != null) {
-                        act.setProduct(product.getObjectReference());
-                    }
                     if (getFilter() != null) {
                         changeLayout(null);
                     }
+                    updateMedicationProduct(product);
                 }
                 Property fixedPrice = getProperty("fixedPrice");
                 Property unitPrice = getProperty("unitPrice");
@@ -284,32 +311,85 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
     }
 
     /**
-     * Updates the dispensing act if present with the patient.
+     * Updates any medication acts with the product.
+     *
+     * @param product the product
      */
-    private void updatePatient() {
-        PatientMedicationActEditor editor = getPatientMedicationActEditor();
-        if (editor != null) {
-            editor.setPatient(getPatient());
+    private void updateMedicationProduct(Product product) {
+        final ActRelationshipCollectionEditor editors = getMedicationEditors();
+        if (editors != null) {
+            List<Act> acts = editors.getActs();
+            PatientMedicationActEditor current
+                    = (PatientMedicationActEditor) editors.getCurrentEditor();
+            if (!acts.isEmpty() || current != null) {
+                for (Act a : acts) {
+                    PatientMedicationActEditor editor
+                            = (PatientMedicationActEditor) editors.getEditor(a);
+                    editor.setProduct(product.getObjectReference());
+                }
+                editors.refresh();
+
+                if (current != null) {
+                    // update the current editor as well. If this refers to a
+                    // new object, it may not be in the list of 'committed' acts
+                    // returned by the above.
+                    current.setPatient(getPatient());
+                }
+            } else {
+                // create a new act
+                IMObject object = editors.create();
+                if (object != null) {
+                    LayoutContext context = new DefaultLayoutContext(true);
+                    final IMObjectEditor editor = editors.createEditor(
+                            object, context);
+                    final EditDialog dialog
+                            = new EditDialog(editor, false, context);
+                    dialog.addWindowPaneListener(new WindowPaneListener() {
+                        public void windowPaneClosing(WindowPaneEvent event) {
+                            if (EditDialog.OK_ID.equals(dialog.getAction())) {
+                                editors.addEdited(editor);
+                            }
+                            --medicationPopups;
+                        }
+                    });
+                    ++medicationPopups;
+                    dialog.show();
+                }
+            }
         }
     }
 
     /**
-     * Returns the patient medication act editor.
-     *
-     * @return the patient medication editor, or <code>null</code> if there
-     *         is no dispensing node or dispensing act
+     * Updates any medication acts with the patient.
      */
-    private PatientMedicationActEditor getPatientMedicationActEditor() {
-        ActRelationshipCollectionEditor editors =
-                (ActRelationshipCollectionEditor) getEditor("dispensing");
+    private void updateMedicationPatient() {
+        ActRelationshipCollectionEditor editors = getMedicationEditors();
         if (editors != null) {
-            List<Act> acts = editors.getActs();
-            if (!acts.isEmpty()) {
-                Act act = acts.get(0);
-                return (PatientMedicationActEditor) editors.getEditor(act);
+            for (Act act : editors.getActs()) {
+                PatientMedicationActEditor editor
+                        = (PatientMedicationActEditor) editors.getEditor(act);
+                editor.setPatient(getPatient());
+            }
+
+            // update any current editor as well. If this refers to a new
+            // object, it may not be in the list of 'committed' acts
+            // returned by the above.
+            PatientMedicationActEditor current
+                    = (PatientMedicationActEditor) editors.getCurrentEditor();
+            if (current != null) {
+                current.setPatient(getPatient());
             }
         }
-        return null;
+    }
+
+    /**
+     * Returns the dispensing items collection editor.
+     *
+     * @return the dispensing items collection editor, or <code>null</code>
+     *         if none is found
+     */
+    private ActRelationshipCollectionEditor getMedicationEditors() {
+        return (ActRelationshipCollectionEditor) getEditor("dispensing");
     }
 
 }

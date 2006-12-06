@@ -74,27 +74,27 @@ public abstract class IMObjectTableCollectionEditor
     /**
      * The container.
      */
-    private Column _container;
+    private Column container;
 
     /**
      * Collection to edit.
      */
-    private PagedIMObjectTable<IMObject> _table;
+    private PagedIMObjectTable<IMObject> table;
 
     /**
      * The archetype short name used to create a new object.
      */
-    private String _shortname;
+    private String shortName;
 
     /**
      * The edit group box.
      */
-    private GroupBox _editBox;
+    private GroupBox editBox;
 
     /**
      * Listener for component change events.
      */
-    private final PropertyChangeListener _componentListener;
+    private final PropertyChangeListener componentListener;
 
     /**
      * The button row style.
@@ -131,7 +131,7 @@ public abstract class IMObjectTableCollectionEditor
                 idFilter, context.getDefaultNodeFilter());
         context.setNodeFilter(filter);
 
-        _componentListener = new PropertyChangeListener() {
+        componentListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 onComponentChange(event);
             }
@@ -151,6 +151,24 @@ public abstract class IMObjectTableCollectionEditor
         this(new DefaultCollectionPropertyEditor(property), object, context);
     }
 
+    /**
+     * Creates a new object, subjecf to a short name being selected, and
+     * current collection cardinality. This must be registered with the
+     * collection.
+     *
+     * @return a new object, or <code>null</code> if the object can't be created
+     */
+    public IMObject create() {
+        IMObject object = null;
+        CollectionPropertyEditor editor = getCollectionPropertyEditor();
+        if (shortName != null) {
+            int maxSize = editor.getMaxCardinality();
+            if (maxSize == -1 || editor.getObjects().size() < maxSize) {
+                object = IMObjectCreator.create(shortName);
+            }
+        }
+        return object;
+    }
 
     /**
      * Lays out the component.
@@ -159,14 +177,14 @@ public abstract class IMObjectTableCollectionEditor
      * @return the component
      */
     protected Component doLayout(LayoutContext context) {
-        _container = ColumnFactory.create(COLUMN_STYLE);
+        container = ColumnFactory.create(COLUMN_STYLE);
         FocusSet focus = new FocusSet("CollectionEditor");
         context.getFocusTree().add(focus);
         Row row = createControls(focus);
-        _container.add(row);
+        container.add(row);
 
-        _table = new PagedIMObjectTable<IMObject>(createTableModel(context));
-        _table.getTable().addActionListener(new ActionListener() {
+        table = new PagedIMObjectTable<IMObject>(createTableModel(context));
+        table.getTable().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onEdit();
             }
@@ -174,9 +192,9 @@ public abstract class IMObjectTableCollectionEditor
 
         populateTable();
 
-        focus.add(_table);
-        _container.add(_table);
-        return _container;
+        focus.add(table);
+        container.add(table);
+        return container;
     }
 
     /**
@@ -211,19 +229,19 @@ public abstract class IMObjectTableCollectionEditor
         Row row = RowFactory.create(ROW_STYLE, create, delete);
 
         if (range.length == 1) {
-            _shortname = range[0];
+            shortName = range[0];
         } else if (range.length > 1) {
             final ArchetypeShortNameListModel model
                     = new ArchetypeShortNameListModel(range);
             final SelectField archetypeNames = SelectFieldFactory.create(model);
             int index = archetypeNames.getSelectedIndex();
-            _shortname = model.getShortName(index);
+            shortName = model.getShortName(index);
 
             archetypeNames.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     int index = archetypeNames.getSelectedIndex();
                     if (index != -1) {
-                        _shortname = model.getShortName(index);
+                        shortName = model.getShortName(index);
                     }
                 }
             });
@@ -246,7 +264,7 @@ public abstract class IMObjectTableCollectionEditor
         if (added) {
             populateTable();
             IMObject object = editor.getObject();
-            _table.getTable().setSelected(object);
+            table.getTable().setSelected(object);
         }
         return added;
     }
@@ -272,14 +290,10 @@ public abstract class IMObjectTableCollectionEditor
      * selected archetype, and displays it in an editor.
      */
     protected void onNew() {
-        CollectionPropertyEditor editor = getCollectionPropertyEditor();
-        if (addCurrentEdits(new Validator()) && _shortname != null) {
-            int maxSize = editor.getMaxCardinality();
-            if (maxSize == -1 || editor.getObjects().size() < maxSize) {
-                IMObject object = IMObjectCreator.create(_shortname);
-                if (object != null) {
-                    edit(object);
-                }
+        if (addCurrentEdits(new Validator()) && shortName != null) {
+            IMObject object = create();
+            if (object != null) {
+                edit(object);
             }
         }
     }
@@ -294,7 +308,7 @@ public abstract class IMObjectTableCollectionEditor
             object = editor.getObject();
             removeEditor();
         } else {
-            object = _table.getTable().getSelected();
+            object = table.getTable().getSelected();
         }
         if (object != null) {
             delete(object);
@@ -326,12 +340,12 @@ public abstract class IMObjectTableCollectionEditor
      * Edits the selected object.
      */
     protected void onEdit() {
-        IMObject object = _table.getTable().getSelected();
+        IMObject object = table.getTable().getSelected();
         if (object != null) {
             if (addCurrentEdits(new Validator())) {
                 // need to add any edits after getting the selected object
                 // as this may change the order within the table
-                _table.getTable().setSelected(object);
+                table.getTable().setSelected(object);
                 edit(object);
             }
         }
@@ -353,20 +367,20 @@ public abstract class IMObjectTableCollectionEditor
 
             editor.removePropertyChangeListener(
                     IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
-                    _componentListener);
-            _editBox.remove(editor.getComponent());
+                    componentListener);
+            editBox.remove(editor.getComponent());
         } else {
-            _editBox = GroupBoxFactory.create();
-            _editBox.setInsets(new Insets(0));
-            _container.add(_editBox);
+            editBox = GroupBoxFactory.create();
+            editBox.setInsets(new Insets(0));
+            container.add(editBox);
         }
         editor = getEditor(object);
-        _editBox.add(editor.getComponent());
-        _editBox.setTitle(editor.getTitle());
+        editBox.add(editor.getComponent());
+        editBox.setTitle(editor.getTitle());
         focus.add(focusIndex, editor.getFocusGroup());
         editor.addPropertyChangeListener(
                 IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
-                _componentListener);
+                componentListener);
         editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 getListeners().notifyListeners(
@@ -384,7 +398,7 @@ public abstract class IMObjectTableCollectionEditor
         List<IMObject> objects = editor.getObjects();
         ResultSet<IMObject> set = new PreloadedResultSet<IMObject>(objects,
                                                                    ROWS);
-        _table.setResultSet(set);
+        table.setResultSet(set);
     }
 
     /**
@@ -393,7 +407,7 @@ public abstract class IMObjectTableCollectionEditor
      * @return the table
      */
     protected PagedIMObjectTable<IMObject> getTable() {
-        return _table;
+        return table;
     }
 
     /**
@@ -404,10 +418,10 @@ public abstract class IMObjectTableCollectionEditor
         LayoutContext context = getContext();
         FocusTree focus = context.getFocusTree();
         focus.remove(editor.getFocusGroup());
-        _editBox.remove(editor.getComponent());
-        _container.remove(_editBox);
+        editBox.remove(editor.getComponent());
+        container.remove(editBox);
         setCurrentEditor(null);
-        _editBox = null;
+        editBox = null;
     }
 
     /**
@@ -418,8 +432,8 @@ public abstract class IMObjectTableCollectionEditor
     private void onComponentChange(PropertyChangeEvent event) {
         Component oldValue = (Component) event.getOldValue();
         Component newValue = (Component) event.getNewValue();
-        _editBox.remove(oldValue);
-        _editBox.add(newValue);
+        editBox.remove(oldValue);
+        editBox.add(newValue);
     }
 
 }
