@@ -29,27 +29,27 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ObjectSetQuerytIterator extends QueryIterator<ObjectSet> {
+public class ObjectSetQueryIterator extends QueryIterator<ObjectSet> {
 
     /**
-     * Constructs a new <code>ObjectSetQuerytIterator</code>.
+     * Constructs a new <code>ObjectSetQueryIterator</code>.
      *
      * @param query the query
      * @throws ArchetypeServiceException if the archetype service isn't
      *                                   initialised
      */
-    public ObjectSetQuerytIterator(IArchetypeQuery query) {
+    public ObjectSetQueryIterator(IArchetypeQuery query) {
         this(ArchetypeServiceHelper.getArchetypeService(), query);
     }
 
     /**
-     * Constructs a new <code>ObjectSetQuerytIterator</code>.
+     * Constructs a new <code>ObjectSetQueryIterator</code>.
      *
      * @param query   the query
      * @param service the archetype service
      */
-    public ObjectSetQuerytIterator(IArchetypeService service,
-                                   IArchetypeQuery query) {
+    public ObjectSetQueryIterator(IArchetypeService service,
+                                  IArchetypeQuery query) {
         super(service, query);
     }
 

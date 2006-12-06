@@ -76,13 +76,16 @@ public abstract class QueryIterator<T> implements Iterator<T> {
      */
     public boolean hasNext() {
         if (page == null || !iterator.hasNext()) {
-            page = getPage(service, query);
-            if (query.getMaxResults() != IArchetypeQuery.ALL_RESULTS) {
-                int first = query.getFirstResult() + query.getMaxResults();
-                query.setFirstResult(first);
+            if (page == null ||
+                    query.getMaxResults() != IArchetypeQuery.ALL_RESULTS) {
+                page = getPage(service, query);
+                if (query.getMaxResults() != IArchetypeQuery.ALL_RESULTS) {
+                    int first = query.getFirstResult() + query.getMaxResults();
+                    query.setFirstResult(first);
+                }
+                iterator = page.getResults().iterator();
             }
         }
-        iterator = page.getResults().iterator();
         return iterator.hasNext();
     }
 
