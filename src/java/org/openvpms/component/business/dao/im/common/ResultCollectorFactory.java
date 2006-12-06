@@ -28,20 +28,48 @@ import java.util.Set;
 
 
 /**
- * Add description here.
+ * Factory for {@link ResultCollector}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface ResultCollectorFactory {
 
+    /**
+     * Creates a new collector of {@link IMObject}s.
+     *
+     * @return a new collector
+     */
     ResultCollector<IMObject> createIMObjectCollector();
 
+    /**
+     * Creates a new collector of partially populated {@link IMObject}s.
+     * This may be used to selectively load parts of object graphs to improve
+     * performance.
+     *
+     * @param nodes the nodes to collect
+     * @return a new collector
+     */
     ResultCollector<IMObject> createIMObjectCollector(Collection<String> nodes);
 
+    /**
+     * Creates a new collector of {@link ObjectSet}s.
+     *
+     * @param names the names to assign the objects in the set. May be
+     *              <code>null</code>
+     * @param types a map of type aliases to their corresponding archetype short
+     *              names. May be <code>null</code>
+     * @return a new collector
+     */
     ResultCollector<ObjectSet> createObjectSetCollector(
             Collection<String> names, Map<String, Set<String>> types);
 
+    /**
+     * Creates a new collector of {@link NodeSet}s.
+     *
+     * @param nodes the nodes to collect
+     * @return a new collector
+     */
     ResultCollector<NodeSet> createNodeSetCollector(Collection<String> nodes);
 
 }

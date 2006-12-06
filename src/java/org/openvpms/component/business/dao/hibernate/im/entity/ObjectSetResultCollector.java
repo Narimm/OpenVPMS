@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.ArrayList;
@@ -26,22 +27,46 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Implementation of {@link ResultCollector} that collects {@link ObjectSet}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 class ObjectSetResultCollector extends HibernateResultCollector<ObjectSet> {
 
+    /**
+     * The object names.
+     */
     private String[] names;
+
+    /**
+     * The results.
+     */
     private final List<ObjectSet> result = new ArrayList<ObjectSet>();
+
+    /**
+     * A map of type aliases to their corresponding sbort names.
+     * May be <code>null</code>
+     */
     private final Map<String, Set<String>> types;
 
+
+    /**
+     * Constructs a new <code>ObjectSetResultCollector</code>.
+     */
     public ObjectSetResultCollector() {
         this(null, null);
     }
 
+    /**
+     * Constructs a new <code>ObjectSetResultCollector</code>.
+     *
+     * @param names the object names. May be <code>null</code>
+     * @param types a map of type aliases to their corresponding archetype short
+     *              names. May be <code>null</code>
+     */
     public ObjectSetResultCollector(Collection<String> names,
                                     Map<String, Set<String>> types) {
         if (names != null) {
@@ -50,6 +75,11 @@ class ObjectSetResultCollector extends HibernateResultCollector<ObjectSet> {
         this.types = types;
     }
 
+    /**
+     * Collects an object.
+     *
+     * @param object the object to collect
+     */
     public void collect(Object object) {
         ObjectSet set = createObjectSet();
         ObjectLoader loader = getLoader();
@@ -77,6 +107,35 @@ class ObjectSetResultCollector extends HibernateResultCollector<ObjectSet> {
         result.add(set);
     }
 
+    /**
+     * Returns the results.
+     *
+     * @return the results
+     */
+    protected List<ObjectSet> getResults() {
+        return result;
+    }
+
+    /**
+     * Creates a new object set.
+     *
+     * @return a new object set
+     */
+    private ObjectSet createObjectSet() {
+        ObjectSet result = new ObjectSet();
+        if (types != null) {
+            for (Map.Entry<String, Set<String>> entry : types.entrySet()) {
+                result.addType(entry.getKey(), entry.getValue());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Creates the names to associate with each object in the set.
+     *
+     * @param object the object set
+     */
     private void getNames(Object object) {
         if (object instanceof Object[]) {
             Object[] values = (Object[]) object;
@@ -89,19 +148,5 @@ class ObjectSetResultCollector extends HibernateResultCollector<ObjectSet> {
             names = new String[1];
             names[0] = "0";
         }
-    }
-
-    private ObjectSet createObjectSet() {
-        ObjectSet result = new ObjectSet();
-        if (types != null) {
-            for (Map.Entry<String, Set<String>> entry : types.entrySet()) {
-                result.addType(entry.getKey(), entry.getValue());
-            }
-        }
-        return result;
-    }
-
-    protected List<ObjectSet> getResults() {
-        return result;
     }
 }

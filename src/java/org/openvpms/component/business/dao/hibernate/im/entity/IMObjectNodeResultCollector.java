@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -28,7 +29,14 @@ import java.util.List;
 
 
 /**
- * Add description here.
+ * An {@link ResultCollector} that collects partially populated
+ * {@link IMObject}s.
+ * This may be used to selectively load parts of object graphs to improve
+ * performance.
+ * All simple properties of the returned objects are populated - the
+ * <code>nodes</code> argument is used to specify which collection nodes to
+ * populate. If empty, no collections will be loaded, and the behaviour of
+ * accessing them is undefined.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -36,13 +44,27 @@ import java.util.List;
 class IMObjectNodeResultCollector
         extends AbstractNodeResultCollector<IMObject> {
 
+    /**
+     * The collected objects.
+     */
     private List<IMObject> result = new ArrayList<IMObject>();
 
+    /**
+     * Constructs a new <code>IMObjectNodeResultCollector</code>.
+     *
+     * @param service the archetype service
+     * @param nodes   the nodes to collect
+     */
     public IMObjectNodeResultCollector(IArchetypeService service,
                                        Collection<String> nodes) {
         super(service, nodes);
     }
 
+    /**
+     * Collects an object.
+     *
+     * @param object the object to collect
+     */
     public void collect(Object object) {
         if (object instanceof IMObject) {
             IMObject obj = (IMObject) object;
@@ -53,6 +75,11 @@ class IMObjectNodeResultCollector
         }
     }
 
+    /**
+     * Returns the results.
+     *
+     * @return the results
+     */
     protected List<IMObject> getResults() {
         return result;
     }

@@ -22,20 +22,47 @@ import org.openvpms.component.system.common.query.IPage;
 
 
 /**
- * Add description here.
+ * Used by an {@link IMObjectDAO} to collect query results into an
+ * {@link IPage}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface ResultCollector<T> {
 
-    void setFirstResult(int firstResult);
+    /**
+     * Sets the first result.
+     *
+     * @param first the first result
+     */
+    void setFirstResult(int first);
 
-    void setPageSize(int maxResults);
+    /**
+     * Sets the page sizse.
+     *
+     * @param size the page size
+     */
+    void setPageSize(int size);
 
+    /**
+     * Sets the total no. of results matching the query criteria.
+     *
+     * @param total the total no. of results matching the query criteria, or
+     *              <code>-1</code> if not calculated
+     */
     void setTotalResults(int total);
 
+    /**
+     * Collects an object.
+     *
+     * @param object the object to collect
+     */
     void collect(Object object);
 
+    /**
+     * Returns the collected page.
+     *
+     * @return the collected page
+     */
     IPage<T> getPage();
 }

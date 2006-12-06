@@ -22,26 +22,26 @@ import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
- * The exception and error codes for {@link IIMObjectDAO}.
- * 
+ * The exception and error codes for {@link IMObjectDAO}.
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public class IMObjectDAOException extends OpenVPMSException {
 
     /**
-     * Generated SUID.
+     * The serialization version identifier.
      */
-    private static final long serialVersionUID = 1403478672254798421L;
+    private static final long serialVersionUID = 1;
 
     /**
      * An enumeration of error codes.
      */
     public enum ErrorCode {
-        FailedToSaveIMObject, 
+        FailedToSaveIMObject,
         FailedToSaveCollectionOfObjects,
-        FailedToDeleteIMObject, 
-        FailedToFindIMObject, 
+        FailedToDeleteIMObject,
+        FailedToFindIMObject,
         FailedToFindIMObjects,
         ClassNameMustBeSpecified,
         FailedToExecuteNamedQuery,
@@ -50,11 +50,12 @@ public class IMObjectDAOException extends OpenVPMSException {
         FailedToFindIMObjectReference,
         FailedToFindObjectsWithArchetypes,
         InvalidQueryString,
-        FailedToExecuteQuery
+        FailedToExecuteQuery,
+        CannotCollectObject
     }
 
     /**
-     * Cache the werror code
+     * The error code.
      */
     private ErrorCode errorCode;
 
@@ -68,10 +69,9 @@ public class IMObjectDAOException extends OpenVPMSException {
 
     /**
      * Instantiate an exception given an error code. The error code corresponds
-     * to a message that does not require any parameters to redner
-     * 
-     * @param errorCode
-     *            the error code
+     * to a message that does not require any parameters to render
+     *
+     * @param errorCode the error code
      */
     public IMObjectDAOException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
@@ -81,14 +81,12 @@ public class IMObjectDAOException extends OpenVPMSException {
     /**
      * Instantiate an exception given an error code and a set of associated
      * object parameters. The params are required to render the message
-     * 
-     * @param errorCode
-     *            the error code
-     * @param parama
-     *            the parameters used to render the message associated with the
-     *            error code
+     *
+     * @param errorCode the error code
+     * @param params    the parameters used to render the message associated
+     *                  with the error code
      */
-    public IMObjectDAOException(ErrorCode errorCode, Object[] params) {
+    public IMObjectDAOException(ErrorCode errorCode, Object ... params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -96,11 +94,9 @@ public class IMObjectDAOException extends OpenVPMSException {
     /**
      * Create an exception with the following error code and the root exception.
      * The error code is used to render a local specific message.
-     * 
-     * @param errorCode
-     *            the error code
-     * @param cause
-     *            the root exception
+     *
+     * @param errorCode the error code
+     * @param cause     the root exception
      */
     public IMObjectDAOException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
@@ -111,22 +107,21 @@ public class IMObjectDAOException extends OpenVPMSException {
      * Create an exception with the following error code and the root exception.
      * The params is used to render the messsgae that is associated with the
      * error code
-     * 
-     * @param errorCode
-     *            the error code
-     * @param params
-     *            additional information required to render the message
-     * @param cause
-     *            the root exception
+     *
+     * @param errorCode the error code
+     * @param cause     the root exception
+     * @param params    additional information required to render the message
      */
-    public IMObjectDAOException(ErrorCode errorCode, Object[] params,
-            Throwable cause) {
+    public IMObjectDAOException(ErrorCode errorCode, Throwable cause,
+                                Object... params) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;
     }
 
     /**
-     * @return Returns the errorCode.
+     * Returns the error code.
+     *
+     * @return the error code
      */
     public ErrorCode getErrorCode() {
         return errorCode;

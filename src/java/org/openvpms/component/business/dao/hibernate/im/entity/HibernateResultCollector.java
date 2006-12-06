@@ -101,7 +101,7 @@ abstract class HibernateResultCollector<T> implements ResultCollector<T> {
     }
 
     /**
-     * Returns the rsults.
+     * Returns the results.
      *
      * @return the results
      */
