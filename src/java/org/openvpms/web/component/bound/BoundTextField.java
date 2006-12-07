@@ -39,7 +39,7 @@ public class BoundTextField extends TextField {
      * @param columns  the no. of columns to display
      */
     public BoundTextField(Property property, int columns) {
-        setWidth(new Extent(columns, Extent.EX));
+        setWidth(new Extent(columns, Extent.EM));
 
         Binder binder = new TextComponentBinder(this, property);
         binder.setField();
