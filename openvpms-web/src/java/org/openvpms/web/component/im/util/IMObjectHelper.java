@@ -240,12 +240,13 @@ public class IMObjectHelper {
     }
 
     /**
-     * Returns a list of entities with matching name, code or identity.
-     * All strings are treated as case-insensitive.
+     * Returns a list of entities with matching nameAll strings are treated as
+     * case-insensitive.
      *
      * @param name    the name. May contain wildcards. If null or empty,
      *                indicates no filtering.
      * @param objects the objects to filter
+     * @return the matching objects
      */
     public static <T extends Entity> List<T> findEntityByName(
             String name, Collection<T> objects) {
@@ -256,10 +257,39 @@ public class IMObjectHelper {
             try {
                 String regex = StringUtilities.toRegEx(name.toLowerCase());
                 for (T object : objects) {
-                    if (matches(object.getName(), regex)
-                            || matches(object.getCode(), regex)
-                            || identityMatches(object, regex)) {
+                    if (matches(object.getName(), regex)) {
                         result.add(object);
+                    }
+                }
+            } catch (PatternSyntaxException exception) {
+                log.warn(exception);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a list of entities with identity.
+     * All strings are treated as case-insensitive.
+     *
+     * @param id      the identity. May contain wildcards. If null or empty,
+     *                indicates no filtering.
+     * @param objects the objects to filter
+     * @return the matching objects
+     */
+    public static <T extends Entity> List<T> findEntityByIdentity(
+            String id, Collection<T> objects) {
+        List<T> result = new ArrayList<T>();
+        if (StringUtils.isEmpty(id)) {
+            result.addAll(objects);
+        } else {
+            try {
+                String regex = StringUtilities.toRegEx(id.toLowerCase());
+                for (T object : objects) {
+                    for (EntityIdentity identity : object.getIdentities()) {
+                        if (matches(identity.getIdentity(), regex)) {
+                            result.add(object);
+                        }
                     }
                 }
             } catch (PatternSyntaxException exception) {
@@ -290,25 +320,6 @@ public class IMObjectHelper {
             }
         }
         return result;
-    }
-
-    /**
-     * Determines if an entity has any identities that match a regular
-     * expression.
-     *
-     * @param object the entity
-     * @param regex  the regular expression
-     * @return <code>true</code> if there is at least one match;
-     *         otherwise <code>false</code>
-     * @throws PatternSyntaxException if the expression is invalid
-     */
-    private static boolean identityMatches(Entity object, String regex) {
-        for (EntityIdentity identityh : object.getIdentities()) {
-            if (matches(identityh.getIdentity(), regex)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

@@ -18,13 +18,19 @@
 
 package org.openvpms.web.component.im.query;
 
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.util.LabelFactory;
 
 
 /**
@@ -33,8 +39,20 @@ import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractEntityQuery
-        extends AbstractIMObjectQuery<Entity> {
+public abstract class AbstractEntityQuery<T extends Entity>
+        extends AbstractIMObjectQuery<T> {
+
+    /**
+     * The identity search check box. If selected, name searches will be performed
+     * against the entities {@link EntityIdentity} instances.
+     */
+    private CheckBox identity;
+
+    /**
+     * Identity search label id.
+     */
+    private static final String IDENTITY_SEARCH_ID = "entityquery.identity";
+
 
     /**
      * Construct a new <code>AbstractEntityQuery</code> that queries Entity instances
@@ -69,7 +87,7 @@ public abstract class AbstractEntityQuery
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
-    public ResultSet<Entity> query(SortConstraint[] sort) {
+    public ResultSet<T> query(SortConstraint[] sort) {
         String type = getShortName();
         String name = getName();
         boolean activeOnly = !includeInactive();
@@ -81,7 +99,59 @@ public abstract class AbstractEntityQuery
         } else {
             archetypes = new ShortNameConstraint(type, true, activeOnly);
         }
-        return new EntityResultSet(archetypes, name, getConstraints(), sort,
-                                   getMaxResults(), isDistinct());
+        return new EntityResultSet<T>(archetypes, name, isIdentitySearch(),
+                                      getConstraints(), sort,
+                                      getMaxResults(), isDistinct());
     }
+
+    /**
+     * Determines if the query should be an identity search or name search.
+     * If an identity search, the name is used to search for entities
+     * with a matching {@link EntityIdentity}.
+     *
+     * @return <code>true</code> if the query should be an identity search
+     */
+    protected boolean isIdentitySearch() {
+        return getIdentitySearch().isSelected();
+    }
+
+    /**
+     * Returns the identity search checkbox.
+     *
+     * @return the identity search chechbox
+     */
+    protected CheckBox getIdentitySearch() {
+        if (identity == null) {
+            identity = new CheckBox();
+            identity.setSelected(false);
+        }
+        return identity;
+    }
+
+    /**
+     * Adds the identity search checkbox to a container.
+     *
+     * @param container the container
+     */
+    protected void addIdentitySearch(Component container) {
+        Label label = LabelFactory.create(IDENTITY_SEARCH_ID);
+        container.add(label);
+        container.add(getIdentitySearch());
+    }
+
+
+    /**
+     * Lays out the component in a container, and sets focus on the instance
+     * name.
+     *
+     * @param container the container
+     */
+    protected void doLayout(Component container) {
+        addShortNameSelector(container);
+        addInstanceName(container);
+        addIdentitySearch(container);
+        addInactive(container);
+        ApplicationInstance.getActive().setFocusedComponent(getInstanceName());
+    }
+
 }

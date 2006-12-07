@@ -20,7 +20,9 @@ package org.openvpms.web.component.im.query;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -29,7 +31,9 @@ import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -38,47 +42,55 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-08-22 05:39:25Z $
  */
-public class EntityResultSet extends NameResultSet<Entity> {
+public class EntityResultSet<T extends Entity> extends NameResultSet<T> {
 
     /**
-     * Determines if queries on name should include the 'identities' node.
-     * True if all archetypes have a 'identities' node.
+     * Identity short names.
      */
-    private final boolean _hasIdentities;
+    private String[] identityShortNames;
 
 
     /**
      * Construct a new <code>EntityResultSet</code>.
      *
-     * @param archetypes   the archetypes to query
-     * @param instanceName the instance name
-     * @param constraints  additional query constraints. May be
-     *                     <code<null</code>
-     * @param sort         the sort criteria. May be <code>null</code>
-     * @param rows         the maximum no. of rows per page
-     * @param distinct     if <code>true</code> filter duplicate rows
+     * @param archetypes       the archetypes to query
+     * @param instanceName     the instance name. May be <code>null</code>
+     * @param searchIdentities if <code>true</code> search on identity name
+     * @param constraints      additional query constraints. May be
+     *                         <code<null</code>
+     * @param sort             the sort criteria. May be <code>null</code>
+     * @param rows             the maximum no. of rows per page
+     * @param distinct         if <code>true</code> filter duplicate rows
      */
     public EntityResultSet(BaseArchetypeConstraint archetypes,
-                           String instanceName,
+                           String instanceName, boolean searchIdentities,
                            IConstraint constraints, SortConstraint[] sort,
                            int rows,
                            boolean distinct) {
         super(archetypes, instanceName, constraints, sort, rows, distinct);
-        List<ArchetypeDescriptor> matches = getArchetypes(archetypes);
         if (!StringUtils.isEmpty(instanceName)) {
-            boolean identities = true;
-            for (ArchetypeDescriptor archetype : matches) {
-                if (archetype.getNodeDescriptor("identities") == null) {
-                    identities = false;
-                    break;
+            if (searchIdentities) {
+                Set<String> shortNames = new HashSet<String>();
+                List<ArchetypeDescriptor> matches = getArchetypes(archetypes);
+                boolean identities = true;
+                for (ArchetypeDescriptor archetype : matches) {
+                    NodeDescriptor ident = archetype.getNodeDescriptor(
+                            "identities");
+                    if (ident == null) {
+                        identities = false;
+                        break;
+                    } else {
+                        for (String name : DescriptorHelper.getShortNames(
+                                ident)) {
+                            shortNames.add(name);
+                        }
+                    }
+                }
+                if (identities) {
+                    identityShortNames = shortNames.toArray(new String[0]);
+                    setDistinct(true);
                 }
             }
-            if (identities) {
-                setDistinct(true);
-            }
-            _hasIdentities = identities;
-        } else {
-            _hasIdentities = false;
         }
     }
 
@@ -92,22 +104,28 @@ public class EntityResultSet extends NameResultSet<Entity> {
     @Override
     protected ArchetypeQuery getQuery(BaseArchetypeConstraint archetypes,
                                       String name) {
-        ArchetypeQuery query;
-        if (_hasIdentities && name.matches(".*\\d+.*")) {
-            query = new ArchetypeQuery(archetypes);
-            query.setCountResults(true);
-            CollectionNodeConstraint constraint
-                    = new CollectionNodeConstraint("identities");
-            constraint.setJoinType(JoinConstraint.JoinType.LeftOuterJoin);
-            constraint.add(new NodeConstraint("name", name));
-            query.add(constraint);
+        ArchetypeQuery query = new ArchetypeQuery(archetypes);
+        query.setDistinct(isDistinct());
+        query.setCountResults(true);
+        IConstraint constraints = getConstraints();
+        if (constraints != null) {
+            query.add(constraints);
+        }
 
-            IConstraint constraints = getConstraints();
-            if (constraints != null) {
-                query.add(constraints);
+        if (!StringUtils.isEmpty(name)) {
+            NodeConstraint nameConstraint = new NodeConstraint("name", name);
+            if (identityShortNames != null) {
+                // querying on identity
+                CollectionNodeConstraint idConstraint
+                        = new CollectionNodeConstraint("identities",
+                                                       identityShortNames,
+                                                       false, true);
+                idConstraint.setJoinType(JoinConstraint.JoinType.LeftOuterJoin);
+                idConstraint.add(nameConstraint);
+                query.add(idConstraint);
+            } else {
+                query.add(nameConstraint);
             }
-        } else {
-            query = super.getQuery(archetypes, name);
         }
         return query;
     }

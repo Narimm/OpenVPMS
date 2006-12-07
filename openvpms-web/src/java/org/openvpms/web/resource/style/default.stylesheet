@@ -581,7 +581,7 @@
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="closable" value="true"/>
-            <property name="width" value="800px"/>
+            <property name="width" value="900px"/>
             <property name="height" value="675px"/>
             <property name="resizable" value="true"/>
             <property name="font">
