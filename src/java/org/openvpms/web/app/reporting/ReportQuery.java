@@ -149,9 +149,9 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
         } else {
             archetypes = new ShortNameConstraint(type, true, activeOnly);
         }
-        templates = new EntityResultSet(archetypes, name, getConstraints(),
-                                        sort,
-                                        getMaxResults(), isDistinct());
+        templates = new EntityResultSet<Entity>(archetypes, name, false,
+                                                getConstraints(), sort,
+                                                getMaxResults(), isDistinct());
 
         // Now filter for Reports, user Level and selected type
         while (templates.hasNext()) {
