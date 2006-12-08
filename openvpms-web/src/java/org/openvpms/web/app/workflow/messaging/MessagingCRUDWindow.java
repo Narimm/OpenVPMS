@@ -26,7 +26,6 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -45,7 +44,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class MessagingCRUDWindow extends AbstractViewCRUDWindow {
+public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
 
     /**
      * The 'forward' button.
@@ -121,7 +120,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow {
      * @param isNew  determines if the object is a new instance
      */
     @Override
-    protected void onSaved(IMObject object, boolean isNew) {
+    protected void onSaved(Act object, boolean isNew) {
         onRefresh(object);
     }
 
@@ -148,7 +147,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow {
      */
     private void forward(User user) {
         try {
-            ActBean bean = new ActBean((Act) getObject());
+            ActBean bean = new ActBean(getObject());
             bean.setParticipant("participation.user", user);
             bean.save();
         } catch (OpenVPMSException exception) {
@@ -161,9 +160,9 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow {
      * Invoked when the 'completed' button is pressed.
      */
     private void onCompleted() {
-        Act act = (Act) getObject();
+        Act act = getObject();
         if (!ActStatus.COMPLETED.equals(act.getStatus())) {
-            act = (Act) IMObjectHelper.reload(act);
+            act = IMObjectHelper.reload(act);
             if (act != null) {
                 act.setStatus(ActStatus.COMPLETED);
                 SaveHelper.save(act);

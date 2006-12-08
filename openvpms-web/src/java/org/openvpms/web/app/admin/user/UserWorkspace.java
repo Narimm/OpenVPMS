@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.admin.user;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
 
@@ -27,13 +29,30 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class UserWorkspace extends CRUDWorkspace {
+public class UserWorkspace extends CRUDWorkspace<User> {
 
     /**
-     * Construct a new <code>ClassificationWorkspace</code>.
+     * Constructs a new <code>UserWorkspace</code>.
      */
     public UserWorkspace() {
         super("admin", "user", "system", "security", "user*");
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof User) {
+            setObject((User) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + User.class.getName());
+        }
     }
 
 }

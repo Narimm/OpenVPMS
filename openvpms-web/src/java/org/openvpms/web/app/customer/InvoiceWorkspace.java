@@ -19,10 +19,9 @@
 package org.openvpms.web.app.customer;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -57,7 +56,7 @@ public class InvoiceWorkspace extends CustomerFinancialActWorkspace {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<FinancialAct> createCRUDWindow() {
         String type = Messages.get("customer.invoice.createtype");
         return new InvoiceCRUDWindow(type, "common", "act",
                                      "customerAccountCharges*");
@@ -69,16 +68,18 @@ public class InvoiceWorkspace extends CustomerFinancialActWorkspace {
      * @param customer the customer to query acts for
      * @return a new query
      */
-    protected ActQuery<Act> createQuery(Party customer) {
+    protected ActQuery<FinancialAct> createQuery(Party customer) {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.customerAccountChargesInvoice");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(descriptor);
-        return new DefaultActQuery(customer, "customer",
-                                   "participation.customer",
-                                   "act", "customerAccountCharges*", lookups,
-                                   FinancialActStatus.POSTED);
+        return new DefaultActQuery<FinancialAct>(customer, "customer",
+                                                 "participation.customer",
+                                                 "act",
+                                                 "customerAccountCharges*",
+                                                 lookups,
+                                                 FinancialActStatus.POSTED);
     }
 
     /**
@@ -88,10 +89,9 @@ public class InvoiceWorkspace extends CustomerFinancialActWorkspace {
      * @param isNew  determines if the object is a new instance
      */
     @Override
-    protected void onSaved(IMObject object, boolean isNew) {
+    protected void onSaved(FinancialAct object, boolean isNew) {
         super.onSaved(object, isNew);
-        Act act = (Act) object;
-        if (FinancialActStatus.POSTED.equals(act.getStatus())) {
+        if (FinancialActStatus.POSTED.equals(object.getStatus())) {
             actSelected(null);
         }
     }
@@ -101,8 +101,8 @@ public class InvoiceWorkspace extends CustomerFinancialActWorkspace {
      *
      * @return a new table model.
      */
-    protected IMObjectTableModel<Act> createTableModel() {
-        return new ActAmountTableModel(true, true);
+    protected IMObjectTableModel<FinancialAct> createTableModel() {
+        return new ActAmountTableModel<FinancialAct>(true, true);
     }
 
 }

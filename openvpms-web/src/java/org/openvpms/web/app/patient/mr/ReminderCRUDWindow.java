@@ -20,7 +20,6 @@ package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -40,7 +39,7 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ReminderCRUDWindow extends ActCRUDWindow {
+public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
 
     /**
      * Reminder and alert shortnames supported by the workspace.
@@ -89,11 +88,10 @@ public class ReminderCRUDWindow extends ActCRUDWindow {
     /**
      * Invoked when a new object has been created.
      *
-     * @param object the new object
+     * @param act the new act
      */
     @Override
-    protected void onCreated(IMObject object) {
-        Act act = (Act) object;
+    protected void onCreated(Act act) {
         Party patient = GlobalContext.getInstance().getPatient();
         if (patient != null) {
             try {
@@ -109,7 +107,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow {
                 ErrorHelper.show(exception);
             }
         }
-        super.onCreated(object);
+        super.onCreated(act);
     }
 
 }

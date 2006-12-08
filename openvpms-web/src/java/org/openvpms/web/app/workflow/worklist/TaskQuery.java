@@ -87,10 +87,10 @@ public class TaskQuery extends WorkflowQuery<Act> {
         or.add(overlapStart);
         or.add(overlapEnd);
 
-        return new ActResultSet(participants, getArchetypeConstraint(), or,
-                                getStatuses(), excludeStatuses(),
-                                getConstraints(), ArchetypeQuery.ALL_RESULTS,
-                                sort);
+        return new ActResultSet<Act>(participants, getArchetypeConstraint(), or,
+                                     getStatuses(), excludeStatuses(),
+                                     getConstraints(),
+                                     ArchetypeQuery.ALL_RESULTS, sort);
     }
 
     /**

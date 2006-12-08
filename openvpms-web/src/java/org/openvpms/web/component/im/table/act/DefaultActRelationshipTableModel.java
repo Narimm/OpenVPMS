@@ -36,7 +36,7 @@ import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DefaultActRelationshipTableModel
-        extends AbstractActRelationshipTableModel {
+        extends AbstractActRelationshipTableModel<Act> {
 
 
     /**

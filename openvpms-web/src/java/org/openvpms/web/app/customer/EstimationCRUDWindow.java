@@ -28,6 +28,7 @@ import static org.openvpms.archetype.rules.act.EstimationActStatus.INVOICED;
 import static org.openvpms.archetype.rules.act.FinancialActStatus.*;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -59,7 +60,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EstimationCRUDWindow extends CustomerActCRUDWindow {
+public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
 
     /**
      * The copy button.
@@ -183,13 +184,13 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
         IMObject object = getObject();
         try {
             IMObjectCopier copier = new IMObjectCopier(new ActCopyHandler());
-            Act act = (Act) copier.copy(object);
+            FinancialAct act = (FinancialAct) copier.copy(object);
             act.setStatus(IN_PROGRESS);
             act.setActivityStartTime(new Date());
             setPrintStatus(act, false);
             SaveHelper.save(act);
             setObject(act);
-            CRUDWindowListener listener = getListener();
+            CRUDWindowListener<Act> listener = getListener();
             if (listener != null) {
                 listener.saved(act, false);
             }
@@ -203,7 +204,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
      * Invoked when the 'invoice' button is pressed.
      */
     protected void onInvoice() {
-        final Act act = (Act) getObject();
+        final Act act = getObject();
         if (canInvoice(act)) {
             String title = Messages.get("customer.estimation.invoice.title");
             String message = Messages.get(
@@ -241,7 +242,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
                 estimation.setStatus(INVOICED);
                 SaveHelper.save(estimation);
                 setObject(estimation);
-                CRUDWindowListener listener = getListener();
+                CRUDWindowListener<Act> listener = getListener();
                 if (listener != null) {
                     listener.saved(estimation, false);
                 }

@@ -19,6 +19,7 @@
 package org.openvpms.web.app.patient;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
@@ -29,19 +30,24 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 
+
 /**
+ * Patient act workspace.
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-
-public abstract class PatientActWorkspace extends ActWorkspace {
+public abstract class PatientActWorkspace<T extends Act>
+        extends ActWorkspace<Party, T> {
 
     /**
-     * @param subsystemId
-     * @param workspaceId
-     * @param refModelName
-     * @param entityName
-     * @param conceptName
+     * Constructs a new <code>PatientActWorkspace</code>.
+     *
+     * @param subsystemId  the subsystem localisation identifier
+     * @param workspaceId  the workspace localisation identfifier
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
      */
     public PatientActWorkspace(String subsystemId, String workspaceId,
                                String refModelName, String entityName,
@@ -55,13 +61,29 @@ public abstract class PatientActWorkspace extends ActWorkspace {
      * @param object the object. May be <code>null</code>
      */
     @Override
-    public void setObject(IMObject object) {
+    public void setObject(Party object) {
         super.setObject(object);
-        Party party = (Party) object;
-        ContextHelper.setPatient(party);
-        layoutWorkspace(party);
-        initQuery(party);
+        ContextHelper.setPatient(object);
+        layoutWorkspace(object);
+        initQuery(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Party) {
+            setObject((Party) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Party.class.getName());
+        }
     }
 
     /**
@@ -72,20 +94,18 @@ public abstract class PatientActWorkspace extends ActWorkspace {
      */
     @Override
     public Component getSummary() {
-        return PatientSummary.getSummary((Party) getObject());
+        return PatientSummary.getSummary(getObject());
     }
 
     /**
-     * Determines if the workspace should be refreshed. This implementation
-     * returns true if the current customer has changed.
+     * Returns the latest version of the current context object.
      *
-     * @return <code>true</code> if the workspace should be refreshed, otherwise
-     *         <code>false</code>
+     * @return the latest version of the context object, or {@link #getObject()}
+     *         if they are the same
      */
     @Override
-    protected boolean refreshWorkspace() {
-        Party patient = GlobalContext.getInstance().getPatient();
-        return (patient != getObject());
+    protected Party getLatest() {
+        return getLatest(GlobalContext.getInstance().getPatient());
     }
 
     /**
@@ -94,9 +114,9 @@ public abstract class PatientActWorkspace extends ActWorkspace {
      * @param container the container
      */
     protected void doLayout(Component container) {
-        Party patient = GlobalContext.getInstance().getPatient();
-        if (patient != getObject()) {
-            setObject(patient);
+        Party latest = getLatest();
+        if (latest != getObject()) {
+            setObject(latest);
         }
     }
 
@@ -111,11 +131,11 @@ public abstract class PatientActWorkspace extends ActWorkspace {
      *                                 archetypes
      */
     @Override
-    @SuppressWarnings("unchecked")
-    protected Query<IMObject> createQuery(String refModelName,
-                                          String entityName,
-                                          String conceptName) {
-        Query query = super.createQuery(refModelName, entityName, conceptName);
+    protected Query<Party> createQuery(String refModelName,
+                                       String entityName,
+                                       String conceptName) {
+        Query<Party> query = super.createQuery(refModelName, entityName,
+                                               conceptName);
         if (query instanceof PatientQuery) {
             ((PatientQuery) query).setShowAllPatients(true);
         }

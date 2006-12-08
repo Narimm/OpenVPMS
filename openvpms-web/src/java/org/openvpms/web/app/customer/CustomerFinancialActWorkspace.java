@@ -18,12 +18,8 @@
 
 package org.openvpms.web.app.customer;
 
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+
 
 /**
  * Customer Financial Act workspace.
@@ -31,35 +27,24 @@ import org.openvpms.web.component.im.query.TableBrowser;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-
 public abstract class CustomerFinancialActWorkspace
-        extends CustomerActWorkspace {
+        extends CustomerActWorkspace<FinancialAct> {
+
 
     /**
-     * @param subsystemId
-     * @param workspaceId
-     * @param refModelName
-     * @param entityName
-     * @param conceptName
+     * Constructs a new <code>CustomerFinancialActWorkspace</code>.
+     *
+     * @param subsystemId  the subsystem localisation identifier
+     * @param workspaceId  the workspace localisation identfifier
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
      */
     public CustomerFinancialActWorkspace(String subsystemId,
                                          String workspaceId,
                                          String refModelName, String entityName,
                                          String conceptName) {
         super(subsystemId, workspaceId, refModelName, entityName, conceptName);
-    }
-
-    /**
-     * Creates a new browser to query and display acts.
-     * Default sort order is by descending starttime.
-     *
-     * @param query the query
-     * @return a new browser
-     */
-    @Override
-    protected Browser<Act> createBrowser(ActQuery<Act> query) {
-        SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
-        return new TableBrowser<Act>(query, sort, createTableModel());
     }
 
 }

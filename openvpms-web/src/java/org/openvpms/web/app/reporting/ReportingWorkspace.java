@@ -40,6 +40,7 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -48,14 +49,14 @@ import org.openvpms.web.component.util.SplitPaneFactory;
 
 import java.util.List;
 
+
 /**
  * Reporting workspace.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-
-public class ReportingWorkspace extends AbstractWorkspace {
+public class ReportingWorkspace extends AbstractWorkspace<Entity> {
 
     /**
      * The current user. May be <code>null</code>.
@@ -123,8 +124,8 @@ public class ReportingWorkspace extends AbstractWorkspace {
      *
      * @param object the object. May be <code>null</code>
      */
-    public void setObject(IMObject object) {
-        _object = (Entity) object;
+    public void setObject(Entity object) {
+        _object = object;
         if (object != null) {
             enableButtons(true);
         } else {
@@ -137,8 +138,25 @@ public class ReportingWorkspace extends AbstractWorkspace {
      *
      * @return the the object. May be <oode>null</code>
      */
-    public IMObject getObject() {
+    public Entity getObject() {
         return _object;
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Entity) {
+            setObject((Entity) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Entity.class.getName());
+        }
     }
 
     /**
@@ -169,7 +187,8 @@ public class ReportingWorkspace extends AbstractWorkspace {
     @Override
     protected boolean refreshWorkspace() {
         User user = GlobalContext.getInstance().getUser();
-        return (user != _user);
+        user = IMObjectHelper.reload(user);
+        return IMObjectHelper.isSame(_user, user);
     }
 
     /**
@@ -311,7 +330,7 @@ public class ReportingWorkspace extends AbstractWorkspace {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         Document doc = TemplateHelper.getDocumentFromTemplate(
-                (Entity) getObject(), service);
+                getObject(), service);
         String uri = "http://localhost:8080/openvpms-viewer/frameset?__report=report/" + doc.getName();
         Command command = new BrowserOpenWindowCommand(
                 uri, "OpenVPMS Report Viewer",

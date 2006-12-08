@@ -38,8 +38,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractActRelationshipTableModel
-        extends DelegatingIMObjectTableModel<ActRelationship, Act> {
+public abstract class AbstractActRelationshipTableModel<T extends Act>
+        extends DelegatingIMObjectTableModel<ActRelationship, T> {
 
     /**
      * The act relationships.
@@ -56,11 +56,11 @@ public abstract class AbstractActRelationshipTableModel
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         _relationships = objects;
-        List<Act> acts = new ArrayList<Act>();
+        List<T> acts = new ArrayList<T>();
         for (IMObject object : objects) {
             ActRelationship relationship = (ActRelationship) object;
             if (relationship.getTarget() != null) {
-                Act act = (Act) ArchetypeQueryHelper.getByObjectReference(
+                T act = (T) ArchetypeQueryHelper.getByObjectReference(
                         service, relationship.getTarget());
                 if (act != null) {
                     acts.add(act);

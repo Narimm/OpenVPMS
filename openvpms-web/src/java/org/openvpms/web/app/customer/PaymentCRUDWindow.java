@@ -20,6 +20,7 @@ package org.openvpms.web.app.customer;
 
 
 import nextapp.echo2.app.Row;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.subsystem.ShortNameList;
 
 
@@ -29,7 +30,7 @@ import org.openvpms.web.app.subsystem.ShortNameList;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PaymentCRUDWindow extends CustomerActCRUDWindow {
+public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
     /**
      * Create a new <code>ActCRUDWindow</code>.

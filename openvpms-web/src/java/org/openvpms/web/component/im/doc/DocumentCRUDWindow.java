@@ -26,7 +26,6 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
@@ -44,7 +43,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DocumentCRUDWindow extends ActCRUDWindow {
+public class DocumentCRUDWindow extends ActCRUDWindow<Act> {
 
 
     /**
@@ -75,15 +74,14 @@ public class DocumentCRUDWindow extends ActCRUDWindow {
      * @param object the object
      */
     @Override
-    protected void printed(IMObject object) {
-        Act act = (Act) object;
+    protected void printed(Act object) {
         try {
-            setPrintStatus(act, true);
-            SaveHelper.save(act);
-            setObject(act);
-            CRUDWindowListener listener = getListener();
+            setPrintStatus(object, true);
+            SaveHelper.save(object);
+            setObject(object);
+            CRUDWindowListener<Act> listener = getListener();
             if (listener != null) {
-                listener.saved(act, false);
+                listener.saved(object, false);
             }
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
@@ -192,7 +190,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow {
      *         <code>false</code>
      */
     private boolean canRefresh() {
-        ActBean act = new ActBean((Act) getObject());
+        ActBean act = new ActBean(getObject());
         return act.hasNode("documentTemplate") && act.hasNode("docReference");
     }
 

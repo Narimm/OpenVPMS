@@ -31,7 +31,7 @@ import org.openvpms.web.component.app.GlobalContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class OrganisationWorkspace extends CRUDWorkspace {
+public class OrganisationWorkspace extends CRUDWorkspace<Party> {
 
     /**
      * Constructs a new <code>OrganisationWorkspace</code>.
@@ -46,18 +46,35 @@ public class OrganisationWorkspace extends CRUDWorkspace {
      * @param object the object. May be <code>null</code>
      */
     @Override
-    public void setObject(IMObject object) {
+    public void setObject(Party object) {
         super.setObject(object);
         // need to update the global context in case organisations have changed.
         // May need to refine this so that the context is only updated if the
         // organisation is a newer version of that currently in the context
         // (i,e don't change for different organisations).
         if (TypeHelper.isA(object, "party.organisationSchedule")) {
-            GlobalContext.getInstance().setSchedule((Party) object);
+            GlobalContext.getInstance().setSchedule(object);
         } else if (TypeHelper.isA(object, "party.organisationWorkList")) {
-            GlobalContext.getInstance().setWorkList((Party) object);
+            GlobalContext.getInstance().setWorkList(object);
         } else if (TypeHelper.isA(object, "party.organisationTill")) {
-            GlobalContext.getInstance().setTill((Party) object);
+            GlobalContext.getInstance().setTill(object);
+        }
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Party) {
+            setObject((Party) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Party.class.getName());
         }
     }
 

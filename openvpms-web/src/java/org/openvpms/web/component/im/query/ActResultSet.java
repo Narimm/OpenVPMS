@@ -41,7 +41,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActResultSet extends AbstractActResultSet<Act> {
+public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
 
     /**
      * The logger.
@@ -147,8 +147,8 @@ public class ActResultSet extends AbstractActResultSet<Act> {
      * @return the page corresponding to <code>firstResult</code>, or
      *         <code>null</code> if none exists
      */
-    protected IPage<Act> getPage(int firstResult, int maxResults) {
-        IPage<Act> result = null;
+    protected IPage<T> getPage(int firstResult, int maxResults) {
+        IPage<T> result = null;
         try {
             ArchetypeQuery query = getQuery(firstResult, maxResults);
             IArchetypeService service

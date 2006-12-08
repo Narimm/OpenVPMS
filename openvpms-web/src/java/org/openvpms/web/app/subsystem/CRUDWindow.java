@@ -29,21 +29,21 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface CRUDWindow {
+public interface CRUDWindow<T extends IMObject> {
 
     /**
      * Sets the event listener.
      *
      * @param listener the event listener.
      */
-    void setListener(CRUDWindowListener listener);
+    void setListener(CRUDWindowListener<T> listener);
 
     /**
      * Returns the event listener.
      *
      * @return the event listener
      */
-    CRUDWindowListener getListener();
+    CRUDWindowListener<T> getListener();
 
     /**
      * Returns the component representing this.
@@ -57,14 +57,14 @@ public interface CRUDWindow {
      *
      * @param object the object. May be <code>null</code>
      */
-    void setObject(IMObject object);
+    void setObject(T object);
 
     /**
      * Returns the object.
      *
      * @return the object, or <code>null</code> if there is none set
      */
-    IMObject getObject();
+    T getObject();
 
     /**
      * Returns the object's archetype descriptor.

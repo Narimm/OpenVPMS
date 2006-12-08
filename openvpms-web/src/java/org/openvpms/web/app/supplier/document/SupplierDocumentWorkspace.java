@@ -21,7 +21,6 @@ package org.openvpms.web.app.supplier.document;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -43,7 +42,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class SupplierDocumentWorkspace extends SupplierActWorkspace {
+public class SupplierDocumentWorkspace extends SupplierActWorkspace<Act> {
 
     /**
      * Supplier Document shortnames supported by the workspace.
@@ -64,7 +63,7 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<Act> createCRUDWindow() {
         String type = Messages.get("supplier.document.createtype");
         return new DocumentCRUDWindow(type, SHORT_NAMES);
     }
@@ -81,9 +80,9 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace {
                 "act.supplierDocumentLetter");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        return new DefaultActQuery(supplier, "supplier",
-                                   "participation.supplier",
-                                   SHORT_NAMES, lookups, null);
+        return new DefaultActQuery<Act>(supplier, "supplier",
+                                        "participation.supplier",
+                                        SHORT_NAMES, lookups, null);
     }
 
     /**
@@ -93,7 +92,7 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace {
      * @param isNew  determines if the object is a new instance
      */
     @Override
-    protected void onSaved(IMObject object, boolean isNew) {
+    protected void onSaved(Act object, boolean isNew) {
         super.onSaved(object, isNew);
     }
 
@@ -103,7 +102,7 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace {
      * @return a new table model.
      */
     protected IMObjectTableModel<Act> createTableModel() {
-        return new ActAmountTableModel(true, false);
+        return new ActAmountTableModel<Act>(true, false);
     }
 
 

@@ -27,19 +27,19 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectPrinter {
+public interface IMObjectPrinter<T extends IMObject> {
 
     /**
      * Initiates printing of an object.
      */
-    void print(IMObject object);
+    void print(T object);
 
     /**
      * Sets the listener for print events.
      *
      * @param listener the listener. May be <code>null</code>
      */
-    void setListener(IMObjectPrinterListener listener);
+    void setListener(IMObjectPrinterListener<T> listener);
 
     /**
      * Determines if printing should occur interactively.

@@ -60,7 +60,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class OrderCRUDWindow extends SupplierActCRUDWindow {
+public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
 
     /**
      * The copy button.
@@ -190,7 +190,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow {
             setPrintStatus(act, false);
             SaveHelper.save(act);
             setObject(act);
-            CRUDWindowListener listener = getListener();
+            CRUDWindowListener<Act> listener = getListener();
             if (listener != null) {
                 listener.saved(act, false);
             }
@@ -204,7 +204,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow {
      * Invoked when the 'invoice' button is pressed.
      */
     protected void onInvoice() {
-        final Act act = (Act) getObject();
+        final Act act = getObject();
         String title = Messages.get("supplier.order.invoice.title");
         String message = Messages.get("supplier.order.invoice.message");
         final ConfirmationDialog dialog
@@ -238,7 +238,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow {
                 order.setStatus(POSTED);
                 SaveHelper.save(order);
                 setObject(order);
-                CRUDWindowListener listener = getListener();
+                CRUDWindowListener<Act> listener = getListener();
                 if (listener != null) {
                     listener.saved(order, false);
                 }

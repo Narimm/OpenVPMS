@@ -41,7 +41,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow {
+public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
 
     /**
      * The consult button.
@@ -101,7 +101,7 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow {
      */
     @Override
     protected void onDelete() {
-        Act act = (Act) getObject();
+        Act act = getObject();
         if (!ActStatus.COMPLETED.equals(act.getStatus())) {
             super.onDelete();
         } else {
@@ -149,7 +149,7 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow {
      * Invoked when the 'consult' button is pressed.
      */
     private void onConsult() {
-        ConsultWorkflow workflow = new ConsultWorkflow((Act) getObject());
+        ConsultWorkflow workflow = new ConsultWorkflow(getObject());
         workflow.setTaskListener(new TaskListener() {
             public void taskEvent(TaskEvent event) {
                 onRefresh(getObject());
@@ -162,7 +162,7 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow {
      * Invoked when the 'check-out' button is pressed.
      */
     private void onCheckOut() {
-        CheckOutWorkflow workflow = new CheckOutWorkflow((Act) getObject());
+        CheckOutWorkflow workflow = new CheckOutWorkflow(getObject());
         workflow.setTaskListener(new TaskListener() {
             public void taskEvent(TaskEvent event) {
                 onRefresh(getObject());

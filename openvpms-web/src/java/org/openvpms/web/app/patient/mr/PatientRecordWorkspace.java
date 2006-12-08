@@ -46,6 +46,7 @@ import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.FastLookupHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -58,7 +59,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PatientRecordWorkspace extends ActWorkspace {
+public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
 
     /**
      * Patient Document shortnames supported by the workspace.
@@ -89,13 +90,29 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @param object the object. May be <code>null</code>
      */
     @Override
-    public void setObject(IMObject object) {
+    public void setObject(Party object) {
         super.setObject(object);
-        Party party = (Party) object;
-        ContextHelper.setPatient(party);
-        layoutWorkspace(party);
-        initQuery(party);
+        ContextHelper.setPatient(object);
+        layoutWorkspace(object);
+        initQuery(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Party) {
+            setObject((Party) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Party.class.getName());
+        }
     }
 
     /**
@@ -106,7 +123,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     @Override
     public Component getSummary() {
-        return PatientSummary.getSummary((Party) getObject());
+        return PatientSummary.getSummary(getObject());
     }
 
     /**
@@ -119,7 +136,8 @@ public class PatientRecordWorkspace extends ActWorkspace {
     @Override
     protected boolean refreshWorkspace() {
         Party patient = GlobalContext.getInstance().getPatient();
-        return (patient != getObject());
+        patient = IMObjectHelper.reload(patient);
+        return IMObjectHelper.isSame(getObject(), patient);
     }
 
     /**
@@ -129,7 +147,8 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     protected void doLayout(Component container) {
         Party patient = GlobalContext.getInstance().getPatient();
-        if (patient != getObject()) {
+        patient = IMObjectHelper.reload(patient);
+        if (!IMObjectHelper.isSame(getObject(), patient)) {
             setObject(patient);
         }
     }
@@ -146,9 +165,9 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     @Override
     @SuppressWarnings("unchecked")
-    protected Query<IMObject> createQuery(String refModelName,
-                                          String entityName,
-                                          String conceptName) {
+    protected Query<Party> createQuery(String refModelName,
+                                       String entityName,
+                                       String conceptName) {
         Query query = super.createQuery(refModelName, entityName, conceptName);
         if (query instanceof PatientQuery) {
             ((PatientQuery) query).setShowAllPatients(true);
@@ -193,7 +212,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<Act> createCRUDWindow() {
         return new SummaryCRUDWindow();
     }
 
@@ -216,7 +235,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
     @Override
     protected Browser<Act> createBrowser(ActQuery<Act> query) {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
-        Party patient = (Party) getObject();
+        Party patient = getObject();
         RecordBrowser browser = new RecordBrowser(query, createQuery(patient),
                                                   createProblemsQuery(),
                                                   createMedicationQuery(),
@@ -233,21 +252,11 @@ public class PatientRecordWorkspace extends ActWorkspace {
     }
 
     /**
-     * Invoked when the object has been deleted.
-     *
-     * @param object the object
-     */
-    @Override
-    protected void onDeleted(IMObject object) {
-        super.onDeleted(object);
-    }
-
-    /**
      * Changes the CRUD window depending on the current browser view.
      */
     private void changeCRUDWindow() {
         RecordBrowser browser = (RecordBrowser) getBrowser();
-        CRUDWindow window;
+        CRUDWindow<Act> window;
         RecordBrowser.View view = browser.getView();
         if (view == RecordBrowser.View.SUMMARY) {
             window = new SummaryCRUDWindow();
@@ -285,10 +294,9 @@ public class PatientRecordWorkspace extends ActWorkspace {
      *
      * @return a new query
      */
-    private DefaultActQuery createProblemsQuery() {
-        Party patient = (Party) getObject();
+    private DefaultActQuery<Act> createProblemsQuery() {
         String[] shortNames = {CLINICAL_PROBLEM};
-        return createQuery(patient, shortNames);
+        return createQuery(getObject(), shortNames);
     }
 
     /**
@@ -297,9 +305,8 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @return a new query
      */
     private Query<Act> createMedicationQuery() {
-        Party patient = (Party) getObject();
         String[] shortNames = {"act.patientMedication"};
-        return createQuery(patient, shortNames);
+        return createQuery(getObject(), shortNames);
     }
 
     /**
@@ -309,15 +316,14 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     private Query<Act> createReminderAlertQuery() {
         String[] shortNames = {"act.patientReminder", "act.patientAlert"};
-        Party patient = (Party) getObject();
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.patientReminder");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        DefaultActQuery query = new DefaultActQuery(patient, "patient",
-                                                    "participation.patient",
-                                                    shortNames, lookups, null);
+        DefaultActQuery<Act> query = new DefaultActQuery<Act>(
+                getObject(), "patient", " participation.patient", shortNames,
+                lookups, null);
         query.setStatus(ActStatus.IN_PROGRESS);
         return query;
     }
@@ -328,14 +334,14 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @return a new query
      */
     private Query<Act> createDocumentQuery() {
-        Party patient = (Party) getObject();
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.patientDocumentLetter");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        return new DefaultActQuery(patient, "patient", "participation.patient",
-                                   DOCUMENT_SHORT_NAMES, lookups, null);
+        return new DefaultActQuery<Act>(getObject(), "patient",
+                                        "participation.patient",
+                                        DOCUMENT_SHORT_NAMES, lookups, null);
     }
 
     /**
@@ -344,14 +350,15 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @return a new query
      */
     private Query<Act> createInvestigationQuery() {
-        Party patient = (Party) getObject();
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.patientInvestigationRadiology");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        return new DefaultActQuery(patient, "patient", "participation.patient",
-                                   INVESTIGATION_SHORT_NAMES, lookups, null);
+        return new DefaultActQuery<Act>(getObject(), "patient",
+                                        "participation.patient",
+                                        INVESTIGATION_SHORT_NAMES, lookups,
+                                        null);
     }
 
     /**
@@ -361,10 +368,12 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @param shortNames the act short names
      * @return a new query
      */
-    private DefaultActQuery createQuery(Party patient, String[] shortNames) {
+    private DefaultActQuery<Act> createQuery(Party patient,
+                                             String[] shortNames) {
         String[] statuses = {};
-        return new DefaultActQuery(patient, "patient", "participation.patient",
-                                   shortNames, statuses);
+        return new DefaultActQuery<Act>(patient, "patient",
+                                        "participation.patient", shortNames,
+                                        statuses);
     }
 
 }

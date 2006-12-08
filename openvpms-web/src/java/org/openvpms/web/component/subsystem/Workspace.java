@@ -18,9 +18,8 @@
 
 package org.openvpms.web.component.subsystem;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-
 import nextapp.echo2.app.Component;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.beans.PropertyChangeListener;
 
@@ -32,7 +31,7 @@ import java.beans.PropertyChangeListener;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface Workspace {
+public interface Workspace<T extends IMObject> {
 
     /**
      * The summary property name, used in event notification.
@@ -76,14 +75,23 @@ public interface Workspace {
      *
      * @param object the object. May be <code>null</code>
      */
-    void setObject(IMObject object);
+    void setObject(T object);
 
     /**
      * Returns the object to to be viewed/edited by the workspace.
      *
      * @return the the object. May be <oode>null</code>
      */
-    IMObject getObject();
+    T getObject();
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    void setIMObject(IMObject object);
 
     /**
      * Add a property change listener.

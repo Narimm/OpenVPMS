@@ -32,7 +32,8 @@ import org.openvpms.web.component.util.SplitPaneFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractViewCRUDWindow extends AbstractCRUDWindow {
+public abstract class AbstractViewCRUDWindow<T extends IMObject>
+        extends AbstractCRUDWindow<T> {
 
     /**
      * The selected object container.
@@ -63,7 +64,7 @@ public abstract class AbstractViewCRUDWindow extends AbstractCRUDWindow {
      *
      * @param object the object. May be <code>null</code>
      */
-    public void setObject(IMObject object) {
+    public void setObject(T object) {
         super.setObject(object);
         _objectContainer.removeAll();
         if (object != null) {

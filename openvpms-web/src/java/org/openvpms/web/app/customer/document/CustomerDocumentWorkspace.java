@@ -21,7 +21,6 @@ package org.openvpms.web.app.customer.document;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -63,7 +62,7 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<Act> createCRUDWindow() {
         String type = Messages.get("customer.document.createtype");
         return new DocumentCRUDWindow(type, SHORT_NAMES);
     }
@@ -80,20 +79,9 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
                 "act.customerDocumentLetter");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        return new DefaultActQuery(customer, "customer",
-                                   "participation.customer",
-                                   SHORT_NAMES, lookups, null);
-    }
-
-    /**
-     * Invoked when the object has been saved.
-     *
-     * @param object the object
-     * @param isNew  determines if the object is a new instance
-     */
-    @Override
-    protected void onSaved(IMObject object, boolean isNew) {
-        super.onSaved(object, isNew);
+        return new DefaultActQuery<Act>(customer, "customer",
+                                        "participation.customer",
+                                        SHORT_NAMES, lookups, null);
     }
 
     /**
@@ -102,7 +90,7 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
      * @return a new table model.
      */
     protected IMObjectTableModel<Act> createTableModel() {
-        return new ActAmountTableModel(true, false);
+        return new ActAmountTableModel<Act>(true, false);
     }
 
 }

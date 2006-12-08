@@ -43,7 +43,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class ActWorkspace extends AbstractViewWorkspace {
+public abstract class ActWorkspace<T extends IMObject, A extends Act>
+        extends AbstractViewWorkspace<T> {
 
     /**
      * The workspace.
@@ -53,17 +54,17 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     /**
      * The query.
      */
-    private ActQuery<Act> query;
+    private ActQuery<A> query;
 
     /**
      * The act browser.
      */
-    private Browser<Act> acts;
+    private Browser<A> acts;
 
     /**
      * The CRUD window.
      */
-    private CRUDWindow window;
+    private CRUDWindow<A> window;
 
 
     /**
@@ -87,9 +88,9 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param object the object
      * @param isNew  determines if the object is a new instance
      */
-    protected void onSaved(IMObject object, boolean isNew) {
+    protected void onSaved(A object, boolean isNew) {
         acts.query();
-        acts.setSelected((Act) object);
+        acts.setSelected(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -98,7 +99,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @param object the object
      */
-    protected void onDeleted(IMObject object) {
+    protected void onDeleted(A object) {
         acts.query();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
@@ -108,9 +109,9 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @param object the object
      */
-    protected void onRefresh(IMObject object) {
+    protected void onRefresh(A object) {
         acts.query();
-        acts.setSelected((Act) object);
+        acts.setSelected(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -119,7 +120,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @param act the act
      */
-    protected void actSelected(Act act) {
+    protected void actSelected(A act) {
         window.setObject(act);
     }
 
@@ -163,7 +164,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @return a new CRUD window
      */
-    protected abstract CRUDWindow createCRUDWindow();
+    protected abstract CRUDWindow<A> createCRUDWindow();
 
     /**
      * Creates a new query.
@@ -171,7 +172,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param party the party to query acts for
      * @return a new query
      */
-    protected abstract ActQuery<Act> createQuery(Party party);
+    protected abstract ActQuery<A> createQuery(Party party);
 
     /**
      * Creates a new browser to query and display acts.
@@ -179,8 +180,8 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param query the query
      * @return a new browser
      */
-    protected Browser<Act> createBrowser(ActQuery<Act> query) {
-        return new TableBrowser<Act>(query, null, createTableModel());
+    protected Browser<A> createBrowser(ActQuery<A> query) {
+        return new TableBrowser<A>(query, null, createTableModel());
     }
 
     /**
@@ -188,8 +189,8 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @return a new table model.
      */
-    protected IMObjectTableModel<Act> createTableModel() {
-        return new ActAmountTableModel();
+    protected IMObjectTableModel<A> createTableModel() {
+        return new ActAmountTableModel<A>();
     }
 
     /**
@@ -197,7 +198,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @param query the new query
      */
-    protected void setQuery(ActQuery<Act> query) {
+    protected void setQuery(ActQuery<A> query) {
         this.query = query;
     }
 
@@ -206,7 +207,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @return the query
      */
-    protected Query<Act> getQuery() {
+    protected Query<A> getQuery() {
         return query;
     }
 
@@ -215,14 +216,14 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @param browser the new browser
      */
-    protected void setBrowser(Browser<Act> browser) {
+    protected void setBrowser(Browser<A> browser) {
         acts = browser;
-        acts.addQueryListener(new QueryBrowserListener<Act>() {
+        acts.addQueryListener(new QueryBrowserListener<A>() {
             public void query() {
                 onQuery();
             }
 
-            public void selected(Act object) {
+            public void selected(A object) {
                 actSelected(object);
             }
         });
@@ -233,7 +234,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @return the browser
      */
-    protected Browser<Act> getBrowser() {
+    protected Browser<A> getBrowser() {
         return acts;
     }
 
@@ -256,18 +257,18 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @param window the window
      */
-    protected void setCRUDWindow(CRUDWindow window) {
+    protected void setCRUDWindow(CRUDWindow<A> window) {
         this.window = window;
-        this.window.setListener(new CRUDWindowListener() {
-            public void saved(IMObject object, boolean isNew) {
+        this.window.setListener(new CRUDWindowListener<A>() {
+            public void saved(A object, boolean isNew) {
                 onSaved(object, isNew);
             }
 
-            public void deleted(IMObject object) {
+            public void deleted(A object) {
                 onDeleted(object);
             }
 
-            public void refresh(IMObject object) {
+            public void refresh(A object) {
                 onRefresh(object);
             }
         });
@@ -313,9 +314,9 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * Selects the first available act, if any.
      */
     private void selectFirst() {
-        List<Act> objects = acts.getObjects();
+        List<A> objects = acts.getObjects();
         if (!objects.isEmpty()) {
-            Act current = objects.get(0);
+            A current = objects.get(0);
             acts.setSelected(current);
             window.setObject(current);
         } else {

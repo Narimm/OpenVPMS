@@ -33,7 +33,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-30 07:52:45Z $
  */
-public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
+public abstract class PatientRecordCRUDWindow extends ActCRUDWindow<Act> {
 
     /**
      * Clinical event item short names.

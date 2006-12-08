@@ -133,7 +133,8 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
      * Invoked when the 'Print Label' button is pressed.
      */
     private void onPrintLabel(IMObject object) {
-        IMObjectPrinter printer = new IMObjectReportPrinter();
+        IMObjectPrinter<IMObject> printer
+                = new IMObjectReportPrinter<IMObject>();
         printer.print(object);
     }
 

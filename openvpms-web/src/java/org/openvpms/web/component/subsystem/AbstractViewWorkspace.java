@@ -55,7 +55,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractViewWorkspace extends AbstractWorkspace {
+public abstract class AbstractViewWorkspace<T extends IMObject>
+        extends AbstractWorkspace<T> {
 
     /**
      * The archetype reference model name, used to query objects.
@@ -77,7 +78,7 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
     /**
      * The current object. May be <code>null</code>.
      */
-    private IMObject _object;
+    private T _object;
 
     /**
      * The selector.
@@ -148,7 +149,7 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      *
      * @param object the object. May be <code>null</code>
      */
-    public void setObject(IMObject object) {
+    public void setObject(T object) {
         _object = object;
         _selector.setObject(object);
     }
@@ -158,7 +159,7 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      *
      * @return the current object. May be <code>null</code>
      */
-    public IMObject getObject() {
+    public T getObject() {
         return _object;
     }
 
@@ -169,9 +170,7 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      */
     @Override
     protected Component doLayout() {
-        _root = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL,
-                "AbstractViewWorkspace.Layout");
+        _root = createRootComponent();
         Component heading = super.doLayout();
         Component selector = _selector.getComponent();
         Row wrapper = RowFactory.create("AbstractViewWorkspace.Selector",
@@ -189,7 +188,20 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      * @return the root split pane
      */
     protected SplitPane getRootComponent() {
+        if (_root == null) {
+            _root = createRootComponent();
+        }
         return _root;
+    }
+
+    /**
+     * Creates a root split pane.
+     *
+     * @return a root split pane
+     */
+    protected SplitPane createRootComponent() {
+        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
+                                       "AbstractViewWorkspace.Layout");
     }
 
     /**
@@ -252,13 +264,13 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    protected Browser<IMObject> createBrowser(String refModelName,
-                                              String entityName,
-                                              String conceptName) {
-        Query<IMObject> query = createQuery(refModelName, entityName,
-                                            conceptName);
+    protected Browser<T> createBrowser(String refModelName,
+                                       String entityName,
+                                       String conceptName) {
+        Query<T> query = createQuery(refModelName, entityName,
+                                     conceptName);
         SortConstraint[] sort = {new NodeSortConstraint("name", true)};
-        return new IMObjectTableBrowser<IMObject>(query, sort);
+        return new IMObjectTableBrowser<T>(query, sort);
     }
 
     /**
@@ -271,9 +283,9 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    protected Query<IMObject> createQuery(String refModelName,
-                                          String entityName,
-                                          String conceptName) {
+    protected Query<T> createQuery(String refModelName,
+                                   String entityName,
+                                   String conceptName) {
         return QueryFactory.create(refModelName, entityName, conceptName,
                                    GlobalContext.getInstance());
     }
@@ -284,16 +296,16 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      */
     protected void onSelect() {
         try {
-            final Browser<IMObject> browser
-                    = createBrowser(_refModelName, _entityName, _conceptName);
+            final Browser<T> browser = createBrowser(
+                    _refModelName, _entityName, _conceptName);
 
             String title = Messages.get("imobject.select.title", _type);
-            final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
+            final BrowserDialog<T> popup = new BrowserDialog<T>(
                     title, browser);
 
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
-                    IMObject object = popup.getSelected();
+                    T object = popup.getSelected();
                     if (object != null) {
                         onSelected(object);
                     }
@@ -311,7 +323,7 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      *
      * @param object the selected object
      */
-    protected void onSelected(IMObject object) {
+    protected void onSelected(T object) {
         setObject(object);
     }
 

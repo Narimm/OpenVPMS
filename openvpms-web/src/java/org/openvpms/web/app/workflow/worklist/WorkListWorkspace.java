@@ -39,7 +39,7 @@ import org.openvpms.web.component.util.SplitPaneFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class WorkListWorkspace extends ActWorkspace {
+public class WorkListWorkspace extends ActWorkspace<Party, Act> {
 
     /**
      * Short name of acts that this may create.
@@ -61,16 +61,43 @@ public class WorkListWorkspace extends ActWorkspace {
      * @param object the object. May be <code>null</code>
      */
     @Override
-    public void setObject(IMObject object) {
+    public void setObject(Party object) {
         super.setObject(object);
-        GlobalContext.getInstance().setWorkList((Party) object);
-        Party party = (Party) object;
-        layoutWorkspace(party);
-        initQuery(party);
+        GlobalContext.getInstance().setWorkList(object);
+        layoutWorkspace(object);
+        initQuery(object);
         TaskQuery query = (TaskQuery) getQuery();
         if (query != null) {
             GlobalContext.getInstance().setWorkListDate(query.getDate());
         }
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Party) {
+            setObject((Party) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Party.class.getName());
+        }
+    }
+
+    /**
+     * Returns the latest version of the current work list context object.
+     *
+     * @return the latest version of the work list context object, or
+     *         {@link #getObject()} if they are the same
+     */
+    @Override
+    protected Party getLatest() {
+        return getLatest(GlobalContext.getInstance().getWorkList());
     }
 
     /**
@@ -92,7 +119,7 @@ public class WorkListWorkspace extends ActWorkspace {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<Act> createCRUDWindow() {
         String type = DescriptorHelper.getDisplayName(ACT_SHORTNAME);
         ShortNameList shortNames = new ShortNameList(ACT_SHORTNAME);
         return new TaskCRUDWindow(type, shortNames);
@@ -137,5 +164,13 @@ public class WorkListWorkspace extends ActWorkspace {
      * @param container the container
      */
     protected void doLayout(Component container) {
+        Party latest = getLatest();
+        if (latest != getObject()) {
+            setObject(latest);
+        }
+        Component workspace = getWorkspace();
+        if (workspace != null) {
+            container.add(workspace);
+        }
     }
 }

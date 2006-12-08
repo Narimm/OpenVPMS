@@ -19,6 +19,7 @@
 package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Row;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 
@@ -29,7 +30,7 @@ import org.openvpms.web.app.subsystem.ShortNameList;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SummaryCRUDWindow extends AbstractCRUDWindow {
+public class SummaryCRUDWindow extends AbstractCRUDWindow<Act> {
 
     /**
      * Create a new <code>SummaryCRUDWindow</code>.

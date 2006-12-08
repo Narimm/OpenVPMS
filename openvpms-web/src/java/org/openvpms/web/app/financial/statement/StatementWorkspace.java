@@ -116,6 +116,17 @@ public class StatementWorkspace extends AbstractWorkspace {
     }
 
     /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object
+     */
+    public void setIMObject(IMObject object) {
+        setObject(object);
+    }
+
+    /**
      * Sets the object to be viewed/edited by the workspace.
      *
      * @param object the object. May be <code>null</code>

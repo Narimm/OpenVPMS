@@ -20,6 +20,7 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -49,7 +50,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SchedulingWorkspace extends AbstractViewWorkspace {
+public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
 
     /**
      * The workspace.
@@ -69,7 +70,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace {
     /**
      * The CRUD window.
      */
-    private CRUDWindow window;
+    private CRUDWindow<Act> window;
 
 
     /**
@@ -78,6 +79,47 @@ public class SchedulingWorkspace extends AbstractViewWorkspace {
     public SchedulingWorkspace() {
         super("workflow", "scheduling", "party", "party",
               "organisationSchedule");
+    }
+
+    /**
+     * Sets the current object.
+     *
+     * @param object the object. May be <code>null</code>
+     */
+    @Override
+    public void setObject(Party object) {
+        super.setObject(object);
+        GlobalContext.getInstance().setSchedule(object);
+        layoutWorkspace(object);
+        initQuery(object);
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Party) {
+            setObject((Party) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Party.class.getName());
+        }
+    }
+
+    /**
+     * Returns the latest version of the current schedule context object.
+     *
+     * @return the latest version of the schedule context object, or
+     *         {@link #getObject()} if they are the same
+     */
+    @Override
+    protected Party getLatest() {
+        return getLatest(GlobalContext.getInstance().getSchedule());
     }
 
     /**
@@ -121,7 +163,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace {
     protected void actSelected(ObjectSet act) {
         IMObjectReference actRef
                 = (IMObjectReference) act.get("act.objectReference");
-        IMObject object = IMObjectHelper.getObject(actRef);
+        Act object = (Act) IMObjectHelper.getObject(actRef);
         window.setObject(object);
     }
 
@@ -235,18 +277,18 @@ public class SchedulingWorkspace extends AbstractViewWorkspace {
      *
      * @param window the window
      */
-    protected void setCRUDWindow(CRUDWindow window) {
+    protected void setCRUDWindow(CRUDWindow<Act> window) {
         this.window = window;
-        this.window.setListener(new CRUDWindowListener() {
-            public void saved(IMObject object, boolean isNew) {
+        this.window.setListener(new CRUDWindowListener<Act>() {
+            public void saved(Act object, boolean isNew) {
                 onSaved(object, isNew);
             }
 
-            public void deleted(IMObject object) {
+            public void deleted(Act object) {
                 onDeleted(object);
             }
 
-            public void refresh(IMObject object) {
+            public void refresh(Act object) {
                 onRefresh(object);
             }
         });
@@ -257,7 +299,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace {
      *
      * @return the CRUD window
      */
-    protected CRUDWindow getCRUDWindow() {
+    protected CRUDWindow<Act> getCRUDWindow() {
         return window;
     }
 
@@ -296,25 +338,11 @@ public class SchedulingWorkspace extends AbstractViewWorkspace {
     }
 
     /**
-     * Sets the current object.
-     *
-     * @param object the object. May be <code>null</code>
-     */
-    @Override
-    public void setObject(IMObject object) {
-        super.setObject(object);
-        GlobalContext.getInstance().setSchedule((Party) object);
-        Party party = (Party) object;
-        layoutWorkspace(party);
-        initQuery(party);
-    }
-
-    /**
      * Creates a new CRUD window for viewing and editing acts.
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<Act> createCRUDWindow() {
         String type = Messages.get("workflow.scheduling.createtype");
         ShortNameList shortNames = new ShortNameList("act.customerAppointment");
         return new AppointmentCRUDWindow(type, shortNames);
@@ -356,5 +384,13 @@ public class SchedulingWorkspace extends AbstractViewWorkspace {
      * @param container the container
      */
     protected void doLayout(Component container) {
+        Party latest = getLatest();
+        if (latest != getObject()) {
+            setObject(latest);
+        }
+        Component workspace = getWorkspace();
+        if (workspace != null) {
+            container.add(workspace);
+        }
     }
 }

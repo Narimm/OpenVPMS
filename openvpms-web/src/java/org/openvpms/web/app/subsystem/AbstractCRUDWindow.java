@@ -57,12 +57,12 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AbstractCRUDWindow implements CRUDWindow {
+public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
 
     /**
      * The object.
      */
-    private IMObject _object;
+    private T _object;
 
     /**
      * Short names of archetypes that this may create.
@@ -77,7 +77,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
     /**
      * The listener.
      */
-    private CRUDWindowListener _listener;
+    private CRUDWindowListener<T> _listener;
 
     /**
      * The component representing this.
@@ -154,7 +154,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      *
      * @param listener the event listener.
      */
-    public void setListener(CRUDWindowListener listener) {
+    public void setListener(CRUDWindowListener<T> listener) {
         _listener = listener;
     }
 
@@ -163,7 +163,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      *
      * @return the event listener
      */
-    public CRUDWindowListener getListener() {
+    public CRUDWindowListener<T> getListener() {
         return _listener;
     }
 
@@ -184,7 +184,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      *
      * @param object the object. May be <code>null</code>
      */
-    public void setObject(IMObject object) {
+    public void setObject(T object) {
         _object = object;
         GlobalContext.getInstance().setCurrent(object);
         getComponent();
@@ -200,7 +200,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      *
      * @return the object, or <code>null</code> if there is none set
      */
-    public IMObject getObject() {
+    public T getObject() {
         return _object;
     }
 
@@ -211,7 +211,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      *         is no object set
      */
     public ArchetypeDescriptor getArchetypeDescriptor() {
-        IMObject object = getObject();
+        T object = getObject();
         ArchetypeDescriptor archetype = null;
         if (object != null) {
             archetype = DescriptorHelper.getArchetypeDescriptor(object);
@@ -366,7 +366,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
     protected void onCreate(String type, ShortNames shortNames) {
         IMObjectCreatorListener listener = new IMObjectCreatorListener() {
             public void created(IMObject object) {
-                onCreated(object);
+                onCreated((T) object);
             }
 
             public void cancelled() {
@@ -382,7 +382,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      *
      * @param object the new object
      */
-    protected void onCreated(IMObject object) {
+    protected void onCreated(T object) {
         edit(object);
     }
 
@@ -391,7 +391,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      * EditDialog}.
      */
     protected void onEdit() {
-        IMObject object = getObject();
+        T object = getObject();
         if (object != null) {
             if (object.isNew()) {
                 edit(object);
@@ -411,7 +411,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      * Invoked when the delete button is pressed.
      */
     protected void onDelete() {
-        IMObject object = getObject();
+        T object = getObject();
         if (object instanceof Entity) {
             Entity entity = (Entity) object;
             if (!entity.getEntityRelationships().isEmpty()) {
@@ -435,8 +435,8 @@ public class AbstractCRUDWindow implements CRUDWindow {
      * Invoked when the 'print' button is pressed.
      */
     protected void onPrint() {
-        IMObject object = getObject();
-        IMObjectPrinter printer = createPrinter(object);
+        T object = getObject();
+        IMObjectPrinter<T> printer = createPrinter(object);
         printer.print(object);
     }
 
@@ -447,7 +447,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      * @param context the layout context
      * @return a new editor
      */
-    protected IMObjectEditor createEditor(IMObject object,
+    protected IMObjectEditor createEditor(T object,
                                           LayoutContext context) {
         return IMObjectEditorFactory.create(object, context);
     }
@@ -471,9 +471,9 @@ public class AbstractCRUDWindow implements CRUDWindow {
      */
     protected void onEditCompleted(IMObjectEditor editor, boolean isNew) {
         if (editor.isDeleted()) {
-            onDeleted(editor.getObject());
+            onDeleted((T) editor.getObject());
         } else if (editor.isSaved()) {
-            onSaved(editor.getObject(), isNew);
+            onSaved((T) editor.getObject(), isNew);
         } else {
             GlobalContext.getInstance().setCurrent(null);
         }
@@ -485,7 +485,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      * @param object the object
      * @param isNew  determines if the object is a new instance
      */
-    protected void onSaved(IMObject object, boolean isNew) {
+    protected void onSaved(T object, boolean isNew) {
         setObject(object);
         if (_listener != null) {
             _listener.saved(object, isNew);
@@ -497,7 +497,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      *
      * @param object the object to delete
      */
-    protected void delete(IMObject object) {
+    protected void delete(T object) {
         try {
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
@@ -518,7 +518,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      *
      * @param object the object
      */
-    protected void onDeleted(IMObject object) {
+    protected void onDeleted(T object) {
         setObject(null);
         if (_listener != null) {
             _listener.deleted(object);
@@ -531,7 +531,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      * @param object the object to print
      * @return a new printer
      */
-    protected IMObjectPrinter createPrinter(IMObject object) {
+    protected IMObjectPrinter<T> createPrinter(T object) {
         return IMObjectPrinterFactory.create(
                 object.getArchetypeId().getShortName());
     }
@@ -541,7 +541,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      *
      * @param object the object
      */
-    protected void onRefresh(IMObject object) {
+    protected void onRefresh(T object) {
         setObject(null);
         if (_listener != null) {
             _listener.refresh(object);
@@ -549,11 +549,11 @@ public class AbstractCRUDWindow implements CRUDWindow {
     }
 
     /**
-     * Edit an IMObject.
+     * Edit an object.
      *
      * @param object the object to edit
      */
-    private void edit(IMObject object) {
+    private void edit(T object) {
         try {
             final boolean isNew = object.isNew();
 
@@ -579,7 +579,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      *
      * @param object the object to delete
      */
-    private void confirmDeactivate(final IMObject object) {
+    private void confirmDeactivate(final T object) {
         String title = Messages.get("imobject.deactivate.title", _type);
         String message = Messages.get("imobject.deactivate.message",
                                       object.getName());
@@ -609,7 +609,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      *
      * @param object the object to delete
      */
-    private void confirmDelete(final IMObject object) {
+    private void confirmDelete(final T object) {
         String title = Messages.get("imobject.delete.title", _type);
         String message = Messages.get("imobject.delete.title",
                                       object.getName());

@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.admin.lookup;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
 
@@ -27,13 +29,30 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class LookupWorkspace extends CRUDWorkspace {
+public class LookupWorkspace extends CRUDWorkspace<Lookup> {
 
     /**
      * Construct a new <code>LookupWorkspace</code>.
      */
     public LookupWorkspace() {
         super("admin", "lookup", "lookup", "lookup", null);
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Lookup) {
+            setObject((Lookup) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Lookup.class.getName());
+        }
     }
 
 }

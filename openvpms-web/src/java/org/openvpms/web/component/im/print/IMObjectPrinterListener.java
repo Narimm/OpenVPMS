@@ -29,21 +29,22 @@ import java.util.EventListener;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectPrinterListener extends EventListener {
+public interface IMObjectPrinterListener<T extends IMObject>
+        extends EventListener {
 
     /**
      * Invoked when an object has been successfully printed.
      *
      * @param object the object
      */
-    void printed(IMObject object);
+    void printed(T object);
 
     /**
      * Notifies that the print was cancelled.
      *
      * @param object the object
      */
-    void cancelled(IMObject object);
+    void cancelled(T object);
 
     /**
      * Invoked when an object fails to print.
@@ -51,5 +52,5 @@ public interface IMObjectPrinterListener extends EventListener {
      * @param object the object
      * @param cause  the reason for the failure
      */
-    void failed(IMObject object, Throwable cause);
+    void failed(T object, Throwable cause);
 }

@@ -118,8 +118,9 @@ public class ActResultSetTestCase extends AbstractAppTest {
         ParticipantConstraint participant = new ParticipantConstraint(
                 "customer", "participation.customer",
                 _customer.getObjectReference());
-        ActResultSet set = new ActResultSet(participant, archetypes, from, to,
-                                            statuses, rowsPerPage, sort);
+        ActResultSet<Act> set = new ActResultSet<Act>(participant, archetypes,
+                                                      from, to, statuses,
+                                                      rowsPerPage, sort);
 
         assertFalse(set.hasPrevious());
         for (int i = 0; i < expectedPages; ++i) {
@@ -154,8 +155,9 @@ public class ActResultSetTestCase extends AbstractAppTest {
         ParticipantConstraint participant = new ParticipantConstraint(
                 "customer", "participation.customer",
                 _customer.getObjectReference());
-        ActResultSet set = new ActResultSet(participant, archetypes, from, to,
-                                            statuses, rowsPerPage, sort);
+        ResultSet<Act> set = new ActResultSet<Act>(participant, archetypes,
+                                                   from, to, statuses,
+                                                   rowsPerPage, sort);
 
         for (int j = 0; j < 2; ++j) {
             for (int i = 0; i < expectedPages; ++i) {
@@ -198,7 +200,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
      * @param rowsPerPage the no. of rows per page
      * @param total       the total no. of rows
      */
-    protected void checkPage(ActResultSet set, IPage<Act> page,
+    protected void checkPage(ResultSet set, IPage<Act> page,
                              int pageIndex, int rowsPerPage, int total) {
         assertNotNull(page);
         assertNotNull(page.getResults());

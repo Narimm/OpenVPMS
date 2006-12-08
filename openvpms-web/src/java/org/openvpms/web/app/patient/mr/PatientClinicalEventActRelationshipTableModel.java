@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel;
@@ -32,7 +33,7 @@ import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PatientClinicalEventActRelationshipTableModel
-        extends AbstractActRelationshipTableModel {
+        extends AbstractActRelationshipTableModel<Act> {
 
     /**
      * Constructs a new <code>PatientClinicalEventActRelationshipTableModel</code>

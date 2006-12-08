@@ -51,7 +51,8 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActAmountTableModel extends BaseIMObjectTableModel<Act> {
+public class ActAmountTableModel<T extends Act>
+        extends BaseIMObjectTableModel<T> {
 
     /**
      * Date column index.
@@ -175,7 +176,7 @@ public class ActAmountTableModel extends BaseIMObjectTableModel<Act> {
      * @return the value at the given coordinate
      */
     @Override
-    protected Object getValue(Act act, int column, int row) {
+    protected Object getValue(T act, int column, int row) {
         Object result = null;
         switch (column) {
             case DATE_INDEX:

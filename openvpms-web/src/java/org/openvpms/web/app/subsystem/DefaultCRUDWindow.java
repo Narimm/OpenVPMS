@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.subsystem;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
+
 
 /**
  * Default implementation of the {@link CRUDWindow} interface.
@@ -25,7 +27,8 @@ package org.openvpms.web.app.subsystem;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DefaultCRUDWindow extends AbstractViewCRUDWindow {
+public class DefaultCRUDWindow<T extends IMObject>
+        extends AbstractViewCRUDWindow<T> {
 
     /**
      * Create a new <code>DefaultCRUDWindow</code>.

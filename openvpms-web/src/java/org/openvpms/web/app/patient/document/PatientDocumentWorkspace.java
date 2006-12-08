@@ -21,7 +21,6 @@ package org.openvpms.web.app.patient.document;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -37,13 +36,14 @@ import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
+
 /**
+ * Patient document workspace.
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-
-public class PatientDocumentWorkspace extends PatientActWorkspace {
-
+public class PatientDocumentWorkspace extends PatientActWorkspace<Act> {
 
     /**
      * Patient Document shortnames supported by the workspace.
@@ -65,7 +65,7 @@ public class PatientDocumentWorkspace extends PatientActWorkspace {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<Act> createCRUDWindow() {
         String type = Messages.get("patient.document.createtype");
         return new DocumentCRUDWindow(type, SHORT_NAMES);
     }
@@ -82,19 +82,9 @@ public class PatientDocumentWorkspace extends PatientActWorkspace {
                 "act.patientDocumentLetter");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        return new DefaultActQuery(patient, "patient", "participation.patient",
-                                   SHORT_NAMES, lookups, null);
-    }
-
-    /**
-     * Invoked when the object has been saved.
-     *
-     * @param object the object
-     * @param isNew  determines if the object is a new instance
-     */
-    @Override
-    protected void onSaved(IMObject object, boolean isNew) {
-        super.onSaved(object, isNew);
+        return new DefaultActQuery<Act>(patient, "patient",
+                                        "participation.patient", SHORT_NAMES,
+                                        lookups, null);
     }
 
     /**
@@ -103,6 +93,6 @@ public class PatientDocumentWorkspace extends PatientActWorkspace {
      * @return a new table model.
      */
     protected IMObjectTableModel<Act> createTableModel() {
-        return new ActAmountTableModel(true, false);
+        return new ActAmountTableModel<Act>(true, false);
     }
 }

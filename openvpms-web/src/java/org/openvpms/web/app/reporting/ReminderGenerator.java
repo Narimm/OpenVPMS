@@ -30,7 +30,6 @@ import static org.openvpms.archetype.rules.patient.reminder.Statistics.Type.SKIP
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.report.TemplateHelper;
@@ -131,21 +130,21 @@ class ReminderGenerator extends AbstractReminderProcessor {
                 documentTemplate,
                 ArchetypeServiceHelper.getArchetypeService());
         if (act != null) {
-            IMObjectPrinter printer = IMObjectPrinterFactory.create(
+            IMObjectPrinter<Act> printer = IMObjectPrinterFactory.create(
                     act.getArchetypeId().getShortName());
             printer.setInteractive(false);
             printer.print(reminder);
-            printer.setListener(new IMObjectPrinterListener() {
-                public void printed(IMObject object) {
+            printer.setListener(new IMObjectPrinterListener<Act>() {
+                public void printed(Act object) {
                     ReminderGenerator.super.print(
                             reminder, reminderType, contact, documentTemplate);
                     generate();
                 }
 
-                public void cancelled(IMObject object) {
+                public void cancelled(Act object) {
                 }
 
-                public void failed(IMObject object, Throwable cause) {
+                public void failed(Act object, Throwable cause) {
                     ErrorHelper.show(cause, new WindowPaneListener() {
                         public void windowPaneClosing(
                                 WindowPaneEvent event) {

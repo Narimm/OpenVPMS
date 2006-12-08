@@ -37,16 +37,17 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class CRUDWorkspace extends AbstractViewWorkspace {
+public abstract class CRUDWorkspace<T extends IMObject>
+        extends AbstractViewWorkspace<T> {
 
     /**
      * The CRUD window.
      */
-    private CRUDWindow _window;
+    private CRUDWindow<T> window;
 
 
     /**
-     * Construct a new <code>CRUDWorkspace</code>.
+     * Constructs a new <code>CRUDWorkspace</code>.
      *
      * @param subsystemId  the subsystem localisation identifier
      * @param workspaceId  the workspace localisation identfifier
@@ -66,7 +67,7 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
      * @param object the object. May be <code>null</code>
      */
     @Override
-    public void setObject(IMObject object) {
+    public void setObject(T object) {
         super.setObject(object);
         getCRUDWindow().setObject(object);
     }
@@ -77,18 +78,18 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
      * @param container the container
      */
     protected void doLayout(Component container) {
-        CRUDWindow window = getCRUDWindow();
+        CRUDWindow<T> window = getCRUDWindow();
         container.add(window.getComponent());
-        window.setListener(new CRUDWindowListener() {
-            public void saved(IMObject object, boolean isNew) {
+        window.setListener(new CRUDWindowListener<T>() {
+            public void saved(T object, boolean isNew) {
                 onSaved(object, isNew);
             }
 
-            public void deleted(IMObject object) {
+            public void deleted(T object) {
                 onDeleted(object);
             }
 
-            public void refresh(IMObject object) {
+            public void refresh(T object) {
                 onRefresh(object);
             }
         });
@@ -101,12 +102,12 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
     @Override
     protected void onSelect() {
         try {
-            final Browser<IMObject> browser = createBrowser(getRefModelName(),
-                                                            getEntityName(),
-                                                            getConceptName());
+            final Browser<T> browser = createBrowser(getRefModelName(),
+                                                     getEntityName(),
+                                                     getConceptName());
 
             String title = Messages.get("imobject.select.title", getType());
-            final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
+            final BrowserDialog<T> popup = new BrowserDialog<T>(
                     title, browser, true);
 
             popup.addWindowPaneListener(new WindowPaneListener() {
@@ -114,7 +115,7 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
                     if (popup.createNew()) {
                         getCRUDWindow().onCreate();
                     } else {
-                        IMObject object = popup.getSelected();
+                        T object = popup.getSelected();
                         if (object != null) {
                             onSelected(object);
                         }
@@ -135,7 +136,7 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
      * @param object the object
      * @param isNew  determines if the object is a new instance
      */
-    protected void onSaved(IMObject object, boolean isNew) {
+    protected void onSaved(T object, boolean isNew) {
         setObject(object);
     }
 
@@ -144,7 +145,7 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
      *
      * @param object the object
      */
-    protected void onDeleted(IMObject object) {
+    protected void onDeleted(T object) {
         setObject(null);
     }
 
@@ -153,7 +154,7 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
      *
      * @param object the object
      */
-    protected void onRefresh(IMObject object) {
+    protected void onRefresh(T object) {
         object = IMObjectHelper.reload(object);
         setObject(object);
     }
@@ -163,11 +164,11 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
      *
      * @return the CRUD window
      */
-    protected CRUDWindow getCRUDWindow() {
-        if (_window == null) {
-            _window = createCRUDWindow();
+    protected CRUDWindow<T> getCRUDWindow() {
+        if (window == null) {
+            window = createCRUDWindow();
         }
-        return _window;
+        return window;
     }
 
     /**
@@ -175,11 +176,11 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<T> createCRUDWindow() {
         ShortNames shortNames = new ShortNameList(getRefModelName(),
                                                   getEntityName(),
                                                   getConceptName());
-        return new DefaultCRUDWindow(getType(), shortNames);
+        return new DefaultCRUDWindow<T>(getType(), shortNames);
     }
 
 }

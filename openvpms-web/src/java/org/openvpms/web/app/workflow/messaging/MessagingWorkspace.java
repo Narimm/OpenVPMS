@@ -39,6 +39,7 @@ import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.util.FastLookupHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
@@ -52,7 +53,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class MessagingWorkspace extends AbstractWorkspace {
+public class MessagingWorkspace extends AbstractWorkspace<User> {
 
     /**
      * The current user. May be <code>null</code>.
@@ -72,7 +73,7 @@ public class MessagingWorkspace extends AbstractWorkspace {
     /**
      * The CRUD window.
      */
-    private CRUDWindow window;
+    private CRUDWindow<Act> window;
 
     /**
      * The act browser.
@@ -106,8 +107,7 @@ public class MessagingWorkspace extends AbstractWorkspace {
      *
      * @param object the object. May be <code>null</code>
      */
-    public void setObject(IMObject object) {
-        user = (User) object;
+    public void setObject(User object) {
         layoutWorkspace(user, root);
     }
 
@@ -116,9 +116,27 @@ public class MessagingWorkspace extends AbstractWorkspace {
      *
      * @return the the object. May be <oode>null</code>
      */
-    public IMObject getObject() {
+    public User getObject() {
         return user;
     }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof User) {
+            setObject((User) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + User.class.getName());
+        }
+    }
+
 
     /**
      * Lays out the component.
@@ -148,7 +166,8 @@ public class MessagingWorkspace extends AbstractWorkspace {
     @Override
     protected boolean refreshWorkspace() {
         User user = GlobalContext.getInstance().getUser();
-        return (user != getObject());
+        user = IMObjectHelper.reload(user);
+        return IMObjectHelper.isSame(getObject(), user);
     }
 
     /**
@@ -171,16 +190,16 @@ public class MessagingWorkspace extends AbstractWorkspace {
         });
 
         window = createCRUDWindow();
-        window.setListener(new CRUDWindowListener() {
-            public void saved(IMObject object, boolean isNew) {
+        window.setListener(new CRUDWindowListener<Act>() {
+            public void saved(Act object, boolean isNew) {
                 browser.query();
             }
 
-            public void deleted(IMObject object) {
+            public void deleted(Act object) {
                 browser.query();
             }
 
-            public void refresh(IMObject object) {
+            public void refresh(Act object) {
                 browser.query();
             }
         });
@@ -213,7 +232,7 @@ public class MessagingWorkspace extends AbstractWorkspace {
      *
      * @return a new CRUD window
      */
-    private CRUDWindow createCRUDWindow() {
+    private CRUDWindow<Act> createCRUDWindow() {
         return new MessagingCRUDWindow(
                 DescriptorHelper.getDisplayName("act.userMessage"),
                 new ShortNameList("act.userMessage"));
@@ -242,9 +261,9 @@ public class MessagingWorkspace extends AbstractWorkspace {
                 = DescriptorHelper.getArchetypeDescriptor(shortName);
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        return new DefaultActQuery(user, "to",
-                                   "participation.user",
-                                   shortNames, lookups, null);
+        return new DefaultActQuery<Act>(user, "to",
+                                        "participation.user",
+                                        shortNames, lookups, null);
     }
 
     /**
