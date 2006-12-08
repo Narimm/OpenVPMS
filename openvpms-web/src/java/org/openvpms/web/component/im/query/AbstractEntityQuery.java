@@ -55,8 +55,8 @@ public abstract class AbstractEntityQuery<T extends Entity>
 
 
     /**
-     * Construct a new <code>AbstractEntityQuery</code> that queries Entity instances
-     * with the specified short names.
+     * Construct a new <code>AbstractEntityQuery</code> that queries Entity
+     * instances with the specified short names.
      *
      * @param shortNames the short names
      * @throws ArchetypeQueryException if the short names don't match any
@@ -67,8 +67,8 @@ public abstract class AbstractEntityQuery<T extends Entity>
     }
 
     /**
-     * Construct a new <code>AbstractEntityQuery</code> that queries Entity instances
-     * with the specified criteria.
+     * Construct a new <code>AbstractEntityQuery</code> that queries Entity
+     * instances with the specified criteria.
      *
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
@@ -139,7 +139,6 @@ public abstract class AbstractEntityQuery<T extends Entity>
         container.add(getIdentitySearch());
     }
 
-
     /**
      * Lays out the component in a container, and sets focus on the instance
      * name.
@@ -152,6 +151,19 @@ public abstract class AbstractEntityQuery<T extends Entity>
         addIdentitySearch(container);
         addInactive(container);
         ApplicationInstance.getActive().setFocusedComponent(getInstanceName());
+    }
+
+    /**
+     * Invoked when the instance name changes.
+     * This sets the identity search checkbox if the name contains a number.
+     */
+    @Override
+    protected void onInstanceNameChanged() {
+        String name = getName();
+        if (name != null && name.matches(".*\\d+.*")) {
+            getIdentitySearch().setSelected(true);
+        }
+        super.onInstanceNameChanged();
     }
 
 }
