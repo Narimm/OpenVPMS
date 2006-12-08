@@ -52,11 +52,22 @@ public class NodeConstraint extends AbstractNodeConstraint {
     }
 
     /**
+     * Construct a constraint on the specified node and operator.
+     *
+     * @param nodeName the name of the node descriptor, optionaly prefixed by
+     *                 the type alias
+     * @param operator the operator
+     */
+    public NodeConstraint(String nodeName, RelationalOp operator) {
+        this(nodeName, operator, new Object[0]);
+    }
+
+    /**
      * Construct a constraint on the specified node with the associated
      * relational operator and parameters.
      *
-     * @param nodeName  the name of the node descriptor, optionaly prefixed by
-     *                  the type alias
+     * @param nodeName   the name of the node descriptor, optionaly prefixed by
+     *                   the type alias
      * @param operator   the relational operator
      * @param parameters the parameters that are used to constrain the value of
      *                   the node
