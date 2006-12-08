@@ -476,7 +476,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
             instanceName = TextComponentFactory.create();
             instanceName.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
-                    onQuery();
+                    onInstanceNameChanged();
                 }
             });
         }
@@ -516,6 +516,13 @@ public abstract class AbstractQuery<T> implements Query<T> {
         Label deactivedLabel = LabelFactory.create(DEACTIVATED_ID);
         container.add(deactivedLabel);
         container.add(getInactive());
+    }
+
+    /**
+     * Invoked when the instance name changes. Invokes {@link #onQuery}.
+     */
+    protected void onInstanceNameChanged() {
+        onQuery();
     }
 
     /**

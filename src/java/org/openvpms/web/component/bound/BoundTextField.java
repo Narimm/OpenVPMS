@@ -20,8 +20,8 @@ package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.TextField;
-
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.util.TextDocument;
 
 
 /**
@@ -39,6 +39,7 @@ public class BoundTextField extends TextField {
      * @param columns  the no. of columns to display
      */
     public BoundTextField(Property property, int columns) {
+        super(new TextDocument());
         setWidth(new Extent(columns, Extent.EM));
 
         Binder binder = new TextComponentBinder(this, property);

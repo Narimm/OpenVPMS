@@ -47,7 +47,7 @@ public class TextComponentFactory extends ComponentFactory {
      * @return a new text field
      */
     public static TextField create() {
-        TextField text = new TextField();
+        TextField text = new TextField(new TextDocument());
         setDefaultStyle(text);
         return text;
     }
@@ -99,7 +99,7 @@ public class TextComponentFactory extends ComponentFactory {
      * @return a new text area
      */
     public static TextArea createTextArea() {
-        TextArea text = new TextArea();
+        TextArea text = new TextArea(new TextDocument());
         setDefaultStyle(text);
         return text;
     }
@@ -140,6 +140,7 @@ public class TextComponentFactory extends ComponentFactory {
      */
     public static TextField createPassword() {
         TextField password = new PasswordField();
+        password.setDocument(new TextDocument());
         setDefaultStyle(password);
         return password;
     }
