@@ -132,9 +132,11 @@ public class RecordBrowser implements Browser<Act> {
         IMObjectTableModel<Act> model = new ReminderActTableModel(
                 reminderAlert.getShortNames());
         this.reminderAlert = new TableBrowser<Act>(reminderAlert, sort, model);
-        IMObjectTableModel<Act> docModel = new ActAmountTableModel(true, false);
+        IMObjectTableModel<Act> docModel
+                = new ActAmountTableModel<Act>(true, false);
         this.document = new TableBrowser<Act>(document, sort, docModel);
-        IMObjectTableModel<Act> invModel = new ActAmountTableModel(true, false);
+        IMObjectTableModel<Act> invModel
+                = new ActAmountTableModel<Act>(true, false);
         this.investigation = new TableBrowser<Act>(investigation, sort,
                                                    invModel);
     }

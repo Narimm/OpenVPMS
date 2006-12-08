@@ -19,16 +19,17 @@
 package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Row;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.subsystem.ShortNameList;
 
 
 /**
  * CRUD window for supplier invoices.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class InvoiceCRUDWindow extends SupplierActCRUDWindow {
+public class InvoiceCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
     /**
      * Create a new <code>InvoiceCRUDWindow</code>.

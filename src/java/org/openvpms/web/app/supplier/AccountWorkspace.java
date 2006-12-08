@@ -19,7 +19,7 @@
 package org.openvpms.web.app.supplier;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -49,7 +49,7 @@ public class AccountWorkspace extends SupplierFinancialActWorkspace {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<FinancialAct> createCRUDWindow() {
         String type = Messages.get("supplier.account.createtype");
         return new AccountCRUDWindow(type, "common", "act", "supplierAccount*");
     }
@@ -60,13 +60,14 @@ public class AccountWorkspace extends SupplierFinancialActWorkspace {
      * @param party the party to query acts for
      * @return a new query
      */
-    protected ActQuery<Act> createQuery(Party party) {
+    protected ActQuery<FinancialAct> createQuery(Party party) {
         String[] shortNames = {"act.supplierAccountCharges*",
                                "act.supplierAccountPayment",
                                "act.supplierAccountRefund"};
         String[] statuses = {FinancialActStatus.POSTED};
-        return new DefaultActQuery(party, "supplier", "participation.supplier",
-                                   shortNames, statuses);
+        return new DefaultActQuery<FinancialAct>(party, "supplier",
+                                                 "participation.supplier",
+                                                 shortNames, statuses);
     }
 
     /**
@@ -75,8 +76,8 @@ public class AccountWorkspace extends SupplierFinancialActWorkspace {
      * @return a new table model.
      */
     @Override
-    protected IMObjectTableModel<Act> createTableModel() {
-        return new ActAmountTableModel(false, true);
+    protected IMObjectTableModel<FinancialAct> createTableModel() {
+        return new ActAmountTableModel<FinancialAct>(false, true);
     }
 
 }

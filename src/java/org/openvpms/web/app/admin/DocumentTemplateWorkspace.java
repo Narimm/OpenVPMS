@@ -18,6 +18,9 @@
 
 package org.openvpms.web.app.admin;
 
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
 
@@ -27,13 +30,30 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DocumentTemplateWorkspace extends CRUDWorkspace {
+public class DocumentTemplateWorkspace extends CRUDWorkspace<Entity> {
 
     /**
-     * Construct a new <code>DocumentTemplateWorkspace</code>.
+     * Constructs a new <code>DocumentTemplateWorkspace</code>.
      */
     public DocumentTemplateWorkspace() {
         super("admin", "documentTemplate", "common", "entity",
               "documentTemplate");
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Party) {
+            setObject((Party) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Party.class.getName());
+        }
     }
 }

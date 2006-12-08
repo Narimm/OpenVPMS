@@ -19,7 +19,6 @@
 package org.openvpms.web.app.customer;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -38,7 +37,8 @@ import org.openvpms.web.component.im.util.ErrorHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class CustomerActCRUDWindow extends ActCRUDWindow {
+public abstract class CustomerActCRUDWindow<T extends Act>
+        extends ActCRUDWindow<T> {
 
     /**
      * Create a new <code>CustomerActCRUDWindow</code>.
@@ -54,11 +54,10 @@ public abstract class CustomerActCRUDWindow extends ActCRUDWindow {
     /**
      * Invoked when a new object has been created.
      *
-     * @param object the new object
+     * @param act the new act
      */
     @Override
-    protected void onCreated(IMObject object) {
-        Act act = (Act) object;
+    protected void onCreated(T act) {
         Party customer = GlobalContext.getInstance().getCustomer();
         if (customer != null) {
             try {
@@ -74,7 +73,7 @@ public abstract class CustomerActCRUDWindow extends ActCRUDWindow {
                 ErrorHelper.show(exception);
             }
         }
-        super.onCreated(object);
+        super.onCreated(act);
     }
 
 }

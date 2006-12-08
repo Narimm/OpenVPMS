@@ -26,6 +26,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -47,7 +48,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AccountCRUDWindow extends CustomerActCRUDWindow {
+public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
     /**
      * The reverse button.
@@ -155,7 +156,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
      * Invoked when the 'reverse' button is pressed.
      */
     protected void onReverse() {
-        final Act act = (Act) getObject();
+        final Act act = getObject();
         String status = act.getStatus();
         if (!TypeHelper.isA(act, OPENING_BALANCE_TYPE, CLOSING_BALANCE_TYPE)
                 && FinancialActStatus.POSTED.equals(status)) {

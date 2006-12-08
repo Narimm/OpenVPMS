@@ -164,7 +164,7 @@ class PrintDocumentsTask extends AbstractTask {
      * due to limitations in downloading multiple pdf files to the client
      * browser.
      */
-    class BatchPrinter implements IMObjectPrinterListener {
+    class BatchPrinter implements IMObjectPrinterListener<IMObject> {
 
         /**
          * Iterator over the objects to  print.
@@ -186,7 +186,8 @@ class PrintDocumentsTask extends AbstractTask {
         public void print() {
             if (iterator.hasNext()) {
                 IMObject object = iterator.next();
-                IMObjectPrinter printer = IMObjectPrinterFactory.create(
+                IMObjectPrinter<IMObject> printer
+                        = IMObjectPrinterFactory.create(
                         object.getArchetypeId().getShortName());
                 printer.setListener(this);
                 printer.print(object);

@@ -161,13 +161,14 @@ public class IMObjectHelper {
      * @param object the object to reload. May be <code>null</code>
      * @return the object, or <code>null</code> if it couldn't be reloaded
      */
-    public static IMObject reload(IMObject object) {
-        IMObject result = null;
+    @SuppressWarnings("unchecked")
+    public static <T extends IMObject> T reload(T object) {
+        T result = null;
         if (object != null) {
             try {
                 IArchetypeService service
                         = ArchetypeServiceHelper.getArchetypeService();
-                result = ArchetypeQueryHelper.getByObjectReference(
+                result = (T) ArchetypeQueryHelper.getByObjectReference(
                         service, object.getObjectReference());
             } catch (OpenVPMSException error) {
                 log.error(error, error);
@@ -334,5 +335,49 @@ public class IMObjectHelper {
         return (value != null && value.toLowerCase().matches(regexp));
     }
 
+    /**
+     * Determines if an object has the same object reference and version
+     * as another.
+     *
+     * @param object the object. May be <code>null</code>
+     * @param other  the object. May be <code>null</code>
+     * @return <code>true</code> if the objects have the same object references
+     *         and version, otherwise <code>false</code>
+     */
+    public static boolean isSame(IMObject object, IMObject other) {
+        if (object != null && other != null) {
+            if (object.getObjectReference().equals(other.getObjectReference())
+                    && object.getVersion() == other.getVersion()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines if a newer version of an object exists.
+     *
+     * @param object the object
+     * @return <code>true<code> if a newer version exists,
+     *         otherwise <code>false</code>. If <code>object == null</code>
+     *         also returns <code>false</code>
+     */
+    public static boolean hasNewerVersion(IMObject object) {
+        boolean result = false;
+        if (object != null) {
+            try {
+                IArchetypeService service
+                        = ArchetypeServiceHelper.getArchetypeService();
+                IMObject o = ArchetypeQueryHelper.getByObjectReference(
+                        service, object.getObjectReference());
+                if (o != null && o.getVersion() > object.getVersion()) {
+                    result = true;
+                }
+            } catch (OpenVPMSException exception) {
+                log.error(exception, exception);
+            }
+        }
+        return result;
+    }
 }
 

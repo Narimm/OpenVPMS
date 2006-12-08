@@ -36,7 +36,8 @@ import java.util.Arrays;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectReportPrinter extends AbstractIMObjectPrinter {
+public class IMObjectReportPrinter<T extends IMObject>
+        extends AbstractIMObjectPrinter<T> {
 
     /**
      * Returns a document for an object.

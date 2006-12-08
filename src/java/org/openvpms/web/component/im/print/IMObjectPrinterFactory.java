@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.print;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
@@ -76,7 +77,8 @@ public final class IMObjectPrinterFactory {
      *                  wildcards
      * @return a new printer
      */
-    public static IMObjectPrinter create(String shortName) {
+    public static <T extends IMObject> IMObjectPrinter<T>
+            create(String shortName) {
         return create(new String[]{shortName});
     }
 
@@ -90,11 +92,13 @@ public final class IMObjectPrinterFactory {
      *                   wildcards
      * @return a new query
      */
-    public static IMObjectPrinter create(String[] shortNames) {
+    @SuppressWarnings("unchecked")
+    public static <T extends IMObject> IMObjectPrinter<T>
+            create(String[] shortNames) {
         shortNames = DescriptorHelper.getShortNames(shortNames);
         ArchetypeHandler<IMObjectPrinter> handler = getPrinters().getHandler(
                 shortNames);
-        IMObjectPrinter result = null;
+        IMObjectPrinter<T> result = null;
         if (handler != null) {
             try {
                 result = handler.create();

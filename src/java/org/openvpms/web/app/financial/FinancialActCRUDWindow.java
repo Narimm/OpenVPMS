@@ -43,7 +43,8 @@ import org.openvpms.web.component.util.ButtonFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class FinancialActCRUDWindow extends AbstractViewCRUDWindow {
+public class FinancialActCRUDWindow
+        extends AbstractViewCRUDWindow<FinancialAct> {
 
     /**
      * The summary button.

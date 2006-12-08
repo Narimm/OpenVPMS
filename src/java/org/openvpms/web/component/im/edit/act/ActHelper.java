@@ -18,11 +18,6 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -39,6 +34,11 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -60,7 +60,8 @@ public class ActHelper {
                 "act.customerAccount*");
         return getAccountBalance(customer.getObjectReference(), "customer",
 
-                                 "participation.customer", shortNames, "act.customerAccountOpeningBalance",
+                                 "participation.customer", shortNames,
+                                 "act.customerAccountOpeningBalance",
                                  "act.customerAccountClosingBalance");
     }
 
@@ -74,7 +75,8 @@ public class ActHelper {
         String[] shortNames = {"act.supplierAccountCharges*",
                                "act.supplierAccountPayment"};
         return getAccountBalance(supplier.getObjectReference(), "supplier",
-                                 "participation.supplier", shortNames, "act.supplierAccountOpeningBalance",
+                                 "participation.supplier", shortNames,
+                                 "act.supplierAccountOpeningBalance",
                                  "act.supplierAccountClosingBalance");
     }
 
@@ -90,7 +92,7 @@ public class ActHelper {
     public static BigDecimal getAccountBalance(IMObjectReference entity,
                                                String participant,
                                                String participation,
-                                               String[] shortNames, 
+                                               String[] shortNames,
                                                String openingBalanceName,
                                                String closingBalanceName) {
         String[] statuses = {FinancialActStatus.POSTED};
@@ -99,8 +101,9 @@ public class ActHelper {
         ParticipantConstraint constraint = new ParticipantConstraint(
                 participant, participation, entity);
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
-        ActResultSet set = new ActResultSet(constraint, archetypes, null, null,
-                                            statuses, 50, sort);
+        ActResultSet<Act> set = new ActResultSet<Act>(constraint, archetypes,
+                                                      null, null, statuses, 50,
+                                                      sort);
         set.setNodes(new String[]{"amount"});
         BigDecimal balance = BigDecimal.ZERO;
         // Add up amounts until find first opening balance ignoring first closing balances.
@@ -108,15 +111,17 @@ public class ActHelper {
         while (set.hasNext()) {
             IPage<Act> acts = set.next();
             for (Act act : acts.getResults()) {
-            	//Ignore first closing balance
-            	if(act.getArchetypeId().getShortName().equalsIgnoreCase(closingBalanceName))
-            		continue;
+                //Ignore first closing balance
+                if (act.getArchetypeId().getShortName().equalsIgnoreCase(
+                        closingBalanceName))
+                    continue;
                 BigDecimal amount = getAmount(act, "amount");
                 balance = balance.add(amount);
-            	if(act.getArchetypeId().getShortName().equalsIgnoreCase(openingBalanceName)) {
-            		finished = true;
-            		break;
-            	}
+                if (act.getArchetypeId().getShortName().equalsIgnoreCase(
+                        openingBalanceName)) {
+                    finished = true;
+                    break;
+                }
             }
             if (finished)
                 break;

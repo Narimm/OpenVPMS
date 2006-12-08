@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.financial.deposit;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 
@@ -30,12 +31,12 @@ import org.openvpms.web.component.im.table.act.ActAmountTableModel;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class BankDepositActRelationshipTableModel
-        extends AbstractActRelationshipTableModel {
+        extends AbstractActRelationshipTableModel<Act> {
 
     /**
      * Constructs a new <code>TillBalanceActRelationshipTableModel</code>
      */
     public BankDepositActRelationshipTableModel() {
-        setModel(new ActAmountTableModel(false, false));
+        setModel(new ActAmountTableModel<Act>(false, false));
     }
 }

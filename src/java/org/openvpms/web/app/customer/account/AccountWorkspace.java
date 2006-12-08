@@ -19,7 +19,7 @@
 package org.openvpms.web.app.customer.account;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerFinancialActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
@@ -50,7 +50,7 @@ public class AccountWorkspace extends CustomerFinancialActWorkspace {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<FinancialAct> createCRUDWindow() {
         String type = Messages.get("customer.account.createtype");
         return new AccountCRUDWindow(type, "common", "act", "customerAccount*");
     }
@@ -61,7 +61,7 @@ public class AccountWorkspace extends CustomerFinancialActWorkspace {
      * @param customer the customer to query acts for
      * @return a new query
      */
-    protected ActQuery<Act> createQuery(Party customer) {
+    protected ActQuery<FinancialAct> createQuery(Party customer) {
         String[] shortNames = {"act.customerAccountCharges*",
                                "act.customerAccountPayment",
                                "act.customerAccountRefund",
@@ -73,9 +73,9 @@ public class AccountWorkspace extends CustomerFinancialActWorkspace {
                                "act.customerAccountBadDebt"};
         String[] statuses = {FinancialActStatus.POSTED};
 
-        return new DefaultActQuery(customer, "customer",
-                                   "participation.customer",
-                                   shortNames, statuses);
+        return new DefaultActQuery<FinancialAct>(customer, "customer",
+                                                 "participation.customer",
+                                                 shortNames, statuses);
     }
 
     /**
@@ -84,8 +84,8 @@ public class AccountWorkspace extends CustomerFinancialActWorkspace {
      * @return a new table model.
      */
     @Override
-    protected IMObjectTableModel<Act> createTableModel() {
-        return new ActAmountTableModel(false, true);
+    protected IMObjectTableModel<FinancialAct> createTableModel() {
+        return new ActAmountTableModel<FinancialAct>(false, true);
     }
 
 }

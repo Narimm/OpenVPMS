@@ -121,7 +121,8 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      *
      * @param object the object. May be <code>null</code>
      */
-    public void setObject(IMObject object) {
+    @Override
+    public void setObject(FinancialAct object) {
         _childAct = null;
         super.setObject(object);
     }
@@ -166,7 +167,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         Row buttons = getButtons();
         buttons.removeAll();
         if (enable) {
-            Act act = (Act) getObject();
+            Act act = getObject();
             boolean uncleared = false;
             if (TypeHelper.isA(act, "act.tillBalance")) {
                 uncleared = TillBalanceStatus.UNCLEARED.equals(act.getStatus());
@@ -193,7 +194,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      * Invoked when the 'clear' button is pressed.
      */
     protected void onClear() {
-        final FinancialAct act = (FinancialAct) getObject();
+        final FinancialAct act = getObject();
         try {
             ActBean actBean = new ActBean(act);
             Party till = (Party) actBean.getParticipant("participation.till");
@@ -229,7 +230,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      * Invoked when the 'transfer' button is pressed.
      */
     protected void onTransfer() {
-        final FinancialAct act = (FinancialAct) getObject();
+        final FinancialAct act = getObject();
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         String[] shortNames = {"party.organisationTill"};
@@ -258,13 +259,12 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     /**
      * Invoked when a new adjustment has been created.
      *
-     * @param object the new adjustment
+     * @param adjustment the new adjustment
      */
     @Override
-    protected void onCreated(IMObject object) {
+    protected void onCreated(FinancialAct adjustment) {
         // populate the adjust with the current till
-        FinancialAct act = (FinancialAct) getObject();
-        FinancialAct adjustment = (FinancialAct) object;
+        FinancialAct act = getObject();
         adjustment.setDescription(Messages.get("till.adjustment.description"));
         ActBean actBean = new ActBean(act);
         IMObjectReference till
@@ -273,7 +273,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         if (till != null) {
             adjBean.setParticipant("participation.till", till);
         }
-        super.onCreated(object);
+        super.onCreated(adjustment);
     }
 
     /**
@@ -303,7 +303,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected void onEditCompleted(IMObjectEditor editor, boolean isNew) {
-        FinancialAct act = (FinancialAct) IMObjectHelper.reload(getObject());
+        FinancialAct act = IMObjectHelper.reload(getObject());
         setObject(act);
     }
 

@@ -33,7 +33,8 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -42,12 +43,13 @@ import java.util.Arrays;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
+public abstract class AbstractIMObjectPrinter<T extends IMObject>
+        implements IMObjectPrinter<T> {
 
     /**
      * The print listener. May be <code>null</code>.
      */
-    private IMObjectPrinterListener _listener;
+    private IMObjectPrinterListener<T> _listener;
 
     /**
      * Determines if printing should occur interactively.
@@ -64,7 +66,7 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
      *
      * @param object the object to print
      */
-    public void print(final IMObject object) {
+    public void print(final T object) {
         if (isInteractive()) {
             String displayName = DescriptorHelper.getDisplayName(object);
             String title = Messages.get("imobject.print.title", displayName);
@@ -95,7 +97,7 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
      *
      * @param listener the listener. May be <code>null</code>
      */
-    public void setListener(IMObjectPrinterListener listener) {
+    public void setListener(IMObjectPrinterListener<T> listener) {
         _listener = listener;
     }
 
@@ -143,7 +145,7 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
      *
      * @param object the object
      */
-    protected void printed(IMObject object) {
+    protected void printed(T object) {
         if (_listener != null) {
             _listener.printed(object);
         }
@@ -156,7 +158,7 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
      * @param object    the object
      * @param exception the cause of the failure
      */
-    protected void failed(IMObject object, Throwable exception) {
+    protected void failed(T object, Throwable exception) {
         if (_listener != null) {
             _listener.cancelled(object);
         }
@@ -168,10 +170,12 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
      * @param object  the object to print
      * @param printer the printer
      */
-    protected void doPrint(IMObject object, String printer) {
+    protected void doPrint(T object, String printer) {
         try {
             IMObjectReport report = createReport(object);
-            report.print(Arrays.asList(object), new PrintProperties(printer));
+            List<IMObject> objects = new ArrayList<IMObject>();
+            objects.add(object);
+            report.print(objects, new PrintProperties(printer));
             printed(object);
         } catch (OpenVPMSException exception) {
             if (isInteractive()) {

@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.financial.till;
 
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel;
 
 
@@ -29,7 +30,7 @@ import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class TillBalanceActRelationshipTableModel
-        extends AbstractActRelationshipTableModel {
+        extends AbstractActRelationshipTableModel<FinancialAct> {
 
     /**
      * Constructs a new <code>TillBalanceActRelationshipTableModel</code>

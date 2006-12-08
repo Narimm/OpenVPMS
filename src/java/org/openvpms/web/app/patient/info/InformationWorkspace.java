@@ -39,7 +39,7 @@ import org.openvpms.web.component.im.query.Query;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InformationWorkspace extends CRUDWorkspace {
+public class InformationWorkspace extends CRUDWorkspace<Party> {
 
     /**
      * Construct a new <code>InformationWorkspace</code>.
@@ -54,10 +54,27 @@ public class InformationWorkspace extends CRUDWorkspace {
      * @param object the object. May be <code>null</code>
      */
     @Override
-    public void setObject(IMObject object) {
+    public void setObject(Party object) {
         super.setObject(object);
-        ContextHelper.setPatient((Party) object);
+        ContextHelper.setPatient(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Party) {
+            setObject((Party) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Party.class.getName());
+        }
     }
 
     /**
@@ -68,20 +85,18 @@ public class InformationWorkspace extends CRUDWorkspace {
      */
     @Override
     public Component getSummary() {
-        return PatientSummary.getSummary((Party) getObject());
+        return PatientSummary.getSummary(getObject());
     }
 
     /**
-     * Determines if the workspace should be refreshed. This implementation
-     * returns true if the current patient has changed.
+     * Returns the latest version of the current patient context object.
      *
-     * @return <code>true</code> if the workspace should be refreshed, otherwise
-     *         <code>false</code>
+     * @return the latest version of the context object, or {@link #getObject()}
+     *         if they are the same
      */
     @Override
-    protected boolean refreshWorkspace() {
-        Party patient = GlobalContext.getInstance().getPatient();
-        return (patient != getObject());
+    protected Party getLatest() {
+        return getLatest(GlobalContext.getInstance().getPatient());
     }
 
     /**
@@ -92,9 +107,9 @@ public class InformationWorkspace extends CRUDWorkspace {
     @Override
     protected void doLayout(Component container) {
         super.doLayout(container);
-        Party patient = GlobalContext.getInstance().getPatient();
-        if (patient != getObject()) {
-            setObject(patient);
+        Party latest = getLatest();
+        if (latest != getObject()) {
+            setObject(latest);
         }
     }
 
@@ -104,7 +119,7 @@ public class InformationWorkspace extends CRUDWorkspace {
      * @return a new CRUD window
      */
     @Override
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<Party> createCRUDWindow() {
         ShortNames shortNames = new ShortNameList(getRefModelName(),
                                                   getEntityName(),
                                                   getConceptName());
@@ -122,11 +137,11 @@ public class InformationWorkspace extends CRUDWorkspace {
      *                                 archetypes
      */
     @Override
-    @SuppressWarnings("unchecked")
-    protected Query<IMObject> createQuery(String refModelName,
-                                          String entityName,
-                                          String conceptName) {
-        Query query = super.createQuery(refModelName, entityName, conceptName);
+    protected Query<Party> createQuery(String refModelName,
+                                       String entityName,
+                                       String conceptName) {
+        Query<Party> query = super.createQuery(refModelName, entityName,
+                                               conceptName);
         if (query instanceof PatientQuery) {
             ((PatientQuery) query).setShowAllPatients(true);
         }

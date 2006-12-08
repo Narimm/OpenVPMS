@@ -39,7 +39,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EstimationWorkspace extends CustomerFinancialActWorkspace {
+public class EstimationWorkspace extends CustomerActWorkspace<Act> {
 
     /**
      * Construct a new <code>EstimationWorkspace</code>.
@@ -54,7 +54,7 @@ public class EstimationWorkspace extends CustomerFinancialActWorkspace {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<Act> createCRUDWindow() {
         String type = Messages.get("customer.estimation.createtype");
         return new EstimationCRUDWindow(type, "common", "act",
                                         "customerEstimation");
@@ -72,8 +72,9 @@ public class EstimationWorkspace extends CustomerFinancialActWorkspace {
                 "act.customerEstimation");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(descriptor);
-        return new DefaultActQuery(customer, "customer",
-                                   "participation.customer",
-                                   "act", "customerEstimation", lookups);
+        return new DefaultActQuery<Act>(customer, "customer",
+                                        "participation.customer",
+                                        "act", "customerEstimation",
+                                        lookups);
     }
 }

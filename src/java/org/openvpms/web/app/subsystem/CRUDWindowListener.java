@@ -29,7 +29,7 @@ import java.util.EventListener;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface CRUDWindowListener extends EventListener {
+public interface CRUDWindowListener<T extends IMObject> extends EventListener {
 
     /**
      * Invoked when an object is saved.
@@ -37,19 +37,19 @@ public interface CRUDWindowListener extends EventListener {
      * @param object the saved object
      * @param isNew  determines if the object is a new instance
      */
-    void saved(IMObject object, boolean isNew);
+    void saved(T object, boolean isNew);
 
     /**
      * Invoked when an object is deleted.
      *
      * @param object the deleted object
      */
-    void deleted(IMObject object);
+    void deleted(T object);
 
     /**
      * Invoked when the parent needs to refresh an object.
      *
      * @param object the object to refresh
      */
-    void refresh(IMObject object);
+    void refresh(T object);
 }

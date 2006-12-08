@@ -57,10 +57,10 @@ public class PrintIMObjectTask extends AbstractTask {
     public void start(final TaskContext context) {
         IMObject object = context.getObject(shortName);
         if (object != null) {
-            IMObjectPrinter printer = IMObjectPrinterFactory.create(
+            IMObjectPrinter<IMObject> printer = IMObjectPrinterFactory.create(
                     object.getArchetypeId().getShortName());
 
-            printer.setListener(new IMObjectPrinterListener() {
+            printer.setListener(new IMObjectPrinterListener<IMObject>() {
                 public void printed(IMObject object) {
                     notifyCompleted();
                 }

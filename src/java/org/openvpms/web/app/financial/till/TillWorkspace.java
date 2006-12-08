@@ -20,7 +20,7 @@ package org.openvpms.web.app.financial.till;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.till.TillBalanceStatus;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -45,7 +46,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-19 07:20:38Z $
  */
-public class TillWorkspace extends ActWorkspace {
+public class TillWorkspace extends ActWorkspace<Party, FinancialAct> {
 
     /**
      * Construct a new <code>TillWorkspace</code>.
@@ -60,11 +61,28 @@ public class TillWorkspace extends ActWorkspace {
      * @param object the object. May be <code>null</code>
      */
     @Override
-    public void setObject(IMObject object) {
+    public void setObject(Party object) {
         super.setObject(object);
-        Party till = (Party) object;
-        layoutWorkspace(till);
-        initQuery(till);
+        GlobalContext.getInstance().setTill(object);
+        layoutWorkspace(object);
+        initQuery(object);
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Party) {
+            setObject((Party) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Party.class.getName());
+        }
     }
 
     /**
@@ -72,7 +90,7 @@ public class TillWorkspace extends ActWorkspace {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow<FinancialAct> createCRUDWindow() {
         String type = Messages.get("financial.till.createtype");
         return new TillCRUDWindow(type, "common", "act",
                                   "tillBalanceAdjustment");
@@ -84,12 +102,12 @@ public class TillWorkspace extends ActWorkspace {
      * @param till the till to query acts for
      * @return a new query
      */
-    protected ActQuery<Act> createQuery(Party till) {
+    protected ActQuery<FinancialAct> createQuery(Party till) {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor("act.tillBalance");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        ActQuery<Act> query = new DefaultActQuery(
+        ActQuery<FinancialAct> query = new DefaultActQuery<FinancialAct>(
                 till, "till", "participation.till", "act", "tillBalance",
                 lookups, null);
         query.setStatus(TillBalanceStatus.UNCLEARED);
@@ -102,6 +120,25 @@ public class TillWorkspace extends ActWorkspace {
      * @param container the container
      */
     protected void doLayout(Component container) {
+        Party latest = getLatest();
+        if (latest != getObject()) {
+            setObject(latest);
+        }
+        Component workspace = getWorkspace();
+        if (workspace != null) {
+            container.add(workspace);
+        }
+    }
+
+    /**
+     * Returns the latest version of the current till context object.
+     *
+     * @return the latest version of the till context object, or
+     *         {@link #getObject()} if they are the same
+     */
+    @Override
+    protected Party getLatest() {
+        return getLatest(GlobalContext.getInstance().getTill());
     }
 
     /**
@@ -109,8 +146,8 @@ public class TillWorkspace extends ActWorkspace {
      *
      * @return a new table model.
      */
-    protected IMObjectTableModel<Act> createTableModel() {
-        return new ActAmountTableModel(true, true);
+    protected IMObjectTableModel<FinancialAct> createTableModel() {
+        return new ActAmountTableModel<FinancialAct>(true, true);
     }
 
 }

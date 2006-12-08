@@ -27,6 +27,7 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ShortNameList;
@@ -45,7 +46,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AccountCRUDWindow extends SupplierActCRUDWindow {
+public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
     /**
      * The reverse button.
@@ -141,7 +142,7 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow {
      * Invoked when the 'reverse' button is pressed.
      */
     protected void onReverse() {
-        final Act act = (Act) getObject();
+        final Act act = getObject();
         String status = act.getStatus();
         if (POSTED.equals(status)) {
             String name = getArchetypeDescriptor().getDisplayName();

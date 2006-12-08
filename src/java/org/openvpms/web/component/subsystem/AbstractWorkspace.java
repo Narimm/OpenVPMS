@@ -18,9 +18,10 @@
 
 package org.openvpms.web.component.subsystem;
 
-import org.openvpms.web.resource.util.Messages;
-
 import nextapp.echo2.app.Component;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -32,7 +33,8 @@ import java.beans.PropertyChangeSupport;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractWorkspace implements Workspace {
+public abstract class AbstractWorkspace<T extends IMObject>
+        implements Workspace<T> {
 
     /**
      * The workspace component.
@@ -172,10 +174,36 @@ public abstract class AbstractWorkspace implements Workspace {
     /**
      * Determines if the workspace should be refreshed.
      *
-     * @return <code>true</code> if the workspace should be refreshed,
-     *         otherwise <code>false</code>
+     * @return <code>true</code> if a later version of {@link #getObject()}
+     *         exists, or it has been deleted
      */
     protected boolean refreshWorkspace() {
-        return false;
+        return getLatest() != getObject();
     }
+
+    /**
+     * Returns the latest version of the current context object.
+     *
+     * @return the latest version of the context object, or {@link #getObject()}
+     *         if they are the same
+     */
+    protected T getLatest() {
+        return getLatest(getObject());
+    }
+
+    /**
+     * Helper to return the latest version of an object.
+     *
+     * @param context the current context object
+     * @return the latest version of the context object, or {@link #getObject()}
+     *         if they are the same
+     */
+    protected T getLatest(T context) {
+        context = IMObjectHelper.reload(context);
+        if (!IMObjectHelper.isSame(getObject(), context)) {
+            return context;
+        }
+        return getObject();
+    }
+
 }

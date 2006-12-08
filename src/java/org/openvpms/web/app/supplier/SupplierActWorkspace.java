@@ -19,10 +19,16 @@
 package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.TableBrowser;
 
 
 /**
@@ -31,7 +37,8 @@ import org.openvpms.web.component.app.GlobalContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class SupplierActWorkspace extends ActWorkspace {
+public abstract class SupplierActWorkspace<T extends Act>
+        extends ActWorkspace<Party, T> {
 
     /**
      * Construct a new <code>SupplierActWorkspace</code>.
@@ -54,13 +61,29 @@ public abstract class SupplierActWorkspace extends ActWorkspace {
      * @param object the object. May be <code>null</code>
      */
     @Override
-    public void setObject(IMObject object) {
+    public void setObject(Party object) {
         super.setObject(object);
-        Party party = (Party) object;
-        GlobalContext.getInstance().setSupplier(party);
-        layoutWorkspace(party);
-        initQuery(party);
+        GlobalContext.getInstance().setSupplier(object);
+        layoutWorkspace(object);
+        initQuery(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Party) {
+            setObject((Party) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Party.class.getName());
+        }
     }
 
     /**
@@ -71,20 +94,18 @@ public abstract class SupplierActWorkspace extends ActWorkspace {
      */
     @Override
     public Component getSummary() {
-        return SupplierSummary.getSummary((Party) getObject());
+        return SupplierSummary.getSummary(getObject());
     }
 
     /**
-     * Determines if the workspace should be refreshed. This implementation
-     * returns true if the current supplier has changed.
+     * Returns the latest version of the current supplier context object.
      *
-     * @return <code>true</code> if the workspace should be refreshed, otherwise
-     *         <code>false</code>
+     * @return the latest version of the context object, or {@link #getObject()}
+     *         if they are the same
      */
     @Override
-    protected boolean refreshWorkspace() {
-        Party supplier = GlobalContext.getInstance().getSupplier();
-        return (supplier != getObject());
+    protected Party getLatest() {
+        return getLatest(GlobalContext.getInstance().getSupplier());
     }
 
     /**
@@ -94,10 +115,24 @@ public abstract class SupplierActWorkspace extends ActWorkspace {
      */
     @Override
     protected void doLayout(Component container) {
-        Party supplier = GlobalContext.getInstance().getSupplier();
-        if (supplier != getObject()) {
-            setObject(supplier);
+        Party latest = getLatest();
+        if (latest != getObject()) {
+            setObject(latest);
         }
+    }
+
+    /**
+     * Creates a new browser to query and display acts.
+     * Default sort order is by descending starttime.
+     *
+     * @param query the query
+     * @return a new browser
+     */
+    @Override
+    protected Browser<T> createBrowser(
+            ActQuery<T> query) {
+        SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
+        return new TableBrowser<T>(query, sort, createTableModel());
     }
 
 }

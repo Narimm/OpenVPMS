@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.admin;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
 
@@ -27,13 +29,32 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AuthorityWorkspace extends CRUDWorkspace {
+public class AuthorityWorkspace
+        extends CRUDWorkspace<ArchetypeAwareGrantedAuthority> {
 
     /**
      * Construct a new <code>ClassificationWorkspace</code>.
      */
     public AuthorityWorkspace() {
         super("admin", "authority", "system", "security", "archetypeAuthority");
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null
+                || object instanceof ArchetypeAwareGrantedAuthority) {
+            setObject((ArchetypeAwareGrantedAuthority) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + ArchetypeAwareGrantedAuthority.class.getName());
+        }
     }
 
 }

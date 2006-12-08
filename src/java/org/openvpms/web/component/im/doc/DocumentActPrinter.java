@@ -32,7 +32,8 @@ import org.openvpms.web.component.im.print.AbstractIMObjectPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -41,35 +42,36 @@ import java.util.Arrays;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocumentActPrinter extends AbstractIMObjectPrinter {
+public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
 
     /**
      * Prints the object.
      *
-     * @param object  the object to print
+     * @param act     the act to print
      * @param printer the printer
      */
-    protected void doPrint(IMObject object, String printer) {
+    @Override
+    protected void doPrint(DocumentAct act, String printer) {
         try {
-            DocumentAct act = (DocumentAct) object;
             Document doc = (Document) IMObjectHelper.getObject(
                     act.getDocReference());
             if (doc == null) {
-                IMObjectReport report = createReport(object);
-                report.print(Arrays.asList(object),
-                             new PrintProperties(printer));
-                printed(object);
+                IMObjectReport report = createReport(act);
+                List<IMObject> objects = new ArrayList<IMObject>();
+                objects.add(act);
+                report.print(objects, new PrintProperties(printer));
+                printed(act);
             } else if (DocFormats.ODT_TYPE.equals(doc.getMimeType())) {
                 OpenOfficeHelper.getPrintService().print(doc, printer);
             } else {
-                doPrintPreview(object);
+                doPrintPreview(act);
             }
-            printed(object);
+            printed(act);
         } catch (OpenVPMSException exception) {
             if (isInteractive()) {
                 ErrorHelper.show(exception);
             } else {
-                failed(object, exception);
+                failed(act, exception);
             }
         }
     }

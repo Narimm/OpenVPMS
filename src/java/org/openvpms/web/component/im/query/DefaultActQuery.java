@@ -53,7 +53,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DefaultActQuery extends ActQuery<Act> {
+public class DefaultActQuery<T extends Act> extends ActQuery<T> {
 
     /**
      * Determines if acts should be filtered on type.
@@ -333,12 +333,12 @@ public class DefaultActQuery extends ActQuery<Act> {
      * @param sort the sort constraint. May be <code>null</code>
      * @return a new result set
      */
-    protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
-        return new ActResultSet(getParticipantConstraint(),
-                                getArchetypeConstraint(),
-                                getStartFrom(), getStartTo(), getStatuses(),
-                                excludeStatuses(), getConstraints(),
-                                getMaxResults(), sort);
+    protected ResultSet<T> createResultSet(SortConstraint[] sort) {
+        return new ActResultSet<T>(getParticipantConstraint(),
+                                   getArchetypeConstraint(),
+                                   getStartFrom(), getStartTo(), getStatuses(),
+                                   excludeStatuses(), getConstraints(),
+                                   getMaxResults(), sort);
     }
 
 

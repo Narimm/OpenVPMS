@@ -22,7 +22,6 @@ import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
@@ -37,7 +36,8 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
+public abstract class ActCRUDWindow<T extends Act>
+        extends AbstractViewCRUDWindow<T> {
 
     /**
      * Create a new <code>ActCRUDWindow</code>.
@@ -80,9 +80,8 @@ public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
      */
     @Override
     protected void onEdit() {
-        IMObject object = getObject();
-        if (object != null) {
-            Act act = (Act) object;
+        Act act = getObject();
+        if (act != null) {
             if (canEdit(act)) {
                 super.onEdit();
             } else {
@@ -96,7 +95,7 @@ public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
      */
     @Override
     protected void onDelete() {
-        Act act = (Act) getObject();
+        Act act = getObject();
         if (canDelete(act)) {
             super.onDelete();
         } else {
@@ -111,18 +110,18 @@ public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
      * @return a new printer
      */
     @Override
-    protected IMObjectPrinter createPrinter(IMObject object) {
-        IMObjectPrinter printer = super.createPrinter(object);
-        printer.setListener(new IMObjectPrinterListener() {
-            public void printed(IMObject object) {
+    protected IMObjectPrinter<T> createPrinter(T object) {
+        IMObjectPrinter<T> printer = super.createPrinter(object);
+        printer.setListener(new IMObjectPrinterListener<T>() {
+            public void printed(T object) {
                 ActCRUDWindow.this.printed(object);
             }
 
-            public void cancelled(IMObject object) {
+            public void cancelled(T object) {
                 // no-op
             }
 
-            public void failed(IMObject object, Throwable cause) {
+            public void failed(T object, Throwable cause) {
                 // no-op
             }
         });
@@ -130,12 +129,11 @@ public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
     }
 
     /**
-     * Invoked when an object has been successfully printed.
+     * Invoked when an act has been successfully printed.
      *
-     * @param object the object
+     * @param act the act
      */
-    protected void printed(IMObject object) {
-        Act act = (Act) object;
+    protected void printed(T act) {
         try {
             String status = act.getStatus();
             if (!POSTED.equals(status)) {
@@ -143,7 +141,7 @@ public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
                 setPrintStatus(act, true);
                 SaveHelper.save(act);
                 setObject(act);
-                CRUDWindowListener listener = getListener();
+                CRUDWindowListener<T> listener = getListener();
                 if (listener != null) {
                     listener.saved(act, false);
                 }

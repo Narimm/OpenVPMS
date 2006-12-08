@@ -21,7 +21,6 @@ package org.openvpms.web.app.patient.mr;
 import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -87,16 +86,15 @@ public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
     /**
      * Invoked when the object has been saved.
      *
-     * @param object the object
-     * @param isNew  determines if the object is a new instance
+     * @param act   the act
+     * @param isNew determines if the object is a new instance
      */
     @Override
-    protected void onSaved(IMObject object, boolean isNew) {
-        Act event = (Act) IMObjectHelper.reload(_event);
+    protected void onSaved(Act act, boolean isNew) {
+        Act event = IMObjectHelper.reload(_event);
         if (event != null) {
             try {
                 boolean save = false;
-                Act act = (Act) object;
                 ActBean bean = new ActBean(act);
                 ActBean eventBean = new ActBean(event);
 
@@ -128,7 +126,7 @@ public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
             }
 
         }
-        super.onSaved(object, isNew);
+        super.onSaved(act, isNew);
     }
 
     /**

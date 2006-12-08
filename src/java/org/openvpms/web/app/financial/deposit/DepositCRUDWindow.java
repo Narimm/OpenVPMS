@@ -26,7 +26,6 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.deposit.DepositRules;
 import static org.openvpms.archetype.rules.deposit.DepositStatus.UNDEPOSITED;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -100,7 +99,7 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
         Row buttons = getButtons();
         buttons.removeAll();
         if (enable) {
-            Act act = (Act) getObject();
+            FinancialAct act = getObject();
             if (UNDEPOSITED.equals(act.getStatus())) {
                 buttons.add(_deposit);
             }
@@ -113,7 +112,7 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
      * Invoked when the 'clear' button is pressed.
      */
     protected void onDeposit() {
-        final FinancialAct act = (FinancialAct) getObject();
+        final FinancialAct act = getObject();
         String title = Messages.get("deposit.deposit.title");
         String message = Messages.get("deposit.deposit.message");
         final ConfirmationDialog dialog

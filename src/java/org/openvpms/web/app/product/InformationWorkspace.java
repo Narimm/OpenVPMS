@@ -31,7 +31,7 @@ import org.openvpms.web.component.app.GlobalContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InformationWorkspace extends CRUDWorkspace {
+public class InformationWorkspace extends CRUDWorkspace<Product> {
 
     /**
      * Construct a new <code>InformationWorkspace</code>.
@@ -46,9 +46,26 @@ public class InformationWorkspace extends CRUDWorkspace {
      * @param object the object. May be <code>null</code>
      */
     @Override
-    public void setObject(IMObject object) {
+    public void setObject(Product object) {
         super.setObject(object);
-        GlobalContext.getInstance().setProduct((Product) object);
+        GlobalContext.getInstance().setProduct(object);
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Product) {
+            setObject((Product) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Product.class.getName());
+        }
     }
 
     /**

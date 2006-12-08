@@ -145,7 +145,7 @@ public class PatientSummary {
      * @param patient the patient
      * @return the set of outstanding alerts for the patient
      */
-    private static ActResultSet getAlerts(Party patient) {
+    private static ActResultSet<Act> getAlerts(Party patient) {
         String[] shortNames = {"act.patientAlert"};
         String[] statuses = {ActStatus.IN_PROGRESS};
         BaseArchetypeConstraint archetypes = new ShortNameConstraint(
@@ -159,8 +159,8 @@ public class PatientSummary {
         time.add(new NodeConstraint("endTime", RelationalOp.IsNULL));
         SortConstraint[] sort = {new NodeSortConstraint("endTime", true)};
 
-        return new ActResultSet(participants, archetypes, time, statuses,
-                                false, null, 5, sort);
+        return new ActResultSet<Act>(participants, archetypes, time, statuses,
+                                     false, null, 5, sort);
     }
 
     /**
@@ -179,8 +179,8 @@ public class PatientSummary {
                                           patient)
         };
         SortConstraint[] sort = {new NodeSortConstraint("endTime", true)};
-        return new ActResultSet(participants, archetypes, null,
-                                statuses, false, null, 10, sort);
+        return new ActResultSet<Act>(participants, archetypes, null,
+                                     statuses, false, null, 10, sort);
     }
 
     /**

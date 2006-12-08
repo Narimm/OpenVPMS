@@ -28,7 +28,7 @@ import org.openvpms.web.component.subsystem.AbstractWorkspace;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DummyWorkspace extends AbstractWorkspace {
+public class DummyWorkspace extends AbstractWorkspace<IMObject> {
 
 
     /**
@@ -51,6 +51,17 @@ public class DummyWorkspace extends AbstractWorkspace {
      */
     public boolean canHandle(String shortName) {
         return false;
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object
+     */
+    public void setIMObject(IMObject object) {
+        setObject(object);
     }
 
     /**

@@ -33,7 +33,7 @@ import org.openvpms.web.component.app.GlobalContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InformationWorkspace extends CRUDWorkspace {
+public class InformationWorkspace extends CRUDWorkspace<Party> {
 
     /**
      * Construct a new <code>InformationWorkspace</code>.
@@ -48,10 +48,27 @@ public class InformationWorkspace extends CRUDWorkspace {
      * @param object the object. May be <code>null</code>
      */
     @Override
-    public void setObject(IMObject object) {
+    public void setObject(Party object) {
         super.setObject(object);
-        ContextHelper.setCustomer((Party) object);
+        ContextHelper.setCustomer(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Sets the current object.
+     * This is analagous to  {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <code>null</code>
+     */
+    public void setIMObject(IMObject object) {
+        if (object == null || object instanceof Party) {
+            setObject((Party) object);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + Party.class.getName());
+        }
     }
 
     /**
@@ -62,20 +79,18 @@ public class InformationWorkspace extends CRUDWorkspace {
      */
     @Override
     public Component getSummary() {
-        return CustomerSummary.getSummary((Party) getObject());
+        return CustomerSummary.getSummary(getObject());
     }
 
     /**
-     * Determines if the workspace should be refreshed. This implementation
-     * returns true if the current customer has changed.
+     * Returns the latest version of the current customer context object.
      *
-     * @return <code>true</code> if the workspace should be refreshed, otherwise
-     *         <code>false</code>
+     * @return the latest version of the context object, or {@link #getObject()}
+     *         if they are the same
      */
     @Override
-    protected boolean refreshWorkspace() {
-        Party customer = GlobalContext.getInstance().getCustomer();
-        return (customer != getObject());
+    protected Party getLatest() {
+        return getLatest(GlobalContext.getInstance().getCustomer());
     }
 
     /**
@@ -86,9 +101,9 @@ public class InformationWorkspace extends CRUDWorkspace {
     @Override
     protected void doLayout(Component container) {
         super.doLayout(container);
-        Party customer = GlobalContext.getInstance().getCustomer();
-        if (customer != getObject()) {
-            setObject(customer);
+        Party latest = getLatest();
+        if (latest != getObject()) {
+            setObject(latest);
         }
     }
 

@@ -18,7 +18,7 @@
 
 package org.openvpms.web.app.financial.till;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.util.DateFormatter;
 
@@ -31,7 +31,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TillActTableModel extends ActAmountTableModel {
+public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
 
     /**
      * Construct a new <code>TillActTableModel</code>.
@@ -49,7 +49,7 @@ public class TillActTableModel extends ActAmountTableModel {
      * @return the value at the given coordinate
      */
     @Override
-    protected Object getValue(Act act, int column, int row) {
+    protected Object getValue(FinancialAct act, int column, int row) {
         Object result = null;
         if (column == DATE_INDEX) {
             Date date = act.getActivityStartTime();
