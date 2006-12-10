@@ -23,6 +23,8 @@ import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
@@ -98,6 +100,12 @@ public class RecordBrowser implements Browser<Act> {
     private int selected = 0;
 
     /**
+     * The focus group.
+     */
+    private FocusSet focusSet = new FocusSet(getClass().getName());
+
+
+    /**
      * The browser view.
      */
     public enum View {
@@ -168,6 +176,7 @@ public class RecordBrowser implements Browser<Act> {
                     }
                 }
             });
+            focusSet.add(tab);
         }
         return tab;
     }
@@ -300,6 +309,15 @@ public class RecordBrowser implements Browser<Act> {
      */
     public void setListener(RecordBrowserListener listener) {
         this.listener = listener;
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    public FocusGroup getFocusGroup() {
+        return focusSet;
     }
 
     /**

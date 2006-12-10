@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.web.component.focus.FocusGroup;
 
 import java.util.List;
 
@@ -71,4 +72,11 @@ public interface Browser<T> {
      * Query using the specified criteria, and populate the table with matches.
      */
     void query();
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    FocusGroup getFocusGroup();
 }

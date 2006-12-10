@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.focus.FocusGroup;
 
 
 /**
@@ -133,5 +134,12 @@ public interface Query<T> {
      * @param constraints the constraints
      */
     void setConstraints(IConstraint constraints);
+
+    /**
+     * Returns the focus group for the component.
+     *
+     * @return the focus group
+     */
+    FocusGroup getFocusGroup();
 
 }

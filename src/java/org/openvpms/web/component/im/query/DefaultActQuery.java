@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.util.CheckBoxFactory;
@@ -283,11 +284,17 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
 
         onStartAllChanged();
 
+        FocusSet focus = getFocusSet();
         if (_statusSelector != null) {
             container.add(LabelFactory.create("actquery.status"));
             container.add(_statusSelector);
+            focus.add(_statusSelector);
         }
         container.add(startRow);
+
+        focus.add(_startAll);
+        focus.add(_startFrom);
+        focus.add(_startTo);
     }
 
     /**
