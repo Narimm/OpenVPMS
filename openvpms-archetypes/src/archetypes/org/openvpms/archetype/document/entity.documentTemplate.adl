@@ -35,8 +35,16 @@
 						<property name="act.supplierDocumentForm" value="Supplier Form" />
 						<property name="act.supplierDocumentLetter" value="Supplier Letter" />
 						<property name="act.customerAccountPayment" value="Customer Payment" />
+						<property name="act.customerAccountRefund" value="Customer Refund" />
 						<property name="act.customerAccountChargesInvoice" value="Customer Invoice" />
+						<property name="act.customerAccountChargesCredit" value="Customer Credit" />
+						<property name="act.customerAccountChargesCounter" value="Customer Counter Sale" />
 						<property name="act.customerEstimation" value="Customer Estimation" />
+						<property name="act.customerAccountChargesCredit" value="Customer Credit" />
+						<property name="act.patientMedication" value="Patient Medication Label" />
+						<property name="act.patientClinicalEvent" value="Patient Visit" />
+						<property name="act.tillBalance" value="Till Balance" />
+						<property name="act.bankDeposit" value="Bank Deposit" />
 						<property name="REPORT" value="Report" />
 						<property name="SUBREPORT" value="Sub Report" />
 					</propertyList>
