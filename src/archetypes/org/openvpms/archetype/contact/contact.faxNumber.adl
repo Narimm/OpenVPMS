@@ -33,7 +33,7 @@
 				type="java.lang.String" minCardinality="0" maxLength="6">
 			</node>
 			<node name="faxNumber" path="/details/attributes/faxNumber"
-				type="java.lang.String" minCardinality="1" >
+				type="java.lang.String" minCardinality="1" maxLength="15">
 			</node>
 		</node>
 		<node name="startDate" path="/activeStartTime"
