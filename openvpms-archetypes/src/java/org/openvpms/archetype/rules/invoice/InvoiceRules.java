@@ -335,6 +335,11 @@ public class InvoiceRules {
             documentAct.addParticipation("participation.patient", patient);
             documentAct.addParticipation("participation.documentTemplate",
                                          document);
+            if (TypeHelper.isA(act, "act.patientDocumentForm")) {
+            	
+                IMObjectReference product = item.getParticipantRef("participation.product");
+                documentAct.addParticipation("participation.product", product);
+            }
             documentAct.save();
             item.addRelationship("actRelationship.invoiceItemDocument",
                                  documentAct.getAct());
