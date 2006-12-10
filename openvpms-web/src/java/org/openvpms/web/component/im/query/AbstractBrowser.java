@@ -25,6 +25,9 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.focus.FocusSet;
+import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -78,6 +81,17 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      */
     private static final String CELLSPACING_STYLE = "CellSpacing";
 
+    /**
+     * The focus tree.
+     */
+    private FocusTree focusTree = new FocusTree(getClass().getName());
+
+    /**
+     * The focus set.
+     */
+    private FocusSet focusSet = new FocusSet(getClass().getName() + "-"
+            + QUERY_ID);
+
 
     /**
      * Construct a new <code>AbstractBrowser</code> that queries IMObjects using
@@ -94,6 +108,8 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
                 onQuery();
             }
         });
+        focusTree.add(query.getFocusGroup());
+        focusTree.add(focusSet);
     }
 
     /**
@@ -118,6 +134,24 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
     }
 
     /**
+     * Returns the query.
+     *
+     * @return the query
+     */
+    public Query<T> getQuery() {
+        return query;
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    public FocusGroup getFocusGroup() {
+        return focusTree;
+    }
+
+    /**
      * Lay out this component.
      */
     protected void doLayout() {
@@ -133,6 +167,7 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
 
         Row row = RowFactory.create(CELLSPACING_STYLE, component, query);
         this.component = ColumnFactory.create(STYLE, row);
+        focusSet.add(query);
 
         if (this.query.isAuto()) {
             query();
@@ -169,6 +204,15 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
     }
 
     /**
+     * Returns the focus set.
+     *
+     * @return the focus set
+     */
+    protected FocusSet getFocusSet() {
+        return focusSet;
+    }
+
+    /**
      * Invoked when the query button is pressed. Performs the query and notifies
      * any listeners.
      */
@@ -179,15 +223,6 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
         for (QueryBrowserListener listener : listeners) {
             listener.query();
         }
-    }
-
-    /**
-     * Returns the query.
-     *
-     * @return the query
-     */
-    public Query<T> getQuery() {
-        return query;
     }
 
 }

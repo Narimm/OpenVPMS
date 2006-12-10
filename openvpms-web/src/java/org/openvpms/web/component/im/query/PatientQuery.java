@@ -192,9 +192,10 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
         allPatients = new CheckBox();
         boolean selected = (customer == null);
         allPatients.setSelected(selected);
-        Label allPatients = LabelFactory.create(ALL_PATIENTS_ID);
+        Label label = LabelFactory.create(ALL_PATIENTS_ID);
+        container.add(label);
         container.add(allPatients);
-        container.add(this.allPatients);
+        getFocusSet().add(allPatients);
     }
 
     /**

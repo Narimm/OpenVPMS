@@ -34,6 +34,8 @@ import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -127,6 +129,11 @@ public abstract class AbstractQuery<T> implements Query<T> {
      * The maxmimum no. of results to return per page.
      */
     private int maxResults = 20;
+
+    /**
+     * The focus set.
+     */
+    private FocusSet focusSet = new FocusSet(getClass().getName());
 
     /**
      * Type label id.
@@ -372,6 +379,15 @@ public abstract class AbstractQuery<T> implements Query<T> {
     }
 
     /**
+     * Returns the focus group for the component.
+     *
+     * @return the focus group
+     */
+    public FocusGroup getFocusGroup() {
+        return focusSet;
+    }
+
+    /**
      * Creates the result set.
      *
      * @param sort the sort criteria. May be <code>null</code>
@@ -463,6 +479,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
             Label typeLabel = LabelFactory.create(TYPE_ID);
             container.add(typeLabel);
             container.add(shortNameSelector);
+            focusSet.add(shortNameSelector);
         }
     }
 
@@ -492,6 +509,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
         Label nameLabel = LabelFactory.create(NAME_ID);
         container.add(nameLabel);
         container.add(getInstanceName());
+        focusSet.add(instanceName);
     }
 
     /**
@@ -516,6 +534,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
         Label deactivedLabel = LabelFactory.create(DEACTIVATED_ID);
         container.add(deactivedLabel);
         container.add(getInactive());
+        focusSet.add(inactive);
     }
 
     /**
@@ -534,6 +553,15 @@ public abstract class AbstractQuery<T> implements Query<T> {
         for (QueryListener listener : listeners) {
             listener.query();
         }
+    }
+
+    /**
+     * Returns the focus set.
+     *
+     * @return the focus set
+     */
+    protected FocusSet getFocusSet() {
+        return focusSet;
     }
 
 }

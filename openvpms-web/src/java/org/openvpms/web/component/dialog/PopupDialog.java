@@ -20,7 +20,7 @@ package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.web.component.focus.FocusTree;
+import org.openvpms.web.component.focus.FocusGroup;
 
 
 /**
@@ -136,11 +136,11 @@ public abstract class PopupDialog extends PopupWindow {
      * @param title   the window title. May be <code>null</code>
      * @param style   the window style. May be <code>null</code>
      * @param buttons the buttons to display
-     * @param tabTree the tab tree. May be <code>null</code>
+     * @param focus   the focus group. May be <code>null</code>
      */
     public PopupDialog(String title, String style, String[] buttons,
-                       FocusTree tabTree) {
-        super(title, style, tabTree);
+                       FocusGroup focus) {
+        super(title, style, focus);
 
         for (final String button : buttons) {
             addButton(button, new ActionListener() {

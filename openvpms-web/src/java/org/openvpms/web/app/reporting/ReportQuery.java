@@ -103,6 +103,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
         Label typeLabel = LabelFactory.create(TYPE_ID);
         container.add(typeLabel);
         container.add(_typeSelector);
+        getFocusSet().add(_typeSelector);
     }
 
     /**

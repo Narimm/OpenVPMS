@@ -96,7 +96,7 @@ public class BrowserDialog<T extends IMObject> extends PopupDialog {
      */
     public BrowserDialog(String title, String[] buttons, Browser<T> browser,
                          boolean addNew) {
-        super(title, STYLE, buttons);
+        super(title, STYLE, buttons, browser.getFocusGroup());
         setModal(true);
         getLayout().add(browser.getComponent());
 
