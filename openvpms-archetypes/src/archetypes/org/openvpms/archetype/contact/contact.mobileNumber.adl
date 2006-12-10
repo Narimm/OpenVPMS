@@ -30,7 +30,7 @@
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
 			<node name="mobileNumber" path="/details/attributes/mobileNumber"
-				type="java.lang.String" minCardinality="1" >
+				type="java.lang.String" minCardinality="1" maxLength="15" >
 			</node>
 			<node displayName="Allow SMS" name="useSms" path="/details/attributes/useSms"
 				type="java.lang.Boolean" defaultValue="false()" />
