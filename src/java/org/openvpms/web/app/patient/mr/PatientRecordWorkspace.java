@@ -322,7 +322,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
-                getObject(), "patient", " participation.patient", shortNames,
+                getObject(), "patient", "participation.patient", shortNames,
                 lookups, null);
         query.setStatus(ActStatus.IN_PROGRESS);
         return query;
