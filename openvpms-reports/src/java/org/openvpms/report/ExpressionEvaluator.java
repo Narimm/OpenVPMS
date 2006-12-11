@@ -18,18 +18,19 @@
 
 package org.openvpms.report;
 
+import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Date;
+
 import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
-
-import java.util.Date;
-import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.NumberFormat;
-import java.text.DecimalFormat;
 
 
 /**
@@ -81,6 +82,19 @@ public class ExpressionEvaluator {
     }
 
     /**
+     * Constructs a new <code>ExpressionEvaluator</code>.
+     *
+     * @param object  the object
+     * @param resolver  the NodeResolver
+     */
+    public ExpressionEvaluator(IMObject object, NodeResolver resolver) {
+		super();
+		this.object = object;
+		this.resolver = resolver;
+		this.service = ArchetypeServiceHelper.getArchetypeService();
+	}
+
+	/**
      * Returns the value of an expression.
      * If the expression is of the form ${expr} this will be evaluated
      * using <code>JXPath</code>, otherwise it will be evaluated using
@@ -90,12 +104,17 @@ public class ExpressionEvaluator {
      * @return the result of the expression
      */
     public Object getValue(String expression) {
-        if (expression.startsWith("${") && expression.endsWith("}")) {
-            String eval = expression.substring(2, expression.length() - 1);
-            return evaluate(eval);
-        } else {
-            return getNodeValue(expression);
-        }
+    	try {
+	        if (expression.startsWith("[") && expression.endsWith("]")) {
+	            String eval = expression.substring(1, expression.length() - 1);
+	            return evaluate(eval);
+	        } else {
+	            return getNodeValue(expression);
+	        }
+    	}
+    	catch (Exception exception){
+    		return exception.getLocalizedMessage();
+    	}
     }
 
     /**

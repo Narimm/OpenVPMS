@@ -21,11 +21,13 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
+
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
+import org.openvpms.report.ExpressionEvaluator;
 import org.openvpms.report.ReportHelper;
 
 
@@ -49,6 +51,11 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     private final NodeResolver _resolver;
 
     /**
+     * The expression evaluator.
+     */
+    private final ExpressionEvaluator _evaluator;
+
+    /**
      * Determines if there is another record.
      */
     private boolean _next = true;
@@ -64,6 +71,7 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
         super(service);
         _object = object;
         _resolver = new NodeResolver(object, service);
+        _evaluator = new ExpressionEvaluator(object, _resolver);
     }
 
     /**
@@ -105,7 +113,8 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      * @throws JRException for any error
      */
     public Object getFieldValue(JRField field) throws JRException {
-        return ReportHelper.getValue(field.getName(), _resolver);
+    	return _evaluator.getValue(field.getName());
+        //return ReportHelper.getValue(field.getName(), _resolver);
     }
 
 }
