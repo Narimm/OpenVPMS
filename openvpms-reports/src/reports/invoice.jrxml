@@ -34,7 +34,7 @@
 	<field name="uid" class="java.lang.Long"/>
 	<field name="tax" class="java.math.BigDecimal"/>
 	<field name="notes" class="java.lang.String"/>
-	<field name="[party:billingAddress(openvpms:get(.,'customer.entity'))]" class="java.lang.String"/>
+	<field name="[party:getBillingAddress(openvpms:get(.,'customer.entity'))]" class="java.lang.String"/>
 
 		<background>
 			<band height="0"  isSplitAllowed="true" >
@@ -135,7 +135,7 @@
 					<textElement>
 						<font size="12"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{[party:billingAddress(openvpms:get(.,'customer.entity'))]}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{[party:getBillingAddress(openvpms:get(.,'customer.entity'))]}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement

@@ -28,7 +28,7 @@
 
     <template name="Counter Sale Template"
               archetype="act.customerAccountChargesCounter"
-              path="vountersale.jrxml"
+              path="countersale.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
