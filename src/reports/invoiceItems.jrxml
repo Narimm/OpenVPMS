@@ -60,17 +60,6 @@
 			</band>
 			</groupFooter>
 		</group>
-		<group  name="productGroup" >
-			<groupExpression><![CDATA[$F{target.product.entity.displayName}]]></groupExpression>
-			<groupHeader>
-			<band height="8"  isSplitAllowed="true" >
-			</band>
-			</groupHeader>
-			<groupFooter>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-			</groupFooter>
-		</group>
 		<background>
 			<band height="0"  isSplitAllowed="true" >
 			</band>
@@ -84,7 +73,7 @@
 			</band>
 		</pageHeader>
 		<columnHeader>
-			<band height="21"  isSplitAllowed="true" >
+			<band height="30"  isSplitAllowed="true" >
 				<line direction="TopDown">
 					<reportElement
 						x="0"
@@ -97,7 +86,7 @@
 				<line direction="TopDown">
 					<reportElement
 						x="1"
-						y="20"
+						y="22"
 						width="534"
 						height="0"
 						key="line-2"/>
@@ -105,53 +94,53 @@
 				</line>
 				<staticText>
 					<reportElement
-						x="61"
-						y="3"
-						width="99"
-						height="15"
+						x="78"
+						y="1"
+						width="125"
+						height="20"
 						key="staticText-7"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
-						<font isBold="true"/>
+						<font pdfFontName="Helvetica" size="12" isBold="false"/>
 					</textElement>
 				<text><![CDATA[Service Provided]]></text>
 				</staticText>
 				<staticText>
 					<reportElement
 						x="448"
-						y="3"
-						width="85"
-						height="15"
+						y="1"
+						width="93"
+						height="20"
 						key="staticText-8"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font isBold="true"/>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="12" isBold="false"/>
 					</textElement>
 				<text><![CDATA[Amount]]></text>
 				</staticText>
 				<staticText>
 					<reportElement
-						x="400"
-						y="3"
-						width="45"
-						height="15"
+						x="368"
+						y="1"
+						width="59"
+						height="20"
 						key="staticText-9"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font isBold="true"/>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="12" isBold="false"/>
 					</textElement>
 				<text><![CDATA[Quantity]]></text>
 				</staticText>
 				<staticText>
 					<reportElement
 						x="7"
-						y="3"
-						width="42"
-						height="15"
+						y="1"
+						width="66"
+						height="20"
 						key="staticText-10"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
-						<font isBold="true"/>
+						<font pdfFontName="Helvetica" size="12" isBold="false"/>
 					</textElement>
 				<text><![CDATA[Patient]]></text>
 				</staticText>
@@ -167,27 +156,27 @@
 						height="15"
 						key="textField-2"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
+					<textElement textAlignment="Left">
 						<font/>
 					</textElement>
 				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{target.total}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="396"
+						x="368"
 						y="2"
-						width="49"
+						width="57"
 						height="15"
 						key="textField-3"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
+					<textElement textAlignment="Left">
 						<font/>
 					</textElement>
 				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{target.quantity}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="68"
+						x="78"
 						y="2"
 						width="273"
 						height="15"
@@ -201,7 +190,7 @@
 			</band>
 		</detail>
 		<columnFooter>
-			<band height="22"  isSplitAllowed="true" >
+			<band height="33"  isSplitAllowed="true" >
 				<line direction="TopDown">
 					<reportElement
 						x="1"
@@ -214,13 +203,13 @@
 				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="448"
-						y="4"
+						y="6"
 						width="85"
-						height="15"
+						height="22"
 						key="textField-6"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
-						<font isBold="true"/>
+					<textElement textAlignment="Left">
+						<font pdfFontName="Helvetica" size="12" isBold="false"/>
 					</textElement>
 				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{SUM_target.total}]]></textFieldExpression>
 				</textField>
@@ -229,11 +218,11 @@
 						x="7"
 						y="4"
 						width="82"
-						height="15"
+						height="22"
 						key="staticText-11"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
-						<font pdfFontName="Helvetica" isBold="true"/>
+						<font pdfFontName="Helvetica" size="12" isBold="false"/>
 					</textElement>
 				<text><![CDATA[TOTAL]]></text>
 				</staticText>

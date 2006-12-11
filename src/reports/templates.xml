@@ -14,6 +14,30 @@
               mimeType="text/xml"
               docType="document.other"/>
 
+    <template name="Credit Template"
+              archetype="act.customerAccountChargesCredit"
+              path="credit.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Credit Items Template"
+              archetype="SUBREPORT"
+              path="creditItems.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Counter Sale Template"
+              archetype="act.customerAccountChargesCounter"
+              path="vountersale.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Counter Sale Items Template"
+              archetype="SUBREPORT"
+              path="countersaleItems.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
     <template name="Receipt Template"
               archetype="act.customerAccountPayment"
               path="receipt.jrxml"
@@ -43,6 +67,7 @@
               archetype="act.patientDocumentForm"
               mimeType="application/vnd.oasis.opendocument.text"
               docType="document.other"/>
+
     <template name="Desexing Certificate"
               path="Desexing Certificate.odt"
               archetype="act.patientDocumentForm"
