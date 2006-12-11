@@ -136,6 +136,32 @@ public class PartyFunctions {
     /**
      * Returns a formatted billing address for a party.
      *
+     * @param context the expression context. Expected to reference a party.
+     * @return a formatted billing address, or <code>null</code>
+     */
+
+    public static String getCorrespondenceAddress(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        if (pointer == null || !(pointer.getValue() instanceof Party)) {
+            return null;
+        }
+        return getCorrespondenceAddress((Party) pointer.getValue());
+    }
+
+    /**
+     * Returns a formatted billing address for a party.
+     *
+     * @param party the party
+     * @return a formatted billing address
+     */
+    public static String getCorrespondenceAddress(Party party) {
+        return getAddress(party, "Correspondence");
+        
+    }
+
+    /**
+     * Returns a formatted billing address for a party.
+     *
      * @param party the party
      * @param purpose the contact purpose fro the address
      * @return a formatted billing address

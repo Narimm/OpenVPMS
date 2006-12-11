@@ -50,6 +50,12 @@ public class PatientRules {
     private static final String PATIENT_OWNER
             = "entityRelationship.patientOwner";
 
+    /**
+     * Patient location relationship short name.
+     */
+    private static final String PATIENT_LOCATION
+            = "entityRelationship.patientLocation";
+
 
     /**
      * Constructs a new <code>PatientRules</code>.
