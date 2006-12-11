@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -39,18 +40,43 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 public class PartyFunctions {
 
     /**
-     * Returns a formatted list of contacts for a party.
+     * Returns the current owner party for the passed party.
      *
-     * @param context the expression context. Expected to reference a party.
-     * @return a formatted list of contacts. May be <code>null</code>
+     * @param context the expression context. Expected to reference a patient party.
+     * @return the patients current owner Party. May be <code>null</code>
      */
-    public static String contacts(ExpressionContext context) {
+    public static Party getPatientOwner(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
         if (pointer == null || !(pointer.getValue() instanceof Party)) {
             return null;
         }
 
-        return contacts((Party) pointer.getValue());
+        return getPatientOwner((Party) pointer.getValue());
+    }
+
+    /**
+     * Returns the owner of a patient.
+     *
+     * @param patient the patient
+     * @return the patient's owner, or <code>null</code> if none can be found
+     */
+    public static Party getPatientOwner(Party patient) {
+    	return new PatientRules().getOwner(patient);
+    }
+    
+    /**
+     * Returns a formatted list of preferred contacts for a party.
+     *
+     * @param context the expression context. Expected to reference a party.
+     * @return a formatted list of contacts. May be <code>null</code>
+     */
+    public static String getPreferredContacts(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        if (pointer == null || !(pointer.getValue() instanceof Party)) {
+            return null;
+        }
+
+        return getPreferredContacts((Party) pointer.getValue());
     }
 
     /**
@@ -59,7 +85,7 @@ public class PartyFunctions {
      * @param party the party
      * @return a formatted list of contacts
      */
-    public static String contacts(Party party) {
+    public static String getPreferredContacts(Party party) {
         StringBuffer result = new StringBuffer();
         if (party != null) {
             for (Contact contact : party.getContacts()) {
@@ -88,12 +114,12 @@ public class PartyFunctions {
      * @return a formatted billing address, or <code>null</code>
      */
 
-    public static String billingAddress(ExpressionContext context) {
+    public static String getBillingAddress(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
         if (pointer == null || !(pointer.getValue() instanceof Party)) {
             return null;
         }
-        return billingAddress((Party) pointer.getValue());
+        return getBillingAddress((Party) pointer.getValue());
     }
 
     /**
@@ -102,32 +128,65 @@ public class PartyFunctions {
      * @param party the party
      * @return a formatted billing address
      */
-    public static String billingAddress(Party party) {
-        String result = "";
+    public static String getBillingAddress(Party party) {
+        return getAddress(party, "Billing");
+        
+    }
+
+    /**
+     * Returns a formatted billing address for a party.
+     *
+     * @param party the party
+     * @param purpose the contact purpose fro the address
+     * @return a formatted billing address
+     */
+    public static String getAddress(Party party, String purpose) {
+        Contact contact = getContact(party, "contact.location", purpose);
+        if (contact != null) {
+            return formatAddress(contact);
+        }
+        else {
+            return "";        	
+        }
+        
+    }
+
+    /**
+     * Returns a contact for the specified Party, contact type and purpose.
+     * If cannot find one with matching purpose returns last preferred contact.
+     * If cannot find with matching purpose and preferred returns last found.
+     *  
+     * @param party the party
+     * @param type the contact type as archetype shortname
+     * @param purpose the contact purpose fro the address
+     * @return a formatted billing address
+     */
+    public static Contact getContact(Party party, String type, String purpose) {
+        Contact currentContact = null;
         if (party != null) {
-            Contact billingContact = null;
             for (Contact contact : party.getContacts()) {
                 //We are only interested in location contacts
-                if (contact.getArchetypeId().getShortName().equals("contact.location")) {
+                if (contact.getArchetypeId().getShortName().equals(type)) {
                     IMObjectBean bean = new IMObjectBean(contact);
-                    // If has  a Billing contact purpose this is our contact.
-                    if (hasContactPurpose(contact, "Billing")) {
-                        billingContact = contact;
+                    // If has  the passed contact purpose this is our contact.
+                    if (hasContactPurpose(contact, purpose)) {
+                        currentContact = contact;
                         break;
                     }
                     // If preferred location save but keep searching just in case we have one with billing
                     // purpose or another preferred.
                     if (bean.hasNode("preferred") && bean.getBoolean("preferred"))
-                        billingContact = contact;
+                        currentContact = contact;
+                    else {
+                    	// Otherwise if we don't have one set to current contact
+                    	if (currentContact == null){
+                    		currentContact = contact;
+                    	}
+                    }
                 }
             }
-
-            if (billingContact != null) {
-                result = formatAddress(billingContact);
-            }
         }
-        return result;
-        
+        return currentContact;        
     }
 
     /**
