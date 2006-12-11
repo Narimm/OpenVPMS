@@ -32,6 +32,7 @@
 	<field name="customer.entity" class="org.openvpms.component.business.domain.im.party.Party"/>
 	<field name="startTime" class="java.util.Date"/>
 	<field name="uid" class="java.lang.Long"/>
+	<field name="[party:getBillingAddress(openvpms:get(.,'customer.entity'))]" class="java.lang.String"/>
 
 		<background>
 			<band height="0"  isSplitAllowed="true" >
@@ -80,7 +81,7 @@
 					<textElement>
 						<font size="12"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[PartyFunctions.billingAddress($F{customer.entity})]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[[party:getBillingAddress(openvpms:get(.,'customer.entity'))]]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement
