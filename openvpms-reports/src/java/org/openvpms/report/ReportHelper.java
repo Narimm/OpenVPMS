@@ -18,6 +18,9 @@
 
 package org.openvpms.report;
 
+import java.util.Collection;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -25,10 +28,9 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
 import org.openvpms.component.business.service.archetype.helper.NodeResolverException;
-
-import java.util.Collection;
 
 
 /**
@@ -102,7 +104,14 @@ public class ReportHelper {
         Object result = null;
         try {
             NodeResolver.State state = resolver.resolve(name);
-            Object value = state.getValue();
+            NodeDescriptor descriptor = state.getLeafNode();
+            Object value = null;
+            if (descriptor != null && descriptor.isLookup()) {
+            	value = LookupHelper.getName(ArchetypeServiceHelper.getArchetypeService(), descriptor, state.getParent());
+            }
+            else {
+            	value = state.getValue();            	
+            }
             if (value != null) {
                 if (state.getLeafNode() != null
                         && state.getLeafNode().isCollection()) {
