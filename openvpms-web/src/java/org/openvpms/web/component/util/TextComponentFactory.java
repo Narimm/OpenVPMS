@@ -60,7 +60,12 @@ public class TextComponentFactory extends ComponentFactory {
      */
     public static TextField create(int columns) {
         TextField text = create();
-        text.setWidth(new Extent(columns, Extent.EM));
+        if (columns <= 10) {
+            text.setWidth(new Extent(columns, Extent.EM));        	
+        }
+        else {
+            text.setWidth(new Extent(columns, Extent.EX));        	        	
+        }
         setDefaultStyle(text);
         return text;
     }
@@ -153,7 +158,12 @@ public class TextComponentFactory extends ComponentFactory {
      */
     public static TextField createPassword(int columns) {
         TextField text = createPassword();
-        text.setWidth(new Extent(columns, Extent.EM));
+        if (columns <= 10) {
+            text.setWidth(new Extent(columns, Extent.EM));        	
+        }
+        else {
+            text.setWidth(new Extent(columns, Extent.EX));        	        	
+        }
         return text;
     }
 }

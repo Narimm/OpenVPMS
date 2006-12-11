@@ -40,7 +40,12 @@ public class BoundTextField extends TextField {
      */
     public BoundTextField(Property property, int columns) {
         super(new TextDocument());
-        setWidth(new Extent(columns, Extent.EM));
+        if (columns <= 10){
+        	setWidth(new Extent(columns, Extent.EM));        	
+        }
+        else {
+        	setWidth(new Extent(columns, Extent.EX));        	
+        }
 
         Binder binder = new TextComponentBinder(this, property);
         binder.setField();
