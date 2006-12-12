@@ -137,7 +137,7 @@ public abstract class AbstractEntityQuery<T extends Entity>
         Label label = LabelFactory.create(IDENTITY_SEARCH_ID);
         container.add(label);
         container.add(getIdentitySearch());
-        getFocusSet().add(identity);
+        getFocusGroup().add(identity);
     }
 
     /**

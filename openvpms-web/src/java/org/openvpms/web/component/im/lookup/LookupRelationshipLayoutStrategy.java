@@ -27,6 +27,7 @@ import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.GridFactory;
 
@@ -77,8 +78,10 @@ public class LookupRelationshipLayoutStrategy extends AbstractLayoutStrategy {
                 = new IMObjectReferenceViewer(tgtRef, tgtLink);
 
         Grid grid = GridFactory.create(4);
-        add(grid, source, sourceView.getComponent(), context);
-        add(grid, target, targetView.getComponent(), context);
+        add(grid, new ComponentState(sourceView.getComponent(),
+                                     source));
+        add(grid, new ComponentState(targetView.getComponent(),
+                                     target));
         container.add(grid);
     }
 

@@ -20,10 +20,9 @@ package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionListener;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 
 
 /**
@@ -51,7 +50,8 @@ public interface IMObjectView {
     /**
      * Returns the focus group.
      *
-     * @return the focus group
+     * @return the focus group, or <code>null</code> if the component hasn't been
+     *         rendered
      */
     FocusGroup getFocusGroup();
 

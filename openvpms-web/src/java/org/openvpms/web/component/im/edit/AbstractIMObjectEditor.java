@@ -72,113 +72,113 @@ public abstract class AbstractIMObjectEditor
     /**
      * The object being edited.
      */
-    private final IMObject _object;
+    private final IMObject object;
 
     /**
      * The parent object. May be <code>null</code>.
      */
-    private final IMObject _parent;
+    private final IMObject parent;
 
     /**
      * The object's descriptor.
      */
-    private final ArchetypeDescriptor _archetype;
+    private final ArchetypeDescriptor archetype;
 
     /**
      * The object viewer.
      */
-    private IMObjectView _viewer;
+    private IMObjectView viewer;
 
     /**
      * The child editors.
      */
-    private Editors _editors = new Editors();
+    private Editors editors = new Editors();
 
     /**
      * The object properties.
      */
-    private PropertySet _properties;
+    private PropertySet properties;
 
     /**
      * Lookup fields. These may beed to be refreshed.
      */
-    private List<SelectField> _lookups = new ArrayList<SelectField>();
+    private List<SelectField> lookups = new ArrayList<SelectField>();
 
     /**
      * The layout strategy factory.
      */
-    private IMObjectLayoutStrategyFactory _layoutFactory;
+    private IMObjectLayoutStrategyFactory layoutFactory;
 
     /**
      * The layout context.
      */
-    private LayoutContext _context;
+    private LayoutContext context;
 
     /**
      * Action listener for layout changes.
      */
-    private ActionListener _layoutChangeListener;
+    private ActionListener layoutChangeListener;
 
     /**
      * Indicates if the object has been saved.
      */
-    private boolean _saved = false;
+    private boolean saved = false;
 
     /**
      * Indicates if the object was deleted.
      */
-    private boolean _deleted = false;
+    private boolean deleted = false;
 
     /**
      * Indicates if editing was cancelled.
      */
-    private boolean _cancelled = false;
+    private boolean cancelled = false;
 
     /**
      * Property change listener notifier.
      */
-    private PropertyChangeSupport _propertyChangeNotifier;
+    private PropertyChangeSupport propertyChangeNotifier;
 
     /**
      * Listener to update derived fields.
      */
-    private ModifiableListener _derivedFieldRefresher;
+    private ModifiableListener derivedFieldRefresher;
 
 
     /**
      * Construct a new <code>AbstractIMObjectEditor</code>.
      *
-     * @param object  the object to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>.
+     * @param object        the object to edit
+     * @param parent        the parent object. May be <code>null</code>
+     * @param layoutContext the layout context. May be <code>null</code>.
      */
     public AbstractIMObjectEditor(IMObject object, IMObject parent,
-                                  LayoutContext context) {
-        _object = object;
-        _parent = parent;
+                                  LayoutContext layoutContext) {
+        this.object = object;
+        this.parent = parent;
 
-        if (context == null) {
-            _context = new DefaultLayoutContext(true);
+        if (layoutContext == null) {
+            context = new DefaultLayoutContext(true);
         } else {
-            _context = new DefaultLayoutContext(context);
+            context = new DefaultLayoutContext(layoutContext);
         }
         // establish a local context if one not already present
-        if (_context.getContext() == GlobalContext.getInstance()) {
-            _context.setContext(new LocalContext());
+        if (context.getContext() == GlobalContext.getInstance()) {
+            context.setContext(new LocalContext());
         }
 
-        _archetype = DescriptorHelper.getArchetypeDescriptor(object);
-        _properties = new PropertySet(object, _archetype);
-        IMObjectComponentFactory factory = new ComponentFactory(_context);
-        _context.setComponentFactory(factory);
+        archetype = DescriptorHelper.getArchetypeDescriptor(object);
+        properties = new PropertySet(object, archetype);
+        IMObjectComponentFactory factory = new ComponentFactory(context);
+        context.setComponentFactory(factory);
 
-        _layoutFactory = new DefaultLayoutStrategyFactory();
-        _derivedFieldRefresher = new ModifiableListener() {
+        layoutFactory = new DefaultLayoutStrategyFactory();
+        derivedFieldRefresher = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateDerivedFields(modifiable);
             }
         };
-        _editors.addModifiableListener(_derivedFieldRefresher);
+        editors.addModifiableListener(derivedFieldRefresher);
     }
 
     /**
@@ -188,7 +188,7 @@ public abstract class AbstractIMObjectEditor
      */
     public String getTitle() {
         String title;
-        if (_object.isNew()) {
+        if (object.isNew()) {
             title = Messages.get("editor.new.title", getDisplayName());
         } else {
             title = Messages.get("editor.edit.title", getDisplayName());
@@ -211,7 +211,7 @@ public abstract class AbstractIMObjectEditor
      * @return the object being edited
      */
     public IMObject getObject() {
-        return _object;
+        return object;
     }
 
     /**
@@ -220,7 +220,7 @@ public abstract class AbstractIMObjectEditor
      * @return the parent object. May be <code>null</code>
      */
     public IMObject getParent() {
-        return _parent;
+        return parent;
     }
 
     /**
@@ -229,7 +229,7 @@ public abstract class AbstractIMObjectEditor
      * @return the object's archetype descriptor
      */
     public ArchetypeDescriptor getArchetypeDescriptor() {
-        return _archetype;
+        return archetype;
     }
 
     /**
@@ -238,25 +238,25 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if the save was successful
      */
     public boolean save() {
-        if (_cancelled) {
+        if (cancelled) {
             return false;
         }
-        boolean saved = false;
+        boolean result = false;
         Validator validator = new Validator();
         if (validator.validate(this)) {
             if (!isModified()) {
-                saved = true;
+                result = true;
             } else {
-                saved = doSave();
-                if (saved) {
-                    _saved = true;
+                result = doSave();
+                if (result) {
+                    saved = true;
                     clearModified();
                 }
             }
         } else {
             ValidationHelper.showError(validator);
         }
-        return saved;
+        return result;
     }
 
     /**
@@ -265,7 +265,7 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if edits have been saved.
      */
     public boolean isSaved() {
-        return _saved;
+        return saved;
     }
 
     /**
@@ -274,26 +274,26 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if the object was deleted successfully
      */
     public boolean delete() {
-        if (_cancelled) {
+        if (cancelled) {
             return false;
         }
-        boolean deleted = false;
+        boolean result = false;
         IMObject object = getObject();
         if (object.isNew()) {
-            deleted = true;
+            result = true;
         } else {
             try {
                 IArchetypeService service
                         = ArchetypeServiceHelper.getArchetypeService();
                 service.remove(object);
-                deleted = true;
+                result = true;
             } catch (OpenVPMSException exception) {
                 String title = Messages.get("imobject.delete.failed.title");
                 ErrorHelper.show(title, exception);
             }
         }
-        _deleted |= deleted;
-        return deleted;
+        deleted |= result;
+        return result;
     }
 
     /**
@@ -302,7 +302,7 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if the object has been deleted
      */
     public boolean isDeleted() {
-        return _deleted;
+        return deleted;
     }
 
     /**
@@ -311,7 +311,7 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if the object has been changed
      */
     public boolean isModified() {
-        return _editors.isModified() || _properties.isModified()
+        return editors.isModified() || properties.isModified()
                 || getObject().isNew();
     }
 
@@ -319,8 +319,8 @@ public abstract class AbstractIMObjectEditor
      * Clears the modified status of the object.
      */
     public void clearModified() {
-        _editors.clearModified();
-        _properties.clearModified();
+        editors.clearModified();
+        properties.clearModified();
     }
 
     /**
@@ -329,7 +329,7 @@ public abstract class AbstractIMObjectEditor
      * @param listener the listener to add
      */
     public void addModifiableListener(ModifiableListener listener) {
-        _editors.addModifiableListener(listener);
+        editors.addModifiableListener(listener);
     }
 
     /**
@@ -338,7 +338,7 @@ public abstract class AbstractIMObjectEditor
      * @param listener the listener to remove
      */
     public void removeModifiableListener(ModifiableListener listener) {
-        _editors.removeModifiableListener(listener);
+        editors.removeModifiableListener(listener);
     }
 
     /**
@@ -348,7 +348,7 @@ public abstract class AbstractIMObjectEditor
      *         <code>false</code>
      */
     public boolean isValid() {
-        return _editors.isValid();
+        return editors.isValid();
     }
 
     /**
@@ -359,12 +359,12 @@ public abstract class AbstractIMObjectEditor
      *         otherwise <code>false</code>
      */
     public boolean validate(Validator validator) {
-        boolean valid = validator.validate(_editors);
+        boolean valid = validator.validate(editors);
         if (valid) {
             // validate each property not associated with an editor
-            for (Property property : _properties.getProperties()) {
+            for (Property property : properties.getProperties()) {
                 String name = property.getDescriptor().getName();
-                if (_editors.getEditor(name) == null) {
+                if (editors.getEditor(name) == null) {
                     if (!validator.validate(property)) {
                         valid = false;
                         break;
@@ -380,7 +380,7 @@ public abstract class AbstractIMObjectEditor
      * behaviour of other methods is undefined..
      */
     public void cancel() {
-        _cancelled = true;
+        cancelled = true;
     }
 
     /**
@@ -389,7 +389,7 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if editing was cancelled
      */
     public boolean isCancelled() {
-        return _cancelled;
+        return cancelled;
     }
 
     /**
@@ -404,7 +404,8 @@ public abstract class AbstractIMObjectEditor
     /**
      * Returns the focus group.
      *
-     * @return the focus group
+     * @return the focus group, or <code>null</code> if the editor hasn't been
+     *         rendered
      */
     public FocusGroup getFocusGroup() {
         return getView().getFocusGroup();
@@ -418,10 +419,10 @@ public abstract class AbstractIMObjectEditor
      */
     public void addPropertyChangeListener(String name,
                                           PropertyChangeListener listener) {
-        if (_propertyChangeNotifier == null) {
-            _propertyChangeNotifier = new PropertyChangeSupport(this);
+        if (propertyChangeNotifier == null) {
+            propertyChangeNotifier = new PropertyChangeSupport(this);
         }
-        _propertyChangeNotifier.addPropertyChangeListener(name, listener);
+        propertyChangeNotifier.addPropertyChangeListener(name, listener);
     }
 
     /**
@@ -432,8 +433,8 @@ public abstract class AbstractIMObjectEditor
      */
     public void removePropertyChangeListener(String name,
                                              PropertyChangeListener listener) {
-        if (_propertyChangeNotifier != null) {
-            _propertyChangeNotifier.removePropertyChangeListener(
+        if (propertyChangeNotifier != null) {
+            propertyChangeNotifier.removePropertyChangeListener(
                     name, listener);
         }
     }
@@ -457,7 +458,7 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if the save was successful
      */
     protected boolean saveChildren() {
-        for (Saveable saveable : _editors.getModifiedSaveable()) {
+        for (Saveable saveable : editors.getModifiedSaveable()) {
             if (!saveable.save()) {
                 return false;
             }
@@ -481,7 +482,7 @@ public abstract class AbstractIMObjectEditor
      * @return the child editors
      */
     protected Editors getEditors() {
-        return _editors;
+        return editors;
     }
 
     /**
@@ -494,9 +495,9 @@ public abstract class AbstractIMObjectEditor
      */
     protected void firePropertyChange(String name, Object oldValue,
                                       Object newValue) {
-        if (_propertyChangeNotifier != null) {
-            _propertyChangeNotifier.firePropertyChange(name, oldValue,
-                                                       newValue);
+        if (propertyChangeNotifier != null) {
+            propertyChangeNotifier.firePropertyChange(name, oldValue,
+                                                      newValue);
         }
     }
 
@@ -506,10 +507,10 @@ public abstract class AbstractIMObjectEditor
      * @return the view
      */
     protected IMObjectView getView() {
-        if (_viewer == null) {
-            _viewer = createView(_object);
+        if (viewer == null) {
+            viewer = createView(object);
         }
-        return _viewer;
+        return viewer;
     }
 
     /**
@@ -521,17 +522,17 @@ public abstract class AbstractIMObjectEditor
     protected IMObjectView createView(IMObject object) {
         IMObjectLayoutStrategy layout = createLayoutStrategy();
         IMObjectView view;
-        view = new AbstractIMObjectView(object, _properties, _parent, layout) {
+        view = new AbstractIMObjectView(object, properties, parent, layout) {
             @Override
             protected Component createComponent() {
-                _lookups.clear();
+                lookups.clear();
                 Component component = super.createComponent();
                 onLayoutCompleted();
                 return component;
             }
 
             protected LayoutContext getLayoutContext() {
-                return _context;
+                return context;
             }
         };
         if (layout instanceof ExpandableLayoutStrategy) {
@@ -551,7 +552,7 @@ public abstract class AbstractIMObjectEditor
      * @return the layout context
      */
     protected LayoutContext getLayoutContext() {
-        return _context;
+        return context;
 
     }
 
@@ -561,7 +562,7 @@ public abstract class AbstractIMObjectEditor
      * @return a new layout strategy
      */
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return _layoutFactory.create(getObject(), getParent());
+        return layoutFactory.create(getObject(), getParent());
     }
 
     /**
@@ -596,13 +597,13 @@ public abstract class AbstractIMObjectEditor
      */
     protected void updateDerivedFields(Modifiable modified) {
         if (modified instanceof Property) {
-            _editors.removeModifiableListener(_derivedFieldRefresher);
+            editors.removeModifiableListener(derivedFieldRefresher);
             try {
                 IArchetypeService service
                         = ArchetypeServiceHelper.getArchetypeService();
                 service.deriveValues(getObject());
 
-                for (Property property : _properties.getProperties()) {
+                for (Property property : properties.getProperties()) {
                     if (modified != property
                             && property.getDescriptor().isDerived()) {
                         property.refresh();
@@ -611,12 +612,12 @@ public abstract class AbstractIMObjectEditor
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);
             }
-            _editors.addModifiableListener(_derivedFieldRefresher);
+            editors.addModifiableListener(derivedFieldRefresher);
         }
     }
 
     protected void refreshLookups(SelectField source) {
-        for (SelectField lookup : _lookups) {
+        for (SelectField lookup : lookups) {
             if (source != lookup) {
                 LookupListModel model = (LookupListModel) lookup.getModel();
                 model.refresh();
@@ -630,14 +631,14 @@ public abstract class AbstractIMObjectEditor
      * @return the layout change listener
      */
     protected ActionListener getLayoutChangeListener() {
-        if (_layoutChangeListener == null) {
-            _layoutChangeListener = new ActionListener() {
+        if (layoutChangeListener == null) {
+            layoutChangeListener = new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     onLayout();
                 }
             };
         }
-        return _layoutChangeListener;
+        return layoutChangeListener;
     }
 
     /**
@@ -659,7 +660,7 @@ public abstract class AbstractIMObjectEditor
      *         <code>null</code> if none exists
      */
     protected Property getProperty(String name) {
-        return _properties.get(name);
+        return properties.get(name);
     }
 
     /**
@@ -671,12 +672,12 @@ public abstract class AbstractIMObjectEditor
      *         </code>null</code> if none exists
      */
     protected Editor getEditor(String name) {
-        if (_editors.isEmpty()) {
+        if (editors.isEmpty()) {
             // make sure the component has been laid out to ensure
             // the editors are created
             getComponent();
         }
-        return _editors.getEditor(name);
+        return editors.getEditor(name);
     }
 
 
@@ -688,7 +689,7 @@ public abstract class AbstractIMObjectEditor
          * @param context the layout context
          */
         public ComponentFactory(LayoutContext context) {
-            super(_editors, context);
+            super(editors, context);
         }
 
         /**
@@ -708,7 +709,7 @@ public abstract class AbstractIMObjectEditor
                     refreshLookups((SelectField) event.getSource());
                 }
             });
-            _lookups.add(lookup);
+            lookups.add(lookup);
             return editor;
         }
     }

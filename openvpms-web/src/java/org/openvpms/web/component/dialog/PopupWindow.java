@@ -22,7 +22,6 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Styles;
@@ -45,6 +44,11 @@ public abstract class PopupWindow extends WindowPane {
      * The button row.
      */
     private final ButtonRow row;
+
+    /**
+     * The focus group.
+     */
+    private final FocusGroup focusGroup;
 
 
     /**
@@ -70,12 +74,12 @@ public abstract class PopupWindow extends WindowPane {
         }
         style = Styles.getStyle(WindowPane.class, style);
         setStyleName(style);
-        FocusTree focusTree = new FocusTree(getClass().getName());
+        focusGroup = new FocusGroup(getClass().getName());
         if (focus != null) {
-            focusTree.add(focus);
+            focusGroup.add(focus);
         }
 
-        row = new ButtonRow(focusTree);
+        row = new ButtonRow(focusGroup);
 
         layout = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
@@ -123,6 +127,15 @@ public abstract class PopupWindow extends WindowPane {
      */
     protected void addButton(String id, ActionListener listener) {
         row.addButton(id, listener);
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    protected FocusGroup getFocusGroup() {
+        return focusGroup;
     }
 
 }

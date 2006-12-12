@@ -19,7 +19,6 @@
 package org.openvpms.web.app.financial;
 
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -30,6 +29,7 @@ import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
@@ -125,11 +125,11 @@ public class FinancialActCRUDWindow
          * @return a component to display <code>property</code>
          */
         @Override
-        protected Component createItems(Property property, IMObject parent,
-                                        LayoutContext context) {
+        protected ComponentState createItems(Property property, IMObject parent,
+                                             LayoutContext context) {
             Viewer viewer = new Viewer((CollectionProperty) property,
                                        parent);
-            return viewer.getComponent();
+            return new ComponentState(viewer.getComponent(), property);
         }
     }
 

@@ -39,7 +39,7 @@ import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.Validator;
-import org.openvpms.web.component.focus.FocusSet;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.create.IMObjectCreatorListener;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -124,9 +124,6 @@ public abstract class AbstractIMObjectReferenceEditor
         super(property);
         selector = new Selector(Selector.ButtonStyle.RIGHT_NO_ACCEL, true);
         selector.setFormat(Selector.Format.NAME);
-        FocusSet set = new FocusSet("IMObjectReferenceEditor");
-        set.add(selector.getComponent());
-        context.getFocusTree().add(set);
         selector.getSelect().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onSelect();
@@ -176,6 +173,15 @@ public abstract class AbstractIMObjectReferenceEditor
      */
     public Component getComponent() {
         return selector.getComponent();
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    public FocusGroup getFocusGroup() {
+        return selector.getFocusGroup();
     }
 
     /**
@@ -320,7 +326,7 @@ public abstract class AbstractIMObjectReferenceEditor
         layoutContext.setContext(context);
         final IMObjectEditor editor
                 = IMObjectEditorFactory.create(object, layoutContext);
-        final EditDialog dialog = new EditDialog(editor, layoutContext);
+        final EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 onEditCompleted(editor);

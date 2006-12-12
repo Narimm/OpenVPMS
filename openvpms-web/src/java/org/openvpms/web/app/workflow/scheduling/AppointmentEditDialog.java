@@ -29,7 +29,6 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -44,11 +43,10 @@ public class AppointmentEditDialog extends EditDialog {
     /**
      * Construct a new <code>AppointmentEditDialog</code>.
      *
-     * @param editor  the editor
-     * @param context the layout context
+     * @param editor the editor
      */
-    public AppointmentEditDialog(IMObjectEditor editor, LayoutContext context) {
-        super(editor, context);
+    public AppointmentEditDialog(IMObjectEditor editor) {
+        super(editor);
     }
 
     /**

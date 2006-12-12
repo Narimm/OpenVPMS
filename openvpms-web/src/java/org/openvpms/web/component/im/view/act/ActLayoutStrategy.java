@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.view.act;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
@@ -26,6 +25,7 @@ import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 
 
 /**
@@ -93,13 +93,14 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
      * @return a component to display <code>property</code>
      */
     @Override
-    protected Component createComponent(Property property, IMObject parent,
-                                        LayoutContext context) {
+    protected ComponentState createComponent(Property property, IMObject parent,
+                                             LayoutContext context) {
         String name = property.getDescriptor().getName();
-        Component component;
+        ComponentState component;
         if (name.equals("items")) {
             if (_editor != null) {
-                component = _editor.getComponent();
+                component = new ComponentState(_editor.getComponent(),
+                                               _editor.getFocusGroup());
             } else {
                 component = createItems(property, parent, context);
             }
@@ -117,8 +118,8 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
      * @param context  the layout context
      * @return a component to display <code>property</code>
      */
-    protected Component createItems(Property property, IMObject parent,
-                                    LayoutContext context) {
+    protected ComponentState createItems(Property property, IMObject parent,
+                                         LayoutContext context) {
         return super.createComponent(property, parent, context);
     }
 

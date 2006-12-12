@@ -19,6 +19,7 @@
 package org.openvpms.web.component.edit;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.web.component.focus.FocusGroup;
 
 
 /**
@@ -36,4 +37,11 @@ public interface Editor extends Modifiable {
      */
     Component getComponent();
 
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group, or <code>null</code> if the editor hasn't been
+     *         rendered
+     */
+    FocusGroup getFocusGroup();
 }

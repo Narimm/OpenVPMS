@@ -20,12 +20,12 @@ package org.openvpms.web.component.im.layout;
 
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
-import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.filter.ValueNodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+
 
 /**
  * Default implmentation of the {@link LayoutContext} interface.
@@ -38,28 +38,22 @@ public class DefaultLayoutContext implements LayoutContext {
     /**
      * The context.
      */
-    private Context _context;
+    private Context context;
 
     /**
      * Determines if this is an edit context.
      */
-    private boolean _edit;
+    private boolean edit;
 
     /**
      * The component factory.
      */
-    private IMObjectComponentFactory _factory;
+    private IMObjectComponentFactory factory;
 
     /**
      * The default node filter.
      */
-    private NodeFilter _filter;
-
-    /**
-     * The foocus tree.
-     */
-    private final FocusTree _focus;
-
+    private NodeFilter filter;
 
     /**
      * Construct a new <code>DefaultLayoutContext</code>.
@@ -76,7 +70,7 @@ public class DefaultLayoutContext implements LayoutContext {
      */
     public DefaultLayoutContext(boolean edit) {
         this((IMObjectComponentFactory) null);
-        _edit = edit;
+        this.edit = edit;
     }
 
     /**
@@ -85,11 +79,10 @@ public class DefaultLayoutContext implements LayoutContext {
      * @param factory the component factory. May  be <code>null</code>
      */
     public DefaultLayoutContext(IMObjectComponentFactory factory) {
-        _factory = factory;
+        this.factory = factory;
         NodeFilter id = new ValueNodeFilter("uid", -1);
         NodeFilter showOptional = new BasicNodeFilter(true);
-        _filter = new ChainedNodeFilter(id, showOptional);
-        _focus = new FocusTree("root");
+        filter = new ChainedNodeFilter(id, showOptional);
     }
 
     /**
@@ -99,15 +92,10 @@ public class DefaultLayoutContext implements LayoutContext {
      * @param context the context
      */
     public DefaultLayoutContext(LayoutContext context) {
-        _context = context.getContext();
-        _factory = context.getComponentFactory();
-        _filter = context.getDefaultNodeFilter();
-
-        FocusTree root = context.getFocusTree();
-        _focus = new FocusTree("child");
-        root.add(_focus);
-
-        _edit = context.isEdit();
+        this.context = context.getContext();
+        factory = context.getComponentFactory();
+        filter = context.getDefaultNodeFilter();
+        edit = context.isEdit();
     }
 
     /**
@@ -116,10 +104,10 @@ public class DefaultLayoutContext implements LayoutContext {
      * @return the context
      */
     public Context getContext() {
-        if (_context == null) {
-            _context = ContextApplicationInstance.getInstance().getContext();
+        if (context == null) {
+            context = ContextApplicationInstance.getInstance().getContext();
         }
-        return _context;
+        return context;
     }
 
     /**
@@ -128,7 +116,7 @@ public class DefaultLayoutContext implements LayoutContext {
      * @param context the context
      */
     public void setContext(Context context) {
-        _context = context;
+        this.context = context;
     }
 
     /**
@@ -138,7 +126,7 @@ public class DefaultLayoutContext implements LayoutContext {
      *         if it is a view context. Defaults to <code>false</code>
      */
     public boolean isEdit() {
-        return _edit;
+        return edit;
     }
 
     /**
@@ -148,7 +136,7 @@ public class DefaultLayoutContext implements LayoutContext {
      *             <code>false</code> it is a view context.
      */
     public void setEdit(boolean edit) {
-        _edit = edit;
+        this.edit = edit;
     }
 
     /**
@@ -157,7 +145,7 @@ public class DefaultLayoutContext implements LayoutContext {
      * @return the component factory
      */
     public IMObjectComponentFactory getComponentFactory() {
-        return _factory;
+        return factory;
     }
 
     /**
@@ -166,16 +154,7 @@ public class DefaultLayoutContext implements LayoutContext {
      * @param factory the component factory
      */
     public void setComponentFactory(IMObjectComponentFactory factory) {
-        _factory = factory;
-    }
-
-    /**
-     * Returns the tab tree.
-     *
-     * @return the tab tree
-     */
-    public FocusTree getFocusTree() {
-        return _focus;
+        this.factory = factory;
     }
 
     /**
@@ -184,7 +163,7 @@ public class DefaultLayoutContext implements LayoutContext {
      * @return the default filter. May be <code>null</code>
      */
     public NodeFilter getDefaultNodeFilter() {
-        return _filter;
+        return filter;
     }
 
     /**
@@ -193,6 +172,6 @@ public class DefaultLayoutContext implements LayoutContext {
      * @param filter the default filter. May be <code>null</code>
      */
     public void setNodeFilter(NodeFilter filter) {
-        _filter = filter;
+        this.filter = filter;
     }
 }

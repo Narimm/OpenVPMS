@@ -18,13 +18,13 @@
 
 package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 
 
@@ -51,11 +51,12 @@ public class DocumentTemplateParticipationLayoutStrategy
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
-    public Component apply(IMObject object, PropertySet properties,
-                           IMObject parent, LayoutContext context) {
+    public ComponentState apply(IMObject object, PropertySet properties,
+                                IMObject parent, LayoutContext context) {
         Property property = properties.get("entity");
         IMObjectReference ref = (IMObjectReference) property.getValue();
-        return new IMObjectReferenceViewer(ref, true).getComponent();
+        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref, true);
+        return new ComponentState(viewer.getComponent());
     }
 
 }

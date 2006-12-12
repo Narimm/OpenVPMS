@@ -45,12 +45,12 @@ public class LoginDialog extends PopupDialog {
     /**
      * The username field.
      */
-    private TextField _username;
+    private TextField username;
 
     /**
      * The password field.
      */
-    private TextField _password;
+    private TextField password;
 
     /**
      * Dialog style name.
@@ -90,31 +90,33 @@ public class LoginDialog extends PopupDialog {
         super(Messages.get(LOGIN_KEY), STYLE, OK);
         setClosable(false);
 
-        _username = TextComponentFactory.create();
-        _password = TextComponentFactory.createPassword();
+        username = TextComponentFactory.create();
+        password = TextComponentFactory.createPassword();
 
-        _username.addActionListener(new ActionListener() {
+        username.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                setFocus(_password);
+                setFocus(password);
             }
         });
-        _password.addActionListener(new ActionListener() {
+        password.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onOK();
             }
         });
 
-        Label username = LabelFactory.create(USER_KEY);
-        username.setStyleName(LABEL_STYLE);
-        Label password = LabelFactory.create(PASSWORD_KEY);
-        password.setStyleName(LABEL_STYLE);
+        Label userLabel = LabelFactory.create(USER_KEY);
+        userLabel.setStyleName(LABEL_STYLE);
+        Label passLabel = LabelFactory.create(PASSWORD_KEY);
+        passLabel.setStyleName(LABEL_STYLE);
 
         Grid grid = GridFactory.create(
-                2, username, _username, password, _password);
+                2, userLabel, username, passLabel, password);
         grid.setStyleName(GRID_STYLE);
         getLayout().add(grid);
 
-        setFocus(_username);
+        getFocusGroup().add(0, username);
+        getFocusGroup().add(1, password);
+        setFocus(username);
     }
 
     /**
@@ -122,12 +124,13 @@ public class LoginDialog extends PopupDialog {
      */
     @Override
     protected void onOK() {
-        String username = _username.getText();
-        String password = _password.getText();
+        String name = username.getText();
+        String pass = password.getText();
 
         // @todo need to encode
         Command redirect = new BrowserRedirectCommand(
-                "j_acegi_security_check?j_username=" + username + "&j_password=" + password);
+                "j_acegi_security_check?j_username=" + name
+                        + "&j_password=" + pass);
         ApplicationInstance.getActive().enqueueCommand(redirect);
     }
 

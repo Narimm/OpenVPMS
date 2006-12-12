@@ -44,7 +44,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ShortcutHelper;
-import org.openvpms.web.component.focus.FocusSet;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -203,7 +203,7 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
         container.add(name);
         container.add(select);
 
-        FocusSet focus = getFocusSet();
+        FocusGroup focus = getFocusGroup();
         focus.add(prevWeek);
         focus.add(prevDay);
         focus.add(date);

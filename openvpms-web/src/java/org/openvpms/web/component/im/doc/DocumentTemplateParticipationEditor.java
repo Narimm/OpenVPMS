@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -31,6 +30,7 @@ import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.view.ComponentState;
 
 
 /**
@@ -113,9 +113,11 @@ public class DocumentTemplateParticipationEditor
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new IMObjectLayoutStrategy() {
-            public Component apply(IMObject object, PropertySet properties,
-                                   IMObject parent, LayoutContext context) {
-                return templateEditor.getComponent();
+            public ComponentState apply(IMObject object, PropertySet properties,
+                                        IMObject parent,
+                                        LayoutContext context) {
+                return new ComponentState(templateEditor.getComponent(),
+                                          templateEditor.getFocusGroup());
             }
         };
     }

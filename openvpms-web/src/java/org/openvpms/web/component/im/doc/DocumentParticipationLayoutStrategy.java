@@ -27,6 +27,7 @@ import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.util.LabelFactory;
 
 
@@ -53,15 +54,18 @@ public class DocumentParticipationLayoutStrategy
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
-    public Component apply(IMObject object, PropertySet properties,
-                           IMObject parent, LayoutContext context) {
+    public ComponentState apply(IMObject object, PropertySet properties,
+                                IMObject parent, LayoutContext context) {
         Property property = properties.get("act");
         IMObjectReference ref = (IMObjectReference) property.getValue();
         final DocumentAct act = (DocumentAct) IMObjectHelper.getObject(ref);
+        Component component;
         if (act != null) {
-            return new DocumentActDownloader(act).getComponent();
+            component = new DocumentActDownloader(act).getComponent();
+        } else {
+            component = LabelFactory.create();
         }
-        return LabelFactory.create();
+        return new ComponentState(component);
     }
 
 }

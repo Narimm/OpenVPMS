@@ -57,6 +57,10 @@ public class DateFieldFactory extends ComponentFactory {
      * @return the date field
      */
     private static DateField init(DateField date) {
+        // disable focus traversal on the main component, but allow it
+        // on the chooser and text field. Without this, two tabs are
+        // required to get to the next field
+        date.setFocusTraversalParticipant(false);
         setDefaultStyle(date.getDateChooser());
         setDefaultStyle(date.getTextField());
         return date;

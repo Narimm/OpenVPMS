@@ -43,6 +43,7 @@ import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.palette.Palette;
@@ -94,8 +95,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * @param context  the context object
      * @return a component to display <code>object</code>
      */
-    public Component create(Property property, IMObject context) {
-        Component result;
+    public ComponentState create(Property property, IMObject context) {
+        ComponentState result;
         NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor.isReadOnly() || descriptor.isDerived()) {
             result = getReadOnlyFactory().create(property, context);
@@ -118,13 +119,13 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                 editor = getObjectReferenceEditor(property);
             }
             if (editor != null) {
-                result = editor.getComponent();
+                result = new ComponentState(editor.getComponent(), property,
+                                            editor.getFocusGroup());
             } else {
                 Label label = LabelFactory.create();
                 label.setText("No editor for type " + descriptor.getType());
-                result = label;
+                result = new ComponentState(label);
             }
-            result.setFocusTraversalParticipant(true);
         }
         return result;
     }
@@ -135,13 +136,13 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * @param object     the object to display
      * @param context    the object's parent. May be <code>null</code>
      * @param descriptor the parent object's descriptor. May be
-     *                   <code>null</code>
      */
-    public Component create(IMObject object, IMObject context,
-                            NodeDescriptor descriptor) {
+    public ComponentState create(IMObject object, IMObject context,
+                                 NodeDescriptor descriptor) {
         Editor editor = getObjectEditor(object, context);
         _editors.add(editor);
-        return editor.getComponent();
+        return new ComponentState(editor.getComponent(),
+                                  editor.getFocusGroup());
     }
 
     /**
@@ -288,7 +289,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                 property.getDescriptor());
         Editor editor;
         if (TypeHelper.matches(range, "document.*")) {
-            editor = new DocumentEditor(property, getLayoutContext());
+            editor = new DocumentEditor(property);
         } else {
             editor = IMObjectReferenceEditorFactory.create(property,
                                                            getLayoutContext());

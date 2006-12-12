@@ -26,6 +26,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -56,37 +57,42 @@ public class Selector {
     /**
      * The 'select' button.
      */
-    private Button _select;
+    private Button select;
 
     /**
      * Selected object's label. Null if the selector is editable.
      */
-    private Label _objectLabel;
+    private Label objectLabel;
 
     /**
      * Selected object's text. Null if the selector is not editable.
      */
-    private TextField _objectText;
+    private TextField objectText;
 
     /**
      * Determines the layout of the 'select' button.
      */
-    private final ButtonStyle _buttonStyle;
+    private final ButtonStyle buttonStyle;
 
     /**
      * Determines if the selector may be edited.
      */
-    private final boolean _editable;
+    private final boolean editable;
 
     /**
      * The presentation format.
      */
-    private Format _format = Format.SUMMARY;
+    private Format format = Format.SUMMARY;
 
     /**
      * The component.
      */
-    private Component _component;
+    private Component component;
+
+    /**
+     * The focus group.
+     */
+    private final FocusGroup focusGroup;
 
 
     /**
@@ -103,9 +109,10 @@ public class Selector {
      * @param editable determines if the selector is editable
      */
     public Selector(ButtonStyle style, boolean editable) {
-        _buttonStyle = style;
-        _editable = editable;
-        _component = RowFactory.create();
+        buttonStyle = style;
+        this.editable = editable;
+        component = RowFactory.create();
+        focusGroup = new FocusGroup(getClass().getName());
     }
 
     /**
@@ -114,11 +121,20 @@ public class Selector {
      * @return the selector component
      */
     public Component getComponent() {
-        if (_component.getComponentCount() == 0) {
+        if (component.getComponentCount() == 0) {
             Component layout = doLayout(null, null);
-            _component.add(layout);
+            component.add(layout);
         }
-        return _component;
+        return component;
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    public FocusGroup getFocusGroup() {
+        return focusGroup;
     }
 
     /**
@@ -127,15 +143,15 @@ public class Selector {
      * @return the 'select' button
      */
     public Button getSelect() {
-        if (_select == null) {
-            if (_buttonStyle == ButtonStyle.LEFT_NO_ACCEL
-                    || _buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
-                _select = ButtonFactory.create(null, "select");
+        if (select == null) {
+            if (buttonStyle == ButtonStyle.LEFT_NO_ACCEL
+                    || buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
+                select = ButtonFactory.create(null, "select");
             } else {
-                _select = ButtonFactory.create("select");
+                select = ButtonFactory.create("select");
             }
         }
-        return _select;
+        return select;
     }
 
     /**
@@ -145,7 +161,7 @@ public class Selector {
      */
     public TextField getText() {
         getObjectComponent();
-        return _objectText;
+        return objectText;
     }
 
     /**
@@ -157,12 +173,12 @@ public class Selector {
         String text = null;
         String deactivated = null;
         if (object != null) {
-            if (_format == Format.NAME) {
+            if (format == Format.NAME) {
                 text = Messages.get("imobject.name", object.getName());
-            } else if (_format == Format.DESCRIPTION) {
+            } else if (format == Format.DESCRIPTION) {
                 text = Messages.get("imobject.description",
                                     object.getDescription());
-            } else if (_format == Format.SUMMARY) {
+            } else if (format == Format.SUMMARY) {
                 text = Messages.get("imobject.summary", object.getName(),
                                     object.getDescription());
             }
@@ -171,9 +187,9 @@ public class Selector {
                 deactivated = Messages.get("imobject.deactivated");
             }
         }
-        _component.removeAll();
+        component.removeAll();
         Component layout = doLayout(text, deactivated);
-        _component.add(layout);
+        component.add(layout);
     }
 
     /**
@@ -182,7 +198,7 @@ public class Selector {
      * @param format the presentation format
      */
     public void setFormat(Format format) {
-        _format = format;
+        this.format = format;
     }
 
     /**
@@ -194,7 +210,7 @@ public class Selector {
      */
     protected Component doLayout(String text, String deactivated) {
         Component component;
-        if (_buttonStyle == ButtonStyle.RIGHT) {
+        if (buttonStyle == ButtonStyle.RIGHT) {
             // button on the right. The 'wrapper' forces the summary+deactivated
             // labels to take up as much space as possible, ensuring that the
             // button is displayed hard on the right.
@@ -209,7 +225,7 @@ public class Selector {
             wrapper.setLayoutData(layout);
             Button button = getSelect();
             component = RowFactory.create(wrapper, button);
-        } else if (_buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
+        } else if (buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
             Row wrapper = RowFactory.create(getObjectComponent(), getSelect());
             if (deactivated != null) {
                 component = RowFactory.create("CellSpacing", wrapper);
@@ -222,15 +238,23 @@ public class Selector {
             if (deactivated != null) {
                 addDeactivated(component, deactivated);
             }
-            if (_buttonStyle == ButtonStyle.LEFT
-                    || _buttonStyle == ButtonStyle.LEFT_NO_ACCEL) {
+            if (buttonStyle == ButtonStyle.LEFT
+                    || buttonStyle == ButtonStyle.LEFT_NO_ACCEL) {
                 component.add(getSelect(), 0);
             }
         }
-        if (_objectText != null) {
-            _objectText.setText(text);
+        if (objectText != null) {
+            objectText.setText(text);
+            focusGroup.add(objectText);
+            if (buttonStyle == ButtonStyle.LEFT
+                    || buttonStyle == ButtonStyle.LEFT_NO_ACCEL) {
+                focusGroup.add(0, getSelect());
+            } else if (buttonStyle == ButtonStyle.RIGHT
+                    || buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
+                focusGroup.add(getSelect());
+            }
         } else {
-            _objectLabel.setText(text);
+            objectLabel.setText(text);
         }
         return component;
     }
@@ -242,16 +266,16 @@ public class Selector {
      */
     protected Component getObjectComponent() {
         Component component;
-        if (_editable) {
-            if (_objectText == null) {
-                _objectText = TextComponentFactory.create();
+        if (editable) {
+            if (objectText == null) {
+                objectText = TextComponentFactory.create();
             }
-            component = _objectText;
+            component = objectText;
         } else {
-            if (_objectLabel == null) {
-                _objectLabel = LabelFactory.create();
+            if (objectLabel == null) {
+                objectLabel = LabelFactory.create();
             }
-            component = _objectLabel;
+            component = objectLabel;
         }
         return component;
     }

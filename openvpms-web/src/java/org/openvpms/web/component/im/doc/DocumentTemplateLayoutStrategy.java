@@ -28,8 +28,10 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.util.LabelFactory;
 
 import java.util.List;
@@ -46,7 +48,7 @@ public class DocumentTemplateLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * The component representing the 'content' node.
      */
-    private Component content;
+    private ComponentState content;
 
 
     /**
@@ -58,10 +60,12 @@ public class DocumentTemplateLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Constructs a new <code>DocumentTemplateLayoutStrategy</code>.
      *
-     * @param content the component representing the 'content' node
+     * @param content    the component representing the 'content' node
+     * @param focusGroup the component's focus group. May be <code>null</code>
      */
-    public DocumentTemplateLayoutStrategy(Component content) {
-        this.content = content;
+    public DocumentTemplateLayoutStrategy(Component content,
+                                          FocusGroup focusGroup) {
+        this.content = new ComponentState(content, focusGroup);
     }
 
     /**
@@ -77,8 +81,8 @@ public class DocumentTemplateLayoutStrategy extends AbstractLayoutStrategy {
      * @return the component containing the rendered <code>object</code>
      */
     @Override
-    public Component apply(IMObject object, PropertySet properties,
-                           IMObject parent, LayoutContext context) {
+    public ComponentState apply(IMObject object, PropertySet properties,
+                                IMObject parent, LayoutContext context) {
         if (content == null) {
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
@@ -89,7 +93,7 @@ public class DocumentTemplateLayoutStrategy extends AbstractLayoutStrategy {
                 content = context.getComponentFactory().create(participation,
                                                                object, null);
             } else {
-                content = LabelFactory.create();
+                content = new ComponentState(LabelFactory.create());
             }
         }
         return super.apply(object, properties, parent, context);

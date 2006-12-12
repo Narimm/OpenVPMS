@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.admin.user;
 
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.DocumentEvent;
 import nextapp.echo2.app.event.DocumentListener;
@@ -35,6 +34,7 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -82,7 +82,6 @@ public class UserEditor extends AbstractIMObjectEditor {
             public void documentUpdate(DocumentEvent event) {
                 onPasswordChanged();
             }
-
         });
         confirm = TextComponentFactory.createPassword(width);
         confirm.setText(value);
@@ -156,12 +155,16 @@ public class UserEditor extends AbstractIMObjectEditor {
                 Property property = properties.get(descriptor);
                 String displayName = descriptor.getDisplayName();
                 if (descriptor.getName().equals("password")) {
-                    result.add(password, displayName);
-                    result.add(confirm, Messages.get(
+                    ComponentState passwordComp
+                            = new ComponentState(password, getPassword());
+                    result.add(passwordComp, displayName);
+                    ComponentState confirmComp
+                            = new ComponentState(confirm, getPassword());
+                    result.add(confirmComp, Messages.get(
                             "admin.user.password.confirm", displayName));
                 } else {
-                    Component component = createComponent(property, object,
-                                                          context);
+                    ComponentState component = createComponent(property, object,
+                                                               context);
                     result.add(component, displayName);
                 }
             }

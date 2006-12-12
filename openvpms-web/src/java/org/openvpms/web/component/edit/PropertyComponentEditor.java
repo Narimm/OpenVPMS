@@ -19,6 +19,7 @@
 package org.openvpms.web.component.edit;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.web.component.focus.FocusGroup;
 
 
 /**
@@ -32,7 +33,12 @@ public class PropertyComponentEditor extends AbstractPropertyEditor {
     /**
      * The edit component.
      */
-    private final Component _component;
+    private final Component component;
+
+    /**
+     * The focus group.
+     */
+    private final FocusGroup focusGroup;
 
 
     /**
@@ -43,7 +49,9 @@ public class PropertyComponentEditor extends AbstractPropertyEditor {
      */
     public PropertyComponentEditor(Property property, Component component) {
         super(property);
-        _component = component;
+        this.component = component;
+        focusGroup = new FocusGroup(property.getDescriptor().getDisplayName());
+        focusGroup.add(component);
     }
 
     /**
@@ -52,7 +60,16 @@ public class PropertyComponentEditor extends AbstractPropertyEditor {
      * @return the edit component
      */
     public Component getComponent() {
-        return _component;
+        return component;
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    public FocusGroup getFocusGroup() {
+        return focusGroup;
     }
 
 }

@@ -27,6 +27,7 @@ import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.Validator;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
@@ -62,6 +63,36 @@ public class SingleParticipationCollectionEditor
     }
 
     /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return <code>true</code> if the object and its descendents are valid
+     *         otherwise <code>false</code>
+     */
+    @Override
+    public boolean validate(Validator validator) {
+        boolean valid;
+        if (isNull()) {
+            valid = true;
+        } else {
+            valid = super.validate(validator);
+        }
+
+        return valid;
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group, or <code>null</code> if the editor hasn't been
+     *         rendered
+     */
+    public FocusGroup getFocusGroup() {
+        AbstractParticipationEditor editor = getParticipationEditor();
+        return (editor != null) ? editor.getFocusGroup() : null;
+    }
+
+    /**
      * Lays out the component.
      *
      * @param context the layout context
@@ -79,25 +110,6 @@ public class SingleParticipationCollectionEditor
             });
         }
         return component;
-    }
-
-    /**
-     * Validates the object.
-     *
-     * @param validator the validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
-     */
-    @Override
-    public boolean validate(Validator validator) {
-        boolean valid;
-        if (isNull()) {
-            valid = true;
-        } else {
-            valid = super.validate(validator);
-        }
-
-        return valid;
     }
 
     /**

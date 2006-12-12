@@ -73,40 +73,40 @@ public abstract class AbstractReadOnlyComponentFactory
      * @param context  the context object
      * @return a component to display <code>object</code>
      */
-    public Component create(Property property, IMObject context) {
-        Component result;
+    public ComponentState create(Property property, IMObject context) {
+        Component component;
         boolean enable = false;
         NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor.isLookup()) {
-            result = getLookup(property, context);
+            component = getLookup(property, context);
         } else if (descriptor.isBoolean()) {
-            result = getBoolean(property);
+            component = getBoolean(property);
         } else if (descriptor.isString()) {
-            result = getString(property);
-            if (result instanceof RichTextArea) {
-                ((RichTextArea) result).setEditable(enable);
+            component = getString(property);
+            if (component instanceof RichTextArea) {
+                ((RichTextArea) component).setEditable(enable);
             }
         } else if (descriptor.isNumeric()) {
-            result = getNumber(property);
+            component = getNumber(property);
         } else if (descriptor.isDate()) {
-            result = getDate(property);
+            component = getDate(property);
         } else if (descriptor.isCollection()) {
-            result = getCollectionViewer((CollectionProperty) property,
-                                         context);
+            component = getCollectionViewer((CollectionProperty) property,
+                                            context);
             // need to enable this otherwise table selection is disabled
             enable = true;
         } else if (descriptor.isObjectReference()) {
-            result = getObjectViewer(property, context);
+            component = getObjectViewer(property, context);
             // need to enable this for hyperlinks to work
             enable = true;
         } else {
             Label label = LabelFactory.create();
             label.setText("No viewer for type " + descriptor.getType());
-            result = label;
+            component = label;
         }
-        result.setEnabled(enable);
-        result.setFocusTraversalParticipant(false);
-        return result;
+        component.setEnabled(enable);
+        component.setFocusTraversalParticipant(false);
+        return new ComponentState(component, property);
     }
 
     /**
@@ -115,14 +115,15 @@ public abstract class AbstractReadOnlyComponentFactory
      * @param object     the object to display
      * @param context    the object's parent. May be <code>null</code>
      * @param descriptor the parent object's descriptor. May be
-     *                   <code>null</code>
+     * @return a component to display <code>object</code>
      */
-    public Component create(IMObject object, IMObject context,
-                            NodeDescriptor descriptor) {
+    public ComponentState create(IMObject object, IMObject context,
+                                 NodeDescriptor descriptor) {
         IMObjectLayoutStrategy strategy = _strategies.create(object, context);
         IMObjectViewer viewer = new IMObjectViewer(object, context, strategy,
                                                    getLayoutContext());
-        return viewer.getComponent();
+        return new ComponentState(viewer.getComponent(),
+                                  viewer.getFocusGroup());
     }
 
     /**
@@ -212,7 +213,7 @@ public abstract class AbstractReadOnlyComponentFactory
                 IMObject value;
                 if (values.length > 0) {
                     value = (IMObject) values[0];
-                    result = create(value, parent, descriptor);
+                    result = create(value, parent, descriptor).getComponent();
                 } else {
                     // nothing to display, so return an empty label
                     result = LabelFactory.create();

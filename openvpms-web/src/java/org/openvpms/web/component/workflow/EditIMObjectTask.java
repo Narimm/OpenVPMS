@@ -216,10 +216,10 @@ public class EditIMObjectTask extends AbstractTask {
                     }
                 } else {
                     // editor invalid. Pop up a dialog.
-                    show(editor, layout);
+                    show(editor);
                 }
             } else {
-                show(editor, layout);
+                show(editor);
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
@@ -245,10 +245,9 @@ public class EditIMObjectTask extends AbstractTask {
      * Shows the editor in an edit dialog.
      *
      * @param editor the editor
-     * @param layout the layout context
      */
-    private void show(final IMObjectEditor editor, LayoutContext layout) {
-        EditDialog dialog = new EditDialog(editor, layout);
+    private void show(final IMObjectEditor editor) {
+        EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 onEditCompleted(editor);

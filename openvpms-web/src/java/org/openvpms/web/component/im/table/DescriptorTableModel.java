@@ -54,7 +54,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
     /**
      * The layout context.
      */
-    private final LayoutContext _context;
+    private final LayoutContext context;
 
 
     /**
@@ -62,9 +62,9 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * The column model must be set using {@link #setTableColumnModel}.
      */
     public DescriptorTableModel() {
-        _context = new DefaultLayoutContext();
-        TableComponentFactory factory = new TableComponentFactory(_context);
-        _context.setComponentFactory(factory);
+        context = new DefaultLayoutContext();
+        TableComponentFactory factory = new TableComponentFactory(context);
+        context.setComponentFactory(factory);
     }
 
     /**
@@ -73,10 +73,10 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * @param shortNames the archetype short names
      */
     public DescriptorTableModel(String[] shortNames) {
-        _context = new DefaultLayoutContext();
-        TableComponentFactory factory = new TableComponentFactory(_context);
-        _context.setComponentFactory(factory);
-        setTableColumnModel(createColumnModel(shortNames, _context));
+        context = new DefaultLayoutContext();
+        TableComponentFactory factory = new TableComponentFactory(context);
+        context.setComponentFactory(factory);
+        setTableColumnModel(createColumnModel(shortNames, context));
     }
 
     /**
@@ -86,7 +86,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * @param context    the layout context
      */
     public DescriptorTableModel(String[] shortNames, LayoutContext context) {
-        _context = context;
+        this.context = context;
         setTableColumnModel(createColumnModel(shortNames, context));
     }
 
@@ -99,7 +99,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
     public DescriptorTableModel(TableColumnModel model,
                                 LayoutContext context) {
         super(model);
-        _context = context;
+        this.context = context;
     }
 
     /**
@@ -178,10 +178,10 @@ public abstract class DescriptorTableModel<T extends IMObject>
      */
     protected Object getValue(IMObject object, DescriptorTableColumn column) {
         Object result;
-        IMObjectComponentFactory factory = _context.getComponentFactory();
+        IMObjectComponentFactory factory = context.getComponentFactory();
         NodeDescriptor descriptor = column.getDescriptor();
         Property property = new IMObjectProperty(object, descriptor);
-        result = factory.create(property, object);
+        result = factory.create(property, object).getComponent();
         return result;
     }
 
@@ -191,7 +191,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * @return the layout context
      */
     protected LayoutContext getLayoutContext() {
-        return _context;
+        return context;
     }
 
     /**
@@ -200,7 +200,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * @return the component factory
      */
     protected IMObjectComponentFactory getFactory() {
-        return _context.getComponentFactory();
+        return context.getComponentFactory();
     }
 
     /**

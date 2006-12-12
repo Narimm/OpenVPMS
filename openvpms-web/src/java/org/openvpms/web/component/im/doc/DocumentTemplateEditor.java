@@ -82,6 +82,7 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new DocumentTemplateLayoutStrategy(
-                participationEditor.getComponent());
+                participationEditor.getComponent(),
+                participationEditor.getFocusGroup());
     }
 }

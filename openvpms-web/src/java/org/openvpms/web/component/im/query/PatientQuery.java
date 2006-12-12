@@ -195,7 +195,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
         Label label = LabelFactory.create(ALL_PATIENTS_ID);
         container.add(label);
         container.add(allPatients);
-        getFocusSet().add(allPatients);
+        getFocusGroup().add(allPatients);
     }
 
     /**

@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.im.layout;
 
-import nextapp.echo2.app.Component;
+import org.openvpms.web.component.im.view.ComponentState;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -35,8 +35,8 @@ public class ComponentSet {
     /**
      * The components.
      */
-    private final LinkedHashMap<Component, String> components
-            = new LinkedHashMap<Component, String>();
+    private final LinkedHashMap<ComponentState, String> components
+            = new LinkedHashMap<ComponentState, String>();
 
     /**
      * Adds a component.
@@ -44,7 +44,7 @@ public class ComponentSet {
      * @param component the component
      * @param label     a label for the component
      */
-    public void add(Component component, String label) {
+    public void add(ComponentState component, String label) {
         components.put(component, label);
     }
 
@@ -53,7 +53,7 @@ public class ComponentSet {
      *
      * @return the components
      */
-    public Collection<Component> getComponents() {
+    public Collection<ComponentState> getComponents() {
         return components.keySet();
     }
 
@@ -64,7 +64,7 @@ public class ComponentSet {
      * @return the component's label, or <code>null</code> if the component is
      *         not found
      */
-    public String getLabel(Component component) {
+    public String getLabel(ComponentState component) {
         return components.get(component);
     }
 

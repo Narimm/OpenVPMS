@@ -29,7 +29,6 @@ import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
@@ -99,7 +98,7 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
         buttons.remove(consult);
         buttons.remove(checkOut);
         if (enable) {
-            Act act = (Act) getObject();
+            Act act = getObject();
             String status = act.getStatus();
             if (AppointmentStatus.PENDING.equals(status)) {
                 buttons.add(checkIn);
@@ -113,20 +112,18 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
     /**
      * Creates a new edit dialog.
      *
-     * @param editor  the editor
-     * @param context the layout context
+     * @param editor the editor
      */
     @Override
-    protected EditDialog createEditDialog(IMObjectEditor editor,
-                                          LayoutContext context) {
-        return new AppointmentEditDialog(editor, context);
+    protected EditDialog createEditDialog(IMObjectEditor editor) {
+        return new AppointmentEditDialog(editor);
     }
 
     /**
      * Invoked when the 'check-in' button is pressed.
      */
     private void onCheckIn() {
-        CheckInWorkflow workflow = new CheckInWorkflow((Act) getObject());
+        CheckInWorkflow workflow = new CheckInWorkflow(getObject());
         workflow.setTaskListener(new TaskListener() {
             public void taskEvent(TaskEvent event) {
                 onRefresh(getObject());
