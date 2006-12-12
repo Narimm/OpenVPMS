@@ -285,7 +285,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         if (TypeHelper.isA(_childAct, "act.tillBalanceAdjustment")) {
             LayoutContext context = new DefaultLayoutContext(true);
             final IMObjectEditor editor = createEditor(_childAct, context);
-            EditDialog dialog = new EditDialog(editor, context);
+            EditDialog dialog = new EditDialog(editor);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
                     onEditCompleted(editor, false);

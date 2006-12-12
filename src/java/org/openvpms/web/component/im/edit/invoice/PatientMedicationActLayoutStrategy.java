@@ -37,6 +37,7 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
 
@@ -66,8 +67,8 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
      * @return the component containing the rendered <code>object</code>
      */
     @Override
-    public Component apply(IMObject object, PropertySet properties,
-                           IMObject parent, LayoutContext context) {
+    public ComponentState apply(IMObject object, PropertySet properties,
+                                IMObject parent, LayoutContext context) {
 
         if (parent instanceof Act) {
             ActBean bean = new ActBean((Act) parent);

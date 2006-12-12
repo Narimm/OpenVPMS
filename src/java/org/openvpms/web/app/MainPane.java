@@ -225,6 +225,7 @@ public class MainPane extends SplitPane implements ContextChangeListener {
                 }
             });
             button.setText(workspace.getTitle());
+            button.setFocusTraversalParticipant(false);
             _subMenu.add(button);
         }
         Workspace current = subsystem.getWorkspace();
@@ -271,6 +272,7 @@ public class MainPane extends SplitPane implements ContextChangeListener {
             }
         });
         button.setText(subsystem.getTitle());
+        button.setFocusTraversalParticipant(false);
         _menu.add(button);
         _subsystems.add(subsystem);
         return button;

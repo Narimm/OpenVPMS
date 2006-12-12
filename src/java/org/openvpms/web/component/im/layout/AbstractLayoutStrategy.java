@@ -18,30 +18,27 @@
 
 package org.openvpms.web.component.im.layout;
 
-import echopointng.DateField;
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.button.AbstractButton;
-import nextapp.echo2.app.text.TextComponent;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.focus.FocusSet;
+import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
@@ -49,9 +46,8 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -63,18 +59,19 @@ import java.util.Map;
 public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
-     * Map of properties to their corresponding components, used to set focus.
+     * List of component states, used to determine initial focus.
      */
-    private final Map<Property, Component> _components
-            = new LinkedHashMap<Property, Component>();
+    private final List<ComponentState> components
+            = new ArrayList<ComponentState>();
 
     /**
-     * The focus set.
+     * The focus group of the current component.
      */
-    private FocusSet _focusSet;
+    private FocusGroup focusGroup;
+
 
     /**
-     * Construct a new <code>AbstractLayoutStrategy</code>.
+     * Constructs a new <code>AbstractLayoutStrategy</code>.
      */
     public AbstractLayoutStrategy() {
     }
@@ -91,15 +88,14 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
-    public Component apply(IMObject object, PropertySet properties,
-                           IMObject parent, LayoutContext context) {
-        _components.clear();
-        _focusSet = new FocusSet(DescriptorHelper.getDisplayName(object));
-        context.getFocusTree().add(_focusSet);
+    public ComponentState apply(IMObject object, PropertySet properties,
+                                IMObject parent, LayoutContext context) {
+        focusGroup = new FocusGroup(DescriptorHelper.getDisplayName(object));
         Column column = ColumnFactory.create("CellSpacing");
         doLayout(object, properties, column, context);
-        setFocus(column);
-        return column;
+        setFocus();
+        components.clear();
+        return new ComponentState(column, focusGroup);
     }
 
     /**
@@ -165,16 +161,15 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                    PropertySet properties, Component container,
                                    LayoutContext context) {
         if (!descriptors.isEmpty()) {
-            DefaultTabModel model = new DefaultTabModel();
+            TabPaneModel model = new TabPaneModel();
             for (NodeDescriptor nodeDesc : descriptors) {
                 Property property = properties.get(nodeDesc);
-                Component child = createComponent(property, object, context);
-
-                // @todo - button doesn't respond to keypress, so don't focus
-                // on it.
-                Component inset = ColumnFactory.create("Inset", child);
+                ComponentState child = createComponent(property, object,
+                                                       context);
+                Component inset = ColumnFactory.create("Inset",
+                                                       child.getComponent());
+                setFocusTraversal(child);
                 model.addTab(nodeDesc.getDisplayName(), inset);
-                setTabIndex(child);
             }
             TabbedPane pane = TabbedPaneFactory.create(model);
             pane.setSelectedIndex(0);
@@ -257,21 +252,24 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                 List<NodeDescriptor> descriptors,
                                 PropertySet properties, Grid grid,
                                 LayoutContext context) {
-        ComponentSet components = createComponentSet(object, descriptors,
-                                                     properties,
-                                                     context);
-        Component[] list = components.getComponents().toArray(new Component[0]);
-        String[] labels = new String[list.length];
-        for (int i = 0; i < list.length; ++i) {
-            Component component = list[i];
-            labels[i] = components.getLabel(component);
-            setTabIndex(component);
+        ComponentSet set = createComponentSet(object, descriptors, properties,
+                                              context);
+        ComponentState[] states =
+                set.getComponents().toArray(new ComponentState[0]);
+        Component[] components = new Component[states.length];
+        String[] labels = new String[states.length];
+        for (int i = 0; i < states.length; ++i) {
+            ComponentState state = states[i];
+            Component component = state.getComponent();
+            components[i] = component;
+            labels[i] = set.getLabel(state);
+            setFocusTraversal(state);
             if (component instanceof SelectField) {
                 // workaround for render bug in firefox. See OVPMS-239
-                list[i] = RowFactory.create(component);
+                components[i] = RowFactory.create(component);
             }
         }
-        int size = list.length;
+        int size = components.length;
         int rows;
         if (size <= 4) {
             rows = size;
@@ -279,9 +277,9 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             rows = (size / 2) + (size % 2);
         }
         for (int i = 0, j = rows; i < rows; ++i, ++j) {
-            add(grid, labels[i], list[i]);
+            add(grid, labels[i], components[i]);
             if (j < size) {
-                add(grid, labels[j], list[j]);
+                add(grid, labels[j], components[j]);
             }
         }
     }
@@ -302,7 +300,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         ComponentSet result = new ComponentSet();
         for (NodeDescriptor descriptor : descriptors) {
             Property property = properties.get(descriptor);
-            Component component = createComponent(property, object, context);
+            ComponentState component = createComponent(property, object,
+                                                       context);
             result.add(component, descriptor.getDisplayName());
         }
         return result;
@@ -328,156 +327,97 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param container the container
      * @param name      the node display name
      * @param component the component representing the node
-     * @param context   the layout context
      */
-    protected void add(Component container, String name, Component component,
-                       LayoutContext context) {
-        add(container, name, component);
-        setTabIndex(component);
+    protected void add(Component container, String name,
+                       ComponentState component) {
+        add(container, name, component.getComponent());
+        setFocusTraversal(component);
     }
 
     /**
      * Helper to add a property to a container, setting its tab index.
      *
      * @param container the container
-     * @param property  the property
      * @param component the component representing the property
-     * @param context   the layout context
      */
-    protected void add(Component container, Property property,
-                       Component component, LayoutContext context) {
-        add(container, property.getDescriptor().getDisplayName(), component,
-            context);
-        addFocusable(property, component);
+    protected void add(Component container, ComponentState component) {
+        Property property = component.getProperty();
+        String name = null;
+        if (property != null) {
+            name = property.getDescriptor().getDisplayName();
+        }
+        add(container, name, component);
+        setFocusTraversal(component);
     }
 
     /**
-     * Creates a component for a property. This maintains a cache of created
-     * components, in order for the focus to be set on an appropriate
-     * component.
+     * Creates a component for a property.
      *
      * @param property the property
      * @param parent   the parent object
      * @param context  the layout context
      * @return a component to display <code>property</code>
      */
-    protected Component createComponent(Property property, IMObject parent,
-                                        LayoutContext context) {
+    protected ComponentState createComponent(Property property, IMObject parent,
+                                             LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
-        Component component = factory.create(property, parent);
-        addFocusable(property, component);
-        return component;
+        return factory.create(property, parent);
     }
 
     /**
      * Sets focus on the first focusable field.
-     *
-     * @param container the component container
      */
-    protected void setFocus(Component container) {
-        Component focusable = null;
-        for (Map.Entry<Property, Component> entry :
-                _components.entrySet()) {
-            Component child = entry.getValue();
-            if (isFocusable(child)) {
-                if (child.isEnabled() && child.isFocusTraversalParticipant()) {
-                    Property property = entry.getKey();
-                    boolean required = property.getDescriptor().isRequired();
-                    try {
-                        Object value = property.getValue();
-                        if (required && (value == null
-                                || (value instanceof String
-                                && StringUtils.isEmpty((String) value)))) {
-                            // null field. Set focus on it in preference to
-                            // others
-                            focusable = child;
-                            break;
-                        } else {
-                            if (focusable == null) {
-                                focusable = child;
-                            }
-                        }
-                    } catch (OpenVPMSException ignore) {
-                        // no-op
-                    }
-                }
-            }
-        }
+    protected void setFocus() {
+        Component focusable = FocusHelper.getFocusable(components);
         if (focusable != null) {
-            if (focusable instanceof DateField) {
-                // @todo - workaround
-                focusable = ((DateField) focusable).getTextField();
-            }
             ApplicationInstance.getActive().setFocusedComponent(focusable);
         }
     }
 
     /**
-     * Sets the tab index of a component, if it is a focus traversal
+     * Sets the focus traversal index of a component, if it is a focus traversal
      * participant.
+     * NOTE: if a component doesn't specify a focus group,
+     * this may register a child component with the focus group rather than the
+     * parent.
      *
-     * @param component the component
+     * @param state the component state
      */
-    protected void setTabIndex(Component component) {
-        if (component.isFocusTraversalParticipant()) {
-            _focusSet.add(component);
-        }
-    }
-
-    /**
-     * Registers a focusable property, if it has a focusable component.
-     *
-     * @param property  the property
-     * @param component the component representing the property
-     */
-    private void addFocusable(Property property, Component component) {
-        Component focusable = getFocusable(component);
-        if (focusable != null) {
-            _components.put(property, focusable);
-        }
-    }
-
-    /**
-     * Returns the first component that may have focus set.
-     *
-     * @param component the component
-     * @return the first child component that may have focus set, or
-     *         <code>null</code> if none may have focus set
-     */
-    private Component getFocusable(Component component) {
-        Component result = null;
-        if (isFocusable(component)) {
-            if (component.isEnabled()
-                    && component.isFocusTraversalParticipant()) {
-                if (component instanceof DateField) {
-                    result = ((DateField) component).getTextField();
-                } else {
-                    result = component;
-                }
-            }
-        } else if (component.getComponentCount() != 0) {
-            for (Component child : component.getComponents()) {
-                result = getFocusable(child);
-                if (result != null) {
-                    break;
-                }
+    protected void setFocusTraversal(ComponentState state) {
+        Component component = state.getComponent();
+        if (state.getFocusGroup() != null) {
+            focusGroup.add(state.getFocusGroup());
+            components.add(state);
+        } else {
+            Component focusable = FocusHelper.getFocusable(component);
+            if (focusable != null) {
+                focusGroup.add(focusable);
+                components.add(state);
             }
         }
-        return result;
     }
 
-    /**
-     * Determines if a component is one that may receive focus.
-     *
-     * @param component the component
-     * @return <code>true</code> if the component is a focusable component;
-     *         otherwise <code>false</code>
-     */
-    private boolean isFocusable(Component component) {
-        return (component instanceof TextComponent
-                || component instanceof CheckBox
-                || component instanceof SelectField
-                || component instanceof DateField
-                || component instanceof AbstractButton);
+    private static class TabPaneModel extends DefaultTabModel {
+        /**
+         * This method is called to create a Tab component with the specified text
+         * and icon. The default behaviour creates ButtonEx instances. Subclasses
+         * can overrride this method to modify what components are returned.
+         *
+         * @param tabTitle -
+         *                 the title of the tab
+         * @param tabIcon  -
+         *                 the icon for the tab
+         * @return a component that will be used as the Tab. This will most likely
+         *         be a Button.
+         */
+        @Override
+        protected Component createTabComponent(String tabTitle,
+                                               ImageReference tabIcon) {
+            Component result = super.createTabComponent(tabTitle, tabIcon);
+            result.setFocusTraversalParticipant(false);
+            return result;
+        }
     }
+
 }
+

@@ -20,7 +20,6 @@ package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.im.layout.LayoutContext;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -49,35 +48,32 @@ public class EditDialog extends PopupDialog {
      */
     private static final String STYLE = "EditDialog";
 
+
     /**
      * Constructs a new <code>EditDialog</code>.
      *
-     * @param editor  the editor
-     * @param context the layout context
+     * @param editor the editor
      */
-    public EditDialog(IMObjectEditor editor, LayoutContext context) {
-        this(editor, true, context);
+    public EditDialog(IMObjectEditor editor) {
+        this(editor, true);
     }
 
     /**
      * Construct a new <code>EditDialog</code>.
      *
-     * @param editor  the editor
-     * @param save    if <code>true</code>, display an 'apply' and 'OK' button
-     *                that save the editor when pressed. If <code>false</code>
-     *                display an 'OK' and 'CANCEL' button that simply close the
-     *                dialog
-     * @param context the layout context
+     * @param editor the editor
+     * @param save   if <code>true</code>, display an 'apply' and 'OK' button
+     *               that save the editor when pressed. If <code>false</code>
+     *               display an 'OK' and 'CANCEL' button that simply close the
+     *               dialog
      */
-    public EditDialog(IMObjectEditor editor, boolean save,
-                      LayoutContext context) {
-        super(editor.getTitle(), STYLE, getButtons(save),
-              context.getFocusTree());
+    public EditDialog(IMObjectEditor editor, boolean save) {
+        super(editor.getTitle(), STYLE, getButtons(save));
         this.editor = editor;
         this.save = save;
         setModal(true);
 
-        getLayout().add(this.editor.getComponent());
+        getLayout().add(editor.getComponent());
         this.editor.addPropertyChangeListener(
                 IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
                 new PropertyChangeListener() {
@@ -85,6 +81,7 @@ public class EditDialog extends PopupDialog {
                         onComponentChange(event);
                     }
                 });
+        getFocusGroup().add(0, editor.getFocusGroup());
     }
 
     /**

@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.layout;
 
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 
@@ -75,13 +74,6 @@ public interface LayoutContext {
      * @param factory the component factory
      */
     void setComponentFactory(IMObjectComponentFactory factory);
-
-    /**
-     * Returns the focus tree.
-     *
-     * @return the focus tree
-     */
-    FocusTree getFocusTree();
 
     /**
      * Returns the default filter.

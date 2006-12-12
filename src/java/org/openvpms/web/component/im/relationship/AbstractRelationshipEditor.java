@@ -27,6 +27,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditorFactory;
@@ -36,6 +37,7 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.GridFactory;
 
@@ -54,12 +56,12 @@ public abstract class AbstractRelationshipEditor
     /**
      * Editor for the source of the relationship.
      */
-    private Entity _source;
+    private Entity sourceEditor;
 
     /**
      * Editor for the target of the relationship.
      */
-    private Entity _target;
+    private Entity targetEditor;
 
 
     /**
@@ -104,14 +106,14 @@ public abstract class AbstractRelationshipEditor
             srcReadOnly = false;
         }
 
-        _source = new Entity(sourceProp, srcReadOnly, layoutContext);
+        sourceEditor = new Entity(sourceProp, srcReadOnly, layoutContext);
 
         boolean targetReadOnly = true;
         if (target == null || !target.equals(edited) || target.equals(source)) {
             targetReadOnly = false;
         }
 
-        _target = new Entity(targetProp, targetReadOnly, layoutContext);
+        targetEditor = new Entity(targetProp, targetReadOnly, layoutContext);
     }
 
     /**
@@ -192,8 +194,12 @@ public abstract class AbstractRelationshipEditor
                                       Component container,
                                       LayoutContext context) {
             Grid grid = GridFactory.create(4);
-            add(grid, _source.getProperty(), _source.getComponent(), context);
-            add(grid, _target.getProperty(), _target.getComponent(), context);
+            add(grid, new ComponentState(sourceEditor.getComponent(),
+                                         sourceEditor.getProperty(),
+                                         sourceEditor.getFocusGroup()));
+            add(grid, new ComponentState(targetEditor.getComponent(),
+                                         targetEditor.getProperty(),
+                                         targetEditor.getFocusGroup()));
             doGridLayout(object, descriptors, properties, grid, context);
             container.add(grid);
         }
@@ -208,15 +214,16 @@ public abstract class AbstractRelationshipEditor
         /**
          * The viewer.
          */
-        private IMObjectReferenceViewer _viewer;
+        private IMObjectReferenceViewer viewer;
 
         /**
          * The editor.
          */
-        private IMObjectReferenceEditor _editor;
+        private IMObjectReferenceEditor editor;
+
 
         /**
-         * Construct a new <code>Entity</code>.
+         * Constructs a new <code>Entity</code>.
          *
          * @param property the reference property
          * @param readOnly if <code>true<code> don't render the select button
@@ -227,9 +234,9 @@ public abstract class AbstractRelationshipEditor
             super(property);
             if (readOnly) {
                 IMObjectReference ref = (IMObjectReference) property.getValue();
-                _viewer = new IMObjectReferenceViewer(ref, false);
+                viewer = new IMObjectReferenceViewer(ref, false);
             } else {
-                _editor = createReferenceEditor(property, context);
+                editor = createReferenceEditor(property, context);
             }
         }
 
@@ -239,8 +246,8 @@ public abstract class AbstractRelationshipEditor
          * @param object the object. May  be <code>null</code>
          */
         public void setObject(IMObject object) {
-            if (_editor != null) {
-                _editor.setObject(object);
+            if (editor != null) {
+                editor.setObject(object);
             }
         }
 
@@ -250,8 +257,18 @@ public abstract class AbstractRelationshipEditor
          * @return the edit component
          */
         public Component getComponent() {
-            return (_editor != null) ? _editor.getComponent() :
-                    _viewer.getComponent();
+            return (editor != null) ? editor.getComponent() :
+                    viewer.getComponent();
+        }
+
+        /**
+         * Returns the focus group.
+         *
+         * @return the focus group, or <code>null</code> if the editor hasn't been
+         *         rendered
+         */
+        public FocusGroup getFocusGroup() {
+            return (editor != null) ? editor.getFocusGroup() : null;
         }
 
     }

@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadEvent;
@@ -41,6 +40,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.resource.util.Messages;
 
 import java.io.InputStream;
@@ -171,9 +171,10 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new IMObjectLayoutStrategy() {
-            public Component apply(IMObject object, PropertySet properties,
-                                   IMObject parent, LayoutContext context) {
-                return _selector.getComponent();
+            public ComponentState apply(IMObject object, PropertySet properties,
+                                        IMObject parent,
+                                        LayoutContext context) {
+                return new ComponentState(_selector.getComponent());
             }
         };
     }

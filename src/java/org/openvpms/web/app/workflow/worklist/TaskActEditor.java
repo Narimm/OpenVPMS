@@ -47,6 +47,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.util.DateTimeFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -349,16 +350,18 @@ public class TaskActEditor extends AbstractActEditor {
          * @return a component to display <code>property</code>
          */
         @Override
-        protected Component createComponent(Property property, IMObject parent,
-                                            LayoutContext context) {
-            Component component;
+        protected ComponentState createComponent(Property property,
+                                                 IMObject parent,
+                                                 LayoutContext context) {
+            ComponentState result;
             String name = property.getDescriptor().getName();
             if (name.equals("startTime") || name.equals("endTime")) {
-                component = DateTimeFieldFactory.create(property);
+                Component component = DateTimeFieldFactory.create(property);
+                result = new ComponentState(component, property);
             } else {
-                component = super.createComponent(property, parent, context);
+                result = super.createComponent(property, parent, context);
             }
-            return component;
+            return result;
         }
     }
 

@@ -342,8 +342,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                     LayoutContext context = new DefaultLayoutContext(true);
                     final IMObjectEditor editor = editors.createEditor(
                             object, context);
-                    final EditDialog dialog
-                            = new EditDialog(editor, false, context);
+                    final EditDialog dialog = new EditDialog(editor, false);
                     dialog.addWindowPaneListener(new WindowPaneListener() {
                         public void windowPaneClosing(WindowPaneEvent event) {
                             if (EditDialog.OK_ID.equals(dialog.getAction())) {

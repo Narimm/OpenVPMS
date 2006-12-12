@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.focus.FocusSet;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.util.CheckBoxFactory;
@@ -46,10 +46,11 @@ public class EntityRelationshipCollectionEditor
     /**
      * Determines if inactive relationships should be displayed.
      */
-    private CheckBox _hideInactive;
+    private CheckBox hideInactive;
+
 
     /**
-     * Construct a new <code>EntityRelationshipCollectionEditor</code>.
+     * Constructs a new <code>EntityRelationshipCollectionEditor</code>.
      *
      * @param property the collection property
      * @param object   the object being edited
@@ -82,19 +83,20 @@ public class EntityRelationshipCollectionEditor
      * @return the row of controls
      */
     @Override
-    protected Row createControls(FocusSet focus) {
+    protected Row createControls(FocusGroup focus) {
         Row row = super.createControls(focus);
         NodeDescriptor descriptor = getCollection().getDescriptor();
         String name = descriptor.getDisplayName();
         String label = Messages.get("relationship.hide.inactive", name);
-        _hideInactive = CheckBoxFactory.create(null, true);
-        _hideInactive.setText(label);
-        _hideInactive.addActionListener(new ActionListener() {
+        hideInactive = CheckBoxFactory.create(null, true);
+        hideInactive.setText(label);
+        hideInactive.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onHideInactiveChanged();
             }
         });
-        row.add(_hideInactive);
+        row.add(hideInactive);
+        focus.add(hideInactive);
         return row;
     }
 
@@ -105,7 +107,7 @@ public class EntityRelationshipCollectionEditor
         EntityRelationshipCollectionPropertyEditor editor
                 = (EntityRelationshipCollectionPropertyEditor)
                 getCollectionPropertyEditor();
-        editor.setExcludeInactive(_hideInactive.isSelected());
+        editor.setExcludeInactive(hideInactive.isSelected());
         populateTable();
     }
 

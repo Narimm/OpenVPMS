@@ -34,8 +34,7 @@ import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Validator;
-import org.openvpms.web.component.focus.FocusSet;
-import org.openvpms.web.component.focus.FocusTree;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -90,6 +89,11 @@ public abstract class IMObjectTableCollectionEditor
      * The edit group box.
      */
     private GroupBox editBox;
+
+    /**
+     * The focus group.
+     */
+    private FocusGroup focusGroup;
 
     /**
      * Listener for component change events.
@@ -171,6 +175,16 @@ public abstract class IMObjectTableCollectionEditor
     }
 
     /**
+     * Returns the focus group.
+     *
+     * @return the focus group, or <code>null</code> if the editor hasn't been
+     *         rendered
+     */
+    public FocusGroup getFocusGroup() {
+        return focusGroup;
+    }
+
+    /**
      * Lays out the component.
      *
      * @param context the layout context
@@ -178,9 +192,8 @@ public abstract class IMObjectTableCollectionEditor
      */
     protected Component doLayout(LayoutContext context) {
         container = ColumnFactory.create(COLUMN_STYLE);
-        FocusSet focus = new FocusSet("CollectionEditor");
-        context.getFocusTree().add(focus);
-        Row row = createControls(focus);
+        focusGroup = new FocusGroup("CollectionEditor");
+        Row row = createControls(focusGroup);
         container.add(row);
 
         table = new PagedIMObjectTable<IMObject>(createTableModel(context));
@@ -192,7 +205,7 @@ public abstract class IMObjectTableCollectionEditor
 
         populateTable();
 
-        focus.add(table);
+        focusGroup.add(table);
         container.add(table);
         return container;
     }
@@ -202,7 +215,7 @@ public abstract class IMObjectTableCollectionEditor
      *
      * @return the row of controls
      */
-    protected Row createControls(FocusSet focus) {
+    protected Row createControls(FocusGroup focus) {
         String[] range = getCollectionPropertyEditor().getArchetypeRange();
         range = DescriptorHelper.getShortNames(range,
                                                false); // expand any wildcards
@@ -352,18 +365,16 @@ public abstract class IMObjectTableCollectionEditor
     }
 
     /**
-     * Edit an object. This pops up a window containing the editor.
+     * Edit an object.
      *
      * @param object the object to edit
      */
     protected void edit(final IMObject object) {
-        LayoutContext context = getContext();
-        FocusTree focus = context.getFocusTree();
-        int focusIndex = focus.size();
+        int focusIndex = focusGroup.size();
         IMObjectEditor editor = getCurrentEditor();
         if (editor != null) {
-            focusIndex = focus.indexOf(editor.getFocusGroup());
-            focus.remove(editor.getFocusGroup());
+            focusIndex = focusGroup.indexOf(editor.getFocusGroup());
+            focusGroup.remove(editor.getFocusGroup());
 
             editor.removePropertyChangeListener(
                     IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
@@ -377,7 +388,7 @@ public abstract class IMObjectTableCollectionEditor
         editor = getEditor(object);
         editBox.add(editor.getComponent());
         editBox.setTitle(editor.getTitle());
-        focus.add(focusIndex, editor.getFocusGroup());
+        focusGroup.add(focusIndex, editor.getFocusGroup());
         editor.addPropertyChangeListener(
                 IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
                 componentListener);
@@ -415,9 +426,7 @@ public abstract class IMObjectTableCollectionEditor
      */
     private void removeEditor() {
         IMObjectEditor editor = getCurrentEditor();
-        LayoutContext context = getContext();
-        FocusTree focus = context.getFocusTree();
-        focus.remove(editor.getFocusGroup());
+        focusGroup.remove(editor.getFocusGroup());
         editBox.remove(editor.getComponent());
         container.remove(editBox);
         setCurrentEditor(null);

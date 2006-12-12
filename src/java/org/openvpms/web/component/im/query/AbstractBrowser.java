@@ -26,8 +26,6 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.focus.FocusSet;
-import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -82,15 +80,9 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
     private static final String CELLSPACING_STYLE = "CellSpacing";
 
     /**
-     * The focus tree.
+     * The focus group.
      */
-    private FocusTree focusTree = new FocusTree(getClass().getName());
-
-    /**
-     * The focus set.
-     */
-    private FocusSet focusSet = new FocusSet(getClass().getName() + "-"
-            + QUERY_ID);
+    private FocusGroup focusGroup = new FocusGroup(getClass().getName());
 
 
     /**
@@ -108,8 +100,7 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
                 onQuery();
             }
         });
-        focusTree.add(query.getFocusGroup());
-        focusTree.add(focusSet);
+        focusGroup.add(query.getFocusGroup());
     }
 
     /**
@@ -148,7 +139,7 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      * @return the focus group
      */
     public FocusGroup getFocusGroup() {
-        return focusTree;
+        return focusGroup;
     }
 
     /**
@@ -167,7 +158,7 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
 
         Row row = RowFactory.create(CELLSPACING_STYLE, component, query);
         this.component = ColumnFactory.create(STYLE, row);
-        focusSet.add(query);
+        focusGroup.add(query);
 
         if (this.query.isAuto()) {
             query();
@@ -201,15 +192,6 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
         for (QueryBrowserListener<T> listener : listeners) {
             listener.selected(selected);
         }
-    }
-
-    /**
-     * Returns the focus set.
-     *
-     * @return the focus set
-     */
-    protected FocusSet getFocusSet() {
-        return focusSet;
     }
 
     /**

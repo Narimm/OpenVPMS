@@ -34,8 +34,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.focus.FocusSet;
-import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -56,34 +55,36 @@ public class DocumentEditor extends AbstractPropertyEditor {
     /**
      * The document type label.
      */
-    private Label _docType;
+    private final Label docType;
 
     /**
      * The component.
      */
-    private Row _component;
+    private final Row component;
+
+    /**
+     * The focus group.
+     */
+    private final FocusGroup focusGroup;
 
 
     /**
      * Construct a new <code>DocumentEditor</code>.
      *
      * @param property the property being edited
-     * @param context  the layout context
      */
-    public DocumentEditor(Property property, LayoutContext context) {
+    public DocumentEditor(Property property) {
         super(property);
 
-        _docType = LabelFactory.create();
+        docType = LabelFactory.create();
         Button upload = ButtonFactory.create("upload", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onUpload();
             }
         });
-        FocusSet set = new FocusSet("DocumentEditor");
-        set.add(upload);
-        context.getFocusTree().add(set);
-
-        _component = RowFactory.create("CellSpacing", upload, _docType);
+        focusGroup = new FocusGroup("DocumentEditor");
+        focusGroup.add(upload);
+        component = RowFactory.create("CellSpacing", upload, docType);
     }
 
     /**
@@ -92,7 +93,17 @@ public class DocumentEditor extends AbstractPropertyEditor {
      * @return the edit component
      */
     public Component getComponent() {
-        return _component;
+        return component;
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group, or <code>null</code> if the editor hasn't been
+     *         rendered
+     */
+    public FocusGroup getFocusGroup() {
+        return focusGroup;
     }
 
     /**
@@ -124,16 +135,18 @@ public class DocumentEditor extends AbstractPropertyEditor {
      * @param fileName the filename
      * @param stream   the file stream
      */
-    private void upload(String fileName, InputStream stream, String contentType, Integer size) {
+    private void upload(String fileName, InputStream stream, String contentType,
+                        Integer size) {
         final IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         try {
-            Document doc = DocumentFactory.create(fileName, stream, contentType, size);
+            Document doc = DocumentFactory.create(fileName, stream, contentType,
+                                                  size);
             service.save(doc);
             IMObjectReference ref = doc.getObjectReference();
             getProperty().setValue(ref);
             String displayName = DescriptorHelper.getDisplayName(doc);
-            _docType.setText(displayName);
+            docType.setText(displayName);
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }

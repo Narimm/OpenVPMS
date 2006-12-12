@@ -110,7 +110,7 @@ public class TableBrowser<T> extends AbstractBrowser<T> {
                 }
             });
             component.add(table);
-            getFocusSet().add(table);
+            getFocusGroup().add(table);
         }
 
         if (set == null) {

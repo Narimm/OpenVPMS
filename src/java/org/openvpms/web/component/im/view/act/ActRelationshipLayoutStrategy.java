@@ -27,6 +27,7 @@ import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.LabelFactory;
 
@@ -52,19 +53,20 @@ public class ActRelationshipLayoutStrategy extends AbstractLayoutStrategy {
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
-    public Component apply(IMObject object, PropertySet properties,
-                           IMObject parent, LayoutContext context) {
+    public ComponentState apply(IMObject object, PropertySet properties,
+                                IMObject parent, LayoutContext context) {
         Property property = properties.get("target");
-        Component component;
+        ComponentState result;
         if (property != null) {
             IMObjectReference ref = (IMObjectReference) property.getValue();
             IMObject target = IMObjectHelper.getObject(ref);
             IMObjectComponentFactory factory = context.getComponentFactory();
-            component = factory.create(target, parent, null);
+            result = factory.create(target, parent, null);
         } else {
-            component = LabelFactory.create();
+            Component component = LabelFactory.create();
+            result = new ComponentState(component);
         }
-        return component;
+        return result;
     }
 
 }

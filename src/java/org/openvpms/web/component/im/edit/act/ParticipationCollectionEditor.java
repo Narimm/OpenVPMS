@@ -26,6 +26,7 @@ import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.Validator;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.DefaultIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
@@ -187,5 +188,15 @@ public class ParticipationCollectionEditor
      */
     public IMObjectEditor getCurrentEditor() {
         return editor.getCurrentEditor();
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group, or <code>null</code> if the editor hasn't been
+     *         rendered
+     */
+    public FocusGroup getFocusGroup() {
+        return editor.getFocusGroup();
     }
 }

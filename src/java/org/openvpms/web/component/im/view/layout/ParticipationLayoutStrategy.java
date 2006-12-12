@@ -18,12 +18,12 @@
 
 package org.openvpms.web.component.im.view.layout;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.LabelFactory;
 
@@ -48,15 +48,15 @@ public class ParticipationLayoutStrategy implements IMObjectLayoutStrategy {
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
-    public Component apply(IMObject object, PropertySet properties,
-                           IMObject parent, LayoutContext context) {
+    public ComponentState apply(IMObject object, PropertySet properties,
+                                IMObject parent, LayoutContext context) {
         Property property = properties.get("entity");
-        Component component;
+        ComponentState component;
         if (property != null) {
             IMObjectComponentFactory factory = context.getComponentFactory();
             component = factory.create(property, object);
         } else {
-            component = LabelFactory.create();
+            component = new ComponentState(LabelFactory.create());
         }
         return component;
     }

@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -43,6 +42,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
 import java.util.Calendar;
@@ -320,9 +320,10 @@ public class AppointmentActEditor extends AbstractActEditor {
          * @return a component to display <code>property</code>
          */
         @Override
-        protected Component createComponent(Property property, IMObject parent,
-                                            LayoutContext context) {
-            Component component;
+        protected ComponentState createComponent(Property property,
+                                                 IMObject parent,
+                                                 LayoutContext context) {
+            ComponentState result;
             String name = property.getDescriptor().getName();
             if (name.equals("startTime") || name.equals("endTime")) {
                 IMObjectProperty timeProperty = (IMObjectProperty) property;
@@ -331,11 +332,12 @@ public class AppointmentActEditor extends AbstractActEditor {
                                                       property.getDescriptor());
                 transformer.setDate(context.getContext().getScheduleDate());
                 timeProperty.setTransformer(transformer);
-                component = TimeFieldFactory.create(property);
+                result = new ComponentState(TimeFieldFactory.create(property),
+                                            property);
             } else {
-                component = super.createComponent(property, parent, context);
+                result = super.createComponent(property, parent, context);
             }
-            return component;
+            return result;
         }
     }
 }

@@ -28,6 +28,7 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 
 
 /**
@@ -97,15 +98,16 @@ public class LookupEditor extends AbstractIMObjectEditor {
         return new AbstractLayoutStrategy() {
 
             @Override
-            protected Component createComponent(Property property,
-                                                IMObject parent,
-                                                LayoutContext context) {
-                Component component = super.createComponent(property, parent,
-                                                            context);
+            protected ComponentState createComponent(Property property,
+                                                     IMObject parent,
+                                                     LayoutContext context) {
+                ComponentState state = super.createComponent(property,
+                                                             parent,
+                                                             context);
                 if ("code".equals(property.getDescriptor().getName())) {
-                    code = component;
+                    code = state.getComponent();
                 }
-                return component;
+                return state;
             }
         };
     }

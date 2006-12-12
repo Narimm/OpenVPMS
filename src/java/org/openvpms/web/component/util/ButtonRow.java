@@ -23,8 +23,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.EventListenerList;
-import org.openvpms.web.component.focus.FocusSet;
-import org.openvpms.web.component.focus.FocusTree;
+import org.openvpms.web.component.focus.FocusGroup;
 
 import java.util.EventListener;
 
@@ -40,12 +39,12 @@ public class ButtonRow extends Row {
     /**
      * The button event listener.
      */
-    private final ActionListener _listener;
+    private final ActionListener listener;
 
     /**
-     * The focus set. May be <code>null</code>
+     * The focus group. May be <code>null</code>
      */
-    private final FocusSet _focus;
+    private final FocusGroup focusGroup;
 
     /**
      * The row style.
@@ -68,19 +67,19 @@ public class ButtonRow extends Row {
     /**
      * Construct a new <code>ButtonRow</code>.
      *
-     * @param focus the focus tree. May be <code>null</code>
+     * @param focus the focus group. May be <code>null</code>
      */
-    public ButtonRow(FocusTree focus) {
+    public ButtonRow(FocusGroup focus) {
         setStyleName(STYLE);
 
         if (focus != null) {
-            _focus = new FocusSet("ButtonRow");
-            focus.add(_focus);
+            this.focusGroup = new FocusGroup("ButtonRow");
+            focus.add(this.focusGroup);
         } else {
-            _focus = null;
+            this.focusGroup = null;
         }
 
-        _listener = new ActionListener() {
+        listener = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 doAction(event);
             }
@@ -177,11 +176,11 @@ public class ButtonRow extends Row {
      * @return the button.
      */
     protected Button add(String id) {
-        Button button = ButtonFactory.create(id, BUTTON_STYLE, _listener);
+        Button button = ButtonFactory.create(id, BUTTON_STYLE, listener);
         button.setId(id);
         button.setActionCommand(id);
-        if (_focus != null) {
-            _focus.add(button);
+        if (focusGroup != null) {
+            focusGroup.add(button);
         }
         add(button);
         return button;

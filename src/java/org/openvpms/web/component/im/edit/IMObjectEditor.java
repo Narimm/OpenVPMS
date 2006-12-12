@@ -18,13 +18,12 @@
 
 package org.openvpms.web.component.im.edit;
 
-import java.beans.PropertyChangeListener;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.edit.Saveable;
+
+import java.beans.PropertyChangeListener;
 
 
 /**
@@ -94,13 +93,6 @@ public interface IMObjectEditor extends Editor, Saveable {
      * @return <code>true</code> if editing was cancelled
      */
     boolean isCancelled();
-
-    /**
-     * Returns the focus group.
-     *
-     * @return the focus group
-     */
-    FocusGroup getFocusGroup();
 
     /**
      * Add a property change listener.

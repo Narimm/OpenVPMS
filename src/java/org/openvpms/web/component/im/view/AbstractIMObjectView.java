@@ -39,32 +39,37 @@ public abstract class AbstractIMObjectView implements IMObjectView {
     /**
      * The object to display.
      */
-    private final IMObject _object;
+    private final IMObject object;
 
     /**
      * The parent object. May be <code>null</code>.
      */
-    private final IMObject _parent;
+    private final IMObject parent;
 
     /**
      * The object's properties.
      */
-    private PropertySet _properties;
+    private PropertySet properties;
 
     /**
      * The layout strafegy.
      */
-    private IMObjectLayoutStrategy _layout;
+    private IMObjectLayoutStrategy layout;
 
     /**
      * The component produced by the renderer.
      */
-    private Component _component;
+    private Component component;
+
+    /**
+     * The component focus group.
+     */
+    private FocusGroup focusGroup;
 
     /**
      * Invoked when the layout changes.
      */
-    private ActionListener _layoutListener;
+    private ActionListener layoutListener;
 
 
     /**
@@ -74,13 +79,13 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * @param parent the parent object. May be <code>null</code>
      * @param layout the layout strategy. May be <code>null</code>
      */
-    public AbstractIMObjectView(
-            IMObject object, PropertySet properties, IMObject parent,
-            IMObjectLayoutStrategy layout) {
-        _object = object;
-        _parent = parent;
-        _properties = properties;
-        _layout = layout;
+    public AbstractIMObjectView(IMObject object, PropertySet properties,
+                                IMObject parent,
+                                IMObjectLayoutStrategy layout) {
+        this.object = object;
+        this.parent = parent;
+        this.properties = properties;
+        this.layout = layout;
     }
 
     /**
@@ -89,7 +94,7 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * @return the object being viewed
      */
     public IMObject getObject() {
-        return _object;
+        return object;
     }
 
     /**
@@ -98,19 +103,20 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * @return the rendered object
      */
     public Component getComponent() {
-        if (_component == null) {
-            _component = createComponent();
+        if (component == null) {
+            component = createComponent();
         }
-        return _component;
+        return component;
     }
 
     /**
      * Returns the focus group.
      *
-     * @return the focus group
+     * @return the focus group, or <code>null</code> if the component hasn't
+     *         been rendered
      */
     public FocusGroup getFocusGroup() {
-        return getLayoutContext().getFocusTree();
+        return focusGroup;
     }
 
     /**
@@ -119,11 +125,11 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * @param layout the new layout strategy
      */
     public void setLayout(IMObjectLayoutStrategy layout) {
-        _component = null;
-        _layout = layout;
+        component = null;
+        this.layout = layout;
         getComponent();
-        if (_layoutListener != null) {
-            _layoutListener.actionPerformed(new ActionEvent(this, null));
+        if (layoutListener != null) {
+            layoutListener.actionPerformed(new ActionEvent(this, null));
         }
     }
 
@@ -133,7 +139,7 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * @return the layout. May be <code>null</code>
      */
     public IMObjectLayoutStrategy getLayout() {
-        return _layout;
+        return layout;
     }
 
     /**
@@ -142,7 +148,7 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * @param listener the listener
      */
     public void setLayoutListener(ActionListener listener) {
-        _layoutListener = listener;
+        layoutListener = listener;
     }
 
     /**
@@ -151,7 +157,14 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * @return a new component
      */
     protected Component createComponent() {
-        return _layout.apply(_object, _properties, _parent, getLayoutContext());
+        LayoutContext context = getLayoutContext();
+        ComponentState component = layout.apply(object, properties, parent,
+                                                context);
+        focusGroup = component.getFocusGroup();
+        if (focusGroup != null) {
+            focusGroup.print(System.out);
+        }
+        return component.getComponent();
     }
 
     /**

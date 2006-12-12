@@ -24,7 +24,6 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
@@ -102,7 +101,7 @@ public class RecordBrowser implements Browser<Act> {
     /**
      * The focus group.
      */
-    private FocusSet focusSet = new FocusSet(getClass().getName());
+    private FocusGroup focusGroup = new FocusGroup(getClass().getName());
 
 
     /**
@@ -176,7 +175,7 @@ public class RecordBrowser implements Browser<Act> {
                     }
                 }
             });
-            focusSet.add(tab);
+            focusGroup.add(tab);
         }
         return tab;
     }
@@ -317,7 +316,7 @@ public class RecordBrowser implements Browser<Act> {
      * @return the focus group
      */
     public FocusGroup getFocusGroup() {
-        return focusSet;
+        return focusGroup;
     }
 
     /**

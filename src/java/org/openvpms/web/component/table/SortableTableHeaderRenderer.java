@@ -27,7 +27,6 @@ import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.table.TableCellRenderer;
-
 import org.openvpms.web.component.util.LabelFactory;
 
 
@@ -42,7 +41,7 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
     /**
      * The button style.
      */
-    private final String _style;
+    private final String style;
 
     /**
      * Up arrow resource path.
@@ -87,7 +86,7 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
      * @param style the style name.
      */
     public SortableTableHeaderRenderer(String style) {
-        _style = style;
+        this.style = style;
     }
 
     /**
@@ -106,11 +105,11 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
                                                    int column, int row) {
         SortableTableModel model = (SortableTableModel) table.getModel();
         String text = (String) value;
-        Component result = null;
+        Component result;
         if (model.isSortable(column)) {
             result = getSortButton(text, column, model);
         } else {
-            Label label = LabelFactory.create(null, _style);
+            Label label = LabelFactory.create(null, style);
             label.setText(text);
             result = label;
         }
@@ -128,7 +127,8 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
     protected Button getSortButton(String label, final int column,
                                    final SortableTableModel model) {
         Button button = new Button(label);
-        button.setStyleName(_style);
+        button.setStyleName(style);
+        button.setFocusTraversalParticipant(false);
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 boolean ascending = false;
@@ -139,7 +139,7 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
             }
         });
 
-        ImageReference icon = null;
+        ImageReference icon;
         if (model.getSortColumn() == column) {
             icon = (model.isSortedAscending()) ? DOWN_ARROW : UP_ARROW;
             button.setIcon(icon);
