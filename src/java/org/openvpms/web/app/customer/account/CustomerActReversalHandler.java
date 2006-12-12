@@ -61,13 +61,13 @@ class CustomerActReversalHandler extends AbstractActReversalHandler {
      * Counter act item short name.
      */
     private static final String COUNTER_ITEM_TYPE
-            = "act.customerAccountChargesCounterItem";
+            = "act.customerAccountCounterItem";
 
     /**
      * Counter act item relationship type.
      */
     private static final String COUNTER_ITEM_RELATIONSHIP_TYPE
-            = "actRelationship.customerAccountChargesCounterItem";
+            = "actRelationship.customerAccountCounterItem";
 
     /**
      * Credit act type.
