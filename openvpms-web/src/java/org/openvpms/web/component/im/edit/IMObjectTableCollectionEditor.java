@@ -28,6 +28,8 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.button.ShortcutHelper;
@@ -97,9 +99,19 @@ public abstract class IMObjectTableCollectionEditor
     private FocusGroup focusGroup;
 
     /**
+     * The current editor's focus group.
+     */
+    private FocusGroup editorFocusGroup;
+
+    /**
      * Listener for component change events.
      */
     private final PropertyChangeListener componentListener;
+
+    /**
+     * The listener for editor events.
+     */
+    private final ModifiableListener editorListener;
 
     /**
      * The button row style.
@@ -115,6 +127,12 @@ public abstract class IMObjectTableCollectionEditor
      * The no. of rows to display.
      */
     private static final int ROWS = 15;
+
+    /**
+     * The logger.
+     */
+    private static final Log log
+            = LogFactory.getLog(IMObjectTableCollectionEditor.class);
 
 
     /**
@@ -139,6 +157,13 @@ public abstract class IMObjectTableCollectionEditor
         componentListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 onComponentChange(event);
+            }
+        };
+
+        editorListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                getListeners().notifyListeners(
+                        IMObjectTableCollectionEditor.this);
             }
         };
     }
@@ -371,12 +396,8 @@ public abstract class IMObjectTableCollectionEditor
      * @param object the object to edit
      */
     protected void edit(final IMObject object) {
-        int focusIndex = focusGroup.size();
         IMObjectEditor editor = getCurrentEditor();
         if (editor != null) {
-            focusIndex = focusGroup.indexOf(editor.getFocusGroup());
-            focusGroup.remove(editor.getFocusGroup());
-
             editor.removePropertyChangeListener(
                     IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
                     componentListener);
@@ -389,16 +410,11 @@ public abstract class IMObjectTableCollectionEditor
         editor = getEditor(object);
         editBox.add(editor.getComponent());
         editBox.setTitle(editor.getTitle());
-        focusGroup.add(focusIndex, editor.getFocusGroup());
         editor.addPropertyChangeListener(
                 IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
                 componentListener);
-        editor.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                getListeners().notifyListeners(
-                        IMObjectTableCollectionEditor.this);
-            }
-        });
+        editor.addModifiableListener(editorListener);
+        changeFocusGroup(editor);
         setCurrentEditor(editor);
     }
 
@@ -427,9 +443,13 @@ public abstract class IMObjectTableCollectionEditor
      */
     private void removeEditor() {
         IMObjectEditor editor = getCurrentEditor();
-        focusGroup.remove(editor.getFocusGroup());
+        focusGroup.remove(editorFocusGroup);
+        editorFocusGroup = null;
         editBox.remove(editor.getComponent());
         container.remove(editBox);
+        editor.removePropertyChangeListener(
+                IMObjectEditor.COMPONENT_CHANGED_PROPERTY, componentListener);
+        editor.removeModifiableListener(editorListener);
         setCurrentEditor(null);
         editBox = null;
     }
@@ -444,6 +464,26 @@ public abstract class IMObjectTableCollectionEditor
         Component newValue = (Component) event.getNewValue();
         editBox.remove(oldValue);
         editBox.add(newValue);
+        changeFocusGroup(getCurrentEditor());
+    }
+
+    /**
+     * Changes the focus group to that belonging to the specified editor.
+     *
+     * @param editor the editor
+     */
+    private void changeFocusGroup(IMObjectEditor editor) {
+        int index;
+        if (editorFocusGroup == null) {
+            index = focusGroup.size();
+        } else {
+            index = focusGroup.indexOf(editorFocusGroup);
+            if (index == -1) {
+                log.error("Missing focus group for existing editor");
+                index = focusGroup.size();
+            }
+        }
+        focusGroup.add(index, editor.getFocusGroup());
     }
 
 }
