@@ -161,9 +161,6 @@ public abstract class AbstractIMObjectView implements IMObjectView {
         ComponentState component = layout.apply(object, properties, parent,
                                                 context);
         focusGroup = component.getFocusGroup();
-        if (focusGroup != null) {
-            focusGroup.print(System.out);
-        }
         return component.getComponent();
     }
 
