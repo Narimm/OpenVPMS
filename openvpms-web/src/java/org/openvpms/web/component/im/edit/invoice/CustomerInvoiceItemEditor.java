@@ -187,13 +187,15 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
     protected void onLayoutCompleted() {
         super.onLayoutCompleted();
         // add a listener to update the dispensing acts when the patient
-        // changes
+        // changes if there is a patient participation.
         PatientParticipationEditor patient = getPatientEditor();
-        patient.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                updateMedicationPatient();
-            }
-        });
+        if (patient != null) {
+	        patient.addModifiableListener(new ModifiableListener() {
+	            public void modified(Modifiable modifiable) {
+	                updateMedicationPatient();
+	            }
+	        });
+        }
     }
 
     /**
@@ -285,7 +287,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                     getProduct());
 
             // calculate the discount
-            if (customer != null && patient != null && product != null) {
+            if (customer != null && product != null) {
                 FinancialAct act = (FinancialAct) getObject();
                 BigDecimal fixedPrice = act.getFixedAmount();
                 BigDecimal unitPrice = act.getUnitAmount();
