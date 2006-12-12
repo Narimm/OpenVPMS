@@ -59,38 +59,38 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
     /**
      * Determines if acts should be filtered on type.
      */
-    private final boolean _selectType;
+    private final boolean selectType;
 
     /**
      * The status dropdown.
      */
-    private SelectField _statusSelector;
+    private SelectField statusSelector;
 
     /**
      * Indicates if all start dates should be queried. If so, the startFrom and
      * startTo dates are ignored.
      */
-    private CheckBox _startAll;
+    private CheckBox startAll;
 
     /**
      * The start-from label.
      */
-    private Label _startFromLabel;
+    private Label startFromLabel;
 
     /**
      * The start-from date.
      */
-    private DateField _startFrom;
+    private DateField startFrom;
 
     /**
      * The start-to label.
      */
-    private Label _startToLabel;
+    private Label startToLabel;
 
     /**
      * The start-to date.
      */
-    private DateField _startTo;
+    private DateField startTo;
 
     /**
      * Cell spacing row style.
@@ -138,7 +138,7 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
                            String excludeStatus) {
         super(entity, participant, participation, entityName, conceptName,
               statusLookups, excludeStatus);
-        _selectType = false;
+        selectType = false;
         QueryFactory.initialise(this);
     }
 
@@ -159,7 +159,7 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
                            List<Lookup> statusLookups, String excludeStatus) {
         super(entity, participant, participation, shortNames, statusLookups,
               excludeStatus);
-        _selectType = true;
+        selectType = true;
         QueryFactory.initialise(this);
     }
 
@@ -179,7 +179,7 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
                            String conceptName, String status) {
         super(entity, participant, participation, entityName, conceptName,
               status);
-        _selectType = true;
+        selectType = true;
         QueryFactory.initialise(this);
     }
 
@@ -197,7 +197,7 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
                            String participation, String[] shortNames,
                            String[] statuses) {
         super(entity, participant, participation, shortNames, statuses);
-        _selectType = true;
+        selectType = true;
         QueryFactory.initialise(this);
     }
 
@@ -220,16 +220,16 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
      */
     @Override
     protected void doLayout(Component container) {
-        if (_selectType) {
+        if (selectType) {
             addShortNameSelector(container);
         }
 
         List<Lookup> lookups = getStatusLookups();
         if (lookups != null) {
             LookupListModel model = new LookupListModel(lookups, true);
-            _statusSelector = SelectFieldFactory.create(model);
-            _statusSelector.setCellRenderer(new LookupListCellRenderer());
-            _statusSelector.addActionListener(new ActionListener() {
+            statusSelector = SelectFieldFactory.create(model);
+            statusSelector.setCellRenderer(new LookupListCellRenderer());
+            statusSelector.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     onStatusChanged();
                 }
@@ -252,25 +252,25 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
             }
         }
 
-        _startAll = CheckBoxFactory.create("actquery.all", true);
-        _startAll.addActionListener(new ActionListener() {
+        startAll = CheckBoxFactory.create("actquery.all", true);
+        startAll.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onStartAllChanged();
             }
         });
 
-        _startFromLabel = LabelFactory.create("actquery.from");
-        _startFrom = DateFieldFactory.create();
-        _startFrom.getDateChooser().addPropertyChangeListener(
+        startFromLabel = LabelFactory.create("actquery.from");
+        startFrom = DateFieldFactory.create();
+        startFrom.getDateChooser().addPropertyChangeListener(
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent event) {
                         onStartFromChanged();
                     }
                 });
 
-        _startToLabel = LabelFactory.create("actquery.to");
-        _startTo = DateFieldFactory.create();
-        _startTo.getDateChooser().addPropertyChangeListener(
+        startToLabel = LabelFactory.create("actquery.to");
+        startTo = DateFieldFactory.create();
+        startTo.getDateChooser().addPropertyChangeListener(
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent event) {
                         onStartToChanged();
@@ -278,30 +278,30 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
                 });
         Row startRange = RowFactory.create(
                 CELLSPACING_STYLE,
-                _startFromLabel, _startFrom,
-                _startToLabel, _startTo);
-        Row startRow = RowFactory.create(ROW_STYLE, _startAll, startRange);
+                startFromLabel, startFrom,
+                startToLabel, startTo);
+        Row startRow = RowFactory.create(ROW_STYLE, startAll, startRange);
 
         onStartAllChanged();
 
         FocusGroup focus = getFocusGroup();
-        if (_statusSelector != null) {
+        if (statusSelector != null) {
             container.add(LabelFactory.create("actquery.status"));
-            container.add(_statusSelector);
-            focus.add(_statusSelector);
+            container.add(statusSelector);
+            focus.add(statusSelector);
         }
         container.add(startRow);
 
-        focus.add(_startAll);
-        focus.add(_startFrom);
-        focus.add(_startTo);
+        focus.add(startAll);
+        focus.add(startFrom);
+        focus.add(startTo);
     }
 
     /**
      * Invoked when a status is selected.
      */
     private void onStatusChanged() {
-        String value = (String) _statusSelector.getSelectedItem();
+        String value = (String) statusSelector.getSelectedItem();
         super.setStatus(value);
     }
 
@@ -309,11 +309,11 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
      * Invoked when the start-all check box changes.
      */
     private void onStartAllChanged() {
-        boolean enabled = !_startAll.isSelected();
-        enable(_startFromLabel, enabled);
-        enable(_startFrom, enabled);
-        enable(_startToLabel, enabled);
-        enable(_startTo, enabled);
+        boolean enabled = !startAll.isSelected();
+        enable(startFromLabel, enabled);
+        enable(startFrom, enabled);
+        enable(startToLabel, enabled);
+        enable(startTo, enabled);
     }
 
     /**
@@ -322,7 +322,7 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
      * @return the start-from date
      */
     protected Date getStartFrom() {
-        return _startAll.isSelected() ? null : getDate(_startFrom);
+        return startAll.isSelected() ? null : getDate(startFrom);
     }
 
     /**
@@ -331,7 +331,7 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
      * @return the start-to date
      */
     protected Date getStartTo() {
-        return _startAll.isSelected() ? null : getDate(_startTo);
+        return startAll.isSelected() ? null : getDate(startTo);
     }
 
     /**
@@ -374,6 +374,7 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
      */
     private void enable(DateField field, boolean enabled) {
         enable(field.getTextField(), enabled);
+        field.getTextField().setFocusTraversalParticipant(enabled);
         field.getDateChooser().setEnabled(enabled);
         field.setEnabled(enabled);
         if (!enabled) {
@@ -387,7 +388,7 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
      * @param date the start-from date
      */
     private void setStartFrom(Date date) {
-        setDate(_startFrom, date);
+        setDate(startFrom, date);
     }
 
     /**
@@ -396,7 +397,7 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
      * @param date the start-to date
      */
     private void setStartTo(Date date) {
-        setDate(_startTo, date);
+        setDate(startTo, date);
     }
 
     /**
@@ -451,12 +452,12 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
      * @param status the status to selecte
      */
     private void updateStatusSelector(String status) {
-        if (_statusSelector != null) {
+        if (statusSelector != null) {
             LookupListModel model
-                    = (LookupListModel) _statusSelector.getModel();
+                    = (LookupListModel) statusSelector.getModel();
             int index = model.indexOf(status);
             if (index != -1) {
-                _statusSelector.setSelectedIndex(index);
+                statusSelector.setSelectedIndex(index);
             }
         }
     }

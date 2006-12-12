@@ -27,6 +27,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.apache.commons.lang.ClassUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.button.ShortcutHelper;
@@ -192,7 +193,7 @@ public abstract class IMObjectTableCollectionEditor
      */
     protected Component doLayout(LayoutContext context) {
         container = ColumnFactory.create(COLUMN_STYLE);
-        focusGroup = new FocusGroup("CollectionEditor");
+        focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
         Row row = createControls(focusGroup);
         container.add(row);
 

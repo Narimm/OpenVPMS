@@ -72,7 +72,18 @@ public class FocusGroup {
      * @param name a symbolic name for the group
      */
     public FocusGroup(String name) {
+        this(name, -1);
+    }
+
+    /**
+     * Construct a new <code>FocusGroup</code>.
+     *
+     * @param name  a symbolic name for the group
+     * @param first the first focus traversal index
+     */
+    public FocusGroup(String name, int first) {
         this.name = name;
+        this.first = first;
     }
 
     /**
@@ -270,6 +281,7 @@ public class FocusGroup {
                     setIndex(component, ++next);
                 }
             }
+            index = next;
             setDirty(false);
         } else {
             index = getLast();
