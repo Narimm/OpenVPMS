@@ -182,9 +182,15 @@ public class DiscountRules {
      */
     private static Set<IMObject> getPartyDiscounts(Party party,
                                                    IArchetypeService service) {
-        IMObjectBean bean = new IMObjectBean(party, service);
-        List<IMObject> discounts = bean.getValues("discounts");
-        return new HashSet<IMObject>(discounts);
+    	if (party != null) {
+	        IMObjectBean bean = new IMObjectBean(party, service);
+	        List<IMObject> discounts = bean.getValues("discounts");
+	        return new HashSet<IMObject>(discounts);
+    	}
+    	else {
+    		return new HashSet<IMObject>();
+    	}
+    		
     }
 
     /**
