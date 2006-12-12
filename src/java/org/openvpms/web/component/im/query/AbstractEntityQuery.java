@@ -43,8 +43,8 @@ public abstract class AbstractEntityQuery<T extends Entity>
         extends AbstractIMObjectQuery<T> {
 
     /**
-     * The identity search check box. If selected, name searches will be performed
-     * against the entities {@link EntityIdentity} instances.
+     * The identity search check box. If selected, name searches will be
+     * performed against the entities {@link EntityIdentity} instances.
      */
     private CheckBox identity;
 
@@ -64,6 +64,7 @@ public abstract class AbstractEntityQuery<T extends Entity>
      */
     public AbstractEntityQuery(String[] shortNames) {
         super(shortNames);
+        QueryFactory.initialise(this);
     }
 
     /**
@@ -77,6 +78,7 @@ public abstract class AbstractEntityQuery<T extends Entity>
     public AbstractEntityQuery(String refModelName, String entityName,
                                String conceptName) {
         super(refModelName, entityName, conceptName);
+        QueryFactory.initialise(this);
     }
 
     /**

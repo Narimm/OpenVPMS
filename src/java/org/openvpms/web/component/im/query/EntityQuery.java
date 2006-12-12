@@ -29,7 +29,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-08-17 06:51:11Z $
  */
-public class EntityQuery extends AbstractEntityQuery {
+public class EntityQuery extends AbstractEntityQuery<Entity> {
 
     /**
      * Construct a new <code>EntityQuery</code> that queries entities
