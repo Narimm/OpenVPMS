@@ -94,8 +94,20 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         Column column = ColumnFactory.create("CellSpacing");
         doLayout(object, properties, column, context);
         setFocus();
+        ComponentState state = new ComponentState(column, focusGroup);
         components.clear();
-        return new ComponentState(column, focusGroup);
+        focusGroup = null;
+        return state;
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group, or <code>null</code> if it hasn't been
+     *         initialised
+     */
+    protected FocusGroup getFocusGroup() {
+        return focusGroup;
     }
 
     /**

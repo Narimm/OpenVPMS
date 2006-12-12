@@ -52,7 +52,7 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
      * Determines if the product node should be displayed. False if
      * the parent act has a product.
      */
-    private boolean _showProduct;
+    private boolean showProduct;
 
     /**
      * Apply the layout strategy.
@@ -72,9 +72,9 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
 
         if (parent instanceof Act) {
             ActBean bean = new ActBean((Act) parent);
-            _showProduct = !bean.hasNode("product");
+            showProduct = !bean.hasNode("product");
         } else {
-            _showProduct = true;
+            showProduct = true;
         }
         return super.apply(object, properties, parent, context);
     }
@@ -108,6 +108,7 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
         row.setLayoutData(columnLayout);
         container.add(row);
         super.doLayout(object, properties, container, context);
+        getFocusGroup().add(button);
     }
 
     /**
@@ -121,7 +122,7 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     protected NodeFilter getNodeFilter(LayoutContext context) {
         NodeFilter filter;
-        if (!_showProduct) {
+        if (!showProduct) {
             filter = super.getNodeFilter(context,
                                          new NamedNodeFilter("product"));
         } else {

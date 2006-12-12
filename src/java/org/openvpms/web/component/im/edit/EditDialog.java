@@ -82,6 +82,8 @@ public class EditDialog extends PopupDialog {
                     }
                 });
         getFocusGroup().add(0, editor.getFocusGroup());
+        System.out.println("EditDialog");
+        getFocusGroup().print(System.out);
     }
 
     /**

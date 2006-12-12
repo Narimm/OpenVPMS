@@ -25,6 +25,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.layout.RowLayoutData;
+import org.apache.commons.lang.ClassUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -112,7 +113,7 @@ public class Selector {
         buttonStyle = style;
         this.editable = editable;
         component = RowFactory.create();
-        focusGroup = new FocusGroup(getClass().getName());
+        focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
     }
 
     /**
