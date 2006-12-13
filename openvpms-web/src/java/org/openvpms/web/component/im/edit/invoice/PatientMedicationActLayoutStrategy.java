@@ -29,7 +29,9 @@ import nextapp.echo2.app.layout.ColumnLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -38,21 +40,37 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
 
 
 /**
- * Layout strategy that includes a 'Print Label' button to print
- * the act.
+ * Layout strategy that includes a 'Print Label' button to print the act.
  */
 public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
      * Determines if the product node should be displayed. False if
-     * the parent act has a product.
+     * the parent act has a product. Ignored if <code>alwaysShowProduct</code>
+     * is <code>true</code>
      */
     private boolean showProduct;
+
+    /**
+     * Determines if the product node should be displayed read-only.
+     */
+    private boolean showReadOnlyProduct;
+
+
+    /**
+     * Determines if the product should be displayed read-only.
+     *
+     * @param readOnly if <code>true</code> display the product read-only.
+     */
+    public void setShowReadOnlyProduct(boolean readOnly) {
+        showReadOnlyProduct = readOnly;
+    }
 
     /**
      * Apply the layout strategy.
@@ -69,12 +87,15 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     public ComponentState apply(IMObject object, PropertySet properties,
                                 IMObject parent, LayoutContext context) {
-
-        if (parent instanceof Act) {
-            ActBean bean = new ActBean((Act) parent);
-            showProduct = !bean.hasNode("product");
-        } else {
+        if (showReadOnlyProduct) {
             showProduct = true;
+        } else {
+            if (parent instanceof Act) {
+                ActBean bean = new ActBean((Act) parent);
+                showProduct = !bean.hasNode("product");
+            } else {
+                showProduct = true;
+            }
         }
         return super.apply(object, properties, parent, context);
     }
@@ -129,6 +150,29 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
             filter = super.getNodeFilter(context);
         }
         return filter;
+    }
+
+    /**
+     * Creates a component for a property.
+     *
+     * @param property the property
+     * @param parent   the parent object
+     * @param context  the layout context
+     * @return a component to display <code>property</code>
+     */
+    @Override
+    protected ComponentState createComponent(Property property, IMObject parent,
+                                             LayoutContext context) {
+        if (showReadOnlyProduct
+                && property.getDescriptor().getName().equals("product")) {
+            ActBean bean = new ActBean((Act) parent);
+            IMObjectReference ref
+                    = bean.getParticipantRef("participation.product");
+            IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref,
+                                                                         false);
+            return new ComponentState(viewer.getComponent(), property);
+        }
+        return super.createComponent(property, parent, context);
     }
 
     /**

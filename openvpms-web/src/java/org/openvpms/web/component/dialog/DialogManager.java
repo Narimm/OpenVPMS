@@ -22,6 +22,7 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.app.WindowPane;
+import org.openvpms.web.component.focus.FocusGroup;
 
 
 /**
@@ -34,10 +35,13 @@ public class DialogManager {
 
     /**
      * Shows a dialog.
+     * The dialog's focus group will be reindexed if it overlaps existing
+     * dialogs.
      *
      * @param dialog the dialog to show
      */
-    public static void show(WindowPane dialog) {
+    public static void show(PopupWindow dialog) {
+        int lastIndex = -1;
         Window root = ApplicationInstance.getActive().getDefaultWindow();
         int zIndex = 0;
         for (Component component : root.getContent().getComponents()) {
@@ -46,9 +50,23 @@ public class DialogManager {
                 if (pane.getZIndex() > zIndex) {
                     zIndex = pane.getZIndex();
                 }
+                if (component instanceof PopupWindow) {
+                    FocusGroup group
+                            = ((PopupWindow) component).getFocusGroup();
+                    if (group.getLast() > lastIndex) {
+                        lastIndex = group.getLast();
+                    }
+                }
             }
         }
         dialog.setZIndex(zIndex + 1);
+        FocusGroup group = dialog.getFocusGroup();
+        if (group.getFirst() <= lastIndex) {
+            group.reindex(lastIndex + 1000);
+            // give the parent dialog room to grow.
+        }
+        System.out.println(dialog.getTitle());
+        group.print(System.out);
         root.getContent().add(dialog);
     }
 

@@ -74,7 +74,7 @@ public abstract class PopupWindow extends WindowPane {
         }
         style = Styles.getStyle(WindowPane.class, style);
         setStyleName(style);
-        focusGroup = new FocusGroup(getClass().getName(), 1000);
+        focusGroup = new FocusGroup(getClass().getName());
         if (focus != null) {
             focusGroup.add(focus);
         }
