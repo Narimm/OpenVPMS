@@ -18,6 +18,11 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -26,14 +31,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -209,7 +209,7 @@ public final class DescriptorHelper {
                                          boolean primaryOnly) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new LinkedHashSet<String>();
         for (String shortName : shortNames) {
             List<String> matches = service.getArchetypeShortNames(
                     shortName, primaryOnly);
