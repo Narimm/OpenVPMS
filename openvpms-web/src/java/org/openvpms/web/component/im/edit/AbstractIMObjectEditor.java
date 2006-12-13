@@ -570,14 +570,24 @@ public abstract class AbstractIMObjectEditor
      */
     protected void onLayout() {
         Component oldValue = getComponent();
-        IMObjectLayoutStrategy layout = createLayoutStrategy();
-        getView().setLayout(layout);
-        if (layout instanceof ExpandableLayoutStrategy) {
-            ExpandableLayoutStrategy exp = (ExpandableLayoutStrategy) layout;
-            Button button = exp.getButton();
-            if (button != null) {
-                button.addActionListener(getLayoutChangeListener());
-            }
+        if (getView().getLayout() instanceof ExpandableLayoutStrategy) {
+    	   ExpandableLayoutStrategy expandable =  (ExpandableLayoutStrategy) getView().getLayout();
+    	   expandable.setShowOptional(!expandable.isShowOptional());
+    	   getView().setLayout(expandable);
+           Button button = expandable.getButton();
+           if (button != null) {
+               button.addActionListener(getLayoutChangeListener());
+           }
+        } else {
+	       IMObjectLayoutStrategy layout = createLayoutStrategy();
+	        getView().setLayout(layout);
+	        if (layout instanceof ExpandableLayoutStrategy) {
+	            ExpandableLayoutStrategy exp = (ExpandableLayoutStrategy) layout;
+	            Button button = exp.getButton();
+	            if (button != null) {
+	                button.addActionListener(getLayoutChangeListener());
+	            }
+	        }
         }
         Component newValue = getComponent();
         firePropertyChange(COMPONENT_CHANGED_PROPERTY, oldValue, newValue);

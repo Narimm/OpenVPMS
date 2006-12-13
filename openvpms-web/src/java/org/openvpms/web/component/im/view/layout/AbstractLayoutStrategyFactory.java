@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.DefaultLayoutStrategy;
+import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
@@ -87,6 +88,10 @@ public abstract class AbstractLayoutStrategyFactory
         if (result == null) {
             result = new DefaultLayoutStrategy();
         }
+        else if (result instanceof ExpandableLayoutStrategy) {
+        	((ExpandableLayoutStrategy)result).setShowOptional(!object.isNew());        		
+        }
+
         return result;
     }
 
