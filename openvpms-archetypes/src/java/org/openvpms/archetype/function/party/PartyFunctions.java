@@ -18,7 +18,9 @@
 
 package org.openvpms.archetype.function.party;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
@@ -28,6 +30,8 @@ import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 
@@ -39,6 +43,39 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
  */
 public class PartyFunctions {
 
+    /**
+     * Returns a set of default Contacts for a party.
+     *
+     * @param context the expression context. Expected to reference a party.
+     * @return a set of contacts. May be <code>null</code>
+     */
+    public static Set<Contact> getDefaultContacts(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        if (pointer == null || !(pointer.getValue() instanceof Party)) {
+            return null;
+        }
+
+        return getDefaultContacts((Party) pointer.getValue());
+    }
+
+    /**
+     * Returns a list of default contacts.
+     *
+     * @param party the party
+     * @return a list of default contacts
+     */
+    public static Set<Contact> getDefaultContacts(Party party) {
+    	Set<Contact> contacts = new HashSet<Contact>();
+    	IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+    	Contact phone = (Contact)service.create("contact.phoneNumber");
+    	Contact location = (Contact)service.create("contact.location");
+    	service.deriveValues(phone);
+    	service.deriveValues(location);
+    	contacts.add(phone);
+    	contacts.add(location);
+    	return contacts;
+    }
+    
     /**
      * Returns the current owner party for the passed party.
      *

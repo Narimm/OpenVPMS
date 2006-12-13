@@ -36,7 +36,7 @@
 				type="java.lang.String" minCardinality="0" maxLength="15" >
 			</node>
 			<node name="preferred" path="/details/attributes/preferred"
-				type="java.lang.Boolean" defaultValue="false()" />
+				type="java.lang.Boolean" defaultValue="true()" />
 		</node>
 		<node name="startDate" path="/activeStartTime"
 			type="java.util.Date" minCardinality="1" hidden="true" defaultValue="java.util.Date.new()"/>
