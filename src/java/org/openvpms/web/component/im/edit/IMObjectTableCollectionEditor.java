@@ -18,7 +18,10 @@
 
 package org.openvpms.web.component.im.edit;
 
-import echopointng.GroupBox;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
@@ -27,6 +30,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,9 +61,7 @@ import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
+import echopointng.GroupBox;
 
 
 /**
@@ -271,7 +273,7 @@ public abstract class IMObjectTableCollectionEditor
             shortName = range[0];
         } else if (range.length > 1) {
             final ArchetypeShortNameListModel model
-                    = new ArchetypeShortNameListModel(range);
+                    = new ArchetypeShortNameListModel(range, false, false);
             final SelectField archetypeNames = SelectFieldFactory.create(model);
             int index = archetypeNames.getSelectedIndex();
             shortName = model.getShortName(index);
