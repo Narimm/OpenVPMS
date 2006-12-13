@@ -31,8 +31,9 @@ import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.im.filter.BasicNodeFilter;
+import org.openvpms.web.component.im.filter.ComplexNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
 
@@ -45,10 +46,10 @@ import org.openvpms.web.component.util.RowFactory;
  */
 public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
 
-    /**
+	/**
      * Determines if only required nodes should be shown.
      */
-    private final boolean _showRequiredOnly;
+    private boolean _showOptional;
 
     /**
      * Determines if the button should be included.
@@ -60,6 +61,14 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      */
     private Button _button;
 
+
+    /**
+     * Construct a new <code>ExpandableLayoutStrategy</code>.
+     *
+     */
+    public ExpandableLayoutStrategy() {
+        this(false, true);
+    }
 
     /**
      * Construct a new <code>ExpandableLayoutStrategy</code>.
@@ -78,9 +87,27 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      *                     mandatory ones.
      */
     public ExpandableLayoutStrategy(boolean showOptional, boolean showButton) {
-        _showRequiredOnly = !showOptional;
+        _showOptional = showOptional;
         _showButton = showButton;
     }
+
+    /**
+     * Apply the layout strategy.
+     * <p/>
+     * This renders an object in a <code>Component</code>, using a factory to
+     * create the child components.
+     *
+     * @param object     the object to apply
+     * @param properties the object's properties
+     * @param parent     the parent object. May be <code>null</code>
+     * @param context    the layout context
+     * @return the component containing the rendered <code>object</code>
+     */
+    @Override
+	public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+    	_button = null;
+		return super.apply(object, properties, parent, context);
+	}
 
     /**
      * Returns the button to expand/collapse the layout.
@@ -169,7 +196,7 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      * @return a node filter to filter nodes
      */
     protected NodeFilter getNodeFilter(LayoutContext context) {
-        return new BasicNodeFilter(!_showRequiredOnly, false);
+        return new ComplexNodeFilter(_showOptional, false);
     }
 
     /**
@@ -188,7 +215,7 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      * @return a new row
      */
     protected Row getButtonRow() {
-        String key = (_showRequiredOnly) ? "plus" : "minus";
+        String key = (_showOptional) ? "minus" : "plus";
         _button = ButtonFactory.create(key);
         RowLayoutData right = new RowLayoutData();
         right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.TOP));
@@ -199,5 +226,13 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
         wrapper.setLayoutData(right);
         return wrapper;
     }
+
+	public boolean isShowOptional() {
+		return _showOptional;
+	}
+
+	public void setShowOptional(boolean showOptional) {
+		_showOptional = showOptional;
+	}
 
 }

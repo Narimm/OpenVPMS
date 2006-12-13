@@ -54,7 +54,14 @@ public interface IMObjectView {
      *         rendered
      */
     FocusGroup getFocusGroup();
-
+    
+    /**
+     * Returns the current layout.
+     *
+     * @return the layout. May be <code>null</code>
+     */
+    IMObjectLayoutStrategy getLayout();
+    
     /**
      * Changes the layout.
      *
