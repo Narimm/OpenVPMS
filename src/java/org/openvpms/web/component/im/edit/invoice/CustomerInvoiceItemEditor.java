@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.im.edit.invoice;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.discount.DiscountRules;
 import org.openvpms.archetype.rules.tax.TaxRuleException;
 import org.openvpms.archetype.rules.tax.TaxRules;
@@ -42,15 +40,12 @@ import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.Validator;
-import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.PatientMedicationActEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -88,6 +83,11 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
      * is invalid until this is <code>0</code>
      */
     private int medicationPopups = 0;
+
+    /**
+     * The medication manager.
+     */
+    private MedicationManager medicationMgr;
 
 
     /**
@@ -156,6 +156,15 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
         return (medicationPopups == 0) && super.validate(validator);
     }
 
+    /**
+     * Sets the medication manager.
+     *
+     * @param manager the medication manager. May be <code>null</code>
+     */
+    public void setMedicationManager(MedicationManager manager) {
+        medicationMgr = manager;
+    }
+
 
     /**
      * Save any edits.
@@ -190,11 +199,11 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
         // changes if there is a patient participation.
         PatientParticipationEditor patient = getPatientEditor();
         if (patient != null) {
-	        patient.addModifiableListener(new ModifiableListener() {
-	            public void modified(Modifiable modifiable) {
-	                updateMedicationPatient();
-	            }
-	        });
+            patient.addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    updateMedicationPatient();
+                }
+            });
         }
     }
 
@@ -338,24 +347,13 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                     current.setPatient(getPatient());
                 }
             } else {
-                // create a new act
-                IMObject object = editors.create();
-                if (object != null) {
-                    LayoutContext context = new DefaultLayoutContext(true);
-                    final IMObjectEditor editor = editors.createEditor(
-                            object, context);
-                    final EditDialog dialog = new EditDialog(editor, false);
-                    dialog.addWindowPaneListener(new WindowPaneListener() {
-                        public void windowPaneClosing(WindowPaneEvent event) {
-                            if (EditDialog.OK_ID.equals(dialog.getAction())) {
-                                editors.addEdited(editor);
-                            }
-                            --medicationPopups;
-                        }
-                    });
-                    ++medicationPopups;
-                    dialog.show();
-                }
+                // queue editing of a new medication act
+                ++medicationPopups;
+                medicationMgr.queue(editors, new MedicationManager.Listener() {
+                    public void completed() {
+                        --medicationPopups;
+                    }
+                });
             }
         }
     }

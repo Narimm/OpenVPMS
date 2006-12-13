@@ -25,6 +25,7 @@ import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.filter.ValueNodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
 
 
 /**
@@ -54,6 +55,18 @@ public class DefaultLayoutContext implements LayoutContext {
      * The default node filter.
      */
     private NodeFilter filter;
+
+    /**
+     * The layout strategy factory.
+     */
+    private IMObjectLayoutStrategyFactory layoutFactory
+            = DEFAULT_LAYOUT_FACTORY;
+
+    /**
+     * The default layout strategy factory.
+     */
+    private static final IMObjectLayoutStrategyFactory DEFAULT_LAYOUT_FACTORY
+            = new DefaultLayoutStrategyFactory();
 
     /**
      * Construct a new <code>DefaultLayoutContext</code>.
@@ -96,6 +109,7 @@ public class DefaultLayoutContext implements LayoutContext {
         factory = context.getComponentFactory();
         filter = context.getDefaultNodeFilter();
         edit = context.isEdit();
+        layoutFactory = context.getLayoutStrategyFactory();
     }
 
     /**
@@ -173,5 +187,24 @@ public class DefaultLayoutContext implements LayoutContext {
      */
     public void setNodeFilter(NodeFilter filter) {
         this.filter = filter;
+    }
+
+    /**
+     * Returns the layout strategy factory.
+     *
+     * @return the layout strategy factory
+     */
+    public IMObjectLayoutStrategyFactory getLayoutStrategyFactory() {
+        return layoutFactory;
+    }
+
+    /**
+     * Sets the layout strategy factory.
+     *
+     * @param factory the layout strategy factory
+     */
+    public void setLayoutStrategyFactory(
+            IMObjectLayoutStrategyFactory factory) {
+        layoutFactory = factory;
     }
 }

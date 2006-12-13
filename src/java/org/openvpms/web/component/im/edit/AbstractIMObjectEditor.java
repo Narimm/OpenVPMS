@@ -51,7 +51,6 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
-import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeListener;
@@ -103,11 +102,6 @@ public abstract class AbstractIMObjectEditor
      * Lookup fields. These may beed to be refreshed.
      */
     private List<SelectField> lookups = new ArrayList<SelectField>();
-
-    /**
-     * The layout strategy factory.
-     */
-    private IMObjectLayoutStrategyFactory layoutFactory;
 
     /**
      * The layout context.
@@ -172,7 +166,6 @@ public abstract class AbstractIMObjectEditor
         IMObjectComponentFactory factory = new ComponentFactory(context);
         context.setComponentFactory(factory);
 
-        layoutFactory = new DefaultLayoutStrategyFactory();
         derivedFieldRefresher = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateDerivedFields(modifiable);
@@ -562,7 +555,9 @@ public abstract class AbstractIMObjectEditor
      * @return a new layout strategy
      */
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return layoutFactory.create(getObject(), getParent());
+        IMObjectLayoutStrategyFactory layoutStrategy
+                = context.getLayoutStrategyFactory();
+        return layoutStrategy.create(getObject(), getParent());
     }
 
     /**
@@ -571,23 +566,23 @@ public abstract class AbstractIMObjectEditor
     protected void onLayout() {
         Component oldValue = getComponent();
         if (getView().getLayout() instanceof ExpandableLayoutStrategy) {
-    	   ExpandableLayoutStrategy expandable =  (ExpandableLayoutStrategy) getView().getLayout();
-    	   expandable.setShowOptional(!expandable.isShowOptional());
-    	   getView().setLayout(expandable);
-           Button button = expandable.getButton();
-           if (button != null) {
-               button.addActionListener(getLayoutChangeListener());
-           }
+            ExpandableLayoutStrategy expandable = (ExpandableLayoutStrategy) getView().getLayout();
+            expandable.setShowOptional(!expandable.isShowOptional());
+            getView().setLayout(expandable);
+            Button button = expandable.getButton();
+            if (button != null) {
+                button.addActionListener(getLayoutChangeListener());
+            }
         } else {
-	       IMObjectLayoutStrategy layout = createLayoutStrategy();
-	        getView().setLayout(layout);
-	        if (layout instanceof ExpandableLayoutStrategy) {
-	            ExpandableLayoutStrategy exp = (ExpandableLayoutStrategy) layout;
-	            Button button = exp.getButton();
-	            if (button != null) {
-	                button.addActionListener(getLayoutChangeListener());
-	            }
-	        }
+            IMObjectLayoutStrategy layout = createLayoutStrategy();
+            getView().setLayout(layout);
+            if (layout instanceof ExpandableLayoutStrategy) {
+                ExpandableLayoutStrategy exp = (ExpandableLayoutStrategy) layout;
+                Button button = exp.getButton();
+                if (button != null) {
+                    button.addActionListener(getLayoutChangeListener());
+                }
+            }
         }
         Component newValue = getComponent();
         firePropertyChange(COMPONENT_CHANGED_PROPERTY, oldValue, newValue);

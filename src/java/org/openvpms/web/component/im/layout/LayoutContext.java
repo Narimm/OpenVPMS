@@ -89,4 +89,18 @@ public interface LayoutContext {
      */
     void setNodeFilter(NodeFilter filter);
 
+    /**
+     * Returns the layout strategy factory.
+     *
+     * @return the layout strategy factory
+     */
+    IMObjectLayoutStrategyFactory getLayoutStrategyFactory();
+
+    /**
+     * Sets the layout strategy factory.
+     *
+     * @param factory the layout strategy factory
+     */
+    void setLayoutStrategyFactory(IMObjectLayoutStrategyFactory factory);
+
 }
