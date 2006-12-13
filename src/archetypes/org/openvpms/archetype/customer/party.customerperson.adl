@@ -61,7 +61,8 @@
 			</assertion>
 		</node>
 		<node name="contacts" path="/contacts"
-			type="java.util.HashSet" baseName="Contact" minCardinality="1" maxCardinality="*">
+			type="java.util.HashSet" baseName="Contact" minCardinality="1" maxCardinality="*" 
+			defaultValue="party:getDefaultContacts()" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
