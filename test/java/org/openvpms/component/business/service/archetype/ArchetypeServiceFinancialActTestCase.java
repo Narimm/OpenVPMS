@@ -261,9 +261,11 @@ public class ArchetypeServiceFinancialActTestCase extends
         service.save(act);
         
         // retrieve it
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
-                act.getObjectReference())));
-        assertTrue(page.getTotalResults() == 1);
+        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
+                act.getObjectReference()));
+        query.setCountResults(true);
+        IPage<IMObject> page = service.get(query);
+        assertEquals(1, page.getTotalResults());
         
         FinancialAct newAct = (FinancialAct)page.getResults().iterator().next();
         assertTrue(newAct.getObjectReference().equals(act.getObjectReference()));
@@ -279,8 +281,10 @@ public class ArchetypeServiceFinancialActTestCase extends
         service.save(act);
         
         // retrieve it
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
-                act.getObjectReference())));
+        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
+                act.getObjectReference()));
+        query.setCountResults(true);
+        IPage<IMObject> page = service.get(query);
         assertTrue(page.getTotalResults() == 1);
         
         FinancialAct newAct = (FinancialAct)page.getResults().iterator().next();
@@ -299,18 +303,19 @@ public class ArchetypeServiceFinancialActTestCase extends
         service.save(act);
         
         // retrieve it
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
-                act.getObjectReference())));
-        assertTrue(page.getTotalResults() == 1);
+        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
+                act.getObjectReference()));
+        query.setCountResults(true);
+        IPage<IMObject> page = service.get(query);
+        assertEquals(1, page.getTotalResults());
     
         // delete it
         FinancialAct newAct = (FinancialAct)page.getResults().iterator().next();
         service.remove(newAct);
         
         // try and retrieve it again
-        page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
-                act.getObjectReference())));
-        assertTrue(page.getTotalResults() == 0);
+        page = service.get(query);
+        assertEquals(0, page.getTotalResults());
     }
     
     /**
@@ -326,9 +331,11 @@ public class ArchetypeServiceFinancialActTestCase extends
         service.save(act);
         
         // retrieve the act
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
-                act.getObjectReference())));
-        assertTrue(page.getTotalResults() == 1);
+        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
+                act.getObjectReference()));
+        query.setCountResults(true);
+        IPage<IMObject> page = service.get(query);
+        assertEquals(1, page.getTotalResults());
         act = (FinancialAct)page.getResults().iterator().next();
         
         // use the descriptors to set the value of endTime

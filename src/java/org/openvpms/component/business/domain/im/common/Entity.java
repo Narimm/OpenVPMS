@@ -354,14 +354,6 @@ public class Entity extends IMObject {
         this.details = details;
     }
 
-    /**
-     * @param identities The identities to set.
-     */
-    @SuppressWarnings("unused")
-    public void setIdentities(Set<EntityIdentity> identities) {
-        this.identities = identities;
-    }
-
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
      */
@@ -377,6 +369,13 @@ public class Entity extends IMObject {
         copy.targetEntityRelationships = new HashSet<EntityRelationship>(this.targetEntityRelationships);
 
         return copy;
+    }
+
+    /**
+     * @param identities The identities to set.
+     */
+    protected void setIdentities(Set<EntityIdentity> identities) {
+        this.identities = identities;
     }
 
 }

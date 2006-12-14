@@ -18,21 +18,19 @@
 
 package org.openvpms.component.business.domain.im.party;
 
-// java core
-import java.util.HashSet;
-import java.util.Set;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
+import java.util.HashSet;
+import java.util.Set;
+
+
 /**
  * The base class of all party types including real world entities and their
- * roles. A party is any entity which can participate in an {@link Act}. The
- * meaning attribute inherited from {@link Locatable} is used to indicate the
- * actual type of party.
- * 
+ * roles. A party is any entity which can participate in an {@link Act}.
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -47,66 +45,65 @@ public class Party extends Entity {
      * The list of contacts for the party
      */
     private Set<Contact> contacts = new HashSet<Contact>();
-    
+
     /**
      * Default Constructor
      */
     public Party() {
         // do nothing
     }
-    
+
     /**
      * Construct a Party object.
-     * 
-     * @param archetypeId
-     *            the archetype id constraining this object
-     * @param name 
-     *            the name of the entity            
-     * @param description
-     *            the description of the party            
-     * @param contacts
-     *            a collection of contacts for this actor            
-     * @param details 
-     *            party details
+     *
+     * @param archetypeId the archetype id constraining this object
+     * @param name        the name of the entity
+     * @param description the description of the party
+     * @param contacts    a collection of contacts for this actor
+     * @param details     party details
      */
-    public Party(ArchetypeId archetypeId, String name,  
-            String description, Set<Contact> contacts, 
-            DynamicAttributeMap details) {
+    public Party(ArchetypeId archetypeId, String name,
+                 String description, Set<Contact> contacts,
+                 DynamicAttributeMap details) {
         super(archetypeId, name, description, details);
         this.contacts = (contacts == null) ? new HashSet<Contact>() : contacts;
     }
 
     /**
-     * @return Returns the contacts.
+     * Returns the contacts.
+     *
+     * @return the contacts
      */
     public Set<Contact> getContacts() {
         return contacts;
     }
 
     /**
-     * @param contacts
-     *            The contacts to set.
+     * Sets the contacts.
+     *
+     * @param contacts the contacts to set
      */
     public void setContacts(Set<Contact> contacts) {
+        for (Contact contact : contacts) {
+            contact.setParty(this);
+        }
         this.contacts = contacts;
     }
-    
+
     /**
      * Add the {@link Contact} to this party
-     * 
-     * @param contact
-     *            contact to add
+     *
+     * @param contact contact to add
      */
     public void addContact(Contact contact) {
         contact.setParty(this);
         contacts.add(contact);
     }
-    
+
     /**
      * Remove the {@link Contact} from this party.
-     * 
-     * @param contact
-     *            the contact to remove
+     *
+     * @param contact the contact to remove
      */
     public void removeContact(Contact contact) {
         contact.setParty(null);
@@ -118,9 +115,9 @@ public class Party extends Entity {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        Party copy = (Party)super.clone();
+        Party copy = (Party) super.clone();
         copy.contacts = new HashSet<Contact>(this.contacts);
-      
+
         return copy;
     }
 }
