@@ -19,13 +19,12 @@
 package org.openvpms.component.business.domain.im.party;
 
 // java core
-import java.util.HashSet;
-import java.util.Set;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Address of a contact.
@@ -99,7 +98,7 @@ class Address extends IMObject {
      * @return Contact
      */
     public Contact[] getContactsAsArray() {
-        return (Contact[])contacts.toArray(new Contact[contacts.size()]);
+        return contacts.toArray(new Contact[contacts.size()]);
     }
     
     /**
@@ -120,13 +119,6 @@ class Address extends IMObject {
     }
 
     /**
-     * @param contacts The contacts to set.
-     */
-    public void setContacts(Set<Contact> contacts) {
-        this.contacts = contacts;
-    }
-
-    /**
      * Associated the address with a contact
      * 
      * @param contact 
@@ -139,7 +131,7 @@ class Address extends IMObject {
     /**
      * Disassociate the address with the specified contact
      * 
-     * @parm contact
+     * @param contact
      *            the contact to disassociate
      */
     public void removeContact(Contact contact) {
@@ -158,6 +150,13 @@ class Address extends IMObject {
      */
     public void setParty(Party party) {
         this.party = party;
+    }
+
+    /**
+     * @param contacts The contacts to set.
+     */
+    protected void setContacts(Set<Contact> contacts) {
+        this.contacts = contacts;
     }
 
     /* (non-Javadoc)

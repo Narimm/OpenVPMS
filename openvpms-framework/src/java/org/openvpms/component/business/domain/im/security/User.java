@@ -156,13 +156,6 @@ public class User extends Entity implements UserDetails {
     }
 
     /**
-     * @param roles The roles to set.
-     */
-    public void setRoles(Set<SecurityRole> roles) {
-        this.roles = roles;
-    }
-    
-    /**
      * Make this user a member of the specified {@link SecurityRole}
      * 
      * @param role
@@ -194,4 +187,12 @@ public class User extends Entity implements UserDetails {
         
         return copy;
     }
+
+    /**
+     * @param roles The roles to set.
+     */
+    protected void setRoles(Set<SecurityRole> roles) {
+        this.roles = roles;
+    }
+
 }

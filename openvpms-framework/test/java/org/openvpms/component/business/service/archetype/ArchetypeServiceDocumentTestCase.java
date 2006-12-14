@@ -19,7 +19,6 @@
 package org.openvpms.component.business.service.archetype;
 
 // spring-context
-import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -39,13 +38,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  */
 public class ArchetypeServiceDocumentTestCase extends
         AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeServiceDocumentTestCase.class);
-    
+
     /**
      * Holds a reference to the entity service
      */
@@ -155,8 +148,9 @@ public class ArchetypeServiceDocumentTestCase extends
         }
         
         // retrieve the last document
-        assertTrue(service.get(new ArchetypeQuery(
-                new ObjectRefConstraint(ref))).getTotalResults() == 1);
+        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(ref));
+        query.setCountResults(true);
+        assertTrue(service.get(query).getTotalResults() == 1);
     }
     
     /**
@@ -181,9 +175,11 @@ public class ArchetypeServiceDocumentTestCase extends
         service.save(document);
         DocumentAct docAct = createDocumentAct(document);
         service.save(docAct);
-        
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
-                docAct.getObjectReference())));
+
+        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
+                docAct.getObjectReference()));
+        query.setCountResults(true);
+        IPage<IMObject> page = service.get(query);
         assertTrue(page.getTotalResults() == 1);
         
         docAct = (DocumentAct)page.getResults().iterator().next();
@@ -200,13 +196,15 @@ public class ArchetypeServiceDocumentTestCase extends
         service.save(document);
         DocumentAct docAct = createDocumentAct(document);
         service.save(docAct);
-        
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
-                docAct.getObjectReference())));
-        assertTrue(page.getTotalResults() == 1);
+
+        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
+                docAct.getObjectReference()));
+        query.setCountResults(true);
+        IPage<IMObject> page = service.get(query);
+        assertEquals(1, page.getTotalResults());
         
         docAct = (DocumentAct)page.getResults().iterator().next();
-        assertTrue(docAct.getDocReference().equals(document.getObjectReference()));
+        assertEquals(document.getObjectReference(), docAct.getDocReference());
         
         // create a new document reference
         document = createDocument("tima.doc", "text/plain", 234, 12343, 
@@ -216,11 +214,10 @@ public class ArchetypeServiceDocumentTestCase extends
         service.save(docAct);
         
         // retrieve and check again
-        page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
-                docAct.getObjectReference())));
-        assertTrue(page.getTotalResults() == 1);
+        page = service.get(query);
+        assertEquals(1, page.getTotalResults());
         docAct = (DocumentAct)page.getResults().iterator().next();
-        assertTrue(docAct.getDocReference().equals(document.getObjectReference()));
+        assertEquals(document.getObjectReference(), docAct.getDocReference());
     }
     
     /**
@@ -238,14 +235,18 @@ public class ArchetypeServiceDocumentTestCase extends
         service.remove(docAct);
         
         // ensure that we can still retrieve the document
-        IPage<IMObject> page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
-                document.getObjectReference())));
-        assertTrue(page.getTotalResults() == 1);
+        ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint(
+                document.getObjectReference()));
+        query.setCountResults(true);
+        IPage<IMObject> page = service.get(query);
+        assertEquals(1, page.getTotalResults());
         
         // check that we can't retrieve the document act
-        page = service.get(new ArchetypeQuery(new ObjectRefConstraint(
-                docAct.getObjectReference())));
-        assertTrue(page.getTotalResults() == 0);
+        ArchetypeQuery query2 = new ArchetypeQuery(new ObjectRefConstraint(
+                docAct.getObjectReference()));
+        query2.setCountResults(true);
+        page = service.get(query2);
+        assertEquals(0, page.getTotalResults());
     }
     
     /**

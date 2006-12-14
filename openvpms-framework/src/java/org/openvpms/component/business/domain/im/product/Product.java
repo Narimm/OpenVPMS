@@ -59,13 +59,6 @@ public class Product extends Entity {
     }
 
     /**
-     * @param productPrices The productPrices to set.
-     */
-    public void setProductPrices(Set<ProductPrice> productPrices) {
-        this.productPrices = productPrices;
-    }
-    
-    /**
      * Add the specified {@link ProductPrice} to the set.
      * 
      * @param productPrice 
@@ -105,4 +98,12 @@ public class Product extends Entity {
 
         return copy;
     }
+
+    /**
+     * @param productPrices The productPrices to set.
+     */
+    protected void setProductPrices(Set<ProductPrice> productPrices) {
+        this.productPrices = productPrices;
+    }
+
 }

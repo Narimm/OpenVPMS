@@ -323,7 +323,7 @@ public class QueryBuilderTestCase
                 + " where ((product0.archetypeId.entityName = :entityName0 and "
                 + "product0.archetypeId.concept = :concept0) and "
                 + "(classifications0.active = :active0 or "
-                + "classifications0.active = :active1) and "
+                + "classifications0.active is NULL) and "
                 + "(classifications0.archetypeId.concept is NULL or "
                 + "(classifications0.archetypeId.concept = :concept1 and "
                 + "classifications0.name = :name0)))";
