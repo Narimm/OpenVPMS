@@ -23,19 +23,16 @@ import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import static org.openvpms.component.business.service.archetype.ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype;
+import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.resource.util.Messages;
 
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.TimeZone;
 
 
@@ -212,18 +209,8 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
         NodeDescriptor node = getDescriptor();
         String message = Messages.get("node.error.invalidtime",
                                       node.getDisplayName());
-        ValidationError error = new ValidationError(node.getName(),
-                                                    message);
-        List<ValidationError> errors = new ArrayList<ValidationError>();
-        errors.add(error);
-        ValidationException.ErrorCode code
-                = FailedToValidObjectAgainstArchetype;
         ArchetypeId id = getParent().getArchetypeId();
-        if (exception != null) {
-            return new ValidationException(errors, code, new Object[]{id},
-                                           exception);
-        }
-        return new ValidationException(errors, code, new Object[]{id});
+        return ValidationHelper.createException(node, message, exception, id);
     }
 
 }

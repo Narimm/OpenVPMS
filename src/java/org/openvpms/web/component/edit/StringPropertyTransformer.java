@@ -18,10 +18,13 @@
 
 package org.openvpms.web.component.edit;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.component.util.MacroEvaluator;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -54,10 +57,25 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
     public Object apply(Object object) throws ValidationException {
         String result = null;
         if (object instanceof String) {
-            result = MacroEvaluator.evaluate((String) object, getParent());
+            String str = (String) object;
+            result = MacroEvaluator.evaluate(str, getParent());
         } else if (object != null) {
             result = object.toString();
         }
+        result = StringUtils.trimToNull(result);
+        NodeDescriptor desc = getDescriptor();
+        int minLength = desc.getMinLength();
+        int maxLength = desc.getMaxLength();
+        if ((result == null && minLength > 0)
+                || (result != null && result.length() < minLength)) {
+            String msg = Messages.get("node.error.minLength", minLength);
+            throw ValidationHelper.createException(desc, msg);
+        }
+        if (result != null && result.length() > maxLength) {
+            String msg = Messages.get("node.error.maxLength", maxLength);
+            throw ValidationHelper.createException(desc, msg);
+        }
+
         return result;
     }
 }

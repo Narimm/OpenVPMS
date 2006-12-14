@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import static org.openvpms.component.business.service.archetype.ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -34,6 +35,7 @@ import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -137,6 +139,56 @@ public class ValidationHelper {
                 }
             }
         }
+    }
+
+    /**
+     * Helper to create a validation error for a node.
+     *
+     * @param descriptor the node descriptor
+     * @param message    the message
+     * @return a new exception
+     */
+    public static ValidationException createException(
+            NodeDescriptor descriptor, String message) {
+        return createException(descriptor, message, null);
+    }
+
+    /**
+     * Helper to create a validation error for a node.
+     *
+     * @param descriptor the node descriptor
+     * @param message    the message
+     * @param cause      the cause. May be <code>null</code>
+     * @return a new exception
+     */
+    public static ValidationException createException(
+            NodeDescriptor descriptor, String message, Throwable cause) {
+        ValidationError error = new ValidationError(descriptor.getName(),
+                                                    message);
+        List<ValidationError> errors = Arrays.asList(error);
+        return new ValidationException(errors,
+                                       FailedToValidObjectAgainstArchetype,
+                                       cause);
+    }
+
+    /**
+     * Helper to create a validation error for a node.
+     *
+     * @param descriptor the node descriptor
+     * @param message    the message
+     * @param cause      the cause. May be <code>null</code>
+     * @param params     additional information required to render the message
+     * @return a new exception
+     */
+    public static ValidationException createException(
+            NodeDescriptor descriptor, String message, Throwable cause,
+            Object ... params) {
+        ValidationError error = new ValidationError(descriptor.getName(),
+                                                    message);
+        List<ValidationError> errors = Arrays.asList(error);
+        return new ValidationException(errors,
+                                       FailedToValidObjectAgainstArchetype,
+                                       params, cause);
     }
 
 }
