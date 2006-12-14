@@ -19,13 +19,10 @@
 package org.openvpms.web.component.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
+import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -83,13 +80,8 @@ public class NumericPropertyTransformer implements PropertyTransformer {
         } catch (Throwable exception) {
             String message = Messages.get("node.error.invalidnumeric",
                                           descriptor.getDisplayName());
-            ValidationError error = new ValidationError(descriptor.getName(),
-                                                        message);
-            List<ValidationError> errors = new ArrayList<ValidationError>();
-            errors.add(error);
-            ValidationException.ErrorCode code
-                    = ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype;
-            throw new ValidationException(errors, code, exception);
+            throw ValidationHelper.createException(descriptor, message,
+                                                   exception);
         }
 
         return result;

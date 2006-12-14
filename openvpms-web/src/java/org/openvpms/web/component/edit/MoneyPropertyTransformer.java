@@ -20,14 +20,12 @@ package org.openvpms.web.component.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -87,19 +85,16 @@ public class MoneyPropertyTransformer implements PropertyTransformer {
         return result;
     }
 
-    private ValidationException getException(Throwable exception) {
+    /**
+     * Helper to create a new validation exception.
+     *
+     * @param cause the cause. May be <code>null</code>
+     * @return a new validation exception
+     */
+    private ValidationException getException(Throwable cause) {
         String message = Messages.get("node.error.invalidnumeric",
                                       descriptor.getDisplayName());
-        ValidationError error = new ValidationError(descriptor.getName(),
-                                                    message);
-        List<ValidationError> errors = new ArrayList<ValidationError>();
-        errors.add(error);
-        ValidationException.ErrorCode code
-                = ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype;
-        if (exception != null) {
-            return new ValidationException(errors, code, exception);
-        }
-        return new ValidationException(errors, code);
+        return ValidationHelper.createException(descriptor, message, cause);
     }
 
 }
