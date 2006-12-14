@@ -255,10 +255,6 @@ public class FocusGroup {
         if (last != getLast()) {
             notifyParent();
         }
-        if (parent == null) {
-            System.out.println("Reindexed: " + this);
-            print(System.out);
-        }
     }
 
     /**
