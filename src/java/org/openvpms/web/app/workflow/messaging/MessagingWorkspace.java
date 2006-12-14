@@ -39,7 +39,6 @@ import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.util.FastLookupHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
@@ -108,7 +107,8 @@ public class MessagingWorkspace extends AbstractWorkspace<User> {
      * @param object the object. May be <code>null</code>
      */
     public void setObject(User object) {
-        layoutWorkspace(user, root);
+        user = object;
+        layoutWorkspace(root);
     }
 
     /**
@@ -151,32 +151,28 @@ public class MessagingWorkspace extends AbstractWorkspace<User> {
         Component heading = super.doLayout();
         root.add(heading);
         if (user != null) {
-            layoutWorkspace(user, root);
+            layoutWorkspace(root);
         }
         return root;
     }
 
     /**
-     * Determines if the workspace should be refreshed. This implementation
-     * returns true if the current user has changed.
+     * Returns the latest version of the current context object.
      *
-     * @return <code>true</code> if the workspace should be refreshed, otherwise
-     *         <code>false</code>
+     * @return the latest version of the context object, or {@link #getObject()}
+     *         if they are the same
      */
     @Override
-    protected boolean refreshWorkspace() {
-        User user = GlobalContext.getInstance().getUser();
-        user = IMObjectHelper.reload(user);
-        return IMObjectHelper.isSame(getObject(), user);
+    protected User getLatest() {
+        return super.getLatest(GlobalContext.getInstance().getUser());
     }
 
     /**
      * Lays out the workspace.
      *
-     * @param user      the user
      * @param container the container
      */
-    protected void layoutWorkspace(User user, Component container) {
+    protected void layoutWorkspace(Component container) {
         ActQuery<Act> query = createQuery(user);
         browser = createBrowser(query);
         browser.addQueryListener(new QueryBrowserListener<Act>() {

@@ -127,17 +127,14 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
     }
 
     /**
-     * Determines if the workspace should be refreshed. This implementation
-     * returns true if the current patient has changed.
+     * Returns the latest version of the current context object.
      *
-     * @return <code>true</code> if the workspace should be refreshed, otherwise
-     *         <code>false</code>
+     * @return the latest version of the context object, or {@link #getObject()}
+     *         if they are the same
      */
     @Override
-    protected boolean refreshWorkspace() {
-        Party patient = GlobalContext.getInstance().getPatient();
-        patient = IMObjectHelper.reload(patient);
-        return IMObjectHelper.isSame(getObject(), patient);
+    protected Party getLatest() {
+        return super.getLatest(GlobalContext.getInstance().getPatient());
     }
 
     /**
