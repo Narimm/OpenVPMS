@@ -65,8 +65,6 @@ public class DialogManager {
             group.reindex(lastIndex + 1000);
             // give the parent dialog room to grow.
         }
-        System.out.println(dialog.getTitle());
-        group.print(System.out);
         root.getContent().add(dialog);
     }
 
