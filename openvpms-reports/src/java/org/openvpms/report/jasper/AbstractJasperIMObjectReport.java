@@ -122,10 +122,10 @@ public abstract class AbstractJasperIMObjectReport
             exporter.setParameter(JRPrintServiceExporterParameter.JASPER_PRINT,
                                   print);
 
-            // print 1 copy on A4 paper
+            // print 1 copy
             PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
             aset.add(new Copies(1));
-            aset.add(MediaSizeName.ISO_A4);
+            //aset.add(MediaSizeName.ISO_A4);
             exporter.setParameter(
                     JRPrintServiceExporterParameter.PRINT_REQUEST_ATTRIBUTE_SET,
                     aset);
