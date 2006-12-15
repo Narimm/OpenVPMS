@@ -24,6 +24,9 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
+import org.openvpms.archetype.rules.doc.DocumentException;
+import org.openvpms.archetype.rules.doc.DocumentHandlerFactory;
+import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -43,7 +46,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
@@ -65,16 +67,24 @@ public class TemplateLoader {
     /**
      * The archetype service.
      */
-    IArchetypeService _service;
+    private final IArchetypeService service;
+
+    /**
+     * The document handler factory.
+     */
+    private final DocumentHandlerFactory factory;
 
 
     /**
      * Construct a new <code>TemplateLoader</code>.
      *
      * @param service the archetype service
+     * @param factory the document handler factory
      */
-    public TemplateLoader(IArchetypeService service) {
-        _service = service;
+    public TemplateLoader(IArchetypeService service,
+                          DocumentHandlerFactory factory) {
+        this.service = service;
+        this.factory = factory;
     }
 
     /**
@@ -100,10 +110,10 @@ public class TemplateLoader {
      *
      * @param template the report template to load
      * @param dir      the parent directory for resolving relative paths
-     * @throws IOException               for any I/O error
+     * @throws DocumentException         if the document cannot be created
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private void load(Template template, File dir) throws IOException {
+    private void load(Template template, File dir) {
         Document document = getDocument(template, dir);
         Entity entity;
         DocumentAct act;
@@ -113,22 +123,22 @@ public class TemplateLoader {
         query.add(new NodeConstraint("name", document.getName()));
         query.setFirstResult(0);
         query.setMaxResults(1);
-        List<IMObject> rows = _service.get(query).getResults();
+        List<IMObject> rows = service.get(query).getResults();
         if (!rows.isEmpty()) {
             act = (DocumentAct) rows.get(0);
             ActBean bean = new ActBean(act);
             entity = bean.getParticipant("participation.document");
             if (entity == null) {
-                entity = (Entity) _service.create("entity.documentTemplate");
+                entity = (Entity) service.create("entity.documentTemplate");
                 bean.setParticipant("participation.document", entity);
             }
         } else {
-            entity = (Entity) _service.create("entity.documentTemplate");
-            act = (DocumentAct) _service.create("act.documentTemplate");
+            entity = (Entity) service.create("entity.documentTemplate");
+            act = (DocumentAct) service.create("act.documentTemplate");
             act.setFileName(document.getName());
             act.setMimeType(document.getMimeType());
             act.setDescription(DescriptorHelper.getDisplayName(document));
-            participation = (Participation) _service.create(
+            participation = (Participation) service.create(
                     "participation.document");
             participation.setAct(act.getObjectReference());
             act.addParticipation(participation);
@@ -136,7 +146,8 @@ public class TemplateLoader {
         }
 
         act.setDocReference(document.getObjectReference());
-        _service.save(act);
+        service.save(document);
+        service.save(act);
 
         String name = template.getName();
         if (name == null) {
@@ -145,7 +156,7 @@ public class TemplateLoader {
         entity.setName(name);
         EntityBean bean = new EntityBean(entity);
         bean.setValue("archetype", template.getArchetype());
-        _service.save(entity);
+        service.save(entity);
     }
 
     /**
@@ -174,7 +185,11 @@ public class TemplateLoader {
                     IArchetypeService service
                             = (IArchetypeService) context.getBean(
                             "archetypeService");
-                    TemplateLoader loader = new TemplateLoader(service);
+                    DocumentHandlerFactory factory
+                            = (DocumentHandlerFactory) context.getBean(
+                            "documentHandlerFactory");
+                    TemplateLoader loader = new TemplateLoader(service,
+                                                               factory);
                     loader.load(file);
                 } else {
                     displayUsage(parser);
@@ -191,29 +206,15 @@ public class TemplateLoader {
      * @param template the template descriptor
      * @param dir      the directory to locate relative paths
      * @return a new document containing the serialized template
-     * @throws IOException for any error
+     * @throws DocumentException for any error
      */
-    private Document getDocument(Template template, File dir)
-            throws IOException {
-        Document document = (Document) _service.create(template.getDocType());
+    private Document getDocument(Template template, File dir) {
         File file = new File(template.getPath());
         if (!file.isAbsolute()) {
             file = new File(dir, template.getPath());
         }
-        FileInputStream stream = new FileInputStream(file);
-        int length = (int) file.length();
-        byte[] content = new byte[length];
-        if (stream.read(content) != length) {
-            throw new IOException("Failed to read " + file);
-        }
-        stream.close();
-
-        document.setContents(content);
-        document.setName(file.getName());
-        document.setDocSize(length);
-        document.setMimeType(template.getMimeType());
-        _service.save(document);
-        return document;
+        return DocumentHelper.create(file, template.getDocType(),
+                                     template.getMimeType(), factory);
     }
 
     /**

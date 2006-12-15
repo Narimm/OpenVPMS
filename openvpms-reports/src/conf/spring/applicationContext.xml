@@ -173,6 +173,16 @@
         </constructor-arg>
     </bean>
 
+    <!-- the Document handler factory -->
+    <bean id="documentHandlerFactory"
+            class="org.openvpms.archetype.rules.doc.DocumentHandlerFactory">
+        <property name="documentHandlers">
+            <list>
+                <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler"/>
+            </list>
+        </property>
+    </bean>
+
     <!--bean id="bootstrapService"
         class="org.openvpms.report.openoffice.BootstrapService">
     </bean-->
