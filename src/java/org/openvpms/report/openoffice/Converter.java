@@ -19,9 +19,8 @@
 package org.openvpms.report.openoffice;
 
 import org.apache.commons.io.FilenameUtils;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.DocFormats;
 
 
@@ -36,23 +35,24 @@ public class Converter {
     /**
      * The OpenOffice service.
      */
-    private final OpenOfficeService _service;
+    private final OpenOfficeService service;
 
     /**
-     * The archetype service.
+     * The document handlers
      */
-    private final IArchetypeService _archetypeService;
+    private final DocumentHandlers handlers;
+
 
     /**
      * Constructs a new <code>Converter</code>.
      *
-     * @param service          the OpenOffice service
-     * @param archetypeService the archetype service
+     * @param service  the OpenOffice service
+     * @param handlers the document handlers
      */
     public Converter(OpenOfficeService service,
-                     IArchetypeService archetypeService) {
-        _service = service;
-        _archetypeService = archetypeService;
+                     DocumentHandlers handlers) {
+        this.service = service;
+        this.handlers = handlers;
     }
 
     /**
@@ -93,16 +93,16 @@ public class Converter {
      * @param document the document to convert
      * @param mimeType the target mime type
      * @return the converted document
-     * @throws OpenOfficeException       if the document cannot be converted
-     * @throws ArchetypeServiceException for any archetype service error
+     * @throws OpenOfficeException if the document cannot be converted
      */
     public Document convert(Document document, String mimeType) {
-        OpenOfficeDocument doc = new OpenOfficeDocument(document, _service);
+        OpenOfficeDocument doc = new OpenOfficeDocument(document, service,
+                                                        handlers);
         doc.refresh();   // workaround to avoid corruption of generated doc
-                         // when the source document contains user fields.
-                         // Alternative approach is to do a Thread.sleep(1000).
+        // when the source document contains user fields.
+        // Alternative approach is to do a Thread.sleep(1000).
         try {
-            return doc.export(mimeType, document.getName(), _archetypeService);
+            return doc.export(mimeType, document.getName());
         } finally {
             doc.close();
         }

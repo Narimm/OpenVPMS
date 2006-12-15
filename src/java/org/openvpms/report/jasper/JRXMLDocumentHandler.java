@@ -64,7 +64,6 @@ public class JRXMLDocumentHandler extends AbstractDocumentHandler {
      * @param name     the document name
      * @param mimeType the mime type of the document. May be <code>null</code>
      * @return <code>true</code> if this handler supports the document
-     * @throws DocumentException for any error
      */
     @Override
     public boolean canHandle(String name, String mimeType) {
@@ -78,7 +77,6 @@ public class JRXMLDocumentHandler extends AbstractDocumentHandler {
      * @param shortName the document archetype short name
      * @param mimeType  the mime type of the document. May be <code>null</code>
      * @return <code>true</code> if this handler supports the document
-     * @throws DocumentException for any error
      */
     @Override
     public boolean canHandle(String name, String shortName, String mimeType) {

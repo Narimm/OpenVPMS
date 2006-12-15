@@ -28,12 +28,16 @@ import net.sf.jasperreports.engine.design.JRDesignSubreport;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.IMObjectReportException;
 import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
+import org.openvpms.archetype.rules.doc.DocumentException;
 
-import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +50,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TemplateLoader {
+public class JasperTemplateLoader {
 
     /**
      * The compiled report.
@@ -58,40 +62,53 @@ public class TemplateLoader {
      */
     private final List<JasperReport> subreports
             = new ArrayList<JasperReport>();
+
     /**
      * Report parameters.
      */
     private final Map<String, Object> parameters
             = new HashMap<String, Object>();
 
+
     /**
-     * Constructs a new <code>TemplateLoader</code>.
+     * Constructs a new <code>JasperTemplateLoader</code>.
      *
      * @param template the document template
      * @param service  the archetype service
+     * @param handlers the document handlers
      * @throws IMObjectReportException if the report cannot be created
      */
-    public TemplateLoader(Document template, IArchetypeService service) {
+    public JasperTemplateLoader(Document template, IArchetypeService service,
+                                DocumentHandlers handlers) {
+        InputStream stream = null;
         try {
-            ByteArrayInputStream stream
-                    = new ByteArrayInputStream(template.getContents());
+            DocumentHandler handler = handlers.get(template);
+            stream = handler.getContent(template);
             JasperDesign report = JRXmlLoader.load(stream);
-            init(report, service);
+            init(report, service, handlers);
+        } catch (DocumentException exception) {
+            throw new IMObjectReportException(exception, FailedToCreateReport,
+                                              exception.getMessage());
         } catch (JRException exception) {
             throw new IMObjectReportException(exception, FailedToCreateReport,
                                               exception.getMessage());
+        } finally {
+            IOUtils.closeQuietly(stream);
+
         }
     }
 
     /**
-     * Constructs a new <code>TemplateLoader</code>.
+     * Constructs a new <code>JasperTemplateLoader</code>.
      *
      * @param design  the master report design
      * @param service the archetype service
+     * @param handlers the document handlers
      * @throws IMObjectReportException if the report cannot be created
      */
-    public TemplateLoader(JasperDesign design, IArchetypeService service) {
-        init(design, service);
+    public JasperTemplateLoader(JasperDesign design, IArchetypeService service,
+                                DocumentHandlers handlers) {
+        init(design, service, handlers);
     }
 
     /**
@@ -126,9 +143,11 @@ public class TemplateLoader {
      *
      * @param design  the report design
      * @param service the archetype service
+     * @param handlers the document handlers
      * @throws IMObjectReportException if the report cannot be initialised
      */
-    protected void init(JasperDesign design, IArchetypeService service) {
+    protected void init(JasperDesign design, IArchetypeService service,
+                        DocumentHandlers handlers) {
         try {
             JRElement[] elements = design.getDetail().getElements();
             for (JRElement element : elements) {
@@ -136,7 +155,7 @@ public class TemplateLoader {
                     JRDesignSubreport subreport = (JRDesignSubreport) element;
                     String reportName = getReportName(subreport);
                     JasperDesign report = JasperReportHelper.getReport(
-                            reportName, service);
+                            reportName, service, handlers);
                     if (report == null) {
                         throw new IMObjectReportException(
                                 FailedToCreateReport,

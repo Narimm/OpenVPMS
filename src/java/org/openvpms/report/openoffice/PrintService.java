@@ -28,6 +28,7 @@ import com.sun.star.view.PrintableState;
 import com.sun.star.view.XPrintJobBroadcaster;
 import com.sun.star.view.XPrintJobListener;
 import com.sun.star.view.XPrintable;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToPrint;
 
@@ -45,14 +46,21 @@ public class PrintService {
      */
     private final OpenOfficeService service;
 
+    /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
 
     /**
      * Creates a new <code>PrintService</code>.
      *
-     * @param service the OpenOffice service
+     * @param service  the OpenOffice service
+     * @param handlers the document handlers
      */
-    public PrintService(OpenOfficeService service) {
+    public PrintService(OpenOfficeService service, DocumentHandlers handlers) {
         this.service = service;
+        this.handlers = handlers;
     }
 
     /**
@@ -74,7 +82,8 @@ public class PrintService {
      * @throws OpenOfficeException for any error
      */
     public void print(Document document, String printer) {
-        OpenOfficeDocument doc = new OpenOfficeDocument(document, service);
+        OpenOfficeDocument doc = new OpenOfficeDocument(document, service,
+                                                        handlers);
         print(doc, printer, true);
     }
 

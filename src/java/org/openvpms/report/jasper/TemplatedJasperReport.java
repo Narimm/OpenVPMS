@@ -23,6 +23,7 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JasperDesign;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -44,7 +45,7 @@ public class TemplatedJasperReport extends AbstractJasperIMObjectReport {
     /**
      * The template loader.
      */
-    private TemplateLoader template;
+    private JasperTemplateLoader template;
 
 
     /**
@@ -52,24 +53,28 @@ public class TemplatedJasperReport extends AbstractJasperIMObjectReport {
      *
      * @param template the document template
      * @param service  the archetype service
+     * @param handlers the document handlers
      * @throws IMObjectReportException if the report cannot be created
      */
-    public TemplatedJasperReport(Document template, IArchetypeService service) {
-        super(service);
-        this.template = new TemplateLoader(template, service);
+    public TemplatedJasperReport(Document template, IArchetypeService service,
+                                 DocumentHandlers handlers) {
+        super(service, handlers);
+        this.template = new JasperTemplateLoader(template, service, handlers);
     }
 
     /**
      * Constructs a new <code>TemplatedJasperReport</code>.
      *
-     * @param design  the master report design
-     * @param service the archetype service
+     * @param design   the master report design
+     * @param service  the archetype service
+     * @param handlers the document handlers
      * @throws IMObjectReportException if the report cannot be created
      */
     public TemplatedJasperReport(JasperDesign design,
-                                 IArchetypeService service) {
-        super(service);
-        this.template = new TemplateLoader(design, service);
+                                 IArchetypeService service,
+                                 DocumentHandlers handlers) {
+        super(service, handlers);
+        this.template = new JasperTemplateLoader(design, service, handlers);
     }
 
     /**

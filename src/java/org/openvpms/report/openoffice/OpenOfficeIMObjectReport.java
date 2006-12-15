@@ -19,11 +19,11 @@
 package org.openvpms.report.openoffice;
 
 import org.apache.commons.io.FilenameUtils;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ExpressionEvaluator;
@@ -51,15 +51,23 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
      */
     private final Document template;
 
+    /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
 
     /**
      * Creates a new <code>OpenOfficeIMObjectReport</code>.
      *
      * @param template the document template
+     * @param handlers the document handlers
      * @throws IMObjectReportException if the mime-type is invalid
      */
-    public OpenOfficeIMObjectReport(Document template) {
+    public OpenOfficeIMObjectReport(Document template,
+                                    DocumentHandlers handlers) {
         this.template = template;
+        this.handlers = handlers;
     }
 
     /**
@@ -70,7 +78,6 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
      *                  output format of the report
      * @return a document containing the report
      * @throws IMObjectReportException   for any report error
-     * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(Collection<IMObject> objects, String[] mimeTypes) {
         String mimeType = null;
@@ -133,7 +140,8 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
 
         try {
             doc = new OpenOfficeDocument(template,
-                                         OpenOfficeHelper.getService());
+                                         OpenOfficeHelper.getService(),
+                                         handlers);
             List<String> fieldNames = doc.getUserFieldNames();
             for (String name : fieldNames) {
                 String value = doc.getUserField(name);
@@ -159,16 +167,13 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
      * @param doc      the document to export
      * @param mimeType the mime-type of the document     *
      * @return a new document
-     * @throws OpenOfficeException       for any error
-     * @throws ArchetypeServiceException for any archetype service error
+     * @throws OpenOfficeException for any error
      */
     private Document export(OpenOfficeDocument doc, String mimeType) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
         String name = template.getName();
         if (!DocFormats.ODT_TYPE.equals(mimeType)) {
             name = FilenameUtils.removeExtension(name);
         }
-        return doc.export(mimeType, name, service);
+        return doc.export(mimeType, name);
     }
 }

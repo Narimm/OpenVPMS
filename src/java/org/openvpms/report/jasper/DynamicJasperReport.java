@@ -36,6 +36,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.IMObjectReportException;
 import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -76,11 +77,13 @@ public class DynamicJasperReport extends AbstractJasperIMObjectReport {
      *
      * @param archetype the archetype descriptor
      * @param service   the archetype service
+     * @param handlers the document handlers
      * @throws IMObjectReportException if the report cannot be created
      */
     public DynamicJasperReport(ArchetypeDescriptor archetype,
-                               IArchetypeService service) {
-        super(service);
+                               IArchetypeService service,
+                               DocumentHandlers handlers) {
+        super(service, handlers);
         try {
             init(archetype);
         } catch (JRException exception) {
