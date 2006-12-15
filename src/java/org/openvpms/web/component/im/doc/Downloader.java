@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;

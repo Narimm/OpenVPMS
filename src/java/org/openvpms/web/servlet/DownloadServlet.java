@@ -20,7 +20,12 @@ package org.openvpms.web.servlet;
 
 import nextapp.echo2.app.Command;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
+import org.openvpms.archetype.rules.doc.DocumentHandlerFactory;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -29,12 +34,15 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.web.app.OpenVPMSApp;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,8 +59,18 @@ public class DownloadServlet extends HttpServlet {
     /**
      * The set of temporary documents. These are deleted after being served.
      */
-    private static Set<IMObjectReference> _tempDocs
+    private static Set<IMObjectReference> tempDocs
             = Collections.synchronizedSet(new HashSet<IMObjectReference>());
+
+    /**
+     * The document handler factory.
+     */
+    private DocumentHandlerFactory factory;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(DownloadServlet.class);
 
     /**
      * Start a download.
@@ -66,7 +84,7 @@ public class DownloadServlet extends HttpServlet {
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
             service.save(document);
-            _tempDocs.add(document.getObjectReference());
+            tempDocs.add(document.getObjectReference());
         }
         String qname = document.getArchetypeId().getQualifiedName();
         String linkId = document.getLinkId();
@@ -74,6 +92,21 @@ public class DownloadServlet extends HttpServlet {
         Command command = new BrowserOpenWindowCommand(
                 uri, null, "width=800,height=600,resizable=yes,scrollbars=yes");
         OpenVPMSApp.getInstance().enqueueCommand(command);
+    }
+
+    /**
+     * Initialises the servlet.
+     *
+     * @throws ServletException for any error
+     */
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        ApplicationContext context
+                = WebApplicationContextUtils.getRequiredWebApplicationContext(
+                getServletContext());
+        factory = (DocumentHandlerFactory) context.getBean(
+                "documentHandlerFactory");
     }
 
     /**
@@ -106,18 +139,50 @@ public class DownloadServlet extends HttpServlet {
             if (!(object instanceof Document)) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             } else {
-                Document doc = (Document) object;
-                response.setHeader("Content-Disposition",
-                                   "inline; filename=\"" + doc.getName()
-                                           + "\"");
-                response.setContentType(doc.getMimeType());
-                response.setContentLength(doc.getDocSize());
-                response.getOutputStream().write(doc.getContents());
-
-                if (_tempDocs.remove(ref)) {
-                    service.remove(doc);
-                }
+                serveDocument((Document) object, response, service);
             }
+        }
+    }
+
+    /**
+     * Serves a document
+     *
+     * @param doc      the document
+     * @param response the response
+     * @param service  the archetype service
+     * @throws IOException for any I/O error
+     */
+    private void serveDocument(Document doc, HttpServletResponse response,
+                               IArchetypeService service)
+            throws IOException {
+        DocumentHandler handler = factory.get(
+                doc.getName(), doc.getArchetypeId().getShortName(),
+                doc.getMimeType());
+        if (handler == null) {
+            response.sendError(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            log.error("Unsupported document: name=" + doc.getName()
+                    + ", shortName="
+                    + doc.getArchetypeId().getShortName()
+                    + ", mimeType=" + doc.getMimeType());
+        } else {
+            response.setHeader("Content-Disposition",
+                               "inline; filename=\"" + doc.getName() + "\"");
+            response.setContentType(doc.getMimeType());
+            response.setContentLength(doc.getDocSize());
+            InputStream stream = null;
+            try {
+                stream = handler.getContent(doc);
+                IOUtils.copy(stream, response.getOutputStream());
+            } finally {
+                IOUtils.closeQuietly(stream);
+            }
+        }
+
+        // todo - need to support case where two users download the same
+        // document simultaneously
+        if (tempDocs.remove(doc.getObjectReference())) {
+            service.remove(doc);
         }
     }
 }

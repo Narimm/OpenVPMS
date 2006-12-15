@@ -26,6 +26,10 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
+import org.openvpms.archetype.rules.doc.DocumentException;
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.UnsupportedDoc;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
+import org.openvpms.archetype.rules.doc.DocumentHandlerFactory;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -40,6 +44,7 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 import java.io.InputStream;
 
@@ -115,7 +120,7 @@ public class DocumentEditor extends AbstractPropertyEditor {
                 String fileName = event.getFileName();
                 InputStream stream = event.getInputStream();
                 String contentType = event.getContentType();
-                Integer size = event.getSize();
+                int size = event.getSize();
                 upload(fileName, stream, contentType, size);
             }
 
@@ -132,16 +137,21 @@ public class DocumentEditor extends AbstractPropertyEditor {
     /**
      * Uploads a file.
      *
-     * @param fileName the filename
-     * @param stream   the file stream
+     * @param fileName    the filename
+     * @param stream      the file stream
+     * @param contentType the mime type
+     * @param size        the content length
      */
     private void upload(String fileName, InputStream stream, String contentType,
-                        Integer size) {
-        final IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
+                        int size) {
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        DocumentHandlerFactory factory = ServiceHelper.getDocumentHandlerFactory();
         try {
-            Document doc = DocumentFactory.create(fileName, stream, contentType,
-                                                  size);
+            DocumentHandler handler = factory.get(fileName, contentType);
+            if (handler == null) {
+                throw new DocumentException(UnsupportedDoc, contentType);
+            }
+            Document doc = handler.create(fileName, stream, contentType, size);
             service.save(doc);
             IMObjectReference ref = doc.getObjectReference();
             getProperty().setValue(ref);
