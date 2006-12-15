@@ -30,7 +30,9 @@ import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -93,17 +95,27 @@ public abstract class AbstractEntityQuery<T extends Entity>
         String type = getShortName();
         String name = getName();
         boolean activeOnly = !includeInactive();
+        ResultSet<T> result;
 
-        BaseArchetypeConstraint archetypes;
-        if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
-            archetypes = getArchetypes();
-            archetypes.setActiveOnly(activeOnly);
+        if (canQueryOnName()) {
+            BaseArchetypeConstraint archetypes;
+            if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
+                archetypes = getArchetypes();
+                archetypes.setActiveOnly(activeOnly);
+            } else {
+                archetypes = new ShortNameConstraint(type, true, activeOnly);
+            }
+            result = new EntityResultSet<T>(archetypes, name,
+                                            isIdentitySearch(),
+                                            getConstraints(),
+                                            sort, getMaxResults(),
+                                            isDistinct());
         } else {
-            archetypes = new ShortNameConstraint(type, true, activeOnly);
+            ErrorHelper.show(Messages.get("entityquery.error.nameLength",
+                                          getNameMinLength()));
+            result = new EmptyResultSet<T>(getMaxResults());
         }
-        return new EntityResultSet<T>(archetypes, name, isIdentitySearch(),
-                                      getConstraints(), sort,
-                                      getMaxResults(), isDistinct());
+        return result;
     }
 
     /**

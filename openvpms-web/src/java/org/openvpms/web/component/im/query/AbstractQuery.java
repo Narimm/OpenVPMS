@@ -26,6 +26,7 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.apache.commons.lang.CharSetUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
@@ -100,6 +101,11 @@ public abstract class AbstractQuery<T> implements Query<T> {
      * to query all instances.
      */
     private TextField instanceName;
+
+    /**
+     * The minimum length of the name field, before queries can be performed.
+     */
+    private int nameMinLength;
 
     /**
      * The inactive check box. If selected, deactived instances will be returned
@@ -265,6 +271,24 @@ public abstract class AbstractQuery<T> implements Query<T> {
             }
         }
         return name;
+    }
+
+    /**
+     * Sets the minimum length of a name before queries can be performed.
+     *
+     * @param length
+     */
+    public void setNameMinLength(int length) {
+        nameMinLength = length;
+    }
+
+    /**
+     * Returns the minimum length of a name before queries can be performed
+     *
+     * @return the minimum length
+     */
+    public int getNameMinLength() {
+        return nameMinLength;
     }
 
     /**
@@ -552,6 +576,28 @@ public abstract class AbstractQuery<T> implements Query<T> {
         for (QueryListener listener : listeners) {
             listener.query();
         }
+    }
+
+    /**
+     * Determines if a query may be performed on name.
+     * A query can be performed on name if:
+     * <ul>
+     * <li>{@link #isAuto()} <code>==true</code></li>
+     * <li>the length of the name (minus wildcards) &gt;=
+     * {@link #getNameMinLength()} </code></li>
+     * </ul>
+     *
+     * @return <code>true</code> if a query may be performed on name;
+     *         otherwise <code>false</code>
+     */
+    protected boolean canQueryOnName() {
+        boolean result = true;
+        String name = getName();
+        if (!isAuto()) {
+            int length = CharSetUtils.delete(name, "*").length();
+            result = (length >= getNameMinLength());
+        }
+        return result;
     }
 
 }
