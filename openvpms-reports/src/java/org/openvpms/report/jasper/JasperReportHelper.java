@@ -21,12 +21,16 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
+import org.apache.commons.io.IOUtils;
+import org.openvpms.archetype.rules.doc.DocumentException;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.TemplateHelper;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 
@@ -73,16 +77,19 @@ public class JasperReportHelper {
     /**
      * Returns a jasper report template given its name.
      *
-     * @param name the report name
+     * @param name     the report name
+     * @param handlers the document handlers
      * @return the jasper report template or <code>null</code> if none can be
      *         found
-     * @throws JRException if the report can't be deserialized
+     * @throws DocumentException for any document error
+     * @throws JRException       if the report can't be deserialized
      */
-    public static JasperDesign getReport(String name, IArchetypeService service)
+    public static JasperDesign getReport(String name, IArchetypeService service,
+                                         DocumentHandlers handlers)
             throws JRException {
         Document document = TemplateHelper.getDocument(name, service);
         if (document != null) {
-            return getReport(document);
+            return getReport(document, handlers);
         }
         return null;
     }
@@ -93,17 +100,21 @@ public class JasperReportHelper {
      *
      * @param shortName the archetype short name
      * @param service   the archetype service
+     * @param handlers  the document handlers
      * @return the jasper report template corresponding to
      *         <code>shortName</code> or <code>null</code> if none can be found.
-     * @throws JRException if the report can't be deserialized
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws DocumentException         for any document error
+     * @throws JRException               if the report can't be deserialized
      */
     public static JasperDesign getReportForArchetype(String shortName,
-                                                     IArchetypeService service)
+                                                     IArchetypeService service,
+                                                     DocumentHandlers handlers)
             throws JRException {
         Document document = TemplateHelper.getDocumentForArchetype(shortName,
                                                                    service);
         if (document != null) {
-            return getReport(document);
+            return getReport(document, handlers);
         }
         return null;
     }
@@ -112,13 +123,22 @@ public class JasperReportHelper {
      * Deserializes a jasper report from a {@link Document}.
      *
      * @param document the document
+     * @param handlers the document handlers
      * @return a new jasper report
-     * @throws JRException if the report can't be deserialized
+     * @throws DocumentException for any document error
+     * @throws JRException       if the report can't be deserialized
      */
-    public static JasperDesign getReport(Document document)
+    public static JasperDesign getReport(Document document,
+                                         DocumentHandlers handlers)
             throws JRException {
-        ByteArrayInputStream stream
-                = new ByteArrayInputStream(document.getContents());
-        return JRXmlLoader.load(stream);
+
+        InputStream stream = null;
+        try {
+            DocumentHandler handler = handlers.get(document);
+            stream = handler.getContent(document);
+            return JRXmlLoader.load(stream);
+        } finally {
+            IOUtils.closeQuietly(stream);
+        }
     }
 }

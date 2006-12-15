@@ -36,14 +36,20 @@ import com.sun.star.uno.UnoRuntime;
 import com.sun.star.util.CloseVetoException;
 import com.sun.star.util.XCloseable;
 import com.sun.star.util.XRefreshable;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.doc.DocumentException;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,7 +65,12 @@ public class OpenOfficeDocument {
     /**
      * The document component.
      */
-    private XComponent _document;
+    private XComponent document;
+
+    /**
+     * The document handlers.
+     */
+    private DocumentHandlers handlers;
 
     /**
      * Prefix for user fields.
@@ -70,15 +81,16 @@ public class OpenOfficeDocument {
     /**
      * The logger.
      */
-    private static final Log _log = LogFactory.getLog(OpenOfficeDocument.class);
+    private static final Log log = LogFactory.getLog(OpenOfficeDocument.class);
 
     /**
      * Constructs a new <code>OpenOfficeDocument</code>.
      *
      * @param document the document
      */
-    public OpenOfficeDocument(XComponent document) {
-        _document = document;
+    public OpenOfficeDocument(XComponent document, DocumentHandlers handlers) {
+        this.document = document;
+        this.handlers = handlers;
     }
 
     /**
@@ -88,16 +100,34 @@ public class OpenOfficeDocument {
      * @param service  the OpenOffice service
      * @throws OpenOfficeException for any error
      */
-    public OpenOfficeDocument(Document document, OpenOfficeService service) {
+    public OpenOfficeDocument(Document document, OpenOfficeService service,
+                              DocumentHandlers handlers) {
         XComponentLoader loader = service.getComponentLoader();
 
-        byte[] content = document.getContents();
-        XInputStream stream = new ByteArrayToXInputStreamAdapter(content);
+        InputStream input;
+        byte[] content;
+        try {
+            DocumentHandler handler = handlers.get(document);
+            input = handler.getContent(document);
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            IOUtils.copy(input, output);
+            IOUtils.closeQuietly(input);
+            content = output.toByteArray();
+            IOUtils.closeQuietly(output);
+        } catch (DocumentException exception) {
+            throw new OpenOfficeException(exception, FailedToCreateDoc,
+                                          document.getName());
+        } catch (java.io.IOException exception) {
+            throw new OpenOfficeException(exception, FailedToCreateDoc,
+                                          document.getName());
+        }
+        XInputStream xstream = new ByteArrayToXInputStreamAdapter(content);
+        // XInputStream xstream = new InputStreamToXInputStreamAdapter(stream);
         PropertyValue[] properties = new PropertyValue[]{
                 property("ReadOnly", Boolean.TRUE),
                 property("Hidden", Boolean.TRUE),
                 property("AsTemplate", true),
-                property("InputStream", stream)
+                property("InputStream", xstream)
         };
         // AsTemplate tells office to create a new document from the given
         // stream
@@ -114,7 +144,8 @@ public class OpenOfficeDocument {
             throw new OpenOfficeException(FailedToCreateDoc,
                                           document.getName());
         }
-        _document = component;
+        this.document = component;
+        this.handlers = handlers;
     }
 
     /**
@@ -123,7 +154,7 @@ public class OpenOfficeDocument {
      * @return the underlying component
      */
     public XComponent getComponent() {
-        return _document;
+        return document;
     }
 
     /**
@@ -202,7 +233,7 @@ public class OpenOfficeDocument {
     public byte[] export(String mimeType) {
         boolean isPDF = mimeType.equals(DocFormats.PDF_TYPE);
         XTextDocument textDocument = (XTextDocument) UnoRuntime.queryInterface(
-                XTextDocument.class, _document);
+                XTextDocument.class, document);
         XOutputStreamToByteArrayAdapter stream
                 = new XOutputStreamToByteArrayAdapter();
 
@@ -234,25 +265,27 @@ public class OpenOfficeDocument {
      *
      * @param mimeType the mime-type of the document format to export to
      * @param name     the document name
-     * @param service  the archetype service
      * @return the exported document
-     * @throws OpenOfficeException       if the document cannot be exported
-     * @throws ArchetypeServiceException for any archetype service error
+     * @throws OpenOfficeException if the source document cannot be
+     *                             exported
+     * @throws DocumentException   if the target document cannot be
+     *                             created
      */
-    public Document export(String mimeType, String name,
-                           IArchetypeService service) {
+    public Document export(String mimeType, String name) {
         boolean isPDF = mimeType.equals(DocFormats.PDF_TYPE);
-        Document result = (Document) service.create("document.other");
         byte[] content = export(mimeType);
         if (isPDF) {
-            result.setName(name + "." + DocFormats.PDF_EXT);
-        } else {
-            result.setName(name);
+            name = name + "." + DocFormats.PDF_EXT;
         }
-        result.setContents(content);
-        result.setDocSize(content.length);
-        result.setMimeType(mimeType);
-        return result;
+        try {
+            DocumentHandler handler = handlers.get(name, "document.other",
+                                                   mimeType);
+            return handler.create(name, new ByteArrayInputStream(content),
+                                  mimeType, content.length);
+        } catch (OpenVPMSException exception) {
+            throw new OpenOfficeException(exception, FailedToExportDoc,
+                                          exception.getMessage());
+        }
     }
 
     /**
@@ -261,14 +294,13 @@ public class OpenOfficeDocument {
     public void close() {
         try {
             XModel model = (XModel) UnoRuntime.queryInterface(XModel.class,
-                                                              _document);
+                                                              document);
             XCloseable closeable = (XCloseable) UnoRuntime.queryInterface(
                     XCloseable.class, model);
             closeable.close(false);
         } catch (CloseVetoException exception) {
-            _log.error("Failed to close document", exception);
+            log.error("Failed to close document", exception);
         }
-
     }
 
     /**
@@ -278,7 +310,7 @@ public class OpenOfficeDocument {
      */
     private XTextFieldsSupplier getTextFieldSupplier() {
         return (XTextFieldsSupplier) UnoRuntime.queryInterface(
-                XTextFieldsSupplier.class, _document);
+                XTextFieldsSupplier.class, document);
     }
 
     /**

@@ -25,7 +25,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
 import org.openvpms.archetype.rules.doc.DocumentException;
-import org.openvpms.archetype.rules.doc.DocumentHandlerFactory;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -70,21 +70,21 @@ public class TemplateLoader {
     private final IArchetypeService service;
 
     /**
-     * The document handler factory.
+     * The document handlers.
      */
-    private final DocumentHandlerFactory factory;
+    private final DocumentHandlers handlers;
 
 
     /**
-     * Construct a new <code>TemplateLoader</code>.
+     * Construct a new <code>JasperTemplateLoader</code>.
      *
      * @param service the archetype service
-     * @param factory the document handler factory
+     * @param handlers the document handlers
      */
     public TemplateLoader(IArchetypeService service,
-                          DocumentHandlerFactory factory) {
+                          DocumentHandlers handlers) {
         this.service = service;
-        this.factory = factory;
+        this.handlers = handlers;
     }
 
     /**
@@ -185,11 +185,11 @@ public class TemplateLoader {
                     IArchetypeService service
                             = (IArchetypeService) context.getBean(
                             "archetypeService");
-                    DocumentHandlerFactory factory
-                            = (DocumentHandlerFactory) context.getBean(
-                            "documentHandlerFactory");
+                    DocumentHandlers handlers
+                            = (DocumentHandlers) context.getBean(
+                            "documentHandlers");
                     TemplateLoader loader = new TemplateLoader(service,
-                                                               factory);
+                                                               handlers);
                     loader.load(file);
                 } else {
                     displayUsage(parser);
@@ -214,7 +214,7 @@ public class TemplateLoader {
             file = new File(dir, template.getPath());
         }
         return DocumentHelper.create(file, template.getDocType(),
-                                     template.getMimeType(), factory);
+                                     template.getMimeType(), handlers);
     }
 
     /**

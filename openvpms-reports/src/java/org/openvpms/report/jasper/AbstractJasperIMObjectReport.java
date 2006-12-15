@@ -26,6 +26,9 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
+import org.openvpms.archetype.rules.doc.DocumentException;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -41,8 +44,8 @@ import javax.print.attribute.HashPrintServiceAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.PrintServiceAttributeSet;
 import javax.print.attribute.standard.Copies;
-import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.PrinterName;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,14 +66,22 @@ public abstract class AbstractJasperIMObjectReport
      */
     private final IArchetypeService service;
 
+    /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
 
     /**
      * Constructs a new <code>AbstractJasperIMObjectReport</code>.
      *
-     * @param service the archetype service
+     * @param service  the archetype service
+     * @param handlers the document handlers
      */
-    public AbstractJasperIMObjectReport(IArchetypeService service) {
+    public AbstractJasperIMObjectReport(IArchetypeService service,
+                                        DocumentHandlers handlers) {
         this.service = service;
+        this.handlers = handlers;
     }
 
     /**
@@ -191,8 +202,7 @@ public abstract class AbstractJasperIMObjectReport
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected Document convert(JasperPrint report, String mimeType) {
-        Document document = (Document) getArchetypeService().create(
-                "document.other");
+        Document document;
         try {
             byte[] data;
             String ext;
@@ -203,10 +213,14 @@ public abstract class AbstractJasperIMObjectReport
                 data = exportToRTF(report);
                 ext = DocFormats.RTF_EXT;
             }
-            document.setName(report.getName() + "." + ext);
-            document.setContents(data);
-            document.setMimeType(mimeType);
-            document.setDocSize(data.length);
+            String name = report.getName() + "." + ext;
+            DocumentHandler handler = handlers.get(name, "document.other",
+                                                   mimeType);
+            ByteArrayInputStream stream = new ByteArrayInputStream(data);
+            document = handler.create(name, stream, mimeType, data.length);
+        } catch (DocumentException exception) {
+            throw new IMObjectReportException(exception, FailedToGenerateReport,
+                                              exception.getMessage());
         } catch (JRException exception) {
             throw new IMObjectReportException(exception, FailedToGenerateReport,
                                               exception.getMessage());

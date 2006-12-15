@@ -18,6 +18,8 @@
 
 package org.openvpms.report.openoffice;
 
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -30,7 +32,6 @@ import org.openvpms.report.IMObjectReport;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -50,29 +51,23 @@ public class OpenOfficeIMObjectReportTestCase
     /**
      * The archetype service.
      */
-    private IArchetypeService _service;
+    private IArchetypeService service;
+
+    /**
+     * The document handlers.
+     */
+    private DocumentHandlers handlers;
+
 
     /**
      * Tests reporting.
      */
     public void testReport() throws IOException {
-        Document doc = (Document) _service.create("document.other");
-        assertNotNull(doc);
         File file = new File("src/test/reports/act.customerEstimation.odt");
-        FileInputStream stream = new FileInputStream(file);
-        int length = (int) file.length();
-        byte[] content = new byte[length];
-        if (stream.read(content) != length) {
-            throw new IOException("Failed to read " + file);
-        }
-        stream.close();
+        Document doc = DocumentHelper.create(file, DocFormats.ODT_TYPE,
+                                             handlers);
 
-        doc.setContents(content);
-        doc.setName(file.getName());
-        doc.setDocSize(length);
-        doc.setMimeType(DocFormats.ODT_TYPE);
-
-        IMObjectReport report = new OpenOfficeIMObjectReport(doc);
+        IMObjectReport report = new OpenOfficeIMObjectReport(doc, handlers);
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setValue("startTime", java.sql.Date.valueOf("2006-08-04"));
@@ -102,7 +97,7 @@ public class OpenOfficeIMObjectReportTestCase
     private Map<String, String> getFields(Document document) {
         Map<String, String> fields = new HashMap<String, String>();
         OpenOfficeDocument doc = new OpenOfficeDocument(
-                document, OpenOfficeHelper.getService());
+                document, OpenOfficeHelper.getService(), handlers);
         for (String name : doc.getUserFieldNames()) {
             fields.put(name, doc.getUserField(name));
         }
@@ -127,9 +122,12 @@ public class OpenOfficeIMObjectReportTestCase
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        _service = (IArchetypeService) applicationContext.getBean(
+        service = (IArchetypeService) applicationContext.getBean(
                 "archetypeService");
-        assertNotNull(_service);
+        handlers = (DocumentHandlers) applicationContext.getBean(
+                "documentHandlers");
+        assertNotNull(service);
+        assertNotNull(handlers);
     }
 
     /**
@@ -139,7 +137,7 @@ public class OpenOfficeIMObjectReportTestCase
      * @return the new object
      */
     private IMObject create(String shortName) {
-        IMObject object = _service.create(shortName);
+        IMObject object = service.create(shortName);
         assertNotNull(object);
         return object;
     }

@@ -25,9 +25,9 @@ import com.martiansoftware.jsap.Switch;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import net.sf.jasperreports.view.JasperViewer;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -37,10 +37,10 @@ import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCrea
 import org.openvpms.report.TemplateHelper;
 import org.openvpms.report.jasper.DynamicJasperReport;
 import org.openvpms.report.jasper.JasperIMObjectReport;
+import org.openvpms.report.jasper.JasperReportHelper;
 import org.openvpms.report.jasper.TemplatedJasperReport;
 import org.openvpms.report.tools.ReportTool;
 
-import java.io.ByteArrayInputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
@@ -60,14 +60,15 @@ public class JasperReportTool extends ReportTool {
      */
     private final boolean showXML;
 
+
     /**
-     * Construct a new <code>JasperReportTool</code>.
+     * Constructs a new <code>JasperReportTool</code>.
      *
-     * @param service the archetype service
-     * @param showXML if  <code>true</code> display the .jrxml
+     * @param contextPath the application context path
+     * @param showXML     if  <code>true</code> display the .jrxml
      */
-    public JasperReportTool(IArchetypeService service, boolean showXML) {
-        super(service);
+    public JasperReportTool(String contextPath, boolean showXML) {
+        super(contextPath);
         this.showXML = showXML;
     }
 
@@ -147,6 +148,7 @@ public class JasperReportTool extends ReportTool {
      */
     protected IMObjectReport getReport(IMObject object) {
         IArchetypeService service = getArchetypeService();
+        DocumentHandlers handlers = getDocumentHandlers();
         String shortName = object.getArchetypeId().getShortName();
         Document doc = TemplateHelper.getDocumentForArchetype(
                 shortName, service);
@@ -154,10 +156,10 @@ public class JasperReportTool extends ReportTool {
         try {
             if (doc != null) {
                 if (doc.getName().endsWith(".jrxml")) {
-                    ByteArrayInputStream stream
-                            = new ByteArrayInputStream(doc.getContents());
-                    JasperDesign design = JRXmlLoader.load(stream);
-                    report = new TemplatedJasperReport(design, service);
+                    JasperDesign design = JasperReportHelper.getReport(
+                            doc, handlers);
+                    report = new TemplatedJasperReport(design, service,
+                                                       handlers);
                 } else {
                     System.err.println("Warning:" + doc.getName()
                             + " not a recognised jasper extension. "
@@ -166,7 +168,8 @@ public class JasperReportTool extends ReportTool {
             }
             if (report == null) {
                 report = new DynamicJasperReport(
-                        service.getArchetypeDescriptor(shortName), service);
+                        service.getArchetypeDescriptor(shortName), service,
+                        handlers);
             }
         } catch (JRException exception) {
             throw new IMObjectReportException(exception, FailedToCreateReport,
@@ -198,7 +201,7 @@ public class JasperReportTool extends ReportTool {
      */
     private static JasperReportTool create(String contextPath,
                                            boolean showXML) {
-        return new JasperReportTool(initArchetypeService(contextPath), showXML);
+        return new JasperReportTool(contextPath, showXML);
     }
 
     /**

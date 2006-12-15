@@ -23,6 +23,9 @@ import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
+import org.apache.commons.io.IOUtils;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -31,9 +34,9 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportFactory;
-import org.openvpms.report.DocFormats;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -41,8 +44,9 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
+import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -56,15 +60,28 @@ public class ReportTool {
     /**
      * The archetype service.
      */
-    private IArchetypeService _service;
+    private final IArchetypeService service;
+
+    /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
 
     /**
      * Construct a new <code>ReportTool</code>.
      *
-     * @param service the archetype service
+     * @param contextPath the application context path
      */
-    public ReportTool(IArchetypeService service) {
-        _service = service;
+    public ReportTool(String contextPath) {
+        ApplicationContext context;
+        if (!new File(contextPath).exists()) {
+            context = new ClassPathXmlApplicationContext(contextPath);
+        } else {
+            context = new FileSystemXmlApplicationContext(contextPath);
+        }
+        service = (IArchetypeService) context.getBean("archetypeService");
+        handlers = (DocumentHandlers) context.getBean("documentHandlers");
     }
 
     /**
@@ -76,7 +93,7 @@ public class ReportTool {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true)
                 .setFirstResult(0)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        IPage<IMObject> rows = _service.get(query);
+        IPage<IMObject> rows = service.get(query);
         for (IMObject object : rows.getResults()) {
             System.out.println(object.getArchetypeId().getShortName()
                     + " " + object.getUid() + " " + object.getName());
@@ -95,7 +112,7 @@ public class ReportTool {
                 .setFirstResult(0)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS);
         query.add(new NodeConstraint("name", name));
-        IPage<IMObject> rows = _service.get(query);
+        IPage<IMObject> rows = service.get(query);
         List<IMObject> objects = rows.getResults();
         return (!objects.isEmpty()) ? objects.get(0) : null;
     }
@@ -108,8 +125,8 @@ public class ReportTool {
      * @return the corresponding object, or <code>null</code> if none was found
      */
     public IMObject get(String shortName, long uid) {
-        ArchetypeId id = _service.getArchetypeDescriptor(shortName).getType();
-        return ArchetypeQueryHelper.getByUid(_service, id, uid);
+        ArchetypeId id = service.getArchetypeDescriptor(shortName).getType();
+        return ArchetypeQueryHelper.getByUid(service, id, uid);
     }
 
     /**
@@ -125,9 +142,12 @@ public class ReportTool {
                               DocFormats.PDF_TYPE};
         Document doc = report.generate(Arrays.asList(object), mimeTypes);
         path = new File(path, doc.getName()).getPath();
-        FileOutputStream stream = new FileOutputStream(path);
-        stream.write(doc.getContents());
-        stream.close();
+        FileOutputStream output = new FileOutputStream(path);
+        DocumentHandler handler = handlers.get(doc);
+        InputStream input = handler.getContent(doc);
+        IOUtils.copy(input, output);
+        input.close();
+        output.close();
     }
 
     /**
@@ -151,10 +171,10 @@ public class ReportTool {
                 String output = config.getString("output");
 
                 if (list && shortName != null) {
-                    ReportTool reporter = create(contextPath);
+                    ReportTool reporter = new ReportTool(contextPath);
                     reporter.list(shortName);
                 } else if (report && shortName != null && output != null) {
-                    ReportTool reporter = ReportTool.create(contextPath);
+                    ReportTool reporter = new ReportTool(contextPath);
                     IMObject object;
                     if (id == -1) {
                         object = reporter.get(shortName, name);
@@ -185,7 +205,7 @@ public class ReportTool {
      */
     protected IMObjectReport getReport(IMObject object) {
         String shortName = object.getArchetypeId().getShortName();
-        return IMObjectReportFactory.create(shortName, _service);
+        return IMObjectReportFactory.create(shortName, service, handlers);
     }
 
     /**
@@ -194,24 +214,16 @@ public class ReportTool {
      * @return the archetype service
      */
     protected IArchetypeService getArchetypeService() {
-        return _service;
+        return service;
     }
 
     /**
-     * Helper to initialise the archetype service.
+     * Returns the document handlers.
      *
-     * @param contextPath the application context path
+     * @return the document handlers
      */
-    protected static IArchetypeService initArchetypeService(
-            String contextPath) {
-        ApplicationContext context;
-        if (!new File(contextPath).exists()) {
-            context = new ClassPathXmlApplicationContext(contextPath);
-        } else {
-            context = new FileSystemXmlApplicationContext(contextPath);
-        }
-
-        return (IArchetypeService) context.getBean("archetypeService");
+    protected DocumentHandlers getDocumentHandlers() {
+        return handlers;
     }
 
     /**
@@ -257,16 +269,6 @@ public class ReportTool {
                 .setLongFlag("output")
                 .setHelp("Save report to file. Use with -r"));
         return parser;
-    }
-
-    /**
-     * Creates the report tool.
-     *
-     * @param contextPath the application context path
-     * @return a new report tool
-     */
-    private static ReportTool create(String contextPath) {
-        return new ReportTool(initArchetypeService(contextPath));
     }
 
     /**

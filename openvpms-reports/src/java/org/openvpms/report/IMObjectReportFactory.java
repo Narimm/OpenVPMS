@@ -18,6 +18,7 @@
 
 package org.openvpms.report;
 
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -38,20 +39,22 @@ public class IMObjectReportFactory {
     /**
      * Creates a new report for a template.
      *
-     * @param template  the document template
-     * @param service   the archetype service
+     * @param template the document template
+     * @param service  the archetype service
+     * @param handlers the document handlers
      * @return a new report
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static IMObjectReport create(Document template,
-                                        IArchetypeService service) {
+                                        IArchetypeService service,
+                                        DocumentHandlers handlers) {
         String name = template.getName();
         IMObjectReport report;
         if (name.endsWith(DocFormats.JRXML_EXT)) {
-            report = new TemplatedJasperReport(template, service);
+            report = new TemplatedJasperReport(template, service, handlers);
         } else if (name.endsWith(DocFormats.ODT_EXT)) {
-            report = new OpenOfficeIMObjectReport(template);
+            report = new OpenOfficeIMObjectReport(template, handlers);
         } else {
             throw new IMObjectReportException(
                     FailedToCreateReport,
@@ -65,18 +68,21 @@ public class IMObjectReportFactory {
      *
      * @param shortName the archetype short name
      * @param service   the archetype service
+     * @param handlers   the document handlers
      * @return a new report
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static IMObjectReport create(String shortName,
-                                        IArchetypeService service) {
+                                        IArchetypeService service,
+                                        DocumentHandlers handlers) {
         Document doc = TemplateHelper.getDocumentForArchetype(shortName,
                                                               service);
         if (doc == null) {
             return new DynamicJasperReport(
-                    service.getArchetypeDescriptor(shortName), service);
+                    service.getArchetypeDescriptor(shortName), service,
+                    handlers);
         }
-        return create(doc, service);
+        return create(doc, service, handlers);
     }
 }
