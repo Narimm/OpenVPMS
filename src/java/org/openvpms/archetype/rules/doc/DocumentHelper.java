@@ -46,7 +46,7 @@ public class DocumentHelper {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static Document create(File file, String mimeType,
-                                  DocumentHandlerFactory factory) {
+                                  DocumentHandlers factory) {
         DocumentHandler handler = factory.get(file.getName(), mimeType);
         return create(file, handler, mimeType);
     }
@@ -63,7 +63,7 @@ public class DocumentHelper {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static Document create(File file, String shortName, String mimeType,
-                                  DocumentHandlerFactory factory) {
+                                  DocumentHandlers factory) {
         DocumentHandler handler = factory.get(file.getName(), shortName,
                                               mimeType);
         return create(file, handler, mimeType);
