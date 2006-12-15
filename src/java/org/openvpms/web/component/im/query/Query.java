@@ -85,6 +85,20 @@ public interface Query<T> {
     String getName();
 
     /**
+     * Sets the minimum length of a name before queries can be performed.
+     *
+     * @param length
+     */
+    void setNameMinLength(int length);
+
+    /**
+     * Returns the minimum length of a name before queries can be performed
+     *
+     * @return the minimum length
+     */
+    int getNameMinLength();
+
+    /**
      * Determines if the query should be run automatically.
      *
      * @param auto if <code>true</code> run the query automatically
