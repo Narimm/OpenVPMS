@@ -22,9 +22,8 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
-import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
-import org.openvpms.archetype.rules.doc.DocumentHandlerFactory;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -193,15 +192,10 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
                     InputStream stream = event.getInputStream();
                     String contentType = event.getContentType();
                     Integer size = event.getSize();
-                    DocumentHandlerFactory factory
-                            = ServiceHelper.getDocumentHandlerFactory();
-                    DocumentHandler handler = factory.get(fileName,
-                                                          contentType);
-                    if (handler == null) {
-                        throw new DocumentException(
-                                DocumentException.ErrorCode.UnsupportedDoc,
-                                contentType);
-                    }
+                    DocumentHandlers handlers
+                            = ServiceHelper.getDocumentHandlers();
+                    DocumentHandler handler = handlers.get(fileName,
+                                                           contentType);
                     Document doc = handler.create(fileName, stream, contentType,
                                                   size);
                     service.save(doc);

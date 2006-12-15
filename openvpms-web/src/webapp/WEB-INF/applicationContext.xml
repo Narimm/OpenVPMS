@@ -408,9 +408,9 @@
     <!--                        REPORTING                                   -->
     <!-- ================================================================== -->
 
-    <!-- the Document handler factory -->
-    <bean id="documentHandlerFactory"
-          class="org.openvpms.archetype.rules.doc.DocumentHandlerFactory">
+    <!-- the Document handlers -->
+    <bean id="documentHandlers"
+          class="org.openvpms.archetype.rules.doc.DocumentHandlers">
         <property name="documentHandlers">
             <list>
                 <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler"/>
@@ -448,6 +448,9 @@
           class="org.openvpms.report.openoffice.PrintService">
         <constructor-arg>
             <ref local="openOfficeService"/>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <ref local="documentHandlers"/>
         </constructor-arg>
     </bean>
 

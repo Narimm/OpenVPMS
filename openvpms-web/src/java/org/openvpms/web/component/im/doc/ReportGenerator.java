@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.doc;
 
 import org.openvpms.archetype.rules.doc.DocumentException;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -35,6 +36,7 @@ import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.IMObjectReportFactory;
 import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.Arrays;
 
@@ -126,7 +128,8 @@ public class ReportGenerator {
         if (doc == null) {
             throw new DocumentException(NotFound);
         }
-        return IMObjectReportFactory.create(doc, service);
+        DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
+        return IMObjectReportFactory.create(doc, service, handlers);
     }
 
     /**

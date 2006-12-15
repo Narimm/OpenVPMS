@@ -26,6 +26,7 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.IMObjectReportFactory;
+import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.Arrays;
 
@@ -64,7 +65,8 @@ public class IMObjectReportPrinter<T extends IMObject>
     protected IMObjectReport createReport(IMObject object) {
         String shortName = object.getArchetypeId().getShortName();
         return IMObjectReportFactory.create(
-                shortName, ArchetypeServiceHelper.getArchetypeService());
+                shortName, ArchetypeServiceHelper.getArchetypeService(),
+                ServiceHelper.getDocumentHandlers());
     }
 
 }

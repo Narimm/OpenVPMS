@@ -25,7 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
-import org.openvpms.archetype.rules.doc.DocumentHandlerFactory;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -63,9 +63,9 @@ public class DownloadServlet extends HttpServlet {
             = Collections.synchronizedSet(new HashSet<IMObjectReference>());
 
     /**
-     * The document handler factory.
+     * The document handlers.
      */
-    private DocumentHandlerFactory factory;
+    private DocumentHandlers handlers;
 
     /**
      * The logger.
@@ -105,8 +105,7 @@ public class DownloadServlet extends HttpServlet {
         ApplicationContext context
                 = WebApplicationContextUtils.getRequiredWebApplicationContext(
                 getServletContext());
-        factory = (DocumentHandlerFactory) context.getBean(
-                "documentHandlerFactory");
+        handlers = (DocumentHandlers) context.getBean("documentHandlers");
     }
 
     /**
@@ -155,7 +154,7 @@ public class DownloadServlet extends HttpServlet {
     private void serveDocument(Document doc, HttpServletResponse response,
                                IArchetypeService service)
             throws IOException {
-        DocumentHandler handler = factory.get(
+        DocumentHandler handler = handlers.get(
                 doc.getName(), doc.getArchetypeId().getShortName(),
                 doc.getMimeType());
         if (handler == null) {
