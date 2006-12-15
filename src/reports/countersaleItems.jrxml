@@ -40,7 +40,7 @@
 			</band>
 		</background>
 		<title>
-			<band height="28"  isSplitAllowed="true" >
+			<band height="4"  isSplitAllowed="true" >
 			</band>
 		</title>
 		<pageHeader>
@@ -191,15 +191,15 @@
 			</band>
 		</columnFooter>
 		<pageFooter>
-			<band height="40"  isSplitAllowed="true" >
+			<band height="7"  isSplitAllowed="true" >
 			</band>
 		</pageFooter>
 		<lastPageFooter>
-			<band height="50"  isSplitAllowed="true" >
+			<band height="5"  isSplitAllowed="true" >
 			</band>
 		</lastPageFooter>
 		<summary>
-			<band height="50"  isSplitAllowed="true" >
+			<band height="3"  isSplitAllowed="true" >
 			</band>
 		</summary>
 </jasperReport>

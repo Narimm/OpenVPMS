@@ -2,13 +2,13 @@
 <!-- Created with iReport - A designer for JasperReports -->
 <!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
 <jasperReport
-		 name="invoice"
+		 name="receipt"
 		 columnCount="1"
 		 printOrder="Vertical"
 		 orientation="Portrait"
-		 pageWidth="595"
-		 pageHeight="842"
-		 columnWidth="535"
+		 pageWidth="421"
+		 pageHeight="595"
+		 columnWidth="361"
 		 columnSpacing="0"
 		 leftMargin="30"
 		 rightMargin="30"
@@ -32,8 +32,6 @@
 	<field name="customer.entity" class="org.openvpms.component.business.domain.im.party.Party"/>
 	<field name="startTime" class="java.util.Date"/>
 	<field name="uid" class="java.lang.Long"/>
-	<field name="tax" class="java.math.BigDecimal"/>
-	<field name="notes" class="java.lang.String"/>
 	<field name="[party:getBillingAddress(openvpms:get(.,'customer.entity'))]" class="java.lang.String"/>
 
 		<background>
@@ -41,141 +39,141 @@
 			</band>
 		</background>
 		<title>
-			<band height="120"  isSplitAllowed="true" >
+			<band height="99"  isSplitAllowed="true" >
 			</band>
 		</title>
 		<pageHeader>
-			<band height="127"  isSplitAllowed="true" >
+			<band height="116"  isSplitAllowed="true" >
 				<staticText>
 					<reportElement
-						x="139"
-						y="4"
+						x="56"
+						y="8"
 						width="236"
 						height="29"
-						key="staticText-1"/>
+						key="staticText-7"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement textAlignment="Center">
 						<font pdfFontName="Helvetica-Bold" size="18" isBold="true"/>
 					</textElement>
-				<text><![CDATA[Tax Invoice]]></text>
-				</staticText>
-				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="384"
-						y="48"
-						width="148"
-						height="16"
-						key="textField-3"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="12"/>
-					</textElement>
-				<textFieldExpression   class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
-				</textField>
-				<staticText>
-					<reportElement
-						x="300"
-						y="72"
-						width="81"
-						height="16"
-						key="staticText-2"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="12"/>
-					</textElement>
-				<text><![CDATA[Transaction No]]></text>
-				</staticText>
-				<staticText>
-					<reportElement
-						x="301"
-						y="48"
-						width="81"
-						height="16"
-						key="staticText-3"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="12"/>
-					</textElement>
-				<text><![CDATA[Date]]></text>
+				<text><![CDATA[Tax Receipt]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="385"
-						y="71"
-						width="148"
-						height="16"
-						key="textField-4"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="12"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.Long"><![CDATA[$F{uid}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="38"
-						y="46"
-						width="253"
+						x="21"
+						y="42"
+						width="167"
 						height="19"
-						key="textField-1"/>
+						key="textField-7"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
-						<font size="12"/>
+						<font size="10"/>
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA[$F{customer.entity.name}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="37"
-						y="71"
-						width="251"
+						x="20"
+						y="67"
+						width="167"
 						height="45"
-						key="textField-2"/>
+						key="textField-8"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
-						<font size="12"/>
+						<font size="10"/>
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA[$F{[party:getBillingAddress(openvpms:get(.,'customer.entity'))]}]]></textFieldExpression>
 				</textField>
+				<staticText>
+					<reportElement
+						x="211"
+						y="44"
+						width="57"
+						height="16"
+						key="staticText-8"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+				<text><![CDATA[Date]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="275"
+						y="44"
+						width="73"
+						height="16"
+						key="textField-9"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="210"
+						y="62"
+						width="57"
+						height="16"
+						key="staticText-9"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+				<text><![CDATA[Transaction No]]></text>
+				</staticText>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="383"
-						y="91"
+						x="276"
+						y="62"
+						width="73"
+						height="16"
+						key="textField-10"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Long"><![CDATA[$F{uid}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="211"
+						y="80"
+						width="57"
+						height="16"
+						key="staticText-10"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+				<text><![CDATA[Page]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="277"
+						y="78"
 						width="27"
 						height="18"
-						key="textField"/>
+						key="textField-11"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement textAlignment="Left">
-						<font size="12"/>
+						<font size="10"/>
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA[$V{PAGE_NUMBER} + " of "]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="416"
-						y="91"
+						x="307"
+						y="78"
 						width="44"
 						height="18"
-						key="textField"/>
+						key="textField-12"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement textAlignment="Left">
-						<font size="12"/>
+						<font size="10"/>
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 				</textField>
-				<staticText>
-					<reportElement
-						x="301"
-						y="93"
-						width="81"
-						height="16"
-						key="staticText-5"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="12"/>
-					</textElement>
-				<text><![CDATA[Page]]></text>
-				</staticText>
 			</band>
 		</pageHeader>
 		<columnHeader>
@@ -186,13 +184,13 @@
 			<band height="50"  isSplitAllowed="true" >
 				<subreport  isUsingCache="true">
 					<reportElement
-						x="2"
-						y="9"
-						width="530"
-						height="31"
+						x="0"
+						y="0"
+						width="361"
+						height="50"
 						key="subreport-1"/>
-					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.product.entity.displayName", "target.product.entity.name"})]]></dataSourceExpression>
-					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA["countersaleItems.jrxml"]]></subreportExpression>
+					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items")]]></dataSourceExpression>
+					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA["receiptItemsA5.jrxml"]]></subreportExpression>
 				</subreport>
 			</band>
 		</detail>
@@ -201,89 +199,27 @@
 			</band>
 		</columnFooter>
 		<pageFooter>
-			<band height="8"  isSplitAllowed="true" >
+			<band height="9"  isSplitAllowed="true" >
 			</band>
 		</pageFooter>
 		<lastPageFooter>
-			<band height="6"  isSplitAllowed="true" >
+			<band height="5"  isSplitAllowed="true" >
 			</band>
 		</lastPageFooter>
 		<summary>
-			<band height="110"  isSplitAllowed="true" >
-				<rectangle>
-					<reportElement
-						x="3"
-						y="7"
-						width="527"
-						height="103"
-						key="rectangle-1"/>
-					<graphicElement stretchType="NoStretch"/>
-				</rectangle>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="38"
-						y="46"
-						width="444"
-						height="57"
-						key="textField-5"
-						isRemoveLineWhenBlank="true"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="12"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{notes}]]></textFieldExpression>
-				</textField>
+			<band height="89"  isSplitAllowed="true" >
 				<staticText>
 					<reportElement
-						x="39"
-						y="23"
-						width="157"
-						height="17"
-						key="staticText-4"/>
+						x="14"
+						y="8"
+						width="332"
+						height="16"
+						key="staticText-5"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
-						<font size="12"/>
+						<font size="10"/>
 					</textElement>
-				<text><![CDATA[This Invoice is inclusive of $ ]]></text>
-				</staticText>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="202"
-						y="23"
-						width="53"
-						height="17"
-						key="textField-6"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
-					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{tax}]]></textFieldExpression>
-				</textField>
-				<staticText>
-					<reportElement
-						x="169"
-						y="35"
-						width="0"
-						height="0"
-						key="staticText-6"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<text><![CDATA[Static text]]></text>
-				</staticText>
-				<staticText>
-					<reportElement
-						x="254"
-						y="23"
-						width="34"
-						height="17"
-						key="staticText-7"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="12"/>
-					</textElement>
-				<text><![CDATA[GST]]></text>
+				<text><![CDATA[Thank you for your payment.   ]]></text>
 				</staticText>
 			</band>
 		</summary>

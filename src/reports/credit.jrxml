@@ -186,13 +186,13 @@
 			<band height="50"  isSplitAllowed="true" >
 				<subreport  isUsingCache="true">
 					<reportElement
-						x="2"
-						y="9"
-						width="530"
-						height="31"
+						x="0"
+						y="0"
+						width="535"
+						height="50"
 						key="subreport-1"/>
 					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.product.entity.displayName", "target.product.entity.name"})]]></dataSourceExpression>
-					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA["invoiceItems.jrxml"]]></subreportExpression>
+					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA["creditItems.jrxml"]]></subreportExpression>
 				</subreport>
 			</band>
 		</detail>
