@@ -25,12 +25,11 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
@@ -41,6 +40,7 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
+import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -132,9 +132,8 @@ public class DocumentActDownloader extends Downloader {
         try {
             Document source = getDocument();
             OpenOfficeService service = OpenOfficeHelper.getService();
-            IArchetypeService archetypeService
-                    = ArchetypeServiceHelper.getArchetypeService();
-            Converter converter = new Converter(service, archetypeService);
+            DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
+            Converter converter = new Converter(service, handlers);
             Document target = converter.convert(source, DocFormats.PDF_TYPE);
             DownloadServlet.startDownload(target);
         } catch (OpenVPMSException exception) {

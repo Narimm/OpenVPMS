@@ -26,10 +26,8 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
-import org.openvpms.archetype.rules.doc.DocumentException;
-import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.UnsupportedDoc;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
-import org.openvpms.archetype.rules.doc.DocumentHandlerFactory;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -145,12 +143,9 @@ public class DocumentEditor extends AbstractPropertyEditor {
     private void upload(String fileName, InputStream stream, String contentType,
                         int size) {
         IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-        DocumentHandlerFactory factory = ServiceHelper.getDocumentHandlerFactory();
+        DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
         try {
-            DocumentHandler handler = factory.get(fileName, contentType);
-            if (handler == null) {
-                throw new DocumentException(UnsupportedDoc, contentType);
-            }
+            DocumentHandler handler = handlers.get(fileName, contentType);
             Document doc = handler.create(fileName, stream, contentType, size);
             service.save(doc);
             IMObjectReference ref = doc.getObjectReference();
