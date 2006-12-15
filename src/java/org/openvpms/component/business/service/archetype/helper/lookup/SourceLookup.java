@@ -120,6 +120,7 @@ public class SourceLookup extends AbstractLookupAssertion {
                             source, false, false))
                     .add(new CollectionNodeConstraint("source", false)
                             .add(new ObjectRefNodeConstraint("target", lookup)))
+                    .setMaxResults(ArchetypeQuery.ALL_RESULTS)
                     .setActiveOnly(true);
             result = getLookups(nodes, query);
         }
@@ -189,6 +190,7 @@ public class SourceLookup extends AbstractLookupAssertion {
                         .add(new ObjectRefNodeConstraint("target", lookup)))
                 .add(new NodeConstraint("code", code))
                 .setActiveOnly(true)
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS)
                 .setCountResults(false);
     }
 

@@ -104,9 +104,9 @@ class RemoteLookup extends AbstractLookupAssertion {
      * @return a list of lookups
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public List<Lookup> getLookups(
-            Collection<String> nodes) {
+    public List<Lookup> getLookups(Collection<String> nodes) {
         ArchetypeQuery query = new ArchetypeQuery(source, false, true);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         return getLookups(nodes, query);
     }
 

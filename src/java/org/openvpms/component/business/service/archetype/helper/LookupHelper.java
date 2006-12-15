@@ -279,6 +279,7 @@ public class LookupHelper  {
                         .add(new ObjectRefNodeConstraint("source",
                                                          source.getObjectReference())))
                 .add(new NodeSortConstraint("name", true))
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS)
                 .setActiveOnly(true);
 
         return new ArrayList<Lookup>((List) service.get(query).getResults());
@@ -308,6 +309,7 @@ public class LookupHelper  {
                         .add(new ObjectRefNodeConstraint("target",
                                                          target.getObjectReference())))
                 .add(new NodeSortConstraint("name", true))
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS)
                 .setActiveOnly(true);
 
         return new ArrayList<Lookup>((List) service.get(query).getResults());
