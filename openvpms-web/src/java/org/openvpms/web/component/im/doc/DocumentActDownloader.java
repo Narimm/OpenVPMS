@@ -24,6 +24,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.io.FilenameUtils;
+import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -35,7 +36,6 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.report.openoffice.OpenOfficeService;
-import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -120,7 +120,7 @@ public class DocumentActDownloader extends Downloader {
     protected Document getDocument() {
         IMObjectReference ref = _act.getDocReference();
         if (ref == null) {
-            throw new DocumentException(NotFound);
+            throw new DocumentException(DocumentException.ErrorCode.NotFound);
         }
         return getDocument(ref);
     }

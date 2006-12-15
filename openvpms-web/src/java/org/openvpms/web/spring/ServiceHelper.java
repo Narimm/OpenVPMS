@@ -19,6 +19,7 @@
 package org.openvpms.web.spring;
 
 import nextapp.echo2.app.ApplicationInstance;
+import org.openvpms.archetype.rules.doc.DocumentHandlerFactory;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.context.ApplicationContext;
@@ -39,6 +40,16 @@ public final class ServiceHelper {
      */
     public static IArchetypeService getArchetypeService() {
         return ArchetypeServiceHelper.getArchetypeService();
+    }
+
+    /**
+     * Helper to get the document handler factory.
+     *
+     * @return the document handler factory
+     */
+    public static DocumentHandlerFactory getDocumentHandlerFactory() {
+        return (DocumentHandlerFactory) getContext().getBean(
+                "documentHandlerFactory");
     }
 
     /**

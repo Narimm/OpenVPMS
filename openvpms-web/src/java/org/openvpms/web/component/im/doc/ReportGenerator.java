@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.doc;
 
+import org.openvpms.archetype.rules.doc.DocumentException;
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -32,7 +34,6 @@ import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.IMObjectReportFactory;
 import org.openvpms.report.TemplateHelper;
-import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.Arrays;

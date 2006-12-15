@@ -22,6 +22,9 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
+import org.openvpms.archetype.rules.doc.DocumentException;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
+import org.openvpms.archetype.rules.doc.DocumentHandlerFactory;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -42,6 +45,7 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 import java.io.InputStream;
 
@@ -189,8 +193,17 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
                     InputStream stream = event.getInputStream();
                     String contentType = event.getContentType();
                     Integer size = event.getSize();
-                    Document doc = DocumentFactory.create(fileName, stream,
-                                                          contentType, size);
+                    DocumentHandlerFactory factory
+                            = ServiceHelper.getDocumentHandlerFactory();
+                    DocumentHandler handler = factory.get(fileName,
+                                                          contentType);
+                    if (handler == null) {
+                        throw new DocumentException(
+                                DocumentException.ErrorCode.UnsupportedDoc,
+                                contentType);
+                    }
+                    Document doc = handler.create(fileName, stream, contentType,
+                                                  size);
                     service.save(doc);
                     _act.setFileName(doc.getName());
                     service.deriveValue(_act, "name");
