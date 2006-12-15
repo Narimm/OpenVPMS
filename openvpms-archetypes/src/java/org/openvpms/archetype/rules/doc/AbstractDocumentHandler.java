@@ -90,7 +90,6 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      * @param shortName the document archetype short name
      * @param mimeType  the mime type of the document. May be <code>null</code>
      * @return <code>true</code> if this handler supports the document
-     * @throws DocumentException for any error
      */
     public boolean canHandle(String name, String shortName, String mimeType) {
         return this.shortName.equals(shortName);

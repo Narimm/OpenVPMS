@@ -29,7 +29,7 @@ import java.io.InputStream;
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- * @see DocumentHandlerFactory
+ * @see DocumentHandlers
  */
 public interface DocumentHandler {
 
@@ -39,7 +39,6 @@ public interface DocumentHandler {
      * @param name     the document name
      * @param mimeType the mime type of the document. May be <code>null</code>
      * @return <code>true</code> if this handler supports the document
-     * @throws DocumentException for any error
      */
     boolean canHandle(String name, String mimeType);
 
@@ -50,7 +49,6 @@ public interface DocumentHandler {
      * @param shortName the document archetype short name
      * @param mimeType  the mime type of the document. May be <code>null</code>
      * @return <code>true</code> if this handler supports the document
-     * @throws DocumentException for any error
      */
     boolean canHandle(String name, String shortName, String mimeType);
 
@@ -59,7 +57,6 @@ public interface DocumentHandler {
      *
      * @param document the document
      * @return <code>true</code> if this handler supports the document
-     * @throws DocumentException for any error
      */
     boolean canHandle(Document document);
 
