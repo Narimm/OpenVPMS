@@ -135,7 +135,7 @@
 					<textElement>
 						<font size="12"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[[party:getBillingAddress(openvpms:get(.,'customer.entity'))]]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{[party:getBillingAddress(openvpms:get(.,'customer.entity'))]}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
