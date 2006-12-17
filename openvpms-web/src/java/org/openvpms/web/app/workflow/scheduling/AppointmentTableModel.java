@@ -114,9 +114,14 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
     private String[] columnNames;
 
     /**
-     * Cached lookup names.
+     * Cached status lookup names.
      */
     private Map<String, String> statuses;
+
+    /**
+     * Cached reason lookup names.
+     */
+    private Map<String, String> reasons;
 
 
     /**
@@ -186,6 +191,10 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
                 }
                 break;
             case REASON_INDEX:
+                if (value instanceof String) {
+                    result = getReason((String) value);
+                }
+                break;
             case DESCRIPTION_INDEX:
                 result = value;
                 break;
@@ -237,6 +246,27 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
             }
         }
         return (statuses != null) ? statuses.get(code) : null;
+    }
+
+    /**
+     * Returns a reason name given its code.
+     *
+     * @param code the reason code
+     * @return the reason name
+     */
+    private String getReason(String code) {
+        if (reasons == null) {
+            ArchetypeDescriptor archetype
+                    = DescriptorHelper.getArchetypeDescriptor(
+                    "act.customerAppointment");
+            if (archetype != null) {
+                NodeDescriptor node = archetype.getNodeDescriptor("reason");
+                if (node != null) {
+                    reasons = FastLookupHelper.getLookupNames(node);
+                }
+            }
+        }
+        return (reasons != null) ? reasons.get(code) : null;
     }
 
     /**
