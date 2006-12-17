@@ -123,10 +123,12 @@ public class TillWorkspace extends ActWorkspace<Party, FinancialAct> {
         Party latest = getLatest();
         if (latest != getObject()) {
             setObject(latest);
-        }
-        Component workspace = getWorkspace();
-        if (workspace != null) {
-            container.add(workspace);
+        } else {
+            // need to add the existing workspace to the container
+            Component workspace = getWorkspace();
+            if (workspace != null) {
+                container.add(workspace);
+            }
         }
     }
 
