@@ -547,6 +547,15 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
     }
 
     /**
+     * Creates a layout context for editing an object.
+     *
+     * @return a new layout context.
+     */
+    protected LayoutContext createLayoutContext() {
+        return new DefaultLayoutContext(true);
+    }
+
+    /**
      * Edit an object.
      *
      * @param object the object to edit
@@ -555,7 +564,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
         try {
             final boolean isNew = object.isNew();
 
-            LayoutContext context = new DefaultLayoutContext(true);
+            LayoutContext context = createLayoutContext();
             final IMObjectEditor editor = createEditor(object, context);
             EditDialog dialog = createEditDialog(editor);
             dialog.addWindowPaneListener(new WindowPaneListener() {

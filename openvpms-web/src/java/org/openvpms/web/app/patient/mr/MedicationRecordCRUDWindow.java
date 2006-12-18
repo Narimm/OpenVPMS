@@ -20,18 +20,33 @@ package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.im.edit.medication.PatientMedicationActLayoutStrategy;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
 
 
 /**
- * CRUD Window for patient medication acts. Only supports the display of the
- * acts.
+ * CRUD Window for patient medication acts. Only supports the editing of
+ * existing acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class MedicationRecordCRUDWindow extends AbstractViewCRUDWindow<Act> {
+
+    /**
+     * Layout strategy factory that returns customized instances of
+     * {@link PatientMedicationActLayoutStrategy}.
+     */
+    private static final IMObjectLayoutStrategyFactory FACTORY
+            = new MedicationLayoutStrategyFactory();
+
 
     /**
      * Create a new <code>MedicationRecordCRUDWindow</code>.
@@ -47,6 +62,7 @@ public class MedicationRecordCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     @Override
     protected void layoutButtons(Row buttons) {
+        buttons.add(getEditButton());
     }
 
     /**
@@ -56,5 +72,49 @@ public class MedicationRecordCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     @Override
     protected void enableButtons(boolean enable) {
+        Row buttons = getButtons();
+        buttons.removeAll();
+        if (enable) {
+            buttons.add(getEditButton());
+        }
+    }
+
+    /**
+     * Creates a layout context for editing an object.
+     *
+     * @return a new layout context.
+     */
+    @Override
+    protected LayoutContext createLayoutContext() {
+        LayoutContext context = new DefaultLayoutContext(true);
+        context.setLayoutStrategyFactory(FACTORY);
+        return context;
+    }
+
+    /**
+     * Factory that invokes marks the date and product read-only on
+     * {@link PatientMedicationActLayoutStrategy} instances.
+     */
+    private static class MedicationLayoutStrategyFactory
+            extends DefaultLayoutStrategyFactory {
+
+        /**
+         * Creates a new layout strategy for an object.
+         *
+         * @param object the object to create the layout strategy for
+         * @param parent the parent object. May be <code>null</code>
+         */
+        @Override
+        public IMObjectLayoutStrategy create(IMObject object, IMObject parent) {
+            IMObjectLayoutStrategy result = super.create(object, parent);
+            if (result instanceof PatientMedicationActLayoutStrategy) {
+                PatientMedicationActLayoutStrategy strategy
+                        = ((PatientMedicationActLayoutStrategy) result);
+                strategy.setDateReadOnly(true);
+                strategy.setProductReadOnly(true);
+            }
+            return result;
+        }
+
     }
 }

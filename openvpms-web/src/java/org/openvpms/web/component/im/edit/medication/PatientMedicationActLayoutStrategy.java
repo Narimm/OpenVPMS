@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.invoice;
+package org.openvpms.web.component.im.edit.medication;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
@@ -29,7 +29,6 @@ import nextapp.echo2.app.layout.ColumnLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
@@ -40,7 +39,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
 
@@ -51,8 +50,13 @@ import org.openvpms.web.component.util.RowFactory;
 public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
+     * Determines if the date node should be displayed read-only.
+     */
+    private boolean showDateReadOnly;
+
+    /**
      * Determines if the product node should be displayed. False if
-     * the parent act has a product. Ignored if <code>alwaysShowProduct</code>
+     * the parent act has a product. Ignored if <code>showProductReadOnly</code>
      * is <code>true</code>
      */
     private boolean showProduct;
@@ -60,16 +64,26 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Determines if the product node should be displayed read-only.
      */
-    private boolean showReadOnlyProduct;
+    private boolean showProductReadOnly;
 
+    /**
+     * Determines if the data should be displayed read-only.
+     *
+     * @param readOnly if <code>true</code> display the date read-only.
+     */
+    public void setDateReadOnly(boolean readOnly) {
+        showDateReadOnly = readOnly;
+
+    }
 
     /**
      * Determines if the product should be displayed read-only.
      *
      * @param readOnly if <code>true</code> display the product read-only.
      */
-    public void setShowReadOnlyProduct(boolean readOnly) {
-        showReadOnlyProduct = readOnly;
+    public void setProductReadOnly(boolean readOnly) {
+        showProduct = true;
+        showProductReadOnly = readOnly;
     }
 
     /**
@@ -87,9 +101,7 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     public ComponentState apply(IMObject object, PropertySet properties,
                                 IMObject parent, LayoutContext context) {
-        if (showReadOnlyProduct) {
-            showProduct = true;
-        } else {
+        if (!showProductReadOnly) {
             if (parent instanceof Act) {
                 ActBean bean = new ActBean((Act) parent);
                 showProduct = !bean.hasNode("product");
@@ -133,8 +145,8 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
-     * Returns a node filter to filter nodes. This implementation return {@link
-     * LayoutContext#getDefaultNodeFilter()}.
+     * Returns a node filter to filter nodes. This implementation filters
+     * out the product node if {@link #showProduct} is <code>false</code>.
      *
      * @param context the context
      * @return a node filter to filter nodes, or <code>null</code> if no
@@ -163,16 +175,16 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     protected ComponentState createComponent(Property property, IMObject parent,
                                              LayoutContext context) {
-        if (showReadOnlyProduct
-                && property.getDescriptor().getName().equals("product")) {
-            ActBean bean = new ActBean((Act) parent);
-            IMObjectReference ref
-                    = bean.getParticipantRef("participation.product");
-            IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref,
-                                                                         false);
-            return new ComponentState(viewer.getComponent(), property);
+        ComponentState result;
+        String name = property.getDescriptor().getName();
+        if (showDateReadOnly && name.equals("startTime")) {
+            result = getReadOnlyComponent(property, parent, context);
+        } else if (showProductReadOnly && name.equals("product")) {
+            result = getReadOnlyComponent(property, parent, context);
+        } else {
+            result = super.createComponent(property, parent, context);
         }
-        return super.createComponent(property, parent, context);
+        return result;
     }
 
     /**
@@ -182,6 +194,22 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
         IMObjectPrinter<IMObject> printer
                 = new IMObjectReportPrinter<IMObject>();
         printer.print(object);
+    }
+
+    /**
+     * Helper to return a read-only component.
+     *
+     * @param property the property
+     * @param parent   the parent object
+     * @param context  the layout context
+     * @return a read-only component to display the property
+     */
+    private ComponentState getReadOnlyComponent(Property property,
+                                                IMObject parent,
+                                                LayoutContext context) {
+        ReadOnlyComponentFactory factory
+                = new ReadOnlyComponentFactory(context);
+        return factory.create(property, parent);
     }
 
 }
