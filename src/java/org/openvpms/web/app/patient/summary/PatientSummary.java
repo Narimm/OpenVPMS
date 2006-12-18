@@ -181,26 +181,31 @@ public class PatientSummary {
     	if (patient != null) {
         	EntityBean bean = new EntityBean(patient);
         	Date birthDate = bean.getDate("dateOfBirth");
-        	Date currentDate = new Date();
-        	Calendar dobCalendar = new GregorianCalendar();
-        	dobCalendar.setTime(birthDate);
-        	Calendar curCalendar = new GregorianCalendar();
-        	curCalendar.setTime(currentDate);
-        	long diffdays = (curCalendar.getTimeInMillis() - dobCalendar.getTimeInMillis())/(24*60*60*1000);
-        	if (diffdays < 90) {
-        		long weeks = diffdays/7;
-        		if (weeks == 0) {
-        			return diffdays + " Days";
-        		}
-        		else {
-        			return weeks + " Weeks";
-        		}
-        	}
-        	else if (diffdays < (365*2)) {
-        		return (diffdays/31) + " Months";
+        	if (birthDate != null) {
+	        	Date currentDate = new Date();
+	        	Calendar dobCalendar = new GregorianCalendar();
+	        	dobCalendar.setTime(birthDate);
+	        	Calendar curCalendar = new GregorianCalendar();
+	        	curCalendar.setTime(currentDate);
+	        	long diffdays = (curCalendar.getTimeInMillis() - dobCalendar.getTimeInMillis())/(24*60*60*1000);
+	        	if (diffdays < 90) {
+	        		long weeks = diffdays/7;
+	        		if (weeks == 0) {
+	        			return diffdays + " Days";
+	        		}
+	        		else {
+	        			return weeks + " Weeks";
+	        		}
+	        	}
+	        	else if (diffdays < (365*2)) {
+	        		return (diffdays/31) + " Months";
+	        	}
+	        	else {
+	        		return (diffdays/365) + " Years";
+	        	}
         	}
         	else {
-        		return (diffdays/365) + " Years";
+        		return "No Birthdate";
         	}
     	}
     	else {
