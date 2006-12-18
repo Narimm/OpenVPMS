@@ -163,7 +163,7 @@ public abstract class AbstractRelationshipEditor
      * Relationship layout strategy. Displays the source and target nodes
      * before any others.
      */
-    private class LayoutStrategy extends AbstractLayoutStrategy {
+    protected class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
          * Returns a node filter to filter nodes. This implementation filters

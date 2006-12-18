@@ -21,6 +21,7 @@ package org.openvpms.web.app.admin;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.openvpms.web.app.admin.lookup.LookupWorkspace;
+import org.openvpms.web.app.admin.template.DocumentTemplateWorkspace;
 import org.openvpms.web.app.admin.user.UserWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
