@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.edit.medication.PatientMedicationActLayoutStrategy;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
@@ -64,7 +65,8 @@ class MedicationManager {
     private boolean editing;
 
     /**
-     * Layout strategy factory that returns
+     * Layout strategy factory that returns customized instances of
+     * {@link PatientMedicationActLayoutStrategy}.
      */
     private static final IMObjectLayoutStrategyFactory FACTORY
             = new MedicationLayoutStrategyFactory();
@@ -147,7 +149,7 @@ class MedicationManager {
     }
 
     /**
-     * Factory that invokes <code>setShowReadOnlyProduct(true)</code> on
+     * Factory that invokes <code>setProductReadOnly(true)</code> on
      * {@link PatientMedicationActLayoutStrategy} instances.
      */
     private static class MedicationLayoutStrategyFactory
@@ -165,7 +167,7 @@ class MedicationManager {
             if (result instanceof PatientMedicationActLayoutStrategy) {
                 PatientMedicationActLayoutStrategy strategy
                         = ((PatientMedicationActLayoutStrategy) result);
-                strategy.setShowReadOnlyProduct(true);
+                strategy.setProductReadOnly(true);
             }
             return result;
         }
