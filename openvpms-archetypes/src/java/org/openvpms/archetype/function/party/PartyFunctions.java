@@ -33,6 +33,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 
 /**
@@ -76,6 +78,70 @@ public class PartyFunctions {
     	return contacts;
     }
     
+    /**
+     * Returns the full name for the passed party.
+     *
+     * @param context the expression context. Expected to reference a patient party.
+     * @return the parties full name.
+     */
+    public static String getPartyFullName(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        if (pointer == null || !(pointer.getValue() instanceof Party)) {
+            return null;
+        }
+
+        return getPartyFullName((Party) pointer.getValue());
+    }
+
+    /**
+     * Return a formatted name for the party
+     * 
+     * @param party the party 
+     * @return String Formatted name string
+     */
+    
+    public static String getPartyFullName(Party party) {
+    	try {
+	    	if (party != null) {
+		        IMObjectBean bean = new IMObjectBean(party);
+		        if (TypeHelper.isA(party, "party.customerperson")) {
+		        	return  getPersonName(bean);
+		        } else if (TypeHelper.isA(party, "party.customerOrganisation")) {
+		        	return bean.getString("name", "");
+		        } else if (TypeHelper.isA(party, "party.patientpet")) {
+		        	return bean.getString("name", "");
+		        } else {
+		        	return "";
+		        }
+	    	}
+	    	else {
+	    		return "";
+	    	}
+    	}
+    	catch (Exception e) {
+    		return "";
+    	}
+    		
+    }
+    
+    /**
+     * Return a formatted name for the customerPerson party
+     * 
+     * @param party the party 
+     * @return String Formatted name string
+     */
+    
+    public static String getPersonName(IMObjectBean bean) {
+    	String title = LookupHelper.getName(ArchetypeServiceHelper.getArchetypeService(), 
+    			bean.getDescriptor("title"), bean.getObject());
+    	if (title != null) {
+    		return title + " " + bean.getString("firstName", "") + " " + bean.getString("lastName", "");
+    	}
+    	else {
+    		return bean.getString("firstName", "") + bean.getString("lastName", "");    		
+    	}
+    }
+
     /**
      * Returns the current owner party for the passed party.
      *
