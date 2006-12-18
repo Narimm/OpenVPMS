@@ -18,14 +18,19 @@
 
 package org.openvpms.web.component.im.print;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.IMObjectReportFactory;
+import org.openvpms.report.TemplateHelper;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.Arrays;
@@ -69,4 +74,23 @@ public class IMObjectReportPrinter<T extends IMObject>
                 ServiceHelper.getDocumentHandlers());
     }
 
+    /**
+     * Returns the default printer for an object.
+     *
+     * @return the default printer, or <code>null</code> if there is
+     *         none defined
+     */
+    protected String getDefaultPrinter(IMObject object) {
+        String printer = null;
+        String shortName = object.getArchetypeId().getShortName();
+        Entity template = TemplateHelper.getTemplateForArchetype(
+                shortName, ArchetypeServiceHelper.getArchetypeService());
+        Party practice = GlobalContext.getInstance().getPractice();
+        if (template != null && practice != null) {
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            printer = TemplateHelper.getPrinter(template, practice, service);
+        }
+        return printer;
+    }
 }

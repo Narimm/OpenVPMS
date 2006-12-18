@@ -26,8 +26,9 @@ import org.openvpms.component.business.domain.im.security.User;
 
 import java.util.Date;
 
+
 /**
- * Add description here.
+ * Application context information.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -63,6 +64,20 @@ public interface Context {
      * @return the current user
      */
     User getUser();
+
+    /**
+     * Sets the current practice.
+     *
+     * @param practice the current practice
+     */
+    void setPractice(Party practice);
+
+    /**
+     * Returns the current practice.
+     *
+     * @return the current practice
+     */
+    Party getPractice();
 
     /**
      * Sets the current customer.

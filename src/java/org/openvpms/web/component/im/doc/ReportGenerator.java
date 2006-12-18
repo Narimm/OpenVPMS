@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -35,6 +36,7 @@ import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.IMObjectReportFactory;
 import org.openvpms.report.TemplateHelper;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -50,9 +52,9 @@ import java.util.Arrays;
 public class ReportGenerator {
 
     /**
-     * Reference to an <em>entity.documentTemplate</em>/
+     * An <em>entity.documentTemplate</em>/
      */
-    private final IMObjectReference template;
+    private final Entity template;
 
 
     /**
@@ -65,7 +67,7 @@ public class ReportGenerator {
      */
     public ReportGenerator(DocumentAct act) {
         ActBean bean = new ActBean(act);
-        template = bean.getParticipantRef("participation.documentTemplate");
+        template = bean.getParticipant("participation.documentTemplate");
         if (template == null) {
             throw new DocumentException(NotFound);
         }
@@ -75,8 +77,21 @@ public class ReportGenerator {
      * Constructs a new <code>ReportGenerator</code>.
      *
      * @param template a reference to an <em>entity.documentTemplate</em>
+     * @throws DocumentException if the template can't be found
      */
     public ReportGenerator(IMObjectReference template) {
+        this.template = (Entity) IMObjectHelper.getObject(template);
+        if (template == null) {
+            throw new DocumentException(NotFound);
+        }
+    }
+
+    /**
+     * Constructs a new <code>ReportGenerator</code>.
+     *
+     * @param template the <em>entity.documentTemplate</em>
+     */
+    public ReportGenerator(Entity template) {
         this.template = template;
     }
 
@@ -92,6 +107,23 @@ public class ReportGenerator {
     public Document generate(IMObject object) {
         String[] mimeTypes = {DocFormats.ODT_TYPE, DocFormats.PDF_TYPE};
         return generate(object, mimeTypes);
+    }
+
+    /**
+     * Returns the default printer for the template.
+     *
+     * @return the default printer for the template, or <code>null</code>
+     *         if none is defined
+     */
+    public String getDefaultPrinter() {
+        Party practice = GlobalContext.getInstance().getPractice();
+        if (practice != null) {
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            return TemplateHelper.getPrinter(template, practice,
+                                             service);
+        }
+        return null;
     }
 
     /**
@@ -119,12 +151,8 @@ public class ReportGenerator {
     public IMObjectReport createReport() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        Entity entity = (Entity) IMObjectHelper.getObject(template);
-        if (entity == null) {
-            throw new DocumentException(NotFound);
-        }
-        Document doc = TemplateHelper.getDocumentFromTemplate(
-                entity, service);
+        Document doc = TemplateHelper.getDocumentFromTemplate(template,
+                                                              service);
         if (doc == null) {
             throw new DocumentException(NotFound);
         }

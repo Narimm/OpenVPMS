@@ -22,7 +22,9 @@ import nextapp.echo2.app.ApplicationInstance;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
@@ -43,26 +45,15 @@ public abstract class ContextApplicationInstance
     /**
      * Application context.
      */
-    private GlobalContext _context = new GlobalContext();
+    private GlobalContext context = new GlobalContext();
 
 
     /**
      * Constructs a new <code>ContextApplicationInstance</code>.
      */
     public ContextApplicationInstance() {
-        Authentication auth
-                = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            List<IMObject> rows = ArchetypeQueryHelper.get(
-                    service, "system", "security", "user", auth.getName(),
-                    true, 0, 1).getResults();
-            if (!rows.isEmpty()) {
-                User user = (User) rows.get(0);
-                _context.setUser(user);
-            }
-        }
+        initUser();
+        initPractice();
     }
 
     /**
@@ -80,7 +71,7 @@ public abstract class ContextApplicationInstance
      * @return the current context
      */
     public GlobalContext getContext() {
-        return _context;
+        return context;
     }
 
     /**
@@ -94,6 +85,44 @@ public abstract class ContextApplicationInstance
      * Clears the current context.
      */
     protected void clearContext() {
-        _context = new GlobalContext();
+        context = new GlobalContext();
+    }
+
+    /**
+     * Initialises the user.
+     *
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private void initUser() {
+        Authentication auth
+                = SecurityContextHolder.getContext().getAuthentication();
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        if (auth != null) {
+            List<IMObject> rows = ArchetypeQueryHelper.get(
+                    service, "system", "security", "user", auth.getName(),
+                    true, 0, 1).getResults();
+            if (!rows.isEmpty()) {
+                User user = (User) rows.get(0);
+                context.setUser(user);
+            }
+        }
+    }
+
+    /**
+     * Initialises the practice.
+     *
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private void initPractice() {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        List<IMObject> rows = ArchetypeQueryHelper.get(
+                service, "party", "party", "organisationPractice", null, true,
+                0, 1).getResults();
+        if (!rows.isEmpty()) {
+            Party practice = (Party) rows.get(0);
+            context.setPractice(practice);
+        }
     }
 }
