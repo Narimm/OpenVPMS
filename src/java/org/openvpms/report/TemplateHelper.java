@@ -18,20 +18,26 @@
 
 package org.openvpms.report;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.QueryIterator;
 
 import java.util.List;
 
@@ -66,6 +72,63 @@ public class TemplateHelper {
     }
 
     /**
+     * Returns an <em>entity.documentTemplate</em> with matching archetype
+     * short name.
+     *
+     * @param shortName the archetype short name
+     * @param service   the archetype service
+     * @return the template corresponding to <code>shortName</code> or
+     *         <code>null</code> if none can be found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public static Entity getTemplateForArchetype(String shortName,
+                                                 IArchetypeService service) {
+        Entity result = null;
+        ArchetypeQuery query = new ArchetypeQuery("entity.documentTemplate",
+                                                  false, true);
+        QueryIterator<Entity> iterator
+                = new IMObjectQueryIterator<Entity>(service, query);
+        while (iterator.hasNext()) {
+            EntityBean bean = new EntityBean(iterator.next(), service);
+            String archetype = bean.getString("archetype");
+            if (archetype != null && TypeHelper.matches(shortName, archetype)) {
+                result = bean.getEntity();
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the default printer name for a template.
+     *
+     * @param template the document template
+     * @param practice the practice (an <em>party.organisationPractice</em>)
+     * @param service  the archetype service
+     * @return the printer name for the template, or <code>null</code> if
+     *         none is defined
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public static String getPrinter(Entity template, Party practice,
+                                    IArchetypeService service) {
+        String printer = null;
+        IMObjectBean templateBean = new IMObjectBean(template, service);
+        IMObjectReference practiceRef = practice.getObjectReference();
+        for (IMObject object : templateBean.getValues("printers")) {
+            EntityRelationship relationship = (EntityRelationship) object;
+            if (relationship.getTarget() != null &&
+                    practiceRef.equals(relationship.getTarget())) {
+                IMObjectBean bean = new IMObjectBean(object, service);
+                printer = bean.getString("printerName");
+                if (!StringUtils.isEmpty(printer)) {
+                    break;
+                }
+            }
+        }
+        return printer;
+    }
+
+    /**
      * Retrieves a document template with matching archetype short name.
      *
      * @param shortName the archetype short name
@@ -77,22 +140,11 @@ public class TemplateHelper {
     public static Document getDocumentForArchetype(String shortName,
                                                    IArchetypeService service) {
         Document document = null;
-        ArchetypeQuery query = new ArchetypeQuery("entity.documentTemplate",
-                                                  false, true);
-        query.setFirstResult(0);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List<IMObject> rows = service.get(query).getResults();
-        for (IMObject object : rows) {
-            EntityBean bean = new EntityBean((Entity) object);
-            String archetype = bean.getString("archetype");
-            if (archetype != null && TypeHelper.matches(shortName, archetype)) {
-                DocumentAct act = getDocumentAct(bean.getEntity(), service);
-                if (act != null) {
-                    document = (Document) get(act.getDocReference(), service);
-                    if (document != null) {
-                        break;
-                    }
-                }
+        Entity template = getTemplateForArchetype(shortName, service);
+        if (template != null) {
+            DocumentAct act = getDocumentAct(template, service);
+            if (act != null) {
+                document = (Document) get(act.getDocReference(), service);
             }
         }
         return document;
