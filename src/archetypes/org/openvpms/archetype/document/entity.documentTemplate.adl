@@ -87,6 +87,20 @@
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
+	        <node name="paperHeight" displayName="Paper Height" path="/details/attributes/paperHeight" type="java.math.BigDecimal" 
+	        	defaultValue="0.0"/>
+	        <node name="paperWidth" displayName="Paper Width" path="/details/attributes/paperWidth" type="java.math.BigDecimal" 
+	        	defaultValue="0.0"/>
+			<node name="paperUnits" displayName="Paper Units" path="/details/attributes/paperUnits" type="java.lang.String" minCardinality="0" 
+				defaultValue="'MM'" >
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="MM" value="Millimetres" />
+						<property name="INCH" value="Inches" />
+					</propertyList>
+					<errorMessage>errorMessage</errorMessage>
+				</assertion>
+			</node>
 		</node>
 		<node name="printers" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
