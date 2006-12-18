@@ -75,8 +75,7 @@ public class BootstrapService {
             // command line arguments
             String[] args = {
                     office, "-nologo", "-nodefault", "-norestore",
-                    "-nocrashreport", "-nolockcheck",
-                    "-accept=pipe,name=" + pipeName + ";urp;"
+                    "-nolockcheck", "-accept=pipe,name=" + pipeName + ";urp;"
             };
 
             // start office process
