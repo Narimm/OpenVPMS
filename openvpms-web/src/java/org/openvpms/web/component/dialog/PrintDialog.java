@@ -24,12 +24,10 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.list.DefaultListModel;
+import org.openvpms.web.component.im.util.PrintHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-
-import javax.print.PrintService;
-import javax.print.PrintServiceLookup;
 
 
 /**
@@ -61,7 +59,8 @@ public class PrintDialog extends PopupDialog {
         setModal(true);
 
         Label label = LabelFactory.create("printdialog.printer");
-        DefaultListModel model = new DefaultListModel(getPrinters());
+        DefaultListModel model
+                = new DefaultListModel(PrintHelper.getPrinters());
         printers = SelectFieldFactory.create(model);
         Row row = RowFactory.create("ControlRow", label, printers);
         getLayout().add(row);
@@ -71,10 +70,7 @@ public class PrintDialog extends PopupDialog {
             }
         });
 
-        PrintService printer = PrintServiceLookup.lookupDefaultPrintService();
-        if (printer != null) {
-            setDefaultPrinter(printer.getName());
-        }
+        setDefaultPrinter(PrintHelper.getDefaultPrinter());
     }
 
     /**
@@ -106,21 +102,6 @@ public class PrintDialog extends PopupDialog {
     protected void onPreview() {
         setAction(PREVIEW_ID);
         close();
-    }
-
-    /**
-     * Returns a list of the available printers.
-     *
-     * @return a list of the available printers
-     */
-    private String[] getPrinters() {
-        PrintService[]  printers = PrintServiceLookup.lookupPrintServices(
-                null, null);
-        String[] names = new String[printers.length];
-        for (int i = 0; i < names.length; ++i) {
-            names[i] = printers[i].getName();
-        }
-        return names;
     }
 
 }

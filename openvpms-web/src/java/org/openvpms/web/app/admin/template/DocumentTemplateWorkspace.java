@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.admin;
+package org.openvpms.web.app.admin.template;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
