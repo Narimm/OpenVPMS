@@ -71,6 +71,7 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
             String displayName = DescriptorHelper.getDisplayName(object);
             String title = Messages.get("imobject.print.title", displayName);
             final PrintDialog dialog = new PrintDialog(title);
+            dialog.setDefaultPrinter(getDefaultPrinter(object));
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
                     String action = dialog.getAction();
@@ -138,6 +139,14 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
      * @throws OpenVPMSException for any error
      */
     protected abstract Document getDocument(IMObject object);
+
+    /**
+     * Returns the default printer for an object.
+     *
+     * @return the default printer, or <code>null</code> if there is
+     *         none defined
+     */
+    protected abstract String getDefaultPrinter(IMObject object);
 
     /**
      * Invoked when an object has been successfully printed.

@@ -95,7 +95,6 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
      *
      * @param object the object
      * @return a document
-     * @throws DocumentException         if the document cannot be found
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -108,6 +107,18 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
             doc = gen.generate(act, DocFormats.PDF_TYPE);
         }
         return doc;
+    }
+
+    /**
+     * Returns the default printer for an object.
+     *
+     * @return the default printer, or <code>null</code> if there is
+     *         none defined
+     */
+    protected String getDefaultPrinter(IMObject object) {
+        DocumentAct act = (DocumentAct) object;
+        ReportGenerator gen = new ReportGenerator(act);
+        return gen.getDefaultPrinter();
     }
 
 }

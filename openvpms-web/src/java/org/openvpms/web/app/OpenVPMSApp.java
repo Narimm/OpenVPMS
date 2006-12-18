@@ -18,11 +18,6 @@
 
 package org.openvpms.web.app;
 
-import org.openvpms.web.component.app.ContextApplicationInstance;
-import org.openvpms.web.resource.util.Styles;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Command;
 import nextapp.echo2.app.ContentPane;
@@ -32,6 +27,9 @@ import nextapp.echo2.webcontainer.command.BrowserRedirectCommand;
 import nextapp.echo2.webrender.ClientConfiguration;
 import nextapp.echo2.webrender.Connection;
 import nextapp.echo2.webrender.WebRenderServlet;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.resource.util.Styles;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -47,12 +45,12 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     /**
      * The window.
      */
-    private Window _window;
+    private Window window;
 
     /**
      * Context change listener.
      */
-    private ContextChangeListener _listener;
+    private ContextChangeListener listener;
 
 
     /**
@@ -63,10 +61,10 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     public Window init() {
         configureSessionExpirationURL();
         setStyleSheet(Styles.DEFAULT_STYLE_SHEET);
-        _window = new Window();
-        _window.setTitle("OpenVPMS");
-        _window.setContent(new ApplicationContentPane());
-        return _window;
+        window = new Window();
+        window.setTitle("OpenVPMS");
+        window.setContent(new ApplicationContentPane());
+        return window;
     }
 
     /**
@@ -84,7 +82,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      * @param content the content pane
      */
     public void setContent(ContentPane content) {
-        _window.setContent(content);
+        window.setContent(content);
     }
 
     /**
@@ -93,7 +91,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      * @return the content pane
      */
     public ContentPane getContent() {
-        return _window.getContent();
+        return window.getContent();
     }
 
     /**
@@ -113,8 +111,8 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      * @param object the object to view
      */
     public void switchTo(IMObject object) {
-        if (_listener != null) {
-            _listener.changeContext(object);
+        if (listener != null) {
+            listener.changeContext(object);
         }
     }
 
@@ -124,7 +122,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      * @param listener the context change listener
      */
     protected void setContextChangeListener(ContextChangeListener listener) {
-        _listener = listener;
+        this.listener = listener;
     }
 
     /**

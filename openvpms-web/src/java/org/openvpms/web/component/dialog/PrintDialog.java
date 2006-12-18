@@ -23,13 +23,13 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.report.openoffice.OpenOfficeException;
-import org.openvpms.report.openoffice.OpenOfficeHelper;
-import org.openvpms.report.openoffice.PrintService;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import nextapp.echo2.app.list.DefaultListModel;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
+
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
 
 
 /**
@@ -60,15 +60,34 @@ public class PrintDialog extends PopupDialog {
         super(title, "PrintDialog", OK_CANCEL);
         setModal(true);
 
-        Label printer = LabelFactory.create("printdialog.printer");
-        printers = SelectFieldFactory.create(getPrinters());
-        Row row = RowFactory.create("ControlRow", printer, printers);
+        Label label = LabelFactory.create("printdialog.printer");
+        DefaultListModel model = new DefaultListModel(getPrinters());
+        printers = SelectFieldFactory.create(model);
+        Row row = RowFactory.create("ControlRow", label, printers);
         getLayout().add(row);
         addButton(PREVIEW_ID, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onPreview();
             }
         });
+
+        PrintService printer = PrintServiceLookup.lookupDefaultPrintService();
+        if (printer != null) {
+            setDefaultPrinter(printer.getName());
+        }
+    }
+
+    /**
+     * Sets the default printer.
+     *
+     * @param name the default printer name. May be <code>null</code>
+     */
+    public void setDefaultPrinter(String name) {
+        DefaultListModel model = (DefaultListModel) printers.getModel();
+        int index = model.indexOf(name);
+        if (index != -1) {
+            printers.setSelectedIndex(index);
+        }
     }
 
     /**
@@ -95,13 +114,13 @@ public class PrintDialog extends PopupDialog {
      * @return a list of the available printers
      */
     private String[] getPrinters() {
-        try {
-            PrintService service = OpenOfficeHelper.getPrintService();
-            return service.getPrinters();
-        } catch (OpenOfficeException exception) {
-            ErrorHelper.show(exception);
+        PrintService[]  printers = PrintServiceLookup.lookupPrintServices(
+                null, null);
+        String[] names = new String[printers.length];
+        for (int i = 0; i < names.length; ++i) {
+            names[i] = printers[i].getName();
         }
-        return new String[0];
+        return names;
     }
 
 }
