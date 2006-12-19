@@ -22,7 +22,7 @@
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Note'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-			derivedValue="/details/attributes/note" />
+			derivedValue="/details/attributes/note" maxLength="500"/>
 		<node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.patient" hidden="true" />
