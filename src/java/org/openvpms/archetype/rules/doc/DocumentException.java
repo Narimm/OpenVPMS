@@ -42,7 +42,9 @@ public class DocumentException extends OpenVPMSException {
         UnsupportedDoc,
         ReadError,
         WriteError,
-        NotFound
+        NotFound,
+        InvalidUnits,
+        InvalidPaperSize
     }
 
     /**
