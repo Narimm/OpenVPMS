@@ -20,13 +20,8 @@ package org.openvpms.report.openoffice;
 
 import com.sun.star.awt.XPrinterServer;
 import com.sun.star.beans.PropertyValue;
-import com.sun.star.lang.EventObject;
 import com.sun.star.lang.IllegalArgumentException;
 import com.sun.star.uno.UnoRuntime;
-import com.sun.star.view.PrintJobEvent;
-import com.sun.star.view.PrintableState;
-import com.sun.star.view.XPrintJobBroadcaster;
-import com.sun.star.view.XPrintJobListener;
 import com.sun.star.view.XPrintable;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -101,25 +96,31 @@ public class PrintService {
         XPrintable printable = (XPrintable) UnoRuntime.queryInterface(
                 XPrintable.class, document.getComponent());
 
-        XPrintJobBroadcaster broadcaster = (XPrintJobBroadcaster)
-                UnoRuntime.queryInterface(XPrintJobBroadcaster.class,
-                                          printable);
-
         PropertyValue[] printerDesc = {newProperty("Name", printer)};
-        PropertyValue[] printOpts = {newProperty("Pages", "1")};
+        PropertyValue[] printOpts = {newProperty("Pages", "1"),
+                                     newProperty("Wait", true)};
 
-        broadcaster.addPrintJobListener(new XPrintJobListener() {
-            public void printJobEvent(PrintJobEvent event) {
-                PrintableState state = event.State;
-                if (!state.equals(PrintableState.JOB_STARTED)
-                        && !state.equals(PrintableState.JOB_SPOOLED)) {
-                    document.close();
+/*
+        todo - replaced asynchronous notification of print completion with
+        synchonrous printing due to OpenOffice 2.1 crashes.
+        if (close) {
+            XPrintJobBroadcaster broadcaster = (XPrintJobBroadcaster)
+                    UnoRuntime.queryInterface(XPrintJobBroadcaster.class,
+                                              printable);
+            broadcaster.addPrintJobListener(new XPrintJobListener() {
+                public void printJobEvent(PrintJobEvent event) {
+                    PrintableState state = event.State;
+                    if (!state.equals(PrintableState.JOB_STARTED)
+                            && !state.equals(PrintableState.JOB_SPOOLED)) {
+                        document.close();
+                    }
                 }
-            }
 
-            public void disposing(EventObject eventObject) {
-            }
-        });
+                public void disposing(EventObject eventObject) {
+                }
+            });
+        }
+*/
 
         try {
             printable.setPrinter(printerDesc);
@@ -127,6 +128,9 @@ public class PrintService {
         } catch (IllegalArgumentException exception) {
             throw new OpenOfficeException(FailedToPrint, exception.getMessage(),
                                           exception);
+        }
+        if (close) {
+            document.close();
         }
     }
 

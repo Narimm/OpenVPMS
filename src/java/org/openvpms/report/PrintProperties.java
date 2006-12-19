@@ -18,6 +18,9 @@
 
 package org.openvpms.report;
 
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.MediaTray;
+
 
 /**
  * Print properties.
@@ -31,6 +34,16 @@ public class PrintProperties {
      * The printer name.
      */
     private final String printerName;
+
+    /**
+     * The media size name.
+     */
+    private MediaSizeName mediaSize;
+
+    /**
+     * The media tray.
+     */
+    private MediaTray mediaTray;
 
 
     /**
@@ -50,4 +63,41 @@ public class PrintProperties {
     public String getPrinterName() {
         return printerName;
     }
+
+    /**
+     * Sets the media size.
+     *
+     * @param size the media size
+     */
+    public void setMediaSize(MediaSizeName size) {
+        mediaSize = size;
+    }
+
+    /**
+     * Returns the media size.
+     *
+     * @return the media size. May be <code>null</code>
+     */
+    public MediaSizeName getMediaSize() {
+        return mediaSize;
+    }
+
+    /**
+     * Sets the media tray.
+     *
+     * @param tray the tray
+     */
+    public void setMediaTray(MediaTray tray) {
+        mediaTray = tray;
+    }
+
+    /**
+     * Returns the media tray.
+     *
+     * @return the media tray. May be <code>null</code>
+     */
+    public MediaTray getMediaTray() {
+        return mediaTray;
+    }
+
 }
