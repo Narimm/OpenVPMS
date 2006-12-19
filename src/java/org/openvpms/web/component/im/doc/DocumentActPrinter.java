@@ -48,7 +48,7 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
      * Prints the object.
      *
      * @param act     the act to print
-     * @param printer the printer
+     * @param printer the printer name
      */
     @Override
     protected void doPrint(DocumentAct act, String printer) {
@@ -59,10 +59,11 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
                 IMObjectReport report = createReport(act);
                 List<IMObject> objects = new ArrayList<IMObject>();
                 objects.add(act);
-                report.print(objects, new PrintProperties(printer));
+                report.print(objects, getProperties(act, printer));
                 printed(act);
             } else if (DocFormats.ODT_TYPE.equals(doc.getMimeType())) {
-                OpenOfficeHelper.getPrintService().print(doc, printer);
+                OpenOfficeHelper.getPrintService().print(
+                        doc, printer);
             } else {
                 doPrintPreview(act);
             }
@@ -84,9 +85,8 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected IMObjectReport createReport(IMObject object) {
-        DocumentAct act = (DocumentAct) object;
-        ReportGenerator gen = new ReportGenerator(act);
+    protected IMObjectReport createReport(DocumentAct object) {
+        ReportGenerator gen = new ReportGenerator(object);
         return gen.createReport();
     }
 
@@ -98,13 +98,12 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected Document getDocument(IMObject object) {
-        DocumentAct act = (DocumentAct) object;
+    protected Document getDocument(DocumentAct object) {
         Document doc = (Document) IMObjectHelper.getObject(
-                act.getDocReference());
+                object.getDocReference());
         if (doc == null) {
-            ReportGenerator gen = new ReportGenerator(act);
-            doc = gen.generate(act, DocFormats.PDF_TYPE);
+            ReportGenerator gen = new ReportGenerator(object);
+            doc = gen.generate(object, DocFormats.PDF_TYPE);
         }
         return doc;
     }
@@ -115,10 +114,25 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
      * @return the default printer, or <code>null</code> if there is
      *         none defined
      */
-    protected String getDefaultPrinter(IMObject object) {
-        DocumentAct act = (DocumentAct) object;
-        ReportGenerator gen = new ReportGenerator(act);
+    protected String getDefaultPrinter(DocumentAct object) {
+        ReportGenerator gen = new ReportGenerator(object);
         return gen.getDefaultPrinter();
     }
 
+    /**
+     * Returns the print properties for an object.
+     *
+     * @param object  the object to print
+     * @param printer the printer
+     * @return the print properties
+     */
+    @Override
+    protected PrintProperties getProperties(DocumentAct object,
+                                            String printer) {
+        PrintProperties properties = super.getProperties(object, printer);
+        ReportGenerator gen = new ReportGenerator(object);
+        properties.setMediaSize(gen.getMediaSize());
+        properties.setMediaTray(gen.getMediaTray(printer));
+        return properties;
+    }
 }

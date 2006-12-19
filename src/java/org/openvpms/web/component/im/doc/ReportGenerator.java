@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.doc;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.MediaHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -31,6 +32,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
@@ -40,6 +42,9 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.MediaTray;
+import java.math.BigDecimal;
 import java.util.Arrays;
 
 
@@ -96,20 +101,6 @@ public class ReportGenerator {
     }
 
     /**
-     * Generates a report.
-     *
-     * @param object the object to generate the report for
-     * @return the generated report
-     * @throws DocumentException         if the template document can't be found
-     * @throws IMObjectReportException   for any report error
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Document generate(IMObject object) {
-        String[] mimeTypes = {DocFormats.ODT_TYPE, DocFormats.PDF_TYPE};
-        return generate(object, mimeTypes);
-    }
-
-    /**
      * Returns the default printer for the template.
      *
      * @return the default printer for the template, or <code>null</code>
@@ -124,6 +115,55 @@ public class ReportGenerator {
                                              service);
         }
         return null;
+    }
+
+    /**
+     * Returns the media size for the template.
+     *
+     * @return the media size for the template, or <code>null</code> if none
+     *         is defined
+     */
+    public MediaSizeName getMediaSize() {
+        IMObjectBean bean = new IMObjectBean(template);
+        String size = bean.getString("paperSize");
+        if (size != null) {
+            BigDecimal width = bean.getBigDecimal("paperWidth");
+            BigDecimal height = bean.getBigDecimal("paperHeight");
+            String units = bean.getString("paperUnits");
+            return MediaHelper.getMedia(size, width, height, units);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the media tray for the template.
+     *
+     * @return the media tray for the template, or <code>null</code> if none
+     *         is defined
+     */
+    public MediaTray getMediaTray(String printer) {
+        Party practice = GlobalContext.getInstance().getPractice();
+        if (practice != null) {
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            return TemplateHelper.getMediaTray(template, practice, printer,
+                                               service);
+        }
+        return null;
+    }
+
+    /**
+     * Generates a report.
+     *
+     * @param object the object to generate the report for
+     * @return the generated report
+     * @throws DocumentException         if the template document can't be found
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Document generate(IMObject object) {
+        String[] mimeTypes = {DocFormats.ODT_TYPE, DocFormats.PDF_TYPE};
+        return generate(object, mimeTypes);
     }
 
     /**

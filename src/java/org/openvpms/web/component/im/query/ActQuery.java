@@ -154,7 +154,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      * Construct a new  <code>ActQuery</code>.
      *
      * @param entity        the entity to search for
-     * @param participant   the partcipant node name
+     * @param participant   the participant node name
      * @param participation the entity participation short name
      * @param shortNames    the act short names
      * @param statuses      the act statuses to search on. May be
