@@ -49,7 +49,7 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
     /**
      * The print listener. May be <code>null</code>.
      */
-    private IMObjectPrinterListener<T> _listener;
+    private IMObjectPrinterListener<T> listener;
 
     /**
      * Determines if printing should occur interactively.
@@ -99,7 +99,7 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
      * @param listener the listener. May be <code>null</code>
      */
     public void setListener(IMObjectPrinterListener<T> listener) {
-        _listener = listener;
+        this.listener = listener;
     }
 
     /**
@@ -129,7 +129,7 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected abstract IMObjectReport createReport(IMObject object);
+    protected abstract IMObjectReport createReport(T object);
 
     /**
      * Returns a document for an object.
@@ -138,7 +138,7 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
      * @return a document
      * @throws OpenVPMSException for any error
      */
-    protected abstract Document getDocument(IMObject object);
+    protected abstract Document getDocument(T object);
 
     /**
      * Returns the default printer for an object.
@@ -146,7 +146,18 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
      * @return the default printer, or <code>null</code> if there is
      *         none defined
      */
-    protected abstract String getDefaultPrinter(IMObject object);
+    protected abstract String getDefaultPrinter(T object);
+
+    /**
+     * Returns the print properties for an object.
+     *
+     * @param object  the object to print
+     * @param printer the printer
+     * @return the print properties
+     */
+    protected PrintProperties getProperties(T object, String printer) {
+        return new PrintProperties(printer);
+    }
 
     /**
      * Invoked when an object has been successfully printed.
@@ -155,8 +166,8 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
      * @param object the object
      */
     protected void printed(T object) {
-        if (_listener != null) {
-            _listener.printed(object);
+        if (listener != null) {
+            listener.printed(object);
         }
     }
 
@@ -168,8 +179,8 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
      * @param exception the cause of the failure
      */
     protected void failed(T object, Throwable exception) {
-        if (_listener != null) {
-            _listener.cancelled(object);
+        if (listener != null) {
+            listener.cancelled(object);
         }
     }
 
@@ -177,14 +188,14 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
      * Prints the object.
      *
      * @param object  the object to print
-     * @param printer the printer
+     * @param printer the printer name
      */
     protected void doPrint(T object, String printer) {
         try {
             IMObjectReport report = createReport(object);
             List<IMObject> objects = new ArrayList<IMObject>();
             objects.add(object);
-            report.print(objects, new PrintProperties(printer));
+            report.print(objects, getProperties(object, printer));
             printed(object);
         } catch (OpenVPMSException exception) {
             if (isInteractive()) {
@@ -200,7 +211,7 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
      *
      * @param object the object to preview
      */
-    protected void doPrintPreview(IMObject object) {
+    protected void doPrintPreview(T object) {
         try {
             Document document = getDocument(object);
             DownloadServlet.startDownload(document);
