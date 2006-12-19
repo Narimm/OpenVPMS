@@ -38,7 +38,9 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
+import org.openvpms.archetype.rules.doc.MediaHelper;
 
+import javax.print.attribute.standard.MediaTray;
 import java.util.List;
 
 
@@ -126,6 +128,38 @@ public class TemplateHelper {
             }
         }
         return printer;
+    }
+
+    /**
+     * Returns the media tray for a template.
+     *
+     * @param template the document template
+     * @param practice the practice (an <em>party.organisationPractice</em>)
+     * @param printer  the printer
+     * @param service  the archetype service
+     * @return the media tray for the template, or <code>null</code> if
+     *         none is defined
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public static MediaTray getMediaTray(Entity template, Party practice,
+                                         String printer,
+                                         IArchetypeService service) {
+        MediaTray tray = null;
+        IMObjectBean templateBean = new IMObjectBean(template, service);
+        IMObjectReference practiceRef = practice.getObjectReference();
+        for (IMObject object : templateBean.getValues("printers")) {
+            EntityRelationship relationship = (EntityRelationship) object;
+            if (relationship.getTarget() != null &&
+                    practiceRef.equals(relationship.getTarget())) {
+                IMObjectBean bean = new IMObjectBean(object, service);
+                String name = bean.getString("printerName");
+                if (StringUtils.equals(printer, name)) {
+                    tray = MediaHelper.getTray(bean.getString("paperTray"));
+                    break;
+                }
+            }
+        }
+        return tray;
     }
 
     /**

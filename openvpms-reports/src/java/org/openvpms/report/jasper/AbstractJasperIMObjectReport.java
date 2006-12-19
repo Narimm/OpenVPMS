@@ -18,23 +18,6 @@
 
 package org.openvpms.report.jasper;
 
-import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
-import static org.openvpms.report.IMObjectReportException.ErrorCode.UnsupportedMimeTypes;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.print.attribute.HashPrintRequestAttributeSet;
-import javax.print.attribute.HashPrintServiceAttributeSet;
-import javax.print.attribute.PrintRequestAttributeSet;
-import javax.print.attribute.PrintServiceAttributeSet;
-import javax.print.attribute.standard.Copies;
-import javax.print.attribute.standard.MediaSizeName;
-import javax.print.attribute.standard.PrinterName;
-
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -43,7 +26,6 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
-
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -53,7 +35,23 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReportException;
+import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
+import static org.openvpms.report.IMObjectReportException.ErrorCode.UnsupportedMimeTypes;
 import org.openvpms.report.PrintProperties;
+
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.HashPrintServiceAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.PrintServiceAttributeSet;
+import javax.print.attribute.standard.Copies;
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.MediaTray;
+import javax.print.attribute.standard.PrinterName;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -140,7 +138,14 @@ public abstract class AbstractJasperIMObjectReport
             // print 1 copy
             PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
             aset.add(new Copies(1));
-            aset.add(MediaSizeName.ISO_A4);
+            MediaSizeName mediaSize = properties.getMediaSize();
+            MediaTray tray = properties.getMediaTray();
+            if (mediaSize != null) {
+                aset.add(mediaSize);
+            }
+            if (tray != null) {
+                aset.add(tray);
+            }
             exporter.setParameter(
                     JRPrintServiceExporterParameter.PRINT_REQUEST_ATTRIBUTE_SET,
                     aset);
