@@ -33,7 +33,7 @@
 	<field name="clinician.entity.name" class="java.lang.String"/>
 
 		<background>
-			<band height="0"  isSplitAllowed="true" >
+			<band height="1"  isSplitAllowed="true" >
 			</band>
 		</background>
 		<title>
@@ -49,7 +49,7 @@
 			</band>
 		</columnHeader>
 		<detail>
-			<band height="130"  isSplitAllowed="true" >
+			<band height="122"  isSplitAllowed="true" >
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="45"
@@ -66,9 +66,9 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="15"
-						y="31"
+						y="28"
 						width="170"
-						height="40"
+						height="43"
 						key="textField"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
