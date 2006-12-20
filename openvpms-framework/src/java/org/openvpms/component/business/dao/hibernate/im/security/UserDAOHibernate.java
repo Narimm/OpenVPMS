@@ -21,8 +21,12 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.openvpms.component.business.dao.hibernate.im.entity.HibernateResultCollectorFactory;
+import org.openvpms.component.business.dao.im.common.ResultCollector;
+import org.openvpms.component.business.dao.im.common.ResultCollectorFactory;
 import org.openvpms.component.business.dao.im.security.IUserDAO;
 import org.openvpms.component.business.dao.im.security.UserDAOException;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -37,6 +41,12 @@ import java.util.List;
  * @version $LastChangedDate$
  */
 public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
+
+    /**
+     * The result collector factory.
+     */
+    private ResultCollectorFactory factory
+            = new HibernateResultCollectorFactory();
 
     /**
      * Constructs a new <code>UserDAOHibernate</code>.
@@ -57,7 +67,14 @@ public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
         try {
             Query query = session.getNamedQuery("user.getByUserName");
             query.setString("name", name);
-            results = query.list();
+            ResultCollector<IMObject> collector
+                    = factory.createIMObjectCollector();
+            for (Object object : query.list()) {
+                collector.collect(object);
+            }
+            List objects;
+            objects = collector.getPage().getResults();
+            results = objects;
         } catch (Exception exception) {
             throw new UserDAOException(
                     UserDAOException.ErrorCode.FailedToFindUserRecordByName,
