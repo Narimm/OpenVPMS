@@ -19,50 +19,54 @@
 
 package org.openvpms.component.business.dao.hibernate.im.security;
 
-import java.util.List;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.openvpms.component.business.dao.im.audit.AuditDAOException;
 import org.openvpms.component.business.dao.im.security.IUserDAO;
 import org.openvpms.component.business.dao.im.security.UserDAOException;
 import org.openvpms.component.business.domain.im.security.User;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
+import java.util.List;
+
+
 /**
  * This is an implementation of the IUserDAO DAO for hibernate. It uses the
  * Spring Framework's template classes.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class UserDAOHibernate extends HibernateDaoSupport implements IUserDAO {
 
-	/**
-	 * 
-	 */
-	public UserDAOHibernate() {
-		super();
-	}
+    /**
+     * Constructs a new <code>UserDAOHibernate</code>.
+     */
+    public UserDAOHibernate() {
+    }
 
-	/* (non-Javadoc)
-	 * @see org.openvpms.component.business.dao.im.security.IUserDAO#getByName(java.lang.String)
-	 */
+    /**
+     * (non-Javadoc)
+     *
+     * @see IUserDAO#getByUserName(String)
+     */
     @SuppressWarnings("unchecked")
-	public List<User> getByUserName(String name) {
+    public List<User> getByUserName(String name) {
         List<User> results = null;
+        Session session
+                = getHibernateTemplate().getSessionFactory().openSession();
         try {
-            Session session = getHibernateTemplate().getSessionFactory().openSession();
-        	Query query = session.getNamedQuery("user.getByUserName");            
+            Query query = session.getNamedQuery("user.getByUserName");
             query.setString("name", name);
             results = query.list();
         } catch (Exception exception) {
             throw new UserDAOException(
                     UserDAOException.ErrorCode.FailedToFindUserRecordByName,
                     new Object[]{name}, exception);
+        } finally {
+            session.close();
         }
-        
+
         return results;
-	}
+    }
 
 }
