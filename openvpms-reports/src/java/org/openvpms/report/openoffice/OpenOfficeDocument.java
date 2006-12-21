@@ -96,13 +96,13 @@ public class OpenOfficeDocument {
     /**
      * Constructs a new <code>OpenOfficeDocument</code>.
      *
-     * @param document the source document
-     * @param service  the OpenOffice service
+     * @param document   the source document
+     * @param connection the connection to the OpenOffice service
      * @throws OpenOfficeException for any error
      */
-    public OpenOfficeDocument(Document document, OpenOfficeService service,
+    public OpenOfficeDocument(Document document, OOConnection connection,
                               DocumentHandlers handlers) {
-        XComponentLoader loader = service.getComponentLoader();
+        XComponentLoader loader = connection.getComponentLoader();
 
         InputStream input;
         byte[] content;

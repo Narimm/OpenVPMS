@@ -41,6 +41,7 @@ public class OpenOfficeException extends OpenVPMSException {
     public enum ErrorCode {
         InvalidURL,
         FailedToConnect,
+        FailedToStartService,
         FailedToGetService,
         ServiceNotInit,
         FailedToCreateDoc,

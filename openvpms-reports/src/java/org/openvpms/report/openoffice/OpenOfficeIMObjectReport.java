@@ -29,8 +29,7 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.ExpressionEvaluator;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
-import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
-import static org.openvpms.report.IMObjectReportException.ErrorCode.UnsupportedMimeTypes;
+import static org.openvpms.report.IMObjectReportException.ErrorCode.*;
 import org.openvpms.report.PrintProperties;
 
 import java.util.Collection;
@@ -77,7 +76,7 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
      * @return a document containing the report
-     * @throws IMObjectReportException   for any report error
+     * @throws IMObjectReportException for any report error
      */
     public Document generate(Collection<IMObject> objects, String[] mimeTypes) {
         String mimeType = null;
@@ -92,14 +91,19 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
             throw new IMObjectReportException(UnsupportedMimeTypes);
         }
 
+
         OpenOfficeDocument doc = null;
+        OOConnection connection = null;
         try {
-            doc = create(objects);
+            OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
+            connection = pool.getConnection();
+            doc = create(objects, connection);
             return export(doc, mimeType);
         } finally {
             if (doc != null) {
                 doc.close();
             }
+            OpenOfficeHelper.close(connection);
         }
     }
 
@@ -113,21 +117,33 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
      */
     public void print(Collection<IMObject> objects,
                       PrintProperties properties) {
-        PrintService service = OpenOfficeHelper.getPrintService();
-        OpenOfficeDocument doc = create(objects);
-        service.print(doc, properties.getPrinterName(), true);
+        OOConnection connection = null;
+        try {
+            PrintService service = OpenOfficeHelper.getPrintService();
+            connection = OpenOfficeHelper.getConnectionPool().getConnection();
+            OpenOfficeDocument doc = create(objects, connection);
+            service.print(doc, properties.getPrinterName(), true);
+        } catch (OpenOfficeException exception) {
+            throw new IMObjectReportException(exception,
+                                              FailedToPrintReport,
+                                              exception.getMessage());
+        } finally {
+            OpenOfficeHelper.close(connection);
+        }
     }
 
     /**
      * Creates an openoffice document from a collection of objects.
      * Note that the collection is limited to a single object.
      *
-     * @param objects the objects to generate the document from
+     * @param objects    the objects to generate the document from
+     * @param connection a connection to the OpenOffice service
      * @return a new openoffice document
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private OpenOfficeDocument create(Collection<IMObject> objects) {
+    private OpenOfficeDocument create(Collection<IMObject> objects,
+                                      OOConnection connection) {
         OpenOfficeDocument doc = null;
         if (objects.size() != 1) {
             throw new IMObjectReportException(
@@ -139,9 +155,7 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
                 object, ArchetypeServiceHelper.getArchetypeService());
 
         try {
-            doc = new OpenOfficeDocument(template,
-                                         OpenOfficeHelper.getService(),
-                                         handlers);
+            doc = new OpenOfficeDocument(template, connection, handlers);
             List<String> fieldNames = doc.getUserFieldNames();
             for (String name : fieldNames) {
                 String value = doc.getUserField(name);

@@ -23,15 +23,18 @@ import com.sun.star.bridge.XUnoUrlResolver;
 import com.sun.star.comp.helper.Bootstrap;
 import com.sun.star.comp.helper.BootstrapException;
 import com.sun.star.connection.NoConnectException;
+import com.sun.star.frame.XDesktop;
 import com.sun.star.lang.XMultiComponentFactory;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.uno.XComponentContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToStartService;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.util.Random;
 
 
 /**
@@ -41,21 +44,43 @@ import java.util.Random;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class BootstrapService {
+public abstract class OOBootstrapService {
 
     /**
      * The connection parameters.
      */
-    private final String _connectParams;
+    private final String parameters;
+
+    /**
+     * The current process.
+     */
+    private Process process;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(OOBootstrapService.class);
 
 
     /**
-     * Bootstraps the component context from a UNO installation.
+     * Constructs a new <code>OOBootstrapService</code>.
      *
-     * @throws BootstrapException if the component context can't be
-     *                            bootstrapped
+     * @param parameters the connection parameters
      */
-    public BootstrapService() throws BootstrapException {
+    public OOBootstrapService(String parameters) {
+        this.parameters = parameters;
+    }
+
+    /**
+     * Starts the OpenOffice service.
+     *
+     * @throws OpenOfficeException if the service cannot be started
+     */
+    public synchronized void start() {
+        if (log.isDebugEnabled()) {
+            log.debug("Attempting to start soffice using parameters="
+                    + parameters);
+        }
         try {
             // create default local component context
             XComponentContext localContext =
@@ -67,21 +92,17 @@ public class BootstrapService {
             String office =
                     System.getProperty("os.name").startsWith("Windows") ?
                             "soffice.exe" : "soffice";
-            // create random pipe name
-            String pipeName = "uno" +
-                    Long.toString(
-                            (new Random()).nextLong() & 0x7fffffffffffffffL);
 
             // command line arguments
             String[] args = {
                     office, "-nologo", "-nodefault", "-norestore",
-                    "-nolockcheck", "-accept=pipe,name=" + pipeName + ";urp;"
+                    "-nolockcheck", "-accept="+ parameters + ";urp;"
             };
 
-            // start office process
-            Process p = Runtime.getRuntime().exec(args);
-            pipe(p.getInputStream(), System.out, "CO> ");
-            pipe(p.getErrorStream(), System.err, "CE> ");
+            // start the office process
+            process = Runtime.getRuntime().exec(args);
+            pipe(process.getInputStream(), System.out, "CO> ");
+            pipe(process.getErrorStream(), System.err, "CE> ");
 
             // initial service manager
             XMultiComponentFactory localServiceManager
@@ -93,9 +114,8 @@ public class BootstrapService {
             XUnoUrlResolver urlResolver = UnoUrlResolver.create(localContext);
 
             // connection string
-            _connectParams = "pipe,name=" + pipeName;
-            String connect = "uno:" + _connectParams
-                    + ";urp;StarOffice.ComponentContext";
+            String connect = "uno:" + parameters +
+                    ";urp;StarOffice.ComponentContext";
 
             // wait until office is started
             for (; ;) {
@@ -104,31 +124,78 @@ public class BootstrapService {
                     Object context = urlResolver.resolve(connect);
                     context = UnoRuntime.queryInterface(
                             XComponentContext.class, context);
-                    if (context == null)
-                        throw new BootstrapException("no component context!");
+                    if (context == null) {
+                        throw new OpenOfficeException(FailedToStartService,
+                                                      "no component context");
+                    }
                     break;
                 } catch (NoConnectException exception) {
                     // wait 500 ms, then try to connect again
                     Thread.sleep(500);
                 }
             }
-        } catch (BootstrapException exception) {
+        } catch (OpenOfficeException exception) {
+            if (process != null) {
+                process.destroy();
+            }
             throw exception;
-        } catch (RuntimeException exception) {
-            throw exception;
-        } catch (Exception exception) {
-            throw new BootstrapException(exception.getMessage(), exception);
+        } catch (Throwable exception) {
+            if (process != null) {
+                process.destroy();
+            }
+            throw new OpenOfficeException(exception, FailedToStartService,
+                                          exception.getMessage());
         }
     }
 
     /**
-     * Returns the connection parameters.
+     * Determines if the service is running.
      *
-     * @return the connection parameters
+     * @return <code>true</code> if the service is running, otherwise
+     *         <code>false</code>
      */
-    public String getConnectionParameters() {
-        return _connectParams;
+    public synchronized boolean isRunning() {
+        return (process != null);
     }
+
+    /**
+     * Stops the service.
+     */
+    public synchronized void stop() {
+        if (process != null) {
+            boolean terminated = false;
+            try {
+                OOConnection connection = getConnection();
+                XDesktop desktop = (XDesktop) connection.getService(
+                        "com.sun.star.frame.Desktop", XDesktop.class);
+                if (desktop != null) {
+                    if (desktop.terminate()) {
+                        terminated = true;
+                    }
+                }
+                try {
+                    connection.close();
+                } catch (OpenOfficeException ignore) {
+                    log.error(ignore,  ignore);
+                }
+            } catch (Throwable exception) {
+                log.debug(exception, exception);
+            }
+            if (!terminated) {
+                log.debug("unable to terminate soffice process, destroying");
+                process.destroy();
+            }
+            process = null;
+        }
+    }
+
+    /**
+     * Returns a new {@link OOConnection} to the service.
+     *
+     * @return a new connection to the service
+     * @throws OpenOfficeException if a connection cannot be established
+     */
+    public abstract OOConnection getConnection();
 
     /**
      * Pipes process output to a stream.
@@ -158,5 +225,4 @@ public class BootstrapService {
             }
         }.start();
     }
-
 }
