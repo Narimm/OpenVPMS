@@ -5,7 +5,7 @@
 		 name="label"
 		 columnCount="1"
 		 printOrder="Vertical"
-		 orientation="Landscape"
+		 orientation="Portrait"
 		 pageWidth="226"
 		 pageHeight="127"
 		 columnWidth="226"
