@@ -33,9 +33,9 @@ import org.openvpms.report.DocFormats;
 public class Converter {
 
     /**
-     * The OpenOffice service.
+     * The the connection to the OpenOffice service.
      */
-    private final OpenOfficeService service;
+    private final OOConnection connection;
 
     /**
      * The document handlers
@@ -46,12 +46,12 @@ public class Converter {
     /**
      * Constructs a new <code>Converter</code>.
      *
-     * @param service  the OpenOffice service
-     * @param handlers the document handlers
+     * @param connection the connection to the OpenOffice service
+     * @param handlers   the document handlers
      */
-    public Converter(OpenOfficeService service,
+    public Converter(OOConnection connection,
                      DocumentHandlers handlers) {
-        this.service = service;
+        this.connection = connection;
         this.handlers = handlers;
     }
 
@@ -96,7 +96,7 @@ public class Converter {
      * @throws OpenOfficeException if the document cannot be converted
      */
     public Document convert(Document document, String mimeType) {
-        OpenOfficeDocument doc = new OpenOfficeDocument(document, service,
+        OpenOfficeDocument doc = new OpenOfficeDocument(document, connection,
                                                         handlers);
         doc.refresh();   // workaround to avoid corruption of generated doc
         // when the source document contains user fields.

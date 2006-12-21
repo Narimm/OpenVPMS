@@ -18,7 +18,6 @@
 
 package org.openvpms.report.openoffice;
 
-import com.sun.star.awt.XPrinterServer;
 import com.sun.star.beans.PropertyValue;
 import com.sun.star.lang.IllegalArgumentException;
 import com.sun.star.uno.UnoRuntime;
@@ -37,9 +36,9 @@ import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.Faile
 public class PrintService {
 
     /**
-     * The OpenOffice service.
+     * The connection pool.
      */
-    private final OpenOfficeService service;
+    private OOConnectionPool pool;
 
     /**
      * The document handlers.
@@ -50,23 +49,12 @@ public class PrintService {
     /**
      * Creates a new <code>PrintService</code>.
      *
-     * @param service  the OpenOffice service
+     * @param pool     the connection pool
      * @param handlers the document handlers
      */
-    public PrintService(OpenOfficeService service, DocumentHandlers handlers) {
-        this.service = service;
+    public PrintService(OOConnectionPool pool, DocumentHandlers handlers) {
+        this.pool = pool;
         this.handlers = handlers;
-    }
-
-    /**
-     * Returns a list of printers.
-     *
-     * @return a list of printers
-     * @throws OpenOfficeException for any error
-     */
-    public String[] getPrinters() {
-        XPrinterServer printerServer = service.getPrinterServer();
-        return printerServer.getPrinterNames();
     }
 
     /**
@@ -77,9 +65,17 @@ public class PrintService {
      * @throws OpenOfficeException for any error
      */
     public void print(Document document, String printer) {
-        OpenOfficeDocument doc = new OpenOfficeDocument(document, service,
-                                                        handlers);
-        print(doc, printer, true);
+        OOConnection connection = null;
+        try {
+            connection = pool.getConnection();
+            OpenOfficeDocument doc = new OpenOfficeDocument(document,
+                                                            connection,
+                                                            handlers);
+            print(doc, printer, true);
+        } finally {
+            OpenOfficeHelper.close(connection);
+
+        }
     }
 
     /**

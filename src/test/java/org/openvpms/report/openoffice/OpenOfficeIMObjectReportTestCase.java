@@ -96,10 +96,16 @@ public class OpenOfficeIMObjectReportTestCase
      */
     private Map<String, String> getFields(Document document) {
         Map<String, String> fields = new HashMap<String, String>();
-        OpenOfficeDocument doc = new OpenOfficeDocument(
-                document, OpenOfficeHelper.getService(), handlers);
-        for (String name : doc.getUserFieldNames()) {
-            fields.put(name, doc.getUserField(name));
+        OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
+        OOConnection connection = pool.getConnection();
+        try {
+            OpenOfficeDocument doc = new OpenOfficeDocument(
+                    document, connection, handlers);
+            for (String name : doc.getUserFieldNames()) {
+                fields.put(name, doc.getUserField(name));
+            }
+        } finally {
+          OpenOfficeHelper.close(connection);
         }
         return fields;
     }

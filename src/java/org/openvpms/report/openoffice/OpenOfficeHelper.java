@@ -19,10 +19,12 @@
 package org.openvpms.report.openoffice;
 
 import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.ServiceNotInit;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
- * Helper to access the {@link OpenOfficeService} and {@link PrintService}.
+ * OpenOIffice helper.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -30,40 +32,45 @@ import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.Servi
 public class OpenOfficeHelper {
 
     /**
-     * A reference to the service.
+     * A reference to the OpenOffice connection pool.
      */
-    private static OpenOfficeService _service;
+    private static OOConnectionPool pool;
 
     /**
      * A reference to the print service.
      */
-    private static PrintService _printService;
+    private static PrintService printService;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(OpenOfficeHelper.class);
 
 
     /**
-     * Initialises the helper..
+     * Initialises the helper.
      *
-     * @param service a reference to the archetype service
+     * @param pool a reference to the OpenOffice connection pool
      */
-    public OpenOfficeHelper(OpenOfficeService service,
+    public OpenOfficeHelper(OOConnectionPool pool,
                             PrintService printService) {
-        _service = service;
-        _printService = printService;
+        OpenOfficeHelper.pool = pool;
+        OpenOfficeHelper.printService = printService;
     }
 
     /**
-     * Returns a reference to the {@link OpenOfficeService}. If one is not
+     * Returns a reference to the {@link DefaultOOConnectionPool}. If one is not
      * available then raises an exception.
      *
-     * @return the service
-     * @throws OpenOfficeException if the value is not set
+     * @return the pool
+     * @throws OpenOfficeException if the pool is not set
      */
-    public static OpenOfficeService getService() {
-        if (_service == null) {
+    public static OOConnectionPool getConnectionPool() {
+        if (pool == null) {
             throw new OpenOfficeException(ServiceNotInit);
         }
 
-        return _service;
+        return pool;
     }
 
     /**
@@ -73,10 +80,25 @@ public class OpenOfficeHelper {
      * @return the print service
      */
     public static PrintService getPrintService() {
-        if (_printService == null) {
+        if (printService == null) {
             throw new OpenOfficeException(ServiceNotInit);
         }
-        return _printService;
+        return printService;
+    }
+
+    /**
+     * Closes a connection, catching any exceptions.
+     *
+     * @param connection the connection. May be <code>null</code>
+     */
+    public static void close(OOConnection connection) {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (OpenOfficeException exception) {
+                log.warn(exception, exception);
+            }
+        }
     }
 
 }
