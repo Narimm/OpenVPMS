@@ -53,7 +53,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="45"
-						y="9"
+						y="4"
 						width="107"
 						height="14"
 						key="textField"/>
@@ -66,9 +66,9 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="15"
-						y="28"
+						y="23"
 						width="181"
-						height="43"
+						height="40"
 						key="textField"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
@@ -79,7 +79,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="45"
-						y="72"
+						y="64"
 						width="50"
 						height="11"
 						key="textField"
@@ -93,7 +93,7 @@
 				<staticText>
 					<reportElement
 						x="15"
-						y="72"
+						y="64"
 						width="28"
 						height="11"
 						key="staticText-1"
@@ -107,7 +107,7 @@
 				<staticText>
 					<reportElement
 						x="102"
-						y="72"
+						y="64"
 						width="21"
 						height="11"
 						key="staticText-2"
@@ -121,7 +121,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="127"
-						y="72"
+						y="64"
 						width="71"
 						height="11"
 						key="textField"
@@ -135,7 +135,7 @@
 				<staticText>
 					<reportElement
 						x="15"
-						y="86"
+						y="78"
 						width="28"
 						height="11"
 						key="staticText-3"
@@ -149,7 +149,7 @@
 				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="45"
-						y="86"
+						y="78"
 						width="50"
 						height="11"
 						key="textField"
@@ -163,7 +163,7 @@
 				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="126"
-						y="86"
+						y="78"
 						width="72"
 						height="11"
 						key="textField"
@@ -177,7 +177,7 @@
 				<staticText>
 					<reportElement
 						x="101"
-						y="86"
+						y="78"
 						width="23"
 						height="11"
 						key="staticText-4"
