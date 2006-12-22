@@ -62,6 +62,12 @@ public abstract class OOBootstrapService {
     private boolean headless = true;
 
     /**
+     * The time to wait after terminating the desktop, in milliseconds. Used to
+     * ensure that subsequent startups don't fail due to socket errors.
+     */
+    private long terminateWait = 1000;
+
+    /**
      * The current process.
      */
     private Process process;
@@ -87,6 +93,10 @@ public abstract class OOBootstrapService {
      * @throws OpenOfficeException if the service cannot be started
      */
     public synchronized void start() {
+        if (process != null) {
+            throw new OpenOfficeException(FailedToStartService,
+                                          "service already running");
+        }
         log.info("Starting OpenOffice");
         if (log.isDebugEnabled()) {
             log.debug("Attempting to start soffice using parameters="
@@ -181,7 +191,7 @@ public abstract class OOBootstrapService {
      * @return <code>true</code> if the service is running, otherwise
      *         <code>false</code>
      */
-    public synchronized boolean isRunning() {
+    public synchronized boolean isActive() {
         boolean running = false;
         if (process != null) {
             OOConnection connection = null;
@@ -209,37 +219,52 @@ public abstract class OOBootstrapService {
                 XDesktop desktop = (XDesktop) connection.getService(
                         "com.sun.star.frame.Desktop", XDesktop.class);
                 if (desktop != null) {
-                    XEnumerationAccess iterAccess = desktop.getComponents();
-                    XEnumeration iter = iterAccess.createEnumeration();
-                    while (iter.hasMoreElements()) {
-                        Object object = iter.nextElement();
-                        XCloseable closeable = (XCloseable) UnoRuntime.queryInterface(
-                                XCloseable.class, object);
-                        if (closeable != null) {
-                            closeable.close(true);
-                        } else {
-                            XComponent component = (XComponent) UnoRuntime.queryInterface(
-                                    XComponent.class, object);
-                            if (component != null) {
-                                component.dispose();
-                            }
-
-                        }
-                    }
-                    if (desktop.terminate()) {
-                        log.debug("Failed to terminate desktop");
-                    }
+                    close(desktop);
                 }
                 try {
                     connection.close();
                 } catch (OpenOfficeException ignore) {
-                    log.error(ignore, ignore);
+                    // no-op
                 }
+                Thread.sleep(terminateWait);
             } catch (Throwable exception) {
                 log.debug(exception, exception);
             }
             process.destroy();
             process = null;
+        }
+    }
+
+    /**
+     * Cleans up the desktop, before terminating it.
+     *
+     * @param desktop the desktop
+     */
+    private void close(XDesktop desktop) {
+        try {
+            XEnumerationAccess iterAccess = desktop.getComponents();
+            XEnumeration iter = iterAccess.createEnumeration();
+            while (iter.hasMoreElements()) {
+                Object object = iter.nextElement();
+                XCloseable closeable = (XCloseable) UnoRuntime.queryInterface(
+                        XCloseable.class, object);
+                if (closeable != null) {
+                    closeable.close(true);
+                } else {
+                    XComponent component =
+                            (XComponent) UnoRuntime.queryInterface(
+                                    XComponent.class, object);
+                    if (component != null) {
+                        component.dispose();
+                    }
+                }
+            }
+
+            if (desktop.terminate()) {
+                log.debug("Failed to terminate desktop");
+            }
+        } catch (Throwable exception) {
+            log.debug(exception, exception);
         }
     }
 
@@ -256,10 +281,23 @@ public abstract class OOBootstrapService {
      * In headless mode, the service can be reliably terminated, however
      * it prevents any viewing of OO documents by the local user.
      *
-     * @param headless if <code>true</code> starts the server headless
+     * @param headless if <code>true</code> starts the server headless.
+     *                 Defaults to <code>true</code>
      */
     public void setHeadless(boolean headless) {
         this.headless = headless;
+    }
+
+    /**
+     * Sets the amount of time to wait after terminating the desktop, when
+     * stopping an OpenOffice service. This ensures that subsequent restarts
+     * don't fail with socket errors.
+     *
+     * @param wait the time to wait, in milliseconds. Defaults to
+     *             <code>1000</code>
+     */
+    public void setTerminateWait(long wait) {
+        this.terminateWait = wait;
     }
 
     /**

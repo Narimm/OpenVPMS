@@ -51,7 +51,7 @@ public class OOBootstrapConnectionPool extends AbstractOOConnectionPool {
      * @throws OpenOfficeException if the connection cannot be created
      */
     protected OOConnection create() {
-        if (!service.isRunning()) {
+        if (!service.isActive()) {
             service.stop();
             service.start();
         }

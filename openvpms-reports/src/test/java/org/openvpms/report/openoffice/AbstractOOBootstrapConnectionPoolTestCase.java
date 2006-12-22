@@ -22,29 +22,28 @@ import junit.framework.Assert;
 
 
 /**
- * bstract test case for {@link DefaultOOConnectionPool}.
+ * Abstract test case for {@link OOBootstrapConnectionPool}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractDefaultOOConnectionPoolTestCase
+public abstract class AbstractOOBootstrapConnectionPoolTestCase
         extends AbstractOOConnectionPoolTestCase {
 
     /**
-     * Verifies that a connection is destroyed after N uses if
-     * {@link DefaultOOConnectionPool#setReuseCount(int)} is non-zero.
+     * Verifies that the OpenOffice service is restarted after N uses if
+     * {@link OOBootstrapConnectionPool#setReuseCount(int)} is non-zero.
      */
-    public void testDestroy() {
-        OOConnectionFactory factory = createFactory();
-        TestConnectionPool pool = new TestConnectionPool(factory);
+    public void testRestart() {
+        TestConnectionPool pool = new TestConnectionPool(getService());
         int uses = 2;
         pool.setReuseCount(uses);
-        for (int i = 0; i < factory.getMaxConnections() * uses; ++i) {
+        for (int i = 0; i < pool.getCapacity() * uses; ++i) {
             OOConnection connection = pool.getConnection();
             checkConnection(connection);
             connection.close();
         }
-        Assert.assertEquals(factory.getMaxConnections(), pool.getDestroyed());
+        Assert.assertEquals(pool.getCapacity(), pool.getRestarted());
 
         OOConnection connection = pool.getConnection();
         checkConnection(connection);
@@ -52,52 +51,50 @@ public abstract class AbstractDefaultOOConnectionPoolTestCase
     }
 
     /**
-     * Creates a new connection factory.
-     *
-     * @return a new connection factory
-     * @throws OpenOfficeException for any error
-     */
-    protected abstract OOConnectionFactory createFactory();
-
-    /**
      * Creates a new connection pool.
+     *
+     * @return a new connection pool
      */
     protected OOConnectionPool createPool() {
-        return new DefaultOOConnectionPool(createFactory());
+        return new OOBootstrapConnectionPool(getService());
     }
 
+    private class TestConnectionPool extends OOBootstrapConnectionPool {
 
-    private class TestConnectionPool extends DefaultOOConnectionPool {
-
-        private int destroyed;
+        /**
+         * The no. of times the service has been restarted.
+         */
+        private int restarted;
 
         /**
          * Creates a new <code>TestConnectionPool</code>.
          *
-         * @param factory the connection factory
+         * @param service the bootstrap service
          */
-        public TestConnectionPool(OOConnectionFactory factory) {
-            super(factory);
+        public TestConnectionPool(OOBootstrapService service) {
+            super(service);
         }
 
         /**
-         * Returns the no. of times connections have been destroyed.
+         * Returns the no. of times the service has been restarted
          *
-         * @return the no. of times connections have been destroyed
+         * @return the no. of times the service has been restarted
          */
-        public synchronized int getDestroyed() {
-            return destroyed;
+        public synchronized int getRestarted() {
+            return restarted;
         }
 
         /**
-         * Destroys a connection.
+         * Destroys a connection. Verifies that the service is restarted.
          *
          * @param state the connection state.
          */
         @Override
         protected synchronized void destroy(State state) {
+            assertTrue(getService().isActive());
             super.destroy(state);
-            ++destroyed;
+            assertFalse(getService().isActive());
+            ++restarted;
         }
     }
 }

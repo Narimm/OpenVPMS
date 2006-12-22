@@ -533,6 +533,9 @@
             <includes>
                 <include>**/*TestCase.java</include>
             </includes>
+            <excludes>
+                <exclude>**/Abstract*TestCase.java</exclude>
+            </excludes>
             <resources>
                 <resource>
                     <directory>${basedir}/src/conf/spring</directory>
