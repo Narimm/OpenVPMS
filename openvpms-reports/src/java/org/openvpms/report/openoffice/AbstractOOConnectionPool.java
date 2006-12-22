@@ -62,6 +62,7 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
     private static final Log log = LogFactory.getLog(
             AbstractOOConnectionPool.class);
 
+    
     /**
      * Constructs a new <code>AbstractOOConnectionPool</code>.
      *

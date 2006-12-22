@@ -105,7 +105,7 @@ public class OpenOfficeIMObjectReportTestCase
                 fields.put(name, doc.getUserField(name));
             }
         } finally {
-          OpenOfficeHelper.close(connection);
+            OpenOfficeHelper.close(connection);
         }
         return fields;
     }
@@ -134,6 +134,20 @@ public class OpenOfficeIMObjectReportTestCase
                 "documentHandlers");
         assertNotNull(service);
         assertNotNull(handlers);
+    }
+
+    /**
+     * Tears down the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
+    protected void onTearDown() throws Exception {
+        super.onTearDown();
+        OOBootstrapService service
+                = (OOBootstrapService) applicationContext.getBean(
+                "OOSocketBootstrapService");
+        service.stop();
     }
 
     /**
