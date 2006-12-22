@@ -20,7 +20,6 @@ package org.openvpms.web.app.admin.template;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
 
@@ -48,12 +47,12 @@ public class DocumentTemplateWorkspace extends CRUDWorkspace<Entity> {
      * @param object the current object. May be <code>null</code>
      */
     public void setIMObject(IMObject object) {
-        if (object == null || object instanceof Party) {
-            setObject((Party) object);
+        if (object == null || object instanceof Entity) {
+            setObject((Entity) object);
         } else {
             throw new IllegalArgumentException(
                     "Argument 'object' must be an instance of "
-                            + Party.class.getName());
+                            + Entity.class.getName());
         }
     }
 }

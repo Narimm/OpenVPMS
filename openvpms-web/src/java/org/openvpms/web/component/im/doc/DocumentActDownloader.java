@@ -33,8 +33,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
+import org.openvpms.report.openoffice.OOConnection;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
-import org.openvpms.report.openoffice.OpenOfficeService;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -129,15 +129,18 @@ public class DocumentActDownloader extends Downloader {
      * Initiates download of the document as a PDF file.
      */
     protected void onDownloadAsPDF() {
+        OOConnection connection = null;
         try {
             Document source = getDocument();
-            OpenOfficeService service = OpenOfficeHelper.getService();
             DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-            Converter converter = new Converter(service, handlers);
+            connection = OpenOfficeHelper.getConnectionPool().getConnection();
+            Converter converter = new Converter(connection, handlers);
             Document target = converter.convert(source, DocFormats.PDF_TYPE);
             DownloadServlet.startDownload(target);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
+        } finally {
+            OpenOfficeHelper.close(connection);
         }
     }
 }

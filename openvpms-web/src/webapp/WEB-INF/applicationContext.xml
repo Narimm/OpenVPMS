@@ -418,38 +418,40 @@
         </property>
     </bean>
 
-    <!-- OpenOffice service. This can be configured to use the BootStrapService
-         to start a local OpenOffice server, or connect to an existing
-         OpenOffice server.
-         To connect to an existing server listening on a socket, use the
-         following, replacing host and port as required:
-        <constructor-arg>
-            <value>socket,host=localhost,port=8100,tcpNoDelay=1</value>
-        </constructor-arg>
-        The corresponding server should be run with the following:
+    <!-- OpenOffice bootstrap service. Starts an instance of OpenOffice on
+         the local host listening on a socket.
+         This is equivalent to running:
             soffice -nologo -nodefault -norestore -nolockcheck -accept=socket,port=8100;urp;
-
-        To connect to an existing server listening on pipe (changing the pipe
-        name as required):
-        <constructor-arg>
-            <value>pipe,name=vpms</value>
-        </constructor-arg>
-        The corresponding server should be run with the following:
-            soffice -nologo -nodefault -norestore -nolockcheck -accept=pipe,name=vpms;urp;
     -->
-    <bean id="openOfficeService"
-          class="org.openvpms.report.openoffice.OpenOfficeService">
+    <bean id="OOSocketBootstrapService"
+          class="org.openvpms.report.openoffice.OOSocketBootstrapService">
         <constructor-arg>
-            <value>socket,host=localhost,port=8100,tcpNoDelay=1</value>
+            <value>8100</value>
         </constructor-arg>
+    </bean>
+
+    <!-- OpenOffice connection pool. Uses an OOBootstrapService
+         to create connections.
+    -->
+    <bean id="OOBootstrapConnectionPool"
+          class="org.openvpms.report.openoffice.OOBootstrapConnectionPool">
+        <constructor-arg>
+            <ref local="OOSocketBootstrapService"/>
+        </constructor-arg>
+        <!-- restart OpenOffice after 'reuseCount' uses. Use 0 to never
+             restart.
+        -->
+        <property name="reuseCount">
+            <value>1000</value>
+        </property>
     </bean>
 
     <bean id="printService"
           class="org.openvpms.report.openoffice.PrintService">
         <constructor-arg>
-            <ref local="openOfficeService"/>
+            <ref local="OOBootstrapConnectionPool"/>
         </constructor-arg>
-        <constructor-arg index="1">
+        <constructor-arg>
             <ref local="documentHandlers"/>
         </constructor-arg>
     </bean>
@@ -457,7 +459,7 @@
     <bean id="openOfficeHelper"
           class="org.openvpms.report.openoffice.OpenOfficeHelper">
         <constructor-arg>
-            <ref local="openOfficeService"/>
+            <ref local="OOBootstrapConnectionPool"/>
         </constructor-arg>
         <constructor-arg>
             <ref local="printService"/>
