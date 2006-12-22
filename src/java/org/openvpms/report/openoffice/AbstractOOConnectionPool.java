@@ -62,7 +62,7 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
     private static final Log log = LogFactory.getLog(
             AbstractOOConnectionPool.class);
 
-    
+
     /**
      * Constructs a new <code>AbstractOOConnectionPool</code>.
      *
@@ -100,7 +100,17 @@ public abstract class AbstractOOConnectionPool implements OOConnectionPool {
     public OOConnection getConnection() {
         allocate();
         try {
-            return new OOConnectionHandle(connections.take());
+            for (int i = 0; i <= capacity; ++i) {
+                // find an active connection
+                State state = connections.take();
+                if (isResponsive(state)) {
+                    return new OOConnectionHandle(state);
+                } else {
+                    destroy(state);
+                    allocate();
+                }
+            }
+            throw new OpenOfficeException(FailedToConnect);
         } catch (InterruptedException exception) {
             throw new OpenOfficeException(FailedToConnect, exception);
         }
