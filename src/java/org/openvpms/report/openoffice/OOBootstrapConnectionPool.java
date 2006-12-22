@@ -52,6 +52,7 @@ public class OOBootstrapConnectionPool extends AbstractOOConnectionPool {
      */
     protected OOConnection create() {
         if (!service.isRunning()) {
+            service.stop();
             service.start();
         }
         return service.getConnection();

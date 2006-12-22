@@ -96,7 +96,7 @@ public class ExpressionEvaluator {
 
 	/**
      * Returns the value of an expression.
-     * If the expression is of the form ${expr} this will be evaluated
+     * If the expression is of the form [expr] this will be evaluated
      * using <code>JXPath</code>, otherwise it will be evaluated using
      * {@link NodeResolver}.
      *

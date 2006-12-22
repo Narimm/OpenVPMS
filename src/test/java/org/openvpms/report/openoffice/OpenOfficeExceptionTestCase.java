@@ -35,11 +35,13 @@ public class OpenOfficeExceptionTestCase extends TestCase {
      */
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     9, OpenOfficeException.ErrorCode.values().length);
+                     10, OpenOfficeException.ErrorCode.values().length);
         checkException(InvalidURL, "Invalid OpenOffice URL: foo", "foo");
         checkException(FailedToConnect, "Failed to connect to OpenOffice");
         checkException(FailedToGetService,
                        "Failed to get OpenOffice service foo", "foo");
+        checkException(FailedToStartService,
+                       "Failed to start OpenOffice service: foo", "foo");
         checkException(ServiceNotInit,
                        "OpenOfficeServiceHelper has not been initialised");
         checkException(FailedToCreateDoc, "Failed to create document");

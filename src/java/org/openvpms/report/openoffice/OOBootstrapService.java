@@ -21,12 +21,15 @@ package org.openvpms.report.openoffice;
 import com.sun.star.bridge.UnoUrlResolver;
 import com.sun.star.bridge.XUnoUrlResolver;
 import com.sun.star.comp.helper.Bootstrap;
-import com.sun.star.comp.helper.BootstrapException;
 import com.sun.star.connection.NoConnectException;
+import com.sun.star.container.XEnumeration;
+import com.sun.star.container.XEnumerationAccess;
 import com.sun.star.frame.XDesktop;
+import com.sun.star.lang.XComponent;
 import com.sun.star.lang.XMultiComponentFactory;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.uno.XComponentContext;
+import com.sun.star.util.XCloseable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToStartService;
@@ -50,6 +53,13 @@ public abstract class OOBootstrapService {
      * The connection parameters.
      */
     private final String parameters;
+
+    /**
+     * Determines whether the service should be started headless or not.
+     * In headless mode, the service can be reliably terminated, however
+     * it prevents any viewing of OO documents by the local user.
+     */
+    private boolean headless = true;
 
     /**
      * The current process.
@@ -77,6 +87,7 @@ public abstract class OOBootstrapService {
      * @throws OpenOfficeException if the service cannot be started
      */
     public synchronized void start() {
+        log.info("Starting OpenOffice");
         if (log.isDebugEnabled()) {
             log.debug("Attempting to start soffice using parameters="
                     + parameters);
@@ -86,7 +97,8 @@ public abstract class OOBootstrapService {
             XComponentContext localContext =
                     Bootstrap.createInitialComponentContext(null);
             if (localContext == null) {
-                throw new BootstrapException("no local component context");
+                throw new OpenOfficeException(FailedToStartService,
+                                              "no local component context");
             }
 
             String office =
@@ -94,10 +106,14 @@ public abstract class OOBootstrapService {
                             "soffice.exe" : "soffice";
 
             // command line arguments
-            String[] args = {
-                    office, "-nologo", "-nodefault", "-norestore",
-                    "-nolockcheck", "-accept="+ parameters + ";urp;"
-            };
+            String[] args;
+            String accept = "-accept=" + parameters + ";urp;";
+            if (headless) {
+                args = new String[]{office, "-headless", accept};
+            } else {
+                args = new String[]{office, "-nologo", "-nodefault",
+                                    "-norestore", "-nolockcheck", accept};
+            }
 
             // start the office process
             process = Runtime.getRuntime().exec(args);
@@ -107,8 +123,10 @@ public abstract class OOBootstrapService {
             // initial service manager
             XMultiComponentFactory localServiceManager
                     = localContext.getServiceManager();
-            if (localServiceManager == null)
-                throw new BootstrapException("no initial service manager");
+            if (localServiceManager == null) {
+                throw new OpenOfficeException(FailedToStartService,
+                                              "no initial service manager");
+            }
 
             // create a URL resolver
             XUnoUrlResolver urlResolver = UnoUrlResolver.create(localContext);
@@ -130,6 +148,15 @@ public abstract class OOBootstrapService {
                     }
                     break;
                 } catch (NoConnectException exception) {
+                    // ensure the process is still running
+                    try {
+                        int exit = process.exitValue();
+                        throw new OpenOfficeException(
+                                FailedToStartService,
+                                "terminated with exit code=" + exit);
+                    } catch (IllegalThreadStateException ignore) {
+                        // process is running
+                    }
                     // wait 500 ms, then try to connect again
                     Thread.sleep(500);
                 }
@@ -149,13 +176,26 @@ public abstract class OOBootstrapService {
     }
 
     /**
-     * Determines if the service is running.
+     * Determines if the service is running and accepting requests.
      *
      * @return <code>true</code> if the service is running, otherwise
      *         <code>false</code>
      */
     public synchronized boolean isRunning() {
-        return (process != null);
+        boolean running = false;
+        if (process != null) {
+            OOConnection connection = null;
+            try {
+                connection = getConnection();
+                connection.getComponentLoader();
+                running = true;
+            } catch (OpenOfficeException exception) {
+                log.debug("OpenOffice not responding", exception);
+            } finally {
+                OpenOfficeHelper.close(connection);
+            }
+        }
+        return running;
     }
 
     /**
@@ -163,28 +203,42 @@ public abstract class OOBootstrapService {
      */
     public synchronized void stop() {
         if (process != null) {
-            boolean terminated = false;
+            log.info("Stopping OpenOffice");
             try {
                 OOConnection connection = getConnection();
                 XDesktop desktop = (XDesktop) connection.getService(
                         "com.sun.star.frame.Desktop", XDesktop.class);
                 if (desktop != null) {
+                    XEnumerationAccess iterAccess = desktop.getComponents();
+                    XEnumeration iter = iterAccess.createEnumeration();
+                    while (iter.hasMoreElements()) {
+                        Object object = iter.nextElement();
+                        XCloseable closeable = (XCloseable) UnoRuntime.queryInterface(
+                                XCloseable.class, object);
+                        if (closeable != null) {
+                            closeable.close(true);
+                        } else {
+                            XComponent component = (XComponent) UnoRuntime.queryInterface(
+                                    XComponent.class, object);
+                            if (component != null) {
+                                component.dispose();
+                            }
+
+                        }
+                    }
                     if (desktop.terminate()) {
-                        terminated = true;
+                        log.debug("Failed to terminate desktop");
                     }
                 }
                 try {
                     connection.close();
                 } catch (OpenOfficeException ignore) {
-                    log.error(ignore,  ignore);
+                    log.error(ignore, ignore);
                 }
             } catch (Throwable exception) {
                 log.debug(exception, exception);
             }
-            if (!terminated) {
-                log.debug("unable to terminate soffice process, destroying");
-                process.destroy();
-            }
+            process.destroy();
             process = null;
         }
     }
@@ -196,6 +250,17 @@ public abstract class OOBootstrapService {
      * @throws OpenOfficeException if a connection cannot be established
      */
     public abstract OOConnection getConnection();
+
+    /**
+     * Determines whether the service should be started headless or not.
+     * In headless mode, the service can be reliably terminated, however
+     * it prevents any viewing of OO documents by the local user.
+     *
+     * @param headless if <code>true</code> starts the server headless
+     */
+    public void setHeadless(boolean headless) {
+        this.headless = headless;
+    }
 
     /**
      * Pipes process output to a stream.
@@ -225,4 +290,5 @@ public abstract class OOBootstrapService {
             }
         }.start();
     }
+
 }
