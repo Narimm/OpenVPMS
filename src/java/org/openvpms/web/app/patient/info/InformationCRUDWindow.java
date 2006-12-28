@@ -19,7 +19,6 @@
 package org.openvpms.web.app.patient.info;
 
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -28,6 +27,7 @@ import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -66,7 +66,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * @param buttons the button row
      */
     @Override
-    protected void layoutButtons(Row buttons) {
+    protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         if (checkIn == null) {
             checkIn = ButtonFactory.create("checkin", new ActionListener() {
@@ -80,12 +80,12 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
     /**
      * Enables/disables the buttons that require an object to be selected.
      *
-     * @param enable determines if buttons should be enabled
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
      */
     @Override
-    protected void enableButtons(boolean enable) {
-        super.enableButtons(enable);
-        Row buttons = getButtons();
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
+        super.enableButtons(buttons, enable);
         if (enable) {
             buttons.add(checkIn);
         } else {

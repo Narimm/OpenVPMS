@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.subsystem;
 
-import org.openvpms.web.resource.util.Messages;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,35 +33,34 @@ public abstract class AbstractSubsystem implements Subsystem {
     /**
      * The identity of the subsystem.
      */
-    private final String _id;
+    private final String id;
 
     /**
      * The workspaces.
      */
-    private final List<Workspace> _workspaces = new ArrayList<Workspace>();
+    private final List<Workspace> workspaces = new ArrayList<Workspace>();
 
     /**
      * The current workspace.
      */
-    private Workspace _workspace;
+    private Workspace workspace;
 
 
     /**
      * Construct a new <code>AbstractSubsystem</code>.
      */
     public AbstractSubsystem(String id) {
-        _id = id;
+        this.id = id;
     }
 
     /**
-     * Returns a localised title for the subsystem.
-     * May contain keyboard shortcuts.
+     * Returns the resource bundle key for the subsystem title.
+     * The corresponding title may contain keyboard shortcuts.
      *
-     * @return a localised title for the subsystem.
+     * @return the resource bundle key the subsystem title.
      */
-    public String getTitle() {
-        String key = "subsystem." + _id;
-        return Messages.get(key);
+    public String getTitleKey() {
+        return "subsystem." + id;
     }
 
     /**
@@ -72,7 +69,7 @@ public abstract class AbstractSubsystem implements Subsystem {
      * @param workspace the workspace to add
      */
     public void addWorkspace(Workspace workspace) {
-        _workspaces.add(workspace);
+        workspaces.add(workspace);
     }
 
     /**
@@ -82,7 +79,7 @@ public abstract class AbstractSubsystem implements Subsystem {
      *         current workspace
      */
     public Workspace getWorkspace() {
-        return _workspace;
+        return workspace;
     }
 
     /**
@@ -91,7 +88,7 @@ public abstract class AbstractSubsystem implements Subsystem {
      * @param workspace the current workspace
      */
     public void setWorkspace(Workspace workspace) {
-        _workspace = workspace;
+        this.workspace = workspace;
     }
 
     /**
@@ -101,7 +98,7 @@ public abstract class AbstractSubsystem implements Subsystem {
      *         default workspace
      */
     public Workspace getDefaultWorkspace() {
-        return (!_workspaces.isEmpty()) ? _workspaces.get(0) : null;
+        return (!workspaces.isEmpty()) ? workspaces.get(0) : null;
     }
 
     /**
@@ -110,7 +107,7 @@ public abstract class AbstractSubsystem implements Subsystem {
      * @return a list of the woprkspaces
      */
     public List<Workspace> getWorkspaces() {
-        return _workspaces;
+        return workspaces;
     }
 
     /**
@@ -121,7 +118,7 @@ public abstract class AbstractSubsystem implements Subsystem {
      *         <code>null</code> if no workspace supports it
      */
     public Workspace getWorkspaceForArchetype(String shortName) {
-        for (Workspace workspace : _workspaces) {
+        for (Workspace workspace : workspaces) {
             if (workspace.canHandle(shortName)) {
                 return workspace;
             }

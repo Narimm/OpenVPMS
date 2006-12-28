@@ -19,7 +19,6 @@
 package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
@@ -27,6 +26,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -72,7 +72,7 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
      * @param buttons the button row
      */
     @Override
-    protected void layoutButtons(Row buttons) {
+    protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         if (checkIn == null) {
             checkIn = ButtonFactory.create(CHECKIN_ID, new ActionListener() {
@@ -86,12 +86,12 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
     /**
      * Enables/disables the buttons that require an object to be selected.
      *
-     * @param enable determines if buttons should be enabled
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
      */
     @Override
-    protected void enableButtons(boolean enable) {
-        super.enableButtons(enable);
-        Row buttons = getButtons();
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
+        super.enableButtons(buttons, enable);
         Button consult = getConsultButton();
         Button checkOut = getCheckOutButton();
         buttons.remove(checkIn);

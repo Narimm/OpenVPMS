@@ -38,6 +38,9 @@ public class ShortcutHelper {
      */
     public static String getShortcut(String text) {
         int index = 0;
+        if (text == null) {
+            return null;
+        }
         String result = null;
         while ((index = text.indexOf("&", index)) != -1) {
             int keyIndex = index + 1;
@@ -81,5 +84,32 @@ public class ShortcutHelper {
         }
         buf.append(text.substring(lastIndex));
         return buf.toString();
+    }
+
+    /**
+     * Returns XHTML underlining the shortcut in a string.
+     *
+     * @param text the string containing the shortcut
+     * @return an XHTML string with any shortcut underlined
+     */
+    public static String getHTML(String text) {
+        int lastIndex = 0;
+        int index;
+        StringBuffer buf = new StringBuffer();
+        while ((index = text.indexOf("&", lastIndex)) != -1) {
+            int keyIndex = index + 1;
+            if (keyIndex < text.length()) {
+                buf.append(text.substring(lastIndex, index));
+                buf.append("<span xmlns=\"http://www.w3.org/1999/xhtml\" ");
+                buf.append("style=\"text-decoration:underline\">");
+                buf.append(text.substring(keyIndex, keyIndex + 1));
+                buf.append("</span>");
+                index = keyIndex;
+            }
+            lastIndex = index + 1;
+        }
+        buf.append(text.substring(lastIndex));
+        return buf.toString();
+
     }
 }

@@ -39,12 +39,12 @@ public interface Workspace<T extends IMObject> {
     final String SUMMARY_PROPERTY = "summary";
 
     /**
-     * Returns the localised title of this workspace.
-     * May contain keyboard shortcuts.
+     * Returns the resource bundle key for the workspace title.
+     * The corresponding title may contain keyboard shortcuts.
      *
-     * @return the localised title of this workspace
+     * @return the resource bundle key the workspace title
      */
-    String getTitle();
+    String getTitleKey();
 
     /**
      * Renders the workspace.

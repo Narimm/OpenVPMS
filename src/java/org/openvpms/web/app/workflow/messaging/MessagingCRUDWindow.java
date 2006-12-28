@@ -19,7 +19,6 @@
 package org.openvpms.web.app.workflow.messaging;
 
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
@@ -31,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -76,7 +76,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      * @param buttons the button row
      */
     @Override
-    protected void layoutButtons(Row buttons) {
+    protected void layoutButtons(ButtonSet buttons) {
         if (forward == null) {
             forward = ButtonFactory.create("forward", new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -97,11 +97,11 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
     /**
      * Enables/disables the buttons that require an object to be selected.
      *
-     * @param enable determines if buttons should be enabled
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
      */
     @Override
-    protected void enableButtons(boolean enable) {
-        Row buttons = getButtons();
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.removeAll();
         if (enable) {
             buttons.add(getCreateButton());

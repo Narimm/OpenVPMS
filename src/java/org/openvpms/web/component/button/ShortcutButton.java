@@ -18,11 +18,19 @@
 
 package org.openvpms.web.component.button;
 
+import echopointng.KeyStrokes;
 import echopointng.PushButton;
+import echopointng.xhtml.XhtmlFragment;
+import org.apache.commons.lang.StringUtils;
 
 
 /**
- * Add description here.
+ * A button that renders its access key with an underline.
+ * Unlike {@link AccessKeyButton} this button does not use the standard
+ * browser 'accesskey', but must instead be used in conjunction with
+ * EchoPointNG's <code>KeyStrokeListener</code> class.
+ * The {@link ButtonSet} class provides a convenient way of receiving
+ * keystroke notification.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -30,34 +38,55 @@ import echopointng.PushButton;
 public class ShortcutButton extends PushButton {
 
     /**
-     * Creates a new button.
+     * The shortcut key.
+     */
+    String key;
+
+    /**
+     * Constructs a new <code>ShortcutButton</code>.
      */
     public ShortcutButton() {
     }
 
     /**
-     * Creates a button with text.
-     *
-     * @param text A text label to display in the button.
-     */
-    public ShortcutButton(String text) {
-        super(text);
-    }
-
-    /**
-     * Sets the button text.
+     * Constructs a new <code>ShortcutButton</code>.
      *
      * @param text the button text
      */
+    public ShortcutButton(String text) {
+        setText(text);
+    }
+
+    /**
+     * Sets the button text. Any shortcut will be parsed from the text.
+     * The shortcut must be prefixed with an '&';
+     *
+     * @param text the button text
+     */
+    @Override
     public void setText(String text) {
-        if (text != null) {
-            String key = ShortcutHelper.getShortcut(text);
-            if (key != null) {
-                setAccessKey(key);
-                text = ShortcutHelper.getText(text);
-            }
+        key = ShortcutHelper.getShortcut(text);
+        if (key != null) {
+            XhtmlFragment fragment = new XhtmlFragment(
+                    ShortcutHelper.getHTML(text));
+            setText(fragment);
+        } else {
+            super.setText(text);
         }
-        super.setText(text);
+    }
+
+    /**
+     * Returns the keycode for this button.
+     *
+     * @return the keycode for this button, or <code>-1</code> if none is
+     *         present
+     */
+    public int getKeyCode() {
+        if (!StringUtils.isEmpty(key)) {
+            char code = key.toUpperCase().toCharArray()[0];
+            return KeyStrokes.ALT_MASK | code;
+        }
+        return -1;
     }
 
 }

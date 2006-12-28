@@ -19,7 +19,6 @@
 package org.openvpms.web.component.util;
 
 import nextapp.echo2.app.Component;
-
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.resource.util.Styles;
 
@@ -46,7 +45,7 @@ public class ComponentFactory {
      * browser, where a style for that resolution exists.
      *
      * @param component the component
-     * @param style the style name
+     * @param style     the style name
      */
     protected static void setStyle(Component component, String style) {
         style = Styles.getStyle(component.getClass(), style);
@@ -63,8 +62,13 @@ public class ComponentFactory {
      *                  <code>name</code>
      * @return the localised string corresponding to <code>key</code>
      */
-    protected static String getString(String type, String name, boolean allowNull) {
-        return Messages.get(type + "." + name, allowNull);
+    protected static String getString(String type, String name,
+                                      boolean allowNull) {
+        String result = Messages.get(type + "." + name, true);
+        if (result == null) {
+            result = Messages.get(name, allowNull);
+        }
+        return result;
     }
 
     /**
