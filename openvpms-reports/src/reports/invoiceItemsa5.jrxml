@@ -107,7 +107,7 @@
 				</staticText>
 				<staticText>
 					<reportElement
-						x="342"
+						x="334"
 						y="5"
 						width="61"
 						height="20"
@@ -120,7 +120,7 @@
 				</staticText>
 				<staticText>
 					<reportElement
-						x="272"
+						x="264"
 						y="5"
 						width="59"
 						height="20"
@@ -150,9 +150,9 @@
 			<band height="19"  isSplitAllowed="true" >
 				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="338"
+						x="330"
 						y="2"
-						width="77"
+						width="67"
 						height="15"
 						key="textField-2"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
@@ -163,7 +163,7 @@
 				</textField>
 				<textField isStretchWithOverflow="false" pattern="###0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="272"
+						x="264"
 						y="2"
 						width="57"
 						height="15"
@@ -202,9 +202,9 @@
 				</line>
 				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="339"
+						x="330"
 						y="6"
-						width="74"
+						width="69"
 						height="22"
 						key="textField-6"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
