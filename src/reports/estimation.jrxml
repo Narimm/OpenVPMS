@@ -143,7 +143,7 @@
 					<reportElement
 						x="394"
 						y="58"
-						width="148"
+						width="132"
 						height="16"
 						key="textField-5"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
