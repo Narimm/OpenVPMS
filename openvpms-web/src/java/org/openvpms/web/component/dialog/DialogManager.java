@@ -22,6 +22,9 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.app.WindowPane;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.web.component.button.KeyStrokeHandler;
 import org.openvpms.web.component.focus.FocusGroup;
 
 
@@ -65,7 +68,42 @@ public class DialogManager {
             group.reindex(lastIndex + 1000);
             // give the parent dialog room to grow.
         }
+
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            /**
+             * Invoked when a user attempts to close a <code>WindowPane</code>.
+             *
+             * @param e the <code>WindowPaneEvent</code> describing the change
+             */
+            public void windowPaneClosing(WindowPaneEvent e) {
+                reregisterKeyStrokeListeners();
+            }
+        });
+
         root.getContent().add(dialog);
     }
+
+    /**
+     * Reregisters any keystroke listeners.
+     */
+    private static void reregisterKeyStrokeListeners() {
+        Window root = ApplicationInstance.getActive().getDefaultWindow();
+        reregisterKeyStrokeListeners(root);
+    }
+
+    /**
+     * Reregisters any keystroke listeners by traversing the component heiarchy
+     * looking for components that inplement the {@link KeyStrokeHandler}
+     * interface.
+     */
+    private static void reregisterKeyStrokeListeners(Component component) {
+        if (component instanceof KeyStrokeHandler) {
+            ((KeyStrokeHandler) component).reregisterKeyStrokeListeners();
+        }
+        for (Component child : component.getComponents()) {
+            reregisterKeyStrokeListeners(child);
+        }
+    }
+
 
 }

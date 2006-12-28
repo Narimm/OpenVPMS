@@ -43,11 +43,11 @@ import org.openvpms.web.app.supplier.SupplierSubsystem;
 import org.openvpms.web.app.workflow.WorkflowSubsystem;
 import org.openvpms.web.component.subsystem.Subsystem;
 import org.openvpms.web.component.subsystem.Workspace;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ButtonColumn;
+import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ContentPaneFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Styles;
 
@@ -68,42 +68,42 @@ public class MainPane extends SplitPane implements ContextChangeListener {
     /**
      * The subsystems.
      */
-    private final List<Subsystem> _subsystems = new ArrayList<Subsystem>();
+    private final List<Subsystem> subsystems = new ArrayList<Subsystem>();
 
     /**
      * Menu button row.
      */
-    private Row _menu;
+    private ButtonRow menu;
 
     /**
      * The left menu, containing the submenu and summary.
      */
-    private Column _leftMenu;
+    private Column leftMenu;
 
     /**
      * Submenu button column.
      */
-    private Column _subMenu;
+    private ButtonColumn subMenu;
 
     /**
      * Workspace summary group box. May be <code>null</code>.
      */
-    private GroupBox _summary;
+    private GroupBox summary;
 
     /**
      * Listener to refresh the summary.
      */
-    private final PropertyChangeListener _summaryRefresher;
+    private final PropertyChangeListener summaryRefresher;
 
     /**
      * The pane for the current subsystem.
      */
-    private ContentPane _subsystem;
+    private ContentPane subsystem;
 
     /**
      * The current workspace.
      */
-    private Workspace _workspace;
+    private Workspace workspace;
 
     /**
      * The style name.
@@ -145,7 +145,7 @@ public class MainPane extends SplitPane implements ContextChangeListener {
         super(ORIENTATION_HORIZONTAL);
         setStyleName(Styles.getStyle(SplitPane.class, STYLE));
 
-        _summaryRefresher = new PropertyChangeListener() {
+        summaryRefresher = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 refreshSummary();
             }
@@ -153,14 +153,14 @@ public class MainPane extends SplitPane implements ContextChangeListener {
 
         OpenVPMSApp.getInstance().setContextChangeListener(this);
 
-        _menu = RowFactory.create(BUTTON_ROW_STYLE);
+        menu = new ButtonRow(BUTTON_ROW_STYLE, BUTTON_STYLE);
         SplitPaneLayoutData layout = new SplitPaneLayoutData();
         layout.setAlignment(new Alignment(Alignment.CENTER,
                                           Alignment.DEFAULT));
-        _menu.setLayoutData(layout);
-        _subMenu = ColumnFactory.create(BUTTON_COLUMN_STYLE);
-        _leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, _subMenu);
-        _subsystem = ContentPaneFactory.create(WORKSPACE_STYLE);
+        menu.setLayoutData(layout);
+        subMenu = new ButtonColumn(BUTTON_COLUMN_STYLE, BUTTON_STYLE);
+        leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, subMenu);
+        subsystem = ContentPaneFactory.create(WORKSPACE_STYLE);
 
         Button button = addSubsystem(new CustomerSubsystem());
         addSubsystem(new PatientSubsystem());
@@ -171,7 +171,7 @@ public class MainPane extends SplitPane implements ContextChangeListener {
         addSubsystem(new ReportingSubsystem());
         addSubsystem(new AdminSubsystem());
 
-        _menu.add(getLogoutRow());
+        menu.add(getLogoutRow());
 
         SplitPane left = SplitPaneFactory.create(ORIENTATION_VERTICAL,
                                                  LEFTPANE_STYLE);
@@ -179,9 +179,9 @@ public class MainPane extends SplitPane implements ContextChangeListener {
                                                   RIGHTPANE_STYLE);
 
         left.add(new Label());
-        left.add(_leftMenu);
-        right.add(_menu);
-        right.add(_subsystem);
+        left.add(leftMenu);
+        right.add(menu);
+        right.add(subsystem);
 
         add(left);
         add(right);
@@ -196,7 +196,7 @@ public class MainPane extends SplitPane implements ContextChangeListener {
      */
     public void changeContext(IMObject context) {
         String shortName = context.getArchetypeId().getShortName();
-        for (Subsystem subsystem : _subsystems) {
+        for (Subsystem subsystem : subsystems) {
             Workspace workspace = subsystem.getWorkspaceForArchetype(shortName);
             if (workspace != null) {
                 workspace.setIMObject(context);
@@ -213,20 +213,19 @@ public class MainPane extends SplitPane implements ContextChangeListener {
      * @param subsystem the subsystem
      */
     protected void select(final Subsystem subsystem) {
-        _subsystem.removeAll();
-        _subMenu.removeAll();
+        this.subsystem.removeAll();
+        subMenu.removeAll();
 
         List<Workspace> workspaces = subsystem.getWorkspaces();
         for (final Workspace workspace : workspaces) {
-            Button button = ButtonFactory.create(
-                    null, BUTTON_STYLE, new ActionListener() {
+            ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     select(subsystem, workspace);
                 }
-            });
-            button.setText(workspace.getTitle());
+            };
+            Button button = subMenu.addButton(workspace.getTitleKey(),
+                                              listener);
             button.setFocusTraversalParticipant(false);
-            _subMenu.add(button);
         }
         Workspace current = subsystem.getWorkspace();
         if (current == null) {
@@ -244,18 +243,18 @@ public class MainPane extends SplitPane implements ContextChangeListener {
      * @param workspace the workspace within the subsystem to select
      */
     protected void select(Subsystem subsystem, Workspace workspace) {
-        if (_workspace != null) {
-            _workspace.removePropertyChangeListener(
-                    Workspace.SUMMARY_PROPERTY, _summaryRefresher);
+        if (this.workspace != null) {
+            this.workspace.removePropertyChangeListener(
+                    Workspace.SUMMARY_PROPERTY, summaryRefresher);
         }
         subsystem.setWorkspace(workspace);
-        _subsystem.removeAll();
-        _subsystem.add(workspace.getComponent());
+        this.subsystem.removeAll();
+        this.subsystem.add(workspace.getComponent());
 
-        _workspace = workspace;
+        this.workspace = workspace;
         refreshSummary();
-        _workspace.addPropertyChangeListener(Workspace.SUMMARY_PROPERTY,
-                                             _summaryRefresher);
+        this.workspace.addPropertyChangeListener(Workspace.SUMMARY_PROPERTY,
+                                                 summaryRefresher);
     }
 
     /**
@@ -265,16 +264,14 @@ public class MainPane extends SplitPane implements ContextChangeListener {
      * @return a button to invoke the subsystem
      */
     protected Button addSubsystem(final Subsystem subsystem) {
-        Button button = ButtonFactory.create(
-                null, BUTTON_STYLE, new ActionListener() {
+        ActionListener listener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 select(subsystem);
             }
-        });
-        button.setText(subsystem.getTitle());
+        };
+        Button button = menu.addButton(subsystem.getTitleKey(), listener);
         button.setFocusTraversalParticipant(false);
-        _menu.add(button);
-        _subsystems.add(subsystem);
+        subsystems.add(subsystem);
         return button;
     }
 
@@ -284,15 +281,12 @@ public class MainPane extends SplitPane implements ContextChangeListener {
      * @return the logout row
      */
     private Row getLogoutRow() {
-        Button logout = ButtonFactory.create(
-                "logout", BUTTON_STYLE,
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
-                        OpenVPMSApp.getInstance().logout();
-                    }
-                });
-
-        Row logoutRow = RowFactory.create(logout);
+        ButtonRow logoutRow = new ButtonRow(null, BUTTON_STYLE);
+        logoutRow.addButton("logout", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                OpenVPMSApp.getInstance().logout();
+            }
+        });
         RowLayoutData rightAlign = new RowLayoutData();
         rightAlign.setAlignment(
                 new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
@@ -305,17 +299,17 @@ public class MainPane extends SplitPane implements ContextChangeListener {
      * Refreshes the workspace summary.
      */
     private void refreshSummary() {
-        _leftMenu.remove(_summary);
-        Component summary = _workspace.getSummary();
+        leftMenu.remove(summary);
+        Component summary = workspace.getSummary();
         if (summary != null) {
             summary = ColumnFactory.create("MainPane.Left.Menu.Summary",
                                            summary);
-            _summary = GroupBoxFactory.create("workspace.summary",
-                                              "MainPane.Left.Menu.SummaryBox",
-                                              summary);
-            _leftMenu.add(_summary);
+            this.summary = GroupBoxFactory.create("workspace.summary",
+                                                  "MainPane.Left.Menu.SummaryBox",
+                                                  summary);
+            leftMenu.add(this.summary);
         } else {
-            _summary = null;
+            this.summary = null;
         }
     }
 

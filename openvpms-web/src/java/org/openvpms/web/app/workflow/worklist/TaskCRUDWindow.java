@@ -19,11 +19,11 @@
 package org.openvpms.web.app.workflow.worklist;
 
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
+import org.openvpms.web.component.button.ButtonSet;
 
 
 /**
@@ -53,7 +53,7 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
      * @param buttons the button row
      */
     @Override
-    protected void layoutButtons(Row buttons) {
+    protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
 
     }
@@ -61,18 +61,18 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
     /**
      * Enables/disables the buttons that require an object to be selected.
      *
-     * @param enable determines if buttons should be enabled
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
      */
     @Override
-    protected void enableButtons(boolean enable) {
-        super.enableButtons(enable);
-        Row buttons = getButtons();
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
+        super.enableButtons(buttons, enable);
         Button consult = getConsultButton();
         Button checkOut = getCheckOutButton();
         buttons.remove(consult);
         buttons.remove(checkOut);
         if (enable) {
-            Act act = (Act) getObject();
+            Act act = getObject();
             String status = act.getStatus();
             if (WorkflowStatus.PENDING.equals(status)) {
                 buttons.add(consult);

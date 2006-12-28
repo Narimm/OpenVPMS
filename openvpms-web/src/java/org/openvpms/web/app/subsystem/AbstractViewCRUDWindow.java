@@ -91,6 +91,6 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
         _objectContainer = ColumnFactory.create();
         return SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                STYLE, getButtons(), _objectContainer);
+                STYLE, getButtons().getContainer(), _objectContainer);
     }
 }

@@ -21,7 +21,6 @@ package org.openvpms.web.component.subsystem;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -39,22 +38,22 @@ public abstract class AbstractWorkspace<T extends IMObject>
     /**
      * The workspace component.
      */
-    private Component _component;
+    private Component component;
 
     /**
      * The subsystem localistion id.
      */
-    private final String _subsystemId;
+    private final String subsystemId;
 
     /**
      * The workspace localisation id.
      */
-    private final String _workspaceId;
+    private final String workspaceId;
 
     /**
      * Property change listener notifier.
      */
-    private PropertyChangeSupport _propertyChangeNotifier;
+    private PropertyChangeSupport propertyChangeNotifier;
 
 
     /**
@@ -64,18 +63,18 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @param workspaceId the workspace localisation identfifier
      */
     public AbstractWorkspace(String subsystemId, String workspaceId) {
-        _subsystemId = subsystemId;
-        _workspaceId = workspaceId;
+        this.subsystemId = subsystemId;
+        this.workspaceId = workspaceId;
     }
 
     /**
-     * Returns the localised title of this workspace.
-     * May contain keyboard shortcuts.
+     * Returns the resource bundle key for the workspace title.
+     * The corresponding title may contain keyboard shortcuts.
      *
-     * @return the localised title if this workspace
+     * @return the resource bundle key the workspace title
      */
-    public String getTitle() {
-        return Messages.get("workspace." + _subsystemId + "." + _workspaceId);
+    public String getTitleKey() {
+        return "workspace." + subsystemId + "." + workspaceId;
     }
 
     /**
@@ -84,10 +83,10 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @return the component representing the workspace
      */
     public Component getComponent() {
-        if (_component == null || refreshWorkspace()) {
-            _component = doLayout();
+        if (component == null || refreshWorkspace()) {
+            component = doLayout();
         }
-        return _component;
+        return component;
     }
 
     /**
@@ -108,10 +107,10 @@ public abstract class AbstractWorkspace<T extends IMObject>
      */
     public void addPropertyChangeListener(String name,
                                           PropertyChangeListener listener) {
-        if (_propertyChangeNotifier == null) {
-            _propertyChangeNotifier = new PropertyChangeSupport(this);
+        if (propertyChangeNotifier == null) {
+            propertyChangeNotifier = new PropertyChangeSupport(this);
         }
-        _propertyChangeNotifier.addPropertyChangeListener(name, listener);
+        propertyChangeNotifier.addPropertyChangeListener(name, listener);
     }
 
     /**
@@ -122,8 +121,8 @@ public abstract class AbstractWorkspace<T extends IMObject>
      */
     public void removePropertyChangeListener(String name,
                                              PropertyChangeListener listener) {
-        if (_propertyChangeNotifier != null) {
-            _propertyChangeNotifier.removePropertyChangeListener(
+        if (propertyChangeNotifier != null) {
+            propertyChangeNotifier.removePropertyChangeListener(
                     name, listener);
         }
     }
@@ -138,9 +137,9 @@ public abstract class AbstractWorkspace<T extends IMObject>
      */
     protected void firePropertyChange(String name, Object oldValue,
                                       Object newValue) {
-        if (_propertyChangeNotifier != null) {
-            _propertyChangeNotifier.firePropertyChange(name, oldValue,
-                                                       newValue);
+        if (propertyChangeNotifier != null) {
+            propertyChangeNotifier.firePropertyChange(name, oldValue,
+                                                      newValue);
         }
     }
 
@@ -150,7 +149,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @return the component
      */
     protected Component doLayout() {
-        return Heading.getHeading(_subsystemId, _workspaceId);
+        return Heading.getHeading(subsystemId, workspaceId);
     }
 
     /**
@@ -159,7 +158,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @return the subsystem localisation id.
      */
     protected String getSubsystemId() {
-        return _subsystemId;
+        return subsystemId;
     }
 
     /**
@@ -168,7 +167,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @return the workspace localisation id
      */
     protected String getWorkspaceId() {
-        return _workspaceId;
+        return workspaceId;
     }
 
     /**

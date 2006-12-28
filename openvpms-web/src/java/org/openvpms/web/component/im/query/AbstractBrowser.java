@@ -20,7 +20,6 @@ package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -28,8 +27,8 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.RowFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,7 +155,9 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
             }
         });
 
-        Row row = RowFactory.create(CELLSPACING_STYLE, component, query);
+        ButtonRow row = new ButtonRow(CELLSPACING_STYLE);
+        row.add(component);
+        row.addButton(query);
         this.component = ColumnFactory.create(STYLE, row);
         focusGroup.add(query);
 

@@ -31,12 +31,12 @@ import java.util.List;
 public interface Subsystem {
 
     /**
-     * Returns a localised title for the subsystem.
-     * May contain keyboard shortcuts.
+     * Returns the resource bundle key for the subsystem title.
+     * The corresponding title may contain keyboard shortcuts.
      *
-     * @return a localised title for the subsystem.
+     * @return the resource bundle key the subsystem title
      */
-    String getTitle();
+    String getTitleKey();
 
     /**
      * Returns the current workspace.

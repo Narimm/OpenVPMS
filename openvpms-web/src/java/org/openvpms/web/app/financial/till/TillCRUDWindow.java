@@ -20,7 +20,6 @@ package org.openvpms.web.app.financial.till;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.ListBox;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
@@ -43,6 +42,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.app.financial.FinancialActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -133,7 +133,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      * @param buttons the button row
      */
     @Override
-    protected void layoutButtons(Row buttons) {
+    protected void layoutButtons(ButtonSet buttons) {
         _clear = ButtonFactory.create(CLEAR_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onClear();
@@ -160,11 +160,11 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     /**
      * Enables/disables the buttons that require an object to be selected.
      *
-     * @param enable determines if buttons should be enabled
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
      */
     @Override
-    protected void enableButtons(boolean enable) {
-        Row buttons = getButtons();
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.removeAll();
         if (enable) {
             Act act = getObject();
@@ -315,7 +315,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     @Override
     protected void onChildActSelected(FinancialAct child) {
         _childAct = child;
-        enableButtons(getObject() != null);
+        enableButtons(getButtons(), getObject() != null);
     }
 
     /**

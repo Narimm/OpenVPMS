@@ -18,15 +18,20 @@
 
 package org.openvpms.web.component.im.select;
 
+import echopointng.KeyStrokeListener;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.TextField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.apache.commons.lang.ClassUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.button.KeyStrokeHandler;
+import org.openvpms.web.component.button.ShortcutButton;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -95,6 +100,11 @@ public class Selector {
      */
     private final FocusGroup focusGroup;
 
+    /**
+     * The keystroke listener.
+     */
+    private KeyStrokeListener listener;
+
 
     /**
      * Construct a new <code>Selector</code>.
@@ -112,8 +122,17 @@ public class Selector {
     public Selector(ButtonStyle style, boolean editable) {
         buttonStyle = style;
         this.editable = editable;
-        component = RowFactory.create();
+        component = new SelectorRow();
         focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
+        if (style != ButtonStyle.LEFT_NO_ACCEL
+                && style != ButtonStyle.RIGHT_NO_ACCEL) {
+            listener = new KeyStrokeListener();
+            listener.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onSelected(event);
+                }
+            });
+        }
     }
 
     /**
@@ -123,6 +142,9 @@ public class Selector {
      */
     public Component getComponent() {
         if (component.getComponentCount() == 0) {
+            if (listener != null) {
+                component.add(listener);
+            }
             Component layout = doLayout(null, null);
             component.add(layout);
         }
@@ -150,6 +172,10 @@ public class Selector {
                 select = ButtonFactory.create(null, "select");
             } else {
                 select = ButtonFactory.create("select");
+                if (select instanceof ShortcutButton) {
+                    ShortcutButton button = (ShortcutButton) select;
+                    listener.addKeyCombination(button.getKeyCode());
+                }
             }
         }
         return select;
@@ -190,6 +216,9 @@ public class Selector {
         }
         component.removeAll();
         Component layout = doLayout(text, deactivated);
+        if (listener != null) {
+            component.add(listener);
+        }
         component.add(layout);
     }
 
@@ -285,6 +314,28 @@ public class Selector {
         Label label = LabelFactory.create(null, "Selector.Deactivated");
         label.setText(deactivated);
         container.add(label);
+    }
+
+
+    private void onSelected(ActionEvent event) {
+        getSelect().fireActionPerformed(event);
+    }
+
+    private class SelectorRow extends Row implements KeyStrokeHandler {
+
+        /**
+         * Re-registers keystroke listeners.
+         */
+        public void reregisterKeyStrokeListeners() {
+            if (listener != null && select instanceof ShortcutButton) {
+                ShortcutButton button = (ShortcutButton) select;
+                int keyCode = button.getKeyCode();
+                if (keyCode != -1) {
+                    listener.removeKeyCombination(keyCode);
+                    listener.addKeyCombination(keyCode);
+                }
+            }
+        }
     }
 
 }

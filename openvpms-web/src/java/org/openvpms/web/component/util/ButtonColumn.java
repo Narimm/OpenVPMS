@@ -19,8 +19,8 @@
 package org.openvpms.web.component.util;
 
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.button.ButtonSet;
@@ -29,12 +29,12 @@ import org.openvpms.web.component.focus.FocusGroup;
 
 
 /**
- * A row of buttons.
+ * A column of buttons.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-12-12 03:25:07Z $
  */
-public class ButtonRow extends Row implements KeyStrokeHandler {
+public class ButtonColumn extends Column implements KeyStrokeHandler {
 
     /**
      * The button set.
@@ -42,71 +42,39 @@ public class ButtonRow extends Row implements KeyStrokeHandler {
     private final ButtonSet set;
 
     /**
-     * The default row style.
+     * The column style.
      */
-    private static final String STYLE = "ButtonRow";
-
-    /**
-     * The default button style.
-     */
-    private static final String BUTTON_STYLE = "ButtonRow.Button";
+    private static final String STYLE = "ControlColumn";
 
 
     /**
-     * Constructs a new <code>ButtonRow</code>.
+     * Constructs a new <code>Buttoncolumn</code>.
      */
-    public ButtonRow() {
-        this(STYLE, BUTTON_STYLE);
+    public ButtonColumn() {
+        this(STYLE, null);
     }
 
     /**
-     * Constructs a new <code>ButtonRow</code>.
+     * Constructs a new <code>Buttoncolumn</code>.
      *
-     * @param rowStyle the row style. May be <code>null</code>
-     */
-    public ButtonRow(String rowStyle) {
-        this(rowStyle, BUTTON_STYLE);
-    }
-
-    /**
-     * Constructs a new <code>ButtonRow</code>.
-     *
-     * @param focus the focus group
-     */
-    public ButtonRow(FocusGroup focus) {
-        this(focus, STYLE, BUTTON_STYLE);
-    }
-
-    /**
-     * Constructs a new <code>ButtonRow</code>.
-     *
-     * @param rowStyle    the row style. May be <code>null</code>
+     * @param columnStyle the column style. May be <code>null</code>
      * @param buttonStyle the button style. May be <code>null</code>
      */
-    public ButtonRow(String rowStyle, String buttonStyle) {
-        this(null, rowStyle, buttonStyle);
+    public ButtonColumn(String columnStyle, String buttonStyle) {
+        this(null, columnStyle, buttonStyle);
     }
 
     /**
-     * Constructs a new <code>ButtonRow</code>.
+     * Constructs a new <code>Buttoncolumn</code>.
      *
      * @param focus       the focus set. May be <code>null</code>
-     * @param rowStyle    the row style. May be <code>null</code>
+     * @param columnStyle the column style. May be <code>null</code>
      * @param buttonStyle the button style. May be <code>null</code>
      */
-    public ButtonRow(FocusGroup focus, String rowStyle, String buttonStyle) {
-        setStyleName(rowStyle);
-
+    public ButtonColumn(FocusGroup focus, String columnStyle,
+                        String buttonStyle) {
+        setStyleName(columnStyle);
         set = new ButtonSet(this, focus, buttonStyle);
-    }
-
-    /**
-     * Returns the buttons.
-     *
-     * @return the buttons
-     */
-    public ButtonSet getButtons() {
-        return set;
     }
 
     /**
@@ -116,15 +84,6 @@ public class ButtonRow extends Row implements KeyStrokeHandler {
      */
     public Button addButton() {
         return set.add();
-    }
-
-    /**
-     * Adds a button.
-     *
-     * @param button the button to add
-     */
-    public void addButton(Button button) {
-        set.add(button);
     }
 
     /**
@@ -181,5 +140,4 @@ public class ButtonRow extends Row implements KeyStrokeHandler {
     public void reregisterKeyStrokeListeners() {
         set.reregisterKeyStrokeListeners();
     }
-
 }

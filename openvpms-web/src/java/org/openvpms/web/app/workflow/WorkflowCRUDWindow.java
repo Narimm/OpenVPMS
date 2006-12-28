@@ -19,7 +19,6 @@
 package org.openvpms.web.app.workflow;
 
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -28,6 +27,7 @@ import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.checkout.CheckOutWorkflow;
 import org.openvpms.web.app.workflow.consult.ConsultWorkflow;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
@@ -80,15 +80,15 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
     /**
      * Enables/disables the buttons that require an object to be selected.
      *
-     * @param enable determines if buttons should be enabled
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
      */
     @Override
-    protected void enableButtons(boolean enable) {
-        super.enableButtons(enable);
-        Row buttons = getButtons();
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
+        super.enableButtons(buttons, enable);
         Button print = getPrintButton();
         if (enable) {
-            if (buttons.indexOf(print) == -1) {
+            if (!buttons.contains(print)) {
                 buttons.add(print);
             }
         } else {

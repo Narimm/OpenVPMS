@@ -18,11 +18,11 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.act.Act;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.resource.util.Messages;
 
@@ -71,7 +71,7 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow<Act> {
      * @param buttons the button row
      */
     @Override
-    protected void layoutButtons(Row buttons) {
+    protected void layoutButtons(ButtonSet buttons) {
         buttons.add(getEditButton());
         buttons.add(getCreateButton());
         buttons.add(getDeleteButton());
@@ -81,11 +81,11 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow<Act> {
     /**
      * Enables/disables the buttons that require an object to be selected.
      *
-     * @param enable determines if buttons should be enabled
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
      */
     @Override
-    protected void enableButtons(boolean enable) {
-        Row buttons = getButtons();
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.removeAll();
         if (enable) {
             buttons.add(getEditButton());

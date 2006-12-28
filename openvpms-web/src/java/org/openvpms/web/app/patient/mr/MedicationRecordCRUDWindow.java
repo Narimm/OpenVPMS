@@ -18,11 +18,11 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.medication.PatientMedicationActLayoutStrategy;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -61,18 +61,18 @@ public class MedicationRecordCRUDWindow extends AbstractViewCRUDWindow<Act> {
      * @param buttons the button row
      */
     @Override
-    protected void layoutButtons(Row buttons) {
+    protected void layoutButtons(ButtonSet buttons) {
         buttons.add(getEditButton());
     }
 
     /**
      * Enables/disables the buttons that require an object to be selected.
      *
-     * @param enable determines if buttons should be enabled
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
      */
     @Override
-    protected void enableButtons(boolean enable) {
-        Row buttons = getButtons();
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.removeAll();
         if (enable) {
             buttons.add(getEditButton());

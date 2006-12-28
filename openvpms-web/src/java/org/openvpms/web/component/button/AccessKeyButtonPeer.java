@@ -37,12 +37,12 @@ import org.w3c.dom.Text;
 
 
 /**
- * Add description here.
+ * The peer for {@link AccessKeyButton}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ShortcutButtonPeer extends PushButtonPeer {
+public class AccessKeyButtonPeer extends PushButtonPeer {
 
     /**
      * Renders the content of the button, i.e., its text, icon, and/or state

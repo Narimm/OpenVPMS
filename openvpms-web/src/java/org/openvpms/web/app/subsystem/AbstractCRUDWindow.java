@@ -20,7 +20,6 @@ package org.openvpms.web.app.subsystem;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
@@ -33,6 +32,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.create.IMObjectCreator;
@@ -47,7 +47,7 @@ import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -62,52 +62,52 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
     /**
      * The object.
      */
-    private T _object;
+    private T object;
 
     /**
      * Short names of archetypes that this may create.
      */
-    private final ShortNames _shortNames;
+    private final ShortNames shortNames;
 
     /**
      * Localised type display name (e.g, Customer, Product).
      */
-    private final String _type;
+    private final String type;
 
     /**
      * The listener.
      */
-    private CRUDWindowListener<T> _listener;
+    private CRUDWindowListener<T> listener;
 
     /**
      * The component representing this.
      */
-    private Component _component;
+    private Component component;
 
     /**
      * The action button row.
      */
-    private Row _buttons;
+    private ButtonRow buttons;
 
     /**
      * The edit button.
      */
-    private Button _edit;
+    private Button edit;
 
     /**
      * The create button.
      */
-    private Button _create;
+    private Button create;
 
     /**
      * The delete button.
      */
-    private Button _delete;
+    private Button delete;
 
     /**
      * The print button.
      */
-    private Button _print;
+    private Button print;
 
     /**
      * Edit button identifier.
@@ -145,8 +145,8 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      *                   {@link #getShortNames}
      */
     public AbstractCRUDWindow(String type, ShortNames shortNames) {
-        _type = type;
-        _shortNames = shortNames;
+        this.type = type;
+        this.shortNames = shortNames;
     }
 
     /**
@@ -155,7 +155,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @param listener the event listener.
      */
     public void setListener(CRUDWindowListener<T> listener) {
-        _listener = listener;
+        this.listener = listener;
     }
 
     /**
@@ -164,7 +164,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @return the event listener
      */
     public CRUDWindowListener<T> getListener() {
-        return _listener;
+        return listener;
     }
 
     /**
@@ -173,10 +173,10 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @return the component
      */
     public Component getComponent() {
-        if (_component == null) {
-            _component = doLayout();
+        if (component == null) {
+            component = doLayout();
         }
-        return _component;
+        return component;
     }
 
     /**
@@ -185,13 +185,13 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @param object the object. May be <code>null</code>
      */
     public void setObject(T object) {
-        _object = object;
+        this.object = object;
         GlobalContext.getInstance().setCurrent(object);
         getComponent();
         if (object != null) {
-            enableButtons(true);
+            enableButtons(buttons.getButtons(), true);
         } else {
-            enableButtons(false);
+            enableButtons(buttons.getButtons(), false);
         }
     }
 
@@ -201,7 +201,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @return the object, or <code>null</code> if there is none set
      */
     public T getObject() {
-        return _object;
+        return object;
     }
 
     /**
@@ -223,7 +223,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * Invoked when the 'new' button is pressed.
      */
     public void onCreate() {
-        onCreate(_type, getShortNames());
+        onCreate(type, getShortNames());
     }
 
     /**
@@ -232,7 +232,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @return the display name for the types of objects that this may create
      */
     protected String getTypeDisplayName() {
-        return _type;
+        return type;
     }
 
     /**
@@ -241,17 +241,18 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @return the short names
      */
     protected ShortNames getShortNames() {
-        return _shortNames;
+        return shortNames;
     }
 
     /**
      * Lays out the component.
      */
     protected Component doLayout() {
-        _buttons = RowFactory.create(ROW_STYLE);
-        layoutButtons(_buttons);
-        enableButtons(false);
-        return _buttons;
+        buttons = new ButtonRow(ROW_STYLE);
+        ButtonSet set = buttons.getButtons();
+        layoutButtons(set);
+        enableButtons(set, false);
+        return buttons;
     }
 
     /**
@@ -259,7 +260,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      *
      * @param buttons the button row
      */
-    protected void layoutButtons(Row buttons) {
+    protected void layoutButtons(ButtonSet buttons) {
         buttons.add(getEditButton());
         buttons.add(getCreateButton());
         buttons.add(getDeleteButton());
@@ -271,14 +272,14 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @return the edit button
      */
     protected Button getEditButton() {
-        if (_edit == null) {
-            _edit = ButtonFactory.create(EDIT_ID, new ActionListener() {
+        if (edit == null) {
+            edit = ButtonFactory.create(EDIT_ID, new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     onEdit();
                 }
             });
         }
-        return _edit;
+        return edit;
     }
 
     /**
@@ -287,14 +288,14 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @return the create button
      */
     protected Button getCreateButton() {
-        if (_create == null) {
-            _create = ButtonFactory.create(NEW_ID, new ActionListener() {
+        if (create == null) {
+            create = ButtonFactory.create(NEW_ID, new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     onCreate();
                 }
             });
         }
-        return _create;
+        return create;
     }
 
     /**
@@ -303,14 +304,14 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @return the create button
      */
     protected Button getDeleteButton() {
-        if (_delete == null) {
-            _delete = ButtonFactory.create(DELETE_ID, new ActionListener() {
+        if (delete == null) {
+            delete = ButtonFactory.create(DELETE_ID, new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     onDelete();
                 }
             });
         }
-        return _delete;
+        return delete;
     }
 
     /**
@@ -319,41 +320,42 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @return the print button
      */
     protected Button getPrintButton() {
-        if (_print == null) {
-            _print = ButtonFactory.create(PRINT_ID, new ActionListener() {
+        if (print == null) {
+            print = ButtonFactory.create(PRINT_ID, new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     onPrint();
                 }
             });
         }
-        return _print;
+        return print;
     }
 
     /**
-     * Returns the button row.
+     * Returns the button set.
      *
-     * @return the button row
+     * @return the button set
      */
-    protected Row getButtons() {
-        return _buttons;
+    protected ButtonSet getButtons() {
+        return buttons.getButtons();
     }
 
     /**
      * Enables/disables the buttons that require an object to be selected.
      *
-     * @param enable determines if buttons should be enabled
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
      */
-    protected void enableButtons(boolean enable) {
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
         if (enable) {
-            if (_buttons.indexOf(_edit) == -1) {
-                _buttons.add(_edit);
+            if (!buttons.contains(edit)) {
+                buttons.add(edit);
             }
-            if (_buttons.indexOf(_delete) == -1) {
-                _buttons.add(_delete);
+            if (!buttons.contains(delete)) {
+                buttons.add(delete);
             }
         } else {
-            _buttons.remove(_edit);
-            _buttons.remove(_delete);
+            buttons.remove(edit);
+            buttons.remove(delete);
         }
     }
 
@@ -399,7 +401,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
                 // make sure the latest instance is being used.
                 object = IMObjectHelper.reload(object);
                 if (object == null) {
-                    ErrorDialog.show(Messages.get("imobject.noexist"), _type);
+                    ErrorDialog.show(Messages.get("imobject.noexist"), type);
                 } else {
                     edit(object);
                 }
@@ -410,6 +412,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
     /**
      * Invoked when the delete button is pressed.
      */
+    @SuppressWarnings("unchecked")
     protected void onDelete() {
         T object = getObject();
         if (object instanceof Entity) {
@@ -485,8 +488,8 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      */
     protected void onSaved(T object, boolean isNew) {
         setObject(object);
-        if (_listener != null) {
-            _listener.saved(object, isNew);
+        if (listener != null) {
+            listener.saved(object, isNew);
         }
     }
 
@@ -518,8 +521,8 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      */
     protected void onDeleted(T object) {
         setObject(null);
-        if (_listener != null) {
-            _listener.deleted(object);
+        if (listener != null) {
+            listener.deleted(object);
         }
     }
 
@@ -541,8 +544,8 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      */
     protected void onRefresh(T object) {
         setObject(null);
-        if (_listener != null) {
-            _listener.refresh(object);
+        if (listener != null) {
+            listener.refresh(object);
         }
     }
 
@@ -587,7 +590,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @param object the object to delete
      */
     private void confirmDeactivate(final T object) {
-        String title = Messages.get("imobject.deactivate.title", _type);
+        String title = Messages.get("imobject.deactivate.title", type);
         String message = Messages.get("imobject.deactivate.message",
                                       object.getName());
         final ConfirmationDialog dialog
@@ -617,7 +620,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @param object the object to delete
      */
     private void confirmDelete(final T object) {
-        String title = Messages.get("imobject.delete.title", _type);
+        String title = Messages.get("imobject.delete.title", type);
         String message = Messages.get("imobject.delete.title",
                                       object.getName());
         final ConfirmationDialog dialog

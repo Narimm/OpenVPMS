@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -28,6 +27,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
@@ -67,11 +67,11 @@ public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
     /**
      * Enables/disables the buttons that require an object to be selected.
      *
-     * @param enable determines if buttons should be enabled
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
      */
     @Override
-    protected void enableButtons(boolean enable) {
-        Row buttons = getButtons();
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.removeAll();
         if (enable) {
             buttons.add(getEditButton());

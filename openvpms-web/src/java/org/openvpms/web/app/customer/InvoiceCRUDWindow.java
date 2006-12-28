@@ -19,9 +19,9 @@
 package org.openvpms.web.app.customer;
 
 
-import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.button.ButtonSet;
 
 
 /**
@@ -52,7 +52,7 @@ public class InvoiceCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * @param buttons the button row
      */
     @Override
-    protected void layoutButtons(Row buttons) {
+    protected void layoutButtons(ButtonSet buttons) {
         buttons.add(getEditButton());
         buttons.add(getCreateButton());
         buttons.add(getDeleteButton());
@@ -62,11 +62,11 @@ public class InvoiceCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     /**
      * Enables/disables the buttons that require an object to be selected.
      *
-     * @param enable determines if buttons should be enabled
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
      */
     @Override
-    protected void enableButtons(boolean enable) {
-        Row buttons = getButtons();
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.removeAll();
         if (enable) {
             buttons.add(getEditButton());
