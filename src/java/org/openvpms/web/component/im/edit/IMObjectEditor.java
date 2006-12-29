@@ -68,7 +68,7 @@ public interface IMObjectEditor extends Editor, Saveable {
     ArchetypeDescriptor getArchetypeDescriptor();
 
     /**
-     * Delete the current object.
+     * Deletes the current object.
      *
      * @return <code>true</code> if the object was deleted successfully
      */
@@ -80,6 +80,11 @@ public interface IMObjectEditor extends Editor, Saveable {
      * @return <code>true</code> if the object has been deleted
      */
     boolean isDeleted();
+
+    /**
+     * Marks the current object inactive.
+     */
+    void deactivate();
 
     /**
      * Cancel any edits. Once complete, query methods may be invoked, but the

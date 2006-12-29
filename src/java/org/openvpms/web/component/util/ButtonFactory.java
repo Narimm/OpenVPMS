@@ -21,7 +21,6 @@ package org.openvpms.web.component.util;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.button.ShortcutButton;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -129,11 +128,11 @@ public final class ButtonFactory extends ComponentFactory {
     /**
      * Helper to return localised text for a button.
      *
-     * @param id the component identifier
+     * @param key the resource bundle key
      * @return the localised string corresponding to <code>id</code>
      */
-    public static String getString(String id) {
-        return Messages.get(TYPE + "." + id);
+    public static String getString(String key) {
+        return getString(TYPE, key, false);
     }
 
 }

@@ -31,8 +31,9 @@ public class ConfirmationDialog extends MessageDialog {
      */
     private static final String STYLE = "ConfirmationDialog";
 
+
     /**
-     * Constructs a new <code>ConfirmationDialog</code>
+     * Constructs a new <code>ConfirmationDialog</code>.
      *
      * @param title   the window title
      * @param message the message
@@ -42,7 +43,7 @@ public class ConfirmationDialog extends MessageDialog {
     }
 
     /**
-     * Construct a new <code>ConfirmationDialog</code>
+     * Constructs a new <code>ConfirmationDialog</code>.
      *
      * @param title   the window title
      * @param message the message
@@ -50,6 +51,22 @@ public class ConfirmationDialog extends MessageDialog {
      */
     public ConfirmationDialog(String title, String message, String[] buttons) {
         super(title, message, STYLE, buttons);
+    }
+
+    /**
+     * Constructs a new <code>ConfirmationDialog</code>.
+     *
+     * @param title             the window title
+     * @param message           the message
+     * @param disableOKShortcut if <code>true</code> disable any shortcut on the
+     *                          OK button
+     */
+    public ConfirmationDialog(String title, String message,
+                              boolean disableOKShortcut) {
+        super(title, message, new String[0]);
+        addButton(OK_ID, disableOKShortcut);
+        addButton(CANCEL_ID, false);
+        setDefaultButton(CANCEL_ID);
     }
 
 }

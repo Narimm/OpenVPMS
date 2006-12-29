@@ -19,8 +19,8 @@
 package org.openvpms.web.component.workflow;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.create.IMObjectCreator;
-import org.openvpms.web.component.im.create.IMObjectCreatorListener;
+import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 
 
 /**

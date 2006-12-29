@@ -147,7 +147,20 @@ public class ButtonRow extends Row implements KeyStrokeHandler {
      * @return the button
      */
     public Button addButton(String key, ActionListener listener) {
-        return set.add(key, listener);
+        return addButton(key, listener, false);
+    }
+
+    /**
+     * Adds a button, and registers an event listener.
+     *
+     * @param key             the resource bundle key. May be <code>null</code>
+     * @param listener        the listener to add
+     * @param disableShortcut if <code>true</code> disable any keyboard shortcut
+     * @return the button
+     */
+    public Button addButton(String key, ActionListener listener,
+                            boolean disableShortcut) {
+        return set.add(key, listener, disableShortcut);
     }
 
     /**

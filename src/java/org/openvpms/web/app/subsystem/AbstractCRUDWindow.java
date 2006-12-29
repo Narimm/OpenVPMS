@@ -25,18 +25,12 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.create.IMObjectCreator;
-import org.openvpms.web.component.im.create.IMObjectCreatorListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -45,6 +39,10 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.im.util.IMObjectCreatorListener;
+import org.openvpms.web.component.im.util.IMObjectDeletor;
+import org.openvpms.web.component.im.util.IMObjectDeletorListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ButtonRow;
@@ -414,23 +412,25 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      */
     @SuppressWarnings("unchecked")
     protected void onDelete() {
-        T object = getObject();
-        if (object instanceof Entity) {
-            Entity entity = (Entity) object;
-            if (!entity.getEntityRelationships().isEmpty()) {
-                if (object.isActive()) {
-                    confirmDeactivate(object);
-                } else {
-                    String message = Messages.get(
-                            "imobject.delete.deactivate",
-                            getArchetypeDescriptor().getDisplayName());
-                    ErrorDialog.show(message);
-                }
-            } else {
-                confirmDelete(object);
-            }
+        T object = IMObjectHelper.reload(getObject());
+        if (object == null) {
+            ErrorDialog.show(Messages.get("imobject.noexist"), type);
         } else {
-            confirmDelete(object);
+            LayoutContext context = createLayoutContext();
+            final IMObjectEditor editor = createEditor(object, context);
+
+            IMObjectDeletor.delete(editor, new IMObjectDeletorListener<T>() {
+                public void deleted(T object) {
+                    onDeleted(object);
+                }
+
+                public void deactivated(T object) {
+                    onSaved(object, false);
+                }
+
+                public void cancelled() {
+                }
+            });
         }
     }
 
@@ -490,27 +490,6 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
         setObject(object);
         if (listener != null) {
             listener.saved(object, isNew);
-        }
-    }
-
-    /**
-     * Deletes an object. Invokes {@link #onDeleted} if successful.
-     *
-     * @param object the object to delete
-     */
-    protected void delete(T object) {
-        try {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            // make sure deleting the latest version, to avoid hibernate errors
-            object = IMObjectHelper.reload(object);
-            if (object != null) {
-                service.remove(object);
-                onDeleted(object);
-            }
-        } catch (OpenVPMSException exception) {
-            String title = Messages.get("imobject.delete.failed.title");
-            ErrorHelper.show(title, exception);
         }
     }
 
@@ -583,55 +562,4 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
         }
     }
 
-    /**
-     * Pops up a dialog prompting if deactivation of an object should proceed,
-     * deleting it if OK is selected.
-     *
-     * @param object the object to delete
-     */
-    private void confirmDeactivate(final T object) {
-        String title = Messages.get("imobject.deactivate.title", type);
-        String message = Messages.get("imobject.deactivate.message",
-                                      object.getName());
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    try {
-                        IArchetypeService service
-                                = ArchetypeServiceHelper.getArchetypeService();
-                        object.setActive(false);
-                        service.save(object);
-                        onSaved(object, false);
-                    } catch (OpenVPMSException exception) {
-                        ErrorHelper.show(exception);
-                    }
-                }
-            }
-        });
-        dialog.show();
-    }
-
-    /**
-     * Pops up a dialog prompting if deletion of an object should proceed,
-     * deleting it if OK is selected.
-     *
-     * @param object the object to delete
-     */
-    private void confirmDelete(final T object) {
-        String title = Messages.get("imobject.delete.title", type);
-        String message = Messages.get("imobject.delete.title",
-                                      object.getName());
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    delete(object);
-                }
-            }
-        });
-        dialog.show();
-    }
 }
