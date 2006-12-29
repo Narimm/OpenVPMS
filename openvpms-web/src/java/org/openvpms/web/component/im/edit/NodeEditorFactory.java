@@ -116,7 +116,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                 editor = getCollectionEditor((CollectionProperty) property,
                                              context);
             } else if (descriptor.isObjectReference()) {
-                editor = getObjectReferenceEditor(property);
+                editor = getObjectReferenceEditor(property, context);
             }
             if (editor != null) {
                 result = new ComponentState(editor.getComponent(), property,
@@ -282,16 +282,18 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * Returns an editor for an object reference property.
      *
      * @param property the object reference properrty
+     * @param object   the parent object
      * @return a new editor for <code>property</code>
      */
-    protected Editor getObjectReferenceEditor(Property property) {
+    protected Editor getObjectReferenceEditor(Property property,
+                                              IMObject object) {
         String[] range = DescriptorHelper.getShortNames(
                 property.getDescriptor());
         Editor editor;
         if (TypeHelper.matches(range, "document.*")) {
             editor = new DocumentEditor(property);
         } else {
-            editor = IMObjectReferenceEditorFactory.create(property,
+            editor = IMObjectReferenceEditorFactory.create(property, object,
                                                            getLayoutContext());
         }
         _editors.add(editor);

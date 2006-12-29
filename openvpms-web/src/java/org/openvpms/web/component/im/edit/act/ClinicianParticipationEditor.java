@@ -82,7 +82,7 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
     @Override
     protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
-        return new AbstractIMObjectReferenceEditor(property,
+        return new AbstractIMObjectReferenceEditor(property, getParent(),
                                                    getLayoutContext()) {
 
             @Override

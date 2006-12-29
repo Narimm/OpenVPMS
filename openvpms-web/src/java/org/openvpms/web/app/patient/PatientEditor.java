@@ -19,6 +19,7 @@
 package org.openvpms.web.app.patient;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
@@ -28,7 +29,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 /**
  * Editor for <em>party.patientpet</em> parties.
  * Creates an <em>entityRelationship.patientOwner</em> with the current
- * customer.
+ * customer, if the parent object isn't an entity relationship.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -45,7 +46,7 @@ public class PatientEditor extends AbstractIMObjectEditor {
     public PatientEditor(Party patient, IMObject parent,
                          LayoutContext context) {
         super(patient, parent, context);
-        if (patient.isNew()) {
+        if (patient.isNew() && !(parent instanceof EntityRelationship)) {
             Party customer = context.getContext().getCustomer();
             if (customer != null) {
                 PatientRules rules = new PatientRules();

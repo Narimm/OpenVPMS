@@ -18,15 +18,11 @@
 
 package org.openvpms.web.app.patient.summary;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
+import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -54,6 +50,10 @@ import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 
 /**
  * Renders Patient Summary Information.
@@ -61,7 +61,6 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-
 public class PatientSummary {
 
     /**
@@ -170,48 +169,40 @@ public class PatientSummary {
         return new ActResultSet<Act>(participants, archetypes, time, statuses,
                                      false, null, 5, sort);
     }
-    
+
     /**
      * Returns the Age for a patient.
+     * todo localise
      *
      * @param patient the patient
      * @return a string representing the patient age
      */
     private static String getPatientAge(Party patient) {
-    	if (patient != null) {
-        	EntityBean bean = new EntityBean(patient);
-        	Date birthDate = bean.getDate("dateOfBirth");
-        	if (birthDate != null) {
-	        	Date currentDate = new Date();
-	        	Calendar dobCalendar = new GregorianCalendar();
-	        	dobCalendar.setTime(birthDate);
-	        	Calendar curCalendar = new GregorianCalendar();
-	        	curCalendar.setTime(currentDate);
-	        	long diffdays = (curCalendar.getTimeInMillis() - dobCalendar.getTimeInMillis())/(24*60*60*1000);
-	        	if (diffdays < 90) {
-	        		long weeks = diffdays/7;
-	        		if (weeks == 0) {
-	        			return diffdays + " Days";
-	        		}
-	        		else {
-	        			return weeks + " Weeks";
-	        		}
-	        	}
-	        	else if (diffdays < (365*2)) {
-	        		return (diffdays/31) + " Months";
-	        	}
-	        	else {
-	        		return (diffdays/365) + " Years";
-	        	}
-        	}
-        	else {
-        		return "No Birthdate";
-        	}
-    	}
-    	else {
-        	return "";    		
-    	}
-    	
+        EntityBean bean = new EntityBean(patient);
+        Date birthDate = bean.getDate("dateOfBirth");
+        String result;
+        if (birthDate != null) {
+            Date currentDate = new Date();
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(birthDate);
+            long diffMs = currentDate.getTime() - calendar.getTimeInMillis();
+            long diffdays = diffMs / DateUtils.MILLIS_IN_DAY;
+            if (diffdays < 90) {
+                long weeks = diffdays / 7;
+                if (weeks == 0) {
+                    result = diffdays + " Days";
+                } else {
+                    result = weeks + " Weeks";
+                }
+            } else if (diffdays < (365 * 2)) {
+                result = (diffdays / 31) + " Months";
+            } else {
+                result = (diffdays / 365) + " Years";
+            }
+        } else {
+            result = "No Birthdate";
+        }
+        return result;
     }
 
     /**

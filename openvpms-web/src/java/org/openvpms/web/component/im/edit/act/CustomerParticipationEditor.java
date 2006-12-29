@@ -72,8 +72,8 @@ public class CustomerParticipationEditor extends AbstractParticipationEditor {
     @Override
     protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
-        return new AbstractIMObjectReferenceEditor(property, getLayoutContext(),
-                                                   true) {
+        return new AbstractIMObjectReferenceEditor(property, getParent(),
+                                                   getLayoutContext(), true) {
 
             @Override
             public void setObject(IMObject object) {

@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.edit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -43,7 +44,7 @@ public class IMObjectReferenceEditorFactory {
     /**
      * The logger.
      */
-    private static final Log _log
+    private static final Log log
             = LogFactory.getLog(IMObjectReferenceEditorFactory.class);
 
     /**
@@ -56,10 +57,12 @@ public class IMObjectReferenceEditorFactory {
      * Creates a new editor.
      *
      * @param property the reference property
+     * @param parent   the parent object. May be <code>null</code>
      * @param context  the layout context
      * @return an editor for <code>property</code>
      */
     public static IMObjectReferenceEditor create(Property property,
+                                                 IMObject parent,
                                                  LayoutContext context) {
         IMObjectReferenceEditor result = null;
 
@@ -70,13 +73,14 @@ public class IMObjectReferenceEditorFactory {
         if (handler != null) {
             try {
                 result = (IMObjectReferenceEditor) handler.create(
-                        new Object[]{property, context});
+                        new Object[]{property, parent, context});
             } catch (Throwable exception) {
-                _log.error(exception, exception);
+                log.error(exception, exception);
             }
         }
         if (result == null) {
-            result = new DefaultIMObjectReferenceEditor(property, context);
+            result = new DefaultIMObjectReferenceEditor(property, parent,
+                                                        context);
         }
         return result;
     }

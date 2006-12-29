@@ -68,6 +68,11 @@ public abstract class AbstractIMObjectReferenceEditor
         extends AbstractPropertyEditor implements IMObjectReferenceEditor {
 
     /**
+     * The parent object. May be <code>null</code>
+     */
+    private final IMObject parent;
+
+    /**
      * The object name listener.
      */
     private final DocumentListener nameListener;
@@ -104,24 +109,29 @@ public abstract class AbstractIMObjectReferenceEditor
      * Constructs a new <code>AbstractIMObjectReferenceEditor</code>.
      *
      * @param property the reference property
+     * @param parent   the parent object. May be <code>null</code>
      * @param context  the layout context
      */
     public AbstractIMObjectReferenceEditor(Property property,
+                                           IMObject parent,
                                            LayoutContext context) {
-        this(property, context, false);
+        this(property, parent, context, false);
     }
 
     /**
      * Constructs a new <code>AbstractIMObjectReferenceEditor</code>.
      *
      * @param property    the reference property
+     * @param parent      the parent object. May be <code>null</code>
      * @param context     the layout context
      * @param allowCreate determines if objects may be created
      */
     public AbstractIMObjectReferenceEditor(Property property,
+                                           IMObject parent,
                                            LayoutContext context,
                                            boolean allowCreate) {
         super(property);
+        this.parent = parent;
         selector = new Selector(Selector.ButtonStyle.RIGHT_NO_ACCEL, true);
         selector.setFormat(Selector.Format.NAME);
         selector.getSelect().addActionListener(new ActionListener() {
@@ -325,7 +335,7 @@ public abstract class AbstractIMObjectReferenceEditor
         LayoutContext layoutContext = new DefaultLayoutContext(true);
         layoutContext.setContext(context);
         final IMObjectEditor editor
-                = IMObjectEditorFactory.create(object, layoutContext);
+                = IMObjectEditorFactory.create(object, parent, layoutContext);
         final EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
