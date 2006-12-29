@@ -46,23 +46,26 @@ public class PatientReferenceEditor extends AbstractIMObjectReferenceEditor {
      * Constructs a new <code>PatientReferenceEditor</code>.
      *
      * @param property the reference property
+     * @param parent   the parent object
      * @param context  the layout context
      */
-    public PatientReferenceEditor(Property property, LayoutContext context) {
-        this(property, context, false);
+    public PatientReferenceEditor(Property property, IMObject parent,
+                                  LayoutContext context) {
+        this(property, parent, context, false);
     }
 
     /**
      * Constructs a new <code>PatientReferenceEditor</code>.
      *
      * @param property    the reference property
+     * @param parent      the parent object
      * @param context     the layout context
      * @param allPatients if <code>true</code>, enable all patients to be
      *                    selected
      */
-    public PatientReferenceEditor(Property property, LayoutContext context,
-                                  boolean allPatients) {
-        super(property, context);
+    public PatientReferenceEditor(Property property, IMObject parent,
+                                  LayoutContext context, boolean allPatients) {
+        super(property, parent, context);
         this.allPatients = allPatients;
     }
 

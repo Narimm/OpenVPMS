@@ -154,7 +154,7 @@ public abstract class AbstractRelationshipEditor
     protected IMObjectReferenceEditor createReferenceEditor(
             Property property, LayoutContext context) {
         IMObjectReferenceEditor editor = IMObjectReferenceEditorFactory.create(
-                property, context);
+                property, getObject(), context);
         editor.setAllowCreate(true);
         return editor;
     }

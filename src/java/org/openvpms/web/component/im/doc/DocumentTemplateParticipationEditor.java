@@ -65,7 +65,8 @@ public class DocumentTemplateParticipationEditor
             act.setValue(parent.getObjectReference());
         }
         Property entity = getProperty("entity");
-        templateEditor = new AbstractIMObjectReferenceEditor(entity, context) {
+        templateEditor = new AbstractIMObjectReferenceEditor(entity, parent,
+                                                             context) {
 
             /**
              * Creates a query to select objects.

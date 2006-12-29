@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.edit;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
@@ -35,10 +36,11 @@ public class DefaultIMObjectReferenceEditor
      * Constructs a new <code>DefaultIMObjectReferenceEditor</code>.
      *
      * @param property the reference property
+     * @param parent   the parent object. May be <code>null</code>
      * @param context  the layout context
      */
-    public DefaultIMObjectReferenceEditor(Property property,
+    public DefaultIMObjectReferenceEditor(Property property, IMObject parent,
                                           LayoutContext context) {
-        super(property, context);
+        super(property, parent, context);
     }
 }

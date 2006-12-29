@@ -132,7 +132,7 @@ public abstract class AbstractParticipationEditor
      */
     protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
-        return IMObjectReferenceEditorFactory.create(property,
+        return IMObjectReferenceEditorFactory.create(property, getObject(),
                                                      getLayoutContext());
     }
 
