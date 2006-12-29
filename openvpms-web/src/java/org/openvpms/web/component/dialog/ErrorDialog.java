@@ -56,6 +56,7 @@ public class ErrorDialog extends MessageDialog {
      */
     public ErrorDialog(String title, String message) {
         super(title, message, "ErrorDialog", OK);
+        setDefaultButton(OK_ID);
     }
 
     /**

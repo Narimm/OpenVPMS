@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.dialog;
 
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -142,12 +143,8 @@ public abstract class PopupDialog extends PopupWindow {
                        FocusGroup focus) {
         super(title, style, focus);
 
-        for (final String button : buttons) {
-            addButton(button, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onButton(button);
-                }
-            });
+        for (String button : buttons) {
+            addButton(button, false);
         }
     }
 
@@ -261,6 +258,22 @@ public abstract class PopupDialog extends PopupWindow {
     protected void close(String action) {
         setAction(action);
         close();
+    }
+
+    /**
+     * Adds a new button.
+     *
+     * @param id              the button identifier
+     * @param disableShortcut if <code>true</code> disable any keyboard shortcut
+     * @return the new button
+     */
+    protected Button addButton(final String id, boolean disableShortcut) {
+        ActionListener listener = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onButton(id);
+            }
+        };
+        return addButton(id, listener, disableShortcut);
     }
 
 }

@@ -19,7 +19,10 @@
 package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.im.util.IMObjectDeletor;
+import org.openvpms.web.component.im.util.IMObjectDeletorListener;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -122,9 +125,17 @@ public class EditDialog extends PopupDialog {
      */
     @Override
     protected void onDelete() {
-        if (editor.delete()) {
-            close(DELETE_ID);
-        }
+        IMObjectDeletorListener<IMObject> listener
+                = new IMObjectDeletorListener<IMObject>() {
+            public void deleted(IMObject object) {
+                close(DELETE_ID);
+            }
+
+            public void deactivated(IMObject object) {
+                close(OK_ID);
+            }
+        };
+        IMObjectDeletor.delete(editor, listener);
     }
 
     /**

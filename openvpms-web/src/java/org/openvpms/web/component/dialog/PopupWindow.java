@@ -18,9 +18,12 @@
 
 package org.openvpms.web.component.dialog;
 
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.SplitPaneFactory;
@@ -49,6 +52,11 @@ public abstract class PopupWindow extends WindowPane {
      * The focus group.
      */
     private final FocusGroup focusGroup;
+
+    /**
+     * The default button.
+     */
+    private String defaultButton;
 
 
     /**
@@ -95,6 +103,30 @@ public abstract class PopupWindow extends WindowPane {
         if (getParent() == null) {
             DialogManager.show(this);
         }
+        if (defaultButton != null) {
+            Button button = getButtons().getButton(defaultButton);
+            if (button != null) {
+                ApplicationInstance.getActive().setFocusedComponent(button);
+            }
+        }
+    }
+
+    /**
+     * Sets the default button identifier.
+     *
+     * @param id the button identifier
+     */
+    public void setDefaultButton(String id) {
+        defaultButton = id;
+    }
+
+    /**
+     * Returns the default button identifier.
+     *
+     * @return the default button, or <code>null</code> if none has been set
+     */
+    public String getDefaultButton() {
+        return defaultButton;
     }
 
     /**
@@ -112,21 +144,36 @@ public abstract class PopupWindow extends WindowPane {
     }
 
     /**
-     * Returns the button row.
+     * Returns the buttons.
      *
-     * @return the button row
+     * @return the buttons
      */
-    protected ButtonRow getButtonRow() {
-        return row;
+    protected ButtonSet getButtons() {
+        return row.getButtons();
     }
 
     /**
-     * Add a button.
+     * Adds a button.
      *
-     * @param id the button identifier
+     * @param id       the button identifier
+     * @param listener the action listener
+     * @return a new button
      */
-    protected void addButton(String id, ActionListener listener) {
-        row.addButton(id, listener);
+    protected Button addButton(String id, ActionListener listener) {
+        return addButton(id, listener, false);
+    }
+
+    /**
+     * Adds a button.
+     *
+     * @param id              the button identifier
+     * @param listener        the action listener
+     * @param disableShortcut if <code>true</code> disable any keyboard shortcut
+     * @return a new button
+     */
+    protected Button addButton(String id, ActionListener listener,
+                               boolean disableShortcut) {
+        return row.addButton(id, listener, disableShortcut);
     }
 
     /**

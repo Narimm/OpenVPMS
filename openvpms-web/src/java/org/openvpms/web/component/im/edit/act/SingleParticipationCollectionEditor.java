@@ -28,11 +28,11 @@ import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 

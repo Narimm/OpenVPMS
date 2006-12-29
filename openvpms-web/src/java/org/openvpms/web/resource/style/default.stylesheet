@@ -741,6 +741,9 @@
 
     <style name="ErrorDialog" base-name="MessageDialog"
            type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="titleBackground" value="#ff0000"/>
+        </properties>
     </style>
 
     <style name="Palette" type="nextapp.echo2.app.Row">
