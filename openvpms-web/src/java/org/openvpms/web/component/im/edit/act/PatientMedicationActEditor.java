@@ -41,7 +41,7 @@ public class PatientMedicationActEditor extends AbstractActEditor {
      * Construct a new <code>PatientMedicationActEditor</code>.
      *
      * @param act     the act to edit
-     * @param parent  the parent act
+     * @param parent  the parent act. May be <code>null</code>
      * @param context the layout context. May be <code>null</code>
      */
     public PatientMedicationActEditor(Act act, Act parent,
@@ -52,18 +52,20 @@ public class PatientMedicationActEditor extends AbstractActEditor {
                     + act.getArchetypeId().getShortName());
         }
 
-        ActBean bean = new ActBean(parent);
-        if (bean.hasNode("product")) {
-            // update the product from the parent
-            IMObjectReference product
-                    = bean.getParticipantRef("participation.product");
-            if (TypeHelper.isA(product, "product.medication")) {
-                setProduct(product);
-            } else {
-                setProduct(null);
+        if (parent != null) {
+            ActBean bean = new ActBean(parent);
+            if (bean.hasNode("product")) {
+                // update the product from the parent
+                IMObjectReference product
+                        = bean.getParticipantRef("participation.product");
+                if (TypeHelper.isA(product, "product.medication")) {
+                    setProduct(product);
+                } else {
+                    setProduct(null);
+                }
             }
+            setPatient(bean.getParticipantRef("participation.patient"));
         }
-        setPatient(bean.getParticipantRef("participation.patient"));
     }
 
     /**
