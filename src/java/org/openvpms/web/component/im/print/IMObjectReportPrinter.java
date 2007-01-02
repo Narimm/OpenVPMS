@@ -34,7 +34,7 @@ import org.openvpms.report.IMObjectReportFactory;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;

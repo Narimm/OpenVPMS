@@ -24,8 +24,6 @@
  */
 package org.openvpms.web.test;
 
-import org.openvpms.web.spring.ServiceHelper;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -33,6 +31,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**

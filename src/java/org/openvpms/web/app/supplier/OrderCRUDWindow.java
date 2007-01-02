@@ -48,7 +48,7 @@ import org.openvpms.web.component.im.edit.act.ActCopyHandler;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;

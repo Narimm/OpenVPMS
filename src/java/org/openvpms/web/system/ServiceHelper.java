@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.spring;
+package org.openvpms.web.system;
 
 import nextapp.echo2.app.ApplicationInstance;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;

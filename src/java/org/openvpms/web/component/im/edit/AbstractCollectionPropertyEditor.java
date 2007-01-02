@@ -32,7 +32,7 @@ import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Validator;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;

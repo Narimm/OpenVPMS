@@ -44,7 +44,7 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.io.InputStream;
 
