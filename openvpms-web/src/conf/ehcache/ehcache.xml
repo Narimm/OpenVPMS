@@ -35,50 +35,57 @@
                   timeToIdleSeconds="120" timeToLiveSeconds="120"
                   overflowToDisk="false"/>
 
+    <cache name="org.hibernate.cache.UpdateTimestampsCache"
+           maxElementsInMemory="10000" eternal="false" timeToIdleSeconds="120"
+           timeToLiveSeconds="120" overflowToDisk="false"/>
 
-  <cache name="org.openvpms.component.business.domain.im.lookup.Lookup"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
+    <cache name="org.hibernate.cache.StandardQueryCache"
+           maxElementsInMemory="10000" eternal="false" timeToIdleSeconds="120"
+           timeToLiveSeconds="120" overflowToDisk="false"/>
 
-  <cache name="org.openvpms.component.business.domain.im.product.Product"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
+    <cache name="org.openvpms.component.business.domain.im.lookup.Lookup"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-  <cache name="org.openvpms.component.business.domain.im.party.Party"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
+    <cache name="org.openvpms.component.business.domain.im.product.Product"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-  <cache name="org.openvpms.component.business.domain.im.common.EntityRelationship"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
+    <cache name="org.openvpms.component.business.domain.im.party.Party"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-  <cache name="org.openvpms.component.business.domain.im.lookup.LookupRelationship"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
+    <cache name="org.openvpms.component.business.domain.im.common.EntityRelationship"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
-  <cache name="org.openvpms.component.business.domain.im.product.ProductPrice"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
-    
-  <cache name="org.openvpms.component.business.domain.im.act.Act"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
-    
-  <cache name="org.openvpms.component.business.domain.im.security.SecurityRole"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
-    
-  <cache name="org.openvpms.component.business.domain.im.common.Entity"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
-    
-  <cache name="org.openvpms.component.business.domain.im.party.Contact"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
-    
-  <cache name="org.openvpms.component.business.domain.im.common.EntityIdentity"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
-    
-  <cache name="org.openvpms.component.business.domain.im.act.ActRelationship"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
-    
-  <cache name="org.openvpms.component.business.domain.im.common.Classification"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
-    
-  <cache name="org.openvpms.component.business.domain.im.common.Participation"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
-    
-  <cache name="org.openvpms.component.business.domain.im.document.Document"
-    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
+    <cache name="org.openvpms.component.business.domain.im.lookup.LookupRelationship"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
+    <cache name="org.openvpms.component.business.domain.im.product.ProductPrice"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
+    <cache name="org.openvpms.component.business.domain.im.act.Act"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
+    <cache name="org.openvpms.component.business.domain.im.security.SecurityRole"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
+    <cache name="org.openvpms.component.business.domain.im.common.Entity"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
+    <cache name="org.openvpms.component.business.domain.im.party.Contact"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
+    <cache name="org.openvpms.component.business.domain.im.common.EntityIdentity"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
+    <cache name="org.openvpms.component.business.domain.im.act.ActRelationship"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
+    <cache name="org.openvpms.component.business.domain.im.common.Classification"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
+    <cache name="org.openvpms.component.business.domain.im.common.Participation"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
+    <cache name="org.openvpms.component.business.domain.im.document.Document"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
 </ehcache>

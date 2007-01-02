@@ -18,18 +18,18 @@
 
 package org.openvpms.web.servlet;
 
-import javax.servlet.ServletException;
-
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.WebContainerServlet;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.web.system.SpringApplicationInstance;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import org.openvpms.web.spring.SpringApplicationInstance;
+import javax.servlet.ServletException;
+
 
 /**
- * <code>WebContainerServlet</code> for integrating Echo with Spring.
+ * A <code>WebContainerServlet</code> for integrating Echo with Spring.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -39,12 +39,12 @@ public class SpringWebContainerServlet extends WebContainerServlet {
     /**
      * The Spring application context.
      */
-    private ApplicationContext _context;
+    private ApplicationContext context;
 
     /**
      * The application name.
      */
-    private String _name;
+    private String name;
 
 
     /**
@@ -55,8 +55,8 @@ public class SpringWebContainerServlet extends WebContainerServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        _name = getInitParameter("app-name");
-        if (StringUtils.isEmpty(_name)) {
+        name = getInitParameter("app-name");
+        if (StringUtils.isEmpty(name)) {
             throw new ServletException("init-param not specified: app-name");
         }
     }
@@ -68,13 +68,13 @@ public class SpringWebContainerServlet extends WebContainerServlet {
      * @return a new <code>ApplicationInstance</code>
      */
     public ApplicationInstance newApplicationInstance() {
-        SpringApplicationInstance result = null;
-        if (_context == null) {
-            _context = WebApplicationContextUtils.getWebApplicationContext(
+        SpringApplicationInstance result;
+        if (context == null) {
+            context = WebApplicationContextUtils.getWebApplicationContext(
                     getServletContext());
         }
-        result = (SpringApplicationInstance) _context.getBean(_name);
-        result.setApplicationContext(_context);
+        result = (SpringApplicationInstance) context.getBean(name);
+        result.setApplicationContext(context);
         return result;
     }
 

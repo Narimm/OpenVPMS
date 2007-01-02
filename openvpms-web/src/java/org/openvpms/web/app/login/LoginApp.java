@@ -20,10 +20,9 @@ package org.openvpms.web.app.login;
 
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Window;
-
-import org.openvpms.web.spring.SpringApplicationInstance;
 import org.openvpms.web.component.util.ContentPaneFactory;
 import org.openvpms.web.resource.util.Styles;
+import org.openvpms.web.system.SpringApplicationInstance;
 
 
 /**

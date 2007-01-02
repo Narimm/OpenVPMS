@@ -28,7 +28,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.web.spring.SpringApplicationInstance;
+import org.openvpms.web.system.SpringApplicationInstance;
 
 import java.util.List;
 

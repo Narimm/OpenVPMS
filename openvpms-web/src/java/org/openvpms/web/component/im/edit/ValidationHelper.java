@@ -33,7 +33,7 @@ import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Arrays;
 import java.util.Collection;
