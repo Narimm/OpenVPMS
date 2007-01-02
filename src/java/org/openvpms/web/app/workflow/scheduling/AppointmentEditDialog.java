@@ -20,6 +20,7 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -31,6 +32,9 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.resource.util.Messages;
 
+import java.sql.Timestamp;
+import java.util.Date;
+
 
 /**
  * Edit dialog for appointment acts.
@@ -41,12 +45,24 @@ import org.openvpms.web.resource.util.Messages;
 public class AppointmentEditDialog extends EditDialog {
 
     /**
+     * The appointment start time.
+     */
+    private Date startTime;
+
+    /**
+     * The appointment end time.
+     */
+    private Date endTime;
+
+
+    /**
      * Construct a new <code>AppointmentEditDialog</code>.
      *
      * @param editor the editor
      */
     public AppointmentEditDialog(IMObjectEditor editor) {
         super(editor);
+        getAppointmentTimes();
     }
 
     /**
@@ -54,8 +70,12 @@ public class AppointmentEditDialog extends EditDialog {
      */
     @Override
     protected void onApply() {
-        if (!checkForOverlappingAppointment(false)) {
-            super.onApply();
+        if (!timesModified()) {
+            save();
+        } else if (!checkForOverlappingAppointment(false)) {
+            if (save()) {
+                getAppointmentTimes();
+            }
         }
     }
 
@@ -64,7 +84,9 @@ public class AppointmentEditDialog extends EditDialog {
      */
     @Override
     protected void onOK() {
-        if (!checkForOverlappingAppointment(true)) {
+        if (!timesModified()) {
+            super.onOK();
+        } else if (!checkForOverlappingAppointment(true)) {
             super.onOK();
         }
     }
@@ -106,6 +128,13 @@ public class AppointmentEditDialog extends EditDialog {
                         public void windowPaneClosing(WindowPaneEvent e) {
                             if (ConfirmationDialog.OK_ID.equals(
                                     dialog.getAction())) {
+                                if (save()) {
+                                    if (close) {
+                                        close();
+                                    } else {
+                                        getAppointmentTimes();
+                                    }
+                                }
                                 if (editor.save() && close) {
                                     close();
                                 }
@@ -139,5 +168,47 @@ public class AppointmentEditDialog extends EditDialog {
         return result;
     }
 
+    /**
+     * Caches the appointment start and end times.
+     */
+    private void getAppointmentTimes() {
+        Act appointment = getAppointment();
+        startTime = appointment.getActivityStartTime();
+        endTime = appointment.getActivityEndTime();
+    }
 
+    /**
+     * Determines if the appointment times have been modified since the
+     * act was saved.
+     *
+     * @return <code>true</code> if the appointment times have been modified,
+     *         otherwise <code>false</code>
+     */
+    private boolean timesModified() {
+        Act act = getAppointment();
+        return !ObjectUtils.equals(getDate(startTime),
+                                   getDate(act.getActivityStartTime()))
+                || !ObjectUtils.equals(getDate(endTime),
+                                       getDate(act.getActivityEndTime()));
+    }
+
+    /**
+     * Returns the appointment.
+     *
+     * @return the appointment
+     */
+    private Act getAppointment() {
+        return (Act) getEditor().getObject();
+    }
+
+    /**
+     * Helper to convert a Timestamp to a Date so comparisons work correctly.
+     *
+     * @param date the date. May be an instance/subclass of <code>Date</code> or
+     *             null
+     * @return the date, or <code>null</code>
+     */
+    private Date getDate(Date date) {
+        return (date instanceof Timestamp) ? new Date(date.getTime()) : date;
+    }
 }
