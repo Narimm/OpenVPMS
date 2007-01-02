@@ -86,7 +86,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * Construct a new <code>ActQuery</code>.
      *
-     * @param entity        the entity to search for
+     * @param entity        the entity to search for. May be <code>null</code>
      * @param participant   the partcipant node name
      * @param participation the entity participation short name
      * @param entityName    the act entity name
@@ -109,7 +109,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * Construct a new <code>ActQuery</code>.
      *
-     * @param entity        the entity to search for
+     * @param entity        the entity to search for. May be <code>null</code>
      * @param participant   the partcipant node name
      * @param participation the entity participation short name
      * @param shortNames    the act short names
@@ -132,7 +132,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      * Construct a new <code>ActQuery</code> to query acts for a
      * specific status.
      *
-     * @param entity        the entity to search for
+     * @param entity        the entity to search for. May be <code>null</code>
      * @param participant   the partcipant node name
      * @param participation the entity participation short name
      * @param entityName    the act entity name
@@ -153,7 +153,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * Construct a new  <code>ActQuery</code>.
      *
-     * @param entity        the entity to search for
+     * @param entity        the entity to search for. May be <code>null</code>
      * @param participant   the participant node name
      * @param participation the entity participation short name
      * @param shortNames    the act short names
