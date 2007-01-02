@@ -101,9 +101,7 @@ public class EditDialog extends PopupDialog {
      */
     @Override
     protected void onApply() {
-        if (save) {
-            editor.save();
-        }
+        save();
     }
 
     /**
@@ -112,7 +110,7 @@ public class EditDialog extends PopupDialog {
     @Override
     protected void onOK() {
         if (save) {
-            if (editor.save()) {
+            if (save()) {
                 close(OK_ID);
             }
         } else {
@@ -144,6 +142,19 @@ public class EditDialog extends PopupDialog {
     protected void onCancel() {
         editor.cancel();
         close(CANCEL_ID);
+    }
+
+    /**
+     * Saves the current object, is saving is enabled.
+     *
+     * @return <code>true</code> if the object was saved
+     */
+    protected boolean save() {
+        boolean result = false;
+        if (save) {
+            result = editor.save();
+        }
+        return result;
     }
 
     /**
