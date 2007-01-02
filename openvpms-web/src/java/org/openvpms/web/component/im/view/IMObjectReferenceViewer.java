@@ -108,6 +108,7 @@ public class IMObjectReferenceViewer {
                         onView();
                     }
                 });
+                button.setFocusTraversalParticipant(false);
                 // wrap in a row so the button renders to its minimum width
                 result = RowFactory.create(button);
             } else {

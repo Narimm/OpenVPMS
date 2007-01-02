@@ -22,10 +22,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.subsystem.CRUDWindow;
@@ -34,11 +31,9 @@ import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
-import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
@@ -251,15 +246,7 @@ public class MessagingWorkspace extends AbstractWorkspace<User> {
      * @return a new query
      */
     private ActQuery<Act> createQuery(User user) {
-        String shortName = "act.userMessage";
-        String[] shortNames = {shortName};
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(shortName);
-        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
-        return new DefaultActQuery<Act>(user, "to",
-                                        "participation.user",
-                                        shortNames, lookups, null);
+        return new MessageQuery(user);
     }
 
     /**
