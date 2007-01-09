@@ -120,11 +120,7 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
                                                       TableColumnModel model) {
         int index = (showArchetype) ? 0 : 1;
         for (int i = index; i < COLUMNS.length; ++i) {
-            TableColumn column = new TableColumn(i);
-            String label = Messages.get(COLUMNS[i]);
-
-            column.setHeaderValue(label);
-            model.addColumn(column);
+            model.addColumn(createTableColumn(i, COLUMNS[i]));
         }
         return model;
     }
@@ -133,7 +129,9 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
      * @see TableModel#getColumnName
      */
     public String getColumnName(int column) {
-        return Messages.get(COLUMNS[column]);
+        TableColumn col = getColumn(column);
+        Object value = col.getHeaderValue();
+        return (value != null) ? value.toString() : null;
     }
 
     /**
@@ -203,6 +201,20 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
                 throw new IllegalArgumentException("Illegal column=" + column);
         }
         return result;
+    }
+
+    /**
+     * Helper to create a table column.
+     *
+     * @param index     the column index
+     * @param headerKey the header label resource key
+     */
+    protected static TableColumn createTableColumn(int index,
+                                                   String headerKey) {
+        TableColumn column = new TableColumn(index);
+        String label = Messages.get(headerKey);
+        column.setHeaderValue(label);
+        return column;
     }
 
 }

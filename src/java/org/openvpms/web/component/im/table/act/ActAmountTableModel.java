@@ -22,7 +22,6 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
-import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -39,7 +38,6 @@ import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
-import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -196,19 +194,6 @@ public class ActAmountTableModel<T extends Act>
                 break;
         }
         return result;
-    }
-
-    /**
-     * Helper to create a table column.
-     *
-     * @param index the column model index
-     * @param name  the column name
-     * @return a new column
-     */
-    protected static TableColumn createTableColumn(int index, String name) {
-        TableColumn column = new TableColumn(index);
-        column.setHeaderValue(Messages.get(name));
-        return column;
     }
 
     /**

@@ -135,6 +135,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      */
     protected void setTableColumnModel(TableColumnModel model) {
         this.model = model;
+        fireTableStructureChanged();
     }
 
     /**

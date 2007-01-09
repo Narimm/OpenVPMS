@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.web.app.patient.PatientBrowser;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
@@ -29,6 +30,7 @@ import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 
@@ -124,6 +126,24 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
                                                   getEntityName(),
                                                   getConceptName());
         return new InformationCRUDWindow(getType(), shortNames);
+    }
+
+    /**
+     * Create a new browser.
+     *
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
+     * @return a new browser
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
+     */
+    @Override
+    protected Browser<Party> createBrowser(String refModelName,
+                                           String entityName,
+                                           String conceptName) {
+        return new PatientBrowser(createQuery(refModelName, entityName,
+                                              conceptName));
     }
 
     /**
