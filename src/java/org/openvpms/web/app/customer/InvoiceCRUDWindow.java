@@ -53,10 +53,7 @@ public class InvoiceCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        buttons.add(getEditButton());
-        buttons.add(getCreateButton());
-        buttons.add(getDeleteButton());
-        buttons.add(getPrintButton());
+        enableButtons(buttons, true);
     }
 
     /**
@@ -72,7 +69,8 @@ public class InvoiceCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
             buttons.add(getEditButton());
             buttons.add(getCreateButton());
             buttons.add(getDeleteButton());
-            buttons.add(getPrintButton());
+            buttons.add(getPostButton());
+            buttons.add(getPreviewButton());
         } else {
             buttons.add(getCreateButton());
         }

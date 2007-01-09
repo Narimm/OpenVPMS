@@ -37,6 +37,7 @@ import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMObjectPrinterListener;
+import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -130,21 +131,21 @@ class ReminderGenerator extends AbstractReminderProcessor {
                 documentTemplate,
                 ArchetypeServiceHelper.getArchetypeService());
         if (act != null) {
-            IMObjectPrinter<Act> printer = IMObjectPrinterFactory.create(
-                    act.getArchetypeId().getShortName());
-            printer.setInteractive(false);
-            printer.print(reminder);
-            printer.setListener(new IMObjectPrinterListener<Act>() {
-                public void printed(Act object) {
+            IMObjectPrinter<DocumentAct> printer
+                    = IMObjectPrinterFactory.create(act);
+            InteractiveIMObjectPrinter<DocumentAct> iPrinter
+                    = new InteractiveIMObjectPrinter<DocumentAct>(printer);
+            iPrinter.setListener(new IMObjectPrinterListener<DocumentAct>() {
+                public void printed(DocumentAct object) {
                     ReminderGenerator.super.print(
                             reminder, reminderType, contact, documentTemplate);
                     generate();
                 }
 
-                public void cancelled(Act object) {
+                public void cancelled(DocumentAct object) {
                 }
 
-                public void failed(Act object, Throwable cause) {
+                public void failed(DocumentAct object, Throwable cause) {
                     ErrorHelper.show(cause, new WindowPaneListener() {
                         public void windowPaneClosing(
                                 WindowPaneEvent event) {
@@ -152,6 +153,7 @@ class ReminderGenerator extends AbstractReminderProcessor {
                     });
                 }
             });
+            iPrinter.print();
             suspend = true;
 
         } else {

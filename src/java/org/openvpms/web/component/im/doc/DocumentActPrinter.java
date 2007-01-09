@@ -18,18 +18,23 @@
 
 package org.openvpms.web.component.im.doc;
 
+import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.PrintProperties;
+import org.openvpms.report.TemplateHelper;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.print.AbstractIMObjectPrinter;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.ArrayList;
@@ -45,60 +50,56 @@ import java.util.List;
 public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
 
     /**
-     * Prints the object.
-     *
-     * @param act     the act to print
-     * @param printer the printer name
+     * The report generator.
      */
-    @Override
-    protected void doPrint(DocumentAct act, String printer) {
-        try {
-            Document doc = (Document) IMObjectHelper.getObject(
-                    act.getDocReference());
-            if (doc == null) {
-                IMObjectReport report = createReport(act);
-                List<IMObject> objects = new ArrayList<IMObject>();
-                objects.add(act);
-                report.print(objects, getProperties(act, printer));
-                printed(act);
-            } else if (DocFormats.ODT_TYPE.equals(doc.getMimeType())) {
-                OpenOfficeHelper.getPrintService().print(
-                        doc, printer);
-            } else {
-                doPrintPreview(act);
-            }
-            printed(act);
-        } catch (OpenVPMSException exception) {
-            if (isInteractive()) {
-                ErrorHelper.show(exception);
-            } else {
-                failed(act, exception);
-            }
-        }
+    private final ReportGenerator generator;
+
+
+    /**
+     * Constructs a new <code>DocumentActPrinter</code>.
+     *
+     * @param object the object to print
+     * @throws DocumentException if the object doesn't have any
+     *                           <em>participation.documentTemplate</em> participation
+     */
+    public DocumentActPrinter(DocumentAct object) {
+        super(object);
+        generator = new ReportGenerator(object);
     }
 
     /**
-     * Creates a new report.
+     * Prints the object.
      *
-     * @param object the object to report on
-     * @return a new report
-     * @throws IMObjectReportException   for any report error
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param printer the printer name. May be <code>null</code>
+     * @throws OpenVPMSException for any error
      */
-    protected IMObjectReport createReport(DocumentAct object) {
-        ReportGenerator gen = new ReportGenerator(object);
-        return gen.createReport();
+    @Override
+    public void print(String printer) {
+        DocumentAct act = getObject();
+        Document doc = (Document) IMObjectHelper.getObject(
+                act.getDocReference());
+        if (doc == null) {
+            IMObjectReport report = createReport();
+            List<IMObject> objects = new ArrayList<IMObject>();
+            objects.add(act);
+            report.print(objects, getProperties(act, printer));
+        } else if (DocFormats.ODT_TYPE.equals(doc.getMimeType())) {
+            OpenOfficeHelper.getPrintService().print(
+                    doc, printer);
+        } else {
+            download();
+        }
     }
 
     /**
      * Returns a document for an object.
      *
-     * @param object the object
      * @return a document
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected Document getDocument(DocumentAct object) {
+    public Document getDocument() {
+        DocumentAct object = getObject();
         Document doc = (Document) IMObjectHelper.getObject(
                 object.getDocReference());
         if (doc == null) {
@@ -113,10 +114,28 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
      *
      * @return the default printer, or <code>null</code> if there is
      *         none defined
+     * @throws OpenVPMSException for any error
      */
-    protected String getDefaultPrinter(DocumentAct object) {
-        ReportGenerator gen = new ReportGenerator(object);
-        return gen.getDefaultPrinter();
+    public String getDefaultPrinter() {
+        Party practice = GlobalContext.getInstance().getPractice();
+        if (practice != null) {
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            return TemplateHelper.getPrinter(generator.getTemplate(), practice,
+                                             service);
+        }
+        return null;
+    }
+
+    /**
+     * Creates a new report.
+     *
+     * @return a new report
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected IMObjectReport createReport() {
+        return generator.createReport();
     }
 
     /**
@@ -125,14 +144,15 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
      * @param object  the object to print
      * @param printer the printer
      * @return the print properties
+     * @throws OpenVPMSException for any error
      */
     @Override
     protected PrintProperties getProperties(DocumentAct object,
                                             String printer) {
         PrintProperties properties = super.getProperties(object, printer);
-        ReportGenerator gen = new ReportGenerator(object);
-        properties.setMediaSize(gen.getMediaSize());
-        properties.setMediaTray(gen.getMediaTray(printer));
+        properties.setMediaSize(getMediaSize(generator.getTemplate()));
+        properties.setMediaTray(getMediaTray(generator.getTemplate(), printer));
         return properties;
     }
+
 }

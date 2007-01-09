@@ -20,7 +20,6 @@ package org.openvpms.web.component.im.query;
 
 import echopointng.DateField;
 import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
@@ -36,6 +35,7 @@ import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.util.CheckBoxFactory;
+import org.openvpms.web.component.util.ComponentHelper;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -310,10 +310,10 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
      */
     private void onStartAllChanged() {
         boolean enabled = !startAll.isSelected();
-        enable(startFromLabel, enabled);
-        enable(startFrom, enabled);
-        enable(startToLabel, enabled);
-        enable(startTo, enabled);
+        ComponentHelper.enable(startFromLabel, enabled);
+        ComponentHelper.enable(startFrom, enabled);
+        ComponentHelper.enable(startToLabel, enabled);
+        ComponentHelper.enable(startTo, enabled);
     }
 
     /**
@@ -346,40 +346,6 @@ public class DefaultActQuery<T extends Act> extends ActQuery<T> {
                                    getStartFrom(), getStartTo(), getStatuses(),
                                    excludeStatuses(), getConstraints(),
                                    getMaxResults(), sort);
-    }
-
-
-    /**
-     * Enable/disable a component.
-     *
-     * @param component the component to update
-     * @param enabled   if <code>true</code> enable the component; otherwise
-     *                  disable it
-     */
-    private void enable(Component component, boolean enabled) {
-        component.setEnabled(enabled);
-        if (enabled) {
-            component.setForeground(Color.BLACK);
-        } else {
-            component.setForeground(Color.LIGHTGRAY);
-        }
-    }
-
-    /**
-     * Enable/disable a date field.
-     *
-     * @param field   the field to update
-     * @param enabled if <code>true</code> enable the field; otherwise disable
-     *                it
-     */
-    private void enable(DateField field, boolean enabled) {
-        enable(field.getTextField(), enabled);
-        field.getTextField().setFocusTraversalParticipant(enabled);
-        field.getDateChooser().setEnabled(enabled);
-        field.setEnabled(enabled);
-        if (!enabled) {
-            field.setExpanded(false);
-        }
     }
 
     /**

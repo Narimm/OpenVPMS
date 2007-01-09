@@ -21,30 +21,23 @@ package org.openvpms.web.component.im.doc;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.archetype.rules.doc.MediaHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.IMObjectReportFactory;
 import org.openvpms.report.TemplateHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.system.ServiceHelper;
 
-import javax.print.attribute.standard.MediaSizeName;
-import javax.print.attribute.standard.MediaTray;
-import java.math.BigDecimal;
 import java.util.Arrays;
 
 
@@ -101,55 +94,12 @@ public class ReportGenerator {
     }
 
     /**
-     * Returns the default printer for the template.
+     * Returns the template.
      *
-     * @return the default printer for the template, or <code>null</code>
-     *         if none is defined
+     * @return an <em>entity.documentTemplate</em>
      */
-    public String getDefaultPrinter() {
-        Party practice = GlobalContext.getInstance().getPractice();
-        if (practice != null) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            return TemplateHelper.getPrinter(template, practice,
-                                             service);
-        }
-        return null;
-    }
-
-    /**
-     * Returns the media size for the template.
-     *
-     * @return the media size for the template, or <code>null</code> if none
-     *         is defined
-     */
-    public MediaSizeName getMediaSize() {
-        IMObjectBean bean = new IMObjectBean(template);
-        String size = bean.getString("paperSize");
-        if (size != null) {
-            BigDecimal width = bean.getBigDecimal("paperWidth");
-            BigDecimal height = bean.getBigDecimal("paperHeight");
-            String units = bean.getString("paperUnits");
-            return MediaHelper.getMedia(size, width, height, units);
-        }
-        return null;
-    }
-
-    /**
-     * Returns the media tray for the template.
-     *
-     * @return the media tray for the template, or <code>null</code> if none
-     *         is defined
-     */
-    public MediaTray getMediaTray(String printer) {
-        Party practice = GlobalContext.getInstance().getPractice();
-        if (practice != null) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            return TemplateHelper.getMediaTray(template, practice, printer,
-                                               service);
-        }
-        return null;
+    public Entity getTemplate() {
+        return template;
     }
 
     /**

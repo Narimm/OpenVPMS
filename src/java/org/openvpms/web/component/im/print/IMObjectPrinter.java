@@ -19,6 +19,8 @@
 package org.openvpms.web.component.im.print;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
@@ -30,21 +32,42 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 public interface IMObjectPrinter<T extends IMObject> {
 
     /**
-     * Initiates printing of an object.
+     * Returns the object being printed.
+     *
+     * @return the object being printed
      */
-    void print(T object);
+    T getObject();
 
     /**
-     * Sets the listener for print events.
+     * Prints the object to the default printer.
      *
-     * @param listener the listener. May be <code>null</code>
+     * @throws OpenVPMSException for any error
      */
-    void setListener(IMObjectPrinterListener<T> listener);
+    void print();
 
     /**
-     * Determines if printing should occur interactively.
+     * Prints the object.
      *
-     * @param interactive if <code>true</code>, prompt the user
+     * @param printer the printer name. May be <code>null</code>
+     * @throws OpenVPMSException for any error
      */
-    void setInteractive(boolean interactive);
+    void print(String printer);
+
+    /**
+     * Returns the default printer for the object.
+     *
+     * @return the default printer for the object, or <code>null</code> if none
+     *         is defined
+     * @throws OpenVPMSException for any error
+     */
+    String getDefaultPrinter();
+
+    /**
+     * Returns a document for the object, corresponding to that which would be
+     * printed.
+     *
+     * @return a document
+     * @throws OpenVPMSException for any error
+     */
+    Document getDocument();
 }

@@ -148,12 +148,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
                 onInvoice();
             }
         });
-        buttons.add(getEditButton());
-        buttons.add(getCreateButton());
-        buttons.add(getDeleteButton());
-        buttons.add(getPrintButton());
-        buttons.add(_copy);
-        buttons.add(_invoice);
+        enableButtons(buttons, true);
     }
 
     /**
@@ -169,7 +164,8 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
             buttons.add(getEditButton());
             buttons.add(getCreateButton());
             buttons.add(getDeleteButton());
-            buttons.add(getPrintButton());
+            buttons.add(getPostButton());
+            buttons.add(getPreviewButton());
             buttons.add(_copy);
             buttons.add(_invoice);
         } else {

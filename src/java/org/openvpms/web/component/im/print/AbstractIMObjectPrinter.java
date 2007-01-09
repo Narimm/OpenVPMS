@@ -18,21 +18,26 @@
 
 package org.openvpms.web.component.im.print;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.rules.doc.MediaHelper;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.PrintProperties;
-import org.openvpms.web.component.dialog.PrintDialog;
-import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.report.TemplateHelper;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.servlet.DownloadServlet;
 
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.MediaTray;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,106 +52,59 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
         implements IMObjectPrinter<T> {
 
     /**
-     * The print listener. May be <code>null</code>.
+     * The object to print.
      */
-    private IMObjectPrinterListener<T> listener;
-
-    /**
-     * Determines if printing should occur interactively.
-     */
-    private boolean interactive = true;
+    private final T object;
 
 
     /**
-     * Initiates printing of an object.
-     * If printing interactively, pops up a {@link PrintDialog} prompting if
-     * printing of an object should proceed, invoking {@link #doPrint} if 'OK'
-     * is selected, or {@link #doPrintPreview} if 'preview' is selected.
-     * If printing in the background, invokes {@link #doPrint}.
+     * Constructs a new <code>AbstractIMObjectPrinter</code>.
      *
      * @param object the object to print
      */
-    public void print(final T object) {
-        if (isInteractive()) {
-            String displayName = DescriptorHelper.getDisplayName(object);
-            String title = Messages.get("imobject.print.title", displayName);
-            final PrintDialog dialog = new PrintDialog(title);
-            dialog.setDefaultPrinter(getDefaultPrinter(object));
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    String action = dialog.getAction();
-                    if (PrintDialog.OK_ID.equals(action)) {
-                        String printer = dialog.getPrinter();
-                        if (printer == null) {
-                            doPrintPreview(object);
-                        } else {
-                            doPrint(object, printer);
-                        }
-                    } else if (PrintDialog.PREVIEW_ID.equals(action)) {
-                        doPrintPreview(object);
-                    }
-                }
-            });
-            dialog.show();
-        } else {
-            doPrint(object, null);
-        }
+    public AbstractIMObjectPrinter(T object) {
+        this.object = object;
     }
 
     /**
-     * Sets the listener for print events.
+     * Returns the object being printed.
      *
-     * @param listener the listener. May be <code>null</code>
+     * @return the object being printed
      */
-    public void setListener(IMObjectPrinterListener<T> listener) {
-        this.listener = listener;
+    public T getObject() {
+        return object;
     }
 
     /**
-     * Determines if printing should occur interactively.
+     * Prints the object to the default printer.
      *
-     * @param interactive if <code>true</code>, prompt the user
+     * @throws OpenVPMSException for any error
      */
-    public void setInteractive(boolean interactive) {
-        this.interactive = interactive;
+    public void print() {
+        print(getDefaultPrinter());
     }
 
     /**
-     * Determines if printing should occur interactively.
+     * Prints the object.
      *
-     * @return <code>true</code> if printing should be interactively;
-     *         <code>false</code> if it should occur in the background
+     * @param printer the printer name. May be <code>null</code>
+     * @throws OpenVPMSException for any error
      */
-    public boolean isInteractive() {
-        return interactive;
+    public void print(String printer) {
+        IMObjectReport report = createReport();
+        List<IMObject> objects = new ArrayList<IMObject>();
+        objects.add(object);
+        report.print(objects, getProperties(object, printer));
     }
 
     /**
      * Creates a new report.
      *
-     * @param object the object to report on
      * @return a new report
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected abstract IMObjectReport createReport(T object);
-
-    /**
-     * Returns a document for an object.
-     *
-     * @param object the object
-     * @return a document
-     * @throws OpenVPMSException for any error
-     */
-    protected abstract Document getDocument(T object);
-
-    /**
-     * Returns the default printer for an object.
-     *
-     * @return the default printer, or <code>null</code> if there is
-     *         none defined
-     */
-    protected abstract String getDefaultPrinter(T object);
+    protected abstract IMObjectReport createReport();
 
     /**
      * Returns the print properties for an object.
@@ -154,69 +112,59 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
      * @param object  the object to print
      * @param printer the printer
      * @return the print properties
+     * @throws OpenVPMSException for any error
      */
     protected PrintProperties getProperties(T object, String printer) {
         return new PrintProperties(printer);
     }
 
     /**
-     * Invoked when an object has been successfully printed.
-     * Notifies any registered listener.
-     *
-     * @param object the object
-     */
-    protected void printed(T object) {
-        if (listener != null) {
-            listener.printed(object);
-        }
-    }
-
-    /**
-     * Invoked when an object has been failed to print.
-     * Notifies any registered listener.
-     *
-     * @param object    the object
-     * @param exception the cause of the failure
-     */
-    protected void failed(T object, Throwable exception) {
-        if (listener != null) {
-            listener.cancelled(object);
-        }
-    }
-
-    /**
-     * Prints the object.
-     *
-     * @param object  the object to print
-     * @param printer the printer name
-     */
-    protected void doPrint(T object, String printer) {
-        try {
-            IMObjectReport report = createReport(object);
-            List<IMObject> objects = new ArrayList<IMObject>();
-            objects.add(object);
-            report.print(objects, getProperties(object, printer));
-            printed(object);
-        } catch (OpenVPMSException exception) {
-            if (isInteractive()) {
-                ErrorHelper.show(exception);
-            } else {
-                failed(object, exception);
-            }
-        }
-    }
-
-    /**
      * Generates a document and downloads it to the client.
      *
-     * @param object the object to preview
+     * @throws OpenVPMSException for any error
      */
-    protected void doPrintPreview(T object) {
-        try {
-            Document document = getDocument(object);
-            DownloadServlet.startDownload(document);
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
+    protected void download() {
+        Document document = getDocument();
+        DownloadServlet.startDownload(document);
     }
+
+    /**
+     * Helper to return the media size for a document template.
+     *
+     * @param template an <em>entity.documentTemplate</em>
+     * @return the media size for the template, or <code>null</code> if none
+     *         is defined
+     * @throws OpenVPMSException for any error
+     */
+    protected MediaSizeName getMediaSize(Entity template) {
+        IMObjectBean bean = new IMObjectBean(template);
+        String size = bean.getString("paperSize");
+        if (size != null) {
+            BigDecimal width = bean.getBigDecimal("paperWidth");
+            BigDecimal height = bean.getBigDecimal("paperHeight");
+            String units = bean.getString("paperUnits");
+            return MediaHelper.getMedia(size, width, height, units);
+        }
+        return null;
+    }
+
+    /**
+     * Helper to return the media tray for a document template.
+     *
+     * @param template an <em>entity.documentTemplate</em>
+     * @param printer  the printer name
+     * @return the media tray for the template, or <code>null</code> if none
+     *         is defined
+     */
+    protected MediaTray getMediaTray(Entity template, String printer) {
+        Party practice = GlobalContext.getInstance().getPractice();
+        if (practice != null) {
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            return TemplateHelper.getMediaTray(template, practice, printer,
+                                               service);
+        }
+        return null;
+    }
+
 }
