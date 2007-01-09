@@ -20,7 +20,6 @@ package org.openvpms.web.app.workflow.worklist;
 
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import nextapp.echo2.app.table.TableModel;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -52,23 +51,8 @@ public class TaskTableModel extends AbstractActTableModel {
         TableColumnModel model
                 = createColumnModel(shortNames, getLayoutContext());
         timeIndex = getNextModelIndex(model);
-        model.addColumn(new TableColumn(timeIndex));
+        model.addColumn(createTableColumn(timeIndex, "tasktablemodel.time"));
         setTableColumnModel(model);
-    }
-
-    /**
-     * @see TableModel#getColumnName
-     */
-    @Override
-    public String getColumnName(int column) {
-        String result;
-        TableColumn col = getColumn(column);
-        if (col.getModelIndex() == timeIndex) {
-            result = Messages.get("tasktablemodel.time");
-        } else {
-            result = super.getColumnName(column);
-        }
-        return result;
     }
 
     /**

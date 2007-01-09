@@ -126,6 +126,15 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
     }
 
     /**
+     * Determines if the all patients checbox is selected.
+     *
+     * @return <code>true</code> if the 'all patients' checkbox is selected
+     */
+    public boolean isAllPatientsSelected() {
+        return allPatients != null && allPatients.isSelected();
+    }
+
+    /**
      * Performs the query.
      *
      * @param sort the sort constraint. May be <code>null</code>
@@ -136,7 +145,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
     public ResultSet<Party> query(SortConstraint[] sort) {
         getComponent();  // ensure the component is rendered
         ResultSet<Party> result;
-        if (allPatients != null && allPatients.isSelected()) {
+        if (isAllPatientsSelected()) {
             result = super.query(sort);
         } else {
             List<Party> objects = null;

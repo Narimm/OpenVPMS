@@ -19,6 +19,8 @@
 package org.openvpms.web.component.im.table;
 
 import nextapp.echo2.app.Table;
+import nextapp.echo2.app.event.TableModelEvent;
+import nextapp.echo2.app.event.TableModelListener;
 import org.openvpms.web.component.table.EvenOddTableCellRenderer;
 
 import java.util.List;
@@ -47,10 +49,7 @@ public class IMTable<T> extends Table {
         this.model = model;
         setStyleName("default");
         setAutoCreateColumnsFromModel(false);
-        setSelectionEnabled(model.getEnableSelection());
-        setRolloverEnabled(model.getEnableSelection());
-        setModel(model);
-        setColumnModel(model.getColumnModel());
+        initialise(model);
         setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
     }
 
@@ -101,4 +100,24 @@ public class IMTable<T> extends Table {
             getSelectionModel().setSelectedIndex(index, true);
         }
     }
+
+    /**
+     * Initialises this.
+     *
+     * @param model the table model
+     */
+    @SuppressWarnings("unchecked")
+    private void initialise(IMTableModel<T> model) {
+        setSelectionEnabled(model.getEnableSelection());
+        setRolloverEnabled(model.getEnableSelection());
+        setModel(model);
+        setColumnModel(model.getColumnModel());
+        setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
+        model.addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent event) {
+                initialise(((IMTableModel<T>) getModel()));
+            }
+        });
+    }
+
 }

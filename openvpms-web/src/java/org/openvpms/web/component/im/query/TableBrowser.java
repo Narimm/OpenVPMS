@@ -130,6 +130,15 @@ public class TableBrowser<T> extends AbstractBrowser<T> {
     }
 
     /**
+     * Returns the underlying table model.
+     *
+     * @return the table model
+     */
+    protected IMTableModel<T> getTableModel() {
+        return model;
+    }
+
+    /**
      * Updates the selected IMObject from the table, and notifies any
      * listeners.
      */

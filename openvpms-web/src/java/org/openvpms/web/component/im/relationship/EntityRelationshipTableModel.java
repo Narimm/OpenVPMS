@@ -22,7 +22,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -32,7 +31,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -62,13 +60,6 @@ public class EntityRelationshipTableModel
      */
     public EntityRelationshipTableModel(LayoutContext context) {
         layoutContext = context;
-    }
-
-    /**
-     * @see TableModel#getColumnName
-     */
-    public String getColumnName(int column) {
-        return getColumn(column).getHeaderValue().toString();
     }
 
     /**
@@ -154,25 +145,12 @@ public class EntityRelationshipTableModel
     @Override
     protected TableColumnModel createTableColumnModel() {
         DefaultTableColumnModel model = new DefaultTableColumnModel();
-        model.addColumn(createColumn(NAME_INDEX, "table.imobject.name"));
-        model.addColumn(
-                createColumn(DESCRIPTION_INDEX, "table.imobject.description"));
-        model.addColumn(
-                createColumn(DETAIL_INDEX, "table.entityrelationship.details"));
+        model.addColumn(createTableColumn(NAME_INDEX, "table.imobject.name"));
+        model.addColumn(createTableColumn(DESCRIPTION_INDEX,
+                                          "table.imobject.description"));
+        model.addColumn(createTableColumn(DETAIL_INDEX,
+                                          "table.entityrelationship.details"));
         return model;
-    }
-
-    /**
-     * Helper to create a table column.
-     *
-     * @param modelIndex the column model index
-     * @param nameKey    the column's name localisation key
-     * @return a new column
-     */
-    private TableColumn createColumn(int modelIndex, String nameKey) {
-        TableColumn column = new TableColumn(modelIndex);
-        column.setHeaderValue(Messages.get(nameKey));
-        return column;
     }
 
     /**

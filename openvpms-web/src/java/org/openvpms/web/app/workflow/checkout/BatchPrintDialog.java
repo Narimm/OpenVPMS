@@ -22,7 +22,6 @@ import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
@@ -136,17 +135,6 @@ public class BatchPrintDialog extends PopupDialog {
         }
 
         /**
-         * @see TableModel#getColumnName
-         */
-        @Override
-        public String getColumnName(int column) {
-            if (column == PRINT_INDEX) {
-                return "Print";
-            }
-            return super.getColumnName(column);
-        }
-
-        /**
          * Returns the value found at the given coordinate within the table.
          *
          * @param object the object
@@ -172,7 +160,9 @@ public class BatchPrintDialog extends PopupDialog {
         protected TableColumnModel createTableColumnModel(
                 boolean showArchetype) {
             TableColumnModel model = new DefaultTableColumnModel();
-            model.addColumn(new TableColumn(PRINT_INDEX));
+            TableColumn column = createTableColumn(
+                    PRINT_INDEX, "workflow.checkout.printtablemodel.print");
+            model.addColumn(column);
             return super.createTableColumnModel(showArchetype, model);
         }
 
