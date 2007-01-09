@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.print;
 
-import org.openvpms.archetype.rules.doc.MediaHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -26,7 +25,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
@@ -36,9 +35,6 @@ import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.system.ServiceHelper;
 
-import javax.print.attribute.standard.MediaSizeName;
-import javax.print.attribute.standard.MediaTray;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,34 +49,27 @@ public class IMObjectReportPrinter<T extends IMObject>
         extends AbstractIMObjectPrinter<T> {
 
     /**
+     * Constructs a new <code>IMObjectReportPrinter</code>.
+     *
+     * @param object the object to print
+     */
+    public IMObjectReportPrinter(T object) {
+        super(object);
+    }
+
+    /**
      * Returns a document for an object.
      *
-     * @param object the object
      * @return a document
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected Document getDocument(T object) {
+    public Document getDocument() {
         List<IMObject> objects = new ArrayList<IMObject>();
-        objects.add(object);
-        IMObjectReport report = createReport(object);
+        objects.add(getObject());
+        IMObjectReport report = createReport();
         String[] mimeTypes = {DocFormats.PDF_TYPE};
         return report.generate(objects, mimeTypes);
-    }
-
-    /**
-     * Creates a new report.
-     *
-     * @param object the object to report on
-     * @return a new report
-     * @throws IMObjectReportException   for any report error
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    protected IMObjectReport createReport(T object) {
-        String shortName = object.getArchetypeId().getShortName();
-        return IMObjectReportFactory.create(
-                shortName, ArchetypeServiceHelper.getArchetypeService(),
-                ServiceHelper.getDocumentHandlers());
     }
 
     /**
@@ -88,10 +77,11 @@ public class IMObjectReportPrinter<T extends IMObject>
      *
      * @return the default printer, or <code>null</code> if there is
      *         none defined
+     * @throws OpenVPMSException for any error
      */
-    protected String getDefaultPrinter(IMObject object) {
+    public String getDefaultPrinter() {
         String printer = null;
-        String shortName = object.getArchetypeId().getShortName();
+        String shortName = getObject().getArchetypeId().getShortName();
         Entity template = TemplateHelper.getTemplateForArchetype(
                 shortName, ArchetypeServiceHelper.getArchetypeService());
         Party practice = GlobalContext.getInstance().getPractice();
@@ -104,11 +94,26 @@ public class IMObjectReportPrinter<T extends IMObject>
     }
 
     /**
+     * Creates a new report.
+     *
+     * @return a new report
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected IMObjectReport createReport() {
+        String shortName = getObject().getArchetypeId().getShortName();
+        return IMObjectReportFactory.create(
+                shortName, ArchetypeServiceHelper.getArchetypeService(),
+                ServiceHelper.getDocumentHandlers());
+    }
+
+    /**
      * Returns the print properties for an object.
      *
      * @param object  the object to print
      * @param printer the printer
      * @return the print properties
+     * @throws OpenVPMSException for any error
      */
     @Override
     protected PrintProperties getProperties(T object, String printer) {
@@ -117,25 +122,8 @@ public class IMObjectReportPrinter<T extends IMObject>
         Entity template = TemplateHelper.getTemplateForArchetype(
                 shortName, ArchetypeServiceHelper.getArchetypeService());
         if (template != null) {
-            IMObjectBean bean = new IMObjectBean(template);
-            String size = bean.getString("paperSize");
-            BigDecimal width = bean.getBigDecimal("paperWidth");
-            BigDecimal height = bean.getBigDecimal("paperHeight");
-            String units = bean.getString("paperUnits");
-            if (size != null) {
-                MediaSizeName mediaSize
-                        = MediaHelper.getMedia(size, width, height, units);
-                properties.setMediaSize(mediaSize);
-            }
-            Party practice = GlobalContext.getInstance().getPractice();
-            if (practice != null) {
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
-                MediaTray tray = TemplateHelper.getMediaTray(template, practice,
-                                                             printer,
-                                                             service);
-                properties.setMediaTray(tray);
-            }
+            properties.setMediaSize(getMediaSize(template));
+            properties.setMediaTray(getMediaTray(template, printer));
         }
 
         return properties;

@@ -48,17 +48,6 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
     }
 
     /**
-     * Lays out the buttons.
-     *
-     * @param buttons the button row
-     */
-    @Override
-    protected void layoutButtons(ButtonSet buttons) {
-        super.layoutButtons(buttons);
-
-    }
-
-    /**
      * Enables/disables the buttons that require an object to be selected.
      *
      * @param buttons the button set

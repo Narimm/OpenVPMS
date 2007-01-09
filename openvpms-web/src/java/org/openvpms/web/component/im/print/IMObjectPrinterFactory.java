@@ -70,34 +70,18 @@ public final class IMObjectPrinterFactory {
     /**
      * Construct a new {@link IMObjectPrinter}.
      * <p/>
-     * IMObjectPrinter implementations must provide a public default
-     * constructor.
+     * IMObjectPrinter implementations must provide a public constructor
+     * accepting the object to print
      *
-     * @param shortName the archetype short name to print. May contain
-     *                  wildcards
+     * @param object the object to print
      * @return a new printer
      */
-    public static <T extends IMObject> IMObjectPrinter<T>
-            create(String shortName) {
-        return create(new String[]{shortName});
-    }
-
-    /**
-     * Construct a new {@link IMObjectPrinter}.
-     * <p/>
-     * IMObjectPrinter implementations must provide a public default
-     * constructor.
-     *
-     * @param shortNames the archetype short names to query on. May contain
-     *                   wildcards
-     * @return a new query
-     */
     @SuppressWarnings("unchecked")
-    public static <T extends IMObject> IMObjectPrinter<T>
-            create(String[] shortNames) {
+    public static <T extends IMObject> IMObjectPrinter<T> create(T object) {
+        String[] shortNames = {object.getArchetypeId().getShortName()};
         shortNames = DescriptorHelper.getShortNames(shortNames);
-        ArchetypeHandler<IMObjectPrinter> handler = getPrinters().getHandler(
-                shortNames);
+        ArchetypeHandler<IMObjectPrinter> handler
+                = getPrinters().getHandler(shortNames);
         IMObjectPrinter<T> result = null;
         if (handler != null) {
             try {
@@ -107,7 +91,7 @@ public final class IMObjectPrinterFactory {
             }
         }
         if (result == null) {
-            result = new IMObjectReportPrinter();
+            result = new IMObjectReportPrinter<T>(object);
         }
         return result;
     }

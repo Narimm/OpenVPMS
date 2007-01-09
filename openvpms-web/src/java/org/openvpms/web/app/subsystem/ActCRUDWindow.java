@@ -18,16 +18,24 @@
 
 package org.openvpms.web.app.subsystem;
 
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
-import org.openvpms.web.component.im.print.IMObjectPrinterListener;
+import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.servlet.DownloadServlet;
 
 
 /**
@@ -38,6 +46,27 @@ import org.openvpms.web.resource.util.Messages;
  */
 public abstract class ActCRUDWindow<T extends Act>
         extends AbstractViewCRUDWindow<T> {
+
+    /**
+     * The 'post' button.
+     */
+    private Button post;
+
+    /**
+     * Post button identifier.
+     */
+    private static final String POST_ID = "post";
+
+    /**
+     * The 'preview' button.
+     */
+    private Button preview;
+
+    /**
+     * Preview button identifier.
+     */
+    private static final String PREVIEW_ID = "preview";
+
 
     /**
      * Create a new <code>ActCRUDWindow</code>.
@@ -104,41 +133,64 @@ public abstract class ActCRUDWindow<T extends Act>
     }
 
     /**
-     * Creates a new printer.
-     *
-     * @param object the object to print
-     * @return a new printer
+     * Invoked when the 'post' button is pressed.
      */
-    @Override
-    protected IMObjectPrinter<T> createPrinter(T object) {
-        IMObjectPrinter<T> printer = super.createPrinter(object);
-        printer.setListener(new IMObjectPrinterListener<T>() {
-            public void printed(T object) {
-                ActCRUDWindow.this.printed(object);
-            }
+    protected void onPost() {
+        try {
+            final IMObjectPrinter<T> printer
+                    = IMObjectPrinterFactory.create(getObject());
 
-            public void cancelled(T object) {
-                // no-op
-            }
-
-            public void failed(T object, Throwable cause) {
-                // no-op
-            }
-        });
-        return printer;
+            final PostDialog dialog = new PostDialog(
+                    Messages.get("act.post.title", getTypeDisplayName()));
+            dialog.setDefaultPrinter(printer.getDefaultPrinter());
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent e) {
+                    if (PostDialog.OK_ID.equals(dialog.getAction())) {
+                        if (dialog.print()) {
+                            boolean printed = false;
+                            try {
+                                printer.print(dialog.getPrinter());
+                                printed = true;
+                            } catch (OpenVPMSException exception) {
+                                ErrorHelper.show(exception);
+                            }
+                            posted(printer.getObject(), printed);
+                        }
+                    }
+                }
+            });
+            dialog.show();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**
-     * Invoked when an act has been successfully printed.
-     *
-     * @param act the act
+     * Invoked when the 'preview' button is pressed.
      */
-    protected void printed(T act) {
+    protected void onPreview() {
+        try {
+            final IMObjectPrinter<T> printer
+                    = IMObjectPrinterFactory.create(getObject());
+            Document document = printer.getDocument();
+            DownloadServlet.startDownload(document);
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Invoked when an act has been posted.
+     *
+     * @param act     the act
+     * @param printed if <code>true</code> indicates that the act was printed
+     */
+    protected void posted(T act, boolean printed) {
         try {
             String status = act.getStatus();
             if (!POSTED.equals(status)) {
                 act.setStatus(POSTED);
-                setPrintStatus(act, true);
+                setPrintStatus(act, printed);
                 SaveHelper.save(act);
                 setObject(act);
                 CRUDWindowListener<T> listener = getListener();
@@ -158,10 +210,9 @@ public abstract class ActCRUDWindow<T extends Act>
      * @param printed the print status
      */
     protected void setPrintStatus(Act act, boolean printed) {
-        ArchetypeDescriptor archetype = getArchetypeDescriptor();
-        NodeDescriptor descriptor = archetype.getNodeDescriptor("printed");
-        if (descriptor != null) {
-            descriptor.setValue(act, printed);
+        ActBean bean = new ActBean(act);
+        if (bean.hasNode("printed")) {
+            bean.setValue("printed", printed);
         }
     }
 
@@ -179,6 +230,38 @@ public abstract class ActCRUDWindow<T extends Act>
         String title = Messages.get(titleKey, name);
         String message = Messages.get(messageKey, name, status);
         ErrorDialog.show(title, message);
+    }
+
+    /**
+     * Returns the post button.
+     *
+     * @return the post button
+     */
+    protected Button getPostButton() {
+        if (post == null) {
+            post = ButtonFactory.create(POST_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onPost();
+                }
+            });
+        }
+        return post;
+    }
+
+    /**
+     * Returns the preview button.
+     *
+     * @return the preview button
+     */
+    protected Button getPreviewButton() {
+        if (preview == null) {
+            preview = ButtonFactory.create(PREVIEW_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onPreview();
+                }
+            });
+        }
+        return preview;
     }
 
 }

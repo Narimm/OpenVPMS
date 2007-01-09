@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMObjectPrinterListener;
+import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
 
 
 /**
@@ -58,9 +59,11 @@ public class PrintIMObjectTask extends AbstractTask {
         IMObject object = context.getObject(shortName);
         if (object != null) {
             IMObjectPrinter<IMObject> printer = IMObjectPrinterFactory.create(
-                    object.getArchetypeId().getShortName());
+                    object);
+            InteractiveIMObjectPrinter<IMObject> iPrinter
+                    = new InteractiveIMObjectPrinter<IMObject>(printer);
 
-            printer.setListener(new IMObjectPrinterListener<IMObject>() {
+            iPrinter.setListener(new IMObjectPrinterListener<IMObject>() {
                 public void printed(IMObject object) {
                     notifyCompleted();
                 }
@@ -73,7 +76,7 @@ public class PrintIMObjectTask extends AbstractTask {
                     notifyCancelled();
                 }
             });
-            printer.print(object);
+            iPrinter.print();
         } else {
             notifyCancelled();
         }

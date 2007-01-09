@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.dialog;
 
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
@@ -44,31 +45,49 @@ public class PrintDialog extends PopupDialog {
     public static final String PREVIEW_ID = "preview";
 
     /**
+     * The print label.
+     */
+    private Label label;
+
+    /**
      * The printers.
      */
     private SelectField printers;
 
 
     /**
-     * Construct a new <code>PrintDialog</code>.
+     * Constructs a new <code>PrintDialog</code>.
      *
      * @param title the window title
      */
     public PrintDialog(String title) {
+        this(title, true);
+    }
+
+    /**
+     * Constructs a new <code>PrintDialog</code>.
+     *
+     * @param title   the window title
+     * @param preview if <code>true</code> add a 'preview' button
+     */
+    public PrintDialog(String title, boolean preview) {
         super(title, "PrintDialog", OK_CANCEL);
         setModal(true);
 
-        Label label = LabelFactory.create("printdialog.printer");
+        label = LabelFactory.create("printdialog.printer");
         DefaultListModel model
                 = new DefaultListModel(PrintHelper.getPrinters());
         printers = SelectFieldFactory.create(model);
-        Row row = RowFactory.create("ControlRow", label, printers);
+        Row row = RowFactory.create("ControlRow");
+        doLayout(row);
         getLayout().add(row);
-        addButton(PREVIEW_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onPreview();
-            }
-        });
+        if (preview) {
+            addButton(PREVIEW_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    onPreview();
+                }
+            });
+        }
 
         setDefaultPrinter(PrintHelper.getDefaultPrinter());
     }
@@ -93,6 +112,34 @@ public class PrintDialog extends PopupDialog {
      */
     public String getPrinter() {
         return (String) printers.getSelectedItem();
+    }
+
+    /**
+     * Lays out the dialog.
+     *
+     * @param container the container
+     */
+    protected void doLayout(Component container) {
+        container.add(label);
+        container.add(printers);
+    }
+
+    /**
+     * Returns the printer label.
+     *
+     * @return the printer label
+     */
+    protected Label getPrinterLabel() {
+        return label;
+    }
+
+    /**
+     * Returns the printers dropdown.
+     *
+     * @return the printers dropdown
+     */
+    protected SelectField getPrinters() {
+        return printers;
     }
 
     /**
