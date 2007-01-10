@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.CollectionProperty;
@@ -73,7 +74,8 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
 
     /**
      * Node filter, used to hide the dispensing node when a non-medication
-     * product is selected
+     * product or a medication product with  dispensing label node flag = false
+     * is selected.
      */
     private static final NodeFilter DISPENSING_FILTER = new NamedNodeFilter(
             "dispensing");
@@ -228,7 +230,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                 fixedPrice.setValue(BigDecimal.ZERO);
                 unitPrice.setValue(BigDecimal.ZERO);
             } else {
-                if (!TypeHelper.isA(product, "product.medication")) {
+                if (!hasDispensingLabel(product)) {
                     if (getFilter() != DISPENSING_FILTER) {
                         changeLayout(DISPENSING_FILTER);
                     }
@@ -379,6 +381,20 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                 current.setPatient(getPatient());
             }
         }
+    }
+
+    /**
+     * Determines if a product requires a dispensing label.
+     *
+     * @param product the product
+     * @return <code>true</code> if the product requires a dispensing label
+     */
+    private boolean hasDispensingLabel(Product product) {
+        IMObjectBean bean = new IMObjectBean(product);
+        if (bean.isA("product.medication")) {
+            return bean.getBoolean("label");
+        }
+        return false;
     }
 
     /**
