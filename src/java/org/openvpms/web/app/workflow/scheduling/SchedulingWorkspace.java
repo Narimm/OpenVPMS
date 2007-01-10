@@ -33,7 +33,6 @@ import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
-import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
@@ -210,7 +209,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * @return a new browser
      */
     protected Browser<ObjectSet> createBrowser(Query<ObjectSet> query) {
-        return new TableBrowser<ObjectSet>(query, null, createTableModel());
+        return new AppointmentBrowser(query, createTableModel());
     }
 
     /**

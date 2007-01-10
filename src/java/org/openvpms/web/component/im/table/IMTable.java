@@ -112,7 +112,9 @@ public class IMTable<T> extends Table {
         setRolloverEnabled(model.getEnableSelection());
         setModel(model);
         setColumnModel(model.getColumnModel());
-        setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
+        if (getDefaultRenderer(Object.class) == null) {
+            setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
+        }
         model.addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent event) {
                 initialise(((IMTableModel<T>) getModel()));
