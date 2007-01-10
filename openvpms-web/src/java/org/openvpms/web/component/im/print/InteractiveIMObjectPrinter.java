@@ -88,7 +88,14 @@ public class InteractiveIMObjectPrinter<T extends IMObject>
     public void print(String printer) {
         String displayName = DescriptorHelper.getDisplayName(getObject());
         String title = Messages.get("imobject.print.title", displayName);
-        final PrintDialog dialog = new PrintDialog(title);
+
+        final PrintDialog dialog = new PrintDialog(title) {
+            @Override
+            protected void onPreview() {
+                doPrintPreview();
+            }
+        };
+
         try {
             if (printer == null) {
                 dialog.setDefaultPrinter(getDefaultPrinter());
@@ -103,8 +110,6 @@ public class InteractiveIMObjectPrinter<T extends IMObject>
                         } else {
                             doPrint(printer);
                         }
-                    } else if (PrintDialog.PREVIEW_ID.equals(action)) {
-                        doPrintPreview();
                     } else {
                         cancelled();
                     }

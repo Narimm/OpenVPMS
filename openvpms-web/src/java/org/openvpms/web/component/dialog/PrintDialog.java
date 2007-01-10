@@ -42,7 +42,7 @@ public class PrintDialog extends PopupDialog {
     /**
      * The preview button identifier.
      */
-    public static final String PREVIEW_ID = "preview";
+    private static final String PREVIEW_ID = "preview";
 
     /**
      * The print label.
@@ -143,12 +143,10 @@ public class PrintDialog extends PopupDialog {
     }
 
     /**
-     * Invoked when the preview button is pressed. This sets the action and
-     * closes the window.
+     * Invoked when the preview button is pressed.
+     * This implementation does nothing.
      */
     protected void onPreview() {
-        setAction(PREVIEW_ID);
-        close();
     }
 
 }
