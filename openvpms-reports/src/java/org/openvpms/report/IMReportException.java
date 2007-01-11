@@ -23,12 +23,12 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
- * Exception class for exceptions raised by {@link IMObjectReport}.
+ * Exception class for exceptions raised by {@link IMReport}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectReportException extends OpenVPMSException {
+public class IMReportException extends OpenVPMSException {
 
     /**
      * Default SUID.
@@ -42,7 +42,8 @@ public class IMObjectReportException extends OpenVPMSException {
         FailedToCreateReport,
         FailedToGenerateReport,
         FailedToPrintReport,
-        UnsupportedMimeTypes
+        UnsupportedMimeTypes,
+        NoExpressionEvaluatorForType
     }
 
     /**
@@ -60,25 +61,25 @@ public class IMObjectReportException extends OpenVPMSException {
             "org.openvpms.report."+ OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
-     * Constructs a new <code>IMObjectReportException</code>.
+     * Constructs a new <code>IMReportException</code>.
      *
      * @param errorCode the error code
      * @param args arguments used to format the error message
      */
-    public IMObjectReportException(ErrorCode errorCode, Object ... args) {
+    public IMReportException(ErrorCode errorCode, Object ... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args));
         _errorCode = errorCode;
     }
 
     /**
-     * Constructs a new <code>IMObjectReportException</code>.
+     * Constructs a new <code>IMReportException</code>.
      *
      * @param cause the root cause
      * @param errorCode the error code
      * @param args arguments used to format the error message
      */
-    public IMObjectReportException(Throwable cause, ErrorCode errorCode,
-                                   Object ... args) {
+    public IMReportException(Throwable cause, ErrorCode errorCode,
+                             Object ... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args), cause);
         _errorCode = errorCode;
     }

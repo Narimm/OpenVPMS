@@ -31,14 +31,14 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.IMObjectReport;
-import org.openvpms.report.IMObjectReportException;
-import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
+import org.openvpms.report.IMReport;
+import org.openvpms.report.IMReportException;
+import static org.openvpms.report.IMReportException.ErrorCode.FailedToCreateReport;
 import org.openvpms.report.TemplateHelper;
 import org.openvpms.report.jasper.DynamicJasperReport;
-import org.openvpms.report.jasper.JasperIMObjectReport;
+import org.openvpms.report.jasper.JasperIMReport;
 import org.openvpms.report.jasper.JasperReportHelper;
-import org.openvpms.report.jasper.TemplatedJasperReport;
+import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
 import org.openvpms.report.tools.ReportTool;
 
 import java.io.PrintStream;
@@ -78,11 +78,12 @@ public class JasperReportTool extends ReportTool {
      * @param object the object
      */
     public void view(IMObject object) throws JRException {
-        IMObjectReport report = getReport(object);
-        if (report instanceof JasperIMObjectReport) {
-            JasperIMObjectReport r = (JasperIMObjectReport) report;
+        IMReport<IMObject> report = getReport(object);
+        if (report instanceof JasperIMReport) {
+            JasperIMReport<IMObject> r = (JasperIMReport<IMObject>) report;
             List<IMObject> list = Arrays.asList(object);
-            JasperViewer viewer = new JasperViewer(r.report(list), true);
+            JasperViewer viewer = new JasperViewer(r.report(list.iterator()),
+                                                   true);
             viewer.setVisible(true);
         } else {
             System.out.println("Can't view reports of type "
@@ -146,20 +147,20 @@ public class JasperReportTool extends ReportTool {
      * @param object the object
      * @return a report for the object
      */
-    protected IMObjectReport getReport(IMObject object) {
+    protected IMReport<IMObject> getReport(IMObject object) {
         IArchetypeService service = getArchetypeService();
         DocumentHandlers handlers = getDocumentHandlers();
         String shortName = object.getArchetypeId().getShortName();
         Document doc = TemplateHelper.getDocumentForArchetype(
                 shortName, service);
-        JasperIMObjectReport report = null;
+        JasperIMReport<IMObject> report = null;
         try {
             if (doc != null) {
                 if (doc.getName().endsWith(".jrxml")) {
                     JasperDesign design = JasperReportHelper.getReport(
                             doc, handlers);
-                    report = new TemplatedJasperReport(design, service,
-                                                       handlers);
+                    report = new TemplatedJasperIMObjectReport(design, service,
+                                                               handlers);
                 } else {
                     System.err.println("Warning:" + doc.getName()
                             + " not a recognised jasper extension. "
@@ -172,8 +173,8 @@ public class JasperReportTool extends ReportTool {
                         handlers);
             }
         } catch (JRException exception) {
-            throw new IMObjectReportException(exception, FailedToCreateReport,
-                                              exception.getMessage());
+            throw new IMReportException(exception, FailedToCreateReport,
+                                        exception.getMessage());
         }
 
         if (showXML) {

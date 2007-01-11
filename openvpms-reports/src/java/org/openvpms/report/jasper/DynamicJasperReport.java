@@ -31,14 +31,16 @@ import net.sf.jasperreports.engine.design.JRDesignStaticText;
 import net.sf.jasperreports.engine.design.JRDesignSubreport;
 import net.sf.jasperreports.engine.design.JRDesignTextField;
 import net.sf.jasperreports.engine.design.JasperDesign;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.IMObjectReportException;
-import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.report.IMReportException;
+import static org.openvpms.report.IMReportException.ErrorCode.FailedToCreateReport;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 
@@ -48,7 +50,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DynamicJasperReport extends AbstractJasperIMObjectReport {
+public class DynamicJasperReport extends AbstractJasperIMReport<IMObject> {
 
     /**
      * Design time report.
@@ -77,8 +79,8 @@ public class DynamicJasperReport extends AbstractJasperIMObjectReport {
      *
      * @param archetype the archetype descriptor
      * @param service   the archetype service
-     * @param handlers the document handlers
-     * @throws IMObjectReportException if the report cannot be created
+     * @param handlers  the document handlers
+     * @throws IMReportException if the report cannot be created
      */
     public DynamicJasperReport(ArchetypeDescriptor archetype,
                                IArchetypeService service,
@@ -87,8 +89,8 @@ public class DynamicJasperReport extends AbstractJasperIMObjectReport {
         try {
             init(archetype);
         } catch (JRException exception) {
-            throw new IMObjectReportException(exception, FailedToCreateReport,
-                                              exception.getMessage());
+            throw new IMReportException(exception, FailedToCreateReport,
+                                        exception.getMessage());
         }
     }
 
@@ -108,6 +110,16 @@ public class DynamicJasperReport extends AbstractJasperIMObjectReport {
      */
     public JasperReport[] getSubreports() {
         return subreports.values().toArray(new JasperReport[0]);
+    }
+
+    /**
+     * Creates a data source for a collection of objects.
+     *
+     * @param objects an iterator over the collection of objects
+     * @return a new datas ource
+     */
+    protected JRDataSource createDataSource(Iterator<IMObject> objects) {
+        return new IMObjectCollectionDataSource(objects, getArchetypeService());
     }
 
     /**

@@ -21,19 +21,18 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.report.IMObjectReport;
+import org.openvpms.report.IMReport;
 
-import java.util.Collection;
+import java.util.Iterator;
 
 
 /**
- * Generates a jasper report for an <code>IMObject</code>.
+ * Generates a jasper report for a collection of objects.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface JasperIMObjectReport extends IMObjectReport {
+public interface JasperIMReport<T> extends IMReport<T> {
 
     /**
      * Generates a report.
@@ -42,7 +41,7 @@ public interface JasperIMObjectReport extends IMObjectReport {
      * @return the report
      * @throws JRException for any error
      */
-    JasperPrint report(Collection<IMObject> objects) throws JRException;
+    JasperPrint report(Iterator<T> objects) throws JRException;
 
     /**
      * Returns the master report.

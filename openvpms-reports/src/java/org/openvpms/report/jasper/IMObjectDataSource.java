@@ -27,8 +27,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
+import org.openvpms.report.IMObjectExpressionEvaluator;
 import org.openvpms.report.ExpressionEvaluator;
-import org.openvpms.report.ReportHelper;
 
 
 /**
@@ -43,22 +43,22 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     /**
      * The source object.
      */
-    private final IMObject _object;
+    private final IMObject object;
 
     /**
      * The node resolver.
      */
-    private final NodeResolver _resolver;
+    private final NodeResolver resolver;
 
     /**
      * The expression evaluator.
      */
-    private final ExpressionEvaluator _evaluator;
+    private final ExpressionEvaluator evaluator;
 
     /**
      * Determines if there is another record.
      */
-    private boolean _next = true;
+    private boolean next = true;
 
 
     /**
@@ -69,9 +69,9 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      */
     public IMObjectDataSource(IMObject object, IArchetypeService service) {
         super(service);
-        _object = object;
-        _resolver = new NodeResolver(object, service);
-        _evaluator = new ExpressionEvaluator(object, _resolver);
+        this.object = object;
+        resolver = new NodeResolver(object, service);
+        evaluator = new IMObjectExpressionEvaluator(object, resolver);
     }
 
     /**
@@ -82,8 +82,8 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      *                     element
      */
     public boolean next() throws JRException {
-        boolean result = _next;
-        _next = false;
+        boolean result = next;
+        next = false;
         return result;
     }
 
@@ -96,13 +96,13 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      */
     public JRDataSource getDataSource(String name, String[] sortNodes)
             throws JRException {
-        ArchetypeDescriptor archetype = _resolver.getArchetype();
+        ArchetypeDescriptor archetype = resolver.getArchetype();
         NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
         if (descriptor == null) {
             throw new JRException("No node found for field=" + name);
         }
         return new IMObjectCollectionDataSource(
-                _object, descriptor, getArchetypeService(), sortNodes);
+                object, descriptor, getArchetypeService(), sortNodes);
     }
 
     /**
@@ -113,8 +113,7 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      * @throws JRException for any error
      */
     public Object getFieldValue(JRField field) throws JRException {
-    	return _evaluator.getValue(field.getName());
-        //return ReportHelper.getValue(field.getName(), _resolver);
+        return evaluator.getValue(field.getName());
     }
 
 }

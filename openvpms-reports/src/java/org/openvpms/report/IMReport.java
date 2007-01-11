@@ -18,20 +18,19 @@
 
 package org.openvpms.report;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
-import java.util.Collection;
+import java.util.Iterator;
 
 
 /**
- * Generates a report for a collection of {@link IMObject}s.
+ * Generates a report for a collection of objects.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectReport {
+public interface IMReport<T> {
 
     /**
      * Generates a report for a collection of objects.
@@ -40,19 +39,19 @@ public interface IMObjectReport {
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
      * @return a document containing the report
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    Document generate(Collection<IMObject> objects, String[] mimeTypes);
+    Document generate(Iterator<T> objects, String[] mimeTypes);
 
     /**
      * Prints a report directly to a printer.
      *
      * @param objects    the objects to report on
      * @param properties the print properties
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    void print(Collection<IMObject> objects, PrintProperties properties);
+    void print(Iterator<T> objects, PrintProperties properties);
 
 }

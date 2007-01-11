@@ -18,29 +18,24 @@
 
 package org.openvpms.report.jasper;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.IMObjectReportException;
+import org.openvpms.report.IMReportException;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 
 /**
- * A {@link JasperIMObjectReport} that uses pre-defined templates.
+ * A {@link JasperIMReport} that uses pre-defined templates.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TemplatedJasperReport extends AbstractJasperIMObjectReport {
+public abstract class AbstractTemplatedJasperIMReport<T>
+        extends AbstractJasperIMReport<T> {
 
     /**
      * The template loader.
@@ -49,30 +44,31 @@ public class TemplatedJasperReport extends AbstractJasperIMObjectReport {
 
 
     /**
-     * Constructs a new <code>TemplatedJasperReport</code>.
+     * Constructs a new <code>AbstractTemplatedJasperIMReport</code>.
      *
      * @param template the document template
      * @param service  the archetype service
      * @param handlers the document handlers
-     * @throws IMObjectReportException if the report cannot be created
+     * @throws IMReportException if the report cannot be created
      */
-    public TemplatedJasperReport(Document template, IArchetypeService service,
-                                 DocumentHandlers handlers) {
+    public AbstractTemplatedJasperIMReport(Document template,
+                                           IArchetypeService service,
+                                           DocumentHandlers handlers) {
         super(service, handlers);
         this.template = new JasperTemplateLoader(template, service, handlers);
     }
 
     /**
-     * Constructs a new <code>TemplatedJasperReport</code>.
+     * Constructs a new <code>AbstractTemplatedJasperIMReport</code>.
      *
      * @param design   the master report design
      * @param service  the archetype service
      * @param handlers the document handlers
-     * @throws IMObjectReportException if the report cannot be created
+     * @throws IMReportException if the report cannot be created
      */
-    public TemplatedJasperReport(JasperDesign design,
-                                 IArchetypeService service,
-                                 DocumentHandlers handlers) {
+    public AbstractTemplatedJasperIMReport(JasperDesign design,
+                                           IArchetypeService service,
+                                           DocumentHandlers handlers) {
         super(service, handlers);
         this.template = new JasperTemplateLoader(design, service, handlers);
     }
@@ -93,24 +89,6 @@ public class TemplatedJasperReport extends AbstractJasperIMObjectReport {
      */
     public JasperReport[] getSubreports() {
         return template.getSubreports();
-    }
-
-    /**
-     * Generates a report for an object.
-     *
-     * @param objects
-     * @return the report
-     * @throws JRException for any error
-     */
-    public JasperPrint report(Collection<IMObject> objects) throws JRException {
-        IMObjectCollectionDataSource source
-                = new IMObjectCollectionDataSource(objects,
-                                                   getArchetypeService());
-        HashMap<String, Object> properties
-                = new HashMap<String, Object>(getParameters());
-        properties.put("dataSource", source);
-        return JasperFillManager.fillReport(template.getReport(), properties,
-                                            source);
     }
 
     /**

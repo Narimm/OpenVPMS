@@ -19,22 +19,22 @@
 package org.openvpms.report;
 
 import junit.framework.TestCase;
-import static org.openvpms.report.IMObjectReportException.ErrorCode.*;
+import static org.openvpms.report.IMReportException.ErrorCode.*;
 
 /**
- * {@link IMObjectReportException} test case.
+ * {@link IMReportException} test case.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectReportExceptionTestCase extends TestCase {
+public class IMReportExceptionTestCase extends TestCase {
 
     /**
      * Verifies that the messages are generated correctly.
      */
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     4, IMObjectReportException.ErrorCode.values().length);
+                     5, IMReportException.ErrorCode.values().length);
         checkException(FailedToCreateReport, "Failed to create report: foo",
                        "foo");
         checkException(FailedToGenerateReport, "Failed to generate report: foo",
@@ -43,20 +43,22 @@ public class IMObjectReportExceptionTestCase extends TestCase {
                        "foo");
         checkException(UnsupportedMimeTypes,
                        "Mime types not supported by report");
+        checkException(NoExpressionEvaluatorForType,
+                       "No ExpressionEvalutor for type: foo", "foo");
     }
 
     /**
-     * Creates an {@link IMObjectReportException} with the supplied code and
+     * Creates an {@link IMReportException} with the supplied code and
      * arguments and verifies that the generated message matches that expected.
      *
      * @param code     the error code
      * @param expected the expected message
      * @param args     exception arguments
      */
-    private void checkException(IMObjectReportException.ErrorCode code,
+    private void checkException(IMReportException.ErrorCode code,
                                 String expected, Object ... args) {
-        IMObjectReportException exception = new IMObjectReportException(code,
-                                                                        args);
+        IMReportException exception = new IMReportException(code,
+                                                            args);
         assertEquals(code, exception.getErrorCode());
         assertEquals(expected, exception.getMessage());
     }
