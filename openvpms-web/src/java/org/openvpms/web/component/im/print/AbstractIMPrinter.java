@@ -20,7 +20,6 @@ package org.openvpms.web.component.im.print;
 
 import org.openvpms.archetype.rules.doc.MediaHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -28,8 +27,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.report.IMObjectReport;
-import org.openvpms.report.IMObjectReportException;
+import org.openvpms.report.IMReport;
+import org.openvpms.report.IMReportException;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.app.GlobalContext;
@@ -43,13 +42,12 @@ import java.util.List;
 
 
 /**
- * Abstract implementation of the {@link IMObjectPrinter} interface.
+ * Abstract implementation of the {@link IMPrinter} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractIMObjectPrinter<T extends IMObject>
-        implements IMObjectPrinter<T> {
+public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
 
     /**
      * The object to print.
@@ -58,11 +56,11 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
 
 
     /**
-     * Constructs a new <code>AbstractIMObjectPrinter</code>.
+     * Constructs a new <code>AbstractIMPrinter</code>.
      *
      * @param object the object to print
      */
-    public AbstractIMObjectPrinter(T object) {
+    public AbstractIMPrinter(T object) {
         this.object = object;
     }
 
@@ -91,20 +89,20 @@ public abstract class AbstractIMObjectPrinter<T extends IMObject>
      * @throws OpenVPMSException for any error
      */
     public void print(String printer) {
-        IMObjectReport report = createReport();
-        List<IMObject> objects = new ArrayList<IMObject>();
+        IMReport<T> report = createReport();
+        List<T> objects = new ArrayList<T>();
         objects.add(object);
-        report.print(objects, getProperties(object, printer));
+        report.print(objects.iterator(), getProperties(object, printer));
     }
 
     /**
      * Creates a new report.
      *
      * @return a new report
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected abstract IMObjectReport createReport();
+    protected abstract IMReport<T> createReport();
 
     /**
      * Returns the print properties for an object.

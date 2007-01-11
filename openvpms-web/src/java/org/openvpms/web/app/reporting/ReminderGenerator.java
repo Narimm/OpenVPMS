@@ -34,10 +34,10 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMObjectPrinterListener;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
+import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -131,10 +131,10 @@ class ReminderGenerator extends AbstractReminderProcessor {
                 documentTemplate,
                 ArchetypeServiceHelper.getArchetypeService());
         if (act != null) {
-            IMObjectPrinter<DocumentAct> printer
+            IMPrinter<DocumentAct> printer
                     = IMObjectPrinterFactory.create(act);
-            InteractiveIMObjectPrinter<DocumentAct> iPrinter
-                    = new InteractiveIMObjectPrinter<DocumentAct>(printer);
+            InteractiveIMPrinter<DocumentAct> iPrinter
+                    = new InteractiveIMPrinter<DocumentAct>(printer);
             iPrinter.setListener(new IMObjectPrinterListener<DocumentAct>() {
                 public void printed(DocumentAct object) {
                     ReminderGenerator.super.print(

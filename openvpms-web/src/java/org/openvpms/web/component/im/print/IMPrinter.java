@@ -18,18 +18,17 @@
 
 package org.openvpms.web.component.im.print;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
- * Prints an {@link IMObject}.
+ * Prints an object.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectPrinter<T extends IMObject> {
+public interface IMPrinter<T> {
 
     /**
      * Returns the object being printed.

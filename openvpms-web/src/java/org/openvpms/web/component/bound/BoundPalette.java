@@ -18,12 +18,12 @@
 
 package org.openvpms.web.component.bound;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.palette.Palette;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -37,18 +37,19 @@ public class BoundPalette extends Palette {
     /**
      * The bound property.
      */
-    private CollectionProperty _property;
+    private final CollectionProperty property;
 
 
     /**
-     * Construct a new <code>BoundPalette</coce>.
+     * Constructs a new <code>BoundPalette</coce>.
      *
      * @param items    all items that may be selected
      * @param property the property to bind
      */
+    @SuppressWarnings("unchecked")
     public BoundPalette(List items, CollectionProperty property) {
         super(items, new ArrayList(property.getValues()));
-        _property = property;
+        this.property = property;
     }
 
     /**
@@ -59,7 +60,7 @@ public class BoundPalette extends Palette {
     @Override
     protected void add(Object[] values) {
         for (Object value : values) {
-            _property.add(value);
+            property.add(value);
         }
     }
 
@@ -71,7 +72,7 @@ public class BoundPalette extends Palette {
     @Override
     protected void remove(Object[] values) {
         for (Object value : values) {
-            _property.remove(value);
+            property.remove(value);
         }
     }
 }

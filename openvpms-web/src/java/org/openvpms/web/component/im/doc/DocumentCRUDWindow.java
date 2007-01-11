@@ -32,9 +32,9 @@ import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectPrinterListener;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
+import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -154,11 +154,11 @@ public class DocumentCRUDWindow extends ActCRUDWindow<Act> {
      * Creates a new printer.
      *
      * @param object the object to print
-     * @return an instance of {@link InteractiveIMObjectPrinter}.
+     * @return an instance of {@link InteractiveIMPrinter}.
      */
     @Override
-    protected IMObjectPrinter<Act> createPrinter(Act object) {
-        InteractiveIMObjectPrinter<Act> printer = (InteractiveIMObjectPrinter<Act>)
+    protected IMPrinter<Act> createPrinter(Act object) {
+        InteractiveIMPrinter<Act> printer = (InteractiveIMPrinter<Act>)
                 super.createPrinter(object);
         printer.setListener(new IMObjectPrinterListener<Act>() {
             public void printed(Act object) {

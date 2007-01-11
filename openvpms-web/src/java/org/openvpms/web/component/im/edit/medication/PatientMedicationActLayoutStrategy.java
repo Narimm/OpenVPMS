@@ -36,9 +36,9 @@ import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
+import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -192,10 +192,10 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
      * Invoked when the 'Print Label' button is pressed.
      */
     private void onPrintLabel(IMObject object) {
-        IMObjectPrinter<IMObject> printer
+        IMPrinter<IMObject> printer
                 = new IMObjectReportPrinter<IMObject>(object);
-        InteractiveIMObjectPrinter<IMObject> iPrinter
-                = new InteractiveIMObjectPrinter<IMObject>(printer);
+        InteractiveIMPrinter<IMObject> iPrinter
+                = new InteractiveIMPrinter<IMObject>(printer);
         iPrinter.print();
     }
 
