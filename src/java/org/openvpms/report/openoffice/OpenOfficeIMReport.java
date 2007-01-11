@@ -20,30 +20,29 @@ package org.openvpms.report.openoffice;
 
 import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ExpressionEvaluator;
-import org.openvpms.report.IMObjectReport;
-import org.openvpms.report.IMObjectReportException;
-import static org.openvpms.report.IMObjectReportException.ErrorCode.*;
+import org.openvpms.report.ExpressionEvaluatorFactory;
+import org.openvpms.report.IMReportException;
+import static org.openvpms.report.IMReportException.ErrorCode.*;
+import org.openvpms.report.IMReport;
 import org.openvpms.report.PrintProperties;
 
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 
 /**
- * Generates a report for an <code>IMObject</code>, using an OpenOffice document
- * as the template.
+ * Generates a report using an OpenOffice document as the template.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class OpenOfficeIMObjectReport implements IMObjectReport {
+public class OpenOfficeIMReport<T> implements IMReport<T> {
 
     /**
      * The document template.
@@ -57,14 +56,14 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
 
 
     /**
-     * Creates a new <code>OpenOfficeIMObjectReport</code>.
+     * Creates a new <code>OpenOfficeIMReport</code>.
      *
      * @param template the document template
      * @param handlers the document handlers
-     * @throws IMObjectReportException if the mime-type is invalid
+     * @throws IMReportException if the mime-type is invalid
      */
-    public OpenOfficeIMObjectReport(Document template,
-                                    DocumentHandlers handlers) {
+    public OpenOfficeIMReport(Document template,
+                              DocumentHandlers handlers) {
         this.template = template;
         this.handlers = handlers;
     }
@@ -76,9 +75,9 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
      * @return a document containing the report
-     * @throws IMObjectReportException for any report error
+     * @throws IMReportException for any report error
      */
-    public Document generate(Collection<IMObject> objects, String[] mimeTypes) {
+    public Document generate(Iterator<T> objects, String[] mimeTypes) {
         String mimeType = null;
         for (String type : mimeTypes) {
             if (DocFormats.ODT_TYPE.equals(type)
@@ -88,7 +87,7 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
             }
         }
         if (mimeType == null) {
-            throw new IMObjectReportException(UnsupportedMimeTypes);
+            throw new IMReportException(UnsupportedMimeTypes);
         }
 
 
@@ -112,11 +111,10 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
      *
      * @param objects    the objects to report on
      * @param properties the print properties
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void print(Collection<IMObject> objects,
-                      PrintProperties properties) {
+    public void print(Iterator<T> objects, PrintProperties properties) {
         OOConnection connection = null;
         try {
             PrintService service = OpenOfficeHelper.getPrintService();
@@ -124,9 +122,9 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
             OpenOfficeDocument doc = create(objects, connection);
             service.print(doc, properties.getPrinterName(), true);
         } catch (OpenOfficeException exception) {
-            throw new IMObjectReportException(exception,
-                                              FailedToPrintReport,
-                                              exception.getMessage());
+            throw new IMReportException(exception,
+                                        FailedToPrintReport,
+                                        exception.getMessage());
         } finally {
             OpenOfficeHelper.close(connection);
         }
@@ -139,19 +137,22 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
      * @param objects    the objects to generate the document from
      * @param connection a connection to the OpenOffice service
      * @return a new openoffice document
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private OpenOfficeDocument create(Collection<IMObject> objects,
+    private OpenOfficeDocument create(Iterator<T> objects,
                                       OOConnection connection) {
         OpenOfficeDocument doc = null;
-        if (objects.size() != 1) {
-            throw new IMObjectReportException(
+        T object = null;
+        if (objects.hasNext()) {
+            object = objects.next();
+        }
+        if (object == null || objects.hasNext()) {
+            throw new IMReportException(
                     FailedToGenerateReport,
                     "Can only report on single objects");
         }
-        IMObject object = objects.toArray(new IMObject[0])[0];
-        ExpressionEvaluator eval = new ExpressionEvaluator(
+        ExpressionEvaluator eval = ExpressionEvaluatorFactory.create(
                 object, ArchetypeServiceHelper.getArchetypeService());
 
         try {

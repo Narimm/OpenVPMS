@@ -35,8 +35,8 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.report.DocFormats;
-import org.openvpms.report.IMObjectReport;
-import org.openvpms.report.IMObjectReportFactory;
+import org.openvpms.report.IMReport;
+import org.openvpms.report.IMReportFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -137,10 +137,11 @@ public class ReportTool {
      * @throws IOException for any I/O error
      */
     public void save(IMObject object, String path) throws IOException {
-        IMObjectReport report = getReport(object);
+        IMReport<IMObject> report = getReport(object);
         String[] mimeTypes = {DocFormats.RTF_TYPE, DocFormats.ODT_TYPE,
                               DocFormats.PDF_TYPE};
-        Document doc = report.generate(Arrays.asList(object), mimeTypes);
+        List<IMObject> list = Arrays.asList(object);
+        Document doc = report.generate(list.iterator(), mimeTypes);
         path = new File(path, doc.getName()).getPath();
         FileOutputStream output = new FileOutputStream(path);
         DocumentHandler handler = handlers.get(doc);
@@ -203,9 +204,10 @@ public class ReportTool {
      * @param object the object
      * @return a report for the object
      */
-    protected IMObjectReport getReport(IMObject object) {
+    protected IMReport<IMObject> getReport(IMObject object) {
         String shortName = object.getArchetypeId().getShortName();
-        return IMObjectReportFactory.create(shortName, service, handlers);
+        return IMReportFactory.createIMObjectReport(shortName, service,
+                                                    handlers);
     }
 
     /**

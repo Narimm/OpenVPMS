@@ -18,9 +18,9 @@
 
 package org.openvpms.report.jasper;
 
+import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
-import net.sf.jasperreports.engine.JRDataSource;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.comparators.TransformingComparator;
@@ -28,9 +28,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
-import org.openvpms.report.IMObjectReportException;
+import org.openvpms.report.IMReportException;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -90,10 +89,10 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @param objects the objects
      * @param service the archetype service
      */
-    public IMObjectCollectionDataSource(Collection<IMObject> objects,
+    public IMObjectCollectionDataSource(Iterator<IMObject> objects,
                                         IArchetypeService service) {
         super(service);
-        iter = objects.iterator();
+        iter = objects;
     }
 
     /**
@@ -199,7 +198,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
                     // not comparable so null to avoid class cast exceptions
                     result = null;
                 }
-            } catch (IMObjectReportException ignore) {
+            } catch (IMReportException ignore) {
                 // node node found
                 result = null;
             }

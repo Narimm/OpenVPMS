@@ -38,7 +38,7 @@ public interface IMObjectCollectionReport {
      *
      * @param objects the objects
      * @return a document containing the report
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     Document generate(Collection<IMObject> objects);

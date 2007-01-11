@@ -18,6 +18,7 @@
 
 package org.openvpms.report.jasper;
 
+import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -29,14 +30,13 @@ import net.sf.jasperreports.engine.export.JRRtfExporter;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.DocFormats;
-import org.openvpms.report.IMObjectReportException;
-import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
-import static org.openvpms.report.IMObjectReportException.ErrorCode.UnsupportedMimeTypes;
+import org.openvpms.report.IMReportException;
+import static org.openvpms.report.IMReportException.ErrorCode.FailedToGenerateReport;
+import static org.openvpms.report.IMReportException.ErrorCode.UnsupportedMimeTypes;
 import org.openvpms.report.PrintProperties;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
@@ -49,19 +49,18 @@ import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.PrinterName;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 
 /**
- * Abstract implementation of the {@link JasperIMObjectReport} interface.
+ * Abstract implementation of the {@link JasperIMReport} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractJasperIMObjectReport
-        implements JasperIMObjectReport {
+public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
 
     /**
      * The archetype service.
@@ -75,13 +74,13 @@ public abstract class AbstractJasperIMObjectReport
 
 
     /**
-     * Constructs a new <code>AbstractJasperIMObjectReport</code>.
+     * Constructs a new <code>AbstractJasperIMReport</code>.
      *
      * @param service  the archetype service
      * @param handlers the document handlers
      */
-    public AbstractJasperIMObjectReport(IArchetypeService service,
-                                        DocumentHandlers handlers) {
+    public AbstractJasperIMReport(IArchetypeService service,
+                                  DocumentHandlers handlers) {
         this.service = service;
         this.handlers = handlers;
     }
@@ -93,10 +92,10 @@ public abstract class AbstractJasperIMObjectReport
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
      * @return a document containing the report
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Document generate(Collection<IMObject> objects, String[] mimeTypes) {
+    public Document generate(Iterator<T> objects, String[] mimeTypes) {
         Document document;
         String mimeType = null;
         for (String type : mimeTypes) {
@@ -107,14 +106,14 @@ public abstract class AbstractJasperIMObjectReport
             }
         }
         if (mimeType == null) {
-            throw new IMObjectReportException(UnsupportedMimeTypes);
+            throw new IMReportException(UnsupportedMimeTypes);
         }
         try {
             JasperPrint print = report(objects);
             document = convert(print, mimeType);
         } catch (JRException exception) {
-            throw new IMObjectReportException(exception, FailedToGenerateReport,
-                                              exception.getMessage());
+            throw new IMReportException(exception, FailedToGenerateReport,
+                                        exception.getMessage());
         }
         return document;
     }
@@ -124,11 +123,10 @@ public abstract class AbstractJasperIMObjectReport
      *
      * @param objects    the objects to report on
      * @param properties the print properties
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void print(Collection<IMObject> objects,
-                      PrintProperties properties) {
+    public void print(Iterator<T> objects, PrintProperties properties) {
         try {
             JasperPrint print = report(objects);
             JRPrintServiceExporter exporter = new JRPrintServiceExporter();
@@ -161,8 +159,8 @@ public abstract class AbstractJasperIMObjectReport
             // print it
             exporter.exportReport();
         } catch (JRException exception) {
-            throw new IMObjectReportException(exception, FailedToGenerateReport,
-                                              exception.getMessage());
+            throw new IMReportException(exception, FailedToGenerateReport,
+                                        exception.getMessage());
         }
     }
 
@@ -173,15 +171,21 @@ public abstract class AbstractJasperIMObjectReport
      * @return the report
      * @throws JRException for any error
      */
-    public JasperPrint report(Collection<IMObject> objects) throws JRException {
-        IMObjectCollectionDataSource source
-                = new IMObjectCollectionDataSource(objects,
-                                                   getArchetypeService());
+    public JasperPrint report(Iterator<T> objects) throws JRException {
+        JRDataSource source = createDataSource(objects);
         HashMap<String, Object> properties
                 = new HashMap<String, Object>(getParameters());
         properties.put("dataSource", source);
         return JasperFillManager.fillReport(getReport(), properties, source);
     }
+
+    /**
+     * Creates a data source for a collection of objects.
+     *
+     * @param objects an iterator over the collection of objects
+     * @return a new datas ource
+     */
+    protected abstract JRDataSource createDataSource(Iterator<T> objects);
 
     /**
      * Returns the archetype service.
@@ -207,7 +211,7 @@ public abstract class AbstractJasperIMObjectReport
      * @param report   the report to convert
      * @param mimeType the mime-type of the document
      * @return a document containing the report
-     * @throws IMObjectReportException   for any error
+     * @throws IMReportException   for any error
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected Document convert(JasperPrint report, String mimeType) {
@@ -228,11 +232,11 @@ public abstract class AbstractJasperIMObjectReport
             ByteArrayInputStream stream = new ByteArrayInputStream(data);
             document = handler.create(name, stream, mimeType, data.length);
         } catch (DocumentException exception) {
-            throw new IMObjectReportException(exception, FailedToGenerateReport,
-                                              exception.getMessage());
+            throw new IMReportException(exception, FailedToGenerateReport,
+                                        exception.getMessage());
         } catch (JRException exception) {
-            throw new IMObjectReportException(exception, FailedToGenerateReport,
-                                              exception.getMessage());
+            throw new IMReportException(exception, FailedToGenerateReport,
+                                        exception.getMessage());
         }
         return document;
     }

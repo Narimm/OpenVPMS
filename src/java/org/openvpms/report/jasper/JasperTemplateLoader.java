@@ -31,8 +31,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.IOUtils;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.IMObjectReportException;
-import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
+import org.openvpms.report.IMReportException;
+import static org.openvpms.report.IMReportException.ErrorCode.FailedToCreateReport;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentException;
@@ -76,7 +76,7 @@ public class JasperTemplateLoader {
      * @param template the document template
      * @param service  the archetype service
      * @param handlers the document handlers
-     * @throws IMObjectReportException if the report cannot be created
+     * @throws IMReportException if the report cannot be created
      */
     public JasperTemplateLoader(Document template, IArchetypeService service,
                                 DocumentHandlers handlers) {
@@ -87,11 +87,11 @@ public class JasperTemplateLoader {
             JasperDesign report = JRXmlLoader.load(stream);
             init(report, service, handlers);
         } catch (DocumentException exception) {
-            throw new IMObjectReportException(exception, FailedToCreateReport,
-                                              exception.getMessage());
+            throw new IMReportException(exception, FailedToCreateReport,
+                                        exception.getMessage());
         } catch (JRException exception) {
-            throw new IMObjectReportException(exception, FailedToCreateReport,
-                                              exception.getMessage());
+            throw new IMReportException(exception, FailedToCreateReport,
+                                        exception.getMessage());
         } finally {
             IOUtils.closeQuietly(stream);
 
@@ -104,7 +104,7 @@ public class JasperTemplateLoader {
      * @param design  the master report design
      * @param service the archetype service
      * @param handlers the document handlers
-     * @throws IMObjectReportException if the report cannot be created
+     * @throws IMReportException if the report cannot be created
      */
     public JasperTemplateLoader(JasperDesign design, IArchetypeService service,
                                 DocumentHandlers handlers) {
@@ -144,7 +144,7 @@ public class JasperTemplateLoader {
      * @param design  the report design
      * @param service the archetype service
      * @param handlers the document handlers
-     * @throws IMObjectReportException if the report cannot be initialised
+     * @throws IMReportException if the report cannot be initialised
      */
     protected void init(JasperDesign design, IArchetypeService service,
                         DocumentHandlers handlers) {
@@ -157,7 +157,7 @@ public class JasperTemplateLoader {
                     JasperDesign report = JasperReportHelper.getReport(
                             reportName, service, handlers);
                     if (report == null) {
-                        throw new IMObjectReportException(
+                        throw new IMReportException(
                                 FailedToCreateReport,
                                 "Failed to find subreport with name: "
                                         + reportName);
@@ -182,9 +182,9 @@ public class JasperTemplateLoader {
             }
             report = JasperCompileManager.compileReport(design);
         } catch (JRException exception) {
-            throw new IMObjectReportException(exception,
-                                              FailedToCreateReport,
-                                              exception.getMessage());
+            throw new IMReportException(exception,
+                                        FailedToCreateReport,
+                                        exception.getMessage());
         }
     }
 

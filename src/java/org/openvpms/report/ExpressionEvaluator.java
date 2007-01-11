@@ -18,104 +18,22 @@
 
 package org.openvpms.report;
 
-import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Date;
-
-import org.apache.commons.jxpath.JXPathContext;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.NodeResolver;
-import org.openvpms.component.system.common.jxpath.JXPathHelper;
-
 
 /**
- * Evaluates report expressions.
- * <p/>
- * Expressions may take one of two forms:
- * <ol>
- * <li>node1.node2.nodeN</li>
- * <li>${expr}</li>
- * </ol>
- * Expressions of the first type are evaluated using {@link NodeResolver};
- * the second by <code>JXPath</code>.
+ * Report exporession evaluator.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ExpressionEvaluator {
+public interface ExpressionEvaluator {
 
     /**
-     * The object.
-     */
-    private final IMObject object;
-
-    /**
-     * The archetype service.
-     */
-    private final IArchetypeService service;
-
-    /**
-     * The JXPath context.
-     */
-    private JXPathContext context;
-
-    /**
-     * The node resolver.
-     */
-    private NodeResolver resolver;
-
-
-    /**
-     * Constructs a new <code>ExpressionEvaluator</code>.
-     *
-     * @param object  the object
-     * @param service the archetype service
-     */
-    public ExpressionEvaluator(IMObject object, IArchetypeService service) {
-        this.object = object;
-        this.service = service;
-    }
-
-    /**
-     * Constructs a new <code>ExpressionEvaluator</code>.
-     *
-     * @param object  the object
-     * @param resolver  the NodeResolver
-     */
-    public ExpressionEvaluator(IMObject object, NodeResolver resolver) {
-		super();
-		this.object = object;
-		this.resolver = resolver;
-		this.service = ArchetypeServiceHelper.getArchetypeService();
-	}
-
-	/**
      * Returns the value of an expression.
-     * If the expression is of the form [expr] this will be evaluated
-     * using <code>JXPath</code>, otherwise it will be evaluated using
-     * {@link NodeResolver}.
      *
      * @param expression the expression
      * @return the result of the expression
      */
-    public Object getValue(String expression) {
-    	try {
-	        if (expression.startsWith("[") && expression.endsWith("]")) {
-	            String eval = expression.substring(1, expression.length() - 1);
-	            return evaluate(eval);
-	        } else {
-	            return getNodeValue(expression);
-	        }
-    	}
-    	catch (Exception exception){
-    		return exception.getLocalizedMessage();
-    	}
-    }
+    Object getValue(String expression);
 
     /**
      * Returns the formatted value of an expression.
@@ -123,46 +41,5 @@ public class ExpressionEvaluator {
      * @param expression the expression
      * @return the result of the expression
      */
-    public String getFormattedValue(String expression) {
-        Object value = getValue(expression);
-        if (value instanceof Date) {
-            Date date = (Date) value;
-            return DateFormat.getDateInstance(DateFormat.MEDIUM).format(date);
-        } else if (value instanceof Money) {
-            return NumberFormat.getCurrencyInstance().format(value);
-        } else if (value instanceof BigDecimal) {
-            DecimalFormat format = new DecimalFormat("#,##0.00;-#,##0.00");
-            return format.format(value);
-        } else if (value != null) {
-            return value.toString();
-        }
-        return null;
-    }
-
-    /**
-     * Evaluates an expression.
-     *
-     * @param expression the expression to evaluate
-     * @return the value of the expression
-     */
-    protected Object evaluate(String expression) {
-        if (context == null) {
-            context = JXPathHelper.newContext(object);
-        }
-        return context.getValue(expression);
-    }
-
-    /**
-     * Returns a node value.
-     *
-     * @param name the node name
-     * @return the node value
-     */
-    protected Object getNodeValue(String name) {
-        if (resolver == null) {
-            resolver = new NodeResolver(object, service);
-        }
-        return ReportHelper.getValue(name, resolver);
-    }
-
+    String getFormattedValue(String expression);
 }
