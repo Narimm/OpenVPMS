@@ -24,7 +24,7 @@ import java.util.EventListener;
 
 
 /**
- * Listener for {@link IMObjectPrinter} events.
+ * Listener for {@link IMPrinter} events.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

@@ -28,13 +28,13 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
-import org.openvpms.report.IMObjectReport;
-import org.openvpms.report.IMObjectReportException;
+import org.openvpms.report.IMReport;
+import org.openvpms.report.IMReportException;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.TemplateHelper;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.print.AbstractIMObjectPrinter;
+import org.openvpms.web.component.im.print.AbstractIMPrinter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
+public class DocumentActPrinter extends AbstractIMPrinter<IMObject> {
 
     /**
      * The report generator.
@@ -60,7 +60,8 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
      *
      * @param object the object to print
      * @throws DocumentException if the object doesn't have any
-     *                           <em>participation.documentTemplate</em> participation
+     *                           <em>participation.documentTemplate</em>
+     *                           participation
      */
     public DocumentActPrinter(DocumentAct object) {
         super(object);
@@ -75,14 +76,14 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
      */
     @Override
     public void print(String printer) {
-        DocumentAct act = getObject();
+        DocumentAct act = (DocumentAct) getObject();
         Document doc = (Document) IMObjectHelper.getObject(
                 act.getDocReference());
         if (doc == null) {
-            IMObjectReport report = createReport();
+            IMReport<IMObject> report = createReport();
             List<IMObject> objects = new ArrayList<IMObject>();
             objects.add(act);
-            report.print(objects, getProperties(act, printer));
+            report.print(objects.iterator(), getProperties(act, printer));
         } else if (DocFormats.ODT_TYPE.equals(doc.getMimeType())) {
             OpenOfficeHelper.getPrintService().print(
                     doc, printer);
@@ -95,11 +96,11 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
      * Returns a document for an object.
      *
      * @return a document
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document getDocument() {
-        DocumentAct object = getObject();
+        DocumentAct object = (DocumentAct) getObject();
         Document doc = (Document) IMObjectHelper.getObject(
                 object.getDocReference());
         if (doc == null) {
@@ -131,10 +132,10 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
      * Creates a new report.
      *
      * @return a new report
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected IMObjectReport createReport() {
+    protected IMReport<IMObject> createReport() {
         return generator.createReport();
     }
 
@@ -147,8 +148,7 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter<DocumentAct> {
      * @throws OpenVPMSException for any error
      */
     @Override
-    protected PrintProperties getProperties(DocumentAct object,
-                                            String printer) {
+    protected PrintProperties getProperties(IMObject object, String printer) {
         PrintProperties properties = super.getProperties(object, printer);
         properties.setMediaSize(getMediaSize(generator.getTemplate()));
         properties.setMediaTray(getMediaTray(generator.getTemplate(), printer));

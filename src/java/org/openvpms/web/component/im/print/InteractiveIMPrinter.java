@@ -31,19 +31,19 @@ import org.openvpms.web.servlet.DownloadServlet;
 
 
 /**
- * Interactive {@link IMObjectPrinter}. Pops up a dialog with options to print,
+ * Interactive {@link IMPrinter}. Pops up a dialog with options to print,
  * preview, or cancel.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class InteractiveIMObjectPrinter<T extends IMObject>
-        implements IMObjectPrinter<T> {
+public class InteractiveIMPrinter<T extends IMObject>
+        implements IMPrinter<T> {
 
     /**
      * The printer to delegate to.
      */
-    private final IMObjectPrinter<T> printer;
+    private final IMPrinter<T> printer;
 
     /**
      * The print listener. May be <code>null</code>.
@@ -51,11 +51,11 @@ public class InteractiveIMObjectPrinter<T extends IMObject>
     private IMObjectPrinterListener<T> listener;
 
     /**
-     * Constructs a new <code>InteractiveIMObjectPrinter</code>.
+     * Constructs a new <code>InteractiveIMPrinter</code>.
      *
      * @param printer the printer to delegate to
      */
-    public InteractiveIMObjectPrinter(IMObjectPrinter<T> printer) {
+    public InteractiveIMPrinter(IMPrinter<T> printer) {
         this.printer = printer;
     }
 

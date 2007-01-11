@@ -31,9 +31,9 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.report.DocFormats;
-import org.openvpms.report.IMObjectReport;
-import org.openvpms.report.IMObjectReportException;
-import org.openvpms.report.IMObjectReportFactory;
+import org.openvpms.report.IMReport;
+import org.openvpms.report.IMReportException;
+import org.openvpms.report.IMReportFactory;
 import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.system.ServiceHelper;
@@ -108,7 +108,7 @@ public class ReportGenerator {
      * @param object the object to generate the report for
      * @return the generated report
      * @throws DocumentException         if the template document can't be found
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(IMObject object) {
@@ -123,7 +123,7 @@ public class ReportGenerator {
      * @param mimeType the mime type of the report.
      * @return the generated report
      * @throws DocumentException         if the template document can't be found
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(IMObject object, String mimeType) {
@@ -135,10 +135,10 @@ public class ReportGenerator {
      *
      * @return a new report
      * @throws DocumentException         if the template document can't be found
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReport createReport() {
+    public IMReport<IMObject> createReport() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         Document doc = TemplateHelper.getDocumentFromTemplate(template,
@@ -147,7 +147,7 @@ public class ReportGenerator {
             throw new DocumentException(NotFound);
         }
         DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-        return IMObjectReportFactory.create(doc, service, handlers);
+        return IMReportFactory.createIMObjectReport(doc, service, handlers);
     }
 
     /**
@@ -158,12 +158,12 @@ public class ReportGenerator {
      *                  output format of the report
      * @return the generated report
      * @throws DocumentException         if the template document can't be found
-     * @throws IMObjectReportException   for any report error
+     * @throws IMReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected Document generate(IMObject object, String[] mimeTypes) {
-        IMObjectReport report = createReport();
-        return report.generate(Arrays.asList(object), mimeTypes);
+        IMReport<IMObject> report = createReport();
+        return report.generate(Arrays.asList(object).iterator(), mimeTypes);
     }
 
 }

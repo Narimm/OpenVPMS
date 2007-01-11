@@ -27,8 +27,8 @@ import org.openvpms.web.component.im.util.ArchetypeHandlers;
 
 
 /**
- * A factory for {@link IMObjectPrinter} instances. The factory is configured to return
- * specific {@link IMObjectPrinter} implementations based on the supplied criteria, with
+ * A factory for {@link IMPrinter} instances. The factory is configured to return
+ * specific {@link IMPrinter} implementations based on the supplied criteria, with
  * {@link IMObjectReportPrinter} returned if no implementation matches.
  * <p/>
  * The factory is configured using a <em>IMObjectPrinterFactory.properties</em> file,
@@ -50,9 +50,9 @@ import org.openvpms.web.component.im.util.ArchetypeHandlers;
 public final class IMObjectPrinterFactory {
 
     /**
-     * IMObjectPrinter implementations.
+     * IMPrinter implementations.
      */
-    private static ArchetypeHandlers<IMObjectPrinter> printers;
+    private static ArchetypeHandlers<IMPrinter> printers;
 
     /**
      * The logger.
@@ -68,21 +68,21 @@ public final class IMObjectPrinterFactory {
     }
 
     /**
-     * Construct a new {@link IMObjectPrinter}.
+     * Construct a new {@link IMPrinter}.
      * <p/>
-     * IMObjectPrinter implementations must provide a public constructor
+     * IMPrinter implementations must provide a public constructor
      * accepting the object to print
      *
      * @param object the object to print
      * @return a new printer
      */
     @SuppressWarnings("unchecked")
-    public static <T extends IMObject> IMObjectPrinter<T> create(T object) {
+    public static <T extends IMObject> IMPrinter<T> create(T object) {
         String[] shortNames = {object.getArchetypeId().getShortName()};
         shortNames = DescriptorHelper.getShortNames(shortNames);
-        ArchetypeHandler<IMObjectPrinter> handler
+        ArchetypeHandler<IMPrinter> handler
                 = getPrinters().getHandler(shortNames);
-        IMObjectPrinter<T> result = null;
+        IMPrinter<T> result = null;
         if (handler != null) {
             try {
                 result = handler.create();
@@ -101,11 +101,11 @@ public final class IMObjectPrinterFactory {
      *
      * @return the printers
      */
-    private static ArchetypeHandlers<IMObjectPrinter> getPrinters() {
+    private static ArchetypeHandlers<IMPrinter> getPrinters() {
         if (printers == null) {
-            printers = new ArchetypeHandlers<IMObjectPrinter>(
+            printers = new ArchetypeHandlers<IMPrinter>(
                     "IMObjectPrinterFactory.properties",
-                    IMObjectPrinter.class);
+                    IMPrinter.class);
         }
         return printers;
     }

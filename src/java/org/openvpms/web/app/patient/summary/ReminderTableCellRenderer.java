@@ -66,7 +66,7 @@ public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
     /**
      * The logger.
      */
-    private static final Log _log
+    private static final Log log
             = LogFactory.getLog(ReminderTableCellRenderer.class);
 
 
@@ -81,6 +81,7 @@ public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
      * @param row    the row
      * @return a style name for the given column and row.
      */
+    @SuppressWarnings("unchecked")
     protected String getStyle(Table table, Object value, int column, int row) {
         String style = DEFAULT_STYLE;
         if (table instanceof IMObjectTable) {
@@ -128,7 +129,7 @@ public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
                 }
             }
         } catch (OpenVPMSException exception) {
-            _log.error(exception, exception);
+            log.error(exception, exception);
         }
         return style;
     }

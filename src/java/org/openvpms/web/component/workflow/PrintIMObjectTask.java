@@ -19,10 +19,10 @@
 package org.openvpms.web.component.workflow;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMObjectPrinterListener;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
+import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 
 
 /**
@@ -58,10 +58,10 @@ public class PrintIMObjectTask extends AbstractTask {
     public void start(final TaskContext context) {
         IMObject object = context.getObject(shortName);
         if (object != null) {
-            IMObjectPrinter<IMObject> printer = IMObjectPrinterFactory.create(
+            IMPrinter<IMObject> printer = IMObjectPrinterFactory.create(
                     object);
-            InteractiveIMObjectPrinter<IMObject> iPrinter
-                    = new InteractiveIMObjectPrinter<IMObject>(printer);
+            InteractiveIMPrinter<IMObject> iPrinter
+                    = new InteractiveIMPrinter<IMObject>(printer);
 
             iPrinter.setListener(new IMObjectPrinterListener<IMObject>() {
                 public void printed(IMObject object) {

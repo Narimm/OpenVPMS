@@ -31,10 +31,10 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMObjectPrinterListener;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
+import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -187,10 +187,10 @@ class PrintDocumentsTask extends AbstractTask {
         public void print() {
             if (iterator.hasNext()) {
                 IMObject object = iterator.next();
-                IMObjectPrinter<IMObject> printer
+                IMPrinter<IMObject> printer
                         = IMObjectPrinterFactory.create(object);
-                InteractiveIMObjectPrinter<IMObject> iPrinter
-                        = new InteractiveIMObjectPrinter<IMObject>(printer);
+                InteractiveIMPrinter<IMObject> iPrinter
+                        = new InteractiveIMPrinter<IMObject>(printer);
                 iPrinter.setListener(this);
                 iPrinter.print();
             } else {
