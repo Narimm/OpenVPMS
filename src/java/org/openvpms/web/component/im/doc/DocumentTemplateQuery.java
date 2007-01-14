@@ -105,8 +105,7 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
             for (IMObject object : rows) {
                 EntityBean bean = new EntityBean((Entity) object);
                 String archetype = bean.getString("archetype");
-                if (StringUtils.isEmpty(archetype)
-                        || TypeHelper.matches(archetypeShortName, archetype)) {
+                if (TypeHelper.matches(archetypeShortName, archetype)) {
                     objects.add((Entity) object);
                 }
             }
