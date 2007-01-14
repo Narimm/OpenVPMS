@@ -41,6 +41,14 @@
 			<node name="initials" path="/details/attributes/initials" type="java.lang.String" maxLength="10" />
 			<node name="lastName" path="/details/attributes/lastName" type="java.lang.String"
 				minCardinality="1" maxLength="30" />
+			<node displayName="Referred By" name="referral" path="/details/attributes/referral" type="java.lang.String"
+				minCardinality="0" maxLength="20">
+				<assertion name="lookup">
+					<property name="type" value="lookup" />
+					<property name="source" value="lookup.customerReferral" />
+					<errorMessage>An error message</errorMessage>
+				</assertion>
+			</node>
 		</node>
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="patients" path="/entityRelationships"
