@@ -29,6 +29,7 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
+import org.openvpms.web.component.app.ContextException;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
@@ -68,6 +69,9 @@ class PatientClinicalEventTask extends CreateIMObjectTask {
         query.setMaxResults(1);
 
         Party patient = context.getPatient();
+        if (patient == null) {
+            throw new ContextException(ContextException.ErrorCode.NoPatient);
+        }
         CollectionNodeConstraint participations
                 = new CollectionNodeConstraint("patient",
                                                "participation.patient",
