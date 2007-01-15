@@ -48,10 +48,14 @@ import java.util.List;
  * <ul>get the value of the "name" node of the entity.</ul>
  * </li>
  * <p/>
- * Currently, a single 'magic' node-name of <em>displayName</em> is defined.
- * When encountered as a leaf node, and the archetype corrresponding to the
- * leaf has no "displayName" node, this returns the value of the archetypes
- * display name.
+ * Several special node names are defined:
+ * <ul>
+ * <li><em>shortName</em> - returns the value of the archetypes short name</li>
+ * <li><em>displayName</em> - returns the value of the archetypes display
+ * name</li>
+ * </ul>
+ * These are only evaluated when they appear as leaf nodes and the archetype
+ * corresponding to the leaf has doesn't define the node.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -145,13 +149,17 @@ public class NodeResolver {
         if (object != null) {
             NodeDescriptor leafNode = archetype.getNodeDescriptor(name);
             Object value;
-            if (leafNode == null && "displayName".equals(name)) {
-                value = archetype.getDisplayName();
-            } else if (leafNode != null) {
-                value = getValue(object, leafNode);
+            if (leafNode == null) {
+                if ("displayName".equals(name)) {
+                    value = archetype.getDisplayName();
+                } else if ("shortName".equals(name)) {
+                    value = object.getArchetypeId().getShortName();
+                } else {
+                    throw new NodeResolverException(InvalidNode, name);
+                }
             } else {
-                throw new NodeResolverException(InvalidNode, name);
-            }
+                value = getValue(object, leafNode);
+            } 
             state = new State(object, archetype, name, leafNode, value);
         } else {
             state = new State();

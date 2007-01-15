@@ -49,6 +49,7 @@ public class NodeResolverTestCase
         assertEquals("J", resolver.getObject("firstName"));
         assertEquals("Zoo", resolver.getObject("lastName"));
         assertEquals("Customer(Person)", resolver.getObject("displayName"));
+        assertEquals("party.customerperson", resolver.getObject("shortName"));
     }
 
     /**
@@ -67,6 +68,8 @@ public class NodeResolverTestCase
                      resolver.getObject("customer.displayName"));
         assertEquals("Customer(Person)",
                      resolver.getObject("customer.entity.displayName"));
+        assertEquals("party.customerperson",
+                     resolver.getObject("customer.entity.shortName"));
     }
 
     /**
