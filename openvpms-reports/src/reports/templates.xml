@@ -73,4 +73,11 @@
               archetype="act.patientDocumentForm"
               mimeType="application/vnd.oasis.opendocument.text"
               docType="document.other"/>
+
+    <template name="Till Balance Template"
+              archetype="act.tillBalance"
+              path="tillBalance.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
 </templates>

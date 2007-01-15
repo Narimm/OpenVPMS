@@ -72,6 +72,7 @@ public class ObjectSetExpressionEvaluator
                         NodeResolver resolver = new NodeResolver(
                                 (IMObject) object, getService());
                         object = getValue(nodeName, resolver);
+                        break;
                     }
                 }
             } else {
