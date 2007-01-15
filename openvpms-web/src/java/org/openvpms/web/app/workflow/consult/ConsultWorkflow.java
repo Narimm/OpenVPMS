@@ -64,11 +64,13 @@ public class ConsultWorkflow extends WorkflowImpl {
         addTask(new UpdateIMObjectTask(act, appProps));
 
         ActBean bean = new ActBean(act);
+        Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
         final User clinician
                 = (User) bean.getParticipant("participation.clinician");
 
         initial = new TaskContextImpl();
+        initial.setCustomer(customer);
         initial.setPatient(patient);
         initial.setClinician(clinician);
 

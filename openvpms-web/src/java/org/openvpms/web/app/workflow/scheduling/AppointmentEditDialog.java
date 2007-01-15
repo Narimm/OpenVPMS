@@ -135,9 +135,6 @@ public class AppointmentEditDialog extends EditDialog {
                                         getAppointmentTimes();
                                     }
                                 }
-                                if (editor.save() && close) {
-                                    close();
-                                }
                             }
                         }
                     });

@@ -30,6 +30,7 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.web.component.app.ContextException;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
@@ -66,6 +67,9 @@ public class InvoiceTask extends CreateIMObjectTask {
      * failure.
      *
      * @param context the task context
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws ContextException          if the context doesn't contain a
+     *                                   customer
      */
     @Override
     public void start(final TaskContext context) {
@@ -89,6 +93,8 @@ public class InvoiceTask extends CreateIMObjectTask {
      * @return the most recent invoice with the specified status or
      *         <code>null</code> if none is found
      * @throws ArchetypeServiceException for any archetype service error
+     * @throws ContextException          if the context doesn't contain a
+     *                                   customer
      */
     private Act getInvoice(TaskContext context, String status) {
         ArchetypeQuery query = new ArchetypeQuery(getShortNames(), false,
@@ -97,6 +103,9 @@ public class InvoiceTask extends CreateIMObjectTask {
         query.setMaxResults(1);
 
         Party customer = context.getCustomer();
+        if (customer == null) {
+            throw new ContextException(ContextException.ErrorCode.NoCustomer);
+        }
         CollectionNodeConstraint participations
                 = new CollectionNodeConstraint("customer",
                                                "participation.customer",
