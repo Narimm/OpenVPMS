@@ -159,7 +159,8 @@ public abstract class OOBootstrapService {
                     break;
                 } catch (NoConnectException exception) {
                     // ensure the process is still running
-                    try {
+/*
+                	try {
                         int exit = process.exitValue();
                         throw new OpenOfficeException(
                                 FailedToStartService,
@@ -167,6 +168,7 @@ public abstract class OOBootstrapService {
                     } catch (IllegalThreadStateException ignore) {
                         // process is running
                     }
+*/
                     // wait 500 ms, then try to connect again
                     Thread.sleep(500);
                 }
