@@ -169,6 +169,7 @@ public abstract class OOBootstrapService {
                         // process is running
                     }
 */
+                    log.debug("Failed to connect to Openoffice service - retrying");
                     // wait 500 ms, then try to connect again
                     Thread.sleep(500);
                 }
