@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.im.print;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-
 import java.util.EventListener;
 
 
@@ -29,28 +27,22 @@ import java.util.EventListener;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectPrinterListener<T extends IMObject>
-        extends EventListener {
+public interface IMPrinterListener extends EventListener {
 
     /**
-     * Invoked when an object has been successfully printed.
-     *
-     * @param object the object
+     * Notifies of a successful print.
      */
-    void printed(T object);
+    void printed();
 
     /**
      * Notifies that the print was cancelled.
-     *
-     * @param object the object
      */
-    void cancelled(T object);
+    void cancelled();
 
     /**
-     * Invoked when an object fails to print.
+     * Invoked when a print fails.
      *
-     * @param object the object
-     * @param cause  the reason for the failure
+     * @param cause the reason for the failure
      */
-    void failed(T object, Throwable cause);
+    void failed(Throwable cause);
 }

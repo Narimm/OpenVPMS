@@ -24,6 +24,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.rules.till.TillBalanceQuery;
 import org.openvpms.archetype.rules.till.TillBalanceStatus;
 import org.openvpms.archetype.rules.till.TillRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -35,11 +36,13 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.financial.FinancialActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
@@ -49,6 +52,9 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
+import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -69,22 +75,22 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     /**
      * The selected child act.
      */
-    protected FinancialAct _childAct;
+    protected FinancialAct childAct;
 
     /**
      * The clear button.
      */
-    private Button _clear;
+    private Button clear;
 
     /**
      * The adjust button.
      */
-    private Button _adjust;
+    private Button adjust;
 
     /**
      * The transfer button.
      */
-    private Button _transfer;
+    private Button transfer;
 
     /**
      * Clear button identifier.
@@ -101,9 +107,14 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     private static final String TRANSFER_ID = "transfer";
 
+    /**
+     * Till balance short name.
+     */
+    private static final String TILL_BALANCE = "act.tillBalance";
+
 
     /**
-     * Create a new <code>TillCRUDWindow</code>.
+     * Creates a new <code>TillCRUDWindow</code>.
      *
      * @param type         display name for the types of objects that this may
      *                     create
@@ -123,7 +134,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     public void setObject(FinancialAct object) {
-        _childAct = null;
+        childAct = null;
         super.setObject(object);
     }
 
@@ -134,27 +145,27 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        _clear = ButtonFactory.create(CLEAR_ID, new ActionListener() {
+        clear = ButtonFactory.create(CLEAR_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onClear();
             }
         });
-        _adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
+        adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onAdjust();
             }
         });
-        _transfer = ButtonFactory.create(TRANSFER_ID, new ActionListener() {
+        transfer = ButtonFactory.create(TRANSFER_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onTransfer();
             }
         });
-        buttons.add(_clear);
+        buttons.add(clear);
         buttons.add(getSummaryButton());
         buttons.add(getPrintButton());
-        buttons.add(_adjust);
+        buttons.add(adjust);
         buttons.add(getEditButton());
-        buttons.add(_transfer);
+        buttons.add(transfer);
     }
 
     /**
@@ -169,22 +180,22 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         if (enable) {
             Act act = getObject();
             boolean uncleared = false;
-            if (TypeHelper.isA(act, "act.tillBalance")) {
+            if (TypeHelper.isA(act, TILL_BALANCE)) {
                 uncleared = TillBalanceStatus.UNCLEARED.equals(act.getStatus());
             }
             if (uncleared) {
-                buttons.add(_clear);
+                buttons.add(clear);
             }
             buttons.add(getSummaryButton());
             buttons.add(getPrintButton());
             if (uncleared) {
-                buttons.add(_adjust);
-                if (TypeHelper.isA(_childAct, "act.tillBalanceAdjustment")) {
+                buttons.add(adjust);
+                if (TypeHelper.isA(childAct, "act.tillBalanceAdjustment")) {
                     buttons.add(getEditButton());
-                } else if (TypeHelper.isA(_childAct,
+                } else if (TypeHelper.isA(childAct,
                                           "act.customerAccountPayment",
                                           "act.customerAccountRefund")) {
-                    buttons.add(_transfer);
+                    buttons.add(transfer);
                 }
             }
         }
@@ -220,6 +231,22 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     }
 
     /**
+     * Prints the till balance.
+     */
+    @Override
+    protected void onPrint() {
+        FinancialAct object = getObject();
+        IPage<ObjectSet> set = new TillBalanceQuery(object).query();
+        IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
+                set.getResults(), TILL_BALANCE);
+        String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
+        String title = Messages.get("imobject.print.title", displayName);
+        InteractiveIMPrinter<ObjectSet> iPrinter
+                = new InteractiveIMPrinter<ObjectSet>(title, printer);
+        iPrinter.print();
+    }
+
+    /**
      * Invoked when the 'adjust' button is pressed.
      */
     protected void onAdjust() {
@@ -248,7 +275,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             public void windowPaneClosing(WindowPaneEvent e) {
                 Party selected = (Party) dialog.getSelected();
                 if (selected != null) {
-                    doTransfer(act, _childAct, selected);
+                    doTransfer(act, childAct, selected);
                 }
             }
         });
@@ -282,9 +309,9 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected void onEdit() {
-        if (TypeHelper.isA(_childAct, "act.tillBalanceAdjustment")) {
+        if (TypeHelper.isA(childAct, "act.tillBalanceAdjustment")) {
             LayoutContext context = new DefaultLayoutContext(true);
-            final IMObjectEditor editor = createEditor(_childAct, context);
+            final IMObjectEditor editor = createEditor(childAct, context);
             EditDialog dialog = new EditDialog(editor);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
@@ -314,7 +341,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected void onChildActSelected(FinancialAct child) {
-        _childAct = child;
+        childAct = child;
         enableButtons(getButtons(), getObject() != null);
     }
 
