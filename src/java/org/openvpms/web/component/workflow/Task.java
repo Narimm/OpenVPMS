@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.workflow;
 
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
 
 /**
  * Workflow task.
@@ -41,6 +43,7 @@ public interface Task {
      * failure.
      *
      * @param context the task context
+     * @throws OpenVPMSException for any error
      */
     void start(TaskContext context);
 

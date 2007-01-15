@@ -29,6 +29,7 @@ import org.openvpms.web.component.im.util.PrintHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -54,6 +55,13 @@ public class PrintDialog extends PopupDialog {
      */
     private SelectField printers;
 
+
+    /**
+     * Constructs a new <code>PrintDialog</code>.
+     */
+    public PrintDialog() {
+        this(Messages.get("printdialog.title"));
+    }
 
     /**
      * Constructs a new <code>PrintDialog</code>.

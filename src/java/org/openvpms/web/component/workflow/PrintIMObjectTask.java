@@ -20,8 +20,9 @@ package org.openvpms.web.component.workflow;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
-import org.openvpms.web.component.im.print.IMObjectPrinterListener;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterListener;
+import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 
 
@@ -61,18 +62,18 @@ public class PrintIMObjectTask extends AbstractTask {
             IMPrinter<IMObject> printer = IMObjectPrinterFactory.create(
                     object);
             InteractiveIMPrinter<IMObject> iPrinter
-                    = new InteractiveIMPrinter<IMObject>(printer);
+                    = new InteractiveIMObjectPrinter<IMObject>(printer);
 
-            iPrinter.setListener(new IMObjectPrinterListener<IMObject>() {
-                public void printed(IMObject object) {
+            iPrinter.setListener(new IMPrinterListener() {
+                public void printed() {
                     notifyCompleted();
                 }
 
-                public void cancelled(IMObject object) {
+                public void cancelled() {
                     notifyCancelled();
                 }
 
-                public void failed(IMObject object, Throwable cause) {
+                public void failed(Throwable cause) {
                     notifyCancelled();
                 }
             });

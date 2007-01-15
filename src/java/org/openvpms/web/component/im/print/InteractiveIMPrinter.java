@@ -11,7 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
@@ -20,14 +20,14 @@ package org.openvpms.web.component.im.print;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
+
+import java.util.List;
 
 
 /**
@@ -37,8 +37,7 @@ import org.openvpms.web.servlet.DownloadServlet;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class InteractiveIMPrinter<T extends IMObject>
-        implements IMPrinter<T> {
+public class InteractiveIMPrinter<T> implements IMPrinter<T> {
 
     /**
      * The printer to delegate to.
@@ -48,7 +47,13 @@ public class InteractiveIMPrinter<T extends IMObject>
     /**
      * The print listener. May be <code>null</code>.
      */
-    private IMObjectPrinterListener<T> listener;
+    private IMPrinterListener listener;
+
+    /**
+     * The dialog title.
+     */
+    private final String title;
+
 
     /**
      * Constructs a new <code>InteractiveIMPrinter</code>.
@@ -56,16 +61,27 @@ public class InteractiveIMPrinter<T extends IMObject>
      * @param printer the printer to delegate to
      */
     public InteractiveIMPrinter(IMPrinter<T> printer) {
+        this(Messages.get("printdialog.title"), printer);
+    }
+
+    /**
+     * Constructs a new <code>InteractiveIMPrinter</code>.
+     *
+     * @param title   the dialog title
+     * @param printer the printer to delegate to
+     */
+    public InteractiveIMPrinter(String title, IMPrinter<T> printer) {
+        this.title = title;
         this.printer = printer;
     }
 
     /**
-     * Returns the object being printed.
+     * Returns the objects being printed.
      *
-     * @return the object being printed
+     * @return the objects being printed
      */
-    public T getObject() {
-        return printer.getObject();
+    public List<T> getObjects() {
+        return printer.getObjects();
     }
 
     /**
@@ -86,10 +102,7 @@ public class InteractiveIMPrinter<T extends IMObject>
      * @param printer the printer name. May be <code>null</code>
      */
     public void print(String printer) {
-        String displayName = DescriptorHelper.getDisplayName(getObject());
-        String title = Messages.get("imobject.print.title", displayName);
-
-        final PrintDialog dialog = new PrintDialog(title) {
+        final PrintDialog dialog = new PrintDialog(getTitle()) {
             @Override
             protected void onPreview() {
                 doPrintPreview();
@@ -148,8 +161,17 @@ public class InteractiveIMPrinter<T extends IMObject>
      *
      * @param listener the listener. May be <code>null</code>
      */
-    public void setListener(IMObjectPrinterListener<T> listener) {
+    public void setListener(IMPrinterListener listener) {
         this.listener = listener;
+    }
+
+    /**
+     * Returns a title for the print dialog.
+     *
+     * @return a title for the print dialog
+     */
+    protected String getTitle() {
+        return title;
     }
 
     /**
@@ -184,7 +206,7 @@ public class InteractiveIMPrinter<T extends IMObject>
      */
     protected void printed() {
         if (listener != null) {
-            listener.printed(getObject());
+            listener.printed();
         }
     }
 
@@ -194,7 +216,7 @@ public class InteractiveIMPrinter<T extends IMObject>
      */
     protected void cancelled() {
         if (listener != null) {
-            listener.cancelled(getObject());
+            listener.cancelled();
         }
     }
 
@@ -206,10 +228,9 @@ public class InteractiveIMPrinter<T extends IMObject>
      */
     protected void failed(Throwable exception) {
         if (listener != null) {
-            listener.failed(getObject(), exception);
+            listener.failed(exception);
         } else {
             ErrorHelper.show(exception);
         }
     }
-
 }

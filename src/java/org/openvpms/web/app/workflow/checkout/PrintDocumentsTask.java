@@ -32,8 +32,9 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
-import org.openvpms.web.component.im.print.IMObjectPrinterListener;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterListener;
+import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
@@ -165,12 +166,17 @@ class PrintDocumentsTask extends AbstractTask {
      * due to limitations in downloading multiple pdf files to the client
      * browser.
      */
-    class BatchPrinter implements IMObjectPrinterListener<IMObject> {
+    class BatchPrinter implements IMPrinterListener {
 
         /**
          * Iterator over the objects to  print.
          */
         private Iterator<IMObject> iterator;
+
+        /**
+         * The object being printed.
+         */
+        private IMObject object;
 
         /**
          * Constructs a new <code>BatchPrinter</code>.
@@ -186,11 +192,11 @@ class PrintDocumentsTask extends AbstractTask {
          */
         public void print() {
             if (iterator.hasNext()) {
-                IMObject object = iterator.next();
+                object = iterator.next();
                 IMPrinter<IMObject> printer
                         = IMObjectPrinterFactory.create(object);
                 InteractiveIMPrinter<IMObject> iPrinter
-                        = new InteractiveIMPrinter<IMObject>(printer);
+                        = new InteractiveIMObjectPrinter<IMObject>(printer);
                 iPrinter.setListener(this);
                 iPrinter.print();
             } else {
@@ -200,10 +206,8 @@ class PrintDocumentsTask extends AbstractTask {
 
         /**
          * Invoked when an object has been successfully printed.
-         *
-         * @param object the object
          */
-        public void printed(IMObject object) {
+        public void printed() {
             boolean next = false;
             try {
                 // update the print flag, if it exists
@@ -214,7 +218,7 @@ class PrintDocumentsTask extends AbstractTask {
                 }
                 next = true;
             } catch (OpenVPMSException exception) {
-                failed(object, exception);
+                failed(exception);
             }
             if (next) {
                 print(); // print the next available object
@@ -223,20 +227,17 @@ class PrintDocumentsTask extends AbstractTask {
 
         /**
          * Notifies that the print was cancelled.
-         *
-         * @param object the object
          */
-        public void cancelled(IMObject object) {
+        public void cancelled() {
             notifyCancelled();
         }
 
         /**
          * Invoked when an object fails to print.
          *
-         * @param object the object
-         * @param cause  the reason for the failure
+         * @param cause the reason for the failure
          */
-        public void failed(IMObject object, Throwable cause) {
+        public void failed(Throwable cause) {
             ErrorHelper.show(cause, new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
                     notifyCancelled();

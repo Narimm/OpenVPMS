@@ -92,15 +92,14 @@ public class IMObjectReportPrinter<T extends IMObject>
     /**
      * Returns the print properties for an object.
      *
-     * @param object  the object to print
      * @param printer the printer
      * @return the print properties
      * @throws OpenVPMSException for any error
      */
     @Override
-    protected PrintProperties getProperties(T object, String printer) {
-        PrintProperties properties = super.getProperties(object, printer);
-        String shortName = object.getArchetypeId().getShortName();
+    protected PrintProperties getProperties(String printer) {
+        PrintProperties properties = super.getProperties(printer);
+        String shortName = getObject().getArchetypeId().getShortName();
         Entity template = TemplateHelper.getTemplateForArchetype(
                 shortName, ArchetypeServiceHelper.getArchetypeService());
         if (template != null) {

@@ -35,8 +35,9 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
-import org.openvpms.web.component.im.print.IMObjectPrinterListener;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterListener;
+import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -134,18 +135,18 @@ class ReminderGenerator extends AbstractReminderProcessor {
             IMPrinter<DocumentAct> printer
                     = IMObjectPrinterFactory.create(act);
             InteractiveIMPrinter<DocumentAct> iPrinter
-                    = new InteractiveIMPrinter<DocumentAct>(printer);
-            iPrinter.setListener(new IMObjectPrinterListener<DocumentAct>() {
-                public void printed(DocumentAct object) {
+                    = new InteractiveIMObjectPrinter<DocumentAct>(printer);
+            iPrinter.setListener(new IMPrinterListener() {
+                public void printed() {
                     ReminderGenerator.super.print(
                             reminder, reminderType, contact, documentTemplate);
                     generate();
                 }
 
-                public void cancelled(DocumentAct object) {
+                public void cancelled() {
                 }
 
-                public void failed(DocumentAct object, Throwable cause) {
+                public void failed(Throwable cause) {
                     ErrorHelper.show(cause, new WindowPaneListener() {
                         public void windowPaneClosing(
                                 WindowPaneEvent event) {

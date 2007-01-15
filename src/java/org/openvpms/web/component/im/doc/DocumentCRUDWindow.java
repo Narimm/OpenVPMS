@@ -32,9 +32,9 @@ import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.print.IMObjectPrinterListener;
 import org.openvpms.web.component.im.print.IMPrinter;
-import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterListener;
+import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -154,21 +154,21 @@ public class DocumentCRUDWindow extends ActCRUDWindow<Act> {
      * Creates a new printer.
      *
      * @param object the object to print
-     * @return an instance of {@link InteractiveIMPrinter}.
+     * @return an instance of {@link InteractiveIMObjectPrinter}.
      */
     @Override
-    protected IMPrinter<Act> createPrinter(Act object) {
-        InteractiveIMPrinter<Act> printer = (InteractiveIMPrinter<Act>)
-                super.createPrinter(object);
-        printer.setListener(new IMObjectPrinterListener<Act>() {
-            public void printed(Act object) {
+    protected IMPrinter<Act> createPrinter(final Act object) {
+        InteractiveIMObjectPrinter<Act> printer
+                = (InteractiveIMObjectPrinter<Act>) super.createPrinter(object);
+        printer.setListener(new IMPrinterListener() {
+            public void printed() {
                 DocumentCRUDWindow.this.printed(object);
             }
 
-            public void cancelled(Act object) {
+            public void cancelled() {
             }
 
-            public void failed(Act object, Throwable cause) {
+            public void failed(Throwable cause) {
                 ErrorHelper.show(cause);
             }
         });

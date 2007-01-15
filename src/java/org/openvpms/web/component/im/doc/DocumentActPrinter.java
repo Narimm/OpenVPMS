@@ -83,10 +83,9 @@ public class DocumentActPrinter extends AbstractIMPrinter<IMObject> {
             IMReport<IMObject> report = createReport();
             List<IMObject> objects = new ArrayList<IMObject>();
             objects.add(act);
-            report.print(objects.iterator(), getProperties(act, printer));
+            report.print(objects.iterator(), getProperties(printer));
         } else if (DocFormats.ODT_TYPE.equals(doc.getMimeType())) {
-            OpenOfficeHelper.getPrintService().print(
-                    doc, printer);
+            OpenOfficeHelper.getPrintService().print(doc, printer);
         } else {
             download();
         }
@@ -142,14 +141,13 @@ public class DocumentActPrinter extends AbstractIMPrinter<IMObject> {
     /**
      * Returns the print properties for an object.
      *
-     * @param object  the object to print
      * @param printer the printer
      * @return the print properties
      * @throws OpenVPMSException for any error
      */
     @Override
-    protected PrintProperties getProperties(IMObject object, String printer) {
-        PrintProperties properties = super.getProperties(object, printer);
+    protected PrintProperties getProperties(String printer) {
+        PrintProperties properties = super.getProperties(printer);
         properties.setMediaSize(getMediaSize(generator.getTemplate()));
         properties.setMediaTray(getMediaTray(generator.getTemplate(), printer));
         return properties;

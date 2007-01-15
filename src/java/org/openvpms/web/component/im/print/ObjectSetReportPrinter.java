@@ -18,14 +18,25 @@
 
 package org.openvpms.web.component.im.print;
 
+import org.openvpms.archetype.rules.doc.DocumentException;
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.IMReportException;
 import org.openvpms.report.IMReportFactory;
+import org.openvpms.report.PrintProperties;
+import org.openvpms.report.TemplateHelper;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.system.ServiceHelper;
+
+import java.util.Collection;
 
 
 /**
@@ -38,20 +49,37 @@ public class ObjectSetReportPrinter
         extends AbstractIMReportPrinter<ObjectSet> {
 
     /**
+     * The document template entity.
+     */
+    private final Entity template;
+
+    /**
      * The document template.
      */
-    private final Document template;
+    private Document document;
 
 
     /**
      * Constructs a new <code>ObjectSetReportPrinter</code>.
      *
-     * @param set      the set to print
-     * @param template the document template
+     * @param set       the set to print
+     * @param shortName the archetype short name
+     * @throws DocumentException         if the document template can't be found
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    public ObjectSetReportPrinter(ObjectSet set, Document template) {
+    public ObjectSetReportPrinter(Collection<ObjectSet> set,
+                                  String shortName) {
         super(set);
-        this.template = template;
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        template = TemplateHelper.getTemplateForArchetype(shortName, service);
+        if (template == null) {
+            throw new DocumentException(NotFound);
+        }
+        document = TemplateHelper.getDocumentFromTemplate(template, service);
+        if (document == null) {
+            throw new DocumentException(NotFound);
+        }
     }
 
     /**
@@ -61,7 +89,14 @@ public class ObjectSetReportPrinter
      *         none defined
      */
     public String getDefaultPrinter() {
-        return null;
+        String printer = null;
+        Party practice = GlobalContext.getInstance().getPractice();
+        if (practice != null) {
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            printer = TemplateHelper.getPrinter(template, practice, service);
+        }
+        return printer;
     }
 
     /**
@@ -73,8 +108,26 @@ public class ObjectSetReportPrinter
      */
     protected IMReport<ObjectSet> createReport() {
         return IMReportFactory.createObjectSetReport(
-                template, ArchetypeServiceHelper.getArchetypeService(),
+                document, ArchetypeServiceHelper.getArchetypeService(),
                 ServiceHelper.getDocumentHandlers());
+    }
+
+    /**
+     * Returns the print properties for an object.
+     *
+     * @param printer the printer
+     * @return the print properties
+     * @throws OpenVPMSException for any error
+     */
+    @Override
+    protected PrintProperties getProperties(String printer) {
+        PrintProperties properties = super.getProperties(printer);
+        if (document != null) {
+            properties.setMediaSize(getMediaSize(template));
+            properties.setMediaTray(getMediaTray(template, printer));
+        }
+
+        return properties;
     }
 
 }

@@ -38,6 +38,7 @@ import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -50,27 +51,45 @@ import java.util.List;
 public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
 
     /**
+     * The objects to print.
+     */
+    private final List<T> objects;
+
+    /**
      * The object to print.
      */
     private final T object;
 
 
     /**
-     * Constructs a new <code>AbstractIMPrinter</code>.
+     * Constructs a new <code>AbstractIMPrinter</code> to print a single object.
      *
      * @param object the object to print
      */
     public AbstractIMPrinter(T object) {
+        objects = new ArrayList<T>();
+        objects.add(object);
         this.object = object;
     }
 
     /**
-     * Returns the object being printed.
+     * Constructs a new <code>AbstractIMPrinter</code> to print a collection
+     * of objects.
      *
-     * @return the object being printed
+     * @param objects the objects to print
      */
-    public T getObject() {
-        return object;
+    public AbstractIMPrinter(Collection<T> objects) {
+        this.objects = new ArrayList<T>(objects);
+        object = null;
+    }
+
+    /**
+     * Returns the objects being printed.
+     *
+     * @return the objects being printed
+     */
+    public List<T> getObjects() {
+        return objects;
     }
 
     /**
@@ -90,9 +109,17 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
      */
     public void print(String printer) {
         IMReport<T> report = createReport();
-        List<T> objects = new ArrayList<T>();
-        objects.add(object);
-        report.print(objects.iterator(), getProperties(object, printer));
+        report.print(getObjects().iterator(), getProperties(printer));
+    }
+
+    /**
+     * Returns the object being printed.
+     *
+     * @return the object being printed, or <code>null</code> if a collection
+     *         is being printed
+     */
+    protected T getObject() {
+        return object;
     }
 
     /**
@@ -107,12 +134,11 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
     /**
      * Returns the print properties for an object.
      *
-     * @param object  the object to print
      * @param printer the printer
      * @return the print properties
      * @throws OpenVPMSException for any error
      */
-    protected PrintProperties getProperties(T object, String printer) {
+    protected PrintProperties getProperties(String printer) {
         return new PrintProperties(printer);
     }
 

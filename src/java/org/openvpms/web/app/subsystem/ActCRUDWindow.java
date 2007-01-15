@@ -154,7 +154,7 @@ public abstract class ActCRUDWindow<T extends Act>
                             } catch (OpenVPMSException exception) {
                                 ErrorHelper.show(exception);
                             }
-                            posted(printer.getObject(), printed);
+                            posted(getObject(), printed);
                         }
                     }
                 }
