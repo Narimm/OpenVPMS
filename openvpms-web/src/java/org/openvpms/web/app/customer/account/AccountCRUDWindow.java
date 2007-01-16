@@ -143,8 +143,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         buttons.removeAll();
         if (enable) {
             buttons.add(_reverse);
-            buttons.add(getPostButton());
-            buttons.add(getPreviewButton());
+            buttons.add(getPrintButton());
             buttons.add(_statement);
             buttons.add(_adjust);
         }
