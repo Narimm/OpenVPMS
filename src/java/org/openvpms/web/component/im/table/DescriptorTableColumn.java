@@ -19,9 +19,10 @@
 package org.openvpms.web.component.im.table;
 
 import nextapp.echo2.app.table.TableColumn;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+
+import java.util.Map;
 
 
 /**
@@ -34,22 +35,30 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 public class DescriptorTableColumn extends TableColumn {
 
     /**
-     * The node descriptor.
+     * The default node descriptor.
      */
+    private final NodeDescriptor descriptor;
 
-    private NodeDescriptor _descriptor;
+    /**
+     * Node descriptors, keyed on short name.
+     */
+    private final Map<String, NodeDescriptor> descriptors;
+
 
     /**
      * Construct a new <code>DescriptorTableColumn</code> with the specified
      * model index,undefined width, and undefined cell and header renderers.
      *
-     * @param modelIndex the column index of model data visualized by this
-     *                   column
-     * @param descriptor the node descriptor
+     * @param modelIndex  the column index of model data visualized by this
+     *                    column
+     * @param descriptors the node descriptors
      */
-    public DescriptorTableColumn(int modelIndex, NodeDescriptor descriptor) {
+    public DescriptorTableColumn(int modelIndex,
+                                 Map<String, NodeDescriptor> descriptors) {
         super(modelIndex);
-        _descriptor = descriptor;
+        this.descriptors = descriptors;
+        this.descriptor = descriptors.values().toArray(
+                new NodeDescriptor[0])[0];
     }
 
     /**
@@ -61,7 +70,7 @@ public class DescriptorTableColumn extends TableColumn {
      */
     @Override
     public Object getHeaderValue() {
-        return _descriptor.getDisplayName();
+        return descriptor.getDisplayName();
     }
 
     /**
@@ -71,16 +80,28 @@ public class DescriptorTableColumn extends TableColumn {
      * @return the value of the cell
      */
     public Object getValue(IMObject context) {
-        return _descriptor.getValue(context);
+        return getDescriptor(context).getValue(context);
     }
 
     /**
-     * Returns the descriptor.
+     * Returns the default descriptor.
      *
-     * @return the descriptor
+     * @return the default descriptor
      */
     public NodeDescriptor getDescriptor() {
-        return _descriptor;
+        return descriptor;
+    }
+
+    /**
+     * Returns the descriptor for a specific object.
+     *
+     * @param object the object
+     * @return the descriptor for <code>object</code>
+     */
+    public NodeDescriptor getDescriptor(IMObject object) {
+        String shortName = object.getArchetypeId().getShortName();
+        NodeDescriptor result = descriptors.get(shortName);
+        return (result != null) ? result : descriptor;
     }
 
 }

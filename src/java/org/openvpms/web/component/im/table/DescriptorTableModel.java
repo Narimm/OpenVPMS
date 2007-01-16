@@ -37,8 +37,10 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -179,7 +181,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
     protected Object getValue(IMObject object, DescriptorTableColumn column) {
         Object result;
         IMObjectComponentFactory factory = context.getComponentFactory();
-        NodeDescriptor descriptor = column.getDescriptor();
+        NodeDescriptor descriptor = column.getDescriptor(object);
         Property property = new IMObjectProperty(object, descriptor);
         result = factory.create(property, object).getComponent();
         return result;
@@ -234,18 +236,18 @@ public abstract class DescriptorTableModel<T extends IMObject>
     protected TableColumnModel createColumnModel(
             List<ArchetypeDescriptor> archetypes,
             LayoutContext context) {
-        List<NodeDescriptor> descriptors = getDescriptors(archetypes, context);
+        List<String> names = getDescriptorNames(archetypes, context);
         TableColumnModel columns = new DefaultTableColumnModel();
 
         if (archetypes.size() > 1) {
-            addColumns(descriptors, columns);
+            addColumns(archetypes, names, columns);
             int index = getArchetypeColumnIndex();
             if (index != -1) {
                 columns.addColumn(new TableColumn(ARCHETYPE_INDEX));
                 columns.moveColumn(columns.getColumnCount() - 1, index);
             }
         } else {
-            addColumns(descriptors, columns);
+            addColumns(archetypes, names, columns);
         }
         return columns;
     }
@@ -253,16 +255,23 @@ public abstract class DescriptorTableModel<T extends IMObject>
     /**
      * Add columns to a column model.
      *
-     * @param descriptors the column descriptors
-     * @param columns     the columns to add to
+     * @param archetypes the archetypes
+     * @param names      the node descriptor names
+     * @param columns    the columns to add to
      */
-    protected void addColumns(List<NodeDescriptor> descriptors,
-                              TableColumnModel columns) {
+    protected void addColumns(List<ArchetypeDescriptor> archetypes,
+                              List<String> names, TableColumnModel columns) {
         // determine a unique starting index for the columns
         int index = getNextModelIndex(columns);
 
-        for (NodeDescriptor descriptor : descriptors) {
-            TableColumn column = new DescriptorTableColumn(index, descriptor);
+        for (String name : names) {
+            Map<String, NodeDescriptor> descriptors
+                    = new HashMap<String, NodeDescriptor>();
+            for (ArchetypeDescriptor archetype : archetypes) {
+                NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
+                descriptors.put(archetype.getShortName(), descriptor);
+            }
+            TableColumn column = new DescriptorTableColumn(index, descriptors);
             columns.addColumn(column);
             ++index;
         }
@@ -287,17 +296,17 @@ public abstract class DescriptorTableModel<T extends IMObject>
     }
 
     /**
-     * Returns the intersection of descriptors for a set of archetypes.
+     * Returns the intersection of descriptor names for a set of archetypes.
      *
      * @param archetypes the archetype descriptors
      * @param context    the layout context
-     * @return thhe intersection of descriptors for a set of archetypes
+     * @return the intersection of descriptors names for a set of archetypes
      */
-    protected List<NodeDescriptor> getDescriptors(
+    protected List<String> getDescriptorNames(
             List<ArchetypeDescriptor> archetypes, LayoutContext context) {
-        List<NodeDescriptor> common = null;
+        List<String> common = null;
         for (ArchetypeDescriptor archetype : archetypes) {
-            List<NodeDescriptor> nodes = getDescriptors(archetype, context);
+            List<String> nodes = getDescriptorNames(archetype, context);
             if (common == null) {
                 common = nodes;
             } else {
@@ -319,26 +328,29 @@ public abstract class DescriptorTableModel<T extends IMObject>
     }
 
     /**
-     * Returns a filtered list of descriptors for an archetype.
+     * Returns a filtered list of descriptor names for an archetype.
      *
      * @param archetype the archetype
      * @param context   the layout context
-     * @return a filtered list of descriptors for the archetype
+     * @return a filtered list of descriptor names for the archetype
      */
-    protected List<NodeDescriptor> getDescriptors(ArchetypeDescriptor archetype,
-                                                  LayoutContext context) {
-        List<NodeDescriptor> result;
+    protected List<String> getDescriptorNames(ArchetypeDescriptor archetype,
+                                              LayoutContext context) {
+        List<String> result = new ArrayList<String>();
         String[] names = getDescriptorNames();
         if (names != null) {
-            result = new ArrayList<NodeDescriptor>();
             for (String name : names) {
                 NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
                 if (descriptor != null) {
-                    result.add(descriptor);
+                    result.add(descriptor.getName());
                 }
             }
         } else {
-            result = filter(archetype.getSimpleNodeDescriptors(), context);
+            List<NodeDescriptor> descriptors
+                    = filter(archetype.getSimpleNodeDescriptors(), context);
+            for (NodeDescriptor descriptor : descriptors) {
+                result.add(descriptor.getName());
+            }
         }
         return result;
     }
@@ -367,18 +379,19 @@ public abstract class DescriptorTableModel<T extends IMObject>
     }
 
     /**
-     * Helper to return the intersection of two lists of node descriptors.
+     * Helper to return the intersection of two lists of strings, maintaining
+     * insertion order.
      *
-     * @param first  the first list of nodes
-     * @param second the second list of nodes
+     * @param first  the first list
+     * @param second the second list
      * @return the intersection of the two lists
      */
-    private List<NodeDescriptor> getIntersection(List<NodeDescriptor> first,
-                                                 List<NodeDescriptor> second) {
-        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
-        for (NodeDescriptor a : first) {
-            for (NodeDescriptor b : second) {
-                if (a.getName().equals(b.getName())) {
+    private List<String> getIntersection(List<String> first,
+                                         List<String> second) {
+        List<String> result = new ArrayList<String>();
+        for (String a : first) {
+            for (String b : second) {
+                if (a.equals(b)) {
                     result.add(a);
                     break;
                 }
