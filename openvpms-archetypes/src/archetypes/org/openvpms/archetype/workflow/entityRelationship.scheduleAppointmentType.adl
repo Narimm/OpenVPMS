@@ -36,7 +36,7 @@
 			<node name="default" path="/details/attributes/default" type="java.lang.Boolean" defaultValue="false()" />
 		</node>		
 		<node name="source" displayName="Schedule" path="/source"
-			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
+			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
@@ -48,7 +48,7 @@
 			</assertion>
 		</node>
 		<node name="target" displayName="Appointment Type" path="/target"
-			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
+			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
