@@ -35,7 +35,7 @@
 			<node name="includeQty" displayName="Quantity" path="/details/attributes/includeQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1" />
 		</node>		
 		<node name="source" displayName="Template" path="/source"
-			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
+			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
@@ -47,7 +47,7 @@
 			</assertion>
 		</node>
 		<node name="target" displayName="Product" path="/target"
-			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
+			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
