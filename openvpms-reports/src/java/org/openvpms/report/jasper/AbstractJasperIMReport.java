@@ -46,6 +46,7 @@ import javax.print.attribute.PrintServiceAttributeSet;
 import javax.print.attribute.standard.Copies;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
+import javax.print.attribute.standard.OrientationRequested;
 import javax.print.attribute.standard.PrinterName;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -92,7 +93,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
      * @return a document containing the report
-     * @throws IMReportException   for any report error
+     * @throws IMReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(Iterator<T> objects, String[] mimeTypes) {
@@ -123,7 +124,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      *
      * @param objects    the objects to report on
      * @param properties the print properties
-     * @throws IMReportException   for any report error
+     * @throws IMReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void print(Iterator<T> objects, PrintProperties properties) {
@@ -137,9 +138,13 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
             aset.add(new Copies(1));
             MediaSizeName mediaSize = properties.getMediaSize();
+            OrientationRequested orientation = properties.getOrientation();
             MediaTray tray = properties.getMediaTray();
             if (mediaSize != null) {
                 aset.add(mediaSize);
+            }
+            if (orientation != null) {
+                aset.add(orientation);
             }
             if (tray != null) {
                 aset.add(tray);
@@ -211,7 +216,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param report   the report to convert
      * @param mimeType the mime-type of the document
      * @return a document containing the report
-     * @throws IMReportException   for any error
+     * @throws IMReportException         for any error
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected Document convert(JasperPrint report, String mimeType) {

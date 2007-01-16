@@ -19,6 +19,7 @@
 package org.openvpms.report;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.doc.MediaHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -38,7 +39,6 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
-import org.openvpms.archetype.rules.doc.MediaHelper;
 
 import javax.print.attribute.standard.MediaTray;
 import java.util.List;
@@ -154,7 +154,10 @@ public class TemplateHelper {
                 IMObjectBean bean = new IMObjectBean(object, service);
                 String name = bean.getString("printerName");
                 if (StringUtils.equals(printer, name)) {
-                    tray = MediaHelper.getTray(bean.getString("paperTray"));
+                    String trayName = bean.getString("paperTray");
+                    if (trayName != null) {
+                        tray = MediaHelper.getTray(trayName);
+                    }
                     break;
                 }
             }
