@@ -111,8 +111,9 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
 
         try {
             if (printer == null) {
-                dialog.setDefaultPrinter(getDefaultPrinter());
+                printer = getDefaultPrinter();
             }
+            dialog.setDefaultPrinter(printer);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
                     String action = dialog.getAction();
