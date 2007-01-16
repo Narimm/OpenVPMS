@@ -27,15 +27,9 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
-import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.print.IMPrinter;
-import org.openvpms.web.component.im.print.IMPrinterListener;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -70,26 +64,6 @@ public class DocumentCRUDWindow extends ActCRUDWindow<Act> {
     public DocumentCRUDWindow(String type, String[] shortNames) {
         super(type, new ShortNameList(shortNames));
     }
-
-    /**
-     * Invoked when an object has been successfully printed.
-     *
-     * @param object the object
-     */
-    protected void printed(Act object) {
-        try {
-            setPrintStatus(object, true);
-            SaveHelper.save(object);
-            setObject(object);
-            CRUDWindowListener<Act> listener = getListener();
-            if (listener != null) {
-                listener.saved(object, false);
-            }
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
 
     /**
      * Lays out the buttons.
@@ -148,31 +122,6 @@ public class DocumentCRUDWindow extends ActCRUDWindow<Act> {
         if (print) {
             super.onPrint();
         }
-    }
-
-    /**
-     * Creates a new printer.
-     *
-     * @param object the object to print
-     * @return an instance of {@link InteractiveIMObjectPrinter}.
-     */
-    @Override
-    protected IMPrinter<Act> createPrinter(final Act object) {
-        InteractiveIMObjectPrinter<Act> printer
-                = (InteractiveIMObjectPrinter<Act>) super.createPrinter(object);
-        printer.setListener(new IMPrinterListener() {
-            public void printed() {
-                DocumentCRUDWindow.this.printed(object);
-            }
-
-            public void cancelled() {
-            }
-
-            public void failed(Throwable cause) {
-                ErrorHelper.show(cause);
-            }
-        });
-        return printer;
     }
 
     /**

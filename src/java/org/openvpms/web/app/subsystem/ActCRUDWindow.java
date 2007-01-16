@@ -32,6 +32,8 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterListener;
+import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -146,16 +148,16 @@ public abstract class ActCRUDWindow<T extends Act>
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent e) {
                     if (PostDialog.OK_ID.equals(dialog.getAction())) {
+                        boolean printed = false;
                         if (dialog.print()) {
-                            boolean printed = false;
                             try {
                                 printer.print(dialog.getPrinter());
                                 printed = true;
                             } catch (OpenVPMSException exception) {
                                 ErrorHelper.show(exception);
                             }
-                            posted(getObject(), printed);
                         }
+                        posted(getObject(), printed);
                     }
                 }
             });
@@ -175,6 +177,51 @@ public abstract class ActCRUDWindow<T extends Act>
             Document document = printer.getDocument();
             DownloadServlet.startDownload(document);
         } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Creates a new printer.
+     *
+     * @param object the object to print
+     * @return an instance of {@link InteractiveIMObjectPrinter}.
+     */
+    @Override
+    protected IMPrinter<T> createPrinter(final T object) {
+        InteractiveIMObjectPrinter<T> printer
+                = (InteractiveIMObjectPrinter<T>) super.createPrinter(object);
+        printer.setListener(new IMPrinterListener() {
+            public void printed() {
+                ActCRUDWindow.this.printed(object);
+            }
+
+            public void cancelled() {
+            }
+
+            public void failed(Throwable cause) {
+                ErrorHelper.show(cause);
+            }
+        });
+        return printer;
+    }
+
+    /**
+     * Invoked when an act has been successfully printed.
+     *
+     * @param object the object
+     */
+    protected void printed(T object) {
+        try {
+            if (setPrintStatus(object, true)) {
+                SaveHelper.save(object);
+                setObject(object);
+                CRUDWindowListener<T> listener = getListener();
+                if (listener != null) {
+                    listener.saved(object, false);
+                }
+            }
+        } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
     }
@@ -208,12 +255,17 @@ public abstract class ActCRUDWindow<T extends Act>
      *
      * @param act     the act
      * @param printed the print status
+     * @return <code>true</code> if the print status was changed,
+     *         <code>false</code> if the act doesn't have a 'printed' node or
+     *         its value is the same as that supplied
      */
-    protected void setPrintStatus(Act act, boolean printed) {
+    protected boolean setPrintStatus(Act act, boolean printed) {
         ActBean bean = new ActBean(act);
-        if (bean.hasNode("printed")) {
+        if (bean.hasNode("printed") && bean.getBoolean("printed") != printed) {
             bean.setValue("printed", printed);
+            return true;
         }
+        return false;
     }
 
     /**
