@@ -18,13 +18,13 @@
 
 package org.openvpms.archetype.rules.doc;
 
-import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidPaperSize;
-import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidUnits;
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.*;
 
 import javax.print.attribute.Size2DSyntax;
 import javax.print.attribute.standard.MediaSize;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
+import javax.print.attribute.standard.OrientationRequested;
 import java.math.BigDecimal;
 
 
@@ -36,6 +36,83 @@ import java.math.BigDecimal;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class MediaHelper {
+
+    /**
+     * Helper to convert a paper size to a {@link MediaSizeName}.
+     *
+     * @param sizeName the size name
+     * @param width    the page width. Only applicable if size is 'CUSTOM'.
+     * @param height   the page height. Only applicable if size is 'CUSTOM'.
+     * @param units    the units. One of 'MM' or 'INCH'.
+     * @return the media size, or <code>null</code> if none is defined
+     * @throws DocumentException if any argument is invalid
+     */
+    public static MediaSizeName getMedia(String sizeName, BigDecimal width,
+                                         BigDecimal height, String units) {
+        MediaSizeName media;
+        if (PaperSize.CUSTOM.name().equals(sizeName)) {
+            media = getMedia(width, height, units);
+        } else {
+            media = PaperSize.getMediaSizeName(sizeName);
+        }
+        return media;
+    }
+
+    /**
+     * Helper to convert a custom paper size to a {@link MediaSizeName}.
+     *
+     * @param width  the page width
+     * @param height the page height
+     * @param units  the units. One of 'MM' or 'INCH'.
+     * @throws DocumentException if the paper size is invalid
+     */
+    public static MediaSizeName getMedia(BigDecimal width, BigDecimal height,
+                                         String units) {
+        int unitCode = Units.getUnits(units);
+
+        try {
+            return MediaSize.findMedia(width.floatValue(), height.floatValue(),
+                                       unitCode);
+        } catch (IllegalArgumentException exception) {
+            throw new DocumentException(InvalidPaperSize,
+                                        formatSize(width, height, units));
+        }
+    }
+
+    /**
+     * Returns the paper orientation given its code.
+     *
+     * @param code the orientation code
+     * @return the orientation corresponding to <code>code</code>
+     * @throws DocumentException if <code>code<code> is invalid
+     */
+    public static OrientationRequested getOrientation(String code) {
+        return Orientation.getOrientation(code);
+    }
+
+    /**
+     * Returns the media tray given its code.
+     *
+     * @param code the tray code
+     * @return the media tray corresponding to <code>code</code>
+     * @throws DocumentException if <code>code<code> is invalid
+     */
+    public static MediaTray getTray(String code) {
+        return Tray.getTray(code);
+    }
+
+    /**
+     * Formats the page size for error reporting purposes.
+     *
+     * @param width  the page width
+     * @param height the page height
+     * @param units  the units
+     * @return a formatted string
+     */
+    private static String formatSize(BigDecimal width, BigDecimal height,
+                                     String units) {
+        return width.toString() + "x" + height.toString() + " " + units;
+    }
 
     /**
      * Provides a mapping between supported paper sizes and
@@ -61,7 +138,7 @@ public class MediaHelper {
                     return size.getMediaSizeName();
                 }
             }
-            return null;
+            throw new DocumentException(InvalidPaperSize, name);
         }
 
         private final MediaSizeName mediaName;
@@ -96,7 +173,36 @@ public class MediaHelper {
     }
 
     /**
-     * Media tray.
+     * Provides a mapping between supported orientations and values defined in
+     * @{link OrientationRequested}.
+     */
+    private enum Orientation {
+        PORTRAIT(OrientationRequested.PORTRAIT),
+        LANDSCAPE(OrientationRequested.LANDSCAPE);
+
+        private Orientation(OrientationRequested orientation) {
+            this.orientation = orientation;
+        }
+
+        public OrientationRequested getOrientation() {
+            return orientation;
+        }
+
+        public static OrientationRequested getOrientation(String orientation) {
+            for (Orientation o : Orientation.values()) {
+                if (o.name().equals(orientation)) {
+                    return o.getOrientation();
+                }
+            }
+            throw new DocumentException(InvalidOrientation, orientation);
+        }
+
+        private final OrientationRequested orientation;
+    }
+
+    /**
+     * Provides a mapping between supported media trays and values defined in
+     * @{link MediaTray}.
      */
     private enum Tray {
         TOP(MediaTray.TOP),
@@ -116,82 +222,16 @@ public class MediaHelper {
             return tray;
         }
 
+        public static MediaTray getTray(String name) {
+            for (Tray tray : Tray.values()) {
+                if (tray.name().equals(name)) {
+                    return tray.getTray();
+                }
+            }
+            throw new DocumentException(InvalidMediaTray, name);
+        }
+
         private final MediaTray tray;
-    }
-
-
-    /**
-     * Helper to convert a paper size to a {@link MediaSizeName}.
-     *
-     * @param sizeName the size name
-     * @param width    the page width. Only applicable if size is 'CUSTOM'.
-     * @param height   the page height. Only applicable if size is 'CUSTOM'.
-     * @param units    the units. One of 'MM' or 'INCH'.
-     * @return the media size, or <code>null</code> if none is defined
-     * @throws DocumentException if any argument is invalid
-     */
-    public static MediaSizeName getMedia(String sizeName, BigDecimal width,
-                                         BigDecimal height, String units) {
-        MediaSizeName media;
-        if (PaperSize.CUSTOM.name().equals(sizeName)) {
-            media = getMedia(width, height, units);
-        } else {
-            media = PaperSize.getMediaSizeName(sizeName);
-            if (media == null) {
-                throw new DocumentException(InvalidPaperSize, sizeName);
-            }
-        }
-        return media;
-    }
-
-    /**
-     * Helper to convert a custom paper size to a {@link MediaSizeName}.
-     *
-     * @param width  the page width
-     * @param height the page height
-     * @param units  the units. One of 'MM' or 'INCH'.
-     * @throws DocumentException if the paper size is invalid
-     */
-    public static MediaSizeName getMedia(BigDecimal width, BigDecimal height,
-                                         String units) {
-        int unitCode = Units.getUnits(units);
-
-        try {
-            return MediaSize.findMedia(width.floatValue(), height.floatValue(),
-                                       unitCode);
-        } catch (IllegalArgumentException exception) {
-            throw new DocumentException(InvalidPaperSize,
-                                        formatSize(width, height, units));
-        }
-    }
-
-    /**
-     * Returns the media tray given its name.
-     *
-     * @param name the tray name
-     * @return the media tray corresponding to <code>name</code> or
-     *         <code>null</code> if none is found
-     */
-    public static MediaTray getTray(String name) {
-        for (Tray tray : Tray.values()) {
-            if (tray.name().equals(name)) {
-                return tray.getTray();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Formats the page size for error reporting purposes.
-     *
-     * @param width  the page width
-     * @param height the page height
-     * @param units  the units
-     * @return a formatted string
-     */
-    private static String formatSize(BigDecimal width, BigDecimal height,
-                                     String units) {
-        return width.toString() + "x" + height.toString() + " " + units;
     }
 
 }

@@ -87,7 +87,17 @@
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
-	        <node name="paperHeight" displayName="Paper Height" path="/details/attributes/paperHeight" type="java.math.BigDecimal" 
+           <node name="orientation" path="/details/attributes/orientation" type="java.lang.String"
+                   defaultValue='PORTRAIT'>
+                <assertion name="lookup.local">
+                    <propertyList name="entries">
+                        <property name="PORTRAIT" value="Portrait" />
+                        <property name="LANDSCAPE" value="Landscape" />
+                    </propertyList>
+                    <errorMessage>errorMessage</errorMessage>
+                </assertion>
+            </node>
+            <node name="paperHeight" displayName="Paper Height" path="/details/attributes/paperHeight" type="java.math.BigDecimal"
 	        	defaultValue="0.0"/>
 	        <node name="paperWidth" displayName="Paper Width" path="/details/attributes/paperWidth" type="java.math.BigDecimal" 
 	        	defaultValue="0.0"/>
