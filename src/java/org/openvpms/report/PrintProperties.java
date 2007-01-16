@@ -20,6 +20,7 @@ package org.openvpms.report;
 
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
+import javax.print.attribute.standard.OrientationRequested;
 
 
 /**
@@ -39,6 +40,11 @@ public class PrintProperties {
      * The media size name.
      */
     private MediaSizeName mediaSize;
+
+    /**
+     * The orientation.
+     */
+    private OrientationRequested orientation;
 
     /**
      * The media tray.
@@ -80,6 +86,24 @@ public class PrintProperties {
      */
     public MediaSizeName getMediaSize() {
         return mediaSize;
+    }
+
+    /**
+     * Sets the orientation.
+     *
+     * @param orientation the orientation
+     */
+    public void setOrientation(OrientationRequested orientation) {
+        this.orientation = orientation;
+    }
+
+    /**
+     * Returns the orientation.
+     *
+     * @return the orientation. May be <code>null</code>
+     */
+    public OrientationRequested getOrientation() {
+        return orientation;
     }
 
     /**
