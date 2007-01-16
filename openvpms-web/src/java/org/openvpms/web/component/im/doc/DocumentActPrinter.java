@@ -149,6 +149,7 @@ public class DocumentActPrinter extends AbstractIMPrinter<IMObject> {
     protected PrintProperties getProperties(String printer) {
         PrintProperties properties = super.getProperties(printer);
         properties.setMediaSize(getMediaSize(generator.getTemplate()));
+        properties.setOrientation(getOrientation(generator.getTemplate()));
         properties.setMediaTray(getMediaTray(generator.getTemplate(), printer));
         return properties;
     }
