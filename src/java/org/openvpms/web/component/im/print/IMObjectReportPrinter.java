@@ -104,6 +104,7 @@ public class IMObjectReportPrinter<T extends IMObject>
                 shortName, ArchetypeServiceHelper.getArchetypeService());
         if (template != null) {
             properties.setMediaSize(getMediaSize(template));
+            properties.setOrientation(getOrientation(template));
             properties.setMediaTray(getMediaTray(template, printer));
         }
 

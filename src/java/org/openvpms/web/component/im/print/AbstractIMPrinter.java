@@ -36,6 +36,7 @@ import org.openvpms.web.servlet.DownloadServlet;
 
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
+import javax.print.attribute.standard.OrientationRequested;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -168,6 +169,23 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
             BigDecimal height = bean.getBigDecimal("paperHeight");
             String units = bean.getString("paperUnits");
             return MediaHelper.getMedia(size, width, height, units);
+        }
+        return null;
+    }
+
+    /**
+     * Helper to return the media orientation for a document template.
+     *
+     * @param template an <em>entity.documentTemplate</em>
+     * @return the orientation for the template, or <code>null</code> if none
+     *         is defined
+     * @throws OpenVPMSException for any error
+     */
+    protected OrientationRequested getOrientation(Entity template) {
+        IMObjectBean bean = new IMObjectBean(template);
+        String orientation = bean.getString("orientation");
+        if (orientation != null) {
+            return MediaHelper.getOrientation(orientation);
         }
         return null;
     }

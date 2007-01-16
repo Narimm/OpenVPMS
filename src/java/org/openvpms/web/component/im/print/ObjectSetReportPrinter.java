@@ -124,6 +124,7 @@ public class ObjectSetReportPrinter
         PrintProperties properties = super.getProperties(printer);
         if (document != null) {
             properties.setMediaSize(getMediaSize(template));
+            properties.setOrientation(getOrientation(template));
             properties.setMediaTray(getMediaTray(template, printer));
         }
 
