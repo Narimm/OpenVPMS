@@ -44,6 +44,8 @@ public class DocumentException extends OpenVPMSException {
         WriteError,
         NotFound,
         InvalidUnits,
+        InvalidOrientation,
+        InvalidMediaTray,
         InvalidPaperSize
     }
 
