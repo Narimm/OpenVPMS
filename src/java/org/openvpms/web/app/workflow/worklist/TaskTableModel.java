@@ -18,15 +18,25 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
+import java.util.Date;
+
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.edit.IMObjectProperty;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.Date;
 
 
 /**
@@ -87,7 +97,30 @@ public class TaskTableModel extends AbstractActTableModel {
                             "description"};
     }
 
-    /**
+	/**
+     * Returns the value found at the specified descriptor table column.
+     *
+     * @param act    the object
+     * @param column the descriptor table column
+     * @return the value at the specified column
+     */
+    @Override
+	protected Object getValue(IMObject object, DescriptorTableColumn column) {
+    	NodeDescriptor descriptor = column.getDescriptor();
+    	if (descriptor.getName().equals("taskType")) {
+    		LayoutContext context = new DefaultLayoutContext();
+    		TableComponentFactory factory = new TableComponentFactory(context);
+    		context.setComponentFactory(factory);
+    		context.setEdit(true);
+            Property property = new IMObjectProperty(object, descriptor);
+            return factory.create(property, object).getComponent();
+        }
+    	else {
+    		return super.getValue(object, column);
+    	}
+	}
+
+	/**
      * Returns the value found at the given coordinate within the table.
      *
      * @param act    the object
