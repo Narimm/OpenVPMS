@@ -378,6 +378,44 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns a formatted contact purpose string for the Contact.
+     *
+     * @param context the expression context. Expected to reference a contact.
+     * @return a formatted string with the contacts contact purposes, or <code>null</code>
+     */
+
+    public static String getContactPurposes(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        if (pointer == null || !(pointer.getValue() instanceof Contact)) {
+            return null;
+        }
+        return getContactPurposes((Contact) pointer.getValue());
+    }
+
+    /**
+     * Returns a string with thecontact purposes.
+     *
+     * @param contact the contact
+     * @return the formatted contact purposes string. May be <code>null</code>
+     */
+    private static String getContactPurposes(Contact contact) {
+        IMObjectBean bean = new IMObjectBean(contact);
+        StringBuffer result = new StringBuffer();
+        if (bean.hasNode("purposes")) {
+            List<IMObject> list = bean.getValues("purposes");
+            if (!list.isEmpty()) {
+                if (result.length() != 0) {
+                    result.append(" ");
+                }
+                result.append("(");
+                result.append(getValues(list, "name"));
+                result.append(")");
+            }
+        }
+        return result.toString();
+    }
+
+    /**
      * Returns a concatenated list of values for a set of objects.
      *
      * @param objects the objects
