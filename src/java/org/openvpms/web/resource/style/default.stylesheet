@@ -805,7 +805,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="insets" value="8px 1px"/>
-                        <property name="background" value="#e1e1e1"/>
+                        <property name="background" value="#d1d1d1"/>
                     </properties>
                 </layout-data>
             </property>
