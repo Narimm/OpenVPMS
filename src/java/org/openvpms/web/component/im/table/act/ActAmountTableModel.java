@@ -22,6 +22,7 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -175,9 +176,9 @@ public class ActAmountTableModel<T extends Act>
      * @return the value at the given coordinate
      */
     @Override
-    protected Object getValue(T act, int column, int row) {
+    protected Object getValue(T act, TableColumn column, int row) {
         Object result = null;
-        switch (column) {
+        switch (column.getModelIndex()) {
             case DATE_INDEX:
                 Date date = act.getActivityStartTime();
                 if (date != null) {

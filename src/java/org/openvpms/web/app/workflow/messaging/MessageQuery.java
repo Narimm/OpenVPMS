@@ -46,7 +46,7 @@ import org.openvpms.web.component.button.ShortcutHelper;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.DefaultActQuery;
-import org.openvpms.web.component.im.query.IMObjectTableBrowser;
+import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.util.ErrorHelper;
@@ -132,7 +132,7 @@ public class MessageQuery extends DefaultActQuery<Act> {
             Query<IMObject> query = QueryFactory.create(
                     shortName, GlobalContext.getInstance());
             final Browser<IMObject> browser
-                    = new IMObjectTableBrowser<IMObject>(query);
+                    = IMObjectTableBrowserFactory.create(query);
 
             String title = Messages.get(
                     "imobject.select.title",

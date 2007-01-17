@@ -29,12 +29,9 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
 
@@ -49,11 +46,6 @@ import java.util.Map;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
-
-    /**
-     * The layout context.
-     */
-    private final LayoutContext context;
 
     /**
      * The start time index.
@@ -134,10 +126,6 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
         }
         setTableColumnModel(model);
 
-        context = new DefaultLayoutContext();
-        TableComponentFactory factory = new TableComponentFactory(context);
-        context.setComponentFactory(factory);
-
         columnNames = new String[NODE_NAMES.length];
         ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
                 "act.customerAppointment");
@@ -171,9 +159,9 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
      * @param row    the row
      * @return the value at the given coordinate.
      */
-    protected Object getValue(ObjectSet set, int column, int row) {
+    protected Object getValue(ObjectSet set, TableColumn column, int row) {
         Object result = null;
-        int index = getColumn(column).getModelIndex();
+        int index = column.getModelIndex();
         Object value = set.get(NODE_NAMES[index][1]);
         switch (index) {
             case START_TIME_INDEX:
@@ -275,10 +263,11 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
      * @param set     the object set
      * @param refKey  the object reference key
      * @param nameKey the entity name key
-     * @param link TODO
+     * @param link    if <code>true</code> enable an hyperlink to the object
      * @return a new component to view the object reference
      */
-    private Component getViewer(ObjectSet set, String refKey, String nameKey, Boolean link) {
+    private Component getViewer(ObjectSet set, String refKey, String nameKey,
+                                boolean link) {
         IMObjectReference ref = (IMObjectReference) set.get(refKey);
         String name = (String) set.get(nameKey);
         IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(

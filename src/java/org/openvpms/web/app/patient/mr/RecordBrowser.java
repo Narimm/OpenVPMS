@@ -25,7 +25,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.IMObjectTableBrowser;
+import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
+import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
@@ -129,23 +130,26 @@ public class RecordBrowser implements Browser<Act> {
                          Query<Act> reminderAlert, Query<Act> document,
                          Query<Act> investigation, SortConstraint[] sort) {
         this.summary = new SummaryTableBrowser(summary);
-        this.visits = new IMObjectTableBrowser<Act>(visits, sort);
-        this.problems = new IMObjectTableBrowser<Act>(problems, sort);
-        this.medication = new IMObjectTableBrowser<Act>(medication, sort);
+        this.visits = IMObjectTableBrowserFactory.create(visits, sort);
+        this.problems = IMObjectTableBrowserFactory.create(problems, sort);
+        this.medication = IMObjectTableBrowserFactory.create(medication, sort);
 
         // todo - should be able to register ReminderActTableModel in
         // IMObjectTableFactory.properties for act.patientReminder and
         // act.patientAlert
         IMObjectTableModel<Act> model = new ReminderActTableModel(
                 reminderAlert.getShortNames());
-        this.reminderAlert = new TableBrowser<Act>(reminderAlert, sort, model);
+        this.reminderAlert = new DefaultIMObjectTableBrowser<Act>(reminderAlert,
+                                                                  sort, model);
         IMObjectTableModel<Act> docModel
                 = new ActAmountTableModel<Act>(true, false);
-        this.document = new TableBrowser<Act>(document, sort, docModel);
+        this.document = new DefaultIMObjectTableBrowser<Act>(document, sort,
+                                                             docModel);
         IMObjectTableModel<Act> invModel
                 = new ActAmountTableModel<Act>(true, false);
-        this.investigation = new TableBrowser<Act>(investigation, sort,
-                                                   invModel);
+        this.investigation = new DefaultIMObjectTableBrowser<Act>(investigation,
+                                                                  sort,
+                                                                  invModel);
     }
 
     /**

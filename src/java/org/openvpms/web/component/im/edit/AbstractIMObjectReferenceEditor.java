@@ -44,7 +44,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.IMObjectTableBrowser;
+import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -269,7 +269,7 @@ public abstract class AbstractIMObjectReferenceEditor
         }
         try {
             final Browser<IMObject> browser
-                    = new IMObjectTableBrowser<IMObject>(query);
+                    = IMObjectTableBrowserFactory.create(query);
             String title = Messages.get("imobject.select.title",
                                         getDescriptor().getDisplayName());
             final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(

@@ -159,11 +159,10 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * @param row    the table row
      */
     @Override
-    protected Object getValue(T object, int column, int row) {
-        TableColumn c = getColumn(column);
+    protected Object getValue(T object, TableColumn column, int row) {
         Object result;
-        if (c instanceof DescriptorTableColumn) {
-            result = getValue(object, (DescriptorTableColumn) c);
+        if (column instanceof DescriptorTableColumn) {
+            result = getValue(object, (DescriptorTableColumn) column);
         } else {
             result = super.getValue(object, column, row);
         }

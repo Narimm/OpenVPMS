@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.app.patient.PatientBrowser;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
 import org.openvpms.web.app.patient.summary.PatientSummary;
@@ -152,24 +151,6 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
     }
 
     /**
-     * Create a new browser.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     * @return a new browser
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
-     */
-    @Override
-    protected Browser<Party> createBrowser(String refModelName,
-                                           String entityName,
-                                           String conceptName) {
-        return new PatientBrowser(createQuery(refModelName, entityName,
-                                              conceptName));
-    }
-
-    /**
      * Create a new query.
      *
      * @param refModelName the archetype reference model name
@@ -180,11 +161,11 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      *                                 archetypes
      */
     @Override
-    @SuppressWarnings("unchecked")
     protected Query<Party> createQuery(String refModelName,
                                        String entityName,
                                        String conceptName) {
-        Query query = super.createQuery(refModelName, entityName, conceptName);
+        Query<Party> query = super.createQuery(refModelName, entityName,
+                                               conceptName);
         if (query instanceof PatientQuery) {
             ((PatientQuery) query).setShowAllPatients(true);
         }

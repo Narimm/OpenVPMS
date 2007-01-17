@@ -144,10 +144,9 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
      * @param row    the row
      * @return the value at the given coordinate
      */
-    protected Object getValue(T object, int column, int row) {
+    protected Object getValue(T object, TableColumn column, int row) {
         Object result;
-        TableColumn col = getColumn(column);
-        switch (col.getModelIndex()) {
+        switch (column.getModelIndex()) {
             case ARCHETYPE_INDEX:
                 result = DescriptorHelper.getDisplayName(object);
                 break;
@@ -200,7 +199,7 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
                 result = new SortConstraint[]{description};
                 break;
             default:
-                throw new IllegalArgumentException("Illegal column=" + column);
+                result = null;
         }
         return result;
     }

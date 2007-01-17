@@ -25,7 +25,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.IMObjectTableBrowser;
+import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -91,7 +91,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      * @param context the task context
      */
     public void start(final TaskContext context) {
-        Browser<T> browser = new IMObjectTableBrowser<T>(query);
+        Browser<T> browser = IMObjectTableBrowserFactory.create(query);
         String title = Messages.get(
                 "imobject.select.title", type);
         String[] buttons = isRequired()

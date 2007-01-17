@@ -77,7 +77,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      * @param row    the row
      * @return the value at the given coordinate.
      */
-    protected Object getValue(Act act, int column, int row) {
+    protected Object getValue(Act act, TableColumn column, int row) {
         Object result = null;
         try {
             if (TypeHelper.isA(act, "act.patientClinicalEvent")) {

@@ -27,13 +27,15 @@ import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 
+
 /**
- * Add description here.
+ * Table browser for {@link IMObject}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectTableBrowser<T extends IMObject> extends TableBrowser<T> {
+public abstract class IMObjectTableBrowser<T extends IMObject>
+        extends TableBrowser<T> {
 
     /**
      * Construct a new <code>IMObjectTableBrowser</code> that queries IMObjects
@@ -57,8 +59,8 @@ public class IMObjectTableBrowser<T extends IMObject> extends TableBrowser<T> {
     }
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects using the
-     * specified query, displaying them in the table.
+     * Construct a new <code>IMObjectTableBrowser</code> that queries IMObjects
+     * using the specified query, displaying them in the table.
      *
      * @param query the query
      * @param sort  the sort criteria. May be <code>null</code>

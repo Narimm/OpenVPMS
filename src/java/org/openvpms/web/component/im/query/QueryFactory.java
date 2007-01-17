@@ -33,7 +33,7 @@ import org.openvpms.web.component.im.util.ArchetypeHandlers;
  * specific {@link Query} implementations based on the supplied criteria, with
  * {@link DefaultQuery} returned if no implementation matches.
  * <p/>
- * The factory is configured using a <em>queryfactory.properties</em> file,
+ * The factory is configured using a <em>QueryFactory.properties</em> file,
  * located in the class path. The file contains pairs of archetype short names
  * and their corresponding query implementations. Short names may be wildcarded
  * e.g:
@@ -45,7 +45,7 @@ import org.openvpms.web.component.im.util.ArchetypeHandlers;
  * <tr><td>party.supplier*</td>org.openvpms.web.component.im.query.AutoQuery</td></tr>
  * </table>
  * <p/>
- * Multiple <em>queryfactory.properties</em> may be used.
+ * Multiple <em>QueryFactory.properties</em> may be used.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -55,12 +55,12 @@ public final class QueryFactory {
     /**
      * Query implementations.
      */
-    private static ArchetypeHandlers<Query> _queries;
+    private static ArchetypeHandlers<Query> queries;
 
     /**
      * The logger.
      */
-    private static final Log _log = LogFactory.getLog(QueryFactory.class);
+    private static final Log log = LogFactory.getLog(QueryFactory.class);
 
 
     /**
@@ -199,7 +199,7 @@ public final class QueryFactory {
                 }
             }
         } catch (Throwable exception) {
-            _log.error(exception, exception);
+            log.error(exception, exception);
         }
         return result;
     }
@@ -236,7 +236,7 @@ public final class QueryFactory {
                 }
             }
         } catch (Throwable throwable) {
-            _log.error(throwable, throwable);
+            log.error(throwable, throwable);
         }
         return result;
     }
@@ -255,7 +255,7 @@ public final class QueryFactory {
             try {
                 handler.initialise(query);
             } catch (Throwable exception) {
-                _log.error(exception);
+                log.error(exception);
             }
         }
     }
@@ -265,12 +265,12 @@ public final class QueryFactory {
      *
      * @return the queries
      */
-    private static ArchetypeHandlers<Query> getQueries() {
-        if (_queries == null) {
-            _queries = new ArchetypeHandlers<Query>("QueryFactory.properties",
-                                                    Query.class);
+    private static synchronized ArchetypeHandlers<Query> getQueries() {
+        if (queries == null) {
+            queries = new ArchetypeHandlers<Query>("QueryFactory.properties",
+                                                   Query.class);
         }
-        return _queries;
+        return queries;
     }
 
 
