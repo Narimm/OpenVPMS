@@ -18,8 +18,19 @@
 
 package org.openvpms.web.app.financial.till;
 
+import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.table.TableColumn;
+import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.edit.IMObjectProperty;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.DateFormatter;
 
 import java.util.Date;
@@ -34,7 +45,13 @@ import java.util.Date;
 public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
 
     /**
-     * Construct a new <code>TillActTableModel</code>.
+     * The customer model index.
+     */
+    private int customerIndex;
+
+
+    /**
+     * Constructs a new <code>TillActTableModel</code>.
      */
     public TillActTableModel() {
         super(false, true, true);
@@ -56,8 +73,66 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
             if (date != null) {
                 result = DateFormatter.formatDateTime(date, false);
             }
+        } else if (column == customerIndex) {
+            ActBean bean = new ActBean(act);
+            if (bean.hasNode("customer")) {
+                NodeDescriptor descriptor = bean.getDescriptor("customer");
+                LayoutContext context = new DefaultLayoutContext();
+                TableComponentFactory factory = new TableComponentFactory(
+                        context);
+                context.setComponentFactory(factory);
+                Property property = new IMObjectProperty(act, descriptor);
+                result = factory.create(property, act).getComponent();
+            }
         } else {
             result = super.getValue(act, column, row);
+        }
+        return result;
+    }
+
+    /**
+     * Helper to create a column model.
+     * Adds a customer column before the amount index.
+     *
+     * @param showStatus determines if the status colunn should be displayed
+     * @param showAmount determines if the credit/debit amount should be
+     *                   displayed
+     * @return a new column model
+     */
+    @Override
+    protected TableColumnModel createColumnModel(boolean showStatus,
+                                                 boolean showAmount) {
+        DefaultTableColumnModel model
+                = (DefaultTableColumnModel) super.createColumnModel(showStatus,
+                                                                    showAmount);
+        customerIndex = getNextModelIndex(model);
+        TableColumn column = createTableColumn(
+                customerIndex, "tillacttablemodel.customer");
+        model.addColumn(column);
+        if (showAmount) {
+            model.moveColumn(model.getColumnCount() - 1,
+                             getColumnOffset(model, AMOUNT_INDEX));
+        }
+        return model;
+    }
+
+    /**
+     * Returns the sort criteria.
+     *
+     * @param column    the primary sort column
+     * @param ascending if <code>true</code> sort in ascending order; otherwise
+     *                  sort in <code>descending</code> order
+     * @return the sort criteria, or <code>null</code> if the column isn't
+     *         sortable
+     */
+    @Override
+    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+        SortConstraint[] result;
+        TableColumn col = getColumn(column);
+        if (col.getModelIndex() == customerIndex) {
+            result = null;
+        } else {
+            result = super.getSortConstraints(column, ascending);
         }
         return result;
     }

@@ -70,7 +70,7 @@ public class ActAmountTableModel<T extends Act>
     /**
      * Determines if the credit/debit amount should be negated.
      */
-    private final boolean _negateAmount;
+    private final boolean negateAmount;
 
 
     /**
@@ -102,8 +102,9 @@ public class ActAmountTableModel<T extends Act>
      */
     public ActAmountTableModel(boolean showStatus, boolean showAmount,
                                boolean negateAmount) {
-        super(createColumnModel(showStatus, showAmount));
-        _negateAmount = negateAmount;
+        super(null);
+        setTableColumnModel(createColumnModel(showStatus, showAmount));
+        this.negateAmount = negateAmount;
     }
 
     /**
@@ -147,8 +148,8 @@ public class ActAmountTableModel<T extends Act>
      *                   displayed
      * @return a new column model
      */
-    protected static TableColumnModel createColumnModel(boolean showStatus,
-                                                        boolean showAmount) {
+    protected TableColumnModel createColumnModel(boolean showStatus,
+                                                 boolean showAmount) {
         TableColumnModel model = new DefaultTableColumnModel();
         model.addColumn(createTableColumn(DATE_INDEX, "table.act.date"));
         model.addColumn(createTableColumn(ARCHETYPE_INDEX, "table.act.type"));
@@ -204,7 +205,7 @@ public class ActAmountTableModel<T extends Act>
      */
     protected Label getAmount(Act act) {
         BigDecimal amount = ActHelper.getAmount(act, "amount");
-        if (_negateAmount) {
+        if (negateAmount) {
             amount = amount.negate();
         }
         String result = NumberFormatter.format(amount);
@@ -230,7 +231,8 @@ public class ActAmountTableModel<T extends Act>
                 = DescriptorHelper.getArchetypeDescriptor(act);
         NodeDescriptor status = archetype.getNodeDescriptor("status");
         if (status != null) {
-            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
             Lookup lookup = LookupHelper.getLookup(service, status, act);
             if (lookup != null) {
                 result = lookup.getName();
