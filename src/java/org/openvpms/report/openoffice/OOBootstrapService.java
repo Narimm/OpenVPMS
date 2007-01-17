@@ -146,6 +146,7 @@ public abstract class OOBootstrapService {
                     ";urp;StarOffice.ComponentContext";
 
             // wait until office is started
+            Thread.sleep(500);
             for (; ;) {
                 try {
                     // try to connect to office
@@ -162,16 +163,11 @@ public abstract class OOBootstrapService {
 
                 	try {
                         int exit = process.exitValue();
-                        if (exit != 0) {
 //                            throw new OpenOfficeException(
 //                                    FailedToStartService,
 //                                    "terminated with exit code=" + exit);                        	
-                            log.error("OpennOffice process failed"+exit);
-                            break;
-                        }
-                        log.error("Failed to connect to Openoffice service - retrying");
-                        // wait 500 ms, then try to connect again
-                        Thread.sleep(500);
+                        log.error("OpennOffice process failed"+exit);
+                        break;
                     } catch (IllegalThreadStateException ignore) {
                         // process is running
                     	break;
