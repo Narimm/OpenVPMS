@@ -90,6 +90,7 @@ public class MessageQuery extends DefaultActQuery<Act> {
     public MessageQuery(Entity user) {
         super(user, "to", "participation.user", new String[]{"act.userMessage"},
               getLookups(), null);
+        setStatus("PENDING");
     }
 
     /**
@@ -103,7 +104,8 @@ public class MessageQuery extends DefaultActQuery<Act> {
     public ResultSet<Act> query(SortConstraint[] sort) {
         ParticipantConstraint[] participants;
         if (getEntityId() != null) {
-            participants = new ParticipantConstraint[]{getParticipantConstraint()};
+            participants = new ParticipantConstraint[]{
+                    getParticipantConstraint()};
         } else {
             participants = new ParticipantConstraint[0];
         }
