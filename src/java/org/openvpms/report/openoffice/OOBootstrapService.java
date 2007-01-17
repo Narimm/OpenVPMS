@@ -163,9 +163,11 @@ public abstract class OOBootstrapService {
 
                 	try {
                         int exit = process.exitValue();
-                        throw new OpenOfficeException(
-                                FailedToStartService,
-                                "terminated with exit code=" + exit);
+                        if (exit != 0) {
+                            throw new OpenOfficeException(
+                                    FailedToStartService,
+                                    "terminated with exit code=" + exit);                        	
+                        }
                     } catch (IllegalThreadStateException ignore) {
                         // process is running
                     }
