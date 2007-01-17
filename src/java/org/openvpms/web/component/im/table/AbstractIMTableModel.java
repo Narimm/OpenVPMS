@@ -166,4 +166,38 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
         }
         return result;
     }
+
+    /**
+     * Returns a column offset given its model index.
+     *
+     * @param column the columjn index
+     * @return the column offset, or <code>-1</code> if a column with the
+     *         specified index doesn't exist
+     */
+    protected int getColumnOffset(int column) {
+        return getColumnOffset(model, column);
+    }
+
+    /**
+     * Returns a column offset given its model index.
+     *
+     * @param model  the model
+     * @param column the column index
+     * @return the column offset, or <code>-1</code> if a column with the
+     *         specified index doesn't exist
+     */
+    protected int getColumnOffset(TableColumnModel model, int column) {
+        int result = -1;
+        int offset = 0;
+        Iterator iterator = model.getColumns();
+        while (iterator.hasNext()) {
+            TableColumn col = (TableColumn) iterator.next();
+            if (col.getModelIndex() == column) {
+                result = offset;
+                break;
+            }
+            ++offset;
+        }
+        return result;
+    }
 }

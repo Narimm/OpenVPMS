@@ -32,6 +32,8 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
+import java.util.Iterator;
+
 
 /**
  * Table model for {@link IMObject}s.
@@ -201,6 +203,24 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
                 throw new IllegalArgumentException("Illegal column=" + column);
         }
         return result;
+    }
+
+    /**
+     * Helper to determine the next available model index.
+     *
+     * @param columns the columns
+     * @return the next available model index.
+     */
+    protected int getNextModelIndex(TableColumnModel columns) {
+        int index = NEXT_INDEX;
+        Iterator iterator = columns.getColumns();
+        while (iterator.hasNext()) {
+            TableColumn col = (TableColumn) iterator.next();
+            if (col.getModelIndex() >= index) {
+                index = col.getModelIndex() + 1;
+            }
+        }
+        return index;
     }
 
     /**
