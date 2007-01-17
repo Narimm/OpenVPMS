@@ -24,8 +24,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.button.AbstractButton;
 import nextapp.echo2.app.text.TextComponent;
-import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.view.ComponentState;
 
@@ -81,8 +79,8 @@ public class FocusHelper {
     }
 
     /**
-     * Returns the first focusable component, selecting null/empty properties
-     * in preference to populated components.
+     * Returns the first focusable component, selecting invalid properties
+     * in preference to other components.
      *
      * @param components the components
      * @return the first focusable component
@@ -93,25 +91,12 @@ public class FocusHelper {
             Component child = getFocusable(state);
             if (child != null) {
                 Property property = state.getProperty();
-                if (property != null) {
-                    boolean required = property.getDescriptor().isRequired();
-                    try {
-                        Object value = property.getValue();
-                        if (required && (value == null
-                                || (value instanceof String
-                                && StringUtils.isEmpty((String) value)))) {
-                            // null field. Set focus on it in preference to
-                            // others
-                            result = child;
-                            break;
-                        } else {
-                            if (result == null) {
-                                result = child;
-                            }
-                        }
-                    } catch (OpenVPMSException ignore) {
-                        // no-op
-                    }
+                if (property != null && !property.isValid()) {
+                    result = child;
+                    break;
+                }
+                if (result == null) {
+                    result = child;
                 }
             }
         }
