@@ -63,7 +63,7 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
         if (enable) {
             Act act = getObject();
             String status = act.getStatus();
-            if (WorkflowStatus.PENDING.equals(status)) {
+            if (WorkflowStatus.PENDING.equals(status) || WorkflowStatus.IN_PROGRESS.equals(status)) {
                 buttons.add(consult);
             }
             if (WorkflowStatus.PENDING.equals(status)
