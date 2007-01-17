@@ -29,12 +29,13 @@ import java.util.List;
 
 
 /**
- * Browser of IMObject instances.
+ * Implementation of {@link Browser} that renders results in a table.
+ * .
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class TableBrowser<T> extends AbstractBrowser<T> {
+public abstract class TableBrowser<T> extends AbstractBrowser<T> {
 
     /**
      * The selected action command.

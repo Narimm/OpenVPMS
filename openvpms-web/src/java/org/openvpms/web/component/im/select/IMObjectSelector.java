@@ -35,7 +35,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.IMObjectTableBrowser;
+import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -263,7 +263,7 @@ public class IMObjectSelector extends Selector {
      * @return a return a new browser
      */
     protected Browser<IMObject> createBrowser(Query<IMObject> query) {
-        return new IMObjectTableBrowser<IMObject>(query);
+        return IMObjectTableBrowserFactory.create(query);
     }
 
     /**

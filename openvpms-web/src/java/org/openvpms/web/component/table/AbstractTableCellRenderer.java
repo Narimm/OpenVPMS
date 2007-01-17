@@ -161,7 +161,7 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
             to.setBackgroundImage(from.getBackgroundImage());
         }
         if (to.getInsets() == null) {
-            to.setInsets(to.getInsets());
+            to.setInsets(from.getInsets());
         }
     }
 }

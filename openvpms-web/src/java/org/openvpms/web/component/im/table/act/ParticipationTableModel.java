@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.table.act;
 
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -51,13 +52,13 @@ public class ParticipationTableModel extends BaseIMObjectTableModel<IMObject> {
      * @return the value at the specified coordinate
      */
     @Override
-    protected Object getValue(IMObject object, int column, int row) {
+    protected Object getValue(IMObject object, TableColumn column, int row) {
         Participation p = (Participation) object;
         Entity entity = (Entity) IMObjectHelper.getObject(p.getEntity());
         Object result = null;
         if (entity != null) {
             result = super.getValue(entity, column, row);
-        } else if (column == NAME_INDEX) {
+        } else if (column.getModelIndex() == NAME_INDEX) {
             Label label = LabelFactory.create();
             label.setText(Messages.get("imobject.none"));
             result = label;

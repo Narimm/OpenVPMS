@@ -37,7 +37,7 @@ import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.app.OpenVPMSApp;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.IMObjectTableBrowser;
+import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -243,7 +243,7 @@ public class ReportingWorkspace extends AbstractWorkspace<Entity> {
      * @return a new act browser
      */
     private TableBrowser<Entity> createBrowser(ReportQuery query) {
-        return new IMObjectTableBrowser<Entity>(query, null);
+        return IMObjectTableBrowserFactory.create(query);
     }
 
     /**

@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.lookup;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
@@ -73,9 +74,10 @@ public class LookupRelationshipTableModel
      * @return the value at the specified coordinate
      */
     @Override
-    protected Object getValue(LookupRelationship object, int column, int row) {
+    protected Object getValue(LookupRelationship object, TableColumn column,
+                              int row) {
         Object result;
-        if (column == NAME_INDEX) {
+        if (column.getModelIndex() == NAME_INDEX) {
             result = getEntity(object);
         } else {
             result = super.getValue(object, column, row);

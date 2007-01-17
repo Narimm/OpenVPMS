@@ -31,7 +31,7 @@ import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.IMObjectTableBrowser;
+import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
@@ -236,7 +236,7 @@ public class MessagingWorkspace extends AbstractWorkspace<User> {
      * @return a new act browser
      */
     private TableBrowser<Act> createBrowser(ActQuery<Act> query) {
-        return new IMObjectTableBrowser<Act>(query, null);
+        return IMObjectTableBrowserFactory.create(query);
     }
 
     /**

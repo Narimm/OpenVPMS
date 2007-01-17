@@ -143,9 +143,9 @@ public class BatchPrintDialog extends PopupDialog {
          * @return the value at the given coordinate.
          */
         @Override
-        protected Object getValue(IMObject object, int column, int row) {
-            TableColumn col = getColumn(column);
-            if (col.getModelIndex() == PRINT_INDEX) {
+        protected Object getValue(IMObject object, TableColumn column,
+                                  int row) {
+            if (column.getModelIndex() == PRINT_INDEX) {
                 return print.get(row);
             }
             return super.getValue(object, column, row);

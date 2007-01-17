@@ -24,7 +24,6 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.edit.IMObjectProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -66,14 +65,15 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
      * @return the value at the given coordinate
      */
     @Override
-    protected Object getValue(FinancialAct act, int column, int row) {
+    protected Object getValue(FinancialAct act, TableColumn column, int row) {
         Object result = null;
-        if (column == DATE_INDEX) {
+        int index = column.getModelIndex();
+        if (index == DATE_INDEX) {
             Date date = act.getActivityStartTime();
             if (date != null) {
                 result = DateFormatter.formatDateTime(date, false);
             }
-        } else if (column == customerIndex) {
+        } else if (index == customerIndex) {
             ActBean bean = new ActBean(act);
             if (bean.hasNode("customer")) {
                 NodeDescriptor descriptor = bean.getDescriptor("customer");
@@ -116,24 +116,4 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
         return model;
     }
 
-    /**
-     * Returns the sort criteria.
-     *
-     * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
-     * @return the sort criteria, or <code>null</code> if the column isn't
-     *         sortable
-     */
-    @Override
-    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-        SortConstraint[] result;
-        TableColumn col = getColumn(column);
-        if (col.getModelIndex() == customerIndex) {
-            result = null;
-        } else {
-            result = super.getSortConstraints(column, ascending);
-        }
-        return result;
-    }
 }

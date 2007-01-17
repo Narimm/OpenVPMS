@@ -105,17 +105,22 @@ public class EntityRelationshipTableModel
      * @param row    the table row
      */
     @Override
-    protected Object getValue(EntityRelationship object, int column, int row) {
+    protected Object getValue(EntityRelationship object, TableColumn column,
+                              int row) {
         Object result;
-        if (column == NAME_INDEX) {
-            result = getEntityViewer(object);
-        } else if (column == DESCRIPTION_INDEX) {
-            IMObject entity = IMObjectHelper.getObject(getEntity(object));
-            result = (entity != null) ? entity.getDescription() : null;
-        } else if (column == DETAIL_INDEX) {
-            result = object.getDescription();
-        } else {
-            result = super.getValue(object, column, row);
+        switch (column.getModelIndex()) {
+            case NAME_INDEX:
+                result = getEntityViewer(object);
+                break;
+            case DESCRIPTION_INDEX:
+                IMObject entity = IMObjectHelper.getObject(getEntity(object));
+                result = (entity != null) ? entity.getDescription() : null;
+                break;
+            case DETAIL_INDEX:
+                result = object.getDescription();
+                break;
+            default:
+                result = super.getValue(object, column, row);
         }
         return result;
     }

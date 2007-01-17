@@ -28,7 +28,7 @@ import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 
 
 /**
@@ -132,7 +132,8 @@ public abstract class SupplierActWorkspace<T extends Act>
     protected Browser<T> createBrowser(
             ActQuery<T> query) {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
-        return new TableBrowser<T>(query, sort, createTableModel());
+        return new DefaultIMObjectTableBrowser<T>(query, sort,
+                                                  createTableModel());
     }
 
 }

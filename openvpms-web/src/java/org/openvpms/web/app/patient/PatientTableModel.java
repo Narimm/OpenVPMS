@@ -24,7 +24,6 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 
@@ -108,9 +107,8 @@ public class PatientTableModel extends BaseIMObjectTableModel<Party> {
      * @return the value at the given coordinate
      */
     @Override
-    protected Object getValue(Party object, int column, int row) {
-        TableColumn col = getColumn(column);
-        if (col.getModelIndex() == OWNER_INDEX) {
+    protected Object getValue(Party object, TableColumn column, int row) {
+        if (column.getModelIndex() == OWNER_INDEX) {
             Party owner = rules.getOwner(object);
             IMObjectReference ref = (owner != null) ? owner.getObjectReference() : null;
             IMObjectReferenceViewer viewer
@@ -121,21 +119,4 @@ public class PatientTableModel extends BaseIMObjectTableModel<Party> {
         }
     }
 
-    /**
-     * Returns the sort criteria.
-     *
-     * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
-     * @return the sort criteria, or <code>null</code> if the column isn't
-     *         sortable
-     */
-    @Override
-    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-        TableColumn col = getColumn(column);
-        if (col.getModelIndex() == OWNER_INDEX) {
-            return null;
-        }
-        return super.getSortConstraints(column, ascending);
-    }
 }

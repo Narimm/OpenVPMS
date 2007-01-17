@@ -115,7 +115,11 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      */
     public Object getValueAt(int column, int row) {
         T object = getObject(row);
-        return getValue(object, column, row);
+        TableColumn col = getColumn(column);
+        if (col == null) {
+            throw new IllegalArgumentException("Illegal column=" + column);
+        }
+        return getValue(object, col, row);
     }
 
     /**
@@ -146,7 +150,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      * @param row    the row
      * @return the value at the given coordinate.
      */
-    protected abstract Object getValue(T object, int column, int row);
+    protected abstract Object getValue(T object, TableColumn column, int row);
 
     /**
      * Returns a column given its model index.

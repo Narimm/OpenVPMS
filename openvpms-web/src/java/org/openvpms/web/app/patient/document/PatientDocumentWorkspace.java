@@ -24,13 +24,10 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.app.patient.PatientActWorkspace;
-import org.openvpms.web.app.patient.PatientBrowser;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
@@ -71,24 +68,6 @@ public class PatientDocumentWorkspace extends PatientActWorkspace<Act> {
     protected CRUDWindow<Act> createCRUDWindow() {
         String type = Messages.get("patient.document.createtype");
         return new DocumentCRUDWindow(type, SHORT_NAMES);
-    }
-
-    /**
-     * Create a new browser.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     * @return a new browser
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
-     */
-    @Override
-    protected Browser<Party> createBrowser(String refModelName,
-                                           String entityName,
-                                           String conceptName) {
-        return new PatientBrowser(createQuery(refModelName, entityName,
-                                              conceptName));
     }
 
     /**
