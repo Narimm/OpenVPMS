@@ -164,15 +164,16 @@ public abstract class OOBootstrapService {
                 	try {
                         int exit = process.exitValue();
                         if (exit != 0) {
-                            throw new OpenOfficeException(
-                                    FailedToStartService,
-                                    "terminated with exit code=" + exit);                        	
+//                            throw new OpenOfficeException(
+//                                    FailedToStartService,
+//                                    "terminated with exit code=" + exit);                        	
+                            log.error("OpennOffice process failed"+exit);
                         }
                     } catch (IllegalThreadStateException ignore) {
                         // process is running
                     }
 
-                    log.debug("Failed to connect to Openoffice service - retrying");
+                    log.error("Failed to connect to Openoffice service - retrying");
                     // wait 500 ms, then try to connect again
                     Thread.sleep(500);
                 }
