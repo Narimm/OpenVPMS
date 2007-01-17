@@ -58,11 +58,6 @@ public abstract class PopupDialog extends PopupWindow {
     public static final String NO_ID = "no";
 
     /**
-     * Delete button identifier.
-     */
-    public static final String DELETE_ID = "delete";
-
-    /**
      * Skip button identifier.
      */
     public static final String SKIP_ID = "skip";
@@ -98,11 +93,11 @@ public abstract class PopupDialog extends PopupWindow {
     public static final String[] YES_NO_CANCEL = {YES_ID, NO_ID, CANCEL_ID};
 
     /**
-     * Helper to create a button row containing the APPLY, OK, DELETE and CANCEL
-     * buttons
+     * Helper to create a button row containing the APPLY, OK, and CANCEL
+     * buttons.
      */
-    public static final String[] APPLY_OK_DELETE_CANCEL
-            = {APPLY_ID, OK_ID, DELETE_ID, CANCEL_ID};
+    public static final String[] APPLY_OK_CANCEL
+            = {APPLY_ID, OK_ID, CANCEL_ID};
 
     /**
      * The dialog action.
@@ -186,8 +181,6 @@ public abstract class PopupDialog extends PopupWindow {
             onSkip();
         } else if (APPLY_ID.equals(button)) {
             onApply();
-        } else if (DELETE_ID.equals(button)) {
-            onDelete();
         } else {
             setAction(button);
             close();
@@ -240,14 +233,6 @@ public abstract class PopupDialog extends PopupWindow {
      */
     protected void onApply() {
         close(APPLY_ID);
-    }
-
-    /**
-     * Invoked when the 'delete' button is pressed. This sets the action and
-     * closes the window.
-     */
-    protected void onDelete() {
-        close(DELETE_ID);
     }
 
     /**
