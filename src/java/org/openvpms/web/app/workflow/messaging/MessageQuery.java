@@ -35,22 +35,28 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ShortcutHelper;
+import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
+import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.FastLookupHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
@@ -87,6 +93,27 @@ public class MessageQuery extends DefaultActQuery<Act> {
     }
 
     /**
+     * Performs the query.
+     *
+     * @param sort the sort constraint. May be <code>null</code>
+     * @return the query result set. May be <code>null</code>
+     * @throws ArchetypeServiceException if the query fails
+     */
+    @Override
+    public ResultSet<Act> query(SortConstraint[] sort) {
+        ParticipantConstraint[] participants;
+        if (getEntityId() != null) {
+            participants = new ParticipantConstraint[]{getParticipantConstraint()};
+        } else {
+            participants = new ParticipantConstraint[0];
+        }
+        return new ActResultSet<Act>(participants, getArchetypeConstraint(),
+                                     getStartFrom(), getStartTo(),
+                                     getStatuses(), excludeStatuses(),
+                                     getConstraints(), getMaxResults(), sort);
+    }
+
+    /**
      * Lays out the component in a container, and sets focus on the instance
      * name.
      *
@@ -97,6 +124,10 @@ public class MessageQuery extends DefaultActQuery<Act> {
         super.doLayout(container);
         Label label = LabelFactory.create("messaging.user");
         name = TextComponentFactory.create();
+        IMObject user = IMObjectHelper.getObject(getEntityId());
+        if (user != null) {
+            name.setText(user.getName());
+        }
         nameListener = new DocumentListener() {
             public void documentUpdate(DocumentEvent event) {
                 onNameChanged();
