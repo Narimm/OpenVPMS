@@ -24,7 +24,7 @@
 			derivedValue="'Fax Number'" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat('(',/details/attributes/areaCode,') ', /details/attributes/faxNumber)" />
+			derivedValue="concat('(',/details/attributes/areaCode,') ', /details/attributes/faxNumber,' ',party:getContactPurposes())" />
 		
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"

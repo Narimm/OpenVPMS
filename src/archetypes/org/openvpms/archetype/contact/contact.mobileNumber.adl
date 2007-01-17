@@ -24,7 +24,7 @@
 			derivedValue="'Mobile Number'" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="/details/attributes/mobileNumber" />
+			derivedValue="concat(/details/attributes/mobileNumber,' ',party:getContactPurposes())" />
 		
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
