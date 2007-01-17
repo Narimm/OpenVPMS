@@ -18,20 +18,29 @@
 
 package org.openvpms.web.app.patient.summary;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
+import org.openvpms.component.system.common.query.QueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -49,10 +58,6 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 
 
 /**
@@ -102,9 +107,13 @@ public class PatientSummary {
             Label ageTitle = LabelFactory.create("patient.age");
             Label age = LabelFactory.create();
             age.setText(getPatientAge(patient));
+
+            Label weightTitle = LabelFactory.create("patient.weight");
+            Label weight = LabelFactory.create();
+            weight.setText(getPatientWeight(patient));
             result = GridFactory.create(2, alertTitle, alertCount,
                                         reminderTitle, reminderCount,
-                                        ageTitle, age);
+                                        ageTitle, age, weightTitle, weight);
         }
         return result;
     }
@@ -202,6 +211,30 @@ public class PatientSummary {
         } else {
             result = "No Birthdate";
         }
+        return result;
+    }
+
+    /**
+     * Returns the current weight for a patient.
+     *
+     * @param patient the patient
+     * @return a string representing the patient weight
+     */
+    private static String getPatientWeight(Party patient) {
+        String result;
+    	ArchetypeQuery query = new ArchetypeQuery("act.patientWeight", true, true);
+    	query.add(new ParticipantConstraint("patient", "participation.patient", patient));
+    	query.add(new NodeSortConstraint("startTime", true));
+    	query.setMaxResults(1);
+    	QueryIterator<Act> iterator = new IMObjectQueryIterator<Act>(query);
+    	Act weight = (iterator.hasNext()) ? iterator.next() : null;
+    	if (weight != null) {   		
+    		ActBean bean = new ActBean(weight);
+    		result = bean.getString("description");
+    	}
+		else {
+			result = "No Weight";
+		} 
         return result;
     }
 
