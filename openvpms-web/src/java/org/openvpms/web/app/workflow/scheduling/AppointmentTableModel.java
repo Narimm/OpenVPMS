@@ -200,15 +200,15 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
                 break;
             case APPOINTMENT_INDEX:
                 result = getViewer(set, AppointmentQuery.APPOINTMENT_REFERENCE,
-                                   AppointmentQuery.APPOINTMENT_NAME);
+                                   AppointmentQuery.APPOINTMENT_NAME, false);
                 break;
             case CUSTOMER_INDEX:
                 result = getViewer(set, AppointmentQuery.CUSTOMER_REFERENCE,
-                                   AppointmentQuery.CUSTOMER_NAME);
+                                   AppointmentQuery.CUSTOMER_NAME, true);
                 break;
             case PATIENT_INDEX:
                 result = getViewer(set, AppointmentQuery.PATIENT_REFERENCE,
-                                   AppointmentQuery.PATIENT_NAME);
+                                   AppointmentQuery.PATIENT_NAME, true);
                 break;
         }
         return result;
@@ -275,13 +275,14 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
      * @param set     the object set
      * @param refKey  the object reference key
      * @param nameKey the entity name key
+     * @param link TODO
      * @return a new component to view the object reference
      */
-    private Component getViewer(ObjectSet set, String refKey, String nameKey) {
+    private Component getViewer(ObjectSet set, String refKey, String nameKey, Boolean link) {
         IMObjectReference ref = (IMObjectReference) set.get(refKey);
         String name = (String) set.get(nameKey);
         IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
-                ref, name, !context.isEdit());
+                ref, name, link);
         return viewer.getComponent();
     }
 }
