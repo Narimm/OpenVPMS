@@ -21,7 +21,12 @@ package org.openvpms.web.component.im.edit.act;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.app.ContextHelper;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
+import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -55,6 +60,27 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
             IMObject patient = context.getContext().getPatient();
             getEditor().setObject(patient);
         }
+    }
+
+    /**
+     * Creates a new object reference editor.
+     *
+     * @param property the reference property
+     * @return a new object reference editor
+     */
+    @Override
+    protected IMObjectReferenceEditor createObjectReferenceEditor(
+            Property property) {
+        return new AbstractIMObjectReferenceEditor(property, getParent(),
+                                                   getLayoutContext(), true) {
+
+            @Override
+            public void setObject(IMObject object) {
+                super.setObject(object);
+                Party patient = (Party) object;
+                ContextHelper.setPatient(patient);
+            }
+        };
     }
 
 }
