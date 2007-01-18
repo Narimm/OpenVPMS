@@ -31,11 +31,39 @@ import java.util.GregorianCalendar;
 /**
  * TableCellRender that assigns blocks of appointments in different hours a
  * different style.
+ * Note that for this renderer will not work for partial table renders as
+ * it maintains state for the style of the previous row.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-09-06 07:52:23Z $
  */
 public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
+
+    /**
+     * The previous rendered row.
+     */
+    private int previousRow = -1;
+
+    /**
+     * The previous rendered row hour.
+     */
+    private int previousHour;
+
+    /**
+     * The previous rendered row style.
+     */
+    private String previousStyle;
+
+    /**
+     * The style of the first block of hours.
+     */
+    private static final String BLOCK_STYLE1 = "Table.EvenRow";
+
+    /**
+     * The style of the second block of hours.
+     */
+    private static final String BLOCK_STYLE2 = "Table.OddRow";
+
 
     /**
      * Returns the style name for a column and row.
@@ -50,19 +78,33 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
      */
     @SuppressWarnings("unchecked")
     protected String getStyle(Table table, Object value, int column, int row) {
-        String style = "Table.EvenRow";
-        IMTable<ObjectSet> actTable = (IMTable<ObjectSet>) table;
-        ObjectSet set = actTable.getObjects().get(row);
-        Date startTime = (Date) set.get(AppointmentQuery.ACT_START_TIME);
-        if (startTime != null) {
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(startTime);
-            int hour = calendar.get(Calendar.HOUR_OF_DAY);
-            if (hour % 2 == 1) {
-                style = "Table.OddRow";
+        String style = BLOCK_STYLE1;
+        if (row == previousRow) {
+            style = previousStyle;
+        } else {
+            IMTable<ObjectSet> actTable = (IMTable<ObjectSet>) table;
+            ObjectSet set = actTable.getObjects().get(row);
+            Date startTime = (Date) set.get(AppointmentQuery.ACT_START_TIME);
+            if (startTime != null) {
+                Calendar calendar = new GregorianCalendar();
+                calendar.setTime(startTime);
+                int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                if (row == (previousRow + 1)) {
+                    if (hour == previousHour) {
+                        style = previousStyle;
+                    } else if (BLOCK_STYLE1.equals(previousStyle)) {
+                        style = BLOCK_STYLE2;
+                    }
+                } else {
+                    if (hour % 2 == 1) {
+                        style = BLOCK_STYLE2;
+                    }
+                }
+                previousHour = hour;
             }
+            previousRow = row;
+            previousStyle = style;
         }
         return style;
     }
-
 }
