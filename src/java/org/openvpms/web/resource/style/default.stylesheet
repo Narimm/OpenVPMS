@@ -200,7 +200,7 @@
             <property name="rolloverForeground" value="#000000"/>
             <property name="rolloverBackground" value="#99cc66"/>
             <property name="font">
-                <font size="8pt" bold="true"/>
+                <font size="9pt" bold="true"/>
             </property>
             <property name="border">
                 <border style="none"/>
