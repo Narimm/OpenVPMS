@@ -29,6 +29,7 @@ import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
@@ -87,6 +88,17 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
                     "Argument 'object' must be an instance of "
                             + Party.class.getName());
         }
+    }
+
+    /**
+     * Determines if the workspace should be refreshed.
+     * This implementation always returns <code>true</code>.
+     *
+     * @return <code>true</code>
+     */
+    @Override
+    protected boolean refreshWorkspace() {
+        return true;
     }
 
     /**
@@ -168,6 +180,10 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
         if (latest != getObject()) {
             setObject(latest);
         } else {
+            Browser<Act> browser = getBrowser();
+            if (browser != null) {
+                browser.query();
+            }
             // need to add the existing workspace to the container
             Component workspace = getWorkspace();
             if (workspace != null) {

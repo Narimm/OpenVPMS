@@ -64,7 +64,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
     /**
      * The act browser.
      */
-    private Browser<ObjectSet> acts;
+    private Browser<ObjectSet> browser;
 
     /**
      * The CRUD window.
@@ -122,13 +122,24 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
     }
 
     /**
+     * Determines if the workspace should be refreshed.
+     * This implementation always returns <code>true</code>.
+     *
+     * @return <code>true</code>
+     */
+    @Override
+    protected boolean refreshWorkspace() {
+        return true;
+    }
+
+    /**
      * Invoked when the object has been saved.
      *
      * @param object the object
      * @param isNew  determines if the object is a new instance
      */
     protected void onSaved(IMObject object, boolean isNew) {
-        acts.query();
+        browser.query();
         // acts.setSelected((Act) object); todo
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
@@ -139,7 +150,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * @param object the object
      */
     protected void onDeleted(IMObject object) {
-        acts.query();
+        browser.query();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -149,7 +160,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * @param object the object
      */
     protected void onRefresh(IMObject object) {
-        acts.query();
+        browser.query();
         // acts.setSelected((Act) object); todo
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
@@ -186,7 +197,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * @return a component representing the acts
      */
     protected Component getActs(Browser acts) {
-        return GroupBoxFactory.create(this.acts.getComponent());
+        return GroupBoxFactory.create(this.browser.getComponent());
     }
 
     /**
@@ -236,8 +247,8 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * @param browser the new browser
      */
     protected void setBrowser(Browser<ObjectSet> browser) {
-        acts = browser;
-        acts.addQueryListener(new QueryBrowserListener<ObjectSet>() {
+        this.browser = browser;
+        this.browser.addQueryListener(new QueryBrowserListener<ObjectSet>() {
             public void query() {
                 onQuery();
             }
@@ -254,7 +265,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * @return the browser
      */
     protected Browser<ObjectSet> getBrowser() {
-        return acts;
+        return browser;
     }
 
     /**
@@ -309,7 +320,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      */
     protected void initQuery(Party party) {
         query.setEntity(party);
-        acts.query();
+        browser.query();
         onQuery();
     }
 
@@ -326,10 +337,10 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * Selects the first available act, if any.
      */
     private void selectFirst() {
-        List<ObjectSet> objects = acts.getObjects();
+        List<ObjectSet> objects = browser.getObjects();
         if (!objects.isEmpty()) {
             ObjectSet current = objects.get(0);
-            acts.setSelected(current);
+            browser.setSelected(current);
             // window.setObject(current) TODO;
         } else {
             window.setObject(null);
@@ -387,6 +398,10 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
         if (latest != getObject()) {
             setObject(latest);
         } else {
+            if (browser != null) {
+                browser.query();
+            }
+
             // need to add the existing workspace to the container
             Component workspace = getWorkspace();
             if (workspace != null) {
