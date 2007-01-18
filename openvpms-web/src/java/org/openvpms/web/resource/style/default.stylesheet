@@ -511,10 +511,10 @@
             <property name="rolloverForeground" value="#6f0f0f"/>
             <property name="background" value="#99cc66"/>
             <property name="foreground" value="#fdf5e6"/>
+            <property name="font">
+                <font size="8pt"/>
+            </property>
             <property name="border">
-                <property name="font">
-                    <font size="8pt"/>
-                </property>
                 <border size="1px" style="outset" color="#7b68ee"/>
             </property>
         </properties>
@@ -1597,6 +1597,9 @@
             <property name="border">
                 <border size="1px" style="outset" color="#7b68ee"/>
                 <!-- mediumslateblue -->
+            </property>
+            <property name="font">
+                <font size="8pt"/>
             </property>
             <property name="pressedEnabled" value="true"/>
             <property name="pressedBackground" value="#191970"/>
