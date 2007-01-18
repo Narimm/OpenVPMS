@@ -6,11 +6,11 @@
 		 columnCount="1"
 		 printOrder="Vertical"
 		 orientation="Landscape"
-		 pageWidth="226"
-		 pageHeight="127"
-		 columnWidth="226"
+		 pageWidth="204"
+		 pageHeight="153"
+		 columnWidth="199"
 		 columnSpacing="0"
-		 leftMargin="0"
+		 leftMargin="5"
 		 rightMargin="0"
 		 topMargin="0"
 		 bottomMargin="0"
@@ -31,6 +31,7 @@
 	<field name="endTime" class="java.util.Date"/>
 	<field name="label" class="java.lang.String"/>
 	<field name="clinician.entity.name" class="java.lang.String"/>
+	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'name')]" class="java.lang.String"/>
 
 		<background>
 			<band height="1"  isSplitAllowed="true" >
@@ -49,25 +50,25 @@
 			</band>
 		</columnHeader>
 		<detail>
-			<band height="122"  isSplitAllowed="true" >
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+			<band height="151"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="45"
-						y="4"
-						width="107"
+						x="27"
+						y="36"
+						width="139"
 						height="14"
 						key="textField"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="10"/>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA[$F{product.entity.name}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="15"
-						y="23"
-						width="181"
+						y="52"
+						width="152"
 						height="40"
 						key="textField"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
@@ -76,12 +77,12 @@
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA[$F{label}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="45"
-						y="64"
-						width="50"
-						height="11"
+						x="106"
+						y="93"
+						width="52"
+						height="10"
 						key="textField"
 						isPrintWhenDetailOverflows="true"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
@@ -93,22 +94,8 @@
 				<staticText>
 					<reportElement
 						x="15"
-						y="64"
-						width="28"
-						height="11"
-						key="staticText-1"
-						isPrintWhenDetailOverflows="true"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<text><![CDATA[Patient:]]></text>
-				</staticText>
-				<staticText>
-					<reportElement
-						x="102"
-						y="64"
-						width="21"
+						y="114"
+						width="30"
 						height="11"
 						key="staticText-2"
 						isPrintWhenDetailOverflows="true"/>
@@ -120,9 +107,9 @@
 				</staticText>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="127"
-						y="64"
-						width="71"
+						x="48"
+						y="114"
+						width="64"
 						height="11"
 						key="textField"
 						isPrintWhenDetailOverflows="true"/>
@@ -134,8 +121,8 @@
 				</textField>
 				<staticText>
 					<reportElement
-						x="15"
-						y="78"
+						x="96"
+						y="104"
 						width="28"
 						height="11"
 						key="staticText-3"
@@ -146,11 +133,11 @@
 					</textElement>
 				<text><![CDATA[Expiry :]]></text>
 				</staticText>
-				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+				<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="45"
-						y="78"
-						width="50"
+						x="125"
+						y="104"
+						width="65"
 						height="11"
 						key="textField"
 						isPrintWhenDetailOverflows="true"/>
@@ -162,9 +149,9 @@
 				</textField>
 				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="126"
-						y="78"
-						width="72"
+						x="48"
+						y="104"
+						width="49"
 						height="11"
 						key="textField"
 						isPrintWhenDetailOverflows="true"/>
@@ -176,9 +163,9 @@
 				</textField>
 				<staticText>
 					<reportElement
-						x="101"
-						y="78"
-						width="23"
+						x="15"
+						y="104"
+						width="30"
 						height="11"
 						key="staticText-4"
 						isPrintWhenDetailOverflows="true"/>
@@ -187,6 +174,85 @@
 						<font size="8"/>
 					</textElement>
 				<text><![CDATA[ Date:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="15"
+						y="127"
+						width="164"
+						height="11"
+						key="staticText-5"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Oblique" size="8" isBold="false" isItalic="true"/>
+					</textElement>
+				<text><![CDATA[Turramurra Veterinary Clinic]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="133"
+						width="181"
+						height="11"
+						key="staticText-6"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-BoldOblique" size="8" isBold="false" isItalic="true"/>
+					</textElement>
+				<text><![CDATA[2 Princess Street, Turramurra NSW 2074]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="15"
+						y="93"
+						width="30"
+						height="11"
+						key="staticText-7"
+						isPrintWhenDetailOverflows="true"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ Patient:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="47"
+						y="93"
+						width="49"
+						height="10"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'name')]}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="96"
+						y="93"
+						width="10"
+						height="10"
+						key="staticText-8"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[-]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="1"
+						y="140"
+						width="191"
+						height="11"
+						key="staticText-9"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-BoldOblique" size="8" isBold="false" isItalic="true"/>
+					</textElement>
+				<text><![CDATA[(02)99880198]]></text>
 				</staticText>
 			</band>
 		</detail>
