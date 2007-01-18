@@ -19,8 +19,6 @@
 
 package org.openvpms.component.business.service.archetype;
 
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -91,12 +89,13 @@ public class ArchetypeServiceFunctions {
 
     /**
      * Resolves the value at the specified node.
-     * If Node doesn't exist returns the defaultValue.
+     * If the node doesn't exist returns the specified default value.     *
      *
      * @param object       the expression context
      * @param node         the node name
      * @param defaultValue the value to return if node does not exist
-     * @return the value at the specified node or defaultValue if node does not exist
+     * @return the value at the specified node or defaultValue if node does not
+     *         exist
      * @see NodeResolver
      */
     public static Object get(IMObject object, String node,
@@ -113,21 +112,47 @@ public class ArchetypeServiceFunctions {
      *
      * @param object the object
      * @param node   the node name
-     * @return the lookup's name, or <code>null</code> if lookup cannot be found
-     * @throws OpenVPMSException if the call cannot complete
+     * @return the lookup's name
+     * @throws NodeResolverException if the node is invalid
+     * @throws OpenVPMSException     if the call cannot complete
+     * @see NodeResolver
      */
     public static String lookup(IMObject object, String node) {
-        String result = null;
-        ArchetypeId id = object.getArchetypeId();
+        String result;
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        ArchetypeDescriptor archetype = service.getArchetypeDescriptor(id);
-        if (archetype != null) {
-            NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
-            if (descriptor != null) {
-                result = LookupHelper.getName(service, descriptor, object);
-            }
+        NodeResolver resolver = new NodeResolver(object, service);
+        NodeResolver.State state = resolver.resolve(node);
+        NodeDescriptor descriptor = state.getLeafNode();
+        if (descriptor != null && descriptor.isLookup()) {
+            result = LookupHelper.getName(service, descriptor,
+                                          state.getParent());
+        } else {
+            throw new NodeResolverException(
+                    NodeResolverException.ErrorCode.InvalidNode, node);
         }
         return result;
     }
+
+    /**
+     * Resolves the name of a lookup, given its node.
+     * If the node doesn't exist returns the specified default value.
+     *
+     * @param object       the object
+     * @param node         the node name
+     * @param defaultValue the default value
+     * @return the lookup's name, or <code>defaultValue</code> if the lookup
+     *         node cannot be found
+     * @throws OpenVPMSException if the call cannot complete
+     * @see NodeResolver
+     */
+    public static String lookup(IMObject object, String node,
+                                String defaultValue) {
+        try {
+            return lookup(object, node);
+        } catch (NodeResolverException exception) {
+            return defaultValue;
+        }
+    }
+
 }

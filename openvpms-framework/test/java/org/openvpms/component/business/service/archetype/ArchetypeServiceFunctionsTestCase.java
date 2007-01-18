@@ -116,6 +116,39 @@ public class ArchetypeServiceFunctionsTestCase
         } catch (JXPathInvalidAccessException exception) {
             checkException(exception, InvalidObject);
         }
+
+        // invalid node with default value
+        Object value = context.getValue(
+                "openvpms:get(., 'invalidNode', 'default')");
+        assertEquals("default", value);
+    }
+
+    /**
+     * Tests the openvpms:lookup() function.
+     */
+    public void testLookup() {
+        Party party = createCustomer();
+        ActBean act = createAct("act.customerEstimation");
+        act.setStatus("IN_PROGRESS");
+        act.setParticipant("participation.customer", party);
+
+        JXPathContext context = JXPathHelper.newContext(act.getAct());
+
+        checkLookup("In Progress", "status", context);
+        checkLookup("Mr", "customer.entity.title", context);
+
+        // test invalid node
+        try {
+            context.getValue("openvpms:lookup(., 'displayName')");
+            fail("expected NodeResolverException to be thrown");
+        } catch (JXPathInvalidAccessException exception) {
+            checkException(exception, InvalidNode);
+        }
+
+        // test invalid node with default
+        Object value = context.getValue(
+                "openvpms:lookup(., 'displayName', 'default')");
+        assertEquals("default", value);
     }
 
     /**
@@ -153,6 +186,19 @@ public class ArchetypeServiceFunctionsTestCase
     private void checkEquals(String expected, String node,
                              JXPathContext context) {
         String expression = "openvpms:get(., '" + node + "')";
+        assertEquals(expected, context.getValue(expression));
+    }
+
+    /**
+     * Verifies that a lookup expression evaluates to the expected result.
+     *
+     * @param expected the expected result
+     * @param node     the exoression node
+     * @param context  the context
+     */
+    private void checkLookup(String expected, String node,
+                             JXPathContext context) {
+        String expression = "openvpms:lookup(., '" + node + "')";
         assertEquals(expected, context.getValue(expression));
     }
 
