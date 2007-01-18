@@ -29,9 +29,9 @@ import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
@@ -73,6 +73,11 @@ public class MessagingWorkspace extends AbstractWorkspace<User> {
      * The act browser.
      */
     private Browser<Act> browser;
+
+    /**
+     * The message query.
+     */
+    private Query<Act> query;
 
 
     /**
@@ -152,6 +157,17 @@ public class MessagingWorkspace extends AbstractWorkspace<User> {
     }
 
     /**
+     * Determines if the workspace should be refreshed.
+     * This implementation always returns <code>true</code>.
+     *
+     * @return <code>true</code>
+     */
+    @Override
+    protected boolean refreshWorkspace() {
+        return true;
+    }
+
+    /**
      * Returns the latest version of the current context object.
      *
      * @return the latest version of the context object, or {@link #getObject()}
@@ -168,36 +184,43 @@ public class MessagingWorkspace extends AbstractWorkspace<User> {
      * @param container the container
      */
     protected void layoutWorkspace(Component container) {
-        ActQuery<Act> query = createQuery(user);
-        browser = createBrowser(query);
-        browser.addQueryListener(new QueryBrowserListener<Act>() {
-            public void query() {
-                selectFirst();
-            }
-
-            public void selected(Act object) {
-                window.setObject(object);
-            }
-        });
-
-        window = createCRUDWindow();
-        window.setListener(new CRUDWindowListener<Act>() {
-            public void saved(Act object, boolean isNew) {
-                browser.query();
-            }
-
-            public void deleted(Act object) {
-                browser.query();
-            }
-
-            public void refresh(Act object) {
-                browser.query();
-            }
-        });
-        if (workspace != null) {
-            container.remove(workspace);
+        if (query == null) {
+            query = new MessageQuery(user);
         }
-        workspace = createWorkspace(browser, window);
+        if (browser == null) {
+            browser = createBrowser(query);
+            browser.addQueryListener(new QueryBrowserListener<Act>() {
+                public void query() {
+                    selectFirst();
+                }
+
+                public void selected(Act object) {
+                    window.setObject(object);
+                }
+            });
+        }
+        if (window == null) {
+            window = createCRUDWindow();
+            window.setListener(new CRUDWindowListener<Act>() {
+                public void saved(Act object, boolean isNew) {
+                    browser.query();
+                }
+
+                public void deleted(Act object) {
+                    browser.query();
+                }
+
+                public void refresh(Act object) {
+                    browser.query();
+                }
+            });
+            if (workspace != null) {
+                container.remove(workspace);
+            }
+        }
+        if (workspace == null) {
+            workspace = createWorkspace(browser, window);
+        }
         container.add(workspace);
         if (!query.isAuto()) {
             browser.query();
@@ -235,18 +258,8 @@ public class MessagingWorkspace extends AbstractWorkspace<User> {
      * @param query the act query
      * @return a new act browser
      */
-    private TableBrowser<Act> createBrowser(ActQuery<Act> query) {
+    private TableBrowser<Act> createBrowser(Query<Act> query) {
         return IMObjectTableBrowserFactory.create(query);
-    }
-
-    /**
-     * Creates a new query.
-     *
-     * @param user the user to query
-     * @return a new query
-     */
-    private ActQuery<Act> createQuery(User user) {
-        return new MessageQuery(user);
     }
 
     /**
