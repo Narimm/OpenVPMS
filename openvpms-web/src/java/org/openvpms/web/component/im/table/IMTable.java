@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.table;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
+import nextapp.echo2.app.table.TableModel;
 import org.openvpms.web.component.table.EvenOddTableCellRenderer;
 
 import java.util.List;
@@ -50,7 +51,6 @@ public class IMTable<T> extends Table {
         setStyleName("default");
         setAutoCreateColumnsFromModel(false);
         initialise(model);
-        setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
     }
 
     /**
@@ -110,16 +110,22 @@ public class IMTable<T> extends Table {
     private void initialise(IMTableModel<T> model) {
         setSelectionEnabled(model.getEnableSelection());
         setRolloverEnabled(model.getEnableSelection());
+        TableModel current = getModel();
         setModel(model);
         setColumnModel(model.getColumnModel());
         if (getDefaultRenderer(Object.class) == null) {
             setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
         }
-        model.addTableModelListener(new TableModelListener() {
-            public void tableChanged(TableModelEvent event) {
-                initialise(((IMTableModel<T>) getModel()));
-            }
-        });
+        // need to add a listener to the model to be notified of column changes
+        if (current != model) {
+            model.addTableModelListener(new TableModelListener() {
+                public void tableChanged(TableModelEvent event) {
+                    if (event.getType() == TableModelEvent.STRUCTURE_CHANGED) {
+                        initialise(((IMTableModel<T>) getModel()));
+                    }
+                }
+            });
+        }
     }
 
 }
