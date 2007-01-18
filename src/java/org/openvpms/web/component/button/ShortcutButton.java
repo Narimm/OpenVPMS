@@ -18,8 +18,8 @@
 
 package org.openvpms.web.component.button;
 
+import echopointng.ButtonEx;
 import echopointng.KeyStrokes;
-import echopointng.PushButton;
 import echopointng.xhtml.XhtmlFragment;
 import org.apache.commons.lang.StringUtils;
 
@@ -35,7 +35,7 @@ import org.apache.commons.lang.StringUtils;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ShortcutButton extends PushButton {
+public class ShortcutButton extends ButtonEx {
 
     /**
      * The shortcut key.

@@ -18,15 +18,10 @@
 
 package org.openvpms.web.app.patient.summary;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -57,7 +52,12 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 
 /**
@@ -89,6 +89,7 @@ public class PatientSummary {
                         onShowAlerts(patient);
                     }
                 });
+                alertCount = RowFactory.create(alertCount);
             }
 
             Label reminderTitle = LabelFactory.create("patient.reminders");
@@ -103,6 +104,7 @@ public class PatientSummary {
                         onShowReminders(patient);
                     }
                 });
+                reminderCount = RowFactory.create(reminderCount);
             }
             Label ageTitle = LabelFactory.create("patient.age");
             Label age = LabelFactory.create();
@@ -222,19 +224,20 @@ public class PatientSummary {
      */
     private static String getPatientWeight(Party patient) {
         String result;
-    	ArchetypeQuery query = new ArchetypeQuery("act.patientWeight", true, true);
-    	query.add(new ParticipantConstraint("patient", "participation.patient", patient));
-    	query.add(new NodeSortConstraint("startTime", true));
-    	query.setMaxResults(1);
-    	QueryIterator<Act> iterator = new IMObjectQueryIterator<Act>(query);
-    	Act weight = (iterator.hasNext()) ? iterator.next() : null;
-    	if (weight != null) {   		
-    		ActBean bean = new ActBean(weight);
-    		result = bean.getString("description");
-    	}
-		else {
-			result = "No Weight";
-		} 
+        ArchetypeQuery query = new ArchetypeQuery("act.patientWeight", true,
+                                                  true);
+        query.add(new ParticipantConstraint("patient", "participation.patient",
+                                            patient));
+        query.add(new NodeSortConstraint("startTime", true));
+        query.setMaxResults(1);
+        QueryIterator<Act> iterator = new IMObjectQueryIterator<Act>(query);
+        Act weight = (iterator.hasNext()) ? iterator.next() : null;
+        if (weight != null) {
+            ActBean bean = new ActBean(weight);
+            result = bean.getString("description");
+        } else {
+            result = "No Weight";
+        }
         return result;
     }
 
