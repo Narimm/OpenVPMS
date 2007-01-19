@@ -88,7 +88,7 @@
 				</assertion>
 			</node>
            <node name="orientation" path="/details/attributes/orientation" type="java.lang.String"
-                   defaultValue='PORTRAIT'>
+                   defaultValue="'PORTRAIT'" >
                 <assertion name="lookup.local">
                     <propertyList name="entries">
                         <property name="PORTRAIT" value="Portrait" />
