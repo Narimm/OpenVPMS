@@ -228,7 +228,7 @@ public class PatientSummary {
                                                   true);
         query.add(new ParticipantConstraint("patient", "participation.patient",
                                             patient));
-        query.add(new NodeSortConstraint("startTime", true));
+        query.add(new NodeSortConstraint("startTime", false));
         query.setMaxResults(1);
         QueryIterator<Act> iterator = new IMObjectQueryIterator<Act>(query);
         Act weight = (iterator.hasNext()) ? iterator.next() : null;
