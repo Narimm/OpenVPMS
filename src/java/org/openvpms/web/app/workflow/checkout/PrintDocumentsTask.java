@@ -233,6 +233,13 @@ class PrintDocumentsTask extends AbstractTask {
         }
 
         /**
+         * Notifies that the print was skipped.
+         */
+        public void skipped() {
+            notifySkipped();
+        }
+
+        /**
          * Invoked when an object fails to print.
          *
          * @param cause the reason for the failure

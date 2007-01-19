@@ -40,7 +40,8 @@ public class ContextException extends OpenVPMSException {
      */
     public enum ErrorCode {
         NoCustomer,
-        NoPatient
+        NoPatient,
+        NoObject
     }
 
     /**

@@ -199,6 +199,9 @@ public abstract class ActCRUDWindow<T extends Act>
             public void cancelled() {
             }
 
+            public void skipped() {
+            }
+
             public void failed(Throwable cause) {
                 ErrorHelper.show(cause);
             }

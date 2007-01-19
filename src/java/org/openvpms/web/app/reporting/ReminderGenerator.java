@@ -146,6 +146,9 @@ class ReminderGenerator extends AbstractReminderProcessor {
                 public void cancelled() {
                 }
 
+                public void skipped() {
+                }
+
                 public void failed(Throwable cause) {
                     ErrorHelper.show(cause, new WindowPaneListener() {
                         public void windowPaneClosing(
