@@ -85,7 +85,7 @@ public final class IMObjectPrinterFactory {
         IMPrinter<T> result = null;
         if (handler != null) {
             try {
-                result = handler.create();
+                result = handler.create(new Object[]{object});
             } catch (Throwable throwable) {
                 log.error(throwable, throwable);
             }
