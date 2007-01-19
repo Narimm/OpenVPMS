@@ -326,13 +326,15 @@ public abstract class OOBootstrapService {
         try {
             // try to connect to office
             Object context = urlResolver.resolve(connect);
-            context = UnoRuntime.queryInterface(
-                    XComponentContext.class, context);
-            if (context == null) {
-                throw new OpenOfficeException(FailedToStartService,
-                                              "no component context");
+            if (context != null) {
+                context = UnoRuntime.queryInterface(
+                          XComponentContext.class, context);
+                  if (context == null) {
+                      throw new OpenOfficeException(FailedToStartService,
+                                                    "no component context");
+                  }
+                  connected = true;
             }
-            connected = true;
         } catch (NoConnectException exception) {
             // see if the process is still running. Don't use
             // process exit to terminate the loop as soffice may
