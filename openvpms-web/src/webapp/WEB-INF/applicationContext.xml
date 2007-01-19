@@ -428,6 +428,10 @@
         <constructor-arg>
             <value>8100</value>
         </constructor-arg>
+        <!-- start the service on demand -->
+        <constructor-arg>
+            <value>false</value>
+        </constructor-arg>
     </bean>
 
     <!-- OpenOffice connection pool. Uses an OOBootstrapService
