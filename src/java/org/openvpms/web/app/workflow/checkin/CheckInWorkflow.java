@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
-import org.openvpms.web.component.workflow.AddActRelationshipTask;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.PrintIMObjectTask;
@@ -121,7 +120,6 @@ public class CheckInWorkflow extends WorkflowImpl {
         String task = "act.customerTask";
         String document = "act.patientDocumentForm";
         String event = "act.patientClinicalEvent";
-        String weight = "act.patientWeight";
 
         // select a worklist
         addTask(new SelectIMObjectTask<Party>(workList, initial));
@@ -153,8 +151,6 @@ public class CheckInWorkflow extends WorkflowImpl {
         addTask(new EditIMObjectTask(event, eventProps, true));
 
         // prompt for a patient weight.
-        addTask(new EditIMObjectTask(weight, true));
-        addTask(new AddActRelationshipTask(
-                event, weight, "actRelationship.patientClinicalEventItem"));
+        addTask(new PatientWeightTask());
     }
 }

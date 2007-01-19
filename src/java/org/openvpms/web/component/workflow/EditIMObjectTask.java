@@ -21,6 +21,7 @@ package org.openvpms.web.component.workflow;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -29,6 +30,8 @@ import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.util.IMObjectDeletor;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -53,6 +56,16 @@ public class EditIMObjectTask extends AbstractTask {
      * Determines if the object should be created.
      */
     private boolean create;
+
+    /**
+     * Determines if editing may be skipped.
+     */
+    private boolean skip;
+
+    /**
+     * Determines if the object should be deleted on cancel or skip.
+     */
+    private boolean deleteOnCancelOrSkip;
 
     /**
      * Properties to create the object with.
@@ -109,8 +122,8 @@ public class EditIMObjectTask extends AbstractTask {
      * @param shortName        the object short name
      * @param createProperties the properties to create the object with.
      *                         May be <code>null</code>
-     * @param background       the if <code>true</code> create an editor but don't
-     *                         display it
+     * @param background       the if <code>true</code> create an editor but
+     *                         don't display it
      */
     public EditIMObjectTask(String shortName, TaskProperties createProperties,
                             boolean background) {
@@ -139,6 +152,29 @@ public class EditIMObjectTask extends AbstractTask {
     public EditIMObjectTask(IMObject object, boolean background) {
         this.object = object;
         this.background = background;
+    }
+
+    /**
+     * Determines if editing may be skipped.
+     * Note that the object may have changed prior to editing being skipped.
+     *
+     * @param skip if <code>true</code> editing may be skipped.
+     */
+    public void setSkip(boolean skip) {
+        this.skip = skip;
+    }
+
+    /**
+     * Determines if the object should be deleted if the task is cancelled
+     * or skipped. Defaults to <code>false</code>.
+     * Note that no checking is performed to see if the object participates
+     * in entity relationships before being deleted. To do this,
+     * use {@link IMObjectDeletor} instead.
+     *
+     * @param delete if <code>true</code> delete the object on cancel or skip
+     */
+    public void setDeleteOnCancelOrSkip(boolean delete) {
+        deleteOnCancelOrSkip = delete;
     }
 
     /**
@@ -212,6 +248,9 @@ public class EditIMObjectTask extends AbstractTask {
                     if (editor.save()) {
                         notifyCompleted();
                     } else {
+                        if (deleteOnCancelOrSkip) {
+                            delete(object);
+                        }
                         notifyCancelled();
                     }
                 } else {
@@ -223,6 +262,9 @@ public class EditIMObjectTask extends AbstractTask {
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
+            if (deleteOnCancelOrSkip) {
+                delete(object);
+            }
             notifyCancelled();
         }
     }
@@ -235,6 +277,9 @@ public class EditIMObjectTask extends AbstractTask {
     protected void onEditCompleted(IMObjectEditor editor) {
         GlobalContext.getInstance().setCurrent(null);
         if (editor.isDeleted() || editor.isCancelled()) {
+            if (editor.isCancelled() && deleteOnCancelOrSkip) {
+                delete(editor.getObject());
+            }
             notifyCancelled();
         } else {
             notifyCompleted();
@@ -247,13 +292,41 @@ public class EditIMObjectTask extends AbstractTask {
      * @param editor the editor
      */
     private void show(final IMObjectEditor editor) {
-        EditDialog dialog = new EditDialog(editor);
+        final EditDialog dialog = new EditDialog(editor, true, skip);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
-                onEditCompleted(editor);
+                if (EditDialog.SKIP_ID.equals(dialog.getAction())) {
+                    if (deleteOnCancelOrSkip) {
+                        delete(editor.getObject());
+                    }
+                    notifySkipped();
+                } else {
+                    onEditCompleted(editor);
+                }
             }
+
         });
         dialog.show();
+    }
+
+    /**
+     * Deletes an object.
+     *
+     * @param object the object to delete
+     */
+    private void delete(IMObject object) {
+        if (!object.isNew()) {
+            try {
+                object = IMObjectHelper.reload(object);
+                if (object != null) {
+                    // make sure the the last saved instance is being deleted
+                    // to avoid validation errors
+                    ArchetypeServiceHelper.getArchetypeService().remove(object);
+                }
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        }
     }
 
 }
