@@ -38,6 +38,11 @@ public class ConditionalTask extends AbstractTask {
     private final Task task;
 
     /**
+     * The task to execute if the condition evaluates false.
+     */
+    private final Task elseTask;
+
+    /**
      * The task context.
      */
     private TaskContext context;
@@ -50,8 +55,22 @@ public class ConditionalTask extends AbstractTask {
      * @param task      the task to execute if the condition evaluates true
      */
     public ConditionalTask(EvalTask<Boolean> condition, Task task) {
+        this(condition, task, null);
+    }
+
+    /**
+     * Constructs a new <code>ConditionalTask</code>.
+     *
+     * @param condition the condition
+     * @param task      the task to execute if the condition evaluates true
+     * @param elseTask  the task to execute if the condition evalates false.
+     *                  May be <code>null</code>
+     */
+    public ConditionalTask(EvalTask<Boolean> condition, Task task,
+                           Task elseTask) {
         this.condition = condition;
         this.task = task;
+        this.elseTask = elseTask;
     }
 
     /**
@@ -75,6 +94,13 @@ public class ConditionalTask extends AbstractTask {
                 onTaskEvent(event);
             }
         });
+        if (elseTask != null) {
+            elseTask.setTaskListener(new TaskListener() {
+                public void taskEvent(TaskEvent event) {
+                    onTaskEvent(event);
+                }
+            });
+        }
         condition.start(context);
     }
 
@@ -94,6 +120,8 @@ public class ConditionalTask extends AbstractTask {
             case COMPLETED:
                 if (condition.getValue()) {
                     task.start(context);
+                } else if (elseTask != null) {
+                    elseTask.start(context);
                 } else {
                     notifyCompleted();
                 }
@@ -102,7 +130,7 @@ public class ConditionalTask extends AbstractTask {
     }
 
     /**
-     * Invoked when the task completes or is cancelled.
+     * Invoked when a task completes or is cancelled.
      *
      * @param event the event
      */

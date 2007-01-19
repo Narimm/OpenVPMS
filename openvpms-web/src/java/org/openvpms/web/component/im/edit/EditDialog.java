@@ -59,7 +59,7 @@ public class EditDialog extends PopupDialog {
     }
 
     /**
-     * Construct a new <code>EditDialog</code>.
+     * Constructs a new <code>EditDialog</code>.
      *
      * @param editor the editor
      * @param save   if <code>true</code>, display an 'apply' and 'OK' button
@@ -68,7 +68,22 @@ public class EditDialog extends PopupDialog {
      *               dialog
      */
     public EditDialog(IMObjectEditor editor, boolean save) {
-        super(editor.getTitle(), STYLE, getButtons(save));
+        this(editor, save, false);
+    }
+
+    /**
+     * Constructs a new <code>EditDialog</code>.
+     *
+     * @param editor the editor
+     * @param save   if <code>true</code>, display an 'apply' and 'OK' button
+     *               that save the editor when pressed. If <code>false</code>
+     *               display an 'OK' and 'CANCEL' button that simply close the
+     *               dialog
+     * @param skip   if <code>triue</code> display a 'skip' button that simply
+     *               closes the dialog
+     */
+    public EditDialog(IMObjectEditor editor, boolean save, boolean skip) {
+        super(editor.getTitle(), STYLE, getButtons(save, skip));
         this.editor = editor;
         this.save = save;
         setModal(true);
@@ -118,6 +133,7 @@ public class EditDialog extends PopupDialog {
     /**
      * Close the editor, discarding any unsaved changes.
      */
+    @Override
     protected void onCancel() {
         editor.cancel();
         close(CANCEL_ID);
@@ -151,10 +167,19 @@ public class EditDialog extends PopupDialog {
      *
      * @param save if <code>true</code> provide apply, OK, delete and cancel
      *             buttons, otherwise provide OK and cancel buttons
+     * @param skip if <code>triue</code> display a 'skip' button
      * @return the button identifiers
      */
-    private static String[] getButtons(boolean save) {
-        return (save) ? APPLY_OK_CANCEL : OK_CANCEL;
+    private static String[] getButtons(boolean save, boolean skip) {
+        if (save && skip) {
+            return new String[]{APPLY_ID, OK_ID, SKIP_ID, CANCEL_ID};
+        } else if (save) {
+            return APPLY_OK_CANCEL;
+        } else if (skip) {
+            return new String[]{OK_ID, SKIP_ID, CANCEL_ID};
+        } else {
+            return OK_CANCEL;
+        }
     }
 
 }
