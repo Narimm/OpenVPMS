@@ -54,6 +54,12 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
      */
     private final String title;
 
+    /**
+     * If <code>triue</code> display a 'skip' button that simply closes the
+     * dialog.
+     */
+    private final boolean skip;
+
 
     /**
      * Constructs a new <code>InteractiveIMPrinter</code>.
@@ -61,7 +67,18 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
      * @param printer the printer to delegate to
      */
     public InteractiveIMPrinter(IMPrinter<T> printer) {
-        this(Messages.get("printdialog.title"), printer);
+        this(printer, false);
+    }
+
+    /**
+     * Constructs a new <code>InteractiveIMPrinter</code>.
+     *
+     * @param printer the printer to delegate to
+     * @param skip    if <code>triue</code> display a 'skip' button that simply
+     *                closes the dialog
+     */
+    public InteractiveIMPrinter(IMPrinter<T> printer, boolean skip) {
+        this(Messages.get("printdialog.title"), printer, skip);
     }
 
     /**
@@ -71,8 +88,22 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
      * @param printer the printer to delegate to
      */
     public InteractiveIMPrinter(String title, IMPrinter<T> printer) {
+        this(title, printer, false);
+    }
+
+    /**
+     * Constructs a new <code>InteractiveIMPrinter</code>.
+     *
+     * @param title   the dialog title
+     * @param printer the printer to delegate to
+     * @param skip    if <code>triue</code> display a 'skip' button that simply
+     *                closes the dialog
+     */
+    public InteractiveIMPrinter(String title, IMPrinter<T> printer,
+                                boolean skip) {
         this.title = title;
         this.printer = printer;
+        this.skip = skip;
     }
 
     /**
@@ -102,7 +133,7 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
      * @param printer the printer name. May be <code>null</code>
      */
     public void print(String printer) {
-        final PrintDialog dialog = new PrintDialog(getTitle()) {
+        final PrintDialog dialog = new PrintDialog(getTitle(), true, skip) {
             @Override
             protected void onPreview() {
                 doPrintPreview();
@@ -124,6 +155,8 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
                         } else {
                             doPrint(printer);
                         }
+                    } else if (PrintDialog.SKIP_ID.equals(action)) {
+                        skipped();
                     } else {
                         cancelled();
                     }
@@ -218,6 +251,16 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
     protected void cancelled() {
         if (listener != null) {
             listener.cancelled();
+        }
+    }
+
+    /**
+     * Invoked when the print is skipped.
+     * Notifies any registered listener.
+     */
+    protected void skipped() {
+        if (listener != null) {
+            listener.skipped();
         }
     }
 

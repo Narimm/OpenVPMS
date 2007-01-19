@@ -36,12 +36,23 @@ public class InteractiveIMObjectPrinter<T extends IMObject>
         extends InteractiveIMPrinter<T> {
 
     /**
-     * Constructs a new <code>InteractiveIMPrinter</code>.
+     * Constructs a new <code>InteractiveIMObjectPrinter</code>.
      *
      * @param printer the printer to delegate to
      */
     public InteractiveIMObjectPrinter(IMPrinter<T> printer) {
-        super(printer);
+        this(printer, false);
+    }
+
+    /**
+     * Constructs a new <code>InteractiveIMObjectPrinter</code>.
+     *
+     * @param printer the printer to delegate to
+     * @param skip    if <code>triue</code> display a 'skip' button that simply
+     *                closes the dialog
+     */
+    public InteractiveIMObjectPrinter(IMPrinter<T> printer, boolean skip) {
+        super(printer, skip);
     }
 
     /**

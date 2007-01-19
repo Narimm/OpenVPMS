@@ -20,19 +20,15 @@ package org.openvpms.web.app.workflow.checkin;
 
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
-import org.openvpms.web.component.workflow.PrintIMObjectTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskContextImpl;
 import org.openvpms.web.component.workflow.TaskProperties;
-import org.openvpms.web.component.workflow.Tasks;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.resource.util.Messages;
@@ -118,7 +114,6 @@ public class CheckInWorkflow extends WorkflowImpl {
 
         String workList = "party.organisationWorkList";
         String task = "act.customerTask";
-        String document = "act.patientDocumentForm";
         String event = "act.patientClinicalEvent";
 
         // select a worklist
@@ -131,19 +126,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         addTask(new EditCustomerTask(task));
 
         // optionally select and print an act.patientDocumentForm
-        DocumentTemplateQuery query = new DocumentTemplateQuery();
-        query.setArchetype(document);
-        SelectIMObjectTask<Entity> docTask
-                = new SelectIMObjectTask<Entity>(query);
-        docTask.setRequired(false);
-        PrintIMObjectTask printTask = new PrintIMObjectTask(document);
-        Tasks selectAndPrint = new Tasks();
-        printTask.setRequired(false);
-        selectAndPrint.addTask(docTask);
-        selectAndPrint.addTask(printTask);
-        selectAndPrint.setRequired(false);
-        selectAndPrint.setBreakOnSkip(true);
-        addTask(selectAndPrint);
+        addTask(new PrintDocumentFormTask());
 
         // create a new act.patientClinicalEvent
         TaskProperties eventProps = new TaskProperties();

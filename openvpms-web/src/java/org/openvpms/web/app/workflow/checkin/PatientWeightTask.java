@@ -42,14 +42,12 @@ import java.math.BigDecimal;
 
 
 /**
- * Task to create an <em>act.patientWeight</em> for a patient,
- * if one doesn't already exist.
+ * Task to create an <em>act.patientWeight</em> for a patient.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 class PatientWeightTask extends WorkflowImpl {
-    private static final String PATIENT_WEIGHT = "act.patientWeight";
 
     /**
      * The last patient weight.
@@ -60,6 +58,11 @@ class PatientWeightTask extends WorkflowImpl {
      * The last weight units.
      */
     private String units;
+
+    /**
+     * Patient weight short name.
+     */
+    private static final String PATIENT_WEIGHT = "act.patientWeight";
 
 
     /**

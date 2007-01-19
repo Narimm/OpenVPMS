@@ -61,8 +61,10 @@ public class PrintIMObjectTask extends AbstractTask {
         if (object != null) {
             IMPrinter<IMObject> printer = IMObjectPrinterFactory.create(
                     object);
+            boolean skip = !isRequired();
             InteractiveIMPrinter<IMObject> iPrinter
-                    = new InteractiveIMObjectPrinter<IMObject>(printer);
+                    = new InteractiveIMObjectPrinter<IMObject>(printer, skip);
+
 
             iPrinter.setListener(new IMPrinterListener() {
                 public void printed() {
@@ -71,6 +73,10 @@ public class PrintIMObjectTask extends AbstractTask {
 
                 public void cancelled() {
                     notifyCancelled();
+                }
+
+                public void skipped() {
+                    notifySkipped();
                 }
 
                 public void failed(Throwable cause) {

@@ -18,7 +18,10 @@
 
 package org.openvpms.web.component.workflow;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 
@@ -41,6 +44,10 @@ public class CreateIMObjectTask extends AbstractTask {
      */
     private final TaskProperties properties;
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(CreateIMObjectTask.class);
 
     /**
      * Constructs a new <code>CreateIMObjectTask</code>.
@@ -120,18 +127,35 @@ public class CreateIMObjectTask extends AbstractTask {
     }
 
     /**
+     * Invoked when an object is created.
+     * Populates the object with any properties and adds it to the context.
+     *
+     * @param object  the object
+     * @param context the context
+     * @throws OpenVPMSException for any error
+     */
+    protected void created(IMObject object, TaskContext context) {
+        if (properties != null) {
+            populate(object, properties, context);
+        }
+        context.addObject(object);
+    }
+
+    /**
      * Invoked when an object is created. Populates the object, adds it to
      * the context and notifies the listener.
      *
      * @param object  the new object
      * @param context the task context
      */
-    protected void onCreated(IMObject object, TaskContext context) {
-        if (properties != null) {
-            populate(object, properties, context);
+    private void onCreated(IMObject object, TaskContext context) {
+        try {
+            created(object, context);
+            notifyCompleted();
+        } catch (OpenVPMSException exception) {
+            log.error(exception, exception);
+            notifyCancelled();
         }
-        context.addObject(object);
-        notifyCompleted();
     }
 
 }

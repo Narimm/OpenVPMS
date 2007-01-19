@@ -40,6 +40,11 @@ public interface IMPrinterListener extends EventListener {
     void cancelled();
 
     /**
+     * Notifies that the print was skipped.
+     */
+    void skipped();
+
+    /**
      * Invoked when a print fails.
      *
      * @param cause the reason for the failure

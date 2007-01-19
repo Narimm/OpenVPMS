@@ -79,7 +79,19 @@ public class PrintDialog extends PopupDialog {
      * @param preview if <code>true</code> add a 'preview' button
      */
     public PrintDialog(String title, boolean preview) {
-        super(title, "PrintDialog", OK_CANCEL);
+        this(title, preview, false);
+    }
+
+    /**
+     * Constructs a new <code>PrintDialog</code>.
+     *
+     * @param title   the window title
+     * @param preview if <code>true</code> add a 'preview' button
+     * @param skip    if <code>triue</code> display a 'skip' button that simply
+     *                closes the dialog
+     */
+    public PrintDialog(String title, boolean preview, boolean skip) {
+        super(title, "PrintDialog", (skip) ? OK_SKIP_CANCEL : OK_CANCEL);
         setModal(true);
 
         label = LabelFactory.create("printdialog.printer");
