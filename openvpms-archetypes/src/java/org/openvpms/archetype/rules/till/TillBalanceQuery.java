@@ -127,7 +127,7 @@ public class TillBalanceQuery {
                 ObjectSet set = new ObjectSet();
                 set.add(TILL_BALANCE, tillBalance);
                 set.add(ACT, tillBalanceItem);
-                set.add(AMOUNT, getAmount(tillBalanceItem));
+                set.add(AMOUNT, getAmount(tillBalanceItem).negate());
                 result.add(set);
             } else {
                 for (Act item : tillBalanceItemBean.getActs()) {
@@ -135,7 +135,7 @@ public class TillBalanceQuery {
                     set.add(TILL_BALANCE, tillBalance);
                     set.add(ACT, tillBalanceItem);
                     set.add(ACT_ITEM, item);
-                    set.add(AMOUNT, getAmount(item));
+                    set.add(AMOUNT, getAmount(item).negate());
                     result.add(set);
                 }
             }
