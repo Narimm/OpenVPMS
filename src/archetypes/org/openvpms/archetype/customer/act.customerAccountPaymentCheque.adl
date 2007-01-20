@@ -17,16 +17,18 @@
 -->
 <archetypes>
 	<archetype name="openvpms-common-act.customerAccountPaymentCheque.1.0" latest="true" primary="false"
-		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Customer Payment Cheque" >
+		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Cheque" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Cheque Payment'" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(' Amount : ', /total,' Details : ',/details/attributes/drawer,
+			derivedValue="concat(/details/attributes/drawer,
 			' ', /details/attributes/bsb,' ',openvpms:lookup(.,'bank'))" />
 		<node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
+		<node name="credit" path="/credit" type="java.lang.Boolean"
+			defaultValue="true()" readOnly="true" hidden="true" />
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
