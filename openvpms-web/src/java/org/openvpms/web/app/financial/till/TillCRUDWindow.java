@@ -161,7 +161,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             }
         });
         buttons.add(clear);
-        buttons.add(getSummaryButton());
+        //buttons.add(getSummaryButton());
         buttons.add(getPrintButton());
         buttons.add(adjust);
         buttons.add(getEditButton());
@@ -186,7 +186,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             if (uncleared) {
                 buttons.add(clear);
             }
-            buttons.add(getSummaryButton());
+            //buttons.add(getSummaryButton());
             buttons.add(getPrintButton());
             if (uncleared) {
                 buttons.add(adjust);
