@@ -24,7 +24,7 @@
 			derivedValue="'Credit Payment'" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(openvpms:lookup(.,'creditCard'))" />
+			derivedValue="concat(openvpms:lookup(.,'creditCard'), ' ')" />
 		<node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
 		<node name="credit" path="/credit" type="java.lang.Boolean"
 			defaultValue="false()" readOnly="true" hidden="true" />
