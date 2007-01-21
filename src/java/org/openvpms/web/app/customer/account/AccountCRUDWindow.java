@@ -153,7 +153,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * Invoked when the 'reverse' button is pressed.
      */
     protected void onReverse() {
-        final Act act = getObject();
+        final FinancialAct act = getObject();
         String status = act.getStatus();
         if (!TypeHelper.isA(act, OPENING_BALANCE_TYPE, CLOSING_BALANCE_TYPE)
                 && FinancialActStatus.POSTED.equals(status)) {
@@ -214,7 +214,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      *
      * @param act the act to reverse
      */
-    private void reverse(Act act) {
+    private void reverse(FinancialAct act) {
         try {
             IMObjectCopier copier
                     = new IMObjectCopier(new CustomerActReversalHandler(act));
@@ -228,6 +228,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
                                         getArchetypeDescriptor().getDisplayName());
             ErrorHelper.show(title, exception);
         }
+        onRefresh(act);
     }
 
 
