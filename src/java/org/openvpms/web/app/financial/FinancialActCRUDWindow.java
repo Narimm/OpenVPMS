@@ -18,9 +18,6 @@
 
 package org.openvpms.web.app.financial;
 
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -33,7 +30,6 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
-import org.openvpms.web.component.util.ButtonFactory;
 
 
 /**
@@ -45,17 +41,6 @@ import org.openvpms.web.component.util.ButtonFactory;
  */
 public class FinancialActCRUDWindow
         extends AbstractViewCRUDWindow<FinancialAct> {
-
-    /**
-     * The summary button.
-     */
-    private Button _summary;
-
-    /**
-     * Summary button identifier.
-     */
-    private static final String SUMMARY_ID = "summary";
-
 
     /**
      * Create a new <code>FinancialActCRUDWindow</code>.
@@ -71,13 +56,6 @@ public class FinancialActCRUDWindow
     }
 
     /**
-     * Invoked when the 'summary' button is pressed.
-     */
-    protected void onSummary() {
-        onPrint();
-    }
-
-    /**
      * Creates a new {@link IMObjectViewer} for an object.
      *
      * @param object the object to view
@@ -85,22 +63,6 @@ public class FinancialActCRUDWindow
     @Override
     protected IMObjectViewer createViewer(IMObject object) {
         return new IMObjectViewer(object, null, new LayoutStrategy(), null);
-    }
-
-    /**
-     * Returns the summary button.
-     *
-     * @return the summary button
-     */
-    protected Button getSummaryButton() {
-        if (_summary == null) {
-            _summary = ButtonFactory.create(SUMMARY_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onSummary();
-                }
-            });
-        }
-        return _summary;
     }
 
     /**
