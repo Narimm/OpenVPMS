@@ -122,7 +122,7 @@ public class TillBalanceQuery {
         List<ObjectSet> result = new ArrayList<ObjectSet>();
         ActBean bean = new ActBean(tillBalance, service);
         for (Act tillBalanceItem : bean.getActs()) {
-            ActBean tillBalanceItemBean = new ActBean(tillBalanceItem);
+            ActBean tillBalanceItemBean = new ActBean(tillBalanceItem, service);
             if (tillBalanceItemBean.isA("act.tillBalanceAdjustment")) {
                 ObjectSet set = new ObjectSet();
                 set.add(TILL_BALANCE, tillBalance);
