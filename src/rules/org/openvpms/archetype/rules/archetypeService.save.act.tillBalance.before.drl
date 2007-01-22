@@ -30,7 +30,9 @@
              <java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
          </parameter>
          <java:consequence>
-             org.openvpms.archetype.rules.till.TillRules.checkCanSaveTillBalance(act, service);
+             import org.openvpms.archetype.rules.till.TillRules;
+             TillRules rules = new TillRules(service);
+             rules.checkCanSaveTillBalance(act);
          </java:consequence>
 
     </rule>
