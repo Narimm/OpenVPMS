@@ -47,34 +47,35 @@
 	<variable name="TILL_TOTAL" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
 		<variableExpression><![CDATA[$F{amount}]]></variableExpression>
 	</variable>
-	<variable name="isCash" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
+	<variable name="isCash" class="java.lang.Boolean" resetType="None" calculation="Nothing">
 		<variableExpression><![CDATA[new Boolean($F{item.displayName}.equals("Cash"))]]></variableExpression>
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<variable name="TOTAL_PAYMENT_CASH" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
 		<variableExpression><![CDATA[($V{isCash}.booleanValue() && $V{isPayment}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
 	</variable>
-	<variable name="isPayment" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
+	<variable name="isPayment" class="java.lang.Boolean" resetType="None" calculation="Nothing">
 		<variableExpression><![CDATA[new Boolean($F{act.displayName}.equals("Payment"))]]></variableExpression>
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
-	<variable name="isRefund" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
+	<variable name="isRefund" class="java.lang.Boolean" resetType="None" calculation="Nothing">
 		<variableExpression><![CDATA[new Boolean($F{act.displayName}.equals("Refund"))]]></variableExpression>
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
-	<variable name="isCheque" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
+	<variable name="isCheque" class="java.lang.Boolean" resetType="None" calculation="Nothing">
 		<variableExpression><![CDATA[new Boolean($F{item.displayName}.equals("Cheque"))]]></variableExpression>
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
-	<variable name="isEFT" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
+	<variable name="isEFT" class="java.lang.Boolean" resetType="None" calculation="Nothing">
 		<variableExpression><![CDATA[new Boolean($F{item.displayName}.equals("EFT"))]]></variableExpression>
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
-	<variable name="isCreditCard" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
+	<variable name="isCreditCard" class="java.lang.Boolean" resetType="None" calculation="Nothing">
 		<variableExpression><![CDATA[new Boolean($F{item.displayName}.equals("Credit Card"))]]></variableExpression>
 		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
-	<variable name="TOTAL_REFUND_CASH" class="java.math.BigDecimal" resetType="Report" calculation="Nothing">
+	<variable name="TOTAL_REFUND_CASH" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
 		<variableExpression><![CDATA[($V{isCash}.booleanValue() && $V{isRefund}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
 	</variable>
 	<variable name="TOTAL_PAYMENT_CHEQUE" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
@@ -224,7 +225,7 @@
 			</groupFooter>
 		</group>
 		<group  name="ActItem" isReprintHeaderOnEachPage="true" >
-			<groupExpression><![CDATA[]]></groupExpression>
+			<groupExpression><![CDATA[null]]></groupExpression>
 			<groupHeader>
 			<band height="36"  isSplitAllowed="true" >
 				<staticText>
