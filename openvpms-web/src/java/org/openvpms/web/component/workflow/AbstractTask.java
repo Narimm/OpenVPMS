@@ -18,9 +18,12 @@
 
 package org.openvpms.web.component.workflow;
 
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.im.util.ErrorHelper;
 
 import java.util.Collection;
 
@@ -108,6 +111,19 @@ public abstract class AbstractTask implements Task {
         if (listener != null) {
             listener.taskEvent(new TaskEvent(TaskEvent.Type.CANCELLED, this));
         }
+    }
+
+    /**
+     * Helper to display an error and nofity that the task has been cancelled.
+     *
+     * @param cause the cause of the error
+     */
+    protected void notifyCancelledOnError(Throwable cause) {
+        ErrorHelper.show(cause, new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                notifyCancelled();
+            }
+        });
     }
 
     /**

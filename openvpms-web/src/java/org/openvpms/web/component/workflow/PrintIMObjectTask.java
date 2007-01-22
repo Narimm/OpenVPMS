@@ -80,7 +80,7 @@ public class PrintIMObjectTask extends AbstractTask {
                 }
 
                 public void failed(Throwable cause) {
-                    notifyCancelled();
+                    notifyCancelledOnError(cause);
                 }
             });
             iPrinter.print();

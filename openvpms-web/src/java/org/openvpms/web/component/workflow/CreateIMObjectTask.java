@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.workflow;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.util.IMObjectCreator;
@@ -44,10 +42,6 @@ public class CreateIMObjectTask extends AbstractTask {
      */
     private final TaskProperties properties;
 
-    /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(CreateIMObjectTask.class);
 
     /**
      * Constructs a new <code>CreateIMObjectTask</code>.
@@ -153,8 +147,7 @@ public class CreateIMObjectTask extends AbstractTask {
             created(object, context);
             notifyCompleted();
         } catch (OpenVPMSException exception) {
-            log.error(exception, exception);
-            notifyCancelled();
+            notifyCancelledOnError(exception);
         }
     }
 

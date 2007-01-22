@@ -234,7 +234,7 @@ public class EditIMObjectTask extends AbstractTask {
      * @param object  the object to edit
      * @param context the task context
      */
-    protected void edit(IMObject object, TaskContext context) {
+    protected void edit(final IMObject object, TaskContext context) {
         try {
             LayoutContext layout = new DefaultLayoutContext(true);
             layout.setContext(context);
@@ -261,11 +261,10 @@ public class EditIMObjectTask extends AbstractTask {
                 show(editor);
             }
         } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
             if (deleteOnCancelOrSkip) {
                 delete(object);
             }
-            notifyCancelled();
+            notifyCancelledOnError(exception);
         }
     }
 
