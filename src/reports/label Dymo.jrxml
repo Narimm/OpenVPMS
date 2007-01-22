@@ -31,7 +31,7 @@
 	<field name="endTime" class="java.util.Date"/>
 	<field name="label" class="java.lang.String"/>
 	<field name="clinician.entity.name" class="java.lang.String"/>
-	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'name')]" class="java.lang.String"/>
+	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'lastName')]" class="java.lang.String"/>
 
 		<background>
 			<band height="1"  isSplitAllowed="true" >
@@ -79,7 +79,7 @@
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="106"
+						x="100"
 						y="93"
 						width="52"
 						height="10"
@@ -219,28 +219,15 @@
 					<reportElement
 						x="47"
 						y="93"
-						width="49"
+						width="45"
 						height="10"
 						key="textField"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'name')]}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'lastName')]}]]></textFieldExpression>
 				</textField>
-				<staticText>
-					<reportElement
-						x="96"
-						y="93"
-						width="10"
-						height="10"
-						key="staticText-8"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<text><![CDATA[-]]></text>
-				</staticText>
 				<staticText>
 					<reportElement
 						x="1"
@@ -253,6 +240,20 @@
 						<font pdfFontName="Helvetica-BoldOblique" size="8" isBold="false" isItalic="true"/>
 					</textElement>
 				<text><![CDATA[(02)99880198]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="92"
+						y="92"
+						width="6"
+						height="11"
+						key="staticText-10"
+						isPrintWhenDetailOverflows="true"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[ , ]]></text>
 				</staticText>
 			</band>
 		</detail>
