@@ -26,5 +26,7 @@
 			path="/description" hidden="true" derived="true"
 			derivedValue="concat(' Amount : ', /total,' Cash Out : ',/details/attributes/cashout)" />
 		<node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
+		<node name="credit" path="/credit" type="java.lang.Boolean"
+			defaultValue="true()" readOnly="true" hidden="true" />
 	</archetype>
 </archetypes>
