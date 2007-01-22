@@ -510,7 +510,7 @@
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#6f0f0f"/>
             <property name="background" value="#99cc66"/>
-            <property name="foreground" value="#fdf5e6"/>
+            <property name="foreground" value="#000000"/>
             <property name="font">
                 <font size="8pt"/>
             </property>
