@@ -18,9 +18,6 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import java.util.Date;
-import java.util.List;
-
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -45,9 +42,12 @@ import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
+import java.util.Date;
+import java.util.List;
+
 
 /**
- * Appoinment rules.
+ * Appointment rules.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
