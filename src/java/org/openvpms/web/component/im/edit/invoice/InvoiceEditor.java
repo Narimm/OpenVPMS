@@ -60,7 +60,7 @@ public abstract class InvoiceEditor extends ActEditor {
         Property taxAmount = getProperty("tax");
         if (taxAmount != null) {
             List<Act> acts = getEditor().getActs();
-            BigDecimal tax = ActHelper.sum(acts, "tax");
+            BigDecimal tax = ActHelper.sum((Act) getObject(), acts, "tax");
             taxAmount.setValue(tax);
         }
     }
@@ -71,7 +71,8 @@ public abstract class InvoiceEditor extends ActEditor {
     protected void updateTotals() {
         // @todo - workaround for OVPMS-211
         Property amount = getProperty("amount");
-        BigDecimal value = ActHelper.sum(getEditor().getActs(), "total");
+        BigDecimal value = ActHelper.sum((Act) getObject(),
+                                         getEditor().getActs(), "total");
         amount.setValue(value);
         calculateTax();
     }
@@ -90,7 +91,7 @@ public abstract class InvoiceEditor extends ActEditor {
                 items.getEditor(act);
             }
             BigDecimal previousTax = (BigDecimal) taxAmount.getValue();
-            BigDecimal tax = ActHelper.sum(acts, "tax");
+            BigDecimal tax = ActHelper.sum((Act) getObject(), acts, "tax");
             if (tax.compareTo(previousTax) != 0) {
                 taxAmount.setValue(tax);
             }

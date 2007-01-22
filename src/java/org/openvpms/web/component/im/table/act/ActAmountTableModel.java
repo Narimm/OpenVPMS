@@ -68,11 +68,6 @@ public class ActAmountTableModel<T extends Act>
      */
     protected static final int AMOUNT_INDEX = STATUS_INDEX + 1;
 
-    /**
-     * Determines if the credit/debit amount should be negated.
-     */
-    private final boolean negateAmount;
-
 
     /**
      * Construct a new <code>ActAmountTableModel</code>.
@@ -89,23 +84,8 @@ public class ActAmountTableModel<T extends Act>
      *                   displayed
      */
     public ActAmountTableModel(boolean showStatus, boolean showAmount) {
-        this(showStatus, showAmount, false);
-    }
-
-    /**
-     * Construct a new <code>ActAmountTableModel</code>.
-     *
-     * @param showStatus   determines if the status colunn should be displayed
-     * @param showAmount   determines if the credit/debit amount should be
-     *                     displayed
-     * @param negateAmount determines if the credit/debit amount should be
-     *                     negated
-     */
-    public ActAmountTableModel(boolean showStatus, boolean showAmount,
-                               boolean negateAmount) {
         super(null);
         setTableColumnModel(createColumnModel(showStatus, showAmount));
-        this.negateAmount = negateAmount;
     }
 
     /**
@@ -206,9 +186,6 @@ public class ActAmountTableModel<T extends Act>
      */
     protected Label getAmount(Act act) {
         BigDecimal amount = ActHelper.getAmount(act, "amount");
-        if (negateAmount) {
-            amount = amount.negate();
-        }
         String result = NumberFormatter.format(amount);
         Label label = LabelFactory.create();
         label.setText(result);

@@ -354,8 +354,8 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     private void doClear(FinancialAct act, BigDecimal amount, Party account) {
         try {
-            TillRules.clearTill(act, amount, account,
-                                ArchetypeServiceHelper.getArchetypeService());
+            TillRules rules = new TillRules();
+            rules.clearTill(act, amount, account);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception.getMessage(), exception);
         }
@@ -372,8 +372,8 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     private void doTransfer(FinancialAct balance, FinancialAct act,
                             Party till) {
         try {
-            TillRules.transfer(balance, act, till,
-                               ArchetypeServiceHelper.getArchetypeService());
+            TillRules rules = new TillRules();
+            rules.transfer(balance, act, till);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception.getMessage(), exception);
         }

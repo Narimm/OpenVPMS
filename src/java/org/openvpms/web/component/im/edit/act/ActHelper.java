@@ -130,7 +130,8 @@ public class ActHelper {
     }
 
     /**
-     * Suma a node in a list of act items.
+     * Sums a node in a list of act items, negating the result if the act
+     * is a credit act.
      *
      * @param act  the parent act
      * @param node the node to sum
@@ -143,31 +144,19 @@ public class ActHelper {
     }
 
     /**
-     * Sums a node in a list of acts.
+     * Sums a node in a list of acts, negating the result if the act
+     * is a credit act.
      *
-     * @param acts the acts
+     * @param act  the parent act
+     * @param acts the child acts
      * @param node the node to sum
      * @return the summed total
      */
-    public static BigDecimal sum(Collection<Act> acts, String node) {
-        ActCalculator calc = new ActCalculator(
-                ArchetypeServiceHelper.getArchetypeService());
-        return calc.sum(acts, node);
-    }
-
-    /**
-     * Sums a node in a list of acts.
-     *
-     * @param initial the initial value
-     * @param acts    the acts
-     * @param node    the node to sum
-     * @return the summed total
-     */
-    public static BigDecimal sum(BigDecimal initial, Collection<Act> acts,
+    public static BigDecimal sum(Act act, Collection<Act> acts,
                                  String node) {
         ActCalculator calc = new ActCalculator(
                 ArchetypeServiceHelper.getArchetypeService());
-        return calc.sum(initial, acts, node);
+        return calc.sum(act, acts, node);
     }
 
     /**
