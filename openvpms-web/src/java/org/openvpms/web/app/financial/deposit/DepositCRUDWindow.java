@@ -18,20 +18,28 @@
 
 package org.openvpms.web.app.financial.deposit;
 
+import static org.openvpms.archetype.rules.deposit.DepositStatus.UNDEPOSITED;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+
 import org.openvpms.archetype.rules.deposit.DepositRules;
-import static org.openvpms.archetype.rules.deposit.DepositStatus.UNDEPOSITED;
+import org.openvpms.archetype.rules.deposit.DepositQuery;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.financial.FinancialActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -55,6 +63,10 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
      */
     private static final String DEPOSIT_ID = "deposit";
 
+    /**
+     * Bank Deposit short name.
+     */
+    private static final String BANK_DEPOSIT = "act.bankDeposit";
 
     /**
      * Create a new <code>EstimationCRUDWindow</code>.
@@ -85,7 +97,6 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
                                             }
                                         });
         buttons.add(_deposit);
-        buttons.add(getSummaryButton());
         buttons.add(getPrintButton());
     }
 
@@ -104,7 +115,6 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
                 buttons.add(_deposit);
             }
             buttons.add(getPrintButton());
-            buttons.add(getSummaryButton());
         }
     }
 
@@ -139,5 +149,22 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
         }
         onRefresh(getObject());
     }
+
+    /**
+     * Prints the deposit slip.
+     */
+    @Override
+    protected void onPrint() {
+        FinancialAct object = getObject();
+        IPage<ObjectSet> set = new DepositQuery(object).query();
+        IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
+                set.getResults(), BANK_DEPOSIT);
+        String displayName = DescriptorHelper.getDisplayName(BANK_DEPOSIT);
+        String title = Messages.get("imobject.print.title", displayName);
+        InteractiveIMPrinter<ObjectSet> iPrinter
+                = new InteractiveIMPrinter<ObjectSet>(title, printer);
+        iPrinter.print();
+    }
+
 
 }
