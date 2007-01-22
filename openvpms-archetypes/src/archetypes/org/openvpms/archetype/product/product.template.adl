@@ -29,7 +29,7 @@
 			<node name="printedName" path="/details/attributes/printedName" type="java.lang.String"
 				minCardinality="0" />
 		</node>
-		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="includes" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
