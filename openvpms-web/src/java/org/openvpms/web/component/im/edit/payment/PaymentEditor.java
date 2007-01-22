@@ -56,7 +56,8 @@ public abstract class PaymentEditor extends ActEditor {
     protected void updateTotals() {
         // @todo - workaround for OVPMS-211
         Property amount = getProperty("amount");
-        BigDecimal value = ActHelper.sum(getEditor().getActs(), "amount");
+        BigDecimal value = ActHelper.sum((Act) getObject(),
+                                         getEditor().getActs(), "amount");
         amount.setValue(value);
     }
 

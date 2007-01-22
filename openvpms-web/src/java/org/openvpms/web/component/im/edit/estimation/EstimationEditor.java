@@ -18,14 +18,13 @@
 
 package org.openvpms.web.component.im.edit.estimation;
 
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
-
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -65,8 +64,8 @@ public class EstimationEditor extends ActEditor {
         Property lowTotal = getProperty("lowTotal");
 
         List<Act> acts = getEditor().getActs();
-        BigDecimal low = ActHelper.sum(acts, "lowTotal");
-        BigDecimal high = ActHelper.sum(acts, "highTotal");
+        BigDecimal low = ActHelper.sum((Act) getObject(), acts, "lowTotal");
+        BigDecimal high = ActHelper.sum((Act) getObject(), acts, "highTotal");
         lowTotal.setValue(low);
         highTotal.setValue(high);
     }
