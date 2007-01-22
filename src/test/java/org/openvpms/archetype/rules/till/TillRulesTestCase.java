@@ -413,6 +413,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         Party account = createAccount();
         ActBean balanceBean = createBalance(TillBalanceStatus.UNCLEARED);
         balanceBean.save();
+        assertNull(balanceBean.getAct().getActivityEndTime());
 
         // make sure there is no uncleared deposit for the accouunt
         FinancialAct deposit = DepositHelper.getUndepositedDeposit(account);
@@ -424,6 +425,11 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
 
         // make sure the balance is updated
         assertEquals(TillBalanceStatus.CLEARED, balance.getStatus());
+        // end time should be > startTime < now
+        Date startTime = balance.getActivityStartTime();
+        Date endTime = balance.getActivityEndTime();
+        assertEquals(1, endTime.compareTo(startTime));
+        assertEquals(-1, endTime.compareTo(new Date()));
 
         BigDecimal total = newCashFloat.subtract(initialCashFloat);
 
