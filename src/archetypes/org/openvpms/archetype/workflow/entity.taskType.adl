@@ -26,6 +26,6 @@
 			minCardinality="1" maxCardinality="1">
 			<node name="colour" path="/details/attributes/colour" type="java.lang.String" maxLength="10" />
 		</node>
-		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 	</archetype>
 </archetypes>

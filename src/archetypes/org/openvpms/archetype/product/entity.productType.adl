@@ -21,7 +21,7 @@
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" displayName="Product Type" type="java.lang.String" path="/name" minCardinality="1" />
 		<node name="description" type="java.lang.String" path="/description" />
-		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="taxes" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
 			filter="classification.taxType" >

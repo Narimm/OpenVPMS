@@ -50,9 +50,9 @@
 				</assertion>
 			</node>
 		</node>
-		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="patients" path="/entityRelationships"
-			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
+			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
 			filter="entityRelationship.patient*" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
@@ -69,7 +69,7 @@
 			</assertion>
 		</node>
 		<node name="contacts" path="/contacts"
-			type="java.util.HashSet" baseName="Contact" minCardinality="1" maxCardinality="*" 
+			type="java.util.HashSet" baseName="Contact" minCardinality="1" maxCardinality="*"
 			defaultValue="party:getDefaultContacts()" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">

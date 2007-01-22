@@ -77,7 +77,7 @@
 			<node name="dispInstructions" displayName="Dispensing Instructions" type="java.lang.String" path="/details/attributes/dispInstructions" 
 				minCardinality="0" maxLength="300" />
 		</node>
-		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="prices" path="/productPrices" parentChild="true"
 			type="java.util.HashSet" baseName="ProductPrice" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">

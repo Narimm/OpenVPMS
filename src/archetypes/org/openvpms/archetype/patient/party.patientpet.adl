@@ -63,7 +63,7 @@
 			<node name="deceased" path="/details/attributes/deceased" type="java.lang.Boolean"
 				defaultValue="false()" />
 		</node>
-		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="customers" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange" filter="entityRelationship.patient*" >
