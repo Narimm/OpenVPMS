@@ -219,6 +219,7 @@ public class TillRules {
             }
         }
         balance.setStatus(TillBalanceStatus.CLEARED);
+        balance.setActivityEndTime(new Date());
 
         Act deposit = DepositHelper.getUndepositedDeposit(account);
         if (deposit == null) {
