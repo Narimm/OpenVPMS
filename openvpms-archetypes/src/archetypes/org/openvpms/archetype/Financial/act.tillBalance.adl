@@ -30,6 +30,8 @@
         <node name="amount" path="/total" 
                     type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
                     defaultValue="'0.0'" readOnly="true"/>
+		<node name="credit" path="/credit" type="java.lang.Boolean"
+			defaultValue="true()" readOnly="true" hidden="true" />
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />
 		<node name="status" path="/status" type="java.lang.String" defaultValue="'UNCLEARED'"
 			minCardinality="1">
