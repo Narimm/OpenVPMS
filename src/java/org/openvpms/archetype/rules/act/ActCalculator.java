@@ -40,7 +40,7 @@ public class ActCalculator {
     /**
      * The archetype service.
      */
-    private final IArchetypeService _service;
+    private final IArchetypeService service;
 
 
     /**
@@ -49,11 +49,12 @@ public class ActCalculator {
      * @param service the archetype service
      */
     public ActCalculator(IArchetypeService service) {
-        _service = service;
+        this.service = service;
     }
 
     /**
-     * Suma a node in a list of act items.
+     * Sums a node in a list of act items, negating the result if the act
+     * is a credit act.
      *
      * @param act  the parent act
      * @param node the node to sum
@@ -61,35 +62,40 @@ public class ActCalculator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal sum(Act act, String node) {
-        ActBean bean = new ActBean(act, _service);
+        ActBean bean = new ActBean(act, service);
         List<Act> acts = bean.getActs();
-        return sum(acts, node);
+
+        return sum(act, acts, node);
     }
 
     /**
-     * Sums a node in a list of acts.
+     * Sums a node in a list of acts, negating the result if the act
+     * is a credit act.
      *
-     * @param acts the acts
+     * @param act the parent act
+     * @param acts the act items
      * @param node the node to sum
      * @return the summed total
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal sum(Collection<Act> acts, String node) {
-        return sum(BigDecimal.ZERO, acts, node);
+    public BigDecimal sum(Act act, Collection<Act> acts, String node) {
+        BigDecimal result = sum(acts, node);
+        if (isCredit(act)) {
+            result = result.negate();
+        }
+        return result;
     }
 
     /**
      * Sums a node in a list of acts.
      *
-     * @param initial the initial value
      * @param acts    the acts
      * @param node    the node to sum
      * @return the summed total
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal sum(BigDecimal initial, Collection<Act> acts,
-                          String node) {
-        BigDecimal result = initial;
+    public BigDecimal sum(Collection<Act> acts, String node) {
+        BigDecimal result = BigDecimal.ZERO;
         for (Act act : acts) {
             BigDecimal amount = getAmount(act, node);
             result = result.add(amount);
@@ -106,16 +112,12 @@ public class ActCalculator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getAmount(Act act, String node) {
-        IMObjectBean bean = new IMObjectBean(act, _service);
+        IMObjectBean bean = new IMObjectBean(act, service);
         BigDecimal result = BigDecimal.ZERO;
         if (bean.hasNode(node)) {
             BigDecimal value = bean.getBigDecimal(node);
             if (value != null) {
-                boolean credit = false;
-                if (bean.hasNode("credit")) {
-                    credit = bean.getBoolean("credit");
-                }
-                if (credit) {
+                if (isCredit(bean)) {
                     result = result.subtract(value);
                 } else {
                     result = result.add(value);
@@ -124,6 +126,34 @@ public class ActCalculator {
         }
 
         return result;
+    }
+
+    /**
+     * Determines if an act is a credit or a debit.
+     *
+     * @param act the act
+     * @return <code>true</code> if the act has node <code>'credit'=true</code>;
+     *         otherwise <code>false</code>
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public boolean isCredit(Act act) {
+        IMObjectBean bean = new IMObjectBean(act, service);
+        return isCredit(bean);
+    }
+
+    /**
+     * Determines if an act is a credit or a debit.
+     *
+     * @param bean the act bean
+     * @return <code>true</code> if the act has node <code>'credit'=true</code>;
+     *         otherwise <code>false</code>
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private boolean isCredit(IMObjectBean bean) {
+        if (bean.hasNode("credit")) {
+            return bean.getBoolean("credit");
+        }
+        return false;
     }
 
 }
