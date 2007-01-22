@@ -25,15 +25,7 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
@@ -45,7 +37,6 @@ import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.util.DateTimeFieldFactory;
@@ -258,61 +249,23 @@ public class TaskActEditor extends AbstractActEditor {
     }
 
     /**
-     * Determines if the task overlaps an existing appointment.
-     * If so, and double scheduling is allowed, a confirmation dialog is shown
-     * prompting to save or continue editing. If double scheduling is not
-     * allowed, an error dialog is shown and no save is performed.
+     * Determines if there are enough slots available to save the task.
      *
-     * @return <code>true</code> if there are less than maxSlots tasks, otherwise
-     *         <code>false</code>
+     * @return <code>true</code> if there are less than maxSlots tasks,
+     *         otherwise <code>false</code>
      */
     private boolean checkMaxSlots() {
         IMObject object = getObject();
         boolean result = true;
         if (isValid()) {
             Act act = (Act) object;
-            if (tooManyTasks(act)) {
+            if (TaskQueryHelper.tooManyTasks(act)) {
                 String title = Messages.get(
                         "workflow.worklist.toomanytasks.title");
                 String message = Messages.get(
                         "workflow.worklist.toomanytasks.message");
                 ErrorDialog.show(title, message);
                 result = false;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Determines there are too many outstanding tasks.
-     *
-     * @return <code>true</code> if there are too many outstanding tasks;
-     *         otherwise <code>false</code>
-     */
-    private boolean tooManyTasks(Act act) {
-        boolean result = false;
-        ActBean actBean = new ActBean(act);
-        Party workList = (Party) actBean.getParticipant(
-                "participation.worklist");
-        if (workList != null) {
-            IMObjectBean bean = new IMObjectBean(workList);
-            int maxSlots = bean.getInt("maxSlots");
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            ArchetypeQuery query
-                    = new ArchetypeQuery("act.customerTask", false, true);
-            query.add(new ParticipantConstraint("worklist",
-                                                "participation.worklist",
-                                                workList));
-            query.add(new NodeConstraint("uid", RelationalOp.NE, act.getUid()));
-            query.add(
-                    new NodeConstraint("status", RelationalOp.NE, CANCELLED));
-            query.setFirstResult(0);
-            query.setMaxResults(1);
-            query.setCountResults(true);
-            IPage<IMObject> page = service.get(query);
-            if (page.getTotalResults() >= maxSlots) {
-                result = true;
             }
         }
         return result;

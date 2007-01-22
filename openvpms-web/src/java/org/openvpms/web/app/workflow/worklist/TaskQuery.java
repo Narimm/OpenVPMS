@@ -21,12 +21,8 @@ package org.openvpms.web.app.workflow.worklist;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.OrConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.workflow.WorkflowQuery;
 import org.openvpms.web.component.im.query.ActResultSet;
@@ -81,34 +77,11 @@ public class TaskQuery extends WorkflowQuery<Act> {
         Date from = getStartFrom();
         Date to = getStartTo();
 
-        OrConstraint or = new OrConstraint();
-        IConstraint overlapStart = createOverlapConstraint(from);
-        IConstraint overlapEnd = createOverlapConstraint(to);
-        or.add(overlapStart);
-        or.add(overlapEnd);
-
-        return new ActResultSet<Act>(participants, getArchetypeConstraint(), or,
-                                     getStatuses(), excludeStatuses(),
+        IConstraint range = TaskQueryHelper.createDateRangeConstraint(from, to);
+        return new ActResultSet<Act>(participants, getArchetypeConstraint(),
+                                     range, getStatuses(), excludeStatuses(),
                                      getConstraints(),
                                      ArchetypeQuery.ALL_RESULTS, sort);
-    }
-
-    /**
-     * Helper to create a constraint of the form:
-     * <code>act.startTime < time && act.endTime > time || act.endTime == null
-     * </code>
-     *
-     * @param time the time
-     * @return a new constraint
-     */
-    private static IConstraint createOverlapConstraint(Date time) {
-        AndConstraint and = new AndConstraint();
-        and.add(new NodeConstraint("startTime", RelationalOp.LTE, time));
-        OrConstraint or = new OrConstraint();
-        or.add(new NodeConstraint("endTime", RelationalOp.GTE, time));
-        or.add(new NodeConstraint("endTime", RelationalOp.IsNULL));
-        and.add(or);
-        return and;
     }
 
 }
