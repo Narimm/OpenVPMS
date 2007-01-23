@@ -206,8 +206,6 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                     CustomerPaymentItemEditor.class);
         checkCreate("act.customerAccountRefundCash",
                     CustomerPaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundCheque",
-                    CustomerPaymentItemEditor.class);
         checkCreate("act.customerAccountRefundCredit",
                     CustomerPaymentItemEditor.class);
         checkCreate("act.customerAccountRefundEFT",
