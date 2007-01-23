@@ -50,14 +50,23 @@ public class CustomerPaymentItemEditor extends AbstractIMObjectEditor {
     public CustomerPaymentItemEditor(Act act, Act parent,
                                      LayoutContext context) {
         super(act, parent, context);
-        if (act.isNew() && TypeHelper.isA(act, "act.customerAccountPayment*")) {
+        if (act.isNew()) {
             // Default the amount to the outstanding balance
+            // If balance < 0 set to 0.00 for payments, or -balance for refunds
+            // If balance > 0 set to 0.00 for refunds
+            boolean payment = TypeHelper.isA(act,
+                                             "act.customerAccountPayment*");
             Party customer = context.getContext().getCustomer();
             if (customer != null) {
                 BigDecimal diff = ActHelper.sum(parent, "amount");
                 BigDecimal current = ActHelper.getCustomerAccountBalance(
                         customer);
                 BigDecimal balance = current.subtract(diff);
+                if (balance.signum() == -1) {
+                    balance = (payment) ? BigDecimal.ZERO : balance.negate();
+                } else if (balance.signum() == 1 && !payment) {
+                    balance = BigDecimal.ZERO;
+                }
                 Property amount = getProperty("amount");
                 amount.setValue(balance);
             }
