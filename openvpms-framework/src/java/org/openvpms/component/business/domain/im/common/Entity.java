@@ -18,7 +18,6 @@
 
 package org.openvpms.component.business.domain.im.common;
 
-// java core
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
@@ -40,12 +39,6 @@ public class Entity extends IMObject {
      */
     private static final long serialVersionUID = 1L;
 
-    /**
-     * An alternative name for this object, unique wirhin the domain of
-     * objects it belongs too.
-     */
-    private String code;
-    
     /**
      * A placeholder for all entity details, which denotes the dynamic and
      * adaptive details of the entity.
@@ -112,20 +105,6 @@ public class Entity extends IMObject {
     }
 
     /**
-     * @return Returns the code.
-     */
-    public String getCode() {
-        return code;
-    }
-
-    /**
-     * @param code The code to set.
-     */
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    /**
      * Add a new {@link EntityIdentity}
      * 
      * @param identity
@@ -160,16 +139,14 @@ public class Entity extends IMObject {
     /**
      * @return Returns the sourceEntityRelationships.
      */
-    @SuppressWarnings("unused")
-    private Set<EntityRelationship> getSourceEntityRelationships() {
+    protected Set<EntityRelationship> getSourceEntityRelationships() {
         return sourceEntityRelationships;
     }
 
     /**
      * @param entityRelationships The sourceEntityRelationships to set.
      */
-    @SuppressWarnings("unused")
-    private void setSourceEntityRelationships(Set<EntityRelationship> entityRelationships) {
+    protected void setSourceEntityRelationships(Set<EntityRelationship> entityRelationships) {
         this.sourceEntityRelationships = entityRelationships;
     }
 
@@ -197,16 +174,14 @@ public class Entity extends IMObject {
     /**
      * @return Returns the targetEntityRelationships.
      */
-    @SuppressWarnings("unused")
-    private Set<EntityRelationship> getTargetEntityRelationships() {
+    protected Set<EntityRelationship> getTargetEntityRelationships() {
         return targetEntityRelationships;
     }
     
     /**
      * @param entityRelationships The targetEntityRelationships to set.
      */
-    @SuppressWarnings("unused")
-    private void setTargetEntityRelationships(Set<EntityRelationship> entityRelationships) {
+    protected void setTargetEntityRelationships(Set<EntityRelationship> entityRelationships) {
         this.targetEntityRelationships = entityRelationships;
     }
     
@@ -335,8 +310,7 @@ public class Entity extends IMObject {
     /**
      * @param classifications The classifications to set.
      */
-    @SuppressWarnings("unused")
-    private void setClassifications(Set<Classification> classifications) {
+    protected void setClassifications(Set<Classification> classifications) {
         this.classifications = classifications;
     }
 
@@ -361,7 +335,6 @@ public class Entity extends IMObject {
     public Object clone() throws CloneNotSupportedException {
         Entity copy = (Entity)super.clone();
         copy.classifications = new HashSet<Classification>(this.classifications);
-        copy.code = this.code;
         copy.details = (DynamicAttributeMap)(this.details == null ?
                 null : this.details.clone());
         copy.identities = new HashSet<EntityIdentity>(this.identities);
