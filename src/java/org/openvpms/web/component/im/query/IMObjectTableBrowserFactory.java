@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
 
@@ -86,7 +87,7 @@ public final class IMObjectTableBrowserFactory {
      * <ul>
      * <li>(Query<T> query, SortConstraint[] sort)</li>
      * <li>(Query<T> query)</li>
-     * </ul>     *
+     * </ul>
      *
      * @param query the query
      * @param sort  the sort criteria. May be <code>null</code>
@@ -103,7 +104,7 @@ public final class IMObjectTableBrowserFactory {
             result = create(handler, query, sort);
         }
         if (result == null) {
-            result = new DefaultIMObjectTableBrowser<T>(query);
+            result = new DefaultIMObjectTableBrowser<T>(query, sort);
         }
         return result;
     }
@@ -132,9 +133,39 @@ public final class IMObjectTableBrowserFactory {
     }
 
     /**
+     * Creates a new {@link IMObjectTableBrowser}.
+     * Implementations must provide at least one constructor accepting the
+     * following arguments, invoked in the order:
+     * <ul>
+     * <li>(Query<T> query, SortConstraint[] sort, IMTableModel<T> model)
+     * <li>(Query<T> query, SortConstraint[] sort)</li>
+     * <li>(Query<T> query)</li>
+     * </ul>
+     *
+     * @param query the query
+     * @param sort  the sort criteria. May be <code>null</code>
+     * @return a new browser
+     */
+    public static <T extends IMObject> IMObjectTableBrowser<T> create(
+            Query<T> query, SortConstraint[] sort, IMTableModel<T> model) {
+        IMObjectTableBrowser<T> result = null;
+        String[] shortNames = DescriptorHelper.getShortNames(
+                query.getShortNames());
+        ArchetypeHandler<IMObjectTableBrowser> handler
+                = getBrowsers().getHandler(shortNames);
+        if (handler != null) {
+            result = create(handler, query, sort, model);
+        }
+        if (result == null) {
+            result = new DefaultIMObjectTableBrowser<T>(query, sort, model);
+        }
+        return result;
+    }
+
+    /**
      * Attempts to create a new browser. First tries the
-     * BrowserImpl(Query<T>, SortConstraint[]) constructor. If that doesn't exist,
-     * tries the BrowserImpl(Query<T>) constructor.
+     * BrowserImpl(Query<T>, SortConstraint[]) constructor. If that doesn't
+     * exist, tries the BrowserImpl(Query<T>) constructor.
      *
      * @param handler the {@link IMObjectTableBrowser} implementation
      * @param query   the query
@@ -153,6 +184,36 @@ public final class IMObjectTableBrowserFactory {
             result = (IMObjectTableBrowser<T>) handler.create(args, types);
         } catch (NoSuchMethodException ignore) {
             result = create(handler, query);
+        } catch (Throwable exception) {
+            log.error(exception, exception);
+        }
+        return result;
+    }
+
+    /**
+     * Attempts to create a new browser. First tries the
+     * BrowserImpl(Query<T>, SortConstraint[], IMTableModel<T>) constructor.
+     * If that doesn't exist, tries the BrowserImpl(Query<T>, SortConstraint[]),
+     * followed by the BrowserImpl(Query<T>) constructor.
+     *
+     * @param handler the {@link IMObjectTableBrowser} implementation
+     * @param query   the query
+     * @param sort    the sort criteria. May be <code>null</code>
+     * @return a new browser, or <code>null</code> if no appropriate constructor
+     *         can be found or construction fails
+     */
+    @SuppressWarnings("unchecked")
+    private static <T extends IMObject> IMObjectTableBrowser<T> create(
+            ArchetypeHandler<IMObjectTableBrowser> handler, Query<T> query,
+            SortConstraint[] sort, IMTableModel<T> model) {
+        IMObjectTableBrowser<T> result = null;
+        try {
+            Object[] args = {query, sort, model};
+            Class[] types = {Query.class, SortConstraint[].class,
+                             IMTableModel.class};
+            result = (IMObjectTableBrowser<T>) handler.create(args, types);
+        } catch (NoSuchMethodException ignore) {
+            result = create(handler, query, sort);
         } catch (Throwable exception) {
             log.error(exception, exception);
         }

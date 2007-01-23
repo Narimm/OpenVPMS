@@ -64,8 +64,7 @@ class TaskQueryHelper {
 
     /**
      * Helper to create a constraint of the form:
-     * <code>(act.startTime < from && act.endTime > from || act.endTime == null)
-     * or (act.startTime < to && act.endTime > to || act.endTime == null)
+     * <code>act.startTime <= to && (act.endTime >= from || act.endTime == null)
      * </code>
      *
      * @param from the from date
@@ -73,27 +72,10 @@ class TaskQueryHelper {
      * @return a new constraint
      */
     public static IConstraint createDateRangeConstraint(Date from, Date to) {
-        OrConstraint or = new OrConstraint();
-        IConstraint overlapStart = createOverlapConstraint(from);
-        IConstraint overlapEnd = createOverlapConstraint(to);
-        or.add(overlapStart);
-        or.add(overlapEnd);
-        return or;
-    }
-
-    /**
-     * Helper to create a constraint of the form:
-     * <code>act.startTime < time && act.endTime > time || act.endTime == null
-     * </code>
-     *
-     * @param time the time
-     * @return a new constraint
-     */
-    private static IConstraint createOverlapConstraint(Date time) {
         AndConstraint and = new AndConstraint();
-        and.add(new NodeConstraint("startTime", RelationalOp.LTE, time));
+        and.add(new NodeConstraint("startTime", RelationalOp.LTE, to));
         OrConstraint or = new OrConstraint();
-        or.add(new NodeConstraint("endTime", RelationalOp.GTE, time));
+        or.add(new NodeConstraint("endTime", RelationalOp.GTE, from));
         or.add(new NodeConstraint("endTime", RelationalOp.IsNULL));
         and.add(or);
         return and;

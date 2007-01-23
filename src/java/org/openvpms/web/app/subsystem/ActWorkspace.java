@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
+import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -181,7 +181,7 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
      * @return a new browser
      */
     protected Browser<A> createBrowser(ActQuery<A> query) {
-        return new DefaultIMObjectTableBrowser<A>(query, null,
+        return IMObjectTableBrowserFactory.create(query, null,
                                                   createTableModel());
     }
 
