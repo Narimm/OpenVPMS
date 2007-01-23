@@ -401,6 +401,59 @@
         </properties>
     </style>
 
+    <!--  Task table styles. -->
+    <style name="TaskTable.PENDING" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="#ffffff"/>
+                        <!-- white -->
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="TaskTable.IN_PROGRESS" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="#FFCCCC"/>
+                        <!-- pale red -->
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="TaskTable.COMPLETED" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="#CCFFFF"/>
+                        <!-- pale blue -->
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="TaskTable.CANCELLED" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="#CC99FF"/>
+                        <!-- pale dull violet -->
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
     <style name="MessagingWorkspace.MainLayout"
            type="nextapp.echo2.app.SplitPane">
         <properties>
