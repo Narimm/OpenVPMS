@@ -19,12 +19,16 @@
 package org.openvpms.web.app.workflow.consult;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.workflow.InvoiceTask;
+import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
+import org.openvpms.web.component.workflow.NodeConditionTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskContextImpl;
 import org.openvpms.web.component.workflow.TaskProperties;
@@ -49,6 +53,11 @@ public class ConsultWorkflow extends WorkflowImpl {
      * The initial context.
      */
     private TaskContext initial;
+
+    /**
+     * The customer task act short name.
+     */
+    private static final String CUSTOMER_TASK = "act.customerTask";
 
 
     /**
@@ -81,6 +90,17 @@ public class ConsultWorkflow extends WorkflowImpl {
         // get/create the invoice, and edit it
         addTask(new InvoiceTask());
         addTask(new EditIMObjectTask(InvoiceTask.INVOICE_SHORTNAME));
+        if (TypeHelper.isA(act, CUSTOMER_TASK)) {
+            NodeConditionTask<String> invoiceCompleted
+                    = new NodeConditionTask<String>(
+                    InvoiceTask.INVOICE_SHORTNAME, "status",
+                    ActStatus.COMPLETED);
+            TaskProperties billProps = new TaskProperties();
+            billProps.add("status", TaskStatus.BILLED);
+            UpdateIMObjectTask billTask = new UpdateIMObjectTask(act, billProps,
+                                                                 true);
+            addTask(new ConditionalTask(invoiceCompleted, billTask));
+        }
     }
 
     /**
