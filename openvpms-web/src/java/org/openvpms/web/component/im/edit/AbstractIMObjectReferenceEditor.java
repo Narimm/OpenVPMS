@@ -20,20 +20,13 @@ package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.DocumentEvent;
-import nextapp.echo2.app.event.DocumentListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
@@ -42,20 +35,13 @@ import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.select.Selector;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.select.IMObjectSelector;
+import org.openvpms.web.component.im.select.IMObjectSelectorListener;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.resource.util.Messages;
-
-import java.util.List;
 
 
 /**
@@ -73,36 +59,14 @@ public abstract class AbstractIMObjectReferenceEditor
     private final IMObject parent;
 
     /**
-     * The object name listener.
-     */
-    private final DocumentListener nameListener;
-
-    /**
      * The selector.
      */
-    private Selector selector;
-
-    /**
-     * The previous selector text, to avoid spurious updates.
-     */
-    private String prevText;
-
-    /**
-     * Determines if objects may be created.
-     */
-    private boolean allowCreate;
+    private IMObjectSelector selector;
 
     /**
      * The context.
      */
     private final Context context;
-
-    /**
-     * Determines if a selection dialog has been popped up. If so, flags the
-     * underlying property as being invalid, at least until the dialog is
-     * closed.
-     */
-    private boolean inSelect;
 
 
     /**
@@ -132,37 +96,28 @@ public abstract class AbstractIMObjectReferenceEditor
                                            boolean allowCreate) {
         super(property);
         this.parent = parent;
-        selector = new Selector(Selector.ButtonStyle.RIGHT_NO_ACCEL, true);
-        selector.setFormat(Selector.Format.NAME);
-        selector.getSelect().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onSelect();
+        NodeDescriptor descriptor = property.getDescriptor();
+        selector = new IMObjectSelector(descriptor, allowCreate) {
+            @Override
+            protected Query<IMObject> createQuery(String name) {
+                return AbstractIMObjectReferenceEditor.this.createQuery(name);
+            }
+        };
+        selector.setListener(new IMObjectSelectorListener() {
+            public void selected(IMObject object) {
+                updateProperty(object);
+            }
+
+            public void create() {
+                onCreate();
             }
         });
         IMObjectReference reference = (IMObjectReference) property.getValue();
         if (reference != null) {
-            NodeDescriptor descriptor = property.getDescriptor();
-            selector.setObject(
-                    IMObjectHelper.getObject(reference, descriptor,
-                                             context.getContext()));
+            selector.setObject(IMObjectHelper.getObject(reference, descriptor,
+                                                        context.getContext()));
         }
 
-        TextField text = selector.getText();
-        nameListener = new DocumentListener() {
-            public void documentUpdate(DocumentEvent event) {
-                onNameChanged();
-            }
-        };
-        text.getDocument().addDocumentListener(nameListener);
-
-        // Register an action listener to ensure document update events
-        // are triggered in a timely fashion
-        text.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                // no-op.
-            }
-        });
-        this.allowCreate = allowCreate;
         this.context = context.getContext();
     }
 
@@ -172,7 +127,7 @@ public abstract class AbstractIMObjectReferenceEditor
      * @param object the object. May  be <code>null</code>
      */
     public void setObject(IMObject object) {
-        updateSelector(object);
+        selector.setObject(object);
         updateProperty(object);
     }
 
@@ -227,7 +182,7 @@ public abstract class AbstractIMObjectReferenceEditor
      * @param create if <code>true</code>, objects may be created
      */
     public void setAllowCreate(boolean create) {
-        allowCreate = create;
+        selector.setAllowCreate(create);
     }
 
     /**
@@ -236,7 +191,7 @@ public abstract class AbstractIMObjectReferenceEditor
      * @return <code>true</code> if objects may be created
      */
     public boolean allowCreate() {
-        return allowCreate;
+        return selector.allowCreate();
     }
 
     /**
@@ -247,53 +202,7 @@ public abstract class AbstractIMObjectReferenceEditor
      *         otherwise <code>false</code>
      */
     public boolean validate(Validator validator) {
-        return (!inSelect) && super.validate(validator);
-    }
-
-    /**
-     * Pops up a dialog to select an object.
-     */
-    protected void onSelect() {
-        onSelect(createQuery(), false);
-    }
-
-    /**
-     * Pop up a dialog to select an object.
-     *
-     * @param query    the query
-     * @param runQuery if <code>true</code> run the query
-     */
-    protected void onSelect(Query<IMObject> query, boolean runQuery) {
-        if (runQuery) {
-            query.setAuto(runQuery);
-        }
-        try {
-            final Browser<IMObject> browser
-                    = IMObjectTableBrowserFactory.create(query);
-            String title = Messages.get("imobject.select.title",
-                                        getDescriptor().getDisplayName());
-            final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
-                    title, browser, allowCreate);
-
-            popup.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    setInSelect(false);
-                    if (popup.createNew()) {
-                        onCreate();
-                    } else {
-                        IMObject object = popup.getSelected();
-                        if (object != null) {
-                            onSelected(object);
-                        }
-                    }
-                }
-            });
-
-            setInSelect(true);
-            popup.show();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
+        return (!selector.inSelect()) && super.validate(validator);
     }
 
     /**
@@ -360,16 +269,6 @@ public abstract class AbstractIMObjectReferenceEditor
     /**
      * Creates a query to select objects.
      *
-     * @return a new query
-     */
-    protected Query<IMObject> createQuery() {
-        String name = StringUtils.trimToNull(selector.getText().getText());
-        return createQuery(name);
-    }
-
-    /**
-     * Creates a query to select objects.
-     *
      * @param name a name to filter on. May be <code>null</code>
      * @param name the name to filter on. May be <code>null</code>
      * @return a new query
@@ -384,60 +283,6 @@ public abstract class AbstractIMObjectReferenceEditor
     }
 
     /**
-     * Determines if a selection dialog has been popped up.
-     *
-     * @return <code>true</code> if a selection dialog has been popped up
-     *         otherwise <code>false</code>
-     */
-    protected boolean inSelect() {
-        return inSelect;
-    }
-
-    /**
-     * Determines if a selection dialog has been popped up.
-     *
-     * @param select if <code>true</code> denotes that a selection dialog has
-     *               been popped up
-     */
-    protected void setInSelect(boolean select) {
-        this.inSelect = select;
-    }
-
-    /**
-     * Invoked when the name is updated.
-     */
-    private void onNameChanged() {
-        TextField text = selector.getText();
-        String name = text.getText();
-        if (!ObjectUtils.equals(name, prevText)) {
-            if (StringUtils.isEmpty(name)) {
-                setObject(null);
-            } else {
-                try {
-                    Query<IMObject> query = createQuery(name);
-                    ResultSet<IMObject> set = query.query(null);
-                    if (set != null && set.hasNext()) {
-                        IPage<IMObject> page = set.next();
-                        List<IMObject> rows = page.getResults();
-                        int size = rows.size();
-                        if (size == 0) {
-                            setObject(null);
-                        } else if (size == 1) {
-                            IMObject object = rows.get(0);
-                            setObject(object);
-                        } else {
-                            onSelect(query, true);
-                        }
-                    }
-                } catch (OpenVPMSException exception) {
-                    updateProperty(null);
-                    ErrorHelper.show(exception);
-                }
-            }
-        }
-    }
-
-    /**
      * Updates the underlying property, notifying any registered listeners.
      *
      * @param object the object. May be <code>null</code>
@@ -449,19 +294,6 @@ public abstract class AbstractIMObjectReferenceEditor
         } else {
             property.setValue(null);
         }
-    }
-
-    /**
-     * Updates the selector.
-     *
-     * @param object the object. May be <code>null</code>
-     */
-    private void updateSelector(IMObject object) {
-        TextField text = selector.getText();
-        text.getDocument().removeDocumentListener(nameListener);
-        selector.setObject(object);
-        text.getDocument().addDocumentListener(nameListener);
-        prevText = selector.getText().getText();
     }
 
 }

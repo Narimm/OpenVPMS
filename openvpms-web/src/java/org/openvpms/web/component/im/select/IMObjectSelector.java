@@ -69,6 +69,11 @@ public class IMObjectSelector extends Selector {
     private final String type;
 
     /**
+     * Determines if objects may be created.
+     */
+    private boolean allowCreate;
+
+    /**
      * Update listener for the text field.
      */
     private final DocumentListener textListener;
@@ -76,34 +81,63 @@ public class IMObjectSelector extends Selector {
     /**
      * The listener. May be <code>null</code>
      */
-    private QuerySelectorListener listener;
+    private IMObjectSelectorListener listener;
 
     /**
      * The previous selector text, to avoid spurious updates.
      */
-    private String _prevText;
+    private String prevText;
+
+    /**
+     * Determines if a selection dialog is currently been popped up.
+     */
+    private boolean inSelect;
 
 
     /**
-     * Construct a new <code>QuerySelector</code>.
+     * Constructs a new <code>QuerySelector</code>.
      *
      * @param descriptor the node descriptor
      */
     public IMObjectSelector(NodeDescriptor descriptor) {
-        this(descriptor.getDisplayName(), descriptor.getArchetypeRange());
+        this(descriptor, false);
     }
 
     /**
-     * Construct a new <code>IMObjectSelector</code>.
+     * Constructs a new <code>QuerySelector</code>.
+     *
+     * @param descriptor  the node descriptor
+     * @param allowCreate determines if objects may be created
+     */
+    public IMObjectSelector(NodeDescriptor descriptor, boolean allowCreate) {
+        this(descriptor.getDisplayName(), descriptor.getArchetypeRange(),
+             allowCreate);
+    }
+
+    /**
+     * Constructs a new <code>IMObjectSelector</code>.
      *
      * @param type       display name for the types of objects this may select
      * @param shortNames the archetype short names to query
      */
     public IMObjectSelector(String type, String[] shortNames) {
+        this(type, shortNames, false);
+    }
+
+    /**
+     * Constructs a new <code>IMObjectSelector</code>.
+     *
+     * @param type        display name for the types of objects this may select
+     * @param shortNames  the archetype short names to query
+     * @param allowCreate determines if objects may be created
+     */
+    public IMObjectSelector(String type, String[] shortNames,
+                            boolean allowCreate) {
         super(ButtonStyle.RIGHT_NO_ACCEL, true);
         setFormat(Format.NAME);
         this.type = type;
         this.shortNames = shortNames;
+        this.allowCreate = allowCreate;
         getSelect().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onSelect();
@@ -140,7 +174,7 @@ public class IMObjectSelector extends Selector {
         text.getDocument().removeDocumentListener(textListener);
         super.setObject(object);
         text.getDocument().addDocumentListener(textListener);
-        _prevText = text.getText();
+        prevText = text.getText();
     }
 
     /**
@@ -157,8 +191,48 @@ public class IMObjectSelector extends Selector {
      *
      * @param listener the listener. May be <code>null</code>
      */
-    public void setListener(QuerySelectorListener listener) {
+    public void setListener(IMObjectSelectorListener listener) {
         this.listener = listener;
+    }
+
+    /**
+     * Determines if the selector is valid.
+     * It is valid if an object has been selected, or no object is present
+     * and no text is input.
+     *
+     * @return <code>true</code> if the selector is valid, otherwise
+     *         <code>false</code>
+     */
+    public boolean isValid() {
+        return (object != null) || StringUtils.isEmpty(getText().getText());
+    }
+
+    /**
+     * Determines if a selection dialog has been popped up.
+     *
+     * @return <code>true</code> if a selection dialog has been popped up
+     *         otherwise <code>false</code>
+     */
+    public boolean inSelect() {
+        return inSelect;
+    }
+
+    /**
+     * Determines if objects may be created.
+     *
+     * @param create if <code>true</code>, objects may be created
+     */
+    public void setAllowCreate(boolean create) {
+        allowCreate = create;
+    }
+
+    /**
+     * Determines if objects may be created.
+     *
+     * @return <code>true</code> if objects may be created
+     */
+    public boolean allowCreate() {
+        return allowCreate;
     }
 
     /**
@@ -184,22 +258,30 @@ public class IMObjectSelector extends Selector {
      * @param runQuery if <code>true</code> run the query
      */
     protected void onSelect(Query<IMObject> query, boolean runQuery) {
+        if (runQuery) {
+            query.setAuto(runQuery);
+        }
         try {
-            final Browser<IMObject> browser = createBrowser(query);
-            final BrowserDialog<IMObject> popup = createBrowserDialog(browser);
-            if (runQuery && !query.isAuto()) {
-                browser.query();
-            }
+            final Browser<IMObject> browser
+                    = IMObjectTableBrowserFactory.create(query);
+            final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
+                    type, browser, allowCreate);
 
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
-                    IMObject object = popup.getSelected();
-                    if (object != null) {
-                        onSelected(object);
+                    setInSelect(false);
+                    if (popup.createNew()) {
+                        onCreate();
+                    } else {
+                        IMObject object = popup.getSelected();
+                        if (object != null) {
+                            onSelected(object);
+                        }
                     }
                 }
             });
 
+            setInSelect(true);
             popup.show();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
@@ -227,6 +309,15 @@ public class IMObjectSelector extends Selector {
         setObject(object);
         if (listener != null) {
             listener.selected(object);
+        }
+    }
+
+    /**
+     * Invoked to create a new object. Notifies the listener.
+     */
+    protected void onCreate() {
+        if (listener != null) {
+            listener.create();
         }
     }
 
@@ -267,14 +358,25 @@ public class IMObjectSelector extends Selector {
     }
 
     /**
+     * Determines if a selection dialog has been popped up.
+     *
+     * @param select if <code>true</code> denotes that a selection dialog has
+     *               been popped up
+     */
+    protected void setInSelect(boolean select) {
+        this.inSelect = select;
+    }
+
+    /**
      * Invoked when the text field is updated.
      */
     private void onTextChanged() {
         TextField text = getText();
         String name = text.getText();
-        if (!ObjectUtils.equals(name, _prevText)) {
+        if (!ObjectUtils.equals(name, prevText)) {
             if (StringUtils.isEmpty(name)) {
                 setObject(null);
+                notifySelected();
             } else {
                 try {
                     Query<IMObject> query = createQuery(name);
@@ -285,10 +387,11 @@ public class IMObjectSelector extends Selector {
                         int size = rows.size();
                         if (size == 0) {
                             setObject(null);
+                            notifySelected();
                         } else if (size == 1) {
                             IMObject object = rows.get(0);
                             setObject(object);
-                            listener.selected(object);
+                            notifySelected();
                         } else {
                             onSelect(query, true);
                         }
@@ -298,6 +401,15 @@ public class IMObjectSelector extends Selector {
                     listener.selected(null);
                 }
             }
+        }
+    }
+
+    /**
+     * Notifies the listener of selection.
+     */
+    private void notifySelected() {
+        if (listener != null) {
+            listener.selected(getObject());
         }
     }
 
