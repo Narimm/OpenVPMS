@@ -454,6 +454,19 @@
         </properties>
     </style>
 
+    <style name="TaskTable.BILLED" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="#CCFFCC"/>
+                        <!-- pale green -->
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
     <style name="MessagingWorkspace.MainLayout"
            type="nextapp.echo2.app.SplitPane">
         <properties>

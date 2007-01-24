@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.workflow;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 
@@ -50,6 +52,11 @@ public class UpdateIMObjectTask extends AbstractTask {
      * Determines if the object should be saved.
      */
     private final boolean save;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(UpdateIMObjectTask.class);
 
 
     /**
@@ -121,6 +128,8 @@ public class UpdateIMObjectTask extends AbstractTask {
             }
             notifyCompleted();
         } else {
+            log.error("Cannot update object: no object with shortName=" +
+                    shortName);
             notifyCancelled();
         }
     }

@@ -22,8 +22,9 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
+
 /**
- * Add description here.
+ * Determines if a node is a particular value.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -44,7 +45,7 @@ public class NodeConditionTask<T> extends NodeEvalTask<Boolean> {
 
     /**
      * Constructs a new <code>NodeConditionTask</code> to evaluate the value
-     * of  an object in the {@link TaskContext}.
+     * of an object in the {@link TaskContext}.
      *
      * @param shortName the short name of the object to evaluate the node of
      * @param node      the node name
