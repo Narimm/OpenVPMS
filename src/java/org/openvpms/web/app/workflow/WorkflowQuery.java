@@ -24,41 +24,22 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.DocumentEvent;
-import nextapp.echo2.app.event.DocumentListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.button.ShortcutHelper;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.select.IMObjectSelector;
+import org.openvpms.web.component.im.select.IMObjectSelectorListener;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeEvent;
@@ -66,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 
 
 /**
@@ -83,19 +63,9 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
     private DateField date;
 
     /**
-     * The clinician name.
+     * The clinician selector.
      */
-    private TextField name;
-
-    /**
-     * The clinician name listener.
-     */
-    private DocumentListener nameListener;
-
-    /**
-     * The selected clinician. May be <code>null</code>
-     */
-    private IMObjectReference clinician;
+    private IMObjectSelector clinician;
 
     /**
      * Indicates no valid clinician selected.
@@ -117,6 +87,17 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
                          String participation, String[] shortNames,
                          String[] statuses) {
         super(entity, participant, participation, shortNames, statuses);
+        clinician = new IMObjectSelector(Messages.get("label.clinician"),
+                                         new String[]{"security.user"});
+        clinician.setListener(new IMObjectSelectorListener() {
+            public void selected(IMObject object) {
+                onQuery();
+            }
+
+            public void create() {
+                // no-op
+            }
+        });
     }
 
     /**
@@ -176,32 +157,11 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
                 });
 
         Label label = LabelFactory.create("clinician");
-        name = TextComponentFactory.create();
-        nameListener = new DocumentListener() {
-            public void documentUpdate(DocumentEvent event) {
-                onNameChanged();
-            }
-        };
-        name.getDocument().addDocumentListener(nameListener);
-
-        // add an action listener so document updates get propagated in a
-        // timely fashion
-        name.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-            }
-        });
-        Button select = ButtonFactory.create(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onSelect();
-            }
-        });
-        select.setText(ShortcutHelper.getLocalisedText("button.select"));
         Row row = RowFactory.create("CellSpacing", prevWeek, prevDay, date,
                                     currentDay, nextDay, nextWeek);
         container.add(row);
         container.add(label);
-        container.add(name);
-        container.add(select);
+        container.add(clinician.getComponent());
 
         FocusGroup focus = getFocusGroup();
         focus.add(prevWeek);
@@ -210,41 +170,7 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
         focus.add(currentDay);
         focus.add(nextDay);
         focus.add(nextWeek);
-        focus.add(name);
-        focus.add(select);
-    }
-
-    /**
-     * Invoked when the 'select' button is pressed. This pops up an {@link
-     * Browser} to select a clinician.
-     */
-    protected void onSelect() {
-        try {
-            String shortName = "security.user";
-            Query<IMObject> query = QueryFactory.create(
-                    shortName, GlobalContext.getInstance());
-            final Browser<IMObject> browser
-                    = IMObjectTableBrowserFactory.create(query);
-
-            String title = Messages.get(
-                    "imobject.select.title",
-                    DescriptorHelper.getDisplayName(shortName));
-            final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
-                    title, browser);
-
-            popup.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    IMObject object = popup.getSelected();
-                    if (object != null) {
-                        onClinicianSelected(object);
-                    }
-                }
-            });
-
-            popup.show();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
+        focus.add(clinician.getFocusGroup());
     }
 
     /**
@@ -272,11 +198,17 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
     /**
      * Returns the selected clinician.
      *
-     * @return the selected clinician, or {@link #INVALID_CLINICIAN} if none
-     *         is selected
+     * @return the selected clinician, or {@link #INVALID_CLINICIAN} if the
+     *         input name is invalid
      */
     protected IMObjectReference getClinician() {
-        return clinician;
+        IMObject object = clinician.getObject();
+        if (object != null) {
+            return object.getObjectReference();
+        } else if (!clinician.isValid()) {
+            return INVALID_CLINICIAN;
+        }
+        return null;
     }
 
     /**
@@ -288,9 +220,9 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
         ParticipantConstraint[] participants;
         ParticipantConstraint participation = getParticipantConstraint();
 
-        if (clinician != null) {
+        if (getClinician() != null) {
             ParticipantConstraint clinician = new ParticipantConstraint(
-                    "clinician", "participation.clinician", this.clinician);
+                    "clinician", "participation.clinician", getClinician());
             participants = new ParticipantConstraint[]{participation,
                                                        clinician};
         } else {
@@ -321,59 +253,6 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
      * Invoked when the date is updated.
      */
     private void onDateChanged() {
-        onQuery();
-    }
-
-    /**
-     * Invoked when the clinician name is updated.
-     */
-    private void onNameChanged() {
-        String name = this.name.getText();
-        if (StringUtils.isEmpty(name)) {
-            clinician = null;
-        } else {
-            try {
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
-                IPage<IMObject> page = ArchetypeQueryHelper.get(
-                        service, "system", "security", "user", name, true, 0,
-                        2);
-                List<IMObject> rows = page.getResults();
-                if (rows.size() != 1) {
-                    // no matches or multiple matches
-                    clinician = INVALID_CLINICIAN;
-                } else {
-                    IMObject clinician = rows.get(0);
-                    this.name.getDocument().removeDocumentListener(
-                            nameListener);
-                    this.name.setText(clinician.getName());
-                    this.name.getDocument().addDocumentListener(nameListener);
-                    this.clinician = clinician.getObjectReference();
-                }
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-        }
-        onQuery();
-    }
-
-    /**
-     * Invoked when a clinician is selected.
-     *
-     * @param clinician the clinician
-     */
-    private void onClinicianSelected(IMObject clinician) {
-        String name;
-        if (clinician != null) {
-            this.clinician = clinician.getObjectReference();
-            name = clinician.getName();
-        } else {
-            this.clinician = null;
-            name = null;
-        }
-        this.name.getDocument().removeDocumentListener(nameListener);
-        this.name.setText(name);
-        this.name.getDocument().addDocumentListener(nameListener);
         onQuery();
     }
 }

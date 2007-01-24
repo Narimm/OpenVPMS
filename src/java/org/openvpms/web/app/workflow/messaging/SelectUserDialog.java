@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.select.IMObjectSelector;
-import org.openvpms.web.component.im.select.QuerySelectorListener;
+import org.openvpms.web.component.im.select.IMObjectSelectorListener;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 
@@ -55,9 +55,13 @@ public class SelectUserDialog extends PopupDialog {
         String shortName = "security.user";
         String type = DescriptorHelper.getDisplayName(shortName);
         selector = new IMObjectSelector(type, new String[]{shortName});
-        selector.setListener(new QuerySelectorListener() {
+        selector.setListener(new IMObjectSelectorListener() {
             public void selected(IMObject object) {
                 onSelected(object);
+            }
+
+            public void create() {
+                // no-op
             }
         });
 

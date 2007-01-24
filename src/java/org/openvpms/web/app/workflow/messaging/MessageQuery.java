@@ -18,17 +18,7 @@
 
 package org.openvpms.web.app.workflow.messaging;
 
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.TextField;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.DocumentEvent;
-import nextapp.echo2.app.event.DocumentListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -36,30 +26,16 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.button.ShortcutHelper;
 import org.openvpms.web.component.im.query.ActResultSet;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.DefaultActQuery;
-import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.select.IMObjectSelector;
+import org.openvpms.web.component.im.select.IMObjectSelectorListener;
 import org.openvpms.web.component.im.util.FastLookupHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -74,14 +50,9 @@ import java.util.List;
 public class MessageQuery extends DefaultActQuery<Act> {
 
     /**
-     * The user name.
+     * The clinician selector.
      */
-    private TextField name;
-
-    /**
-     * The clinician name listener.
-     */
-    private DocumentListener nameListener;
+    private final IMObjectSelector clinician;
 
 
     /**
@@ -91,6 +62,20 @@ public class MessageQuery extends DefaultActQuery<Act> {
         super(user, "to", "participation.user", new String[]{"act.userMessage"},
               getLookups(), null);
         setStatus("PENDING");
+
+        clinician = new IMObjectSelector(Messages.get("messaging.user"),
+                                         new String[]{"security.user"});
+        clinician.setListener(new IMObjectSelectorListener() {
+            public void selected(IMObject object) {
+                setEntity((Entity) object);
+                onQuery();
+            }
+
+            public void create() {
+                // no-op
+            }
+        });
+        clinician.setObject(user);
     }
 
     /**
@@ -102,17 +87,23 @@ public class MessageQuery extends DefaultActQuery<Act> {
      */
     @Override
     public ResultSet<Act> query(SortConstraint[] sort) {
+        ResultSet<Act> result = null;
         ParticipantConstraint[] participants;
-        if (getEntityId() != null) {
-            participants = new ParticipantConstraint[]{
-                    getParticipantConstraint()};
-        } else {
-            participants = new ParticipantConstraint[0];
+        if (clinician.isValid()) {
+            if (getEntityId() != null) {
+                participants = new ParticipantConstraint[]{
+                        getParticipantConstraint()};
+            } else {
+                participants = new ParticipantConstraint[0];
+            }
+            result = new ActResultSet<Act>(participants,
+                                           getArchetypeConstraint(),
+                                           getStartFrom(), getStartTo(),
+                                           getStatuses(), excludeStatuses(),
+                                           getConstraints(), getMaxResults(),
+                                           sort);
         }
-        return new ActResultSet<Act>(participants, getArchetypeConstraint(),
-                                     getStartFrom(), getStartTo(),
-                                     getStatuses(), excludeStatuses(),
-                                     getConstraints(), getMaxResults(), sort);
+        return result;
     }
 
     /**
@@ -124,121 +115,9 @@ public class MessageQuery extends DefaultActQuery<Act> {
     @Override
     protected void doLayout(Component container) {
         super.doLayout(container);
-        Label label = LabelFactory.create("messaging.user");
-        name = TextComponentFactory.create();
-        IMObject user = IMObjectHelper.getObject(getEntityId());
-        if (user != null) {
-            name.setText(user.getName());
-        }
-        nameListener = new DocumentListener() {
-            public void documentUpdate(DocumentEvent event) {
-                onNameChanged();
-            }
-        };
-        name.getDocument().addDocumentListener(nameListener);
-
-        // add an action listener so document updates get propagated in a
-        // timely fashion
-        name.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-            }
-        });
-        Button select = ButtonFactory.create(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onSelect();
-            }
-        });
-        select.setText(ShortcutHelper.getLocalisedText("button.select"));
-        container.add(label);
-        container.add(name);
-        container.add(select);
-        getFocusGroup().add(name);
-    }
-
-    /**
-     * Invoked when the 'select' button is pressed. This pops up an {@link
-     * Browser} to select a clinician.
-     */
-    protected void onSelect() {
-        try {
-            String shortName = "security.user";
-            Query<IMObject> query = QueryFactory.create(
-                    shortName, GlobalContext.getInstance());
-            final Browser<IMObject> browser
-                    = IMObjectTableBrowserFactory.create(query);
-
-            String title = Messages.get(
-                    "imobject.select.title",
-                    DescriptorHelper.getDisplayName(shortName));
-            final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
-                    title, browser);
-
-            popup.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    Entity object = (Entity) popup.getSelected();
-                    if (object != null) {
-                        onUserSelected(object);
-                    }
-                }
-            });
-
-            popup.show();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    /**
-     * Invoked when the user name is updated.
-     */
-    private void onNameChanged() {
-        String name = this.name.getText();
-        if (StringUtils.isEmpty(name)) {
-            setEntity(null);
-        } else {
-            try {
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
-                IPage<IMObject> page = ArchetypeQueryHelper.get(
-                        service, "system", "security", "user", name, true, 0,
-                        2);
-                List<IMObject> rows = page.getResults();
-                if (rows.size() != 1) {
-                    // no matches or multiple matches
-                    setEntity(null);
-                } else {
-                    Entity user = (Entity) rows.get(0);
-                    this.name.getDocument().removeDocumentListener(
-                            nameListener);
-                    this.name.setText(user.getName());
-                    this.name.getDocument().addDocumentListener(nameListener);
-                    setEntity(user);
-                }
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-        }
-        onQuery();
-    }
-
-    /**
-     * Invoked when a user is selected.
-     *
-     * @param user the user
-     */
-    private void onUserSelected(Entity user) {
-        String name;
-        if (user != null) {
-            setEntity(user);
-            name = user.getName();
-        } else {
-            setEntity(null);
-            name = null;
-        }
-        this.name.getDocument().removeDocumentListener(nameListener);
-        this.name.setText(name);
-        this.name.getDocument().addDocumentListener(nameListener);
-        onQuery();
+        container.add(LabelFactory.create("messaging.user"));
+        container.add(clinician.getComponent());
+        getFocusGroup().add(clinician.getFocusGroup());
     }
 
     private static List<Lookup> getLookups() {
