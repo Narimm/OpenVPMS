@@ -39,6 +39,7 @@
 					<property name="CANCELLED" value="Cancelled" />
 					<property name="IN_PROGRESS" value="In Progress" />
 					<property name="COMPLETED" value="Completed" />
+                    <property name="BILLED" value="Billed" />
 				</propertyList>
 				<errorMessage>Invalid Task Status</errorMessage>
 			</assertion>
