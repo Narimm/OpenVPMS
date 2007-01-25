@@ -25,6 +25,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.TemplateHelper;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -72,6 +74,14 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
         participationEditor = IMObjectEditorFactory.create(participation,
                                                            template, context);
         getEditors().add(participationEditor);
+
+        if (participationEditor instanceof DocumentParticipationEditor) {
+            getProperty("name").addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    onNameUpdated();
+                }
+            });
+        }
     }
 
     /**
@@ -84,5 +94,16 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
         return new DocumentTemplateLayoutStrategy(
                 participationEditor.getComponent(),
                 participationEditor.getFocusGroup());
+    }
+
+    /**
+     * Invoked when the name is updated. Propagates the value to the associated
+     * editor's {@link DocumentParticipationEditor#setDescription(String)}.
+     */
+    private void onNameUpdated() {
+        String name = (String) getProperty("name").getValue();
+        DocumentParticipationEditor editor
+                = ((DocumentParticipationEditor) participationEditor);
+        editor.setDescription(name);
     }
 }

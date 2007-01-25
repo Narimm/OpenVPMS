@@ -60,17 +60,17 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     /**
      * The upload selector.
      */
-    private Selector _selector;
+    private Selector selector;
 
     /**
      * The document act.
      */
-    private DocumentAct _act;
+    private DocumentAct act;
 
     /**
      * Determines if the document has changed.
      */
-    private boolean _docModified = false;
+    private boolean docModified = false;
 
 
     /**
@@ -88,14 +88,14 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
         if (entity.getValue() == null) {
             entity.setValue(parent.getObjectReference());
         }
-        _act = getDocumentAct();
-        _selector = new Selector();
-        _selector.getSelect().addActionListener(new ActionListener() {
+        act = getDocumentAct();
+        selector = new Selector();
+        selector.getSelect().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onSelect();
             }
         });
-        _selector.setObject(_act);
+        selector.setObject(act);
     }
 
     /**
@@ -105,7 +105,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
      */
     @Override
     public boolean isModified() {
-        return super.isModified() || _docModified;
+        return super.isModified() || docModified;
     }
 
     /**
@@ -114,7 +114,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     @Override
     public void clearModified() {
         super.clearModified();
-        _docModified = false;
+        docModified = false;
     }
 
     /**
@@ -125,22 +125,22 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     @Override
     protected boolean saveChildren() {
         boolean saved = super.saveChildren();
-        if (saved && _docModified) {
-            if (!_act.isNew()) {
+        if (saved && docModified) {
+            if (!act.isNew()) {
                 // need to reload the act as the participation has already
                 // been saved by the parent Entity. Failing to do so will
                 // result in hibernate StaleObjectExceptions
-                IMObjectReference ref = _act.getDocReference();
-                String fileName = _act.getFileName();
-                String mimeType = _act.getMimeType();
-                String description = _act.getDescription();
-                _act = getDocumentAct();
-                _act.setDocReference(ref);
-                _act.setFileName(fileName);
-                _act.setMimeType(mimeType);
-                _act.setDescription(description);
+                IMObjectReference ref = act.getDocReference();
+                String fileName = act.getFileName();
+                String mimeType = act.getMimeType();
+                String description = act.getDescription();
+                act = getDocumentAct();
+                act.setDocReference(ref);
+                act.setFileName(fileName);
+                act.setMimeType(mimeType);
+                act.setDescription(description);
             }
-            saved = SaveHelper.save(_act);
+            saved = SaveHelper.save(act);
         }
         return saved;
     }
@@ -177,7 +177,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
             public ComponentState apply(IMObject object, PropertySet properties,
                                         IMObject parent,
                                         LayoutContext context) {
-                return new ComponentState(_selector.getComponent());
+                return new ComponentState(selector.getComponent());
             }
         };
     }
@@ -199,17 +199,17 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
                     Document doc = handler.create(fileName, stream, contentType,
                                                   size);
                     service.save(doc);
-                    _act.setFileName(doc.getName());
-                    service.deriveValue(_act, "name");
-                    _act.setMimeType(doc.getMimeType());
+                    act.setFileName(doc.getName());
+                    service.deriveValue(act, "name");
+                    act.setMimeType(doc.getMimeType());
                     if (getParent() == null) {
-                        _act.setDescription(doc.getDescription());
+                        act.setDescription(doc.getDescription());
                     } else {
-                        _act.setDescription(getParent().getName());
+                        act.setDescription(getParent().getName());
                     }
-                    _act.setDocReference(doc.getObjectReference());
-                    _selector.setObject(_act);
-                    _docModified = true;
+                    act.setDocReference(doc.getObjectReference());
+                    selector.setObject(act);
+                    docModified = true;
                 } catch (Exception exception) {
                     ErrorHelper.show(exception);
                 }
@@ -225,4 +225,14 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
         dialog.show();
     }
 
+    /**
+     * Sets the description of the document act.
+     *
+     * @param description the description of the document act.
+     *                    May be <code>null</code>
+     */
+    public void setDescription(String description) {
+        act.setDescription(description);
+        selector.setObject(act);
+    }
 }
