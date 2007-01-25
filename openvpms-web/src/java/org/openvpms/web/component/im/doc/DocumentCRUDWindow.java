@@ -23,6 +23,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -166,8 +167,16 @@ public class DocumentCRUDWindow extends ActCRUDWindow<Act> {
      *         <code>false</code>
      */
     private boolean canRefresh() {
-        ActBean act = new ActBean(getObject());
-        return act.hasNode("documentTemplate") && act.hasNode("docReference");
+        boolean refresh = false;
+        Act act = getObject();
+        if (!ActStatus.POSTED.equals(act.getStatus())) {
+            ActBean bean = new ActBean(getObject());
+            if (bean.hasNode("documentTemplate")
+                    && bean.hasNode("docReference")) {
+                refresh = true;
+            }
+        }
+        return refresh;
     }
 
 }
