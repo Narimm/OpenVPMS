@@ -65,8 +65,9 @@
 		</node>
 		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="customers" path="/entityRelationships"
-			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*">
-			<assertion name="archetypeRange" filter="entityRelationship.patient*" >
+			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
+			 filter="entityRelationship.patient*">
+			<assertion name="archetypeRange" >
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
@@ -96,6 +97,23 @@
 					<propertyMap name="archetype">
 						<property name="shortName"
 							value="entityIdentity.petTag" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="referrals" path="/entityRelationships"
+			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
+			 filter="entityRelationship.referred*">
+			<assertion name="archetypeRange" >
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityRelationship.referredFrom" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityRelationship.referredTo" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
