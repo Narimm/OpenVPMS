@@ -37,7 +37,7 @@ public class Validator {
     /**
      * Modifiable instances with their corresponding errors.
      */
-    private Map<Modifiable, List<ValidationError>> _errors
+    private Map<Modifiable, List<ValidationError>> errors
             = new HashMap<Modifiable, List<ValidationError>>();
 
 
@@ -53,23 +53,35 @@ public class Validator {
     }
 
     /**
-     * Adds
+     * Adds validation errors for an object.
      *
-     * @param modifiable
-     * @param errors
+     * @param modifiable the object
+     * @param errors     the validation errors
      */
     public void add(Modifiable modifiable, List<ValidationError> errors) {
         if (!errors.isEmpty()) {
-            _errors.put(modifiable, errors);
+            this.errors.put(modifiable, errors);
         }
     }
 
+    /**
+     * Returns all invalid objects.
+     *
+     * @return all invalid objects
+     */
     public Collection<Modifiable> getInvalid() {
-        return _errors.keySet();
+        return errors.keySet();
     }
 
+    /**
+     * Returns any errors for an object.
+     *
+     * @param modifiable the object
+     * @return errors associated with <code>modifiable</code>, or
+     *         <code>null</code> if there are no errors
+     */
     public List<ValidationError> getErrors(Modifiable modifiable) {
-        return _errors.get(modifiable);
+        return errors.get(modifiable);
     }
 
 }
