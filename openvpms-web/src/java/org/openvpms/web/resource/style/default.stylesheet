@@ -1021,6 +1021,12 @@
             <property name="font">
                 <font underline="true"/>
             </property>
+            <property name="border">
+                <border style="none"/>
+            </property>
+            <property name="rolloverBorder">
+                <border style="none"/>
+            </property>
         </properties>
     </style>
 

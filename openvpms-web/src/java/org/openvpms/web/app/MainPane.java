@@ -171,6 +171,11 @@ public class MainPane extends SplitPane implements ContextChangeListener {
         addSubsystem(new ReportingSubsystem());
         addSubsystem(new AdminSubsystem());
 
+        menu.addButton("help", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                new HelpDialog().show();
+            }
+        });
         menu.add(getLogoutRow());
 
         SplitPane left = SplitPaneFactory.create(ORIENTATION_VERTICAL,
@@ -287,6 +292,7 @@ public class MainPane extends SplitPane implements ContextChangeListener {
                 OpenVPMSApp.getInstance().logout();
             }
         });
+
         RowLayoutData rightAlign = new RowLayoutData();
         rightAlign.setAlignment(
                 new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
