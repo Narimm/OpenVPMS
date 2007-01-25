@@ -59,7 +59,7 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
     /**
      * The act browser.
      */
-    private Browser<A> acts;
+    private Browser<A> browser;
 
     /**
      * The CRUD window.
@@ -89,8 +89,8 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
      * @param isNew  determines if the object is a new instance
      */
     protected void onSaved(A object, boolean isNew) {
-        acts.query();
-        acts.setSelected(object);
+        browser.query();
+        browser.setSelected(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -100,7 +100,7 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
      * @param object the object
      */
     protected void onDeleted(A object) {
-        acts.query();
+        browser.query();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -110,8 +110,8 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
      * @param object the object
      */
     protected void onRefresh(A object) {
-        acts.query();
-        acts.setSelected(object);
+        browser.query();
+        browser.setSelected(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -127,13 +127,23 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
     /**
      * Lays out the workspace.
      *
-     * @param party the party
+     * @param party the party. May be <code>null</code>
      */
     protected void layoutWorkspace(Party party) {
-        setQuery(createQuery(party));
-        setBrowser(createBrowser(query));
-        setCRUDWindow(createCRUDWindow());
-        setWorkspace(createWorkspace());
+        if (party != null) {
+            setQuery(createQuery(party));
+            setBrowser(createBrowser(query));
+            setCRUDWindow(createCRUDWindow());
+            setWorkspace(createWorkspace());
+        } else {
+            query = null;
+            browser = null;
+            window = null;
+            if (workspace != null) {
+                getRootComponent().remove(workspace);
+                workspace = null;
+            }
+        }
     }
 
     /**
@@ -144,7 +154,7 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
      * @return a component representing the acts
      */
     protected Component getActs(Browser acts) {
-        return GroupBoxFactory.create(this.acts.getComponent());
+        return GroupBoxFactory.create(this.browser.getComponent());
     }
 
     /**
@@ -206,7 +216,7 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
     /**
      * Returns the query.
      *
-     * @return the query
+     * @return the query. May be <code>null</code>
      */
     protected Query<A> getQuery() {
         return query;
@@ -218,8 +228,8 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
      * @param browser the new browser
      */
     protected void setBrowser(Browser<A> browser) {
-        acts = browser;
-        acts.addQueryListener(new QueryBrowserListener<A>() {
+        this.browser = browser;
+        this.browser.addQueryListener(new QueryBrowserListener<A>() {
             public void query() {
                 onQuery();
             }
@@ -233,10 +243,10 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
     /**
      * Returns the browser.
      *
-     * @return the browser
+     * @return the browser. May be <code>null</code>
      */
     protected Browser<A> getBrowser() {
-        return acts;
+        return browser;
     }
 
     /**
@@ -278,7 +288,7 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
     /**
      * Returns the CRUD window.
      *
-     * @return the CRUD window
+     * @return the CRUD window. May be <code>null</code>
      */
     protected CRUDWindow getCRUDWindow() {
         return window;
@@ -290,9 +300,11 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
      * @param party the party
      */
     protected void initQuery(Party party) {
-        query.setEntity(party);
-        acts.query();
-        onQuery();
+        if (query != null) {
+            query.setEntity(party);
+            browser.query();
+            onQuery();
+        }
     }
 
     /**
@@ -308,17 +320,19 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
      * Invoked when acts are queried. Selects the first available act, if any.
      */
     protected void onQuery() {
-        selectFirst();
+        if (query != null) {
+            selectFirst();
+        }
     }
 
     /**
      * Selects the first available act, if any.
      */
     private void selectFirst() {
-        List<A> objects = acts.getObjects();
+        List<A> objects = browser.getObjects();
         if (!objects.isEmpty()) {
             A current = objects.get(0);
-            acts.setSelected(current);
+            browser.setSelected(current);
             window.setObject(current);
         } else {
             window.setObject(null);
