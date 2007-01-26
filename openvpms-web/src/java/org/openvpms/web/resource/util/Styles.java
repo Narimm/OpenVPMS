@@ -59,7 +59,7 @@ public final class Styles {
     /**
      * Path to default style sheet.
      */
-    private static final String PATH = "/org/openvpms/web/resource/style/default.stylesheet";
+    private static final String PATH = "org/openvpms/web/resource/style/default.stylesheet";
 
     /**
      * List of screen width & corresponding style suffixes. Must be ordered
@@ -80,7 +80,7 @@ public final class Styles {
      * Returns a style name, amended for the client resolution, if one exists.
      *
      * @param component the component class
-     * @param style the style name
+     * @param style     the style name
      * @return the (possibly modified) style name
      */
     public static String getStyle(Class component, String style) {
@@ -120,7 +120,8 @@ public final class Styles {
             StyleSheet styles = StyleSheetLoader.load(PATH,
                                                       Styles.class.getClassLoader());
             if (styles == null) {
-                styles = StyleSheetLoader.load(PATH, Thread.currentThread().getContextClassLoader());
+                styles = StyleSheetLoader.load(PATH,
+                                               Thread.currentThread().getContextClassLoader());
             }
             DEFAULT_STYLE_SHEET = styles;
             if (DEFAULT_STYLE_SHEET == null) {

@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.admin.lookup.LookupEditor;
+import org.openvpms.web.app.admin.template.DocumentTemplatePrinterEditor;
 import org.openvpms.web.app.customer.CustomerEditor;
 import org.openvpms.web.app.customer.PatientOwnerRelationshipEditor;
 import org.openvpms.web.app.customer.account.AdjustmentActEditor;
@@ -76,7 +77,9 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * Verifies that an {@link EntityRelationshipEditor} is returned for
      * all <em>entityRelationship.*</em> short names, with the exception
      * of <em>entityRelationship.patientOwner</em> which should return
-     * an {@link PatientOwnerRelationshipEditor}.
+     * an {@link PatientOwnerRelationshipEditor} and
+     * <em>entityRelationship.documentTemplatePrinter</em>
+     * which should return an {@link DocumentTemplatePrinterEditor}.
      */
     public void testCreateRelationshipEditor() {
         String[] shortNames
@@ -84,6 +87,9 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
         for (String shortName : shortNames) {
             if (shortName.equals("entityRelationship.patientOwner")) {
                 checkCreate(shortName, PatientOwnerRelationshipEditor.class);
+            } else if (shortName.equals(
+                    "entityRelationship.documentTemplatePrinter")) {
+                checkCreate(shortName, DocumentTemplatePrinterEditor.class);
             } else {
                 checkCreate(shortName, EntityRelationshipEditor.class);
             }

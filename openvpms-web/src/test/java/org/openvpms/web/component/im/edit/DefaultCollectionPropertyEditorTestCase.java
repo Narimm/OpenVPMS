@@ -25,6 +25,7 @@
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.edit.CollectionProperty;
@@ -52,10 +53,11 @@ public class DefaultCollectionPropertyEditorTestCase
         CollectionProperty property = getCollectionProperty(parent);
         CollectionPropertyEditor editor = createEditor(property, parent);
         String[] range = editor.getArchetypeRange();
-        assertEquals(4, range.length);
+        assertEquals(5, range.length);
         Set<String> set = new HashSet<String>(Arrays.asList(range));
         assertTrue(set.contains("contact.location"));
         assertTrue(set.contains("contact.phoneNumber"));
+        assertTrue(set.contains("contact.mobileNumber"));
         assertTrue(set.contains("contact.email"));
         assertTrue(set.contains("contact.faxNumber"));
     }
@@ -67,6 +69,10 @@ public class DefaultCollectionPropertyEditorTestCase
      */
     protected IMObject createParent() {
         Party party = (Party) TestHelper.create("party.customerperson");
+        // remove default contacts
+        for (Contact contact : party.getContacts().toArray(new Contact[0])) {
+            party.removeContact(contact);
+        }
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("firstName", "foo");
         bean.setValue("lastName", "xyz");
