@@ -58,7 +58,7 @@
 			type="boolean" />
 		<property name="primary" access="property" column="is_primary"
 			type="boolean" />
-		<map name="nodeDescriptors" access="property" lazy="false"
+		<map name="nodeDescriptors" access="property" lazy="false" inverse="true"
 			table="node_descriptors" cascade="all,delete-orphan">
 			<key column="archetype_desc_id" />
 			<map-key column="name" type="string" />

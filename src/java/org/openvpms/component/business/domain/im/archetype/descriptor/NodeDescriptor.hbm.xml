@@ -61,13 +61,14 @@
     <property name="index" access="property" column="node_index" type="integer" />
     <property name="parentChild" access="property" column="is_parent_child"
       type="boolean" />
-    <map name="nodeDescriptors" access="property" lazy="false"
+    <map name="nodeDescriptors" access="property" lazy="false" inverse="true"
       table="node_descriptors" cascade="all,delete-orphan">
       <key column="parent_id" />
       <map-key column="name" type="string" />
       <one-to-many
         class="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor" />
     </map>
+    <many-to-one name="parent" column="parent_id"/>
     <map name="assertionDescriptors" access="property" lazy="false"
       table="assertion_descriptors" cascade="all,delete-orphan">
       <key column="node_desc_id" />
@@ -75,6 +76,8 @@
       <one-to-many
         class="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor" />
     </map>
+    <many-to-one name="archetypeDescriptor" column="archetype_desc_id" />
+
   </class>
 
   <query name="nodeDescriptor.getRowCount">
