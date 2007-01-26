@@ -46,7 +46,7 @@ public class StringPropertyTransformerTestCase
                 = new StringPropertyTransformer(person, descriptor);
 
         assertNull(handler.apply(null));
-        assertEquals("", handler.apply(""));
+        assertNull(handler.apply(""));
         assertEquals("abc", handler.apply("abc"));
 
         assertEquals("1", handler.apply(1));

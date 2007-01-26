@@ -29,7 +29,7 @@
               failonerror="false"
               failifexecutionfails="false"
               executable="${svnversion.path}">
-            <arg line="-c ${basedir}"/>
+            <arg line="${basedir}"/>
         </exec>
         <echo>subversion revision: ${subversion.revision}</echo>
         <mkdir dir="${maven.build.dest}/META-INF"/>
