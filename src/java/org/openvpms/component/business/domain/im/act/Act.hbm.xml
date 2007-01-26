@@ -47,15 +47,13 @@
     <property name="description" access="property" column="description"
       type="string" />
     <property name="active" access="property" column="active" type="boolean" />
-    <property name="mood" column="mood" type="string" />
     <property name="title" column="title" type="string" />
     <property name="activityStartTime" column="activity_start_time" type="timestamp"
       index="act_start_time_idx" />
     <property name="activityEndTime" column="activity_end_time" type="timestamp" 
       index="act_end_time_idx"/>
     <property name="reason" column="reason" type="string" />
-    <property name="repeatNumber" column="repeat_number" type="int" />
-    <property name="status" column="status" type="string" 
+    <property name="status" column="status" type="string"
     	index="act_status_idx" />
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
