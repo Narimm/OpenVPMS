@@ -20,17 +20,16 @@
 package org.openvpms.component.business.domain.im.act;
 
 // java core
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Date;
-
-// openvpms-framework
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.EntityException;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A class representing an activity that is being done, has been done, 
@@ -43,24 +42,12 @@ import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttribut
 public class Act extends IMObject {
 
     /**
-     * Generated SUID.
+     * The serialization version identifier.
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * Text that defines the modality of the Act i.e Definition, Intent, 
-     * Event, Goal. The mood of an Act does not change. To describe the 
-     * progression of an Act from defined through to executed you create 
-     * different Acts connected via ActRelationships.
-     * 
-     * TODO Change to use terminology service
-     */
-    private String mood;
-    
-    /**
      * Represents the title of the act.
-     * 
-     * TODO Change to use terminology service
      */
     private String title;
     
@@ -81,12 +68,6 @@ public class Act extends IMObject {
     private String reason;
     
     /**
-     * An interval of integers stating the minimal and maximum nymber of Act 
-     * repetitions. 
-     */
-    private int repeatNumber;
-
-    /**
      * A String representing the status or state of the Act. (i.e  Normal, 
      * Aborted, Completed, Suspended, Cancelled etc
      */
@@ -99,7 +80,7 @@ public class Act extends IMObject {
     private DynamicAttributeMap details;
     
     /**
-     * The {@link Participations} for this act.
+     * The {@link Participation}s for this act.
      */
     private Set<Participation> participations =
         new HashSet<Participation>();
@@ -126,7 +107,7 @@ public class Act extends IMObject {
     /**
      * Constructs an instance of an act.
      * 
-     * @param archetypeI
+     * @param archetypeId
      *            the archetype id constraining this object
      * @param details
      *            dynamic details of the act.
@@ -179,20 +160,6 @@ public class Act extends IMObject {
     }
 
     /**
-     * @return Returns the mood.
-     */
-    public String getMood() {
-        return mood;
-    }
-
-    /**
-     * @param mood The mood to set.
-     */
-    public void setMood(String mood) {
-        this.mood = mood;
-    }
-
-    /**
      * @return Returns the reason.
      */
     public String getReason() {
@@ -204,20 +171,6 @@ public class Act extends IMObject {
      */
     public void setReason(String reason) {
         this.reason = reason;
-    }
-
-    /**
-     * @return Returns the repeatNumber.
-     */
-    public int getRepeatNumber() {
-        return repeatNumber;
-    }
-
-    /**
-     * @param repeatNumber The repeatNumber to set.
-     */
-    public void setRepeatNumber(int repeatNumber) {
-        this.repeatNumber = repeatNumber;
     }
 
     /**
@@ -378,7 +331,7 @@ public class Act extends IMObject {
         return relationships;
     }
     /**
-     * Return the associated {@link Participantion} instances.
+     * Return the associated {@link Participation} instances.
      * 
      * @return Participation
      */
@@ -405,7 +358,7 @@ public class Act extends IMObject {
     /**
      * Remove a {@link Participation}.
      * 
-     * @param source
+     * @param participation
      */
     public void removeParticipation(Participation participation) {
         this.participations.remove(participation);
@@ -424,10 +377,8 @@ public class Act extends IMObject {
                 null : this.activityStartTime.clone());
         copy.details = (DynamicAttributeMap)(this.details == null ?
                 null : this.details.clone());
-        copy.mood = this.mood;
         copy.participations = new HashSet<Participation>(this.participations);
         copy.reason = this.reason;
-        copy.repeatNumber = this.repeatNumber;
         copy.sourceActRelationships = new HashSet<ActRelationship>(this.sourceActRelationships);
         copy.status = this.status;
         copy.targetActRelationships = new HashSet<ActRelationship>(this.targetActRelationships);
@@ -443,12 +394,10 @@ public class Act extends IMObject {
     public String toString() {
         return new ToStringBuilder(this)
             .appendSuper(null)
-            .append("mood", mood)
             .append("title", title)
             .append("activityStartTime", activityStartTime)
             .append("activityEndTime", activityEndTime)
             .append("reason", reason)
-            .append("repeatNumber", repeatNumber)
             .append("status", status)
             .append("participations", participations)
             .append("sourceActRelationships", sourceActRelationships)
