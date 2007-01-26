@@ -189,35 +189,41 @@ public class ArchetypeServiceDescriptorTestCase extends
             dumpValidationException(ex);
             throw ex;
         }
-        
+
         // clone the object and resave it
         ArchetypeDescriptor copy = (ArchetypeDescriptor)desc.clone();
         copy.setName("openvpms-test-archetype.dummy.2.0");
         copy.setClassName("thisClassAgain");
-        assertTrue(copy.getName().equals(desc.getName()) == false);
-        assertTrue(copy.getClassName().equals(desc.getClassName()) == false);
+        assertFalse(copy.getName().equals(desc.getName()));
+        assertFalse(copy.getClassName().equals(desc.getClassName()));
         service.save(copy);
-       
+
         // retrieve the cloned and saved object and ensure that the values
         // are correct
         ArchetypeDescriptor obj = (ArchetypeDescriptor)ArchetypeQueryHelper
             .getByUid(service, copy.getArchetypeId(), copy.getUid());
-        assertTrue(obj != null);
-        assertTrue(obj.getNodeDescriptors().size() == 1);
-        assertTrue(copy.getName().equals(obj.getName()));
-        assertTrue(copy.getClassName().equals(obj.getClassName()));
+        assertNotNull(obj);
+        assertEquals(1, obj.getNodeDescriptors().size());
+        assertEquals(copy.getName(), obj.getName());
+        assertEquals(copy.getClassName(), obj.getClassName());
         
         // clone the object again 
         ArchetypeDescriptor copy2 = (ArchetypeDescriptor)copy.clone();
-        copy2.getNodeDescriptors().clear();
-        assertTrue(copy2.getNodeDescriptors().size() != copy.getNodeDescriptors().size());
+        for (NodeDescriptor toRemove : copy2.getAllNodeDescriptors()) {
+            copy2.removeNodeDescriptor(toRemove);
+
+            // NOTE: need to explicitly remove the children of cloned objects
+            // as they don't contain hibernate peristent collection instances.
+            service.remove(toRemove);
+        }
+        assertEquals(0, copy2.getNodeDescriptors().size());
         service.save(copy2);
         
          // retrieve the object again and check the info
         obj = (ArchetypeDescriptor)ArchetypeQueryHelper.getByUid(service,
                 copy2.getArchetypeId(), copy2.getUid());
-        assertTrue(obj != null);
-        assertTrue(obj.getNodeDescriptors().size() == 0);
+        assertNotNull(obj);
+        assertEquals(0, obj.getNodeDescriptors().size());
         assertTrue(copy2.getName().equals(obj.getName()));
         assertTrue(copy2.getClassName().equals(obj.getClassName()));
     }
@@ -249,7 +255,7 @@ public class ArchetypeServiceDescriptorTestCase extends
      */
     public void testOVPMS194()
     throws Exception {
-        ArchetypeDescriptor adesc = (ArchetypeDescriptor)service.getArchetypeDescriptor("descriptor.archetype");
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("descriptor.archetype");
         NodeDescriptor ndesc = adesc.getNodeDescriptor("nodeDescriptors");
         if (ndesc.isCollection()) {
               Collection values = (Collection)ndesc.getValue(adesc);
@@ -380,7 +386,7 @@ public class ArchetypeServiceDescriptorTestCase extends
      * @throws Exception
      */
     public Session currentSession() throws Exception {
-        Session s = (Session) session.get();
+        Session s = session.get();
         // Open a new Session, if this Thread has none yet
         if (s == null) {
             s = getSessionFactory().openSession();

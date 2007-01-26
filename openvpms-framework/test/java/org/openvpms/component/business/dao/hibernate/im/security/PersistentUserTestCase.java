@@ -152,13 +152,13 @@ public class PersistentUserTestCase extends HibernateInfoModelTestCase {
             assertTrue(user != null);
             
             tx = session.beginTransaction();
-            user.setPassword("testModificationOfUser");
+            user.setPassword("testChangeOfUser");
             session.save(user);
             tx.commit();
 
             // retrieve the record and check that the password has changed
             user = (User)session.load(User.class, user.getUid());
-            assertTrue(user.getPassword().equals("testModificationOfUser"));
+            assertTrue(user.getPassword().equals("testChangeOfUser"));
             
         } catch (Exception exception) {
             if (tx != null) {
