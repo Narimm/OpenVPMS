@@ -64,6 +64,12 @@ public abstract class AbstractIMObjectReferenceEditor
     private IMObjectSelector selector;
 
     /**
+     * Determines if the selector listener is currently being invoked
+     * to avoid redundant updates.
+     */
+    private boolean inListener;
+
+    /**
      * The context.
      */
     private final Context context;
@@ -105,7 +111,12 @@ public abstract class AbstractIMObjectReferenceEditor
         };
         selector.setListener(new IMObjectSelectorListener() {
             public void selected(IMObject object) {
-                updateProperty(object);
+                inListener = true;
+                try {
+                    setObject(object);
+                } finally {
+                    inListener = false;
+                }
             }
 
             public void create() {
@@ -127,7 +138,9 @@ public abstract class AbstractIMObjectReferenceEditor
      * @param object the object. May  be <code>null</code>
      */
     public void setObject(IMObject object) {
-        selector.setObject(object);
+        if (!inListener) {
+            selector.setObject(object);
+        }
         updateProperty(object);
     }
 
