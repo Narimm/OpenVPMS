@@ -1671,7 +1671,7 @@
                 <!-- mediumslateblue -->
             </property>
             <property name="font">
-                <font size="8pt"/>
+                <font size="9pt"/>
             </property>
             <property name="pressedEnabled" value="true"/>
             <property name="pressedBackground" value="#191970"/>
@@ -1692,7 +1692,7 @@
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="font">
-                <font size="7pt"/>
+                <font size="8pt"/>
             </property>
         </properties>
     </style>
@@ -1701,7 +1701,7 @@
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="font">
-                <font size="6pt"/>
+                <font size="7pt"/>
             </property>
         </properties>
     </style>
