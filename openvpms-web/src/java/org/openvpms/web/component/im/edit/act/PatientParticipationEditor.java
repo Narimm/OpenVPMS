@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -38,7 +37,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PatientParticipationEditor extends AbstractParticipationEditor {
+public class PatientParticipationEditor
+        extends AbstractParticipationEditor<Party> {
 
     /**
      * Construct a new <code>PatientParticipationEditor</code>.
@@ -57,7 +57,7 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
                             + participation.getArchetypeId().getShortName());
         }
         if (participation.getEntity() == null && parent.isNew()) {
-            IMObject patient = context.getContext().getPatient();
+            Party patient = context.getContext().getPatient();
             getEditor().setObject(patient);
         }
     }
@@ -69,16 +69,15 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor createObjectReferenceEditor(
+    protected IMObjectReferenceEditor<Party> createObjectReferenceEditor(
             Property property) {
-        return new AbstractIMObjectReferenceEditor(property, getParent(),
-                                                   getLayoutContext(), true) {
+        return new AbstractIMObjectReferenceEditor<Party>(
+                property, getParent(), getLayoutContext(), true) {
 
             @Override
-            public void setObject(IMObject object) {
+            public void setObject(Party object) {
                 super.setObject(object);
-                Party patient = (Party) object;
-                ContextHelper.setPatient(patient);
+                ContextHelper.setPatient(object);
             }
         };
     }

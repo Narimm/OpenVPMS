@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -40,7 +41,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaskTypeQuery extends AbstractIMObjectQuery<IMObject> {
+public class TaskTypeQuery extends AbstractIMObjectQuery<Entity> {
 
     /**
      * The work list to constraint task types to.
@@ -67,17 +68,17 @@ public class TaskTypeQuery extends AbstractIMObjectQuery<IMObject> {
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
-    public ResultSet<IMObject> query(SortConstraint[] sort) {
+    public ResultSet<Entity> query(SortConstraint[] sort) {
         getComponent();  // ensure the component is rendered
-        ResultSet<IMObject> result;
+        ResultSet<Entity> result;
         if (_workList == null) {
             result = super.query(sort);
         } else {
-            List<IMObject> objects = filterForWorkList();
+            List<Entity> objects = filterForWorkList();
             if (objects == null) {
                 objects = Collections.emptyList();
             }
-            result = new PreloadedResultSet<IMObject>(objects, getMaxResults());
+            result = new PreloadedResultSet<Entity>(objects, getMaxResults());
             if (sort != null) {
                 result.sort(sort);
             }
@@ -102,14 +103,14 @@ public class TaskTypeQuery extends AbstractIMObjectQuery<IMObject> {
      * @return a list of task types associated with the work list that matches
      *         the specified criteria
      */
-    private List<IMObject> filterForWorkList() {
-        List<IMObject> types = getTaskTypes(_workList);
+    private List<Entity> filterForWorkList() {
+        List<Entity> types = getTaskTypes(_workList);
         String name = getName();
         types = IMObjectHelper.findByName(name, types);
-        List<IMObject> result = new ArrayList<IMObject>();
+        List<Entity> result = new ArrayList<Entity>();
         for (IMObject type : types) {
             if (type.isActive()) {
-                result.add(type);
+                result.add((Entity) type);
             }
         }
         return result;
@@ -121,15 +122,15 @@ public class TaskTypeQuery extends AbstractIMObjectQuery<IMObject> {
      * @param workList the work list
      * @return a list of task types associated with <code>workList</code>
      */
-    private List<IMObject> getTaskTypes(Party workList) {
-        List<IMObject> result = new ArrayList<IMObject>();
+    private List<Entity> getTaskTypes(Party workList) {
+        List<Entity> result = new ArrayList<Entity>();
         EntityBean bean = new EntityBean(workList);
         List<IMObject> relationships = bean.getValues("taskTypes");
         for (IMObject object : relationships) {
             EntityRelationship relationship = (EntityRelationship) object;
             IMObject type = IMObjectHelper.getObject(relationship.getTarget());
             if (type != null) {
-                result.add(type);
+                result.add((Entity) type);
             }
         }
         return result;

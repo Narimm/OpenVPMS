@@ -41,7 +41,7 @@ public class SelectUserDialog extends PopupDialog {
     /**
      * The selector.
      */
-    private final IMObjectSelector selector;
+    private final IMObjectSelector<User> selector;
 
 
     /**
@@ -54,9 +54,9 @@ public class SelectUserDialog extends PopupDialog {
 
         String shortName = "security.user";
         String type = DescriptorHelper.getDisplayName(shortName);
-        selector = new IMObjectSelector(type, new String[]{shortName});
-        selector.setListener(new IMObjectSelectorListener() {
-            public void selected(IMObject object) {
+        selector = new IMObjectSelector<User>(type, new String[]{shortName});
+        selector.setListener(new IMObjectSelectorListener<User>() {
+            public void selected(User object) {
                 onSelected(object);
             }
 
@@ -77,7 +77,7 @@ public class SelectUserDialog extends PopupDialog {
      * @return the selected user
      */
     public User getUser() {
-        return (User) selector.getObject();
+        return selector.getObject();
     }
 
     /**

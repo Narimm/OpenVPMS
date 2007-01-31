@@ -19,7 +19,7 @@
 package org.openvpms.web.app.workflow.scheduling;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -38,7 +38,7 @@ import org.openvpms.web.component.im.query.Query;
  * @version $LastChangedDate: 2006-08-15 06:42:15Z $
  */
 public class AppointmentTypeParticipationEditor
-        extends AbstractParticipationEditor {
+        extends AbstractParticipationEditor<Entity> {
 
     /**
      * The schedule, used to constrain appointment types. Nay be
@@ -81,14 +81,15 @@ public class AppointmentTypeParticipationEditor
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor createObjectReferenceEditor(
+    protected IMObjectReferenceEditor<Entity> createObjectReferenceEditor(
             Property property) {
-        return new AbstractIMObjectReferenceEditor(property, getParent(),
-                                                   getLayoutContext()) {
+        return new AbstractIMObjectReferenceEditor<Entity>(property,
+                                                           getParent(),
+                                                           getLayoutContext()) {
 
             @Override
-            protected Query<IMObject> createQuery(String name) {
-                Query<IMObject> query = new AppointmentTypeQuery(_schedule);
+            protected Query<Entity> createQuery(String name) {
+                Query<Entity> query = new AppointmentTypeQuery(_schedule);
                 query.setName(name);
                 return query;
             }

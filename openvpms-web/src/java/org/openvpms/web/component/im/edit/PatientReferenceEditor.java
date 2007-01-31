@@ -34,7 +34,8 @@ import org.openvpms.web.component.im.query.Query;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientReferenceEditor extends AbstractIMObjectReferenceEditor {
+public class PatientReferenceEditor
+        extends AbstractIMObjectReferenceEditor<Party> {
 
     /**
      * Determines if all patients should be allowed.
@@ -77,10 +78,9 @@ public class PatientReferenceEditor extends AbstractIMObjectReferenceEditor {
      * @param object the object. May  be <code>null</code>
      */
     @Override
-    public void setObject(IMObject object) {
+    public void setObject(Party object) {
         super.setObject(object);
-        Party patient = (Party) object;
-        ContextHelper.setPatient(patient);
+        ContextHelper.setPatient(object);
     }
 
     /**
@@ -103,8 +103,8 @@ public class PatientReferenceEditor extends AbstractIMObjectReferenceEditor {
      */
     @Override
     @SuppressWarnings("unchecked")
-    protected Query<IMObject> createQuery(String name) {
-        Query query = super.createQuery(name);
+    protected Query<Party> createQuery(String name) {
+        Query<Party> query = super.createQuery(name);
         if (query instanceof PatientQuery) {
             // constraint patients to the current customer
             ((PatientQuery) query).setShowAllPatients(allPatients);

@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -40,7 +41,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentTypeQuery extends AbstractIMObjectQuery<IMObject> {
+public class AppointmentTypeQuery extends AbstractIMObjectQuery<Entity> {
 
     /**
      * The schedule to constraint appointment types to.
@@ -67,17 +68,17 @@ public class AppointmentTypeQuery extends AbstractIMObjectQuery<IMObject> {
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
-    public ResultSet<IMObject> query(SortConstraint[] sort) {
+    public ResultSet<Entity> query(SortConstraint[] sort) {
         getComponent();  // ensure the component is rendered
-        ResultSet<IMObject> result;
+        ResultSet<Entity> result;
         if (_schedule == null) {
             result = super.query(sort);
         } else {
-            List<IMObject> objects = filterForSchedule();
+            List<Entity> objects = filterForSchedule();
             if (objects == null) {
                 objects = Collections.emptyList();
             }
-            result = new PreloadedResultSet<IMObject>(objects, getMaxResults());
+            result = new PreloadedResultSet<Entity>(objects, getMaxResults());
             if (sort != null) {
                 result.sort(sort);
             }
@@ -102,14 +103,14 @@ public class AppointmentTypeQuery extends AbstractIMObjectQuery<IMObject> {
      * @return a list of appointment types associated with the schedule that
      *         matches the specified criteria
      */
-    private List<IMObject> filterForSchedule() {
-        List<IMObject> types = getAppointmentTypes(_schedule);
+    private List<Entity> filterForSchedule() {
+        List<Entity> types = getAppointmentTypes(_schedule);
         String name = getName();
         types = IMObjectHelper.findByName(name, types);
-        List<IMObject> result = new ArrayList<IMObject>();
+        List<Entity> result = new ArrayList<Entity>();
         for (IMObject type : types) {
             if (type.isActive()) {
-                result.add(type);
+                result.add((Entity) type);
             }
         }
         return result;
@@ -121,19 +122,18 @@ public class AppointmentTypeQuery extends AbstractIMObjectQuery<IMObject> {
      * @param schedule the schedule
      * @return a list of appointment types associated with <code>schedule</code>
      */
-    private List<IMObject> getAppointmentTypes(Party schedule) {
-        List<IMObject> result = new ArrayList<IMObject>();
+    private List<Entity> getAppointmentTypes(Party schedule) {
+        List<Entity> result = new ArrayList<Entity>();
         EntityBean bean = new EntityBean(schedule);
         List<IMObject> relationships = bean.getValues("appointmentTypes");
         for (IMObject object : relationships) {
             EntityRelationship relationship = (EntityRelationship) object;
             IMObject type = IMObjectHelper.getObject(relationship.getTarget());
             if (type != null) {
-                result.add(type);
+                result.add((Entity) type);
             }
         }
         return result;
     }
-
 
 }

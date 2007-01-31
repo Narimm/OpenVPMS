@@ -29,8 +29,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DefaultIMObjectReferenceEditor
-        extends AbstractIMObjectReferenceEditor {
+public class DefaultIMObjectReferenceEditor<T extends IMObject>
+        extends AbstractIMObjectReferenceEditor<T> {
 
     /**
      * Constructs a new <code>DefaultIMObjectReferenceEditor</code>.

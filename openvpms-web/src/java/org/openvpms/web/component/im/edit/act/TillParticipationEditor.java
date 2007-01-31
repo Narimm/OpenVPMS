@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -37,7 +36,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-18 14:13:02 +1000 (Thu, 18 May 2006) $
  */
-public class TillParticipationEditor extends AbstractParticipationEditor {
+public class TillParticipationEditor
+        extends AbstractParticipationEditor<Party> {
 
     /**
      * Construct a new <code>PatientParticipationEditor</code>.
@@ -56,7 +56,7 @@ public class TillParticipationEditor extends AbstractParticipationEditor {
                             + participation.getArchetypeId().getShortName());
         }
         if (participation.isNew() && participation.getEntity() == null) {
-            IMObject till = context.getContext().getTill();
+            Party till = context.getContext().getTill();
             getEditor().setObject(till);
         }
     }
@@ -68,16 +68,15 @@ public class TillParticipationEditor extends AbstractParticipationEditor {
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor createObjectReferenceEditor(
+    protected IMObjectReferenceEditor<Party> createObjectReferenceEditor(
             Property property) {
-        return new AbstractIMObjectReferenceEditor(property, getParent(),
-                                                   getLayoutContext()) {
+        return new AbstractIMObjectReferenceEditor<Party>(
+                property, getParent(), getLayoutContext()) {
 
             @Override
-            public void setObject(IMObject object) {
+            public void setObject(Party object) {
                 super.setObject(object);
-                Party till = (Party) object;
-                GlobalContext.getInstance().setTill(till);
+                GlobalContext.getInstance().setTill(object);
             }
         };
     }

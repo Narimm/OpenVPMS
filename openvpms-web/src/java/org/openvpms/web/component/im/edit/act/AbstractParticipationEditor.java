@@ -40,13 +40,13 @@ import org.openvpms.web.component.im.view.ComponentState;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public abstract class AbstractParticipationEditor
+public abstract class AbstractParticipationEditor<T extends Entity>
         extends AbstractIMObjectEditor {
 
     /**
      * The entity editor.
      */
-    private IMObjectReferenceEditor _editor;
+    private IMObjectReferenceEditor<T> editor;
 
 
     /**
@@ -63,8 +63,8 @@ public abstract class AbstractParticipationEditor
             throw new IllegalArgumentException("Argument 'parent' is null");
         }
         Property entity = getProperty("entity");
-        _editor = createObjectReferenceEditor(entity);
-        getEditors().add(_editor, entity);
+        editor = createObjectReferenceEditor(entity);
+        getEditors().add(editor, entity);
         Property act = getProperty("act");
         if (act.getValue() == null) {
             act.setValue(new IMObjectReference(parent));
@@ -85,8 +85,8 @@ public abstract class AbstractParticipationEditor
      *
      * @return the participation entity editor
      */
-    public IMObjectReferenceEditor getEditor() {
-        return _editor;
+    public IMObjectReferenceEditor<T> getEditor() {
+        return editor;
     }
 
     /**
@@ -95,7 +95,7 @@ public abstract class AbstractParticipationEditor
      * @return the participation entity property
      */
     public Property getProperty() {
-        return _editor.getProperty();
+        return editor.getProperty();
     }
 
     /**
@@ -112,8 +112,9 @@ public abstract class AbstractParticipationEditor
      *
      * @return the participation entity. May be <code>null</code>
      */
-    public Entity getEntity() {
-        return (Entity) IMObjectHelper.getObject(getEntityRef());
+    @SuppressWarnings("unchecked")
+    public T getEntity() {
+        return (T) IMObjectHelper.getObject(getEntityRef());
     }
 
     /**
@@ -130,7 +131,7 @@ public abstract class AbstractParticipationEditor
      * @param property the reference property
      * @return a new object reference editor
      */
-    protected IMObjectReferenceEditor createObjectReferenceEditor(
+    protected IMObjectReferenceEditor<T> createObjectReferenceEditor(
             Property property) {
         return IMObjectReferenceEditorFactory.create(property, getObject(),
                                                      getLayoutContext());
@@ -147,8 +148,8 @@ public abstract class AbstractParticipationEditor
             public ComponentState apply(IMObject object,
                                         PropertySet properties, IMObject parent,
                                         LayoutContext context) {
-                return new ComponentState(_editor.getComponent(),
-                                          _editor.getFocusGroup());
+                return new ComponentState(editor.getComponent(),
+                                          editor.getFocusGroup());
             }
 
         };

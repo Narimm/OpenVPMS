@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.customer;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
@@ -57,8 +58,9 @@ public class PatientOwnerRelationshipEditor extends EntityRelationshipEditor {
      * @return a new reference editor
      */
     @Override
-    protected IMObjectReferenceEditor createReferenceEditor(Property property,
-                                                            LayoutContext context) {
+    @SuppressWarnings("unchecked")
+    protected IMObjectReferenceEditor<Entity> createReferenceEditor(
+            Property property, LayoutContext context) {
         IMObjectReferenceEditor editor
                 = super.createReferenceEditor(property, context);
         if (editor instanceof PatientReferenceEditor) {

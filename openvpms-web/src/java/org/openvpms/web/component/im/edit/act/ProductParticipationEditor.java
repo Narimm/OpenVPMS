@@ -22,19 +22,13 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.query.AndConstraint;
-import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
-import org.openvpms.component.system.common.query.ArchetypeProperty;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.OrConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.ProductQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
@@ -88,14 +82,14 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor createObjectReferenceEditor(
+    protected IMObjectReferenceEditor<Product> createObjectReferenceEditor(
             Property property) {
-        return new AbstractIMObjectReferenceEditor(property, getParent(),
-                                                   getLayoutContext()) {
+        return new AbstractIMObjectReferenceEditor<Product>(
+                property, getParent(), getLayoutContext()) {
 
             @Override
-            protected Query<IMObject> createQuery(String name) {
-                Query<IMObject> query = super.createQuery(name);
+            protected Query<Product> createQuery(String name) {
+                Query<Product> query = super.createQuery(name);
                 return getQuery(query);
             }
         };
@@ -106,18 +100,16 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
      *
      * @return a new query
      */
-    protected Query<IMObject> getQuery(Query<IMObject> query) {
-        if (_patient != null) {
+    protected Query<Product> getQuery(Query<Product> query) {
+        if (query instanceof ProductQuery && _patient != null) {
             IMObjectReference ref = (IMObjectReference) _patient.getValue();
             if (ref != null) {
                 IMObject patient = IMObjectHelper.getObject(ref);
                 if (patient != null) {
-                    String species = (String) IMObjectHelper.getValue(patient,
-                                                                      "species");
+                    String species = (String) IMObjectHelper.getValue(
+                            patient, "species");
                     if (species != null) {
-                        IConstraint constraint = getSpeciesConstraint(species);
-                        query.setConstraints(constraint);
-                        query.setDistinct(true);
+                        ((ProductQuery) query).setSpecies(species);
                     }
                 }
             }
@@ -125,40 +117,4 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
         return query;
     }
 
-    /**
-     * Return a query contraint that restricts products to those that are
-     * associated with a particular species, or have no species classification.
-     *
-     * @param species the species to restrict products to
-     * @return a new constraint
-     */
-    private IConstraint getSpeciesConstraint(String species) {
-        IConstraint noClassification = new ArchetypeNodeConstraint(
-                ArchetypeProperty.ConceptName, RelationalOp.IsNULL);
-
-        IConstraint isActive = new OrConstraint()
-                .add(new NodeConstraint("active", RelationalOp.EQ, true))
-                .add(new NodeConstraint("active", RelationalOp.IsNULL));
-
-        IConstraint hasSpeciesClassification = new ArchetypeNodeConstraint(
-                ArchetypeProperty.ConceptName, RelationalOp.EQ, "species");
-
-        IConstraint isSpecies = new NodeConstraint("name", RelationalOp.EQ,
-                                                   species);
-        IConstraint isTargetSpecies = new AndConstraint()
-                .add(hasSpeciesClassification).add(isSpecies);
-
-        IConstraint hasNoSpeciesClassification = new ArchetypeNodeConstraint(
-                ArchetypeProperty.ConceptName, RelationalOp.NE, "species");
-
-        CollectionNodeConstraint constraint
-                = new CollectionNodeConstraint("species");
-        constraint.setJoinType(CollectionNodeConstraint.JoinType.LeftOuterJoin);
-        constraint.add(isActive);
-        constraint.add(new OrConstraint()
-                .add(noClassification)
-                .add(isTargetSpecies)
-                .add(hasNoSpeciesClassification));
-        return constraint;
-    }
 }

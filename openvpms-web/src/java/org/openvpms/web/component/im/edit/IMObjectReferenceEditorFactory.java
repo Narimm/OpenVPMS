@@ -61,10 +61,10 @@ public class IMObjectReferenceEditorFactory {
      * @param context  the layout context
      * @return an editor for <code>property</code>
      */
-    public static IMObjectReferenceEditor create(Property property,
-                                                 IMObject parent,
-                                                 LayoutContext context) {
-        IMObjectReferenceEditor result = null;
+    @SuppressWarnings("unchecked")
+    public static <T extends IMObject> IMObjectReferenceEditor<T>
+            create(Property property, IMObject parent, LayoutContext context) {
+        IMObjectReferenceEditor<T> result = null;
 
         String[] shortNames = DescriptorHelper.getShortNames(
                 property.getDescriptor());
@@ -72,15 +72,15 @@ public class IMObjectReferenceEditorFactory {
 
         if (handler != null) {
             try {
-                result = (IMObjectReferenceEditor) handler.create(
+                result = (IMObjectReferenceEditor<T>) handler.create(
                         new Object[]{property, parent, context});
             } catch (Throwable exception) {
                 log.error(exception, exception);
             }
         }
         if (result == null) {
-            result = new DefaultIMObjectReferenceEditor(property, parent,
-                                                        context);
+            result = new DefaultIMObjectReferenceEditor<T>(property, parent,
+                                                           context);
         }
         return result;
     }

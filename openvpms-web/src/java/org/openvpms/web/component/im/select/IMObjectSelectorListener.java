@@ -27,14 +27,15 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectSelectorListener extends java.util.EventListener {
+public interface IMObjectSelectorListener<T extends IMObject>
+        extends java.util.EventListener {
 
     /**
      * Invoked when the selected object changes.
      *
      * @param object the object. May be <code>null</code>
      */
-    void selected(IMObject object);
+    void selected(T object);
 
     /**
      * Invoked to create a new object.

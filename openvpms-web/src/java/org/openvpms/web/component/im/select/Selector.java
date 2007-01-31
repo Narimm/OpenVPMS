@@ -46,7 +46,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class Selector {
+public class Selector<T extends IMObject> {
 
     /**
      * Determines the layout of the 'select' button.
@@ -196,7 +196,7 @@ public class Selector {
      *
      * @param object the object. May be <code>null</code>
      */
-    public void setObject(IMObject object) {
+    public void setObject(T object) {
         String text = null;
         String deactivated = null;
         if (object != null) {

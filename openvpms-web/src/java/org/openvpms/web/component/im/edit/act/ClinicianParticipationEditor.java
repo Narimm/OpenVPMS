@@ -25,7 +25,6 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -49,7 +48,8 @@ import org.openvpms.web.component.im.query.Query;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-24 01:44:28Z $
  */
-public class ClinicianParticipationEditor extends AbstractParticipationEditor {
+public class ClinicianParticipationEditor
+        extends AbstractParticipationEditor<User> {
 
     /**
      * Construct a new <code>PatientParticipationEditor</code>.
@@ -68,7 +68,7 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
                             + participation.getArchetypeId().getShortName());
         }
         if (participation.getEntity() == null && parent.isNew()) {
-            IMObject clinician = context.getContext().getClinician();
+            User clinician = context.getContext().getClinician();
             getEditor().setObject(clinician);
         }
     }
@@ -80,22 +80,21 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
     * @return a new object reference editor
     */
     @Override
-    protected IMObjectReferenceEditor createObjectReferenceEditor(
+    protected IMObjectReferenceEditor<User> createObjectReferenceEditor(
             Property property) {
-        return new AbstractIMObjectReferenceEditor(property, getParent(),
-                                                   getLayoutContext()) {
+        return new AbstractIMObjectReferenceEditor<User>(
+                property, getParent(), getLayoutContext()) {
 
             @Override
-            protected Query<IMObject> createQuery(String name) {
-                Query<IMObject> query = super.createQuery(name);
+            protected Query<User> createQuery(String name) {
+                Query<User> query = super.createQuery(name);
                 addConstraints(query);
                 return query;
             }
 
-            public void setObject(IMObject object) {
+            public void setObject(User object) {
                 super.setObject(object);
-                User user = (User) object;
-                GlobalContext.getInstance().setClinician(user);
+                GlobalContext.getInstance().setClinician(object);
             }
         };
     }
