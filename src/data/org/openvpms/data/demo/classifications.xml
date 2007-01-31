@@ -54,12 +54,12 @@
 	<data archetype="classification.productIncomeType" name="Medication" />
 	<data archetype="classification.productIncomeType" name="Merchandise" />
 	<data archetype="classification.productIncomeType" name="Other" />
-	<data archetype="classification.species" name="Canine" species="Canine" />
-	<data archetype="classification.species" name="Feline" species="Feline" />
-	<data archetype="classification.species" name="Equine" species="Equine" />
-	<data archetype="classification.species" name="Bovine" species="Bovine" />
-	<data archetype="classification.species" name="Porcine" species="Porcine" />
-	<data archetype="classification.species" name="Avian" species="Avian" />
+    <data archetype="classification.species" name="CANINE" species="CANINE" />
+    <data archetype="classification.species" name="FELINE" species="FELINE" />
+    <data archetype="classification.species" name="EQUINE" species="EQUINE" />
+    <data archetype="classification.species" name="BOVINE" species="BOVINE" />
+    <data archetype="classification.species" name="PORCINE" species="PORCINE" />
+    <data archetype="classification.species" name="AVIAN" species="AVIAN" />
 	<data archetype="classification.supplierType" name="Wholesaler" />
 	<data archetype="classification.supplierType" name="Manufacturer" />
 	<data archetype="classification.supplierType" name="Retail" />

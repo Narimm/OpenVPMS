@@ -20,9 +20,11 @@ package org.openvpms.archetype.test;
 
 import junit.framework.Assert;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -30,6 +32,10 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.QueryIterator;
 
 
 /**
@@ -108,7 +114,7 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Creates and saves a new patient.
+     * Creates and saves a new patient, with species='Canine'.
      *
      * @return a new patient
      */
@@ -117,7 +123,7 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Creates a new patient.
+     * Creates a new patient, with species='Canine'.
      *
      * @param save if <code>true</code> make the patient persistent
      * @return a new patient
@@ -188,6 +194,72 @@ public class TestHelper extends Assert {
             bean.save();
         }
         return user;
+    }
+
+    /**
+     * Creates a new <em>product.medication</em> with no species classification.
+     * The product name is prefixed with <em>XProduct-</em>.
+     *
+     * @return a new product
+     */
+    public static Product createProduct() {
+        return createProduct(null);
+    }
+
+    /**
+     * Creates a new <em>product.medicication</em> with an optional species
+     * classification. The product name is prefixed with <em>XProduct-</em>.
+     *
+     * @param species the species classification. May be <code>null</code>
+     * @return a new product
+     */
+    public static Product createProduct(String species) {
+        return createProduct("product.medication", species);
+    }
+
+    /**
+     * Creates a new product with an optional species classification.
+     * The product name is prefixed with <em>XProduct-</em>.
+     *
+     * @param species the species classification name. May be <code>null</code>
+     * @return a new product
+     */
+    public static Product createProduct(String shortName, String species) {
+        Product product = (Product) create(shortName);
+        assertNotNull(product);
+        EntityBean bean = new EntityBean(product);
+        String name = "XProduct-" + ((species != null) ? species : "")
+                + System.currentTimeMillis();
+        bean.setValue("name", name);
+        if (species != null) {
+            Classification classification = getClassification(
+                    "classification.species", species);
+            bean.addValue("species", classification);
+        }
+        bean.save();
+        return product;
+    }
+
+    /**
+     * Gets a classification, creating it if it doesn't exist.
+     *
+     * @param shortName the clasification short name
+     * @param name      the classification name
+     * @return the classification
+     */
+    private static Classification getClassification(String shortName,
+                                                    String name) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
+        query.add(new NodeConstraint("name", name));
+        query.setMaxResults(1);
+        QueryIterator<Classification> iter
+                = new IMObjectQueryIterator<Classification>(query);
+        if (iter.hasNext()) {
+            return iter.next();
+        }
+        Classification classification = (Classification) create(shortName);
+        classification.setName(name);
+        return classification;
     }
 
 }
