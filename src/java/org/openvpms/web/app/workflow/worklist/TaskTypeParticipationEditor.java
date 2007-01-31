@@ -19,6 +19,7 @@
 package org.openvpms.web.app.workflow.worklist;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -43,13 +44,14 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-08-15 06:42:15Z $
  */
-public class TaskTypeParticipationEditor extends AbstractParticipationEditor {
+public class TaskTypeParticipationEditor
+        extends AbstractParticipationEditor<Entity> {
 
     /**
      * The work list, used to constrain task types types. Nay be
      * <code>null</code>.
      */
-    private Party _workList;
+    private Party workList;
 
 
     /**
@@ -77,9 +79,9 @@ public class TaskTypeParticipationEditor extends AbstractParticipationEditor {
      * @param workList the work list. May be <code>null</code>
      */
     public void setWorkList(Party workList) {
-        _workList = workList;
-        if (_workList != null && getEntityRef() == null) {
-            EntityBean workListBean = new EntityBean(_workList);
+        this.workList = workList;
+        if (workList != null && getEntityRef() == null) {
+            EntityBean workListBean = new EntityBean(this.workList);
             List<IMObject> relationships = workListBean.getValues("taskTypes");
             for (IMObject object : relationships) {
                 IMObjectBean bean = new IMObjectBean(object);
@@ -89,7 +91,7 @@ public class TaskTypeParticipationEditor extends AbstractParticipationEditor {
                     IMObject taskType = IMObjectHelper.getObject(
                             relationship.getTarget());
                     if (taskType != null) {
-                        getEditor().setObject(taskType);
+                        getEditor().setObject((Entity) taskType);
                         break;
                     }
                 }
@@ -104,14 +106,14 @@ public class TaskTypeParticipationEditor extends AbstractParticipationEditor {
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor createObjectReferenceEditor(
+    protected IMObjectReferenceEditor<Entity> createObjectReferenceEditor(
             Property property) {
-        return new AbstractIMObjectReferenceEditor(property, getParent(),
-                                                   getLayoutContext()) {
+        return new AbstractIMObjectReferenceEditor<Entity>(
+                property, getParent(), getLayoutContext()) {
 
             @Override
-            protected Query<IMObject> createQuery(String name) {
-                Query<IMObject> query = new TaskTypeQuery(_workList);
+            protected Query<Entity> createQuery(String name) {
+                Query<Entity> query = new TaskTypeQuery(workList);
                 query.setName(name);
                 return query;
 

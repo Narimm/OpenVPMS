@@ -31,14 +31,15 @@ import org.openvpms.web.component.edit.PropertyEditor;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-10-18 06:59:36Z $
  */
-public interface IMObjectReferenceEditor extends PropertyEditor {
+public interface IMObjectReferenceEditor<T extends IMObject>
+        extends PropertyEditor {
 
     /**
      * Sets the value of the reference to the supplied object.
      *
      * @param object the object. May  be <code>null</code>
      */
-    void setObject(IMObject object);
+    void setObject(T object);
 
     /**
      * Returns the component.

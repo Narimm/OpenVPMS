@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -52,7 +51,7 @@ public class MessageQuery extends DefaultActQuery<Act> {
     /**
      * The clinician selector.
      */
-    private final IMObjectSelector clinician;
+    private final IMObjectSelector<Entity> clinician;
 
 
     /**
@@ -63,11 +62,11 @@ public class MessageQuery extends DefaultActQuery<Act> {
               getLookups(), null);
         setStatus("PENDING");
 
-        clinician = new IMObjectSelector(Messages.get("messaging.user"),
-                                         new String[]{"security.user"});
-        clinician.setListener(new IMObjectSelectorListener() {
-            public void selected(IMObject object) {
-                setEntity((Entity) object);
+        clinician = new IMObjectSelector<Entity>(Messages.get("messaging.user"),
+                                                 new String[]{"security.user"});
+        clinician.setListener(new IMObjectSelectorListener<Entity>() {
+            public void selected(Entity object) {
+                setEntity(object);
                 onQuery();
             }
 

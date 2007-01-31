@@ -51,12 +51,12 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectSelector extends Selector {
+public class IMObjectSelector<T extends IMObject> extends Selector<T> {
 
     /**
      * The selected object.
      */
-    private IMObject object;
+    private T object;
 
     /**
      * The archetype short names to query on.
@@ -81,7 +81,7 @@ public class IMObjectSelector extends Selector {
     /**
      * The listener. May be <code>null</code>
      */
-    private IMObjectSelectorListener listener;
+    private IMObjectSelectorListener<T> listener;
 
     /**
      * The previous selector text, to avoid spurious updates.
@@ -168,7 +168,7 @@ public class IMObjectSelector extends Selector {
      * @param object the object. May be <code>null</code>
      */
     @Override
-    public void setObject(IMObject object) {
+    public void setObject(T object) {
         this.object = object;
         TextField text = getText();
         text.getDocument().removeDocumentListener(textListener);
@@ -182,7 +182,7 @@ public class IMObjectSelector extends Selector {
      *
      * @return the current object. May be <code>null</code>
      */
-    public IMObject getObject() {
+    public T getObject() {
         return object;
     }
 
@@ -191,7 +191,7 @@ public class IMObjectSelector extends Selector {
      *
      * @param listener the listener. May be <code>null</code>
      */
-    public void setListener(IMObjectSelectorListener listener) {
+    public void setListener(IMObjectSelectorListener<T> listener) {
         this.listener = listener;
     }
 
@@ -257,14 +257,14 @@ public class IMObjectSelector extends Selector {
      * @param query    the query
      * @param runQuery if <code>true</code> run the query
      */
-    protected void onSelect(Query<IMObject> query, boolean runQuery) {
+    protected void onSelect(Query<T> query, boolean runQuery) {
         if (runQuery) {
             query.setAuto(runQuery);
         }
         try {
-            final Browser<IMObject> browser
+            final Browser<T> browser
                     = IMObjectTableBrowserFactory.create(query);
-            final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
+            final BrowserDialog<T> popup = new BrowserDialog<T>(
                     type, browser, allowCreate);
 
             popup.addWindowPaneListener(new WindowPaneListener() {
@@ -273,7 +273,7 @@ public class IMObjectSelector extends Selector {
                     if (popup.createNew()) {
                         onCreate();
                     } else {
-                        IMObject object = popup.getSelected();
+                        T object = popup.getSelected();
                         if (object != null) {
                             onSelected(object);
                         }
@@ -294,10 +294,9 @@ public class IMObjectSelector extends Selector {
      * @param browser the browser
      * @return a new dialog for the browser
      */
-    protected BrowserDialog<IMObject> createBrowserDialog(
-            Browser<IMObject> browser) {
+    protected BrowserDialog<T> createBrowserDialog(Browser<T> browser) {
         String title = Messages.get("imobject.select.title", type);
-        return new BrowserDialog<IMObject>(title, browser);
+        return new BrowserDialog<T>(title, browser);
     }
 
     /**
@@ -305,7 +304,7 @@ public class IMObjectSelector extends Selector {
      *
      * @param object the selected object
      */
-    protected void onSelected(IMObject object) {
+    protected void onSelected(T object) {
         setObject(object);
         if (listener != null) {
             listener.selected(object);
@@ -326,7 +325,7 @@ public class IMObjectSelector extends Selector {
      *
      * @return a new query
      */
-    protected Query<IMObject> createQuery() {
+    protected Query<T> createQuery() {
         String name = getText().getText();
         return createQuery(name);
     }
@@ -340,8 +339,8 @@ public class IMObjectSelector extends Selector {
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    protected Query<IMObject> createQuery(String name) {
-        Query<IMObject> query = QueryFactory.create(
+    protected Query<T> createQuery(String name) {
+        Query<T> query = QueryFactory.create(
                 shortNames, GlobalContext.getInstance());
         query.setName(name);
         return query;
@@ -379,17 +378,17 @@ public class IMObjectSelector extends Selector {
                 notifySelected();
             } else {
                 try {
-                    Query<IMObject> query = createQuery(name);
-                    ResultSet<IMObject> set = query.query(null);
+                    Query<T> query = createQuery(name);
+                    ResultSet<T> set = query.query(null);
                     if (set != null && set.hasNext()) {
-                        IPage<IMObject> page = set.next();
-                        List<IMObject> rows = page.getResults();
+                        IPage<T> page = set.next();
+                        List<T> rows = page.getResults();
                         int size = rows.size();
                         if (size == 0) {
                             setObject(null);
                             notifySelected();
                         } else if (size == 1) {
-                            IMObject object = rows.get(0);
+                            T object = rows.get(0);
                             setObject(object);
                             notifySelected();
                         } else {

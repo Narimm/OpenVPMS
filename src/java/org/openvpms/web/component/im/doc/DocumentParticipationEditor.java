@@ -60,7 +60,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     /**
      * The upload selector.
      */
-    private Selector selector;
+    private Selector<DocumentAct> selector;
 
     /**
      * The document act.
@@ -89,7 +89,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
             entity.setValue(parent.getObjectReference());
         }
         act = getDocumentAct();
-        selector = new Selector();
+        selector = new Selector<DocumentAct>();
         selector.getSelect().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onSelect();

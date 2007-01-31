@@ -61,39 +61,39 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     /**
      * The archetype reference model name, used to query objects.
      */
-    private final String _refModelName;
+    private final String refModelName;
 
     /**
      * The archetype entity name, used to query objects. May be
      * <code>null</code>.
      */
-    private final String _entityName;
+    private final String entityName;
 
     /**
      * The archetype concept name, used to query objects. May be
      * <code>null</code>.
      */
-    private final String _conceptName;
+    private final String conceptName;
 
     /**
      * The current object. May be <code>null</code>.
      */
-    private T _object;
+    private T object;
 
     /**
      * The selector.
      */
-    private Selector _selector;
+    private Selector<T> selector;
 
     /**
      * Localised type display name (e.g, Customer, Product).
      */
-    private final String _type;
+    private final String type;
 
     /**
      * The root component.
      */
-    private SplitPane _root;
+    private SplitPane root;
 
 
     /**
@@ -109,15 +109,15 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
                                  String refModelName, String entityName,
                                  String conceptName) {
         super(subsystemId, workspaceId);
-        _refModelName = refModelName;
-        _entityName = entityName;
-        _conceptName = conceptName;
-        _selector = new Selector();
+        this.refModelName = refModelName;
+        this.entityName = entityName;
+        this.conceptName = conceptName;
+        selector = new Selector<T>();
 
         String id = getSubsystemId() + "." + getWorkspaceId();
-        _type = Messages.get(id + ".type");
+        type = Messages.get(id + ".type");
 
-        _selector.getSelect().addActionListener(new ActionListener() {
+        selector.getSelect().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 onSelect();
             }
@@ -136,7 +136,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
         IArchetypeService service = ServiceHelper.getArchetypeService();
         try {
             List<String> shortNames = service.getArchetypeShortNames(
-                    _refModelName, _entityName, _conceptName, true);
+                    refModelName, entityName, conceptName, true);
             result = shortNames.contains(shortName);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
@@ -150,8 +150,8 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      * @param object the object. May be <code>null</code>
      */
     public void setObject(T object) {
-        _object = object;
-        _selector.setObject(object);
+        this.object = object;
+        selector.setObject(object);
     }
 
     /**
@@ -160,7 +160,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      * @return the current object. May be <code>null</code>
      */
     public T getObject() {
-        return _object;
+        return object;
     }
 
     /**
@@ -170,16 +170,16 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      */
     @Override
     protected Component doLayout() {
-        _root = createRootComponent();
+        root = createRootComponent();
         Component heading = super.doLayout();
-        Component selector = _selector.getComponent();
+        Component select = selector.getComponent();
         Row wrapper = RowFactory.create("AbstractViewWorkspace.Selector",
-                                        selector);
+                                        select);
 
         Column top = ColumnFactory.create(heading, wrapper);
-        _root.add(top);
-        doLayout(_root);
-        return _root;
+        root.add(top);
+        doLayout(root);
+        return root;
     }
 
     /**
@@ -188,10 +188,10 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      * @return the root split pane
      */
     protected SplitPane getRootComponent() {
-        if (_root == null) {
-            _root = createRootComponent();
+        if (root == null) {
+            root = createRootComponent();
         }
-        return _root;
+        return root;
     }
 
     /**
@@ -217,7 +217,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      * @return the archetype reference model name
      */
     protected String getRefModelName() {
-        return _refModelName;
+        return refModelName;
     }
 
     /**
@@ -226,14 +226,14 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      * @return the archetype entity name
      */
     protected String getEntityName() {
-        return _entityName;
+        return entityName;
     }
 
     /**
      * Returns the archetype concept name.
      */
     protected String getConceptName() {
-        return _conceptName;
+        return conceptName;
     }
 
     /**
@@ -242,7 +242,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      * @return a localised type display name
      */
     protected String getType() {
-        return _type;
+        return type;
     }
 
     /**
@@ -251,7 +251,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      * @return the selector
      */
     protected Selector getSelector() {
-        return _selector;
+        return selector;
     }
 
     /**
@@ -297,9 +297,9 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     protected void onSelect() {
         try {
             final Browser<T> browser = createBrowser(
-                    _refModelName, _entityName, _conceptName);
+                    refModelName, entityName, conceptName);
 
-            String title = Messages.get("imobject.select.title", _type);
+            String title = Messages.get("imobject.select.title", type);
             final BrowserDialog<T> popup = new BrowserDialog<T>(
                     title, browser);
 

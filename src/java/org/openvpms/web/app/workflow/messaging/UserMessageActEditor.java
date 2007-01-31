@@ -107,8 +107,8 @@ public class UserMessageActEditor extends ActEditor {
      */
     private void onCustomerChanged() {
         try {
-            Party customer = (Party) getCustomerEditor().getEntity();
-            Party patient = (Party) getPatientEditor().getEntity();
+            Party customer = getCustomerEditor().getEntity();
+            Party patient = getPatientEditor().getEntity();
             PatientRules rules = new PatientRules();
             if (customer != null && patient != null) {
                 if (!rules.isOwner(customer, patient)) {

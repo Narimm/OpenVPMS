@@ -50,8 +50,8 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractIMObjectReferenceEditor
-        extends AbstractPropertyEditor implements IMObjectReferenceEditor {
+public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
+        extends AbstractPropertyEditor implements IMObjectReferenceEditor<T> {
 
     /**
      * The parent object. May be <code>null</code>
@@ -61,7 +61,7 @@ public abstract class AbstractIMObjectReferenceEditor
     /**
      * The selector.
      */
-    private IMObjectSelector selector;
+    private IMObjectSelector<T> selector;
 
     /**
      * Determines if the selector listener is currently being invoked
@@ -96,6 +96,7 @@ public abstract class AbstractIMObjectReferenceEditor
      * @param context     the layout context
      * @param allowCreate determines if objects may be created
      */
+    @SuppressWarnings("unchecked")
     public AbstractIMObjectReferenceEditor(Property property,
                                            IMObject parent,
                                            LayoutContext context,
@@ -105,12 +106,12 @@ public abstract class AbstractIMObjectReferenceEditor
         NodeDescriptor descriptor = property.getDescriptor();
         selector = new IMObjectSelector(descriptor, allowCreate) {
             @Override
-            protected Query<IMObject> createQuery(String name) {
+            protected Query<T> createQuery(String name) {
                 return AbstractIMObjectReferenceEditor.this.createQuery(name);
             }
         };
-        selector.setListener(new IMObjectSelectorListener() {
-            public void selected(IMObject object) {
+        selector.setListener(new IMObjectSelectorListener<T>() {
+            public void selected(T object) {
                 inListener = true;
                 try {
                     setObject(object);
@@ -125,8 +126,9 @@ public abstract class AbstractIMObjectReferenceEditor
         });
         IMObjectReference reference = (IMObjectReference) property.getValue();
         if (reference != null) {
-            selector.setObject(IMObjectHelper.getObject(reference, descriptor,
-                                                        context.getContext()));
+            T object = (T) IMObjectHelper.getObject(reference, descriptor,
+                                                    context.getContext());
+            selector.setObject(object);
         }
 
         this.context = context.getContext();
@@ -137,7 +139,7 @@ public abstract class AbstractIMObjectReferenceEditor
      *
      * @param object the object. May  be <code>null</code>
      */
-    public void setObject(IMObject object) {
+    public void setObject(T object) {
         if (!inListener) {
             selector.setObject(object);
         }
@@ -223,7 +225,7 @@ public abstract class AbstractIMObjectReferenceEditor
      *
      * @param object the selected object
      */
-    protected void onSelected(IMObject object) {
+    protected void onSelected(T object) {
         setObject(object);
     }
 
@@ -273,9 +275,10 @@ public abstract class AbstractIMObjectReferenceEditor
      *
      * @param editor the editor
      */
+    @SuppressWarnings("unchecked")
     protected void onEditCompleted(IMObjectEditor editor) {
         if (!editor.isCancelled() && !editor.isDeleted()) {
-            setObject(editor.getObject());
+            setObject((T) editor.getObject());
         }
     }
 
@@ -288,9 +291,9 @@ public abstract class AbstractIMObjectReferenceEditor
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    protected Query<IMObject> createQuery(String name) {
+    protected Query<T> createQuery(String name) {
         String[] shortNames = getDescriptor().getArchetypeRange();
-        Query<IMObject> query = QueryFactory.create(shortNames, context);
+        Query<T> query = QueryFactory.create(shortNames, context);
         query.setName(name);
         return query;
     }

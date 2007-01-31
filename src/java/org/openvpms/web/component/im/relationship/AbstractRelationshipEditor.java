@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.relationship;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
@@ -56,12 +57,12 @@ public abstract class AbstractRelationshipEditor
     /**
      * Editor for the source of the relationship.
      */
-    private Entity sourceEditor;
+    private EntityEditor sourceEditor;
 
     /**
      * Editor for the target of the relationship.
      */
-    private Entity targetEditor;
+    private EntityEditor targetEditor;
 
 
     /**
@@ -106,14 +107,15 @@ public abstract class AbstractRelationshipEditor
             srcReadOnly = false;
         }
 
-        sourceEditor = new Entity(sourceProp, srcReadOnly, layoutContext);
+        sourceEditor = new EntityEditor(sourceProp, srcReadOnly, layoutContext);
 
         boolean targetReadOnly = true;
         if (target == null || !target.equals(edited) || target.equals(source)) {
             targetReadOnly = false;
         }
 
-        targetEditor = new Entity(targetProp, targetReadOnly, layoutContext);
+        targetEditor = new EntityEditor(targetProp, targetReadOnly,
+                                        layoutContext);
     }
 
     /**
@@ -151,10 +153,11 @@ public abstract class AbstractRelationshipEditor
      * @param context  the layout context
      * @return a new reference editor
      */
-    protected IMObjectReferenceEditor createReferenceEditor(
+    protected IMObjectReferenceEditor<Entity> createReferenceEditor(
             Property property, LayoutContext context) {
-        IMObjectReferenceEditor editor = IMObjectReferenceEditorFactory.create(
-                property, getObject(), context);
+        IMObjectReferenceEditor<Entity> editor
+                = IMObjectReferenceEditorFactory.create(property, getObject(),
+                                                        context);
         editor.setAllowCreate(true);
         return editor;
     }
@@ -209,7 +212,7 @@ public abstract class AbstractRelationshipEditor
     /**
      * Editor for a source/target entity in a relationship.
      */
-    private class Entity extends AbstractPropertyEditor {
+    private class EntityEditor extends AbstractPropertyEditor {
 
         /**
          * The viewer.
@@ -219,18 +222,18 @@ public abstract class AbstractRelationshipEditor
         /**
          * The editor.
          */
-        private IMObjectReferenceEditor editor;
+        private IMObjectReferenceEditor<Entity> editor;
 
 
         /**
-         * Constructs a new <code>Entity</code>.
+         * Constructs a new <code>EntityEditor</code>.
          *
          * @param property the reference property
          * @param readOnly if <code>true<code> don't render the select button
          * @param context  the layout context
          */
-        public Entity(Property property, boolean readOnly,
-                      LayoutContext context) {
+        public EntityEditor(Property property, boolean readOnly,
+                            LayoutContext context) {
             super(property);
             if (readOnly) {
                 IMObjectReference ref = (IMObjectReference) property.getValue();
@@ -245,7 +248,7 @@ public abstract class AbstractRelationshipEditor
          *
          * @param object the object. May  be <code>null</code>
          */
-        public void setObject(IMObject object) {
+        public void setObject(Entity object) {
             if (editor != null) {
                 editor.setObject(object);
             }

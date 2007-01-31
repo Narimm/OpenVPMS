@@ -30,6 +30,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
@@ -65,7 +66,7 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
     /**
      * The clinician selector.
      */
-    private IMObjectSelector clinician;
+    private IMObjectSelector<User> clinician;
 
     /**
      * Indicates no valid clinician selected.
@@ -87,10 +88,10 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
                          String participation, String[] shortNames,
                          String[] statuses) {
         super(entity, participant, participation, shortNames, statuses);
-        clinician = new IMObjectSelector(Messages.get("label.clinician"),
-                                         new String[]{"security.user"});
-        clinician.setListener(new IMObjectSelectorListener() {
-            public void selected(IMObject object) {
+        clinician = new IMObjectSelector<User>(Messages.get("label.clinician"),
+                                               new String[]{"security.user"});
+        clinician.setListener(new IMObjectSelectorListener<User>() {
+            public void selected(User object) {
                 onQuery();
             }
 

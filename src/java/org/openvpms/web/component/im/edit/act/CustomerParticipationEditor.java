@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -39,7 +38,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-07-03 00:50:52Z $
  */
-public class CustomerParticipationEditor extends AbstractParticipationEditor {
+public class CustomerParticipationEditor
+        extends AbstractParticipationEditor<Party> {
 
     /**
      * Construct a new <code>CustomerParticipationEditor</code>.
@@ -58,7 +58,7 @@ public class CustomerParticipationEditor extends AbstractParticipationEditor {
                             + participation.getArchetypeId().getShortName());
         }
         if (participation.getEntity() == null && parent.isNew()) {
-            IMObject customer = context.getContext().getCustomer();
+            Party customer = context.getContext().getCustomer();
             getEditor().setObject(customer);
         }
     }
@@ -70,16 +70,15 @@ public class CustomerParticipationEditor extends AbstractParticipationEditor {
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor createObjectReferenceEditor(
+    protected IMObjectReferenceEditor<Party> createObjectReferenceEditor(
             Property property) {
-        return new AbstractIMObjectReferenceEditor(property, getParent(),
-                                                   getLayoutContext(), true) {
+        return new AbstractIMObjectReferenceEditor<Party>(
+                property, getParent(), getLayoutContext(), true) {
 
             @Override
-            public void setObject(IMObject object) {
+            public void setObject(Party object) {
                 super.setObject(object);
-                Party customer = (Party) object;
-                ContextHelper.setCustomer(customer);
+                ContextHelper.setCustomer(object);
             }
         };
     }

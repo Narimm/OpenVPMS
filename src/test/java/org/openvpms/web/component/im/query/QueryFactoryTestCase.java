@@ -86,6 +86,14 @@ public class QueryFactoryTestCase extends AbstractAppTest {
     }
 
     /**
+     * Verifies that a {@link ProductQuery} is returned for
+     * <em>product.**</em> short names.
+     */
+    public void testProductQuery() {
+        checkCreate("product.*", ProductQuery.class);
+    }
+
+    /**
      * Verifies that the query implementation returned by {@link
      * QueryFactory#create} matches that expected.
      *
