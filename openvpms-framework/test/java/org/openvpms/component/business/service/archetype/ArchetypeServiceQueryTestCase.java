@@ -102,13 +102,14 @@ public class ArchetypeServiceQueryTestCase extends
         ArchetypeQuery query = new ArchetypeQuery("lookup.country", false,
                                                   true).add(
                 new NodeConstraint("name", RelationalOp.EQ, "Belarus"));
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
         int acount = service.get(query).getResults().size();
         Lookup lookup = (Lookup) service.create("lookup.country");
         lookup.setCode("Belarus");
         service.save(lookup);
         int acount1 = service.get(query).getResults().size();
-        assertTrue(acount1 == acount + 1);
+        assertEquals(acount + 1, acount1);
     }
 
     /**
@@ -119,13 +120,14 @@ public class ArchetypeServiceQueryTestCase extends
         ArchetypeQuery query = new ArchetypeQuery("lookup.country", false,
                                                   true).add(
                 new NodeConstraint("name", RelationalOp.EQ, "Bel*"));
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
         int acount = service.get(query).getResults().size();
         Lookup lookup = (Lookup) service.create("lookup.country");
         lookup.setCode("Belarus");
         service.save(lookup);
         int acount1 = service.get(query).getResults().size();
-        assertTrue(acount1 == acount + 1);
+        assertEquals(acount + 1, acount1);
     }
 
     /**
@@ -136,13 +138,14 @@ public class ArchetypeServiceQueryTestCase extends
         ArchetypeQuery query = new ArchetypeQuery("lookup.cou*", false,
                                                   true).add(
                 new NodeConstraint("name", RelationalOp.EQ, "Bel*"));
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
         int acount = service.get(query).getResults().size();
         Lookup lookup = (Lookup) service.create("lookup.country");
         lookup.setCode("Belarus");
         service.save(lookup);
         int acount1 = service.get(query).getResults().size();
-        assertTrue(acount1 == acount + 1);
+        assertEquals(acount + 1, acount1);
     }
 
     /**
@@ -153,13 +156,14 @@ public class ArchetypeServiceQueryTestCase extends
         ArchetypeQuery query = new ArchetypeQuery("lookup.cou*", false, true)
                 .add(new NodeConstraint("name", RelationalOp.EQ, "Bel*"))
                 .add(new NodeSortConstraint("name", true));
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
         int acount = service.get(query).getResults().size();
         Lookup lookup = (Lookup) service.create("lookup.country");
         lookup.setCode("Belarus");
         service.save(lookup);
         int acount1 = service.get(query).getResults().size();
-        assertTrue(acount1 == acount + 1);
+        assertEquals(acount + 1, acount1);
     }
 
     /**
@@ -185,7 +189,7 @@ public class ArchetypeServiceQueryTestCase extends
                         .add(new NodeSortConstraint("name", true)))));
 
         IPage<IMObject> page = service.get(query);
-        assertTrue(page != null);
+        assertNotNull(page);
     }
 
     /**

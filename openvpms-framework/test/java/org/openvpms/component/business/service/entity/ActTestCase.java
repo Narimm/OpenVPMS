@@ -39,7 +39,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActTestCases extends
+public class ActTestCase extends
         AbstractDependencyInjectionSpringContextTests {
 
     /**
@@ -48,13 +48,13 @@ public class ActTestCases extends
     private IArchetypeService archetypeService;
 
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(ActTestCases.class);
+        junit.textui.TestRunner.run(ActTestCase.class);
     }
 
     /**
      * Default constructor
      */
-    public ActTestCases() {
+    public ActTestCase() {
     }
 
     /*
@@ -142,7 +142,7 @@ public class ActTestCases extends
 
         List<Act> acts = ArchetypeQueryHelper.getActs(archetypeService,
                 person.getObjectReference(), "participation.simple",
-                "act", null, null, null, null, null, null, true, 0,
+                "act", "simple", null, null, null, null, null, true, 0,
                 ArchetypeQuery.ALL_RESULTS).getResults();
         assertTrue(acts.size() == 2);
     }
@@ -323,6 +323,7 @@ public class ActTestCases extends
      */
     private ActRelationship createActRelationship(Act source, Act target) {
         ActRelationship rel = (ActRelationship)archetypeService.create("actRelationship.simple");
+        rel.setName(source.getName() + "-" + target.getName());
         rel.setSource(source.getObjectReference());
         rel.setTarget(target.getObjectReference());
 

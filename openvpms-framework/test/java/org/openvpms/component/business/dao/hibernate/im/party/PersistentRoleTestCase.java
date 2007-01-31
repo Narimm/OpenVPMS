@@ -155,9 +155,9 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
                     "entityIdentity");
 
             // retrieve the entity identity to add
-            int eicount = ((Integer) this.getTestData().getTestCaseParameter(
+            int eicount = (Integer) this.getTestData().getTestCaseParameter(
                     "testAdditionRemoveEntityIdentities", "normal",
-                    "entityIdentityCount")).intValue();
+                    "entityIdentityCount");
             // execute the test
             tx = session.beginTransaction();
 
@@ -425,9 +425,9 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             tx.commit();
 
             // retrieve the entity classification count
-            int eccount = ((Integer) this.getTestData().getTestCaseParameter(
+            int eccount = (Integer) this.getTestData().getTestCaseParameter(
                     "testAdditionRemovalEntityClassification", "normal",
-                    "entityClassificationCount")).intValue();
+                    "entityClassificationCount");
             int classCount = HibernateUtil.getTableRowCount(session,
                     "classification");
 
@@ -444,9 +444,6 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
                     "classification");
             assertTrue(classCount1 == (classCount + eccount));
 
-            // retrieve the role, delete the first entity classification and
-            // do some checks
-            session.flush();
             role = (Party) session.load(Party.class, role.getUid());
             assertTrue(role.getClassifications().size() == eccount);
 
