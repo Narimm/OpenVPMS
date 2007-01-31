@@ -48,7 +48,7 @@ public class HibernateUtil {
      */
     public static int getTableRowCount(Session session, String table)
     throws Exception {
-        return ((Integer)session.getNamedQuery(table + ".getRowCount")
+        return ((Number)session.getNamedQuery(table + ".getRowCount")
                 .list().get(0)).intValue();
         
     }

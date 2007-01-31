@@ -490,7 +490,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             throws Exception {
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         try {
-            session.setFlushMode(FlushMode.NEVER);
+            session.setFlushMode(FlushMode.MANUAL);
             Query query = session.createQuery(queryString);
             params.setParameters(query);
 
@@ -548,7 +548,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                                    boolean count) throws Exception {
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         try {
-            session.setFlushMode(FlushMode.NEVER);
+            session.setFlushMode(FlushMode.MANUAL);
             Query query = session.getNamedQuery(name);
             Params p = new Params(params);
             p.setParameters(query);
@@ -608,7 +608,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 + queryString.substring(indexOfFrom));
 
         params.setParameters(query);
-        return (Integer) query.list().get(0);
+        return ((Number) query.list().get(0)).intValue();
     }
 
     /**
