@@ -46,7 +46,6 @@ public class AdminSubsystem extends AbstractSubsystem {
         addWorkspace(new OrganisationWorkspace());
         addWorkspace(new TypeWorkspace());
         addWorkspace(new DocumentTemplateWorkspace());
-        addWorkspace(new ClassificationWorkspace());
         addWorkspace(new LookupWorkspace());
         if (auth != null && "admin".equals(auth.getName())) {
             addWorkspace(new UserWorkspace());

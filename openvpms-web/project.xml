@@ -551,8 +551,8 @@
         <dependency>
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
-            <version>1.4</version>
-            <url>http://www.hibernate.org</url>
+            <version>1.6.1</version>
+            <url>http://www.dom4j.org/</url>
             <properties>
                 <war.bundle>false</war.bundle>
             </properties>
@@ -576,15 +576,6 @@
             </properties>
         </dependency>
         <dependency>
-            <groupId>odmg</groupId>
-            <artifactId>odmg</artifactId>
-            <version>3.0</version>
-            <url>http://www.hibernate.org</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
-        </dependency>
-        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.0.0-beta-bin</version>
@@ -596,7 +587,7 @@
         <dependency>
             <groupId>c3p0</groupId>
             <artifactId>c3p0</artifactId>
-            <version>0.9.0</version>
+            <version>0.9.1</version>
             <url>http://sourceforge.net/projects/c3p0</url>
             <properties>
                 <war.bundle>false</war.bundle>

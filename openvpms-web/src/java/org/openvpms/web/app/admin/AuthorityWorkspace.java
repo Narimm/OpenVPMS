@@ -33,7 +33,7 @@ public class AuthorityWorkspace
         extends CRUDWorkspace<ArchetypeAwareGrantedAuthority> {
 
     /**
-     * Construct a new <code>ClassificationWorkspace</code>.
+     * Constructs a new <code>AuthorityWorkspace</code>.
      */
     public AuthorityWorkspace() {
         super("admin", "authority", "system", "security", "archetypeAuthority");
