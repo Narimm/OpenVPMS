@@ -72,11 +72,11 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.patient" />
+							value="lookup.patient" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.staff" />
+							value="lookup.staff" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

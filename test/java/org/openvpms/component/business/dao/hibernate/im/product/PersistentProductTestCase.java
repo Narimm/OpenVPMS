@@ -18,18 +18,18 @@
 
 package org.openvpms.component.business.dao.hibernate.im.product;
 
-// hibernate
-import java.math.BigDecimal;
-import java.util.Date;
-
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.dao.hibernate.im.party.HibernatePartyUtil;
-import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
 
 /**
  * Test the actor and actor-role relationship
@@ -46,7 +46,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
     /**
      * Constructor for PersistentProductTestCase.
      * 
-     * @param arg0
+     * @param name
      */
     public PersistentProductTestCase(String name) {
         super(name);
@@ -86,7 +86,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             // ensure that the appropriate rows have been added to the database
             int acount1 = HibernateProductUtil.getTableRowCount(session, "product");
             assertTrue(acount1 == acount + 1);
-            
+
             product = (Product)session.load(Product.class, product.getUid());
             assertTrue(product != null);
         } catch (Exception exception) {
@@ -98,7 +98,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             closeSession();
         }
     }
-    
+
     /**
      * Test the creation of a product with some dynamic attributes
      */
@@ -116,19 +116,19 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             product.setDetails(new DynamicAttributeMap());
             product.getDetails().setAttribute("supplier", "jima");
             product.getDetails().setAttribute("code", "1123");
-            product.getDetails().setAttribute("overpriced", new Boolean(true));
+            product.getDetails().setAttribute("overpriced", true);
             session.save(product);
             tx.commit();
 
             // ensure that the appropriate rows have been added to the database
             int acount1 = HibernateProductUtil.getTableRowCount(session, "product");
-            assertTrue(acount1 == acount + 1); 
-            
+            assertTrue(acount1 == acount + 1);
+
             product = (Product)session.load(Product.class, product.getUid());
             assertTrue(product != null);
             assertTrue(product.getDetails().getAttribute("supplier").equals("jima"));
             assertTrue(product.getDetails().getAttribute("code").equals("1123"));
-            assertTrue(((Boolean)product.getDetails().getAttribute("overpriced")).booleanValue() == true);
+            assertTrue(((Boolean)product.getDetails().getAttribute("overpriced")));
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -164,13 +164,13 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             int ppcount1 = HibernateProductUtil.getTableRowCount(session, "productPrice");
             assertTrue(pcount1 == pcount + 1);
             assertTrue(ppcount1 == ppcount + 2);
-            
+
             tx = session.beginTransaction();
             product = (Product)session.load(Product.class, product.getUid());
             assertTrue(product != null);
             session.delete(product);
             tx.commit();
-            
+
             // ensure that the appropriate rows have been added to the database
             pcount1 = HibernateProductUtil.getTableRowCount(session, "product");
             ppcount1 = HibernateProductUtil.getTableRowCount(session, "productPrice");
@@ -185,7 +185,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             closeSession();
         }
     }
-    
+
     /**
      * Test name and description fields are being stored and retrieved
      */
@@ -209,7 +209,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             // ensure that the appropriate rows have been added to the database
             int ppcount1 = HibernateProductUtil.getTableRowCount(session, "productPrice");
             assertTrue(ppcount1 == ppcount + 1);
-            
+
             pprice = (ProductPrice)session.load(ProductPrice.class, pprice.getUid());
             assertTrue(pprice != null);
             assertTrue(pprice.getName().equals("gum"));
@@ -223,7 +223,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             closeSession();
         }
     }
-    
+
     /**
      * Test the create of product with product prices
      */
@@ -252,19 +252,19 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             int ppcount1 = HibernateProductUtil.getTableRowCount(session, "productPrice");
             assertTrue(pcount1 == pcount + 1);
             assertTrue(ppcount1 == ppcount + 4);
-            
+
             product = (Product)session.load(Product.class, product.getUid());
             assertTrue(product != null);
             assertTrue(product.getProductPrices().size() == 4);
-            
+
             // iterate through the product prics and ensure that all 
             // fixed indicators are true except the one with the price 
             // of 1.
             for (ProductPrice item : product.getProductPrices()) {
                 if (item.getPrice().intValue() == 1) {
-                    assertTrue(item.isFixed() == false);
+                    assertFalse(item.isFixed());
                 } else {
-                    assertTrue(item.isFixed() == true);
+                    assertTrue(item.isFixed());
                 }
             }
         } catch (Exception exception) {
@@ -276,7 +276,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             closeSession();
         }
     }
-    
+
 
     /**
      * Test the lifecycle of product prics
@@ -306,11 +306,11 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             int ppcount1 = HibernateProductUtil.getTableRowCount(session, "productPrice");
             assertTrue(pcount1 == pcount + 1);
             assertTrue(ppcount1 == ppcount + 4);
-            
+
             product = (Product)session.load(Product.class, product.getUid());
             assertTrue(product != null);
             assertTrue(product.getProductPrices().size() == 4);
-            
+
             // delete the first entry
             tx = session.beginTransaction();
             ProductPrice entry = product.getProductPrices().iterator().next();
@@ -318,7 +318,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             assertTrue(product.getProductPrices().size() == 3);
             session.save(product);
             tx.commit();
-            
+
             // retrieve again and check
             product = (Product)session.load(Product.class, product.getUid());
             assertTrue(product != null);
@@ -345,13 +345,13 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             // get initial number of rows
             int pcount = HibernateProductUtil.getTableRowCount(session, "product");
             int ppcount = HibernateProductUtil.getTableRowCount(session, "productPrice");
-            int pppcount = HibernateProductUtil.getTableRowCount(session, "classification");
+            int pppcount = HibernateProductUtil.getTableRowCount(session, "lookup");
 
             // Create product, price and classification
             tx = session.beginTransaction();
             Product product = createProduct("type-of-pill");
             ProductPrice price = createProductPrice(1000,true);
-            Classification tax = createClassification("gst");
+            Lookup tax = createClassification("gst");
             session.save(tax);
             price.addClassification(tax);
             product.addProductPrice(price);
@@ -361,38 +361,38 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             // ensure that the appropriate rows have been added to the database
             int pcount1 = HibernateProductUtil.getTableRowCount(session, "product");
             int ppcount1 = HibernateProductUtil.getTableRowCount(session, "productPrice");
-            int pppcount1 = HibernateProductUtil.getTableRowCount(session, "classification");
+            int pppcount1 = HibernateProductUtil.getTableRowCount(session, "lookup");
             assertTrue(pcount1 == pcount + 1);
             assertTrue(ppcount1 == ppcount + 1);
             assertTrue(pppcount1 == pppcount + 1);
-            
+
             // Retrieve the product 
             product = (Product)session.load(Product.class, product.getUid());
             assertTrue(product != null);
             assertTrue(product.getProductPrices().size() == 1);
-            
+
             // Add another product price classification
             tx = session.beginTransaction();
             ProductPrice price1 = product.getProductPrices().iterator().next();
-            Classification exempt = createClassification("exempt");
+            Lookup exempt = createClassification("exempt");
             session.save(exempt);
             price1.addClassification(exempt);
             session.save(price1);
             tx.commit();
-            
+
             // check that there is only one productprice and two classifications 
             ppcount1 = HibernatePartyUtil.getTableRowCount(session, "productPrice");
-            pppcount1 = HibernatePartyUtil.getTableRowCount(session, "classification");
+            pppcount1 = HibernatePartyUtil.getTableRowCount(session, "lookup");
             assertTrue(ppcount1 == ppcount + 1);
             assertTrue(pppcount1 == pppcount + 2);
 
             // retrieve the productprice and make sure there are 2 classifications
             price = (ProductPrice)session.get(ProductPrice.class, price1.getUid());
             assertTrue(price.getClassifications().size() == 2);
-            
+
             // delete a classification
             tx = session.beginTransaction();
-            Classification entry = price.getClassifications().iterator().next();
+            Lookup entry = price.getClassifications().iterator().next();
             price.removeClassification(entry);
             assertTrue(price.getClassifications().size() == 1);
             session.save(price);
@@ -400,7 +400,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
 
             // retrieve the productprice and make sure there are 1 classification
             price1 = (ProductPrice)session.get(ProductPrice.class, price.getUid());
-            assertTrue(price1.getClassifications().size() == 1);           
+            assertTrue(price1.getClassifications().size() == 1);
 
         } catch (Exception exception) {
             if (tx != null) {
@@ -423,7 +423,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
         Product product = new Product();
         product.setArchetypeIdAsString("openvpms-product-product.basic.1.0");
         product.setName(name);
-        
+
         return product;
     }
 
@@ -444,23 +444,21 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
         pp.setThruDate(new Date());
         pp.setFixed(fixed);
         pp.setPrice(new BigDecimal(price));
-        
+
         return pp;
     }
 
     /**
-     * Create a simple classification with the specified name
+     * Creates a simple classification lookup with the specified code.
      * 
-     * @param name
-     *            the name of the classification
-     * @return Classification
+     * @param code the code of the classification
+     * @return a new lookup
      */
-    private Classification createClassification(String name) throws Exception {
-        Classification clas = new Classification();
-        clas.setArchetypeIdAsString("openvpms-productprice-classification.current.1.0");
-        clas.setName(name);
-        
-        return clas;
+    private Lookup createClassification(String code) throws Exception {
+        Lookup result = new Lookup();
+        result.setArchetypeIdAsString("openvpms-productprice-classification.current.1.0");
+        result.setCode(code);
+        return result;
     }
 
     /* (non-Javadoc)

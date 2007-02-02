@@ -12,12 +12,12 @@
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
 			<node name="species" path="/details/attributes/species" type="java.lang.String"
-				minCardinality="1" defaultValue="'Equine'" />
+				minCardinality="1" defaultValue="'EQUINE'" />
 			<node name="breed" path="/details/attributes/breed" type="java.lang.String">
 				<assertion name="lookup">
 					<property name="type" value="targetLookup" />
 					<property name="relationship" value="lookupRelationship.speciesBreed" />
-					<property name="value" value="'Equine'" />
+					<property name="value" value="'EQUINE'" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>

@@ -58,9 +58,6 @@
           /org/openvpms/component/business/domain/im/act/ActRelationship.hbm.xml
         </value>
         <value>
-          /org/openvpms/component/business/domain/im/common/Classification.hbm.xml
-        </value>
-        <value>
           /org/openvpms/component/business/domain/im/common/Entity.hbm.xml
         </value>
         <value>

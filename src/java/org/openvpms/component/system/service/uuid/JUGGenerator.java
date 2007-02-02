@@ -19,12 +19,9 @@
 
 package org.openvpms.component.system.service.uuid;
 
-// commons-lang
-import org.apache.commons.lang.StringUtils;
-
-//jug
-import org.safehaus.uuid.UUIDGenerator;
 import org.safehaus.uuid.EthernetAddress;
+import org.safehaus.uuid.UUIDGenerator;
+
 
 /**
  * This is an implementation of the {@link UUIDGenerator} interface based on the 
@@ -44,7 +41,14 @@ public class JUGGenerator implements IUUIDGenerator {
      * specified the one will be automatically generated.
      */
     private EthernetAddress ethernetAddress;
-    
+
+    /**
+     * Construct a new <code>JUGGenerator</code> using a dummy ethernet
+     * address.
+     */
+    public JUGGenerator() {
+        this(UUIDGenerator.getInstance().getDummyAddress().toString());
+    }
     /**
      * Instantiate an instance of the UUID generator using the specified 
      * ethernet address. The specified ethernet address must be 6-byte
@@ -54,11 +58,7 @@ public class JUGGenerator implements IUUIDGenerator {
     throws UUIDServiceException {
         try {
             generator = UUIDGenerator.getInstance();
-            if (StringUtils.isEmpty(ethernetAddress)) {
-                this.ethernetAddress = generator.getDummyAddress();
-            } else {
-                this.ethernetAddress = new EthernetAddress(ethernetAddress);
-            }
+            this.ethernetAddress = new EthernetAddress(ethernetAddress);
         } catch (Exception exception) {
             throw new UUIDServiceException(
                     UUIDServiceException.ErrorCode.FailedToInitializeService,

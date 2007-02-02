@@ -19,20 +19,12 @@
 package org.openvpms.tools.security.loader;
 
 // java core
-import java.io.FileReader;
-import java.util.List;
-
-// log4j
 import org.apache.log4j.Logger;
-
-// hibernate
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.Query;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
@@ -40,7 +32,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -52,6 +43,10 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.business.domain.im.security.User;
+
+import java.io.FileReader;
+import java.util.List;
+
 
 /**
  * This tool will process an XML document and load all the users, roles and 
@@ -94,7 +89,7 @@ public class SecurityLoader {
         init();
 
         // read the security data
-        data = (SecurityData)SecurityData.unmarshal(new FileReader(fileName));
+        data = SecurityData.unmarshal(new FileReader(fileName));
     }
 
     /**
@@ -245,7 +240,6 @@ public class SecurityLoader {
     private void init() throws Exception {
         Configuration config = new Configuration();
         config.addClass(Contact.class);
-        config.addClass(Classification.class);
         config.addClass(Entity.class);
         config.addClass(Act.class);
         config.addClass(ActRelationship.class);
@@ -272,7 +266,7 @@ public class SecurityLoader {
      * @throws Exception
      */
     private Session currentSession() throws Exception {
-        Session s = (Session) session.get();
+        Session s = session.get();
         // Open a new Session, if this Thread has none yet
         if (s == null) {
             s = sessionFactory.openSession();
@@ -288,7 +282,7 @@ public class SecurityLoader {
      * @throws Exception
      */
     public void closeSession() throws Exception {
-        Session s = (Session) session.get();
+        Session s = session.get();
         session.set(null);
         if (s != null)
             s.close();

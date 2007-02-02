@@ -19,16 +19,14 @@
 
 package org.openvpms.component.business.domain.im.party;
 
-// java core
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-// openvpms-framework
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.common.Classification;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * Defines a contact for a {@link Party}. 
@@ -46,44 +44,48 @@ public class Contact extends IMObject {
      * The time that this participation was activitated
      */
     private Date activeStartTime;
-    
+
     /**
      * The time that this participation was inactivated
      */
     private Date activeEndTime;
-    
+
     /**
-     * The classification for the contact
+     * The classification for the contact.
      */
-    private Set<Classification> classifications = new HashSet<Classification>();
-    
+    private Set<Lookup> classifications = new HashSet<Lookup>();
+
     /*
-     * Specific details for the contact purpose.
-     */
+    * Specific details for the contact purpose.
+    */
     private DynamicAttributeMap details;
 
     /**
      * A reference to the owning {@link Party}
      */
     private Party party;
-    
-    
+
+
     /**
      * Define a protected default constructor
      */
     public Contact() {
         // do nothing
     }
-    
+
     /**
-     * @return Returns the entity.
+     * Returns the party.
+     *
+     * @return returns the party
      */
     public Party getParty() {
         return party;
     }
 
     /**
-     * @param entity The entity to set.
+     * Sets the party.
+     *
+     * @param party the entity to set.
      */
     public void setParty(Party party) {
         this.party = party;
@@ -132,53 +134,54 @@ public class Contact extends IMObject {
     }
 
     /**
-     * Convenience method that return all the {@link Classification} as an array.
+     * Convenience method that returns all the classification lookups as an 
+     * array.
      * 
-     * @return Classification[]
+     * @return the classifications
      */
-    public Classification[] getClassificationsAsArray() {
-        return (Classification[])classifications.toArray(
-                new Classification[classifications.size()]);
+    public Lookup[] getClassificationsAsArray() {
+        return classifications.toArray(new Lookup[classifications.size()]);
     }
-    
+
     /**
-     * Return all the associated {@link Classification}
+     * Returns the classifications for this contact.
      * 
-     * @return Set<Classification>
+     * @return the classifications
      */
-    public Set<Classification> getClassifications() {
-        return this.classifications;
+    public Set<Lookup> getClassifications() {
+        return classifications;
     }
-    
+
     /**
-     * @param classifications The classifications to set.
+     * Sets the classifications for this contact.
+     *
+     * @param classifications the classifications to set.
      */
-    public void setClassifications(Set<Classification> classifications) {
+    public void setClassifications(Set<Lookup> classifications) {
         this.classifications = classifications;
     }
-    
+
     /**
-     * Add a {@link Classification}
+     * Adds a classification.
      * 
-     * @param classification 
-     *            the classification to add
+     * @param classification the classification to add
      */
-    public void addClassification(Classification classification) {
+    public void addClassification(Lookup classification) {
         classifications.add(classification);
     }
 
     /**
-     * Remove the specified {@link Classification}.
+     * Removes a classification.
      * 
-     * @param classification
+     * @param classification the classification to remove
      */
-    public void removeClassification(Classification classification) {
+    public void removeClassification(Lookup classification) {
         classifications.remove(classification);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
-     */
+    * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+    */
     @Override
     public Object clone() throws CloneNotSupportedException {
         Contact copy = (Contact)super.clone();
@@ -186,7 +189,7 @@ public class Contact extends IMObject {
                 null : this.activeEndTime.clone());
         copy.activeStartTime = (Date)(this.activeStartTime == null ?
                 null : this.activeStartTime.clone());
-        copy.classifications = new HashSet<Classification>(this.classifications);
+        copy.classifications = new HashSet<Lookup>(this.classifications);
         copy.party = this.party;
 
         return copy;

@@ -3,16 +3,6 @@
   <params>
   </params>
   
-  <class name="PersistentClassificationTestCase">
-    <!-- Data for the testMultipleLevelClassificationHierarchy method -->
-  	<method name="testMultipleLevelClassificationHierarchy" test-case="normal">
-  		<params>
-  			<param name="levels" type="java.lang.Integer">4</param>
-  			<param name="childrenPerLevel" type="java.lang.Integer">4</param>
-  		</params>
-  	</method>
-  </class>
-  
   <class name="PersistentParticipationTestCase">
     <!-- Data for the testCreateMultipleAddresses method -->
   	<method name="testMultipleParticiaptionCreation" test-case="normal">

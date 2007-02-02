@@ -39,7 +39,7 @@ import java.util.Iterator;
 
 
 /**
- * Tests the {@link QueryIterator} classes
+ * Tests the {@link QueryIterator} classes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-12-04 06:59:40Z $

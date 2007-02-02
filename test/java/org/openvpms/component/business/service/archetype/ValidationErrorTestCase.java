@@ -19,8 +19,8 @@
 package org.openvpms.component.business.service.archetype;
 
 // java-core
-import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
@@ -75,7 +75,6 @@ public class ValidationErrorTestCase extends BaseTestCase {
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(dir,
                 new String[] { extension }, assertionFile);
         service = new ArchetypeService(cache);
-        assertTrue(service != null);
     }
 
     /**
@@ -149,8 +148,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
     public void testValidMinCardinalityOnArchetypeRange() throws Exception {
         Party person = createPerson("MR", "Jim", "Alateras");
 
-        person.addClassification(createClassification("classification.staff",
-                "class1"));
+        person.addClassification(createLookup("lookup.staff", "CLASS1"));
         service.validateObject(person);
     }
 
@@ -165,21 +163,21 @@ public class ValidationErrorTestCase extends BaseTestCase {
         person.getDetails().setAttribute("title", "MR");
         person.getDetails().setAttribute("firstName", "Jim");
         person.getDetails().setAttribute("lastName", "Alateras");
-        person.addClassification(createClassification("classification.staff", "class1"));
+        person.addClassification(createLookup("lookup.staff", "CLASS1"));
         assertTrue(person.getClassifications().size() == 1);
         service.validateObject(person);
-        person.addClassification(createClassification("classification.staff", "class2"));
+        person.addClassification(createLookup("lookup.staff", "CLASS2"));
         assertTrue(person.getClassifications().size() == 2);
         service.validateObject(person);
-        person.addClassification(createClassification("classification.staff", "class3"));
+        person.addClassification(createLookup("lookup.staff", "CLASS3"));
         service.validateObject(person);
-        person.addClassification(createClassification("classification.patient", "classs1"));
+        person.addClassification(createLookup("lookup.patient", "CLASS1"));
         service.validateObject(person);
 
-        // now try and add anotehr .staff
-        Classification classification = null;
+        // now try and add another .staff
+        Lookup classification = null;
         try {
-            classification = createClassification("classification.staff", "class4");
+            classification = createLookup("lookup.staff", "class4");
             person.addClassification(classification);
             service.validateObject(person);
             fail("This object should not have passed validation");
@@ -194,7 +192,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
         // now try and add another .patient
         try {
-            classification = createClassification("classification.patient", "classs2");
+            classification = createLookup("lookup.patient", "classs2");
             person.addClassification(classification);
             service.validateObject(person);
             fail("This object should not have passed validation");
@@ -444,22 +442,16 @@ public class ValidationErrorTestCase extends BaseTestCase {
     }
 
     /**
-     * Create a classification with the specified name.
+     * Create a lookup with the specified code.
      *
-     * @param shortName
-     *            the archetype short name to create
-     * @param name
-     *            the name of the classification
-     * @return Classification
+     * @param shortName the archetype short name to create
+     * @param code      the lookup cocde
+     * @return a new lookup
      */
-    private Classification createClassification(String shortName, String name)
-            throws Exception {
-        Classification classification = (Classification) service
-                .create(shortName);
-        classification.setName(name);
-        classification.setDescription(name);
-
-        return classification;
+    private Lookup createLookup(String shortName, String code) {
+        Lookup lookup = (Lookup) service.create(shortName);
+        lookup.setCode(code);
+        return lookup;
     }
 
     /**

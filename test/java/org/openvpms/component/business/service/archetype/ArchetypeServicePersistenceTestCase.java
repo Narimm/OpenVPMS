@@ -18,13 +18,10 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// JAV CORE
-
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -48,7 +45,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 /**
- * Test the persistence side of the archetype service
+ *
+ * Test the persistence side of the archetype service.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -482,24 +480,23 @@ public class ArchetypeServicePersistenceTestCase extends
      */
     public void testGetCandidateChildren()
             throws Exception {
-        Classification cf = (Classification) service.create(
-                "classification.staff");
-        cf.setName("vet");
+        Lookup cf = (Lookup) service.create("lookup.staff");
+        cf.setCode("VET");
         cf.setDescription("vet");
         service.save(cf);
 
-        cf = (Classification) service.create("classification.staff");
-        cf.setName("vet1");
+        cf = (Lookup) service.create("lookup.staff");
+        cf.setCode("VET1");
         cf.setDescription("vet1");
         service.save(cf);
 
-        cf = (Classification) service.create("classification.patient");
-        cf.setName("premium");
+        cf = (Lookup) service.create("lookup.patient");
+        cf.setCode("PREMIUM");
         cf.setDescription("premium");
         service.save(cf);
 
-        cf = (Classification) service.create("classification.patient");
-        cf.setName("standard");
+        cf = (Lookup) service.create("lookup.patient");
+        cf.setCode("STANDARD");
         cf.setDescription("standard");
         service.save(cf);
 
@@ -624,19 +621,19 @@ public class ArchetypeServicePersistenceTestCase extends
     public void testOVPMS135()
             throws Exception {
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                "classification.staff");
+                "lookup.staff");
         assertTrue(adesc != null);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("alias");
         assertTrue(ndesc != null);
 
-        IMObject object = service.create("classification.staff");
-        object.setName("jima");
+        Lookup object = (Lookup) service.create("lookup.staff");
+        object.setCode("jima");
         object.setDescription("head chef");
         ndesc.setValue(object, "jimmya");
         assertTrue(ndesc.getValue(object) != null);
         service.save(object);
 
-        object = ArchetypeQueryHelper.getByUid(service,
+        object = (Lookup) ArchetypeQueryHelper.getByUid(service,
                                                object.getArchetypeId(),
                                                object.getUid());
         assertTrue(object != null);

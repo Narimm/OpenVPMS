@@ -56,8 +56,8 @@
          table="product_price_classifications" cascade="none">
       <key column="product_price_id" />
       <many-to-many
-        class="org.openvpms.component.business.domain.im.common.Classification"
-        column="classification_id" outer-join="auto" />
+        class="org.openvpms.component.business.domain.im.lookup.Lookup"
+        column="lookup_id" outer-join="auto" />
     </set>
   </class>
 

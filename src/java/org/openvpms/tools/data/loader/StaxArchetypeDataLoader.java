@@ -44,6 +44,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
@@ -229,8 +230,7 @@ public class StaxArchetypeDataLoader {
     /**
      * Process all the files in the directory
      * 
-     * @param the
-     *            directory
+     * @param dir the directory
      */
     private void processDir(String dir) throws Exception {
         String[] extensions = { extension };
@@ -299,7 +299,11 @@ public class StaxArchetypeDataLoader {
                         
                         stack.push(current);
                     } catch (Exception exception) {
-                        logger.error("Error in start element\n" +
+                        Location location = reader.getLocation();
+                        logger.error("Error in start element, line "
+                                + location.getLineNumber()
+                                + ", column " + location.getColumnNumber() +
+                                "\n" +
                                 formatElement(reader) + "\n", exception);
                     }
                 }

@@ -18,14 +18,16 @@
 
 package org.openvpms.component.business.service.entity;
 
-//spring-context
-import org.openvpms.component.business.domain.im.common.Classification;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+import java.util.Random;
+
 
 /**
  * Test the entity service
@@ -34,7 +36,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @version $LastChangedDate$
  */
 public class PersonContactTestCase extends
-        AbstractDependencyInjectionSpringContextTests {
+                                   AbstractDependencyInjectionSpringContextTests {
 
     /**
      * Holds a reference to the archetype service
@@ -76,7 +78,7 @@ public class PersonContactTestCase extends
         service.save(person);
 
         person = (Party)ArchetypeQueryHelper.getByUid(service,
-                person.getArchetypeId(), person.getUid());
+                                                      person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getContacts().size() == 1);
     }
@@ -103,12 +105,12 @@ public class PersonContactTestCase extends
 
         // now attempt to retrieve the entities
         person1 = (Party)ArchetypeQueryHelper.getByUid(service,
-                person1.getArchetypeId(), person1.getUid());
+                                                       person1.getArchetypeId(), person1.getUid());
         assertTrue(person1 != null);
         assertTrue(person1.getContacts().size() == 1);
 
         person2 = (Party)ArchetypeQueryHelper.getByUid(service,
-                person2.getArchetypeId(), person2.getUid());
+                                                       person2.getArchetypeId(), person2.getUid());
         assertTrue(person2 != null);
         assertTrue(person2.getContacts().size() == 1);
 
@@ -120,12 +122,12 @@ public class PersonContactTestCase extends
         // retrieve the entities again and check that the addresses are
         // still valid
         person1 = (Party)ArchetypeQueryHelper.getByUid(service,
-                person1.getArchetypeId(), person1.getUid());
+                                                       person1.getArchetypeId(), person1.getUid());
         assertTrue(person1 != null);
         assertTrue(person1.getContacts().size() == 0);
 
         person2 = (Party)ArchetypeQueryHelper.getByUid(service,
-                person2.getArchetypeId(), person2.getUid());
+                                                       person2.getArchetypeId(), person2.getUid());
         assertTrue(person2 != null);
         assertTrue(person2.getContacts().size() == 1);
     }
@@ -144,7 +146,7 @@ public class PersonContactTestCase extends
 
         // retrieve and remove the first contact and update
         person = (Party)ArchetypeQueryHelper.getByUid(service,
-                person.getArchetypeId(), person.getUid());
+                                                      person.getArchetypeId(), person.getUid());
         assertTrue(person.getContacts().size() == 3);
         Contact contact = person.getContacts().iterator().next();
         person.getContacts().remove(contact);
@@ -153,7 +155,7 @@ public class PersonContactTestCase extends
 
         // retrieve and ensure thagt there are only 2 contacts
         person = (Party)ArchetypeQueryHelper.getByUid(service,
-                person.getArchetypeId(), person.getUid());
+                                                      person.getArchetypeId(), person.getUid());
         assertTrue(person.getContacts().size() == 2);
     }
 
@@ -162,7 +164,7 @@ public class PersonContactTestCase extends
      */
     public void testOBF049()
     throws Exception {
-        Party person = (Party)createPerson("person.obf49", "MR", "Jim", "Alateras");
+        Party person = createPerson("person.obf49", "MR", "Jim", "Alateras");
         try {
             service.validateObject(person);
             fail("This should not have validated");
@@ -171,13 +173,13 @@ public class PersonContactTestCase extends
         }
 
         // add classification
-        person.addClassification(createClassification("classification.staff"));
-        person.addClassification(createClassification("classification.patient"));
+        person.addClassification(createLookup("lookup.staff"));
+        person.addClassification(createLookup("lookup.patient"));
         service.validateObject(person);
 
         // add another classification
         try {
-            person.addClassification(createClassification("classification.patient"));
+            person.addClassification(createLookup("lookup.patient"));
             service.validateObject(person);
             fail("This should not have validated");
         } catch (ValidationException exception) {
@@ -188,7 +190,7 @@ public class PersonContactTestCase extends
     /**
      * Create a valid location contact
      *
-     * @return
+     * @return a new contact
      */
     private Contact createLocationContact() {
         Contact contact = (Contact)service.create("contact.location");
@@ -234,14 +236,16 @@ public class PersonContactTestCase extends
     }
 
     /**
-     * Create a classification of the specified type and name
+     * Creates a new lookup of the specified type.
+     *
+     * @param shortName the lookup short name
+     * @return a new lookup
      */
-    private Classification createClassification(String shortName) {
-        Classification classification = (Classification)service.create(shortName);
-        classification.setName(shortName);
-        classification.setDescription(shortName);
-
-        return classification;
+    private Lookup createLookup(String shortName) {
+        Lookup result = (Lookup) service.create(shortName);
+        String code = shortName + new Random().nextInt();
+        result.setCode(code);
+        return result;
     }
 
 }
