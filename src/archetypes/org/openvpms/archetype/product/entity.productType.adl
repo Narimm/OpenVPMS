@@ -24,12 +24,12 @@
 		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="taxes" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-			filter="classification.taxType" >
+			filter="lookup.taxType" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.taxType" />
+							value="lookup.taxType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
@@ -37,12 +37,12 @@
 		</node>
 		<node name="discounts" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-			filter="classification.discountType" >
+			filter="lookup.discountType" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.discountType" />
+							value="lookup.discountType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

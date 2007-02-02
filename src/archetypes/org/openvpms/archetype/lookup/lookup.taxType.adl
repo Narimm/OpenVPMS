@@ -16,19 +16,24 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-classification.paymentType.1.0"
+	<archetype name="openvpms-lookup-lookup.taxType.1.0"
 		latest="true"
-		type="org.openvpms.component.business.domain.im.common.Classification" displayName="Payment Type" >
+		type="org.openvpms.component.business.domain.im.lookup.Lookup" displayName="Tax Type" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" path="/name" type="java.lang.String"
+        <node name="code" path="/code" type="java.lang.String" hidden="true"
+              minCardinality="1">
+            <assertion name="regularExpression">
+                <property name="expression" value="[A-Z0-9_]*"/>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>                
+        <node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat(/name, ' Payment Type')" />
+		<node name="description" type="java.lang.String" path="/description" minCardinality="0" />
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
-			<node name="archetypeName" path="/details/attributes/archetypeName" type="java.lang.String"	minCardinality="0" />
+			<node name="rate" displayName="Percentage %" path="/details/attributes/rate" type="java.math.BigDecimal" minCardinality="1" />
 		</node>		
 	</archetype>
 </archetypes>

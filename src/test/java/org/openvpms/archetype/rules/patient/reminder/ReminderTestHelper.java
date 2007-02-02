@@ -21,13 +21,14 @@ package org.openvpms.archetype.rules.patient.reminder;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
 import java.util.Date;
+import java.util.Random;
 
 
 /**
@@ -41,16 +42,16 @@ public class ReminderTestHelper extends TestHelper {
     /**
      * Creates and saves a new <em>entity.reminderType</em>.
      *
-     * @param groups a list of <em>classification.reminderGroup</em>
+     * @param groups a list of <em>lookup.reminderGroup</em>
      * @return a new reminder
      */
-    public static Entity createReminderType(Classification ... groups) {
+    public static Entity createReminderType(Lookup ... groups) {
         Entity reminder = (Entity) create("entity.reminderType");
         EntityBean bean = new EntityBean(reminder);
         bean.setValue("name", "XReminderType");
         bean.setValue("defaultInterval", 1);
         bean.setValue("defaultUnits", "MONTHS");
-        for (Classification group : groups) {
+        for (Lookup group : groups) {
             reminder.addClassification(group);
         }
         bean.save();
@@ -78,15 +79,14 @@ public class ReminderTestHelper extends TestHelper {
     }
 
     /**
-     * Creates and saves a new <em>classification.reminderGroup</em>
-     * classification.
+     * Creates and saves a new <em>lookup.reminderGroup</em> classification
+     * lookup.
      *
-     * @return a new classification
+     * @return a new lookup
      */
-    public static Classification createReminderGroup() {
-        Classification group = (Classification) create(
-                "classification.reminderGroup");
-        group.setName("XReminderGroupClassification");
+    public static Lookup createReminderGroup() {
+        Lookup group = (Lookup) create("lookup.reminderGroup");
+        group.setCode("XREMINDERGROUP_" + Math.abs(new Random().nextInt()));
         save(group);
         return group;
     }

@@ -46,7 +46,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.contactPurpose" />
+							value="lookup.contactPurpose" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

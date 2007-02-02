@@ -16,10 +16,17 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-classification.discountType.1.0"
+	<archetype name="openvpms-lookup-lookup.discountType.1.0"
 		latest="true"
-		type="org.openvpms.component.business.domain.im.common.Classification" displayName="Discount Type" >
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+		type="org.openvpms.component.business.domain.im.lookup.Lookup" displayName="Discount Type" >
+        <node name="code" path="/code" type="java.lang.String" hidden="true"
+              minCardinality="1">
+            <assertion name="regularExpression">
+                <property name="expression" value="[A-Z0-9_]*"/>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />
 		<node name="description" type="java.lang.String" path="/description" minCardinality="0" />

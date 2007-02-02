@@ -18,16 +18,12 @@
 
 package org.openvpms.archetype.function.party;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -35,6 +31,10 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -77,7 +77,7 @@ public class PartyFunctions {
     	contacts.add(location);
     	return contacts;
     }
-    
+
     /**
      * Returns the full name for the passed party.
      *
@@ -95,11 +95,11 @@ public class PartyFunctions {
 
     /**
      * Return a formatted name for the party
-     * 
-     * @param party the party 
+     *
+     * @param party the party
      * @return String Formatted name string
      */
-    
+
     public static String getPartyFullName(Party party) {
     	try {
 	    	if (party != null) {
@@ -121,24 +121,24 @@ public class PartyFunctions {
     	catch (Exception e) {
     		return "";
     	}
-    		
+
     }
-    
+
     /**
      * Return a formatted name for the customerPerson party
-     * 
-     * @param party the party 
+     *
+     * @param bean the party
      * @return String Formatted name string
      */
-    
+
     public static String getPersonName(IMObjectBean bean) {
-    	String title = LookupHelper.getName(ArchetypeServiceHelper.getArchetypeService(), 
+    	String title = LookupHelper.getName(ArchetypeServiceHelper.getArchetypeService(),
     			bean.getDescriptor("title"), bean.getObject());
     	if (title != null) {
     		return title + " " + bean.getString("firstName", "") + " " + bean.getString("lastName", "");
     	}
     	else {
-    		return bean.getString("firstName", "") + bean.getString("lastName", "");    		
+    		return bean.getString("firstName", "") + bean.getString("lastName", "");
     	}
     }
 
@@ -166,7 +166,7 @@ public class PartyFunctions {
     public static Party getPatientOwner(Party patient) {
     	return new PatientRules().getOwner(patient);
     }
-    
+
     /**
      * Returns a formatted list of preferred contacts for a party.
      *
@@ -232,8 +232,8 @@ public class PartyFunctions {
      * @return a formatted billing address
      */
     public static String getBillingAddress(Party party) {
-        return getAddress(party, "Billing");
-        
+        return getAddress(party, "BILLING");
+
     }
 
     /**
@@ -258,8 +258,8 @@ public class PartyFunctions {
      * @return a formatted billing address
      */
     public static String getCorrespondenceAddress(Party party) {
-        return getAddress(party, "Correspondence");
-        
+        return getAddress(party, "CORRESPONDENCE");
+
     }
 
     /**
@@ -275,16 +275,16 @@ public class PartyFunctions {
             return formatAddress(contact);
         }
         else {
-            return "";        	
+            return "";
         }
-        
+
     }
 
     /**
      * Returns a contact for the specified Party, contact type and purpose.
      * If cannot find one with matching purpose returns last preferred contact.
      * If cannot find with matching purpose and preferred returns last found.
-     *  
+     *
      * @param party the party
      * @param type the contact type as archetype shortname
      * @param purpose the contact purpose fro the address
@@ -315,33 +315,33 @@ public class PartyFunctions {
                 }
             }
         }
-        return currentContact;        
+        return currentContact;
     }
 
     /**
-     * Indicates if a contact has a particular purpose 
-     * 
+     * Indicates if a contact has a particular purpose
+     *
      * @param contact the contact
      * @param contact purpose string
      * @return True or False
      */
-    
+
     private static Boolean hasContactPurpose(Contact contact, String contactPurpose) {
-        for (Classification classification : contact.getClassifications()) {
-            if (classification.getName().equalsIgnoreCase(contactPurpose))
+        for (Lookup classification : contact.getClassifications()) {
+            if (classification.getCode().equalsIgnoreCase(contactPurpose))
                 return true;
         }
         return false;
-        
+
     }
 
     /**
      * Format Address
-     * 
-     * @param contact contact 
+     *
+     * @param contact contact
      * @return String Formatted address string
      */
-    
+
     private static String formatAddress(Contact contact) {
         IMObjectBean bean = new IMObjectBean(contact);
         String address = bean.getString("address");
@@ -349,7 +349,7 @@ public class PartyFunctions {
         String state = bean.getString("state");
         String postcode = bean.getString("postcode");
         return address + "\n" + suburb + " " + state + " " + postcode;
-        
+
     }
     /**
      * Returns the description of a contact.

@@ -54,12 +54,12 @@
 		</node>
 		<node name="type" displayName="Account Type" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1" 
-			filter="classification.supplierAccountType">
+			filter="lookup.supplierAccountType">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.supplierAccountType" />
+							value="lookup.supplierAccountType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
@@ -71,11 +71,11 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.supplierType" />
+							value="lookup.supplierType" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.supplierAccountType" />
+							value="lookup.supplierAccountType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
