@@ -32,7 +32,7 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
 public class RoleWorkspace extends CRUDWorkspace<SecurityRole> {
 
     /**
-     * Construct a new <code>ClassificationWorkspace</code>.
+     * Constructs a new <code>RoleWorkspace</code>.
      */
     public RoleWorkspace() {
         super("admin", "role", "system", "security", "role");
