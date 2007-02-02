@@ -18,11 +18,9 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// spring-context
-import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
-import org.openvpms.component.business.domain.im.common.Classification;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
@@ -35,12 +33,6 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  */
 public class ArchetypeServicePartyTestCase extends
         AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeServicePartyTestCase.class);
 
     /**
      * Holds a reference to the entity service
@@ -93,9 +85,9 @@ public class ArchetypeServicePartyTestCase extends
     @SuppressWarnings("unchecked")
     public void testSimplePartyWithContactCreation()
     throws Exception {
-        Classification classification = createClassification("email");
+        Lookup classification = createLookup("EMAIL");
         service.save(classification);
-        Classification classification1 = createClassification("home");
+        Lookup classification1 = createLookup("HOME");
         service.save(classification1);
 
         Party person = createPerson("MR", "Jim", "Alateras");
@@ -105,7 +97,13 @@ public class ArchetypeServicePartyTestCase extends
 
         // try the hql query
         Query query = sessionFactory.openSession().createQuery(
-                "select party from " + Party.class.getName() + " as party inner join party.contacts as contact left outer join contact.classifications as classification where contact.archetypeId.entityName = :entityName and contact.archetypeId.concept = :concept and classification.name = :classification");
+                "select party from " + Party.class.getName()
+                        + " as party inner join party.contacts as contact "
+                        + "left outer join contact.classifications as "
+                        + "classification "
+                        + "where contact.archetypeId.entityName = :entityName "
+                        + "and contact.archetypeId.concept = :concept "
+                        + "and classification.name = :classification");
         query.setParameter("entityName", "contact");
         query.setParameter("concept", "location");
         query.setParameter("classification", "email");
@@ -131,11 +129,12 @@ public class ArchetypeServicePartyTestCase extends
     }
 
     /**
-     * Create a contact with the specified classification
+     * Create a contact with the specified classification.
      *
-     * @return Contact
+     * @param classification the classification
+     * @return a new contact
      */
-    private Contact createContact(Classification classification) {
+    private Contact createContact(Lookup classification) {
         Contact contact = (Contact)service.create("contact.location");
 
         contact.getDetails().setAttribute("address", "kalulu rd");
@@ -149,17 +148,14 @@ public class ArchetypeServicePartyTestCase extends
     }
 
     /**
-     * Create a classification with the specified name
+     * Creates a lookup with the specified code.
      *
-     * @param name
-     *            the name of the classification
-     * @return Classification
+     * @param code the code of the lookup
+     * @return a new lookup
      */
-    private Classification createClassification(String name) {
-        Classification classification = (Classification)service.create(
-                "classification.contactPurpose");
-        classification.setName(name);
-
-        return classification;
+    private Lookup createLookup(String code) {
+        Lookup result = (Lookup) service.create("lookup.contactPurpose");
+        result.setCode(code);
+        return result;
     }
 }

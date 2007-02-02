@@ -55,15 +55,15 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.personType" />
+							value="lookup.personType" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.accountType" />
+							value="lookup.accountType" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.staff" />
+							value="lookup.staff" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

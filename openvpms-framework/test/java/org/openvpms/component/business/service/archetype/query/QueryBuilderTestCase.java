@@ -297,18 +297,18 @@ public class QueryBuilderTestCase
                 + "product0.active = :active0 and "
                 + "(classifications0.archetypeId.entityName = :entityName1 and "
                 + "classifications0.archetypeId.concept = :concept1) and "
-                + "(classifications0.name = :name0 or "
-                + "classifications0.name = :name1))";
+                + "(classifications0.code = :code0 or "
+                + "classifications0.code = :code1))";
         ArchetypeQuery query = new ArchetypeQuery(
                 new ShortNameConstraint("product.product", false,
                                         true))
                 .add(new CollectionNodeConstraint(
                         "classifications",
-                        new ShortNameConstraint("classification.staff",
+                        new ShortNameConstraint("lookup.staff",
                                                 false, false))
                         .add(new OrConstraint()
-                        .add(new NodeConstraint("name", "equine"))
-                        .add(new NodeConstraint("name", "all"))));
+                        .add(new NodeConstraint("code", "equine"))
+                        .add(new NodeConstraint("code", "all"))));
         checkQuery(query, expected);
     }
 

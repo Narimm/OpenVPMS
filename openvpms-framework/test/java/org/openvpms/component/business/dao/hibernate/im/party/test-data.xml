@@ -21,11 +21,11 @@
             </params>
         </method>
 
-        <!-- Data for the testAdditionRemovalEntityClassification method -->
-        <method name="testAdditionRemovalEntityClassification"
+        <!-- Data for the testAdditionRemovalClassification method -->
+        <method name="testAdditionRemovalClassification"
                 test-case="normal">
             <params>
-                <param name="entityClassificationCount"
+                <param name="classificationCount"
                        type="java.lang.Integer">10</param>
             </params>
         </method>

@@ -21,6 +21,7 @@ package org.openvpms.component.business.domain.im.common;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +36,7 @@ import java.util.Set;
 public class Entity extends IMObject {
 
     /**
-     * Generated SUID
+     * Serialisation version identifier.
      */
     private static final long serialVersionUID = 1L;
 
@@ -46,12 +47,10 @@ public class Entity extends IMObject {
     private DynamicAttributeMap details;
     
     /**
-     * Return a set of {@link Classification} for this entity. An 
-     * {@link Entity} can have to zero, one or more {@link Classification}
-     * 
+     * The {@link Lookup} classifications this entity. An {@link Entity} can
+     * have to zero, one or more {@link Lookup} clasification.
      */
-    private Set<Classification> classifications =
-        new HashSet<Classification>();
+    private Set<Lookup> classifications = new HashSet<Lookup>();
     
     /**
      * Return the set of {@link EntityIdentity} instance for this entity
@@ -278,42 +277,32 @@ public class Entity extends IMObject {
     }
 
     /**
-     * Add an {@link Classification} to this entity
+     * Adds a classification to this entity.
      * 
-     * @param classification 
-     *            the classification to add
+     * @param classification the classification to add
      */
-    public void addClassification(Classification classification) {
+    public void addClassification(Lookup classification) {
         classifications.add(classification);
     }
     
     /**
-     * Remove the {@link Classification} from this entity
+     * Removes a classification from this entity.
      * 
-     * @param classification
-     *            the classification to remove
+     * @param classification the classification to remove
      */
-    public void removeClassification(Classification classification) {
+    public void removeClassification(Lookup classification) {
         classifications.remove(classification);
     }
     
     /**
-     * Return all the {@link Classification} objects that this entity is 
-     * belongs too.
+     * Returns the classifications for this entity.
      * 
-     * @return Set<Classification>
+     * @return the classifications
      */
-    public Set<Classification> getClassifications() {
-        return this.classifications;
+    public Set<Lookup> getClassifications() {
+        return classifications;
     }
     
-    /**
-     * @param classifications The classifications to set.
-     */
-    protected void setClassifications(Set<Classification> classifications) {
-        this.classifications = classifications;
-    }
-
     /**
      * @return Returns the details.
      */
@@ -334,7 +323,7 @@ public class Entity extends IMObject {
     @Override
     public Object clone() throws CloneNotSupportedException {
         Entity copy = (Entity)super.clone();
-        copy.classifications = new HashSet<Classification>(this.classifications);
+        copy.classifications = new HashSet<Lookup>(this.classifications);
         copy.details = (DynamicAttributeMap)(this.details == null ?
                 null : this.details.clone());
         copy.identities = new HashSet<EntityIdentity>(this.identities);
@@ -345,7 +334,18 @@ public class Entity extends IMObject {
     }
 
     /**
-     * @param identities The identities to set.
+     * Sets the classifications for this entity.
+     *
+     * @param classifications the classifications to set
+     */
+    protected void setClassifications(Set<Lookup> classifications) {
+        this.classifications = classifications;
+    }
+
+    /**
+     * Sets the identifies for this entity.
+     *
+     * @param identities the identities to set
      */
     protected void setIdentities(Set<EntityIdentity> identities) {
         this.identities = identities;

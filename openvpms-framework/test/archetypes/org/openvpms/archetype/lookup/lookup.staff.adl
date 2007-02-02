@@ -1,8 +1,10 @@
 <archetypes>
-	<archetype name="openvpms-common-classification.staff.1.0"
+	<archetype name="openvpms-lookup-lookup.staff.1.0"
 		latest="true"
-		type="org.openvpms.component.business.domain.im.common.Classification">
+		type="org.openvpms.component.business.domain.im.lookup.Lookup">
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
+        <node name="code" path="/code" type="java.lang.String"
+              minCardinality="1"/>
 		<node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />
 		<node name="description" path="/description" type="java.lang.String"
@@ -12,5 +14,8 @@
 			minCardinality="0" maxCardinality="1">
 			<node name="alias" path="/details/attributes/alias" type="java.lang.String" />
 		</node>
+        <node name="target" path="/targetLookupRelationships"
+               type="java.util.HashSet" baseName="targetLookupRelationship"
+               minCardinality="0" maxCardinality="0"/>
 	</archetype>
 </archetypes>

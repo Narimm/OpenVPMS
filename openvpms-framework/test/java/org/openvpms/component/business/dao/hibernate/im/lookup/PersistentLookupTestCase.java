@@ -187,6 +187,22 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
     }
 
     /**
+     * Test persistent lookup equality.
+     */
+    public void testPersistentLookupEquality() throws Exception {
+        Session session = currentSession();
+        Transaction tx;
+        tx = session.beginTransaction();
+        Lookup lookup = new Lookup(createLookArchetypeId("equality"), "FOO");
+        session.save(lookup);
+        tx.commit();
+        closeSession();
+        session = currentSession();
+        Lookup lookup2 = (Lookup) session.load(Lookup.class, lookup.getUid());
+        assertEquals(lookup, lookup2);
+    }
+
+    /**
      * Test the creation of a simple lookup
      */
     public void testMultipleCategoryLookupCreation()

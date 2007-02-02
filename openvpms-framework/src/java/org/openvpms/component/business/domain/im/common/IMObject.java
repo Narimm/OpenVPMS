@@ -19,29 +19,19 @@
 package org.openvpms.component.business.domain.im.common;
 
 // java core
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Map;
-
-// commons-jxpath
 import org.apache.commons.jxpath.Pointer;
-
-// commons-lang
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-
-// log4j
 import org.apache.log4j.Logger;
-
-// commons-id
-import org.safehaus.uuid.UUIDGenerator;
-
-//openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
-import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * This is the base class for information model objects. An {@link IMObject} 
@@ -55,12 +45,10 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyColl
 public class IMObject implements Serializable, Cloneable {
 
     /**
-     * An internal UUID generator
+     * An internal UUID generator.
      */
-    @SuppressWarnings("unused")
-    private static JUGGenerator generator = new JUGGenerator(
-            UUIDGenerator.getInstance().getDummyAddress().toString());
-    
+    private static final JUGGenerator generator = new JUGGenerator();
+
     /**
      * Define a logger for this class
      */
@@ -387,8 +375,7 @@ public class IMObject implements Serializable, Cloneable {
     /**
      * @param linkId The linkId to set.
      */
-    @SuppressWarnings("unused")
-    private void setLinkId(String linkId) {
+    protected void setLinkId(String linkId) {
         this.linkId = linkId;
     }
 

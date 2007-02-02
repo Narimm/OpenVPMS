@@ -18,9 +18,6 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// spring-context
-
-import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -201,9 +198,8 @@ public class ArchetypeServiceQueryTestCase extends
         Contact contact = (Contact) service.create("contact.phoneNumber");
         contact.getDetails().setAttribute("areaCode", "03");
         contact.getDetails().setAttribute("telephoneNumber", "0123456789");
-        Classification purpose = (Classification) service.create(
-                "classification.contactPurpose");
-        purpose.setName("Home");
+        Lookup purpose = (Lookup) service.create("lookup.contactPurpose");
+        purpose.setCode("Home");
         service.save(purpose);
 
         contact.addClassification(purpose);
@@ -259,9 +255,8 @@ public class ArchetypeServiceQueryTestCase extends
         Contact contact = (Contact) service.create("contact.phoneNumber");
         contact.getDetails().setAttribute("areaCode", "03");
         contact.getDetails().setAttribute("telephoneNumber", "0123456789");
-        Classification purpose = (Classification) service.create(
-                "classification.contactPurpose");
-        purpose.setName("Home");
+        Lookup purpose = (Lookup) service.create("lookup.contactPurpose");
+        purpose.setCode("HOME");
         service.save(purpose);
 
         contact.addClassification(purpose);
@@ -303,8 +298,8 @@ public class ArchetypeServiceQueryTestCase extends
         assertEquals("0123456789",
                      contact2.getDetails().getAttribute("telephoneNumber"));
         assertEquals(1, contact2.getClassificationsAsArray().length);
-        Classification purpose2 = contact2.getClassificationsAsArray()[0];
-        assertEquals("Home", purpose2.getName());
+        Lookup purpose2 = contact2.getClassificationsAsArray()[0];
+        assertEquals("HOME", purpose2.getCode());
     }
 
 }

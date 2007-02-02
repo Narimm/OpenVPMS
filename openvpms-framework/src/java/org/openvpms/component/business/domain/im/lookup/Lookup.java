@@ -341,7 +341,7 @@ public class Lookup extends IMObject {
         Lookup rhs = (Lookup) obj;
         return new EqualsBuilder()
                 .append(getArchetypeId(), rhs.getArchetypeId())
-                .append(code, rhs.code)
+                .append(getCode(), rhs.getCode())
                 .isEquals();
     }
 
@@ -352,7 +352,7 @@ public class Lookup extends IMObject {
     public int hashCode() {
         return new HashCodeBuilder()
                 .append(getArchetypeId())
-                .append(code)
+                .append(getCode())
                 .toHashCode();
     }
 
@@ -365,8 +365,8 @@ public class Lookup extends IMObject {
                 .appendSuper(super.toString())
                 .append("linkId", getLinkId())
                 .append("uid", getUid())
-                .append("code", code)
-                .append("default", defaultLookup)
+                .append("code", getCode())
+                .append("default", isDefaultLookup())
                 .toString();
     }
 

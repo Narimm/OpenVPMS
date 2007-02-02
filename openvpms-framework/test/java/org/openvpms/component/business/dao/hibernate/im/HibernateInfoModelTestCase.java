@@ -19,22 +19,16 @@
 
 package org.openvpms.component.business.dao.hibernate.im;
 
-// java core
-
-//hibernate
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
-import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -50,11 +44,9 @@ import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.system.common.test.BaseTestCase;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
 
-// jug
-import org.safehaus.uuid.UUIDGenerator;
 
 /**
- * This is the class for all hibernate persistence test cases
+ * This is the base class for all hibernate persistence test cases.
  * 
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
@@ -78,7 +70,7 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
 
 
     /**
-     * mail line 
+     * mail line
      * @param args
      */
     public static void main(String[] args) {
@@ -87,7 +79,7 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
 
     /**
      * Constructor for HibernateInfoModelTestCase.
-     * 
+     *
      * @param name
      */
     protected HibernateInfoModelTestCase(String name) {
@@ -100,13 +92,11 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
     protected void setUp() throws Exception {
         super.setUp();
     
-        generator = new JUGGenerator(
-                UUIDGenerator.getInstance().getDummyAddress().toString());
-        
+        generator = new JUGGenerator();
+
         // create the hibernate session factory
         Configuration config = new Configuration();
         config.addClass(Contact.class);
-        config.addClass(Classification.class);
         config.addClass(Entity.class);
         config.addClass(Act.class);
         config.addClass(ActRelationship.class);
@@ -155,7 +145,7 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
      * @throws Exception
      */
     public Session currentSession() throws Exception {
-        Session s = (Session) session.get();
+        Session s = session.get();
         // Open a new Session, if this Thread has none yet
         if (s == null) {
             s = getSessionFactory().openSession();
@@ -170,7 +160,7 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
      * @throws Exception
      */
     public void closeSession() throws Exception {
-        Session s = (Session) session.get();
+        Session s = session.get();
         session.set(null);
         if (s != null)
             s.close();

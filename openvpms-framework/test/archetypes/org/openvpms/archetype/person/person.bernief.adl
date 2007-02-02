@@ -40,13 +40,13 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.staff" />
+							value="lookup.staff" />
 						<!--property name="defaultValue"
 							value="staffMember1" /-->
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.patient" />
+							value="lookup.patient" />
 						<property name="maxCardinality"
 							value="1" />
 					</propertyMap>

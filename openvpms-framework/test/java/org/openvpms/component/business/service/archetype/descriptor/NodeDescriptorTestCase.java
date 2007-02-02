@@ -26,8 +26,8 @@ import org.exolab.castor.xml.Unmarshaller;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.xml.sax.InputSource;
@@ -245,8 +245,8 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
         assertNotNull(node);
         assertNull(node.getBaseName());
 
-        // add a classification
-        Classification classification = new Classification();
+        // add a classification lookup
+        Lookup classification = new Lookup();
         node.addChildToCollection(party, classification);
 
         // verify it was added
@@ -273,7 +273,7 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
         ArchetypeDescriptor archetype = getArchetype("person.person");
         Party party = new Party();
 
-        Classification classification = new Classification();
+        Lookup classification = new Lookup();
         NodeDescriptor node = archetype.getNodeDescriptor("classifications");
         assertNotNull(node);
         assertNull(node.getBaseName());

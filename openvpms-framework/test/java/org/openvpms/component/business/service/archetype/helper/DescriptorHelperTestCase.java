@@ -174,7 +174,7 @@ public class DescriptorHelperTestCase
         assertNotNull(patients);
         assertNotNull(patients.getFilter());
         String[] filter = DescriptorHelper.getShortNames(patients);
-        checkEquals(filter, "classification.staff");
+        checkEquals(filter, "lookup.staff");
     }
 
     /**

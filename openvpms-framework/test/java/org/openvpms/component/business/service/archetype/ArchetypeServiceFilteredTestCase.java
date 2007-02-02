@@ -18,16 +18,14 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// java core
-
-import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Classification;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.util.List;
+
 
 /**
  * Test that different filtered collection sets to ensure that they work
@@ -38,15 +36,9 @@ import java.util.List;
  */
 public class ArchetypeServiceFilteredTestCase extends
                                               AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeServiceFilteredTestCase.class);
 
     /**
-     * Holds a reference to the entity service
+     * Holds a reference to the archetype service.
      */
     private ArchetypeService service;
 
@@ -85,14 +77,12 @@ public class ArchetypeServiceFilteredTestCase extends
                 "patientClassifications");
 
         // add a single staff classification
-        person.addClassification(createClassification("classification.staff",
-                                                      "class1"));
+        person.addClassification(createLookup("lookup.staff", "class1"));
         assertTrue(((List) ndesc1.getValue(person)).size() == 1);
         assertTrue(((List) ndesc2.getValue(person)).size() == 0);
 
         // add a single patient classification
-        person.addClassification(createClassification("classification.patient",
-                                                      "patient1"));
+        person.addClassification(createLookup("lookup.patient", "patient1"));
         assertTrue(((List) ndesc1.getValue(person)).size() == 1);
         assertTrue(((List) ndesc2.getValue(person)).size() == 1);
 
@@ -112,13 +102,10 @@ public class ArchetypeServiceFilteredTestCase extends
         NodeDescriptor ndesc2 = adesc.getNodeDescriptor(
                 "patientClassifications");
 
-        // add a single staff classification
-        Classification class1 = createClassification("classification.staff",
-                                                     "class1");
-        Classification class2 = createClassification("classification.staff",
-                                                     "class2");
-        Classification class3 = createClassification("classification.patient",
-                                                     "patient1");
+        // add classification lookups
+        Lookup class1 = createLookup("lookup.staff", "class1");
+        Lookup class2 = createLookup("lookup.staff", "class2");
+        Lookup class3 = createLookup("lookup.patient", "patient1");
         person.addClassification(class1);
         person.addClassification(class2);
         person.addClassification(class3);
@@ -171,19 +158,15 @@ public class ArchetypeServiceFilteredTestCase extends
     }
 
     /**
-     * Create a classification with the specified name.
+     * Create a lookup with the specified code.
      *
      * @param shortName the archetype short name to create
-     * @param name      the name of the classification
-     * @return Classification
+     * @param code      the code of the lookup
+     * @return a new lookup
      */
-    private Classification createClassification(String shortName, String name)
-            throws Exception {
-        Classification classification = (Classification) service
-                .create(shortName);
-        classification.setName(name);
-        classification.setDescription(name);
-
-        return classification;
+    private Lookup createLookup(String shortName, String code) {
+        Lookup result = (Lookup) service.create(shortName);
+        result.setCode(code);
+        return result;
     }
 }

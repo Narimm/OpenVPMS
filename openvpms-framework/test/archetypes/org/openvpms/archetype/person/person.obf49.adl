@@ -34,13 +34,13 @@
 				minCardinality="1" maxLength="30" />
 		</node>
 		<node name="staffClassifications" path="/classifications"
-			parentChild="false" type="java.util.HashSet" filter="classification.st*"
+			parentChild="false" type="java.util.HashSet" filter="lookup.st*"
 			baseName="classification" minCardinality="1" maxCardinality="1">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.staff" />
+							value="lookup.staff" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>
@@ -49,13 +49,13 @@
 			</assertion>
 		</node>
 		<node name="patientClassifications" path="/classifications"
-			parentChild="false" type="java.util.HashSet" filter="classification.pat*"
+			parentChild="false" type="java.util.HashSet" filter="lookup.pat*"
 			baseName="classification" minCardinality="1" maxCardinality="1">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.patient" />
+							value="lookup.patient" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>

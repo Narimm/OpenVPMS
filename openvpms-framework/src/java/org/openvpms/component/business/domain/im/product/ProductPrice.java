@@ -19,16 +19,17 @@
 
 package org.openvpms.component.business.domain.im.product;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.openvpms.component.business.domain.im.common.Classification;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * Represents the price of a {@link Product}
@@ -39,48 +40,48 @@ import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttribut
 public class ProductPrice extends IMObject {
 
     /**
-     * Default SUID
+     * Serialisation version identifier.
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * The product that it refers too
+     * The product that it refers to.
      */
     private Product product;
-    
+
     /**
-     * The price of the product
+     * The price of the product.
      */
     private BigDecimal price;
-    
+
     /**
-     * The product is valid from this date
+     * The product is valid from this date.
      */
     private Date fromDate;
-    
+
     /**
-     * The product is valid through to this date
+     * The product is valid through to this date.
      */
     private Date thruDate;
-    
+
     /**
      * Indicates whether this is a fixed or variable price (i.e.
-     * do we multiple by the quantity sold
+     * do we multiple by the quantity sold.
      */
     private boolean fixed;
-    
+
     /**
-     * The classification for the product price
+     * The classifications for the product price.
      */
-    private Set<Classification> classifications = new HashSet<Classification>();
-    
+    private Set<Lookup> classifications = new HashSet<Lookup>();
+
     /**
      * A placeholder for all entity details, which denotes the dynamic and
      * adaptive details of the entity.
      */
     private DynamicAttributeMap details;
-    
-    
+
+
     /**
      * Default constructor
      */
@@ -173,58 +174,58 @@ public class ProductPrice extends IMObject {
     }
 
     /**
-     * Convenience method that return all the {@link Classification} as an array.
+     * Convenience method that return all the classifications as an array.
      * 
-     * @return Classification[]
+     * @return the classifications
      */
-    public Classification[] getClassificationsAsArray() {
-        return (Classification[])classifications.toArray(
-                new Classification[classifications.size()]);
+    public Lookup[] getClassificationsAsArray() {
+        return classifications.toArray(new Lookup[classifications.size()]);
     }
-    
+
     /**
-     * Return all the associated {@link Classification}
+     * Returns the classifications for this price.
      * 
-     * @return Set<Classification>
+     * @return the clasifications
      */
-    public Set<Classification> getClassifications() {
-        return this.classifications;
+    public Set<Lookup> getClassifications() {
+        return classifications;
     }
-    
+
     /**
-     * @param classifications The classifications to set.
+     * Sets the classifications for this price.
+     *
+     * @param classifications the classifications to set
      */
-    public void setClassifications(Set<Classification> classifications) {
+    public void setClassifications(Set<Lookup> classifications) {
         this.classifications = classifications;
     }
-    
+
     /**
-     * Add a {@link Classification}
+     * Add a classification.
      * 
-     * @param classification 
-     *            the classification to add
+     * @param classification the classification to add
      */
-    public void addClassification(Classification classification) {
+    public void addClassification(Lookup classification) {
         classifications.add(classification);
     }
 
     /**
-     * Remove the specified {@link Classification}.
+     * Removes a classification.
      * 
-     * @param classification
+     * @param classification the classification to remove
      */
-    public void removeClassification(Classification classification) {
+    public void removeClassification(Lookup classification) {
         classifications.remove(classification);
     }
-    
+
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
-     */
+    * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
+    */
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, 
-                ToStringStyle.MULTI_LINE_STYLE);
+        return ToStringBuilder.reflectionToString(this,
+                                                  ToStringStyle.MULTI_LINE_STYLE);
     }
 
     /* (non-Javadoc)
@@ -235,13 +236,13 @@ public class ProductPrice extends IMObject {
         ProductPrice copy = (ProductPrice)super.clone();
         copy.fixed = this.fixed;
         copy.fromDate = (Date)(this.fromDate == null ?
-                null : this.fromDate.clone());;
+                null : this.fromDate.clone());
         copy.price = this.price;
-        copy.classifications = new HashSet<Classification>(this.classifications);
+        copy.classifications = new HashSet<Lookup>(this.classifications);
         copy.product = this.product;
         copy.thruDate  = (Date)(this.thruDate == null ?
                 null : this.thruDate.clone());
-        
+
         return copy;
     }
 }

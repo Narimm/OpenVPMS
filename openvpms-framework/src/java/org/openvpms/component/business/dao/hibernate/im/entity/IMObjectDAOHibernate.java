@@ -357,7 +357,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindIMObjects,
-                    exception);
+                    exception, rmName, entityName, conceptName, instanceName);
         }
     }
 

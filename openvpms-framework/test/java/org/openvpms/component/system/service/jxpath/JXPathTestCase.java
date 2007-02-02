@@ -18,7 +18,6 @@
 
 package org.openvpms.component.system.service.jxpath;
 
-// java
 import ognl.Ognl;
 import ognl.OgnlContext;
 import org.apache.commons.beanutils.MethodUtils;
@@ -26,7 +25,6 @@ import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -61,15 +59,9 @@ import java.util.Properties;
  * @version $LastChangedDate$
  */
 public class JXPathTestCase extends BaseTestCase {
+
     /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(JXPathTestCase.class);
-    
-    /**
-     * A reference to the JXPathHelper
+     * A reference to the JXPathHelper. Configures jxpath. 
      */
     @SuppressWarnings("unused")
     private JXPathHelper context = new JXPathHelper();
@@ -86,7 +78,7 @@ public class JXPathTestCase extends BaseTestCase {
     /**
      * Constructor for JXPathTestCase.
      * 
-     * @param arg0
+     * @param name
      */
     public JXPathTestCase(String name) {
         super(name);
@@ -106,7 +98,6 @@ public class JXPathTestCase extends BaseTestCase {
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(dir,
                 new String[] { extension }, afile);
         service = new ArchetypeService(cache);
-        assertTrue(service != null);
     }
 
     /*
@@ -126,13 +117,11 @@ public class JXPathTestCase extends BaseTestCase {
                 .getArchetypeDescriptor("person.person");
         NodeDescriptor ndesc = adesc.getNodeDescriptor("firstName");
         assertTrue(ndesc != null);
+        assertTrue(((Boolean) getValue(adesc, "nodeDescriptors/name/string")));
+        assertTrue(((Boolean) getValue(adesc," nodeDescriptors/description/string")));
         assertTrue(((Boolean) getValue(adesc,
-                "nodeDescriptors/name/string")).booleanValue());
-        assertTrue(((Boolean) getValue(adesc,
-                "nodeDescriptors/description/string")).booleanValue());
-        assertTrue(((Boolean) getValue(adesc,
-                "nodeDescriptors/uid/identifier")).booleanValue());
-        assertTrue(getValue(adesc, "nodeDescriptors/jimbo") == null);
+                "nodeDescriptors/uid/identifier")));
+        assertNull(getValue(adesc, "nodeDescriptors/jimbo"));
     }
 
     /**
@@ -157,14 +146,14 @@ public class JXPathTestCase extends BaseTestCase {
      */
     public void testNonMandatoryNodes()
     throws Exception {
-        IMObject object = service.create("classification.staff");
-        assertTrue(object != null);
+        IMObject object = service.create("lookup.staff");
+        assertNotNull(object);
         
         // now attempt to retrieve the value of alias 
         NodeDescriptor ndesc = service.getArchetypeDescriptor(
                 object.getArchetypeId()).getNodeDescriptor("alias");
-        assertTrue(ndesc != null);
-        assertTrue(ndesc.getValue(object) == null);
+        assertNotNull(ndesc);
+        assertNull(ndesc.getValue(object));
     }
 
     /**
@@ -175,16 +164,13 @@ public class JXPathTestCase extends BaseTestCase {
                 .getArchetypeDescriptor("person.person");
         assertTrue(((Boolean) getValue(
                 adesc,
-                "nodeDescriptors/name/string and nodeDescriptors/description/string"))
-                .booleanValue());
+                "nodeDescriptors/name/string and nodeDescriptors/description/string")));
+        assertFalse(((Boolean) getValue(
+                adesc,
+                "nodeDescriptors/name/string and not(nodeDescriptors/description/string)")));
         assertTrue(((Boolean) getValue(
                 adesc,
-                "nodeDescriptors/name/string and not(nodeDescriptors/description/string)"))
-                .booleanValue() == false);
-        assertTrue(((Boolean) getValue(
-                adesc,
-                "nodeDescriptors/name/string and not(nodeDescriptors/description/number)"))
-                .booleanValue());
+                "nodeDescriptors/name/string and not(nodeDescriptors/description/number)")));
     }
 
     /**
@@ -200,7 +186,7 @@ public class JXPathTestCase extends BaseTestCase {
         } catch (ValidationException exception) {
             fail("Validation of person failed");
         }
-        assertTrue(StringUtils.isEmpty(person.getName()) == false);
+        assertFalse(StringUtils.isEmpty(person.getName()));
         assertTrue(person.getName().equals("Alateras,Jim"));
     }
 
@@ -287,8 +273,7 @@ public class JXPathTestCase extends BaseTestCase {
         ArchetypeDescriptor metaDesc = service.getArchetypeDescriptor(
                 adesc.getArchetypeId());
         TestPage page = new TestPage(adesc, metaDesc);
-        assertTrue(page != null);
-        assertTrue(getValue(page, "pathToCollection(model,  node/nodeDescriptors/nodeDescriptors/path)") 
+        assertTrue(getValue(page, "pathToCollection(model,  node/nodeDescriptors/nodeDescriptors/path)")
                 instanceof Collection);
     }
     /**
@@ -421,11 +406,11 @@ public class JXPathTestCase extends BaseTestCase {
         
         JXPathContext context = JXPathHelper.newContext(person);
         Boolean bool = (Boolean)context.getValue("tf:testName(.)");
-        assertTrue(bool.booleanValue());
+        assertTrue(bool);
         
         person.setName(null);
         bool = (Boolean)context.getValue("tf:testName(.)");
-        assertFalse(bool.booleanValue());
+        assertFalse(bool);
     }
     
     /**
@@ -467,7 +452,7 @@ public class JXPathTestCase extends BaseTestCase {
         JXPathContext ctx = JXPathHelper.newContext(values);
         Object obj = ctx.getValue("/low + /high");
         assertTrue(obj instanceof BigDecimal);
-        assertTrue(((BigDecimal)obj).equals(new BigDecimal(300)));
+        assertTrue(obj.equals(new BigDecimal(300)));
     }
     
     /**
@@ -476,7 +461,7 @@ public class JXPathTestCase extends BaseTestCase {
     public void testOBF54()
     throws Exception {
         OpenVPMSTypeConverter converter = new OpenVPMSTypeConverter();
-        Object obj = null;
+        Object obj;
         
         obj = converter.convert("10.55", Money.class);
         assertTrue(obj.getClass().getName(), obj instanceof Money);

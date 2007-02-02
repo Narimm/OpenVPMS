@@ -13,6 +13,7 @@
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="/name"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
         <node name="defaultLookup" type="java.lang.Boolean"
               path="/defaultLookup"
               defaultValue="false()"/>
