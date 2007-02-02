@@ -20,8 +20,8 @@ package org.openvpms.archetype.test;
 
 import junit.framework.Assert;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -114,7 +114,7 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Creates and saves a new patient, with species='Canine'.
+     * Creates and saves a new patient, with species='CANINE'.
      *
      * @return a new patient
      */
@@ -123,7 +123,7 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Creates a new patient, with species='Canine'.
+     * Creates a new patient, with species='CANINE'.
      *
      * @param save if <code>true</code> make the patient persistent
      * @return a new patient
@@ -133,7 +133,7 @@ public class TestHelper extends Assert {
         assertNotNull(patient);
         EntityBean bean = new EntityBean(patient);
         bean.setValue("name", "XPatient-" + System.currentTimeMillis());
-        bean.setValue("species", "Canine");
+        bean.setValue("species", "CANINE");
         if (save) {
             bean.save();
         }
@@ -232,8 +232,8 @@ public class TestHelper extends Assert {
                 + System.currentTimeMillis();
         bean.setValue("name", name);
         if (species != null) {
-            Classification classification = getClassification(
-                    "classification.species", species);
+            Lookup classification
+                    = getClassification("lookup.species", species);
             bean.addValue("species", classification);
         }
         bean.save();
@@ -241,24 +241,23 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Gets a classification, creating it if it doesn't exist.
+     * Gets a classification lookup, creating it if it doesn't exist.
      *
      * @param shortName the clasification short name
-     * @param name      the classification name
+     * @param code      the classification code
      * @return the classification
      */
-    private static Classification getClassification(String shortName,
-                                                    String name) {
+    private static Lookup getClassification(String shortName, String code) {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
-        query.add(new NodeConstraint("name", name));
+        query.add(new NodeConstraint("code", code));
         query.setMaxResults(1);
-        QueryIterator<Classification> iter
-                = new IMObjectQueryIterator<Classification>(query);
+        QueryIterator<Lookup> iter = new IMObjectQueryIterator<Lookup>(query);
         if (iter.hasNext()) {
             return iter.next();
         }
-        Classification classification = (Classification) create(shortName);
-        classification.setName(name);
+        Lookup classification = (Lookup) create(shortName);
+        classification.setCode(code);
+        save(classification);
         return classification;
     }
 

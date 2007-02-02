@@ -16,12 +16,21 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-classification.reminderGroup.1.0"
+	<archetype name="openvpms-lookup-lookup.practiceType.1.0"
 		latest="true"
-		type="org.openvpms.component.business.domain.im.common.Classification" displayName="Reminder Group" >
+		type="org.openvpms.component.business.domain.im.lookup.Lookup" displayName="Practice Type" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" path="/name" type="java.lang.String"
+        <node name="code" path="/code" type="java.lang.String" hidden="true"
+              minCardinality="1">
+            <assertion name="regularExpression">
+                <property name="expression" value="[A-Z0-9_]*"/>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>                
+        <node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />
-		<node name="description" type="java.lang.String" path="/description" minCardinality="0" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" minCardinality="1" derived="true"
+			derivedValue="concat(/name, ' Practice Type')" />
 	</archetype>
 </archetypes>

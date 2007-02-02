@@ -324,7 +324,7 @@ public class ReminderRules {
     /**
      * Determines if a reminder is associated with an
      * <em>entity.reminderType</em> that has one or more
-     * <em>classification.reminderGroup</em> classifications the same as those
+     * <em>lookup.reminderGroup</em> classifications the same as those
      * specified.
      *
      * @param groups   the groups

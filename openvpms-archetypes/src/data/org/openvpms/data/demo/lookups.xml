@@ -33,39 +33,11 @@
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST6" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST7" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST8" />
-	<data archetype="lookup.appointmentReason" code="CHECKUP" name="Checkup" defaultLookup="true" />
-	<data archetype="lookup.appointmentReason" code="VACCINATION" name="Vaccination" />
-	<data archetype="lookup.appointmentReason" code="OTHER" name="Other" />
+	<data archetype="lookup.appointmentReason" code="CHECKUP" defaultLookup="true" />
+	<data archetype="lookup.appointmentReason" code="VACCINATION" />
+	<data archetype="lookup.appointmentReason" code="OTHER" />
 	<data archetype="lookup.messageReason" code="PHONE" name="Phone Call" defaultLookup="true" />
 	<data archetype="lookup.messageReason" code="OTHER" name="Other" />
-	<data archetype="lookup.bank" code="NAB" name="National" />
-	<data archetype="lookup.bank" code="CBA" name="Commonwealth" />
-	<data archetype="lookup.bank" code="ANZ" name="ANZ" />
-	<data archetype="lookup.bank" code="WBA" name="Westpac" />
-	<data archetype="lookup.bank" code="SGB" name="St George" />
-	<data archetype="lookup.bank" code="BANK_WEST" name="Bank West" />
-	<data archetype="lookup.bank" code="SBSA" name="State bank of SA"/>
-	<data archetype="lookup.bank" code="BEN" name="Bendigo" />
-	<data archetype="lookup.creditcard" code="VISA" name="Visa" floorLimit="500.00" />
-	<data archetype="lookup.creditcard" code="MASTERCARD"  name="Mastercard" floorLimit="500.00" />
-	<data archetype="lookup.creditcard" code="AMEX" name="American Express" floorLimit="500.00" />
-	<data archetype="lookup.creditcard" code="DINERS" name="Diners" floorLimit="500.00" />
-	<data archetype="lookup.personTitle" code="MR" defaultLookup="true"/>
-	<data archetype="lookup.personTitle" code="MRS" />
-	<data archetype="lookup.personTitle" code="MS" />
-	<data archetype="lookup.personTitle" code="DR" />
-	<data archetype="lookup.personTitle" code="LADY" />
-	<data archetype="lookup.alertType" code="ALLLERGY" />
-	<data archetype="lookup.alertType" code="AGGRESSION" />
-	<data archetype="lookup.alertType" code="OTHER" defaultLookup="true"/>
-	<data archetype="lookup.reportType" code="CUSTOMER" />
-	<data archetype="lookup.reportType" code="PATIENT" />
-	<data archetype="lookup.reportType" code="SUPPLIER" />
-	<data archetype="lookup.reportType" code="PRODUCT" />
-	<data archetype="lookup.reportType" code="WORKFLOW" />
-	<data archetype="lookup.reportType" code="ADMINISTRATION" />
-	<data archetype="lookup.reportType" code="FINANCIAL" />
-	<data archetype="lookup.reportType" code="OTHER" defaultLookup="true"/>
 	<data archetype="lookup.uom" code="UNIT" defaultLookup="true"/>
 	<data archetype="lookup.uom" code="BOTTLE" />
 	<data archetype="lookup.uom" code="SYRINGE" />
@@ -84,4 +56,84 @@
     <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>
 	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
 	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
+    <data archetype="lookup.contactPurpose" code="HOME" />
+    <data archetype="lookup.contactPurpose" code="WORK" />
+    <data archetype="lookup.contactPurpose" code="POSTAL" />
+    <data archetype="lookup.contactPurpose" code="CORRESPONDENCE" />
+    <data archetype="lookup.contactPurpose" code="REMINDER" />
+    <data archetype="lookup.contactPurpose" code="BILLING" />
+    <data archetype="lookup.customerType" code="SMALL_ANIMAL" />
+    <data archetype="lookup.customerType" code="LARGE_ANIMAL" />
+    <data archetype="lookup.customerType" code="STUD" />
+    <data archetype="lookup.customerType" code="FARM" />
+    <data archetype="lookup.discountType" code="PETS_FIRST_MEDICATION" name="PetsFirst Medication" type="PERCENTAGE" rate="10.0" />
+    <data archetype="lookup.discountType" code="PETS_FIRST_SERVICES" name="PetsFirst Services"  type="PERCENTAGE" rate="100.0" />
+    <data archetype="lookup.discountType" code="PENSIONER_MEDICATION" type="PERCENTAGE" rate="10.0" />
+    <data archetype="lookup.discountType" code="PENSIONER_SERVICES"  type="PERCENTAGE" rate="5.0" />
+    <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" />
+    <data archetype="lookup.paymentType" code="CASH" />
+    <data archetype="lookup.paymentType" code="CHEQUE" />
+    <data archetype="lookup.paymentType" code="CREDIT" />
+    <data archetype="lookup.paymentType" code="EFT" />
+    <data archetype="lookup.paymentType" code="POSTAL_NOTE" />
+    <data id="MERCH" archetype="lookup.productGroup" code="MERCH" />
+    <data id="DRUGS" archetype="lookup.productGroup" code="DRUGS" />
+    <data id="MISC" archetype="lookup.productGroup" code="MISC" />
+    <data id="ANAESTHETIC" archetype="lookup.productGroup" code="ANAESTHETIC" />
+    <data id="PATHOLOGY" archetype="lookup.productGroup" code="PATHOLOGY" />
+    <data id="SURGERY" archetype="lookup.productGroup" code="SURGERY" />
+    <data id="DESEX" archetype="lookup.productGroup" code="DESEX" />
+    <data id="GROOMING" archetype="lookup.productGroup" code="GROOMING" />
+    <data id="FEES" archetype="lookup.productGroup" code="FEES" />
+    <data id="HOSP" archetype="lookup.productGroup" code="HOSP" />
+    <data id="P" archetype="lookup.productGroup" code="P" />
+    <data id="TRAVEL" archetype="lookup.productGroup" code="TRAVEL" />
+    <data id="VACCINATIONS" archetype="lookup.productGroup" code="VACCINATIONS" />
+    <data id="RADIOLOGY" archetype="lookup.productGroup" code="RADIOLOGY" />
+    <data archetype="lookup.productIncomeType" code="PROFESSIONAL" />
+    <data archetype="lookup.productIncomeType" code="MEDICATION" />
+    <data archetype="lookup.productIncomeType" code="MERCHANDISE" />
+    <data archetype="lookup.productIncomeType" code="OTHER" />
+    <data archetype="lookup.supplierType" code="WHOLESALER" />
+    <data archetype="lookup.supplierType" code="MANUFACTURER" />
+    <data archetype="lookup.supplierType" code="RETAIL" />
+    <data archetype="lookup.supplierType" code="OTHER" />
+    <data id="Normal" archetype="lookup.customerType" code="NORMAL" />
+    <data id="Valued" archetype="lookup.customerType" code="VALUED" />
+    <data id="Bad" archetype="lookup.customerType" code="BAD" />
+    <data id="Pensioner" archetype="lookup.customerType" code="PENSIONER" />
+    <data id="Monthly" archetype="lookup.customerType" code="MONTHLY" />
+    <data id="Cash Only" archetype="lookup.customerType" code="CASH_ONLY" />
+    <data archetype="lookup.reminderGroup" code="VACCINATIONS" />
+    <data archetype="lookup.reminderGroup" code="DESEXING" />
+    <data archetype="lookup.reminderGroup" code="WORMING" />
+    <data archetype="lookup.reminderGroup" code="OTHER" />
+	<data archetype="lookup.bank" code="NAB" name="National" />
+	<data archetype="lookup.bank" code="CBA" name="Commonwealth" />
+	<data archetype="lookup.bank" code="ANZ"/>
+	<data archetype="lookup.bank" code="WBA" name="Westpac" />
+	<data archetype="lookup.bank" code="SGB" name="St George" />
+	<data archetype="lookup.bank" code="BANK_WEST" />
+	<data archetype="lookup.bank" code="STATE_SA" />
+	<data archetype="lookup.bank" code="BEN" name="Bendigo" />
+	<data archetype="lookup.creditcard" code="VISA" floorLimit="500.00" />
+	<data archetype="lookup.creditcard" code="MASTERCARD"  floorLimit="500.00" />
+	<data archetype="lookup.creditcard" code="AMEX" name="American Express" floorLimit="500.00" />
+	<data archetype="lookup.creditcard" code="DINERS" floorLimit="500.00" />
+	<data archetype="lookup.personTitle" code="MR" defaultLookup="true"/>
+	<data archetype="lookup.personTitle" code="MRS" />
+	<data archetype="lookup.personTitle" code="MS" />
+	<data archetype="lookup.personTitle" code="DR" />
+	<data archetype="lookup.personTitle" code="LADY" />
+	<data archetype="lookup.alertType" code="ALLLERGY" />
+	<data archetype="lookup.alertType" code="AGGRESSION" />
+	<data archetype="lookup.alertType" code="OTHER" defaultLookup="true"/>
+	<data archetype="lookup.reportType" code="CUSTOMER" />
+	<data archetype="lookup.reportType" code="PATIENT" />
+	<data archetype="lookup.reportType" code="SUPPLIER" />
+	<data archetype="lookup.reportType" code="PRODUCT" />
+	<data archetype="lookup.reportType" code="WORKFLOW" />
+	<data archetype="lookup.reportType" code="ADMINISTRATION" />
+	<data archetype="lookup.reportType" code="FINANCIAL" />
+	<data archetype="lookup.reportType" code="OTHER" defaultLookup="true"/>
 </archetype>

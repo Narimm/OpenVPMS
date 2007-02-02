@@ -493,9 +493,6 @@
     <data id="B149" archetype="lookup.breed" code="PUG"/>
     <data archetype="lookupRelationship.speciesBreed" source="id:Canine"
           target="id:B149"/>
-    <data id="B150" archetype="lookup.breed" code="PUG"/>
-    <data archetype="lookupRelationship.speciesBreed" source="id:Canine"
-          target="id:B150"/>
     <data id="B151" archetype="lookup.breed" code="PYRENEAN_MOUNTAIN_DOG"/>
     <data archetype="lookupRelationship.speciesBreed" source="id:Canine"
           target="id:B151"/>

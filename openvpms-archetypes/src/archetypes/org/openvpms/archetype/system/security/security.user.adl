@@ -73,12 +73,12 @@
 		</node>
 		<node displayName="Category" name="classifications" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*" 
-			filter="classification.userType">
+			filter="lookup.userType">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.userType" />
+							value="lookup.userType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

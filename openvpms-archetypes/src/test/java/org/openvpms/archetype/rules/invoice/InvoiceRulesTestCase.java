@@ -51,27 +51,27 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     /**
      * The customer.
      */
-    private Party _customer;
+    private Party customer;
 
     /**
      * The patient.
      */
-    private Party _patient;
+    private Party patient;
 
     /**
      * The clinician.
      */
-    private User _clinician;
+    private User clinician;
 
     /**
      * The reminder.
      */
-    private Entity _reminder;
+    private Entity reminder;
 
     /**
      * The document template.
      */
-    private Entity _template;
+    private Entity template;
 
 
     /**
@@ -97,7 +97,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         // verify the end time has been set
         ReminderRules rules = new ReminderRules(getArchetypeService());
         Date endTime = rules.calculateReminderDueDate(
-                item.getAct().getActivityStartTime(), _reminder);
+                item.getAct().getActivityStartTime(), this.reminder);
         assertEquals(endTime, reminder.getActivityEndTime());
 
         // make sure a document has been added
@@ -112,15 +112,15 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
 
         // check reminder participations
         ActBean reminderBean = new ActBean(reminder);
-        assertEquals(_patient,
+        assertEquals(patient,
                      reminderBean.getParticipant("participation.patient"));
-        assertEquals(_reminder,
+        assertEquals(this.reminder,
                      reminderBean.getParticipant("participation.reminderType"));
 
         // check document participations
         ActBean docBean = new ActBean(document);
-        assertEquals(_patient, docBean.getParticipant("participation.patient"));
-        assertEquals(_template,
+        assertEquals(patient, docBean.getParticipant("participation.patient"));
+        assertEquals(template,
                      docBean.getParticipant("participation.documentTemplate"));
 
         // change the product participation to one without a reminder.
@@ -290,11 +290,11 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        _customer = TestHelper.createCustomer();
-        _clinician = TestHelper.createClinician(false);
-        _patient = TestHelper.createPatient();
-        _reminder = ReminderTestHelper.createReminderType();
-        _template = createDocumentTemplate();
+        customer = TestHelper.createCustomer();
+        clinician = TestHelper.createClinician(false);
+        patient = TestHelper.createPatient();
+        reminder = ReminderTestHelper.createReminderType();
+        template = createDocumentTemplate();
     }
 
     /**
@@ -306,9 +306,9 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         Act act = createAct("act.customerAccountChargesInvoice");
         act.setStatus(IN_PROGRESS);
         ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.customer", _customer);
-        bean.addParticipation("participation.patient", _patient);
-        bean.addParticipation("participation.clinician", _clinician);
+        bean.addParticipation("participation.customer", customer);
+        bean.addParticipation("participation.patient", patient);
+        bean.addParticipation("participation.clinician", clinician);
         return bean;
     }
 
@@ -320,8 +320,8 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     private ActBean createInvoiceItem() {
         Act act = createAct("act.customerAccountInvoiceItem");
         ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", _patient);
-        bean.addParticipation("participation.clinician", _clinician);
+        bean.addParticipation("participation.patient", patient);
+        bean.addParticipation("participation.clinician", clinician);
         return bean;
     }
 
@@ -364,9 +364,9 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         bean.setValue("name", "XProduct");
         if (reminderDoc) {
             bean.addRelationship("entityRelationship.productReminder",
-                                 _reminder);
+                                 reminder);
             bean.addRelationship("entityRelationship.productDocument",
-                                 _template);
+                                 template);
         }
         bean.save();
         return product;

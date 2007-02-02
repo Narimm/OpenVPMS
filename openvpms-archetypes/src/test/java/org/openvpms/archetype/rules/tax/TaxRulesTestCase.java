@@ -21,9 +21,9 @@ package org.openvpms.archetype.rules.tax;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -33,6 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 
 /**
@@ -46,7 +47,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
     /**
      * The tax type classification.
      */
-    private Classification _taxType;
+    private Lookup taxType;
 
 
     /**
@@ -66,7 +67,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
     public void testCalculateTaxForProductTax() {
         Party customer = createCustomer();
         Product product = createProduct();
-        product.addClassification(_taxType);
+        product.addClassification(taxType);
         save(product);
 
         checkCalculateTax(customer, product, new BigDecimal("0.091"));
@@ -104,7 +105,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        _taxType = createTaxType();
+        taxType = createTaxType();
     }
 
     /**
@@ -163,7 +164,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
      */
     private Party createCustomerWithTaxExemption() {
         Party customer = createCustomer();
-        customer.addClassification(_taxType);
+        customer.addClassification(taxType);
         return customer;
     }
 
@@ -187,7 +188,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
      */
     private Product createProductWithTax() {
         Product product = createProduct();
-        product.addClassification(_taxType);
+        product.addClassification(taxType);
         save(product);
         return product;
     }
@@ -203,7 +204,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         Product product = createProduct();
         Entity type = (Entity) create("entity.productType");
         type.setName("TaxRulesTestCase-entity" + type.hashCode());
-        type.addClassification(_taxType);
+        type.addClassification(taxType);
         save(type);
         EntityRelationship relationship
                 = (EntityRelationship) create(
@@ -231,11 +232,11 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
      *
      * @return a new tax classification
      */
-    private Classification createTaxType() {
-        Classification tax = (Classification) create("classification.taxType");
+    private Lookup createTaxType() {
+        Lookup tax = (Lookup) create("lookup.taxType");
         IMObjectBean bean = new IMObjectBean(tax);
-        bean.setValue("name", "TaxRulesTestCase-classification"
-                + tax.hashCode());
+        bean.setValue("code", "XTAXRULESTESTCASE_CLASSIFICATION_"
+                + Math.abs(new Random().nextInt()));
         bean.setValue("rate", new BigDecimal(10));
         save(tax);
         return tax;

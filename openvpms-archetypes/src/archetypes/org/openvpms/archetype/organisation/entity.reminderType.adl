@@ -77,12 +77,12 @@
 		</node>
 		<node name="species" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-			filter="classification.species" >
+			filter="lookup.species" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.species" />
+							value="lookup.species" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
@@ -90,12 +90,12 @@
 		</node>
 		<node name="groups" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-			filter="classification.reminderGroup">
+			filter="lookup.reminderGroup">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.reminderGroup" />
+							value="lookup.reminderGroup" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

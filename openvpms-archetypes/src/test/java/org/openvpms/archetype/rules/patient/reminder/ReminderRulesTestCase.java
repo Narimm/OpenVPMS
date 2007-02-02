@@ -21,8 +21,8 @@ package org.openvpms.archetype.rules.patient.reminder;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
@@ -43,40 +43,40 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * <em>archetypeService.save.act.patientReminder.before</em> rule.
      */
     public void testMarkMatchingRemindersCompleted() {
-        Classification group1 = ReminderTestHelper.createReminderGroup();
-        Classification group2 = ReminderTestHelper.createReminderGroup();
+        Lookup group1 = ReminderTestHelper.createReminderGroup();
+        Lookup group2 = ReminderTestHelper.createReminderGroup();
 
         Party patient1 = TestHelper.createPatient();
         Party patient2 = TestHelper.createPatient();
 
         // create a reminder for patient1, with an entity.reminderType with
-        // no classification.reminderGroup
+        // no lookup.reminderGroup
         Act reminder0 = createReminder(patient1);
         checkReminder(reminder0, ReminderStatus.IN_PROGRESS);
 
         // create a reminder for patient1, with an entity.reminderType with
-        // group1 classification.reminderGroup. Verify it has not changed
+        // group1 lookup.reminderGroup. Verify it has not changed
         // reminder0
         Act reminder1 = createReminder(patient1, group1);
         checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
         checkReminder(reminder0, ReminderStatus.IN_PROGRESS, true);
 
         // create a reminder for patient2, with an entity.reminderType with
-        // group2 classification.reminderGroup. Verify it has not changed
+        // group2 lookup.reminderGroup. Verify it has not changed
         // reminder1
         Act reminder2 = createReminder(patient2, group2);
         checkReminder(reminder2, ReminderStatus.IN_PROGRESS);
         checkReminder(reminder1, ReminderStatus.IN_PROGRESS, true);
 
         // create a reminder for patient1, with an entity.reminderType with
-        // group1 classification.reminderGroup. Verify it marks reminder1
+        // group1 lookup.reminderGroup. Verify it marks reminder1
         // COMPLETED.
         Act reminder3 = createReminder(patient1, group1);
         checkReminder(reminder3, ReminderStatus.IN_PROGRESS);
         checkReminder(reminder1, ReminderStatus.COMPLETED, true);
 
         // create a reminder for patient2, with an entity.reminderType with
-        // both group1 and group2 classification.reminderGroup. Verify it marks
+        // both group1 and group2 lookup.reminderGroup. Verify it marks
         // reminder2 COMPLETED.
         Act reminder4 = createReminder(patient2, group1, group2);
         checkReminder(reminder4, ReminderStatus.IN_PROGRESS);
@@ -90,7 +90,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * @param groups  the reminder group classifications
      * @return a new reminder
      */
-    private Act createReminder(Party patient, Classification ... groups) {
+    private Act createReminder(Party patient, Lookup ... groups) {
         Entity reminderType = ReminderTestHelper.createReminderType(groups);
         return ReminderTestHelper.createReminder(patient, reminderType,
                                                  new Date());

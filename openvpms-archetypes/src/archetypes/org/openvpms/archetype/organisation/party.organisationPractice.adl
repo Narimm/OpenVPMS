@@ -58,12 +58,12 @@
 		</node>
 		<node name="taxes" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-			filter="classification.taxType" >
+			filter="lookup.taxType" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.taxType" />
+							value="lookup.taxType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
