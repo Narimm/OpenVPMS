@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import org.openvpms.archetype.rules.party.PartyRelationshipRules;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -49,12 +50,6 @@ public class PatientRules {
      */
     private static final String PATIENT_OWNER
             = "entityRelationship.patientOwner";
-
-    /**
-     * Patient location relationship short name.
-     */
-    private static final String PATIENT_LOCATION
-            = "entityRelationship.patientLocation";
 
 
     /**
@@ -133,5 +128,21 @@ public class PatientRules {
     public boolean isOwner(Party customer, Party patient) {
         Party owner = getOwner(patient);
         return (owner != null && owner.equals(customer));
+    }
+
+    /**
+     * Returns the referral vet for a patient.
+     * This is the associated party from the first matching
+     * <em>entityRelationship.referredFrom</em> or
+     * <em>entityrRelationship.referredTo</em> overlapping the specified time.
+     *
+     * @param patient the patient
+     * @param time    the time
+     * @return the referral vet, or <code>null</code> if none is founds
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Party getReferralVet(Party patient, Date time) {
+        return (Party) PartyRelationshipRules.getTargetEntity(
+                service, patient, "referrals", time);
     }
 }

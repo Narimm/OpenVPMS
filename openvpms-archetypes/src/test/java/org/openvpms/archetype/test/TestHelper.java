@@ -130,7 +130,6 @@ public class TestHelper extends Assert {
      */
     public static Party createPatient(boolean save) {
         Party patient = (Party) create("party.patientpet");
-        assertNotNull(patient);
         EntityBean bean = new EntityBean(patient);
         bean.setValue("name", "XPatient-" + System.currentTimeMillis());
         bean.setValue("species", "CANINE");
@@ -185,7 +184,6 @@ public class TestHelper extends Assert {
      */
     public static User createClinician(boolean save) {
         User user = (User) create("security.user");
-        assertNotNull(user);
         EntityBean bean = new EntityBean(user);
         bean.setValue("name", "zvet" + System.currentTimeMillis());
         bean.setValue("username", "zvet");
@@ -226,7 +224,6 @@ public class TestHelper extends Assert {
      */
     public static Product createProduct(String shortName, String species) {
         Product product = (Product) create(shortName);
-        assertNotNull(product);
         EntityBean bean = new EntityBean(product);
         String name = "XProduct-" + ((species != null) ? species : "")
                 + System.currentTimeMillis();
@@ -238,6 +235,20 @@ public class TestHelper extends Assert {
         }
         bean.save();
         return product;
+    }
+
+    /**
+     * Creates a new <code>party.supplierVeterinarian</em>.
+     *
+     * @return a new party
+     */
+    public static Party createSupplierVet() {
+        Party party = (Party) create("party.supplierVeterinarian");
+        IMObjectBean bean = new IMObjectBean(party);
+        bean.setValue("firstName", "J");
+        bean.setValue("lastName", "XSupplierVet");
+        bean.save();
+        return party;
     }
 
     /**

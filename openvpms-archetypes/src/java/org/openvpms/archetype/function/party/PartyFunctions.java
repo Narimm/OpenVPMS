@@ -20,18 +20,22 @@ package org.openvpms.archetype.function.party;
 
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
+import org.openvpms.archetype.rules.party.SupplierRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -67,15 +71,15 @@ public class PartyFunctions {
      * @return a list of default contacts
      */
     public static Set<Contact> getDefaultContacts(Party party) {
-    	Set<Contact> contacts = new HashSet<Contact>();
-    	IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-    	Contact phone = (Contact)service.create("contact.phoneNumber");
-    	Contact location = (Contact)service.create("contact.location");
-    	service.deriveValues(phone);
-    	service.deriveValues(location);
-    	contacts.add(phone);
-    	contacts.add(location);
-    	return contacts;
+        Set<Contact> contacts = new HashSet<Contact>();
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        Contact phone = (Contact) service.create("contact.phoneNumber");
+        Contact location = (Contact) service.create("contact.location");
+        service.deriveValues(phone);
+        service.deriveValues(location);
+        contacts.add(phone);
+        contacts.add(location);
+        return contacts;
     }
 
     /**
@@ -94,52 +98,25 @@ public class PartyFunctions {
     }
 
     /**
-     * Return a formatted name for the party
+     * Returns a formatted name for a party.
      *
      * @param party the party
-     * @return String Formatted name string
+     * @return the party's formatted name
      */
-
     public static String getPartyFullName(Party party) {
-    	try {
-	    	if (party != null) {
-		        IMObjectBean bean = new IMObjectBean(party);
-		        if (TypeHelper.isA(party, "party.customerperson")) {
-		        	return  getPersonName(bean);
-		        } else if (TypeHelper.isA(party, "party.customerOrganisation")) {
-		        	return bean.getString("name", "");
-		        } else if (TypeHelper.isA(party, "party.patientpet")) {
-		        	return bean.getString("name", "");
-		        } else {
-		        	return "";
-		        }
-	    	}
-	    	else {
-	    		return "";
-	    	}
-    	}
-    	catch (Exception e) {
-    		return "";
-    	}
-
-    }
-
-    /**
-     * Return a formatted name for the customerPerson party
-     *
-     * @param bean the party
-     * @return String Formatted name string
-     */
-
-    public static String getPersonName(IMObjectBean bean) {
-    	String title = LookupHelper.getName(ArchetypeServiceHelper.getArchetypeService(),
-    			bean.getDescriptor("title"), bean.getObject());
-    	if (title != null) {
-    		return title + " " + bean.getString("firstName", "") + " " + bean.getString("lastName", "");
-    	}
-    	else {
-    		return bean.getString("firstName", "") + bean.getString("lastName", "");
-    	}
+        String name = null;
+        try {
+            if (party != null) {
+                if (TypeHelper.isA(party, "party.customerperson")) {
+                    name = getPersonName(party);
+                } else {
+                    name = party.getName();
+                }
+            }
+        } catch (Exception ignore) {
+            // no-op
+        }
+        return (name != null) ? name : "";
     }
 
     /**
@@ -164,7 +141,7 @@ public class PartyFunctions {
      * @return the patient's owner, or <code>null</code> if none can be found
      */
     public static Party getPatientOwner(Party patient) {
-    	return new PatientRules().getOwner(patient);
+        return new PatientRules().getOwner(patient);
     }
 
     /**
@@ -265,7 +242,7 @@ public class PartyFunctions {
     /**
      * Returns a formatted billing address for a party.
      *
-     * @param party the party
+     * @param party   the party
      * @param purpose the contact purpose fro the address
      * @return a formatted billing address
      */
@@ -273,8 +250,7 @@ public class PartyFunctions {
         Contact contact = getContact(party, "contact.location", purpose);
         if (contact != null) {
             return formatAddress(contact);
-        }
-        else {
+        } else {
             return "";
         }
 
@@ -285,8 +261,8 @@ public class PartyFunctions {
      * If cannot find one with matching purpose returns last preferred contact.
      * If cannot find with matching purpose and preferred returns last found.
      *
-     * @param party the party
-     * @param type the contact type as archetype shortname
+     * @param party   the party
+     * @param type    the contact type as archetype shortname
      * @param purpose the contact purpose fro the address
      * @return a formatted billing address
      */
@@ -304,13 +280,14 @@ public class PartyFunctions {
                     }
                     // If preferred location save but keep searching just in case we have one with billing
                     // purpose or another preferred.
-                    if (bean.hasNode("preferred") && bean.getBoolean("preferred"))
+                    if (bean.hasNode("preferred") && bean.getBoolean(
+                            "preferred"))
                         currentContact = contact;
                     else {
-                    	// Otherwise if we don't have one set to current contact
-                    	if (currentContact == null){
-                    		currentContact = contact;
-                    	}
+                        // Otherwise if we don't have one set to current contact
+                        if (currentContact == null) {
+                            currentContact = contact;
+                        }
                     }
                 }
             }
@@ -325,8 +302,8 @@ public class PartyFunctions {
      * @param contact purpose string
      * @return True or False
      */
-
-    private static Boolean hasContactPurpose(Contact contact, String contactPurpose) {
+    private static Boolean hasContactPurpose(Contact contact,
+                                             String contactPurpose) {
         for (Lookup classification : contact.getClassifications()) {
             if (classification.getCode().equalsIgnoreCase(contactPurpose))
                 return true;
@@ -351,6 +328,7 @@ public class PartyFunctions {
         return address + "\n" + suburb + " " + state + " " + postcode;
 
     }
+
     /**
      * Returns the description of a contact.
      *
@@ -390,6 +368,132 @@ public class PartyFunctions {
             return null;
         }
         return getContactPurposes((Contact) pointer.getValue());
+    }
+
+    /**
+     * Returns a stringfield form of a party's identities.
+     *
+     * @param context the expression context. Expected to reference a party.
+     * @return the stringified form of the party's identities or
+     *         <code>null</code>
+     */
+    public static String identities(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        if (pointer == null || !(pointer.getValue() instanceof Party)) {
+            return null;
+        }
+
+        StringBuffer result = new StringBuffer();
+
+        Party party = (Party) pointer.getValue();
+        for (EntityIdentity identity : party.getIdentities()) {
+            IMObjectBean bean = new IMObjectBean(identity);
+            if (bean.hasNode("name")) {
+                String name = bean.getString("name");
+                String displayName = bean.getDisplayName();
+                if (name != null) {
+                    if (result.length() != 0) {
+                        result.append(", ");
+                    }
+                    result.append(displayName);
+                    result.append(": ");
+                    result.append(name);
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * Returns the referral vet for a patient linked to an act.
+     * This is the patient's associated party from the first matching
+     * <em>entityRelationship.referredFrom</em> or
+     * <em>entityrRelationship.referredTo</em> overlapping the act's start time.
+     *
+     * @param context the expression context. Expected to reference an act.
+     * @return the referral vet, or <code>null</code> if there is no patient
+     *         associated with the act, the act has no start time, or the
+     *         patient isn't being referred
+     */
+    public static Party getPatientReferralVet(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        if (pointer == null || !(pointer.getValue() instanceof Act)) {
+            return null;
+        }
+        return getPatientReferralVet((Act) pointer.getValue());
+    }
+
+    /**
+     * Returns the referral vet for a patient linked to an act.
+     * This is the patient's associated party from the first matching
+     * <em>entityRelationship.referredFrom</em> or
+     * <em>entityrRelationship.referredTo</em> overlapping the act's start time.
+     *
+     * @param act the act
+     * @return the referral vet, or <code>null</code> if there is no patient
+     *         associated with the act, the act has no start time, or the
+     *         patient isn't being referred
+     */
+    public static Party getPatientReferralVet(Act act) {
+        Party vet = null;
+        Date startTime = act.getActivityStartTime();
+        ActBean bean = new ActBean(act);
+        Party patient = (Party) bean.getParticipant("participation.patient");
+        if (patient != null && startTime != null) {
+            PatientRules rules = new PatientRules();
+            vet = rules.getReferralVet(patient, startTime);
+        }
+        return vet;
+    }
+
+    /**
+     * Returhs the referral vet practice for a vet associated with the
+     * supplied act's patient.
+     *
+     * @param context the expression context. Expected to reference an act.
+     * @return the practice the vet is associated with or <code>null</code> if
+     *         the vet is not associated with any practice
+     */
+    public static Party getPatientReferralVetPractice(
+            ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        if (pointer == null || !(pointer.getValue() instanceof Act)) {
+            return null;
+        }
+        return getPatientReferralVetPractice((Act) pointer.getValue());
+    }
+
+    /**
+     * Returhs the referral vet practice for a vet associated with the
+     * supplied act's patient.
+     *
+     * @param act the act
+     * @return the practice the vet is associated with or <code>null</code> if
+     *         the vet is not associated with any practice
+     */
+    public static Party getPatientReferralVetPractice(Act act) {
+        Date startTime = act.getActivityStartTime();
+        if (startTime != null) {
+            Party vet = getPatientReferralVet(act);
+            if (vet != null) {
+                return getReferralVetPractice(vet, startTime);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returhs the referral vet practice for a vet overlapping the specified
+     * time.
+     *
+     * @param vet  the vet
+     * @param time the time
+     * @return the practice the vet is associated with or <code>null</code> if
+     *         the vet is not associated with any practice
+     */
+    public static Party getReferralVetPractice(Party vet, Date time) {
+        return new SupplierRules().getReferralVetPractice(vet, time);
     }
 
     /**
@@ -439,36 +543,21 @@ public class PartyFunctions {
     }
 
     /**
-     * Returns a stringfield form of a party's identities.
+     * Return a formatted name for the customerPerson party.
      *
-     * @param context the expression context. Expected to reference a party.
-     * @return the stringified form of the party's identities or
-     *         <code>null</code>
+     * @param party the party
+     * @return a formatted name string
      */
-    public static String identities(ExpressionContext context) {
-        Pointer pointer = context.getContextNodePointer();
-        if (pointer == null || !(pointer.getValue() instanceof Party)) {
-            return null;
-        }
-
+    private static String getPersonName(Party party) {
+        String title = ArchetypeServiceFunctions.lookup(party, "title");
+        IMObjectBean bean = new IMObjectBean(party);
+        String firstName = bean.getString("firstName", "");
+        String lastName = bean.getString("lastName", "");
         StringBuffer result = new StringBuffer();
-
-        Party party = (Party) pointer.getValue();
-        for (EntityIdentity identity : party.getIdentities()) {
-            IMObjectBean bean = new IMObjectBean(identity);
-            if (bean.hasNode("name")) {
-                String name = bean.getString("name");
-                String displayName = bean.getDisplayName();
-                if (name != null) {
-                    if (result.length() != 0) {
-                        result.append(", ");
-                    }
-                    result.append(displayName);
-                    result.append(": ");
-                    result.append(name);
-                }
-            }
+        if (title != null) {
+            result.append(title).append(" ");
         }
+        result.append(firstName).append(" ").append(lastName);
         return result.toString();
     }
 
