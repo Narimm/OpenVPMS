@@ -52,6 +52,8 @@
                     defaultValue="'0.0'" readOnly="true" />
         <node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
             derived="true" derivedValue="/fixedAmount - /details/attributes/discount + /quantity * /unitAmount"/>
+		<node name="credit" path="/credit" type="java.lang.Boolean"
+			defaultValue="false()" readOnly="true" hidden="true" />
         <node name="dispensing" path="/sourceActRelationships"
 			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
 			filter="actRelationship.invoiceItemDispensing" >
