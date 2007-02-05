@@ -22,7 +22,10 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+
+import java.util.Date;
 
 
 /**
@@ -70,6 +73,35 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
 
         deactivateOwnerRelationship(patient2);
         assertFalse(rules.isOwner(customer, patient2));
+    }
+
+    /**
+     * Tests the {@link PatientRules#getReferralVet} method.
+     */
+    public void testGetReferralVet() {
+        Party patient = TestHelper.createPatient(false);
+        Party vet = TestHelper.createSupplierVet();
+        EntityBean bean = new EntityBean(patient);
+        EntityRelationship referral
+                = bean.addRelationship("entityRelationship.referredFrom", vet);
+        PatientRules rules = new PatientRules();
+
+        // verify the vet is returned for a time > the default start time
+        Party vet2 = rules.getReferralVet(patient, new Date());
+        assertEquals(vet, vet2);
+
+        // verify no vet returned if the relationship has no start time
+        referral.setActiveStartTime(null);
+        assertNull(rules.getReferralVet(patient, new Date()));
+
+        // now set the start and end time and verify that there is no referrer
+        // for a later time (use time addition due to system clock granularity)
+        Date start = new Date();
+        Date end = new Date(start.getTime() + 1);
+        Date later = new Date(end.getTime() + 1);
+        referral.setActiveStartTime(start);
+        referral.setActiveEndTime(end);
+        assertNull(rules.getReferralVet(patient, later));
     }
 
     /**
