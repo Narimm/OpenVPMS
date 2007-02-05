@@ -76,17 +76,17 @@
     <data archetype="lookup.paymentType" code="CREDIT" />
     <data archetype="lookup.paymentType" code="EFT" />
     <data archetype="lookup.paymentType" code="POSTAL_NOTE" />
-    <data id="MERCH" archetype="lookup.productGroup" code="MERCH" />
+    <data id="MERCH" archetype="lookup.productGroup" code="MERCHANDISE" />
     <data id="DRUGS" archetype="lookup.productGroup" code="DRUGS" />
-    <data id="MISC" archetype="lookup.productGroup" code="MISC" />
+    <data id="MISC" archetype="lookup.productGroup" code="MISCELLANEOUS" />
     <data id="ANAESTHETIC" archetype="lookup.productGroup" code="ANAESTHETIC" />
     <data id="PATHOLOGY" archetype="lookup.productGroup" code="PATHOLOGY" />
     <data id="SURGERY" archetype="lookup.productGroup" code="SURGERY" />
     <data id="DESEX" archetype="lookup.productGroup" code="DESEX" />
     <data id="GROOMING" archetype="lookup.productGroup" code="GROOMING" />
     <data id="FEES" archetype="lookup.productGroup" code="FEES" />
-    <data id="HOSP" archetype="lookup.productGroup" code="HOSP" />
-    <data id="P" archetype="lookup.productGroup" code="P" />
+    <data id="HOSP" archetype="lookup.productGroup" code="HOSPITAL" />
+    <data id="PROCEDURES" archetype="lookup.productGroup" code="PROCEDURES" />
     <data id="TRAVEL" archetype="lookup.productGroup" code="TRAVEL" />
     <data id="VACCINATIONS" archetype="lookup.productGroup" code="VACCINATIONS" />
     <data id="RADIOLOGY" archetype="lookup.productGroup" code="RADIOLOGY" />
