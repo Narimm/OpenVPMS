@@ -25,7 +25,7 @@
 			derivedValue="'Referred From'" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat('Referred To', '(', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')', ' - ', /details/attributes/reason)" />
+			derivedValue="concat('Referred From', '(', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')', ' - ', /details/attributes/reason)" />
 		<node name="activeStartTime" displayName="Start Date" path="/activeStartTime"
 			type="java.util.Date" minCardinality="1"
 			defaultValue="java.util.Date.new()" />
