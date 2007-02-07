@@ -27,6 +27,8 @@ import org.openvpms.web.app.customer.CustomerEditor;
 import org.openvpms.web.app.customer.PatientOwnerRelationshipEditor;
 import org.openvpms.web.app.customer.account.AdjustmentActEditor;
 import org.openvpms.web.app.patient.PatientEditor;
+import org.openvpms.web.app.patient.mr.PatientClinicalEventActEditor;
+import org.openvpms.web.app.patient.mr.PatientClinicalProblemActEditor;
 import org.openvpms.web.app.workflow.messaging.UserMessageActEditor;
 import org.openvpms.web.component.im.doc.DocumentTemplateEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
@@ -62,7 +64,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     /**
      * The archetype service.
      */
-    private IArchetypeService _service;
+    private IArchetypeService service;
 
 
     /**
@@ -335,6 +337,24 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
+     * Verifies that a {@link PatientClinicalEventActEditor} is created
+     * for <em>act.patientClinicalEvent</em>.
+     */
+    public void testCreatePatientClinicalEventActEditor() {
+        checkCreate("act.patientClinicalEvent",
+                    PatientClinicalEventActEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link PatientClinicalProblemActEditor} is created
+     * for <em>act.patientClinicalProblem</em>.
+     */
+    public void testCreatePatientClinicalProblemActEditor() {
+        checkCreate("act.patientClinicalProblem",
+                    PatientClinicalProblemActEditor.class);
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -342,7 +362,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        _service = ServiceHelper.getArchetypeService();
+        service = ServiceHelper.getArchetypeService();
     }
 
     /**
@@ -354,7 +374,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     private void checkCreate(String shortName, Class type) {
         LayoutContext context = new DefaultLayoutContext();
-        IMObject object = _service.create(shortName);
+        IMObject object = service.create(shortName);
         assertNotNull("Failed to create object with shortname=" + shortName,
                       object);
         IMObjectEditor editor = IMObjectEditorFactory.create(object, context);
@@ -373,10 +393,10 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     private void checkCreate(String shortName, String parentShortName,
                              Class type) {
         LayoutContext context = new DefaultLayoutContext();
-        IMObject object = _service.create(shortName);
+        IMObject object = service.create(shortName);
         assertNotNull("Failed to create object with shortname=" + shortName,
                       object);
-        IMObject parent = _service.create(parentShortName);
+        IMObject parent = service.create(parentShortName);
         assertNotNull("Failed to create object with shortname="
                 + parentShortName, parent);
         IMObjectEditor editor = IMObjectEditorFactory.create(object, parent,

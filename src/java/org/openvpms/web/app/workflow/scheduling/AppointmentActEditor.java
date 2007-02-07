@@ -60,12 +60,6 @@ import java.util.List;
 public class AppointmentActEditor extends AbstractActEditor {
 
     /**
-     * Listener for modifications to the endTime property.
-     */
-    private final ModifiableListener _endTimeListener;
-
-
-    /**
      * Construct a new <code>AppointmentActEditor</code>.
      *
      * @param act     the act to edit
@@ -86,24 +80,10 @@ public class AppointmentActEditor extends AbstractActEditor {
                 setParticipant("appointmentType", appointmentType);
             }
         }
-        Property startTime = getProperty("startTime");
-        if (startTime.getValue() == null) {
+        if (getStartTime() == null) {
             Date scheduleDate = context.getContext().getScheduleDate();
-            startTime.setValue(getDefaultStartTime(scheduleDate));
+            setStartTime(getDefaultStartTime(scheduleDate));
         }
-        startTime.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onStartTimeChanged();
-            }
-        });
-
-        Property endTime = getProperty("endTime");
-        _endTimeListener = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onEndTimeChanged();
-            }
-        };
-        endTime.addModifiableListener(_endTimeListener);
     }
 
     /**
@@ -140,28 +120,12 @@ public class AppointmentActEditor extends AbstractActEditor {
     /**
      * Invoked when the start time changes. Calculates the end time.
      */
-    private void onStartTimeChanged() {
+    @Override
+    protected void onStartTimeChanged() {
         try {
             calculateEndTime();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
-        }
-    }
-
-    /**
-     * Invoked when the end time changes. Sets the value to start time if
-     * end time < start time.
-     */
-    private void onEndTimeChanged() {
-        Object startValue = getProperty("startTime").getValue();
-        Property end = getProperty("endTime");
-        Object endValue = end.getValue();
-        if (startValue instanceof Date && endValue instanceof Date) {
-            Date startTime = (Date) startValue;
-            Date endTime = (Date) endValue;
-            if (endTime.compareTo(startTime) < 0) {
-                end.setValue(startTime);
-            }
         }
     }
 
@@ -233,22 +197,15 @@ public class AppointmentActEditor extends AbstractActEditor {
      * @throws OpenVPMSException for any error
      */
     private void calculateEndTime() {
-        Property startTime = getProperty("startTime");
-        Object value = startTime.getValue();
+        Date start = getStartTime();
         Party schedule = (Party) getParticipant("schedule");
         AppointmentTypeParticipationEditor editor
                 = getAppointmentTypeEditor();
         Entity appointmentType = editor.getEntity();
-        if (value instanceof Date && schedule != null
-                && appointmentType != null) {
-            Date start = (Date) value;
-            Date end = AppointmentRules.calculateEndTime(start,
-                                                         schedule,
+        if (start != null && schedule != null && appointmentType != null) {
+            Date end = AppointmentRules.calculateEndTime(start, schedule,
                                                          appointmentType);
-            Property endTime = getProperty("endTime");
-            endTime.removeModifiableListener(_endTimeListener);
-            endTime.setValue(end);
-            endTime.addModifiableListener(_endTimeListener);
+            setEndTime(end);
         }
     }
 

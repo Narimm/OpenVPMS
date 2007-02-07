@@ -20,26 +20,23 @@ package org.openvpms.web.app.workflow.consult;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.OrConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.QueryIterator;
 import org.openvpms.web.component.app.ContextException;
+import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
 
-import java.util.List;
-
 
 /**
  * Task to create an <em>act.patientClinicalEvent</em> for a customer,
- * if one doesn't already exist.
+ * if an IN_PROGRESS one doesn't already exist.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -60,38 +57,30 @@ class PatientClinicalEventTask extends CreateIMObjectTask {
      * failure.
      *
      * @param context the task context
+     * @throws ContextException          if there is no patient
+     * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
     public void start(final TaskContext context) {
-        ArchetypeQuery query = new ArchetypeQuery(getShortNames(), false,
-                                                  true);
-        query.setFirstResult(0);
-        query.setMaxResults(1);
-
         Party patient = context.getPatient();
         if (patient == null) {
             throw new ContextException(ContextException.ErrorCode.NoPatient);
         }
-        CollectionNodeConstraint participations
-                = new CollectionNodeConstraint("patient",
-                                               "participation.patient",
-                                               false, true);
-        participations.add(new ObjectRefNodeConstraint(
-                "entity", patient.getObjectReference()));
 
-        query.add(participations);
-        OrConstraint or = new OrConstraint();
-        or.add(new NodeConstraint("status", ActStatus.IN_PROGRESS));
-        or.add(new NodeConstraint("status", ActStatus.COMPLETED));
-        query.add(or);
+        ArchetypeQuery query = new ArchetypeQuery(getShortNames(), false,
+                                                  true);
+        query.setMaxResults(1);
 
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        List<IMObject> result = service.get(query).getResults();
-        if (result.isEmpty()) {
+        query.add(new ParticipantConstraint("patient", "participation.patient",
+                                            patient.getObjectReference()));
+        query.add(new NodeConstraint("status", ActStatus.IN_PROGRESS));
+        query.add(new NodeSortConstraint("startTime", false));
+
+        QueryIterator<Act> iterator = new IMObjectQueryIterator<Act>(query);
+        if (!iterator.hasNext()) {
             super.start(context);
         } else {
-            Act event = (Act) result.get(0);
+            Act event = iterator.next();
             context.addObject(event);
             notifyCompleted();
         }

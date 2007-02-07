@@ -69,23 +69,12 @@ public class TaskActEditor extends AbstractActEditor {
         initParticipant("patient", context.getContext().getPatient());
         initParticipant("worklist", context.getContext().getWorkList());
 
-        Property startTime = getProperty("startTime");
-        if (startTime.getValue() == null) {
+        if (getStartTime() == null) {
             Date date = context.getContext().getWorkListDate();
-            startTime.setValue(getDefaultStartTime(date));
+            setStartTime(getDefaultStartTime(date));
         }
-        startTime.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onStartTimeChanged();
-            }
-        });
 
-        Property endTime = getProperty("endTime");
-        endTime.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onEndTimeChanged();
-            }
-        });
+        addStartEndTimeListeners();
 
         getProperty("status").addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -189,63 +178,12 @@ public class TaskActEditor extends AbstractActEditor {
      */
     private void onStatusChanged() {
         Property status = getProperty("status");
-        Property endTime = getProperty("endTime");
+        Date time = null;
         String value = (String) status.getValue();
         if (COMPLETED.equals(value) || CANCELLED.equals(value)) {
-            endTime.setValue(new Date());
-        } else {
-            endTime.setValue(null);
+            time = new Date();
         }
-    }
-
-    /**
-     * Invoked when the start time changes. Sets the value to end time if
-     * start time > end time.
-     */
-    private void onStartTimeChanged() {
-        Date start = getStartTime();
-        Date end = getEndTime();
-        if (start != null && end != null) {
-            if (start.compareTo(end) > 0) {
-                getProperty("startTime").setValue(end);
-            }
-        }
-    }
-
-    /**
-     * Invoked when the end time changes. Sets the value to start time if
-     * end time < start time.
-     */
-    private void onEndTimeChanged() {
-        Date start = getStartTime();
-        Date end = getEndTime();
-        if (start != null && end != null) {
-            if (end.compareTo(start) < 0) {
-                getProperty("endTime").setValue(start);
-            }
-        }
-    }
-
-    /**
-     * Returns the start time.
-     *
-     * @return the start time. May be <code>null</code>
-     */
-    private Date getStartTime() {
-        Property property = getProperty("startTime");
-        Object value = property.getValue();
-        return (value instanceof Date) ? (Date) value : null;
-    }
-
-    /**
-     * Returns the end time.
-     *
-     * @return the end time. May be <code>null</code>
-     */
-    private Date getEndTime() {
-        Property property = getProperty("endTime");
-        Object value = property.getValue();
-        return (value instanceof Date) ? (Date) value : null;
+        setEndTime(time, false);
     }
 
     /**

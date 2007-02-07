@@ -118,7 +118,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         String reason = getValue(bean, "reason");
         String status = ArchetypeServiceFunctions.lookup(act, "status");
 
-        Date date = bean.getDate("completeTime");
+        Date date = bean.getDate("endTime");
         if (date != null) {
             completed = getValue(DateFormatter.formatDate(date, false),
                                  bean, "completedTime");
