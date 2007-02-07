@@ -191,6 +191,10 @@
         <constructor-arg>
             <value>8100</value>
         </constructor-arg>
+        <!-- start the service on demand -->
+        <constructor-arg>
+            <value>false</value>
+        </constructor-arg>
     </bean>
 
     <!-- OpenOffice bootstrap service. Starts an instance of OpenOffice on
