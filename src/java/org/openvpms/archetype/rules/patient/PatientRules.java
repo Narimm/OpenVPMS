@@ -18,18 +18,17 @@
 
 package org.openvpms.archetype.rules.patient;
 
-import org.openvpms.archetype.rules.party.PartyRelationshipRules;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
 import java.util.Date;
-import java.util.Set;
 
 
 /**
@@ -91,6 +90,24 @@ public class PatientRules {
     }
 
     /**
+     * Returns the owner of a patient associated with an act.
+     *
+     * @param act the act
+     * @return the patient's owner, or <code>null</code> if none can be found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Party getOwner(Act act) {
+        ActBean bean = new ActBean(act, service);
+        Party patient = (Party) bean.getParticipant("participation.patient");
+        Date startTime = act.getActivityStartTime();
+        if (patient != null && startTime != null) {
+            EntityBean patientBean = new EntityBean(patient, service);
+            return (Party) patientBean.getSourceEntity(PATIENT_OWNER, startTime);
+        }
+        return null;
+    }
+
+    /**
      * Returns the owner of a patient.
      *
      * @param patient the patient
@@ -98,23 +115,8 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getOwner(Party patient) {
-        Party owner = null;
-        Set<EntityRelationship> relationships
-                = patient.getEntityRelationships();
-        for (EntityRelationship relationship : relationships) {
-            if (TypeHelper.isA(relationship, PATIENT_OWNER)
-                    && relationship.isActive()) {
-                IMObjectReference custRef = relationship.getSource();
-                if (custRef != null) {
-                    owner = (Party) ArchetypeQueryHelper.getByObjectReference(
-                            service, custRef);
-                    if (owner != null) {
-                        break;
-                    }
-                }
-            }
-        }
-        return owner;
+        EntityBean bean = new EntityBean(patient, service);
+        return (Party) bean.getSourceEntity(PATIENT_OWNER);
     }
 
     /**
@@ -142,7 +144,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getReferralVet(Party patient, Date time) {
-        return (Party) PartyRelationshipRules.getTargetEntity(
-                service, patient, "referrals", time);
+        EntityBean bean = new EntityBean(patient);
+        return (Party) bean.getNodeTargetEntity("referrals", time);
     }
 }

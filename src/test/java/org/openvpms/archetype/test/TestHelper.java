@@ -22,7 +22,6 @@ import junit.framework.Assert;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -84,9 +83,6 @@ public class TestHelper extends Assert {
         IMObjectBean bean = new IMObjectBean(customer);
         bean.setValue("firstName", firstName);
         bean.setValue("lastName", lastName);
-        Contact contact = (Contact) create("contact.phoneNumber");
-        assertNotNull(contact);
-        customer.addContact(contact);
         if (save) {
             bean.save();
         }
