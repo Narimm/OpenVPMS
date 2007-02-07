@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
 import java.util.Date;
 
@@ -70,7 +71,7 @@ public class SupplierRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getReferralVetPractice(Party vet, Date time) {
-        return (Party) PartyRelationshipRules.getSourceEntity(
-                service, vet, "practices", time);
+        EntityBean bean = new EntityBean(vet, service);
+        return (Party) bean.getNodeSourceEntity("practices", time);
     }
 }

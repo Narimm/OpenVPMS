@@ -19,19 +19,11 @@
 package org.openvpms.archetype.rules.party;
 
 import org.apache.log4j.Logger;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanException;
 import org.openvpms.component.business.service.ruleengine.RuleEngineException;
 
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -117,94 +109,4 @@ public class PartyRelationshipRules {
         }
     }
 
-    /**
-     * Returns the target entity in the first entity relationship for the
-     * specified node that has a start and end times overlapping the specified
-     * time. The end time may be null, indicating an unbounded time.
-     *
-     * @param service the archetype service
-     * @param entity  the entity
-     * @param node    the entity relationship node
-     * @param time    the time
-     * @return the first entity, or <code>null</code> if none is found
-     * @throws IMObjectBeanException     if the node is invalid
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public static Entity getTargetEntity(
-            IArchetypeService service, Entity entity, String node, Date time) {
-        return getEntity(service, entity, node, time,
-                         new EntityAccessor(false));
-    }
-
-    /**
-     * Returns the source entity in the first entity relationship for the
-     * specified node that has a start and end times overlapping the specified
-     * time. The end time may be null, indicating an unbounded time.
-     *
-     * @param service the archetype service
-     * @param entity  the entity
-     * @param node    the entity relationship node
-     * @param time    the time
-     * @return the first entity, or <code>null</code> if none is found
-     * @throws IMObjectBeanException     if the node is invalid
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public static Entity getSourceEntity(
-            IArchetypeService service, Entity entity, String node, Date time) {
-        return getEntity(service, entity, node, time, new EntityAccessor(true));
-    }
-
-    /**
-     * Returns the entity in the first entity relationship for the
-     * specified node that has a start and end times overlapping the specified
-     * time. The end time may be null, indicating an unbounded time.
-     *
-     * @param service  the archetype service
-     * @param entity   the entity
-     * @param node     the entity relationship node
-     * @param time     the time
-     * @param accessor the entity accessor
-     * @return the first entity, or <code>null</code> if none is found
-     * @throws IMObjectBeanException     if the node is invalid
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private static Entity getEntity(
-            IArchetypeService service, Entity entity, String node, Date time,
-            EntityAccessor accessor) {
-        IMObjectBean bean = new IMObjectBean(entity, service);
-        for (IMObject object : bean.getValues(node)) {
-            EntityRelationship relationship = (EntityRelationship) object;
-            Date start = relationship.getActiveStartTime();
-            if (start instanceof Timestamp) {
-                start = new Date(start.getTime());
-            }
-            if (start != null && start.compareTo(time) <= 0
-                    && accessor.getRef(relationship) != null) {
-                Date end = relationship.getActiveEndTime();
-                if (end == null || end.compareTo(time) >= 0) {
-                    return accessor.get(relationship, service);
-                }
-            }
-        }
-        return null;
-    }
-
-    private static class EntityAccessor {
-
-        private final boolean source;
-
-        public EntityAccessor(boolean source) {
-            this.source = source;
-        }
-
-        public IMObjectReference getRef(EntityRelationship relationship) {
-            return source ? relationship.getSource() : relationship.getTarget();
-        }
-
-        public Entity get(EntityRelationship relationship,
-                          IArchetypeService service) {
-            return (Entity) ArchetypeQueryHelper.getByObjectReference(
-                    service, getRef(relationship));
-        }
-    }
 }
