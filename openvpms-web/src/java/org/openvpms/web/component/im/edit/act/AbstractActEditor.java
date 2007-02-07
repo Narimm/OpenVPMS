@@ -25,11 +25,15 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import java.util.Date;
 
 
 /**
@@ -41,6 +45,17 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 public class AbstractActEditor extends AbstractIMObjectEditor {
 
     /**
+     * Listener for <em>startTime</em> changes.
+     */
+    private final ModifiableListener startTimeListener;
+
+    /**
+     * Listener for <em>endTime</em> changes.
+     */
+    private final ModifiableListener endTimeListener;
+
+
+    /**
      * Constructs a new <code>AbstractActEditor</code>.
      *
      * @param act     the act to edit
@@ -49,6 +64,16 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      */
     public AbstractActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
+        startTimeListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onStartTimeChanged();
+            }
+        };
+        endTimeListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onEndTimeChanged();
+            }
+        };
     }
 
     /**
@@ -174,4 +199,123 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
         }
         return (value instanceof Participation) ? (Participation) value : null;
     }
+
+    /**
+     * Returns the act start time.
+     *
+     * @return the act start time. May be <code>null</code>
+     */
+    protected Date getStartTime() {
+        return ((Act) getObject()).getActivityStartTime();
+    }
+
+    /**
+     * Sets the act start time, temporarily disabling callbacks.
+     *
+     * @param time the start time
+     */
+    protected void setStartTime(Date time) {
+        Property startTime = getProperty("startTime");
+        removeStartEndTimeListeners();
+        startTime.setValue(time);
+        addStartEndTimeListeners();
+    }
+
+    /**
+     * Returns the end time.
+     *
+     * @return the end time. May be <code>null</code>
+     */
+    protected Date getEndTime() {
+        return ((Act) getObject()).getActivityEndTime();
+    }
+
+    /**
+     * Sets the act end time, temporarily disabling callbacks.
+     *
+     * @param time the end time
+     */
+    protected void setEndTime(Date time) {
+        setEndTime(time, true);
+    }
+
+    /**
+     * Sets the act end time.
+     *
+     * @param time    the end time
+     * @param disable if <code>true</code> disable the {@link #onEndTimeChanged}
+     *                callback
+     */
+    protected void setEndTime(Date time, boolean disable) {
+        Property endTime = getProperty("endTime");
+        if (disable) {
+            removeStartEndTimeListeners();
+        }
+        endTime.setValue(time);
+        if (disable) {
+            addStartEndTimeListeners();
+        }
+    }
+
+    /**
+     * Adds act start/end time modification callbacks.
+     * When enabled, changes to the <em>startTime</em> property trigger
+     * {@link #onStartTimeChanged()} and changes to <em>endTime</em> trigger
+     * {@link #onEndTimeChanged()}.
+     */
+    protected void addStartEndTimeListeners() {
+        Property startTime = getProperty("startTime");
+        if (startTime != null) {
+            startTime.addModifiableListener(startTimeListener);
+        }
+
+        Property endTime = getProperty("endTime");
+        if (endTime != null) {
+            endTime.addModifiableListener(endTimeListener);
+        }
+    }
+
+    /**
+     * Removes act start/end time modification callbacks.
+     */
+    protected void removeStartEndTimeListeners() {
+        Property startTime = getProperty("startTime");
+        if (startTime != null) {
+            startTime.removeModifiableListener(startTimeListener);
+        }
+
+        Property endTime = getProperty("endTime");
+        if (endTime != null) {
+            endTime.removeModifiableListener(endTimeListener);
+        }
+    }
+
+    /**
+     * Invoked when the start time changes. Sets the value to end time if
+     * start time > end time.
+     */
+    protected void onStartTimeChanged() {
+        Date start = getStartTime();
+        Date end = getEndTime();
+        if (start != null && end != null) {
+            if (start.compareTo(end) > 0) {
+                setStartTime(end);
+            }
+        }
+    }
+
+    /**
+     * Invoked when the end time changes. Sets the value to start time if
+     * end time < start time.
+     */
+    protected void onEndTimeChanged() {
+        Date start = getStartTime();
+        Date end = getEndTime();
+        if (start != null && end != null) {
+            if (end.compareTo(start) < 0) {
+                setEndTime(start);
+            }
+        }
+    }
+
 }
