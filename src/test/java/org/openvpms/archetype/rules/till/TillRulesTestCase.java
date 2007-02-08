@@ -34,6 +34,7 @@ import org.openvpms.component.business.service.ruleengine.RuleEngineException;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 
@@ -204,6 +205,32 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         final BigDecimal cashFloat = new BigDecimal(40);
         final BigDecimal newCashFloat = new BigDecimal(100);
         checkClearTill(cashFloat, newCashFloat);
+    }
+
+    /**
+     * Verifies that an act doesn't get added to a new till balance if it
+     * is subsequently saved after the till has been cleared.
+     */
+    public void testClearTillAndReSave() {
+        ActBean payment = createPayment();
+        payment.setStatus(POSTED);
+        FinancialAct balance = checkAddToTillBalance(payment, false,
+                                                     BigDecimal.ONE);
+
+        // clear the till
+        Party account = createAccount();
+        rules.clearTill(balance, BigDecimal.ZERO, account);
+
+        // reload the act and save it to force TillRules.addToTill() to run
+        // again. However the act should not be added to a new balance as
+        // there is an existing actRelationship.tillBalanceItem relationship.
+        Act latest = (Act) get(payment.getAct());
+        save(latest);
+        latest = (Act) get(latest);
+        payment = new ActBean(latest);
+        List<ActRelationship> relationships = payment.getRelationships(
+                "actRelationship.tillBalanceItem");
+        assertEquals(1, relationships.size());
     }
 
     /**
@@ -382,7 +409,8 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
             assertNull(balance);
         }
         if (balance != null) {
-            int found = countRelationships(balance, act.getAct());
+            Act latest = (Act) get(act.getAct());
+            int found = countRelationships(balance, latest);
             if (posted) {
                 assertTrue("Act not added to till balance", found != 0);
                 assertFalse("Act added to till balance more than once",

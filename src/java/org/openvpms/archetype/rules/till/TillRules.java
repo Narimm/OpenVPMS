@@ -35,6 +35,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -79,6 +80,12 @@ public class TillRules {
      * Customer account refund act short name.
      */
     private static final String ACCOUNT_REFUND = "act.customerAccountRefund";
+
+    /**
+     * Till balance item relationship short name.
+     */
+    private static final String TILL_BALANCE_ITEM
+            = "actRelationship.tillBalanceItem";
 
 
     /**
@@ -158,35 +165,26 @@ public class TillRules {
      */
     public void addToTill(Act act) {
         ActBean bean = new ActBean(act, service);
+        boolean add = true;
         boolean isAccount = bean.isA(ACCOUNT_PAYMENT, ACCOUNT_REFUND);
         boolean isAdjust = bean.isA("act.tillBalanceAdjustment");
         if (!isAccount && !isAdjust) {
             throw new TillRuleException(CantAddActToTill,
                                         act.getArchetypeId().getShortName());
         }
-        if (isAccount && !POSTED.equals(bean.getStatus())) {
-            return;
+        if (isAccount && !POSTED.equals(act.getStatus())) {
+            add = false;
+        } else if (!bean.getRelationships(TILL_BALANCE_ITEM).isEmpty()) {
+            // already associated with a balance
+            add = false;
         }
-        IMObjectReference till = bean.getParticipantRef(TILL_PARTICIPATION);
-        if (till == null) {
-            throw new TillRuleException(MissingTill, act.getArchetypeId());
-        }
-        FinancialAct balance = getUnclearedTillBalance(till);
-        if (balance == null) {
-            balance = createTillBalance(till);
-        }
-        ActBean balanceBean = new ActBean(balance, service);
-        if (balanceBean.getRelationship(act) == null) {
-            balanceBean.addRelationship("actRelationship.tillBalanceItem", act);
-            updateBalance(balanceBean);
-            balanceBean.save();
-        } else if (isAdjust) {
-            updateBalance(balanceBean);
-            balanceBean.save();
+        if (add) {
+            doAddToTill(act);
         }
     }
 
     /**
+     * `
      * Clears a till.
      *
      * @param balance   the current till balance
@@ -315,7 +313,7 @@ public class TillRules {
         actBean.save();
 
         // @todo should save all modifications in the one transaction
-        addToTill(act);
+        doAddToTill(act);
     }
 
     /**
@@ -373,6 +371,36 @@ public class TillRules {
     }
 
     /**
+     * Adds an act to a till.
+     *
+     * @param act the act to add
+     * @throws TillRuleException         if the act is invalid or the till is
+     *                                   missing
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private void doAddToTill(Act act) {
+        ActBean bean = new ActBean(act);
+        boolean isAdjust = TypeHelper.isA(act, "act.tillBalanceAdjustment");
+        IMObjectReference till = bean.getParticipantRef(TILL_PARTICIPATION);
+        if (till == null) {
+            throw new TillRuleException(MissingTill, act.getArchetypeId());
+        }
+        FinancialAct balance = getUnclearedTillBalance(till);
+        if (balance == null) {
+            balance = createTillBalance(till);
+        }
+        ActBean balanceBean = new ActBean(balance, service);
+        if (balanceBean.getRelationship(act) == null) {
+            balanceBean.addRelationship(TILL_BALANCE_ITEM, act);
+            updateBalance(balanceBean);
+            balanceBean.save();
+        } else if (isAdjust) {
+            updateBalance(balanceBean);
+            balanceBean.save();
+        }
+    }
+
+    /**
      * Helper to create a new till balance, associating it with a till.
      *
      * @param till the till
@@ -419,5 +447,6 @@ public class TillRules {
         return ArchetypeQueryHelper.getByObjectReference(
                 service, object.getObjectReference());
     }
+
 
 }
