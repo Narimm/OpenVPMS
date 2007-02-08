@@ -41,8 +41,9 @@ public class ActBeanTestCase
         extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * Tests the {@link ActBean#addRelationship} and
-     * {@link ActBean#getRelationship)} methods.
+     * Tests the {@link ActBean#addRelationship},
+     * {@link ActBean#getRelationship)} and {@link ActBean#getRelationships}
+     * methods.
      */
     public void testRelationships() {
         final String relName = "actRelationship.customerEstimationItem";
@@ -50,14 +51,18 @@ public class ActBeanTestCase
         ActBean bean = createBean("act.customerEstimation");
         Act source = bean.getAct();
         assertNull(bean.getRelationship(target));
+        assertEquals(0, bean.getRelationships(relName).size());
 
         ActRelationship r = bean.addRelationship(relName, target);
         checkRelationship(r, relName, source, target);
         r = bean.getRelationship(target);
         checkRelationship(r, relName, source, target);
 
+        assertEquals(1, bean.getRelationships(relName).size());
+
         bean.removeRelationship(r);
         assertNull(bean.getRelationship(target));
+        assertEquals(0, bean.getRelationships(relName).size());
     }
 
     /**
