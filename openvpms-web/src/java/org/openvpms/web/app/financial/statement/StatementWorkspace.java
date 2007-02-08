@@ -178,7 +178,7 @@ public class StatementWorkspace extends AbstractWorkspace {
     private void doLayout(Component container) {
         IPage<IMObject> page = ArchetypeQueryHelper.get(
                 ArchetypeServiceHelper.getArchetypeService(),
-                new String[]{"classification.customerAccountType"}, true, 0,
+                new String[]{"lookup.customerAccountType"}, true, 0,
                 ArchetypeQuery.ALL_RESULTS);
         List<IMObject> rows = page.getResults();
         ListModel model = new IMObjectListModel(rows, true, false);
