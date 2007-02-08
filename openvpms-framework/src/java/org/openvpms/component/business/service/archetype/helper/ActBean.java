@@ -30,6 +30,7 @@ import static org.openvpms.component.business.service.archetype.helper.IMObjectB
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -132,6 +133,23 @@ public class ActBean extends IMObjectBean {
     public void removeRelationship(ActRelationship relationship) {
         Act act = getAct();
         act.removeActRelationship(relationship);
+    }
+
+    /**
+     * Returns all relationships matching the specified short name.
+     *
+     * @param shortName the short name
+     * @return a list of all relationships matching the short name
+     */
+    public List<ActRelationship> getRelationships(String shortName) {
+        List<ActRelationship> result = new ArrayList<ActRelationship>();
+        Set<ActRelationship> relationships = getAct().getActRelationships();
+        for (ActRelationship r : relationships) {
+            if (TypeHelper.isA(r, shortName)) {
+                result.add(r);
+            }
+        }
+        return result;
     }
 
     /**
