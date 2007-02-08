@@ -3,6 +3,19 @@
 # 1.0-beta-1
 #
 
+# remove mood, repeat_number columns from acts
+alter table acts
+drop column mood;
+
+alter table acts
+drop column repeat_number;
+
+
+# remove code column from entities
+alter table entities
+drop column code;
+
+
 # drop foreign key constraints referencing classifications table
 alter table entity_classifications
 drop foreign key FK76B55CF17751F7FA;
@@ -89,4 +102,4 @@ drop column classification_id;
 
 
 # drop classifications table
-drop classifications;
+drop table classifications;
