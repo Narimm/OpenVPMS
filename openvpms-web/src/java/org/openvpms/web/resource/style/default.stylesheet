@@ -544,8 +544,14 @@
 
     <style name="ButtonRow" type="nextapp.echo2.app.Row">
         <properties>
-            <property name="insets" value="10px 2px"/>
             <property name="cellSpacing" value="3px"/>
+        </properties>
+    </style>
+
+    <style name="DialogButtonRow" base-name="ButtonRow"
+           type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="insets" value="10px 2px"/>
             <property name="layoutData">
                 <layout-data
                         type="nextapp.echo2.app.layout.SplitPaneLayoutData">

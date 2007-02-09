@@ -42,10 +42,13 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.component.util.KeyStrokeHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -184,6 +187,15 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                 model.addTab(nodeDesc.getDisplayName(), inset);
             }
             TabbedPane pane = TabbedPaneFactory.create(model);
+
+            // register a listener to re-register keystroke listeners when
+            // the pane changes as Firefox seems to lose the registration.
+            pane.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    KeyStrokeHelper.reregisterKeyStrokeListeners();
+                }
+
+            });
             pane.setSelectedIndex(0);
             container.add(pane);
         }

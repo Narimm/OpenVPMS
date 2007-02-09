@@ -63,6 +63,11 @@ public class DefaultLayoutContext implements LayoutContext {
             = DEFAULT_LAYOUT_FACTORY;
 
     /**
+     * The layout depth.
+     */
+    private int depth;
+
+    /**
      * The default layout strategy factory.
      */
     private static final IMObjectLayoutStrategyFactory DEFAULT_LAYOUT_FACTORY
@@ -100,7 +105,7 @@ public class DefaultLayoutContext implements LayoutContext {
 
     /**
      * Construct a new  <code>DefaultLayoutContext</code> from an existing
-     * layout context.
+     * layout context. Increases the layout depth by 1.
      *
      * @param context the context
      */
@@ -110,6 +115,7 @@ public class DefaultLayoutContext implements LayoutContext {
         filter = context.getDefaultNodeFilter();
         edit = context.isEdit();
         layoutFactory = context.getLayoutStrategyFactory();
+        depth = context.getLayoutDepth() + 1;
     }
 
     /**
@@ -206,5 +212,23 @@ public class DefaultLayoutContext implements LayoutContext {
     public void setLayoutStrategyFactory(
             IMObjectLayoutStrategyFactory factory) {
         layoutFactory = factory;
+    }
+
+    /**
+     * Returns the layout depth.
+     *
+     * @return the layout depth. If unset, defaults to <code>0</code>
+     */
+    public int getLayoutDepth() {
+        return depth;
+    }
+
+    /**
+     * Sets the layout depth.
+     *
+     * @param depth the depth
+     */
+    public void setLayoutDepth(int depth) {
+        this.depth = depth;
     }
 }

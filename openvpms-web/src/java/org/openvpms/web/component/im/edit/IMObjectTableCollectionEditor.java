@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.edit;
 
 import echopointng.GroupBox;
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Insets;
@@ -32,7 +31,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.button.ShortcutHelper;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
@@ -51,10 +49,9 @@ import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.view.TableComponentFactory;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 
 import java.beans.PropertyChangeEvent;
@@ -114,11 +111,6 @@ public abstract class IMObjectTableCollectionEditor
     private final ModifiableListener editorListener;
 
     /**
-     * The button row style.
-     */
-    private static final String ROW_STYLE = "CellSpacing";
-
-    /**
      * The column style.
      */
     private static final String COLUMN_STYLE = "CellSpacing";
@@ -148,6 +140,10 @@ public abstract class IMObjectTableCollectionEditor
         super(editor, object, new DefaultLayoutContext(context));
 
         context = getContext();
+
+        // don't want to increase the depth for this context
+        context.setLayoutDepth(context.getLayoutDepth() - 1);
+
         // filter out the uid (aka "id") field
         NodeFilter idFilter = new NamedNodeFilter("uid");
         NodeFilter filter = FilterHelper.chain(
@@ -246,26 +242,27 @@ public abstract class IMObjectTableCollectionEditor
         range = DescriptorHelper.getShortNames(range,
                                                false); // expand any wildcards
 
-        Button create = ButtonFactory.create(new ActionListener() {
+        ButtonRow buttons = new ButtonRow(focus);
+
+        boolean disableShortcut;
+
+        // Only use button shortcuts for the first level of collections
+        // as multiple collections may be displayed on the one form
+        disableShortcut = getContext().getLayoutDepth() > 1;
+
+        ActionListener addListener = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onNew();
             }
-        });
+        };
+        buttons.addButton("add", addListener, disableShortcut);
 
-        Button delete = ButtonFactory.create(new ActionListener() {
+        ActionListener deleteListener = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onDelete();
             }
-        });
-
-        // remove any shortcuts from the text, as multiple collections may
-        // be displayed on the one form
-        create.setText(ShortcutHelper.getLocalisedText("button.add"));
-        delete.setText(ShortcutHelper.getLocalisedText("button.delete"));
-
-        focus.add(create);
-        focus.add(delete);
-        Row row = RowFactory.create(ROW_STYLE, create, delete);
+        };
+        buttons.addButton("delete", deleteListener, disableShortcut);
 
         if (range.length == 1) {
             shortName = range[0];
@@ -284,10 +281,10 @@ public abstract class IMObjectTableCollectionEditor
                     }
                 }
             });
-            row.add(archetypeNames);
+            buttons.add(archetypeNames);
             focus.add(archetypeNames);
         }
-        return row;
+        return buttons;
     }
 
     /**

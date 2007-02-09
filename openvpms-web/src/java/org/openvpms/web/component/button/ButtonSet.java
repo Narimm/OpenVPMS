@@ -50,9 +50,9 @@ public class ButtonSet implements KeyStrokeHandler {
     private final FocusGroup focusGroup;
 
     /**
-     * The keystroke listener.
+     * The keystroke listener. May be <code>null</code>.
      */
-    private final KeyStrokeListener keyStrokeListener;
+    private KeyStrokeListener keyStrokeListener;
 
     /**
      * The button style.
@@ -105,15 +105,6 @@ public class ButtonSet implements KeyStrokeHandler {
             this.focusGroup = null;
         }
         this.style = (style != null) ? style : BUTTON_STYLE;
-
-        keyStrokeListener = new KeyStrokeListener();
-        keyStrokeListener.setCancelMode(true);
-        keyStrokeListener.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onKeyStroke(event);
-            }
-        });
-        container.add(keyStrokeListener);
     }
 
     /**
@@ -295,7 +286,7 @@ public class ButtonSet implements KeyStrokeHandler {
     private void addKeyStrokeListener(ShortcutButton button) {
         int code = button.getKeyCode();
         if (code != -1) {
-            keyStrokeListener.addKeyCombination(code, button.getId());
+            getListener().addKeyCombination(code, button.getId());
         }
     }
 
@@ -307,7 +298,9 @@ public class ButtonSet implements KeyStrokeHandler {
     private void removeKeystrokeListener(ShortcutButton button) {
         int code = button.getKeyCode();
         if (code != -1) {
-            keyStrokeListener.removeKeyCombination(code);
+            if (keyStrokeListener != null) {
+                keyStrokeListener.removeKeyCombination(code);
+            }
         }
     }
 
@@ -329,6 +322,25 @@ public class ButtonSet implements KeyStrokeHandler {
         } else {
             log.warn("Keystroke received but not handled");
         }
+    }
+
+    /**
+     * Returns the keystroke listener, creating it if it doesn't exist.
+     *
+     * @return the keystroke listener
+     */
+    private KeyStrokeListener getListener() {
+        if (keyStrokeListener == null) {
+            keyStrokeListener = new KeyStrokeListener();
+            keyStrokeListener.setCancelMode(true);
+            keyStrokeListener.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onKeyStroke(event);
+                }
+            });
+            container.add(keyStrokeListener);
+        }
+        return keyStrokeListener;
     }
 
 }

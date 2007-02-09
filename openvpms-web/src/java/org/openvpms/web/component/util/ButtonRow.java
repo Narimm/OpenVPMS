@@ -44,12 +44,12 @@ public class ButtonRow extends Row implements KeyStrokeHandler {
     /**
      * The default row style.
      */
-    private static final String STYLE = "ButtonRow";
+    public static final String STYLE = "ButtonRow";
 
     /**
      * The default button style.
      */
-    private static final String BUTTON_STYLE = "ButtonRow.Button";
+    public static final String BUTTON_STYLE = "ButtonRow.Button";
 
 
     /**

@@ -103,4 +103,19 @@ public interface LayoutContext {
      */
     void setLayoutStrategyFactory(IMObjectLayoutStrategyFactory factory);
 
+    /**
+     * Returns the layout depth.
+     *
+     * @return the layout depth. If unset, defaults to <code>0</code>
+     *         s
+     */
+    int getLayoutDepth();
+
+    /**
+     * Sets the layout depth.
+     *
+     * @param depth the depth
+     */
+    void setLayoutDepth(int depth);
+
 }
