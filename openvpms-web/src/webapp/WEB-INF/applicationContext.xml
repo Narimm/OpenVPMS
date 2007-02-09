@@ -480,7 +480,7 @@
           singleton="false"/>
 
     <!-- Defines the key stroke combination for accelerator keys.
-         If not specified, defaults to 'Alt'.
+         If mask not specified, defaults to 'Alt'.
       -->
     <bean id="keyStrokeMask"
           class="org.openvpms.web.component.util.KeyStrokeMask">

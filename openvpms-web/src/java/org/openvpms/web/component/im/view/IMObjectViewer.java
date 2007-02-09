@@ -24,7 +24,7 @@ import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
+import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 
 
 /**
@@ -38,17 +38,17 @@ public class IMObjectViewer extends AbstractIMObjectView {
     /**
      * The layout context.
      */
-    private final LayoutContext _context;
+    private final LayoutContext context;
 
 
     /**
-     * Construct a new <code>IMObjectViewer</code>.
+     * Constructs a new <code>IMObjectViewer</code>.
      *
      * @param object the object to view.
      * @param parent the parent object. May be <code>null</code>
      */
     public IMObjectViewer(IMObject object, IMObject parent) {
-        this(object, parent, new DefaultLayoutStrategyFactory().create(object),
+        this(object, parent, new ViewLayoutStrategyFactory().create(object),
              null);
     }
 
@@ -61,7 +61,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
      */
     public IMObjectViewer(IMObject object, IMObject parent,
                           LayoutContext context) {
-        this(object, parent, new DefaultLayoutStrategyFactory().create(object),
+        this(object, parent, new ViewLayoutStrategyFactory().create(object),
              context);
     }
 
@@ -69,7 +69,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
      * Construct a new <code>IMObjectViewer</code>.
      *
      * @param object  the object to view.
-     * @param parent
+     * @param parent  the parent object. May be <code>null</code>
      * @param layout  the layout strategy. May be <code>null</code>
      * @param context the layout context. May be <code>null</code>
      */
@@ -78,13 +78,13 @@ public class IMObjectViewer extends AbstractIMObjectView {
                           LayoutContext context) {
         super(object, new PropertySet(object), parent, layout);
         if (context == null) {
-            _context = new DefaultLayoutContext();
+            this.context = new DefaultLayoutContext();
         } else {
-            _context = new DefaultLayoutContext(context);
+            this.context = new DefaultLayoutContext(context);
         }
         IMObjectComponentFactory factory
-                = new ReadOnlyComponentFactory(_context);
-        _context.setComponentFactory(factory);
+                = new ReadOnlyComponentFactory(this.context);
+        this.context.setComponentFactory(factory);
     }
 
     /**
@@ -102,7 +102,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
      * @return the component factory
      */
     protected LayoutContext getLayoutContext() {
-        return _context;
+        return context;
     }
 
 }

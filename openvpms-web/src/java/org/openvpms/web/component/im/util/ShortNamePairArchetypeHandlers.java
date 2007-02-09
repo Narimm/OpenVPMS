@@ -42,13 +42,18 @@ public class ShortNamePairArchetypeHandlers<T>
     /**
      * Map of primary short names to their correspnding handler classes.
      */
-    private Map<String, Handlers<T>> _handlers
+    private Map<String, Handlers<T>> handlers
             = new HashMap<String, Handlers<T>>();
+
+    /**
+     * The class that each handler must implement/extend.
+     */
+    private final Class type;
 
     /**
      * The logger.
      */
-    private static final Log _log
+    private static final Log log
             = LogFactory.getLog(ShortNamePairArchetypeHandlers.class);
 
 
@@ -59,6 +64,16 @@ public class ShortNamePairArchetypeHandlers<T>
      * @param type class the each handler must implement/extend
      */
     public ShortNamePairArchetypeHandlers(String name, Class type) {
+        this.type = type;
+        load(name);
+    }
+
+    /**
+     * Merges handlers from the specified resource.
+     *
+     * @param name the resource name
+     */
+    public void load(String name) {
         Parser parser = new Parser(type);
         parser.parse(name);
     }
@@ -85,9 +100,9 @@ public class ShortNamePairArchetypeHandlers<T>
      */
     public ArchetypeHandler<T> getHandler(String primary, String secondary) {
         ArchetypeHandler<T> handler = null;
-        String match = getShortName(primary, _handlers.keySet());
+        String match = getShortName(primary, handlers.keySet());
         if (match != null) {
-            Handlers<T> handlers = _handlers.get(match);
+            Handlers<T> handlers = this.handlers.get(match);
             if (secondary != null) {
                 match = getShortName(secondary, handlers.getShortNames());
                 if (match != null) {
@@ -110,12 +125,12 @@ public class ShortNamePairArchetypeHandlers<T>
         /**
          * The global handler.
          */
-        private ArchetypeHandler<T> _handler;
+        private ArchetypeHandler<T> handler;
 
         /**
          * The handlers, keyed on short name.
          */
-        private final Map<String, ArchetypeHandler<T>> _handlers
+        private final Map<String, ArchetypeHandler<T>> handlers
                 = new HashMap<String, ArchetypeHandler<T>>();
 
         /**
@@ -124,7 +139,7 @@ public class ShortNamePairArchetypeHandlers<T>
          * @param handler the handler
          */
         public void setHandler(ArchetypeHandler<T> handler) {
-            _handler = handler;
+            this.handler = handler;
         }
 
         /**
@@ -133,7 +148,7 @@ public class ShortNamePairArchetypeHandlers<T>
          * @return the handler. May be <code>null</code>
          */
         public ArchetypeHandler<T> getHandler() {
-            return _handler;
+            return handler;
         }
 
         /**
@@ -143,7 +158,7 @@ public class ShortNamePairArchetypeHandlers<T>
          * @param handler   the handler handler
          */
         public void add(String shortName, ArchetypeHandler<T> handler) {
-            _handlers.put(shortName, handler);
+            handlers.put(shortName, handler);
         }
 
         /**
@@ -153,7 +168,7 @@ public class ShortNamePairArchetypeHandlers<T>
          * @return the handler type
          */
         public ArchetypeHandler<T> get(String shortName) {
-            return _handlers.get(shortName);
+            return handlers.get(shortName);
         }
 
         /**
@@ -163,7 +178,7 @@ public class ShortNamePairArchetypeHandlers<T>
          * @return the secondary short names
          */
         public Set<String> getShortNames() {
-            return _handlers.keySet();
+            return handlers.keySet();
         }
 
     }
@@ -188,12 +203,13 @@ public class ShortNamePairArchetypeHandlers<T>
          * @param key   the property key
          * @param value the property value
          */
+        @SuppressWarnings("unchecked")
         protected void parse(String key, String value) {
             Class<T> clazz = (Class<T>) getClass(value);
             if (clazz != null) {
                 String[] pair = key.split(",");
                 if (pair.length == 0 || pair.length > 2) {
-                    _log.error("Invalid short name pair=" + key
+                    log.error("Invalid short name pair=" + key
                             + ", loaded from path=" + getPath());
                 } else if (pair.length == 1) {
                     addHandler(pair[0], clazz);
@@ -214,7 +230,7 @@ public class ShortNamePairArchetypeHandlers<T>
             if (matches.length != 0) {
                 Handlers<T> handlers = getHandlers(shortName);
                 if (handlers.getHandler() != null) {
-                    _log.warn("Duplicate sbort name=" + shortName
+                    log.warn("Duplicate sbort name=" + shortName
                             + " from " + getPath() + ": ignoring");
 
                 } else {
@@ -238,7 +254,7 @@ public class ShortNamePairArchetypeHandlers<T>
             if (primaryMatches.length != 0 && secondaryMatches.length != 0) {
                 Handlers<T> handlers = getHandlers(primary);
                 if (handlers.get(secondary) != null) {
-                    _log.warn("Duplicate sbort name=" + secondary
+                    log.warn("Duplicate sbort name=" + secondary
                             + " for primary short name=" + primary
                             + " from " + getPath() + ": ignoring");
                 } else {
@@ -256,7 +272,7 @@ public class ShortNamePairArchetypeHandlers<T>
         private String[] getShortNames(String shortName) {
             String[] matches = DescriptorHelper.getShortNames(shortName, false);
             if (matches.length == 0) {
-                _log.warn("No archetypes found matching short name="
+                log.warn("No archetypes found matching short name="
                         + shortName + ", loaded from path=" + getPath());
             }
             return matches;
@@ -269,12 +285,12 @@ public class ShortNamePairArchetypeHandlers<T>
          * @return the handlers for <code>shortName</code>
          */
         private Handlers<T> getHandlers(String shortName) {
-            Handlers<T> handlers = _handlers.get(shortName);
-            if (handlers == null) {
-                handlers = new Handlers<T>();
-                _handlers.put(shortName, handlers);
+            Handlers<T> result = handlers.get(shortName);
+            if (result == null) {
+                result = new Handlers<T>();
+                handlers.put(shortName, result);
             }
-            return handlers;
+            return result;
         }
     }
 }

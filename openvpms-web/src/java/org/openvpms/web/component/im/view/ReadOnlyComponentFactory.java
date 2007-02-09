@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
+import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.TextComponentFactory;
@@ -49,7 +49,7 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      * @param context the layout context.
      */
     public ReadOnlyComponentFactory(LayoutContext context) {
-        super(context, new DefaultLayoutStrategyFactory());
+        super(context, new ViewLayoutStrategyFactory());
     }
 
     /**

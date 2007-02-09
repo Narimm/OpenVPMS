@@ -25,7 +25,7 @@ import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.filter.ValueNodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
+import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 
 
 /**
@@ -71,7 +71,7 @@ public class DefaultLayoutContext implements LayoutContext {
      * The default layout strategy factory.
      */
     private static final IMObjectLayoutStrategyFactory DEFAULT_LAYOUT_FACTORY
-            = new DefaultLayoutStrategyFactory();
+            = new ViewLayoutStrategyFactory();
 
     /**
      * Construct a new <code>DefaultLayoutContext</code>.
