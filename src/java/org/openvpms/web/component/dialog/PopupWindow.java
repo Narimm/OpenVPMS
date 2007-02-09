@@ -87,7 +87,8 @@ public abstract class PopupWindow extends WindowPane {
             focusGroup.add(focus);
         }
 
-        row = new ButtonRow(focusGroup);
+        row = new ButtonRow(focusGroup, "DialogButtonRow",
+                            ButtonRow.BUTTON_STYLE);
 
         layout = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,

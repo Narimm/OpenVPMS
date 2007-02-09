@@ -19,9 +19,9 @@
 package org.openvpms.web.component.button;
 
 import echopointng.ButtonEx;
-import echopointng.KeyStrokes;
 import echopointng.xhtml.XhtmlFragment;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.web.component.util.KeyStrokeHelper;
 
 
 /**
@@ -84,7 +84,7 @@ public class ShortcutButton extends ButtonEx {
     public int getKeyCode() {
         if (!StringUtils.isEmpty(key)) {
             char code = key.toUpperCase().toCharArray()[0];
-            return KeyStrokes.ALT_MASK | code;
+            return KeyStrokeHelper.getKeyCode(code);
         }
         return -1;
     }
