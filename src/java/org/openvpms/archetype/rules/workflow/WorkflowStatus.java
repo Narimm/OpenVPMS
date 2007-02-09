@@ -35,4 +35,9 @@ public class WorkflowStatus extends ActStatus {
      */
     public static final String PENDING = "PENDING";
 
+    /**
+     * Billed status.
+     */
+    public static final String BILLED = "BILLED";
+
 }

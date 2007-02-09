@@ -66,8 +66,6 @@
     <data archetype="lookup.customerType" code="LARGE_ANIMAL" />
     <data archetype="lookup.customerType" code="STUD" />
     <data archetype="lookup.customerType" code="FARM" />
-    <data archetype="lookup.discountType" code="PETS_FIRST_MEDICATION" name="PetsFirst Medication" type="PERCENTAGE" rate="10.0" />
-    <data archetype="lookup.discountType" code="PETS_FIRST_SERVICES" name="PetsFirst Services"  type="PERCENTAGE" rate="100.0" />
     <data archetype="lookup.discountType" code="PENSIONER_MEDICATION" type="PERCENTAGE" rate="10.0" />
     <data archetype="lookup.discountType" code="PENSIONER_SERVICES"  type="PERCENTAGE" rate="5.0" />
     <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" />
