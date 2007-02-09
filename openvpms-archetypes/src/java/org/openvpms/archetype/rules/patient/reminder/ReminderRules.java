@@ -294,9 +294,7 @@ public class ReminderRules {
                 } else {
                     List<IMObject> purposes = contactBean.getValues("purposes");
                     for (IMObject purpose : purposes) {
-                        // todo - will break if Classification name is changed
-                        // will be fixed by OBF-134
-                        if ("Reminders".equals(purpose.getName())) {
+                        if ("REMINDERS".equals(purpose.getName())) {
                             reminders = contact;
                             break;
                         }
