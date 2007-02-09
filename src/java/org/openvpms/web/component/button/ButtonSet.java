@@ -173,7 +173,13 @@ public class ButtonSet implements KeyStrokeHandler {
         if (focusGroup != null) {
             focusGroup.add(button);
         }
-        container.add(button);
+        if (keyStrokeListener != null) {
+            // add the button before the keystroke listener to avoid
+            // cell spacing issues
+            container.add(button, container.getComponentCount() - 1);
+        } else {
+            container.add(button);
+        }
         return button;
     }
 

@@ -29,7 +29,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
+import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 
 import java.util.LinkedList;
 
@@ -153,7 +153,7 @@ class MedicationManager {
      * {@link PatientMedicationActLayoutStrategy} instances.
      */
     private static class MedicationLayoutStrategyFactory
-            extends DefaultLayoutStrategyFactory {
+            extends EditLayoutStrategyFactory {
 
         /**
          * Creates a new layout strategy for an object.

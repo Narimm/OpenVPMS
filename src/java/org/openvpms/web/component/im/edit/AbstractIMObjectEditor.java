@@ -51,6 +51,8 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
+import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
+import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeListener;
@@ -161,6 +163,13 @@ public abstract class AbstractIMObjectEditor
         } else {
             context = new DefaultLayoutContext(layoutContext);
         }
+        IMObjectLayoutStrategyFactory strategyFactory
+                = context.getLayoutStrategyFactory();
+        if (strategyFactory == null
+                || strategyFactory instanceof ViewLayoutStrategyFactory) {
+            context.setLayoutStrategyFactory(new EditLayoutStrategyFactory());
+        }
+
         // establish a local context if one not already present
         if (context.getContext() == GlobalContext.getInstance()) {
             context.setContext(new LocalContext());

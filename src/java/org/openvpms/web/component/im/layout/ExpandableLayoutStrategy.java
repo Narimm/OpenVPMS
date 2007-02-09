@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.im.layout;
 
-import java.util.List;
-
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
@@ -27,7 +25,6 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.PropertySet;
@@ -36,6 +33,8 @@ import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
+
+import java.util.List;
 
 
 /**
@@ -46,7 +45,7 @@ import org.openvpms.web.component.util.RowFactory;
  */
 public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
 
-	/**
+    /**
      * Determines if only required nodes should be shown.
      */
     private boolean _showOptional;
@@ -64,7 +63,6 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
      * Construct a new <code>ExpandableLayoutStrategy</code>.
-     *
      */
     public ExpandableLayoutStrategy() {
         this(false, true);
@@ -104,10 +102,11 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      * @return the component containing the rendered <code>object</code>
      */
     @Override
-	public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-    	_button = null;
-		return super.apply(object, properties, parent, context);
-	}
+    public ComponentState apply(IMObject object, PropertySet properties,
+                                IMObject parent, LayoutContext context) {
+        _button = null;
+        return super.apply(object, properties, parent, context);
+    }
 
     /**
      * Returns the button to expand/collapse the layout.
@@ -156,10 +155,12 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
                                   Component container,
                                   LayoutContext context) {
         if (_button != null || !_showButton) {
-            super.doSimpleLayout(object, descriptors, properties, container, context);
+            super.doSimpleLayout(object, descriptors, properties, container,
+                                 context);
         } else if (!descriptors.isEmpty()) {
             Row group = RowFactory.create();
-            super.doSimpleLayout(object, descriptors, properties, group, context);
+            super.doSimpleLayout(object, descriptors, properties, group,
+                                 context);
             group.add(getButtonRow());
             container.add(group);
         }
@@ -186,7 +187,8 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
             row.setLayoutData(right);
             container.add(row);
         }
-        super.doComplexLayout(object, descriptors, properties, container, context);
+        super.doComplexLayout(object, descriptors, properties, container,
+                              context);
     }
 
     /**
@@ -227,12 +229,12 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
         return wrapper;
     }
 
-	public boolean isShowOptional() {
-		return _showOptional;
-	}
+    public boolean isShowOptional() {
+        return _showOptional;
+    }
 
-	public void setShowOptional(boolean showOptional) {
-		_showOptional = showOptional;
-	}
+    public void setShowOptional(boolean showOptional) {
+        _showOptional = showOptional;
+    }
 
 }

@@ -593,6 +593,7 @@
     </style>
 
     <style name="ButtonRow.Button-1024x768"
+           base-name="ButtonRow.Button"
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="font">
@@ -602,6 +603,7 @@
     </style>
 
     <style name="ButtonRow.Button-800x600"
+           base-name="ButtonRow.Button"
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="font">

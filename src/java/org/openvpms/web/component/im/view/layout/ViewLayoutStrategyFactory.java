@@ -23,19 +23,21 @@ import org.openvpms.web.component.im.util.ShortNamePairArchetypeHandlers;
 
 
 /**
- * Default implementation of the {@link IMObjectLayoutStrategyFactory}
- * interface.
+ * Implementation of the {@link IMObjectLayoutStrategyFactory}
+ * interface for viewing objects.
+ * Loads configuration from <em>ViewLayoutStrategyFactory.properties</em>
+ * and <em>DefaultLayoutStrategyFactory.properties</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DefaultLayoutStrategyFactory
+public class ViewLayoutStrategyFactory
         extends AbstractLayoutStrategyFactory {
 
     /**
      * Layout strategy implementations.
      */
-    private static ShortNamePairArchetypeHandlers _strategies;
+    private static ShortNamePairArchetypeHandlers strategies;
 
     /**
      * Returns the strategy imlementations.
@@ -44,11 +46,12 @@ public class DefaultLayoutStrategyFactory
      */
     protected ShortNamePairArchetypeHandlers getStrategies() {
         synchronized (getClass()) {
-            if (_strategies == null) {
-                _strategies = load("DefaultLayoutStrategyFactory.properties");
+            if (strategies == null) {
+                strategies = load("ViewLayoutStrategyFactory.properties");
+                strategies.load("DefaultLayoutStrategyFactory.properties");
             }
         }
-        return _strategies;
+        return strategies;
     }
 
 }

@@ -42,7 +42,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * specified.
      */
     public void testDefaultQuery() {
-        checkCreate("classification.*", DefaultQuery.class);
+        checkCreate("lookup.*", DefaultQuery.class);
     }
 
     /**

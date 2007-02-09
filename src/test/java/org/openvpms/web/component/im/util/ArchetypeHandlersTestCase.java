@@ -110,9 +110,9 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
     public void testSameHandlerImplementationType() {
 
         // make sure the AutoQuery class is returned for lookup.*,
-        // classification.*
+        // security.*
         ArchetypeHandler handler = _handlers.getHandler(
-                new String[]{"lookup.*", "classification.*"});
+                new String[]{"lookup.*", "security.*"});
         assertNotNull(handler);
         assertEquals(handler.getType(), AutoQuery.class);
 
@@ -122,11 +122,11 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
         assertNotNull(org);
         assertEquals(org.getType(), AutoQuery.class);
 
-        // make sure no handleris returned for lookup.*, classification.*,
+        // make sure no handleris returned for lookup.*, security.*,
         // party.organisation* as the party.organisation* line has a different
         // configuration
         handler = _handlers.getHandler(
-                new String[]{"lookup.*", "classification.*",
+                new String[]{"lookup.*", "security.*",
                              "party.organisation*"});
         assertNull(handler);
     }
