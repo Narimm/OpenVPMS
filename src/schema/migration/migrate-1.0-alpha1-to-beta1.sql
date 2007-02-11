@@ -2,6 +2,9 @@
 # Script to modify the database schema and data from 1.0-alpha-1 to
 # 1.0-beta-1
 #
+# NOTE: species classifications are removed as part of the migration
+#       as these duplicate species lookups. Any associations between products
+#       and species classifications are not migrated.
 
 # remove mood, repeat_number columns from acts
 alter table acts
@@ -26,6 +29,11 @@ drop foreign key FK5AC8832E7751F7FA;
 alter table product_price_classifications
 drop foreign key FK9EC6BF077751F7FA;
 
+
+# remove species classifications. These duplicate those in lookups
+delete from classifications
+where arch_namespace='openvpms' and arch_rm_name='common'
+      and arch_entity_name='classification' and arch_concept_name='species';
 
 # copy existing classifications into lookups table
 insert into lookups (version, linkId, active, arch_namespace, arch_rm_name,
