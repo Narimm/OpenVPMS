@@ -99,7 +99,9 @@ public class AppointmentTestHelper extends TestHelper {
     public static Act createAppointment(Date startTime, Date endTime,
                                         Party schedule) {
         Party customer = TestHelper.createCustomer();
-        return createAppointment(startTime, endTime, schedule, customer, null);
+        Party patient = TestHelper.createPatient();
+        return createAppointment(startTime, endTime, schedule, customer,
+                                 patient);
     }
 
     /**
