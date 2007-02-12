@@ -77,7 +77,7 @@ public abstract class OOBootstrapService {
      * The time to wait after terminating the desktop, in milliseconds. Used to
      * ensure that subsequent startups don't fail due to socket errors.
      */
-    private long terminateWait = 1000;
+    private long terminateWait = 2000;
 
     /**
      * The current process.
@@ -374,7 +374,7 @@ public abstract class OOBootstrapService {
                 }
             }
 
-            if (desktop.terminate()) {
+            if (!desktop.terminate()) {
                 log.debug("Failed to terminate desktop");
             }
         } catch (Throwable exception) {
