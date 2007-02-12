@@ -76,8 +76,8 @@ public class CustomerInvoiceEditor extends InvoiceEditor {
      */
     @Override
     public boolean save() {
-        boolean saved = true;
-        if (super.save()) {
+        boolean saved = super.save();
+        if (saved) {
             saved = processMedication();
         }
         return saved;
