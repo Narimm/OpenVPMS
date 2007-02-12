@@ -234,17 +234,33 @@
     <!-- Default OpenOffice connection pool. Uses an OOConnectionFactory
          to create connections.
     -->
-    <bean id="DefaultOOConnectionPool"
+    <!--bean id="DefaultOOConnectionPool"
           class="org.openvpms.report.openoffice.DefaultOOConnectionPool">
         <constructor-arg>
             <ref local="OOSocketConnectionFactory"/>
         </constructor-arg>
+    </bean-->
+
+    <!-- OpenOffice connection pool. Uses an OOBootstrapService
+         to create connections.
+    -->
+    <bean id="OOBootstrapConnectionPool"
+          class="org.openvpms.report.openoffice.OOBootstrapConnectionPool">
+        <constructor-arg>
+            <ref local="OOSocketBootstrapService"/>
+        </constructor-arg>
+        <!-- restart OpenOffice after 'reuseCount' uses. Use 0 to never
+             restart.
+        -->
+        <property name="reuseCount">
+            <value>1000</value>
+        </property>
     </bean>
 
     <bean id="printService"
           class="org.openvpms.report.openoffice.PrintService">
         <constructor-arg>
-            <ref local="DefaultOOConnectionPool"/>
+            <ref local="OOBootstrapConnectionPool"/>
         </constructor-arg>
         <constructor-arg>
             <ref local="documentHandlers"/>
@@ -254,7 +270,7 @@
     <bean id="openOfficeHelper"
           class="org.openvpms.report.openoffice.OpenOfficeHelper">
         <constructor-arg>
-            <ref local="DefaultOOConnectionPool"/>
+            <ref local="OOBootstrapConnectionPool"/>
         </constructor-arg>
         <constructor-arg>
             <ref local="printService"/>
