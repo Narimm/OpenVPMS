@@ -11,7 +11,7 @@
     <inceptionYear>2005</inceptionYear>
     <name>openvpms</name>
     <artifactId>openvpms-reports</artifactId>
-    <currentVersion>1.0-beta-1-SNAPSHOT</currentVersion>
+    <currentVersion>1.0-beta-1</currentVersion>
     <package>org.openvpms.report</package>
     <shortDescription>OpenVPMS report generator</shortDescription>
     <url>http://www.openvpms.org/${pom.artifactId}</url>
@@ -399,7 +399,7 @@
         <dependency>
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
-            <version>1.4</version>
+            <version>1.6.1</version>
             <url>http://www.hibernate.org</url>
         </dependency>
         <dependency>
@@ -415,12 +415,6 @@
             <url>http://www.hibernate.org</url>
         </dependency>
         <dependency>
-            <groupId>odmg</groupId>
-            <artifactId>odmg</artifactId>
-            <version>3.0</version>
-            <url>http://www.hibernate.org</url>
-        </dependency>
-        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.0.0-beta-bin</version>
@@ -429,7 +423,7 @@
         <dependency>
             <groupId>c3p0</groupId>
             <artifactId>c3p0</artifactId>
-            <version>0.9.0</version>
+            <version>0.9.1</version>
             <url>http://sourceforge.net/projects/c3p0</url>
         </dependency>
         <dependency>
@@ -477,13 +471,13 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
-            <version>1.0-beta-1-SNAPSHOT</version>
+            <version>1.0-beta-1</version>
             <url>http://www.openvpms.org</url>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
-            <version>1.0-beta-1-SNAPSHOT</version>
+            <version>1.0-beta-1</version>
             <url>http://www.openvpms.org</url>
         </dependency>
         <dependency>
