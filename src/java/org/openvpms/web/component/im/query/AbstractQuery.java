@@ -580,24 +580,16 @@ public abstract class AbstractQuery<T> implements Query<T> {
 
     /**
      * Determines if a query may be performed on name.
-     * A query can be performed on name if:
-     * <ul>
-     * <li>{@link #isAuto()} <code>==true</code></li>
-     * <li>the length of the name (minus wildcards) &gt;=
-     * {@link #getNameMinLength()} </code></li>
-     * </ul>
+     * A query can be performed on name if the length of the name
+     * (minus wildcards) &gt;= {@link #getNameMinLength()}
      *
      * @return <code>true</code> if a query may be performed on name;
      *         otherwise <code>false</code>
      */
     protected boolean canQueryOnName() {
-        boolean result = true;
         String name = getName();
-        if (!isAuto()) {
-            int length = CharSetUtils.delete(name, "*").length();
-            result = (length >= getNameMinLength());
-        }
-        return result;
+        int length = CharSetUtils.delete(name, "*").length();
+        return (length >= getNameMinLength());
     }
 
 }

@@ -18,24 +18,29 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.archetype.rules.product.ProductQueryFactory;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
  * Query implementation that queries {@link Product} instances on short name,
- * instance name, and active/inactive status.
+ * instance name, active/inactive status and species.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-12-04 07:03:58Z $
  */
-public class ProductQuery extends AbstractQuery<Product> {
+public class ProductQuery extends AbstractEntityQuery<Product> {
 
     /**
      * The species to constrain the query to. May be <code>null</code>.
@@ -78,54 +83,51 @@ public class ProductQuery extends AbstractQuery<Product> {
     }
 
     /**
-     * Creates the result set.
+     * Performs the query.
      *
-     * @param sort the sort criteria. May be <code>null</code>
-     * @return a new result set
+     * @param sort the sort constraint. May be <code>null</code>
+     * @return the query result set
+     * @throws ArchetypeServiceException if the query fails
      */
-    protected ResultSet<Product> createResultSet(SortConstraint[] sort) {
-        return new ProductResultSet(getMaxResults(), sort);
+    @Override
+    public ResultSet<Product> query(SortConstraint[] sort) {
+        ResultSet<Product> result = super.query(sort);
+        if (!StringUtils.isEmpty(species)) {
+            result = filterOnSpecies(result);
+        }
+        return result;
     }
 
-    class ProductResultSet extends AbstractArchetypeServiceResultSet<Product> {
-
-        /**
-         * Construct a new <code>ProductResultSet</code>.
-         *
-         * @param pageSize the maximum no. of results per page
-         * @param sort     the sort criteria. May be <code>null</code>
-         */
-        public ProductResultSet(int pageSize, SortConstraint[] sort) {
-            super(pageSize, sort);
-        }
-
-        /**
-         * Returns the specified page.
-         *
-         * @param firstResult the first result of the page to retrieve
-         * @param maxResults  the maximun no of results in the page
-         * @return the page corresponding to <code>firstResult</code>, or
-         *         <code>null</code> if none exists
-         */
-        @SuppressWarnings("unchecked")
-        protected IPage<Product> getPage(int firstResult, int maxResults) {
-            String[] shortNames;
-            if (getShortName() != null) {
-                shortNames = new String[]{getShortName()};
-            } else {
-                shortNames = getShortNames();
+    /**
+     * Filters products to include only those that either have no species
+     * classification, or have a classification matching the species.
+     *
+     * @param set the set to filter
+     * @return the filtered set
+     */
+    private ResultSet<Product> filterOnSpecies(ResultSet<Product> set) {
+        List<Product> matches = new ArrayList<Product>();
+        while (set.hasNext()) {
+            IPage<Product> page = set.next();
+            for (Product product : page.getResults()) {
+                IMObjectBean bean = new IMObjectBean(product);
+                if (bean.hasNode("species")) {
+                    Collection<IMObject> list = bean.getValues("species");
+                    if (list.isEmpty()) {
+                        matches.add(product);
+                    } else {
+                        for (IMObject object : list) {
+                            Lookup lookup = (Lookup) object;
+                            if (StringUtils.equals(lookup.getCode(), species)) {
+                                matches.add(product);
+                                break;
+                            }
+                        }
+                    }
+                }
             }
-            IArchetypeQuery query = ProductQueryFactory.create(
-                    shortNames, getName(), species, getSortConstraints());
-            query.setFirstResult(firstResult);
-            query.setMaxResults(maxResults);
-            query.setCountResults(true);
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            IPage result = service.get(query);
-            return (IPage<Product>) result;
         }
-
+        return new PreloadedResultSet<Product>(matches, getMaxResults());
     }
 
 }
