@@ -44,7 +44,7 @@
               mimeType="text/xml"
               docType="document.other"/>
 
-    <template name="Credit Items Template"
+    <template name="Credit Items A5 Template"
               archetype="SUBREPORT"
               path="creditItemsA5.jrxml"
               mimeType="text/xml"
@@ -56,7 +56,7 @@
               mimeType="text/xml"
               docType="document.other"/>
 
-    <template name="Counter Sale Template"
+    <template name="Counter Sale A5 Template"
               archetype="act.customerAccountChargesCounter"
               path="countersaleA5.jrxml"
               mimeType="text/xml"
