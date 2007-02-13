@@ -23,7 +23,7 @@
 			derivedValue="'Appointment'" />
 		<node name="customer" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.customer" />
-		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
+		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
 			filter="participation.patient" />
 		<node name="appointmentType" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.appointmentType" />
