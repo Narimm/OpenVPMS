@@ -146,9 +146,6 @@
                     /org/openvpms/component/business/domain/im/audit/AuditRecord.hbm.xml
                 </value>
                 <value>
-                    /org/openvpms/archetype/rules/product/Product.hbm.xml
-                </value>
-                <value>
                     /org/openvpms/archetype/rules/workflow/Workflow.hbm.xml
                 </value>
             </list>
