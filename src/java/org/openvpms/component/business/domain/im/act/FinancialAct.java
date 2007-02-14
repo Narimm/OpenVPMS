@@ -19,169 +19,229 @@
 
 package org.openvpms.component.business.domain.im.act;
 
-// java core
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+
 import java.math.BigDecimal;
 
-// commons-lang
-import org.apache.commons.lang.builder.ToStringBuilder;
-
-// openvpms-framework
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 
 /**
  * The financial act is used to model charge, refunds and payment acts to
  * name a few. It extends the {@link Act} class and adds additional
  * attributes
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class FinancialAct extends Act {
 
     /**
-     * Default SUID
+     * Serialisation version identifier.
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * Quantity of units being sold
+     * Quantity of units being sold.
      */
     private BigDecimal quantity;
-    
+
     /**
-     * Fixed amount or fee
+     * Fixed amount or fee.
      */
     private Money fixedAmount;
-    
+
     /**
-     * Unit amount or fee
+     * Unit amount or fee.
      */
     private Money unitAmount;
-    
+
     /**
-     * Tax am ount
+     * Tax amount.
      */
     private Money taxAmount;
-    
+
     /**
-     * The total for this act
+     * The total for this act.
      */
     private Money total;
-    
+
     /**
-     * Is this financial transaction a credit
+     * The allocated amount.
+     */
+    private Money allocatedAmount;
+
+    /**
+     * Determines if this financial transaction is a credit or debit.
      */
     private boolean credit;
-    
+
     /**
-     * Indicates whether it has been printed
+     * Indicates whether it has been printed.
      */
     private boolean printed;
-    
-    
+
+
     /**
-     * Default constructor
+     * Default constructor.
      */
     public FinancialAct() {
         super();
     }
 
     /**
-     * @return Returns the credit.
+     * Determines if this is a credit or debit transaction.
+     *
+     * @return <code>true</code> if it's a credit, <code>false</code> if it's
+     *         a debit
      */
     public boolean isCredit() {
         return credit;
     }
 
     /**
-     * @param credit The credit to set.
+     * Determines if this is a credit or debit transaction.
+     *
+     * @param credit if <code>true</code> it's a credit. If <code>false</code>
+     * it's a debit
      */
     public void setCredit(boolean credit) {
         this.credit = credit;
     }
 
     /**
-     * @return Returns the fixedAmount.
+     * Returns the fixed amount.
+     *
+     * @return the fixed amount
      */
     public Money getFixedAmount() {
         return fixedAmount;
     }
 
     /**
-     * @param fixedAmount The fixedAmount to set.
+     * Sets the fixed amount.
+     *
+     * @param fixedAmount the fixed amount
      */
     public void setFixedAmount(Money fixedAmount) {
         this.fixedAmount = fixedAmount;
     }
 
     /**
-     * @return Returns the printed.
+     * Determines if the act has been printed.
+     *
+     * @return <code>true</code> if the act has been printed
      */
     public boolean isPrinted() {
         return printed;
     }
 
     /**
-     * @param printed The printed to set.
+     * Determines if the act has been printed.
+     *
+     * @param printed if <code>true</code>, the act has been printed
      */
     public void setPrinted(boolean printed) {
         this.printed = printed;
     }
 
     /**
-     * @return Returns the quantity.
+     * Returns the quantity.
+     *
+     * @return the quantity
      */
     public BigDecimal getQuantity() {
         return quantity;
     }
 
     /**
-     * @param quantity The quantity to set.
+     * Sets the quantity.
+     *
+     * @param quantity the quantity
      */
     public void setQuantity(BigDecimal quantity) {
         this.quantity = quantity;
     }
 
     /**
-     * @return Returns the taxAmount.
+     * Returns the tax amount.
+     *
+     * @return the tax amount
      */
     public Money getTaxAmount() {
         return taxAmount;
     }
 
     /**
-     * @param taxAmount The taxAmount to set.
+     * Sets the tax amount.
+     *
+     * @param taxAmount the tax amount
      */
     public void setTaxAmount(Money taxAmount) {
         this.taxAmount = taxAmount;
     }
 
     /**
-     * @return Returns the total.
+     * Returns the total.
+     *
+     * @return the total
      */
     public Money getTotal() {
         return total;
     }
 
     /**
-     * @param total The total to set.
+     * Sets the total.
+     *
+     * @param total the total
      */
     public void setTotal(Money total) {
         this.total = total;
     }
 
     /**
-     * @return Returns the unitAmount.
+     * Returns the unit amount.
+     *
+     * @return the unit amount.
      */
     public Money getUnitAmount() {
         return unitAmount;
     }
 
     /**
-     * @param unitAmount The unitAmount to set.
+     * Sets the unit amount.
+     *
+     * @param unitAmount the unit amount
      */
     public void setUnitAmount(Money unitAmount) {
         this.unitAmount = unitAmount;
+    }
+
+    /**
+     * Returns the allocated amount.
+     * <p>For debits, it is the amount of credits
+     * that have been allocated against the total amount. If allocated = total
+     * then the debt is fully paid.
+     * </p>
+     * <p/>
+     * For credits, it is the amount of the credit that has been allocated
+     * against a debit. If allocated = total then credit has been fully
+     * allocated.
+     * </p>
+     *
+     * @return the allocated amount
+     */
+    public Money getAllocatedAmount() {
+        return allocatedAmount;
+    }
+
+    /**
+     * Sets the allocated amount.
+     *
+     * @param amount the allocated amount
+     * @see #getAllocatedAmount
+     */
+    public void setAllocatedAmount(Money amount) {
+        allocatedAmount = amount;
     }
 
     /* (non-Javadoc)
@@ -189,8 +249,8 @@ public class FinancialAct extends Act {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        FinancialAct copy = (FinancialAct)super.clone();
-        
+        FinancialAct copy = (FinancialAct) super.clone();
+
         copy.credit = this.credit;
         copy.fixedAmount = this.fixedAmount;
         copy.printed = this.printed;
@@ -198,7 +258,8 @@ public class FinancialAct extends Act {
         copy.taxAmount = this.taxAmount;
         copy.total = this.total;
         copy.unitAmount = this.unitAmount;
-        
+        copy.allocatedAmount = this.allocatedAmount;
+
         return copy;
     }
 
@@ -208,14 +269,15 @@ public class FinancialAct extends Act {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(null)
-            .append("quantity", quantity)
-            .append("fixedAmount", fixedAmount)
-            .append("unitAmount", unitAmount)
-            .append("taxAmount", taxAmount)
-            .append("total", total)
-            .append("credit", credit)
-            .append("printed", printed)
-            .toString();
+                .appendSuper(null)
+                .append("quantity", quantity)
+                .append("fixedAmount", fixedAmount)
+                .append("unitAmount", unitAmount)
+                .append("taxAmount", taxAmount)
+                .append("total", total)
+                .append("allocatedAmount", allocatedAmount)
+                .append("credit", credit)
+                .append("printed", printed)
+                .toString();
     }
 }
