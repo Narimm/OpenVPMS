@@ -91,6 +91,8 @@
         type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType" />
       <property name="total" access="property" column="total"
         type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType" />
+      <property name="allocatedAmount" access="property" column="allocated_amount"
+        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType" />
       <property name="credit" access="property" column="credit" type="boolean" />
       <property name="printed" access="property" column="printed"
         type="boolean" />
