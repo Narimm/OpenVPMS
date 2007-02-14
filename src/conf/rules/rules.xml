@@ -1,9 +1,25 @@
 <rules>
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.bankDeposit.before.drl" />
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountBadDebt.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountBadDebt.after.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesCounter.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesCounter.after.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesCredit.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesCredit.after.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesInvoice.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesInvoice.after.drl"/>
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.remove.act.customerAccountChargesInvoice.before.drl" />
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountCreditAdjust.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountCreditAdjust.after.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountDebitAdjust.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountDebitAdjust.after.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountInitialBalance.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountInitialBalance.after.drl"/>
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountInvoiceItem.after.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.remove.act.customerAccountInvoiceItem.after.drl" />
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountPayment.before.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountPayment.after.drl" />
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountRefund.before.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountRefund.after.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.tillBalance.before.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.patientReminder.before.drl"/>
