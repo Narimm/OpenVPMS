@@ -30,6 +30,9 @@
 		<node name="amount" path="/total" 
                     type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
                     defaultValue="'0.0'" readOnly="true"/>
+        <node name="allocatedAmount" path="/allocatedAmount"
+                    type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+                    defaultValue="'0.0'" hidden="true" readOnly="true"/>
 		<node name="credit" path="/credit" type="java.lang.Boolean"
 			defaultValue="false()" readOnly="true" hidden="true" />
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
@@ -56,6 +59,9 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
+        <node name="accountBalance" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.customerAccountBalance" hidden="true"/>
         <node name="items" path="/sourceActRelationships" type="java.util.HashSet" minCardinality="0" maxCardinality="*"
 			filter="actRelationship.customerAccountRefundItem" >
 			<assertion name="archetypeRange">

@@ -33,6 +33,9 @@
 		<node name="tax" path="/taxAmount" 
                     type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
                     defaultValue="'0.0'" readOnly="true" />
+        <node name="allocatedAmount" path="/allocatedAmount"
+                    type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+                    defaultValue="'0.0'" hidden="true" readOnly="true"/>
 		<node name="status" path="/status" type="java.lang.String"	minCardinality="1" derived="true" derivedValue="'POSTED'" />
 		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" minCardinality="1" maxCardinality="1">
 			<node name="notes" displayName="Notes" path="/details/attributes/notes" type="java.lang.String" minCardinality="0" maxLength="300" />
@@ -42,10 +45,13 @@
 			defaultValue="false()" readOnly="true" />
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
         <node name="customer" path="/participations" type="java.util.HashSet"
-              minCardinality="0" maxCardinality="1"
+              minCardinality="1" maxCardinality="1"
               filter="participation.customer" hidden="true"/>
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
+        <node name="accountBalance" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.customerAccountBalance" hidden="true"/>
 	</archetype>
 </archetypes>

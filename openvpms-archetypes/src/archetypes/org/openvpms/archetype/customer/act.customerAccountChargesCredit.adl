@@ -33,6 +33,9 @@
 		<node name="tax" path="/taxAmount" 
                     type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
                     defaultValue="'0.0'" readOnly="true" />
+        <node name="allocatedAmount" path="/allocatedAmount"
+                    type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+                    defaultValue="'0.0'" hidden="true" readOnly="true"/>
 		<node name="status" path="/status" type="java.lang.String"
 			minCardinality="1" defaultValue="'IN_PROGRESS'" >
 			<assertion name="lookup.local">
@@ -61,8 +64,11 @@
         <node name="clinician" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.clinician" />
+        <node name="accountBalance" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.customerAccountBalance" hidden="true"/>
         <node name="items" path="/sourceActRelationships"
-			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*">
+			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">

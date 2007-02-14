@@ -23,6 +23,7 @@ import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.archetype.rules.deposit.DepositHelper;
 import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.*;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -167,7 +168,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     public void testAddToTillBalanceWithNoTill() {
         ActBean act = createAct("act.customerAccountPayment");
         act.setStatus(IN_PROGRESS);
-        Party party = createCustomer();
+        Party party = TestHelper.createCustomer();
         act.setParticipant("participation.customer", party);
         try {
             rules.addToTill(act.getAct());
@@ -335,7 +336,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         ActBean balanceBean = new ActBean(balance);
         ActBean payment = createAct("act.customerAccountPayment");
         payment.setStatus(POSTED);
-        Party party = createCustomer();
+        Party party = TestHelper.createCustomer();
         payment.setParticipant("participation.customer", party);
         balanceBean.addRelationship("actRelationship.tillBalanceItem",
                                     payment.getAct());
@@ -527,7 +528,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         ActBean act = createAct("act.customerAccountPayment");
         act.setStatus(IN_PROGRESS);
         act.setValue("amount", new BigDecimal("1.0"));
-        Party party = createCustomer();
+        Party party = TestHelper.createCustomer();
         act.setParticipant("participation.till", till);
         act.setParticipant("participation.customer", party);
         return act;
@@ -543,7 +544,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         ActBean act = createAct("act.customerAccountRefund");
         act.setStatus(IN_PROGRESS);
         act.setValue("amount", new BigDecimal("1.0"));
-        Party party = createCustomer();
+        Party party = TestHelper.createCustomer();
         act.setParticipant("participation.till", till);
         act.setParticipant("participation.customer", party);
         return act;
@@ -589,17 +590,6 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         bean.setValue("accountName", "Foo");
         save(account);
         return account;
-    }
-
-    /**
-     * Creates a new customer.
-     *
-     * @return a new customer
-     */
-    private Party createCustomer() {
-        Party party = (Party) create("party.customerperson");
-        assertNotNull(party);
-        return party;
     }
 
     /**
