@@ -18,11 +18,6 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -34,6 +29,11 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -82,6 +82,19 @@ public final class DescriptorHelper {
     public static ArchetypeDescriptor getArchetypeDescriptor(IMObject object) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
+        return getArchetypeDescriptor(object, service);
+    }
+
+    /**
+     * Returns the archetype descriptor for the specified object.
+     *
+     * @param object the object
+     * @param service the archetype service
+     * @return the archetype descriptor corresponding to <code>object</code>
+     * @throws ArchetypeServiceException for any error
+     */
+    public static ArchetypeDescriptor getArchetypeDescriptor(
+            IMObject object, IArchetypeService service) {
         ArchetypeDescriptor descriptor;
         ArchetypeId archId = object.getArchetypeId();
 
@@ -100,6 +113,7 @@ public final class DescriptorHelper {
         }
         return descriptor;
     }
+
 
     /**
      * Returns the archetype descriptors for an archetype range.

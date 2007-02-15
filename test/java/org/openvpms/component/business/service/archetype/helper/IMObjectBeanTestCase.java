@@ -18,11 +18,14 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.NodeDescriptorNotFound;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
@@ -275,6 +278,38 @@ public class IMObjectBeanTestCase
     }
 
     /**
+     * Tests the {@link IMObjectBean#getValues(String, Class)} method.
+     */
+    public void testGetValuesTypeSafeCast() {
+        IMObjectBean bean = createBean("party.customerperson");
+        List<IMObject> values = bean.getValues("contacts");
+        assertNotNull(values);
+        assertEquals(0, values.size());
+        IMObjectBean locationBean = createBean("contact.location");
+        IMObjectBean phoneBean = createBean("contact.phoneNumber");
+
+        Contact location = (Contact) locationBean.getObject();
+        Contact phone = (Contact) phoneBean.getObject();
+        assertNotNull(location);
+        assertNotNull(phone);
+
+        bean.addValue("contacts", location);
+        bean.addValue("contacts", phone);
+        List<Contact> contacts = bean.getValues("contacts", Contact.class);
+        checkEquals(contacts, location, phone);
+
+        try {
+            bean.getValues("contacts", Act.class);
+            fail("Expected IMObjectBeanException");
+        } catch (IMObjectBeanException exception) {
+            assertEquals(InvalidClassCast, exception.getErrorCode());
+            assertEquals("Expected class of type " + Act.class.getName()
+                    + " but got " + Contact.class.getName(), 
+                         exception.getMessage());
+        }
+    }
+
+    /**
      * Tests {@link IMObjectBean#save}.
      */
     public void testSave() {
@@ -320,8 +355,8 @@ public class IMObjectBeanTestCase
     /**
      * Verifies that two lists of objects match.
      */
-    private void checkEquals(List<IMObject> actual,
-                             IMObject ... expected) {
+    private <T extends IMObject> void checkEquals(List<T> actual,
+                                                  T ... expected) {
         assertEquals(actual.size(), expected.length);
         for (IMObject e : expected) {
             boolean found = false;
