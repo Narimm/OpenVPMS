@@ -515,7 +515,6 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#save(org.openvpms.component.business.domain.im.common.IMObject)
      */
-    @Deprecated
     public void save(IMObject entity, boolean validate) {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.save: Saving object of type "
@@ -549,6 +548,19 @@ public class ArchetypeService implements IArchetypeService {
                     ArchetypeServiceException.ErrorCode.FailedToSaveObject,
                     exception, entity);
         }
+    }
+
+    /**
+     * Save a collection of {@link IMObject} instances.
+     *
+     * @param entities the entities to insert or update
+     * @throws ArchetypeServiceException if the service cannot save any of the
+     *                                   entities
+     * @throws ValidationException       if any of the specified entities cannot
+     *                                   be validated
+     */
+    public void save(Collection<IMObject> entities) {
+        save(entities,  true);
     }
 
     /* (non-Javadoc)

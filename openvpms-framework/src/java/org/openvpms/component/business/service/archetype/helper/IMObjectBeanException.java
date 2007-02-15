@@ -40,13 +40,14 @@ public class IMObjectBeanException extends OpenVPMSException {
      */
     public enum ErrorCode {
         NodeDescriptorNotFound,
-        ArchetypeNotFound
+        ArchetypeNotFound,
+        InvalidClassCast
     }
 
     /**
      * The error code.
      */
-    private final ErrorCode _errorCode;
+    private final ErrorCode errorCode;
 
     /**
      * The appropriate resource file is loaded cached into memory when this
@@ -64,7 +65,7 @@ public class IMObjectBeanException extends OpenVPMSException {
      */
     public IMObjectBeanException(ErrorCode errorCode, Object ... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args));
-        _errorCode = errorCode;
+        this.errorCode = errorCode;
     }
 
     /**
@@ -73,7 +74,7 @@ public class IMObjectBeanException extends OpenVPMSException {
      * @return the error code
      */
     public ErrorCode getErrorCode() {
-        return _errorCode;
+        return errorCode;
     }
 
 }

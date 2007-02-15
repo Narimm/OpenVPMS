@@ -104,9 +104,9 @@ public class IMObjectCopier {
      */
     protected void doCopy(IMObject source, IMObject target) {
         ArchetypeDescriptor sourceType
-                = DescriptorHelper.getArchetypeDescriptor(source);
+                = DescriptorHelper.getArchetypeDescriptor(source, _service);
         ArchetypeDescriptor targetType
-                = DescriptorHelper.getArchetypeDescriptor(target);
+                = DescriptorHelper.getArchetypeDescriptor(target, _service);
 
         // copy the nodes
         for (NodeDescriptor sourceDesc : sourceType.getAllNodeDescriptors()) {
