@@ -21,13 +21,17 @@ package org.openvpms.archetype.rules.balance;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -227,7 +231,8 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
      */
     public void testCalculateBalance() {
         Money hundred = new Money(100);
-        Money fifty = new Money(50);
+        Money sixty = new Money(60);
+        Money forty = new Money(40);
         FinancialAct invoice = createChargesInvoice(hundred);
         save(invoice);
 
@@ -239,9 +244,10 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
         invoice = (FinancialAct) get(invoice);
         checkEquals(hundred, invoice.getTotal());
         checkEquals(BigDecimal.ZERO, invoice.getAllocatedAmount());
+        checkAllocation(invoice);
 
-        // pay half of the debt
-        FinancialAct payment1 = createPayment(fifty);
+        // pay 60 of the debt
+        FinancialAct payment1 = createPayment(sixty);
         save(payment1);
 
         // reload and verify the acts have changed
@@ -249,31 +255,40 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
         payment1 = (FinancialAct) get(payment1);
 
         checkEquals(hundred, invoice.getTotal());
-        checkEquals(fifty, invoice.getAllocatedAmount());
+        checkEquals(sixty, invoice.getAllocatedAmount());
+        checkAllocation(invoice, payment1);
 
-        checkEquals(fifty, payment1.getTotal());
-        checkEquals(fifty, payment1.getAllocatedAmount());
+        checkEquals(sixty, payment1.getTotal());
+        checkEquals(sixty, payment1.getAllocatedAmount());
+        checkAllocation(payment1, invoice);
 
         // pay the remainder of the debt
-        FinancialAct payment2 = createPayment(fifty);
+        FinancialAct payment2 = createPayment(forty);
         save(payment2);
 
         // reload and verify the acts have changed
         invoice = (FinancialAct) get(invoice);
-        payment2 = (FinancialAct) get(payment1);
+        payment2 = (FinancialAct) get(payment2);
 
         checkEquals(hundred, invoice.getTotal());
         checkEquals(hundred, invoice.getAllocatedAmount());
+        checkAllocation(invoice, payment1, payment2);
 
-        checkEquals(fifty, payment2.getTotal());
-        checkEquals(fifty, payment2.getAllocatedAmount());
+        checkEquals(forty, payment2.getTotal());
+        checkEquals(forty, payment2.getAllocatedAmount());
+        checkAllocation(payment2, invoice);
     }
 
+    /**
+     * Verifies two <code>BigDecimals</code> are equal.
+     *
+     * @param a the first value
+     * @param b the second value
+     */
     private void checkEquals(BigDecimal a, BigDecimal b) {
         if (a.compareTo(b) != 0) {
             fail("Expected " + a + ", but got " + b);
         }
-        assertEquals(0, a.compareTo(b));
     }
 
     /**
@@ -321,6 +336,7 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
         credit = (FinancialAct) get(credit);
         checkEquals(amount, credit.getTotal());
         checkEquals(BigDecimal.ZERO, credit.getAllocatedAmount());
+        checkAllocation(credit);
 
         // save the debit. The allocated amount for the debit and credit should
         // be the same as the total
@@ -331,9 +347,56 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
 
         checkEquals(amount, credit.getTotal());
         checkEquals(amount, credit.getAllocatedAmount());
+        checkAllocation(credit, debit);
 
         checkEquals(amount, debit.getTotal());
         checkEquals(amount, debit.getAllocatedAmount());
+        checkAllocation(debit, credit);
+    }
+
+    /**
+     * Verifies the total amount allocated to an act matches that of the
+     * amounts from the associated
+     * <em>actRelationship.customerAccountllocation</em> relationships.
+     *
+     * @param act  the act
+     * @param acts the acts contributing to the allocated amount
+     */
+    private void checkAllocation(FinancialAct act, FinancialAct ... acts) {
+        IMObjectBean bean = new IMObjectBean(act);
+        BigDecimal total = BigDecimal.ZERO;
+        List<ActRelationship> allocations = bean.getValues(
+                "allocation", ActRelationship.class);
+        List<FinancialAct> matches = new ArrayList<FinancialAct>();
+        for (ActRelationship relationship : allocations) {
+            if (act.isCredit()) {
+                assertEquals(act.getObjectReference(),
+                             relationship.getTarget());
+                for (FinancialAct source : acts) {
+                    if (source.getObjectReference().equals(
+                            relationship.getSource())) {
+                        matches.add(source);
+                        break;
+                    }
+                }
+            } else {
+                assertEquals(act.getObjectReference(),
+                             relationship.getSource());
+                for (FinancialAct target : acts) {
+                    if (target.getObjectReference().equals(
+                            relationship.getTarget())) {
+                        matches.add(target);
+                        break;
+                    }
+                }
+            }
+            IMObjectBean relBean = new IMObjectBean(relationship);
+            BigDecimal allocation = relBean.getBigDecimal("allocatedAmount");
+            total = total.add(allocation);
+        }
+        checkEquals(act.getAllocatedAmount(), total);
+
+        assertEquals(acts.length, matches.size());
     }
 
     /**
