@@ -20,13 +20,16 @@ package org.openvpms.archetype.rules.balance;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import static org.openvpms.archetype.rules.balance.CustomerBalanceRuleException.ErrorCode.MissingCustomer;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -159,20 +162,26 @@ public class CustomerBalanceRules {
                 debits.add(new BalanceAct(act));
             }
         }
+        List<IMObject> modified = new ArrayList<IMObject>();
         for (BalanceAct credit : credits) {
             for (ListIterator<BalanceAct> iter = debits.listIterator();
                  iter.hasNext();) {
                 BalanceAct debit = iter.next();
                 allocate(credit, debit);
                 if (debit.isAllocated()) {
-                    debit.saveIfDirty();
                     iter.remove();
                 }
+                if (debit.isDirty()) {
+                    modified.add(debit.getAct());
+                }
             }
-            credit.saveIfDirty();
+            if (credit.isDirty()) {
+                modified.add(credit.getAct());
+            }
         }
-        for (BalanceAct debit : debits) {
-            debit.saveIfDirty();
+        if (!modified.isEmpty()) {
+            // save all modified acts in the one transaction
+            service.save(modified);
         }
     }
 
@@ -221,10 +230,12 @@ public class CustomerBalanceRules {
             if (creditToAlloc.compareTo(debitToAlloc) <= 0) {
                 // can allocate all the credit
                 debit.addAllocated(creditToAlloc);
+                debit.addRelationship(credit, creditToAlloc);
                 credit.addAllocated(creditToAlloc);
             } else {
                 // can allocate some of the credit
                 debit.addAllocated(debitToAlloc);
+                debit.addRelationship(credit, debitToAlloc);
                 credit.addAllocated(debitToAlloc);
             }
         }
@@ -288,14 +299,36 @@ public class CustomerBalanceRules {
         }
 
         /**
-         * Saves the act if it has been modified.
+         * Adds an <em>actRelationship.customerAccountAllocation</em>.
          *
-         * @throws ArchetypeServiceException for any archetype service error
+         * @param credit the credit act
+         * @param allocated the allocated amount
          */
-        public void saveIfDirty() {
-            if (dirty) {
-                service.save(act);
-            }
+        public void addRelationship(BalanceAct credit, BigDecimal allocated)  {
+            ActBean bean = new ActBean(act, service);
+            ActRelationship relationship = bean.addRelationship(
+                    "actRelationship.customerAccountAllocation",
+                    credit.getAct());
+            IMObjectBean relBean = new IMObjectBean(relationship, service);
+            relBean.setValue("allocatedAmount", allocated);
+        }
+
+        /**
+         * Returns the underlying act.
+         *
+         * @return the underlying act
+         */
+        public FinancialAct getAct() {
+            return act;
+        }
+
+        /**
+         * Determines if the act has been modified.
+         *
+         * @return <code>true</code> if the act has been modified
+         */
+        public boolean isDirty() {
+            return dirty;
         }
 
     }
