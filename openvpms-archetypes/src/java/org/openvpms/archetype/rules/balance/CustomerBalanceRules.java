@@ -69,37 +69,43 @@ public class CustomerBalanceRules {
     /**
      * Bad debt act short name.
      */
-    private static final String BAD_DEBT = "act.customerAccountBadDebt";
+    private static final String BAD_DEBT
+            = "act.customerAccountBadDebt";
 
     /**
      * Counter charge act short name.
      */
-    private static final String CHARGES_COUNTER = "act.customerAccountChargesCounter";
+    private static final String CHARGES_COUNTER
+            = "act.customerAccountChargesCounter";
 
     /**
      * Invoice charge act short name.
      */
-    private static final String CHARGES_INVOICE = "act.customerAccountChargesInvoice";
+    private static final String CHARGES_INVOICE
+            = "act.customerAccountChargesInvoice";
 
     /**
      * Credit charge act short name.
      */
-    private static final String CHARGES_CREDIT = "act.customerAccountChargesCredit";
+    private static final String CHARGES_CREDIT
+            = "act.customerAccountChargesCredit";
 
     /**
      * Credit adjust act short name.
      */
-    private static final String CREDIT_ADJUST = "act.customerAccountCreditAdjust";
+    private static final String CREDIT_ADJUST
+            = "act.customerAccountCreditAdjust";
 
     /**
      * Payment act short name.
      */
-    private static final String PAYMENT = "act.customerAccountPayment";
+    private static final String PAYMENT
+            = "act.customerAccountPayment";
 
     /**
      * Short names of the credit and debit acts the affect the balance.
      */
-    private static final String[] SHORT_NAMES = {
+    static final String[] SHORT_NAMES = {
             CHARGES_COUNTER,
             CHARGES_CREDIT,
             CHARGES_INVOICE,
@@ -119,9 +125,14 @@ public class CustomerBalanceRules {
     /**
      * The customer account balance participation short name.
      */
-    private static final String ACCOUNT_BALANCE_SHORTNAME
+    static final String ACCOUNT_BALANCE_SHORTNAME
             = "participation.customerAccountBalance";
 
+    /**
+     * The customer account balance act relationship short name.
+     */
+    static final String ACCOUNT_ALLOCATION_SHORTNAME
+            = "actRelationship.customerAccountAllocation";
 
     /**
      * Creates a new <code>CustomerBalanceRules</code>.
@@ -180,6 +191,27 @@ public class CustomerBalanceRules {
             }
             updateBalance(customer);
         }
+    }
+
+    /**
+     * Determines if an act is already in the customer account balance.
+     *
+     * @param act the act
+     * @return <code>true</code> if the act has no
+     *         <em>act.customerAccountBalance</em> participation and has been
+     *         fully allocated
+     */
+    public boolean inBalance(FinancialAct act) {
+        boolean result = hasBalanceParticipation(act);
+        if (!result) {
+            ActBean bean = new ActBean(act, service);
+            List<ActRelationship> relationships = bean.getRelationships(
+                    ACCOUNT_ALLOCATION_SHORTNAME);
+            if (!relationships.isEmpty()) {
+                result = true;
+            }
+        }
+        return result;
     }
 
     /**
@@ -301,26 +333,6 @@ public class CustomerBalanceRules {
             // save all modified acts in the one transaction
             service.save(modified);
         }
-    }
-
-    /**
-     * Determines if an act is already in the customer account balance.
-     *
-     * @param act the act
-     * @return <code>true</code> if the act has no
-     *         <em>act.customerAccountBalance</em> participation and has been
-     *         fully allocated
-     */
-    private boolean inBalance(FinancialAct act) {
-        boolean result = hasBalanceParticipation(act);
-        if (!result) {
-            BigDecimal total = act.getTotal();
-            BigDecimal allocated = act.getAllocatedAmount();
-            if (total != null && allocated != null) {
-                result = (total.compareTo(allocated) == 0);
-            }
-        }
-        return result;
     }
 
     /**
@@ -458,7 +470,13 @@ public class CustomerBalanceRules {
          */
         public BigDecimal getAllocatable() {
             BigDecimal amount = act.getTotal();
+            if (amount == null) {
+                amount = BigDecimal.ZERO;
+            }
             BigDecimal allocated = act.getAllocatedAmount();
+            if (allocated == null) {
+                allocated = BigDecimal.ZERO;
+            }
             return amount.subtract(allocated);
         }
 
@@ -497,7 +515,7 @@ public class CustomerBalanceRules {
         public void addRelationship(BalanceAct credit, BigDecimal allocated) {
             ActBean bean = new ActBean(act, service);
             ActRelationship relationship = bean.addRelationship(
-                    "actRelationship.customerAccountAllocation",
+                    ACCOUNT_ALLOCATION_SHORTNAME,
                     credit.getAct());
             IMObjectBean relBean = new IMObjectBean(relationship, service);
             relBean.setValue("allocatedAmount", allocated);
