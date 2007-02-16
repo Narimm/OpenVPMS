@@ -15,7 +15,7 @@
  *
  *  $$Id$$
 -->
-<rule-set name="archetypeService.save.act.customerAccountInitialBalance.after"
+<rule-set name="archetypeService.save.act.customerAccountBadDebt.after"
     xmlns="http://drools.org/rules"    
     xmlns:java="http://drools.org/semantics/java"
     xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
@@ -32,7 +32,7 @@
         <java:consequence>
             import org.openvpms.archetype.rules.balance.CustomerBalanceRules;
             CustomerBalanceRules rules = new CustomerBalanceRules(service);
-            rules.calculateBalance(act);
+            rules.updateBalance(act);
         </java:consequence>
     </rule>
 </rule-set>

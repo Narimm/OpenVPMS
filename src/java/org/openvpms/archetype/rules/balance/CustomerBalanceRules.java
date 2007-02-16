@@ -18,12 +18,18 @@
 
 package org.openvpms.archetype.rules.balance;
 
+import org.apache.commons.lang.time.DateUtils;
+import org.openvpms.archetype.rules.act.ActCalculator;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import static org.openvpms.archetype.rules.balance.CustomerBalanceRuleException.ErrorCode.MissingCustomer;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -33,12 +39,16 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.QueryIterator;
+import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -57,21 +67,57 @@ public class CustomerBalanceRules {
     private final IArchetypeService service;
 
     /**
+     * Bad debt act short name.
+     */
+    private static final String BAD_DEBT = "act.customerAccountBadDebt";
+
+    /**
+     * Counter charge act short name.
+     */
+    private static final String CHARGES_COUNTER = "act.customerAccountChargesCounter";
+
+    /**
+     * Invoice charge act short name.
+     */
+    private static final String CHARGES_INVOICE = "act.customerAccountChargesInvoice";
+
+    /**
+     * Credit charge act short name.
+     */
+    private static final String CHARGES_CREDIT = "act.customerAccountChargesCredit";
+
+    /**
+     * Credit adjust act short name.
+     */
+    private static final String CREDIT_ADJUST = "act.customerAccountCreditAdjust";
+
+    /**
+     * Payment act short name.
+     */
+    private static final String PAYMENT = "act.customerAccountPayment";
+
+    /**
      * Short names of the credit and debit acts the affect the balance.
      */
     private static final String[] SHORT_NAMES = {
-            "act.customerAccountChargesCounter",
-            "act.customerAccountChargesCredit",
-            "act.customerAccountChargesInvoice",
-            "act.customerAccountCreditAdjust",
+            CHARGES_COUNTER,
+            CHARGES_CREDIT,
+            CHARGES_INVOICE,
+            CREDIT_ADJUST,
             "act.customerAccountDebitAdjust",
-            "act.customerAccountPayment",
+            PAYMENT,
             "act.customerAccountRefund",
             "act.customerAccountInitialBalance",
-            "act.customerAccountBadDebt"};
+            BAD_DEBT};
 
     /**
-     * The customer account balance short name.
+     * All customer credit act short names.
+     */
+    private static final String[] CREDIT_SHORT_NAMES = {
+            CHARGES_CREDIT, CREDIT_ADJUST, PAYMENT, BAD_DEBT};
+
+    /**
+     * The customer account balance participation short name.
      */
     private static final String ACCOUNT_BALANCE_SHORTNAME
             = "participation.customerAccountBalance";
@@ -115,7 +161,7 @@ public class CustomerBalanceRules {
     }
 
     /**
-     * Calculates the balance for the customer associated with the supplied
+     * Updates the balance for the customer associated with the supplied
      * act. Invoked after the act is saved.
      *
      * @param act the act
@@ -123,7 +169,7 @@ public class CustomerBalanceRules {
      * @throws CustomerBalanceRuleException if the act is posted but contains
      *                                      no customer
      */
-    public void calculateBalance(FinancialAct act) {
+    public void updateBalance(FinancialAct act) {
         if (FinancialActStatus.POSTED.equals(act.getStatus())
                 && hasBalanceParticipation(act)) {
             ActBean bean = new ActBean(act, service);
@@ -132,8 +178,88 @@ public class CustomerBalanceRules {
             if (customer == null) {
                 throw new CustomerBalanceRuleException(MissingCustomer, act);
             }
-            calculateBalance(customer);
+            updateBalance(customer);
         }
+    }
+
+    /**
+     * Calculates the outstanding balance for a customer.
+     *
+     * @param customer the customer
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getBalance(Party customer) {
+        Iterator<FinancialAct> iterator = getUnallocatedActs(customer);
+        return calculateBalance(iterator);
+    }
+
+    /**
+     * Calculates the overdue balance for a customer.
+     * This is the sum of unallocated amounts in associated debits and credits
+     * that have a date less than the specified date less the overdue days.
+     * The overdue days are specified in the customer's type node.
+     *
+     * @param customer the customer
+     * @param date     the date
+     * @return the overdue balance
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getOverdueBalance(Party customer, Date date) {
+        IMObjectBean bean = new IMObjectBean(customer, service);
+        List<Lookup> types = bean.getValues("type", Lookup.class);
+        Date overdue;
+        if (!types.isEmpty()) {
+            IMObjectBean type = new IMObjectBean(types.get(0), service);
+            date = DateUtils.truncate(date, Calendar.DATE); // strip any time
+            int days = type.getInt("paymentTerms");
+            String units = type.getString("paymentUom");
+            overdue = DateRules.getDate(date, -days, units);
+        } else {
+            overdue = date;
+        }
+        Iterator<FinancialAct> iterator = getUnallocatedActs(customer, overdue);
+        return calculateBalance(iterator);
+    }
+
+    /**
+     * Calculates the sum of all unallocated credits for a customer.
+     *
+     * @param customer the customer
+     * @return the credit amount
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getCreditAmount(Party customer) {
+        ArchetypeQuery query = createQuery(customer, CREDIT_SHORT_NAMES);
+        Iterator<FinancialAct> iterator
+                = new IMObjectQueryIterator<FinancialAct>(service, query);
+        BigDecimal amount = calculateBalance(iterator);
+
+        // need to negate as calculateBalance treats credits as negative,
+        // but want a positive return value
+        return amount.negate();
+    }
+
+    /**
+     * Calculates the sum of all unbilled charge acts for a customer.
+     *
+     * @param customer the customer
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getUnbilledAmount(Party customer) {
+        String[] shortNames = {CHARGES_INVOICE, CHARGES_COUNTER,
+                               CHARGES_CREDIT};
+        ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
+        query.add(new NodeConstraint("status", RelationalOp.NE,
+                                     ActStatus.POSTED));
+        CollectionNodeConstraint constraint = new CollectionNodeConstraint(
+                "customer", "participation.customer", true, true);
+        constraint.add(new ObjectRefNodeConstraint(
+                "entity", customer.getObjectReference()));
+        query.add(constraint);
+
+        Iterator<Act> iterator = new IMObjectQueryIterator<Act>(service, query);
+        ActCalculator calculator = new ActCalculator(service);
+        return calculator.sum(iterator, "amount");
     }
 
     /**
@@ -142,16 +268,8 @@ public class CustomerBalanceRules {
      * @param customer the customer
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private void calculateBalance(Party customer) {
-        ArchetypeQuery query = new ArchetypeQuery(SHORT_NAMES, true, true);
-        CollectionNodeConstraint constraint = new CollectionNodeConstraint(
-                "accountBalance", ACCOUNT_BALANCE_SHORTNAME, true, true);
-        constraint.add(new ObjectRefNodeConstraint(
-                "entity", customer.getObjectReference()));
-        query.add(constraint);
-        query.add(new NodeSortConstraint("startTime", false));
-        QueryIterator<FinancialAct> results
-                = new IMObjectQueryIterator<FinancialAct>(service, query);
+    private void updateBalance(Party customer) {
+        Iterator<FinancialAct> results = getUnallocatedActs(customer);
         List<BalanceAct> debits = new ArrayList<BalanceAct>();
         List<BalanceAct> credits = new ArrayList<BalanceAct>();
         while (results.hasNext()) {
@@ -214,6 +332,78 @@ public class CustomerBalanceRules {
     private boolean hasBalanceParticipation(FinancialAct act) {
         ActBean bean = new ActBean(act, service);
         return bean.getParticipantRef(ACCOUNT_BALANCE_SHORTNAME) != null;
+    }
+
+    /**
+     * Calculates the oustanding balance.
+     *
+     * @param iterator an iterator over the collection
+     * @return the outstanding balance
+     */
+    private BigDecimal calculateBalance(Iterator<FinancialAct> iterator) {
+        BigDecimal total = BigDecimal.ZERO;
+        ActCalculator calculator = new ActCalculator(service);
+        while (iterator.hasNext()) {
+            BalanceAct act = new BalanceAct(iterator.next());
+            BigDecimal unallocated = act.getAllocatable();
+            total = calculator.addAmount(total, unallocated, act.isCredit());
+        }
+        return total;
+    }
+
+    /**
+     * Returns unallocated acts for a customer.
+     *
+     * @param customer the customer
+     * @return unallocated acts for the customer
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private Iterator<FinancialAct> getUnallocatedActs(Party customer) {
+        ArchetypeQuery query = createQuery(customer);
+        return new IMObjectQueryIterator<FinancialAct>(service, query);
+    }
+
+    /**
+     * Returns unallocated acts for a customer whose startTime is less
+     * than that supplied.
+     *
+     * @param customer the customer
+     * @return unallocated acts for the customer
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private Iterator<FinancialAct> getUnallocatedActs(Party customer,
+                                                      Date startTime) {
+        ArchetypeQuery query = createQuery(customer);
+        query.add(new NodeConstraint("startTime", RelationalOp.LT, startTime));
+        return new IMObjectQueryIterator<FinancialAct>(service, query);
+    }
+
+    /**
+     * Creates a query for unallocated acts for the specified customer.
+     *
+     * @param customer the customer
+     * @return a new query
+     */
+    private ArchetypeQuery createQuery(Party customer) {
+        return createQuery(customer, SHORT_NAMES);
+    }
+
+    /**
+     * Creates a query for unallocated acts for the specified customer.
+     *
+     * @param customer   the customer
+     * @param shortNames the act short names
+     * @return a new query
+     */
+    private ArchetypeQuery createQuery(Party customer, String[] shortNames) {
+        ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
+        CollectionNodeConstraint constraint = new CollectionNodeConstraint(
+                "accountBalance", ACCOUNT_BALANCE_SHORTNAME, true, true);
+        constraint.add(new ObjectRefNodeConstraint(
+                "entity", customer.getObjectReference()));
+        query.add(constraint);
+        query.add(new NodeSortConstraint("startTime", false));
+        return query;
     }
 
     /**
@@ -301,16 +491,26 @@ public class CustomerBalanceRules {
         /**
          * Adds an <em>actRelationship.customerAccountAllocation</em>.
          *
-         * @param credit the credit act
+         * @param credit    the credit act
          * @param allocated the allocated amount
          */
-        public void addRelationship(BalanceAct credit, BigDecimal allocated)  {
+        public void addRelationship(BalanceAct credit, BigDecimal allocated) {
             ActBean bean = new ActBean(act, service);
             ActRelationship relationship = bean.addRelationship(
                     "actRelationship.customerAccountAllocation",
                     credit.getAct());
             IMObjectBean relBean = new IMObjectBean(relationship, service);
             relBean.setValue("allocatedAmount", allocated);
+        }
+
+        /**
+         * Determines if the act is a credit or debit.
+         *
+         * @return <code>true</code> if the act is a credit, <code>false</code>
+         *         if it is a debit
+         */
+        public boolean isCredit() {
+            return act.isCredit();
         }
 
         /**

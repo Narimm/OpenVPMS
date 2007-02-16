@@ -18,12 +18,15 @@
 
 package org.openvpms.archetype.rules.balance;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -31,7 +34,9 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -61,6 +66,11 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
+
+    /**
+     * The rules.
+     */
+    private CustomerBalanceRules rules;
 
     /**
      * The customer.
@@ -163,7 +173,7 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
      * Verifies that an <em>act.customerAccountChargesInvoice</em> is
      * offset by an <em>act.customerAccountPayment</em> for the same amount.
      */
-    public void testCalculateBalanceForChargesInvoiceAndPayment() {
+    public void testGetBalanceForChargesInvoiceAndPayment() {
         Money amount = new Money(100);
         FinancialAct invoice = createChargesInvoice(amount);
         FinancialAct payment = createPayment(amount);
@@ -174,7 +184,7 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
      * Verifies that an <em>act.customerAccountChargesCounter</em> is
      * offset by an <em>act.customerAccountPayment</em> for the same amount.
      */
-    public void testCalculateBalanceForChargesCounterAndPayment() {
+    public void testGetBalanceForChargesCounterAndPayment() {
         Money amount = new Money(100);
         FinancialAct counter = createChargesCounter(amount);
         FinancialAct payment = createPayment(amount);
@@ -186,7 +196,7 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
      * offset by an <em>act.customerAccountChargesCredit</em> for the same
      * amount.
      */
-    public void testCalculateBalanceForChargesInvoiceAndCredit() {
+    public void testGetBalanceForChargesInvoiceAndCredit() {
         Money amount = new Money(100);
         FinancialAct invoice = createChargesInvoice(amount);
         FinancialAct credit = createChargesCredit(amount);
@@ -197,7 +207,7 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
      * Verifies that an <em>act.customerAccountRefund</em> is offset by an
      * <em>act.customerAccountPayment</em> for the same amount.
      */
-    public void testCalculateBalanceForRefundAndPayment() {
+    public void testGetBalanceForRefundAndPayment() {
         Money amount = new Money(100);
         FinancialAct refund = createRefund(amount);
         FinancialAct payment = createCreditAdjust(amount);
@@ -208,7 +218,7 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
      * Verifies that an <em>act.customerAccountDebitAdjust</em> is offset by an
      * <em>act.customerAccountCreditAdjust</em> for the same amount.
      */
-    public void testCalculateBalanceForDebitAndCreditAdjust() {
+    public void testGetBalanceForDebitAndCreditAdjust() {
         Money amount = new Money(100);
         FinancialAct debit = createDebitAdjust(amount);
         FinancialAct credit = createCreditAdjust(amount);
@@ -219,7 +229,7 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
      * Verifies that an <em>act.customerAccountInitialBalance</em> is offset by
      * an <em>act.customerAccountBadDebt</em> for the same amount.
      */
-    public void testCalculateBalanceForInitialBalanceAndBadDebt() {
+    public void testGetBalanceForInitialBalanceAndBadDebt() {
         Money amount = new Money(100);
         FinancialAct debit = createInitialBalance(amount);
         FinancialAct credit = createBadDebt(amount);
@@ -227,15 +237,19 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link CustomerBalanceRules#calculateBalance}.
+     * Tests the {@link CustomerBalanceRules#getBalance} method.
      */
-    public void testCalculateBalance() {
+    public void testGetBalance() {
         Money hundred = new Money(100);
         Money sixty = new Money(60);
         Money forty = new Money(40);
         FinancialAct invoice = createChargesInvoice(hundred);
         save(invoice);
 
+        // check the balance
+        checkEquals(hundred, rules.getBalance(customer));
+
+        // make sure the invoice has an account balance participation
         ActBean bean = new ActBean(invoice);
         assertEquals(customer, bean.getParticipant(
                 "participation.customerAccountBalance"));
@@ -249,6 +263,9 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
         // pay 60 of the debt
         FinancialAct payment1 = createPayment(sixty);
         save(payment1);
+
+        // check the balance
+        checkEquals(forty, rules.getBalance(customer));
 
         // reload and verify the acts have changed
         invoice = (FinancialAct) get(invoice);
@@ -266,6 +283,9 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
         FinancialAct payment2 = createPayment(forty);
         save(payment2);
 
+        // check the balance
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
+
         // reload and verify the acts have changed
         invoice = (FinancialAct) get(invoice);
         payment2 = (FinancialAct) get(payment2);
@@ -277,6 +297,93 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
         checkEquals(forty, payment2.getTotal());
         checkEquals(forty, payment2.getAllocatedAmount());
         checkAllocation(payment2, invoice);
+    }
+
+    /**
+     * Tests the {@link CustomerBalanceRules#getOverdueBalance} method.
+     */
+    public void testGetOverdueBalance() {
+        // add a 30 day payment term for accounts to the customer
+        customer.addClassification(createAccountType(30, DateRules.DAYS));
+        save(customer);
+
+        // create and save a new invoice
+        final Money amount = new Money(100);
+        Date startTime = java.sql.Date.valueOf("2007-1-1");
+        FinancialAct invoice = createChargesInvoice(amount);
+        invoice.setActivityStartTime(startTime);
+        save(invoice);
+
+        // check the invoice is not overdue on the day it is saved
+        BigDecimal overdue = rules.getOverdueBalance(customer, startTime);
+        checkEquals(BigDecimal.ZERO, overdue);
+
+        // 30 days from saved, amount shouldn't be overdue
+        Date now = DateRules.getDate(startTime, 30, DateRules.DAYS);
+        overdue = rules.getOverdueBalance(customer, now);
+        checkEquals(BigDecimal.ZERO, overdue);
+
+        // 31 days from saved, invoice should be overdue.
+        now = DateRules.getDate(now, 1, DateRules.DAYS);
+        overdue = rules.getOverdueBalance(customer, now);
+        checkEquals(amount, overdue);
+    }
+
+    /**
+     * Tests the {@link CustomerBalanceRules#getCreditAmount(Party)} method.
+     */
+    public void testGetCreditAmount() {
+        final Money amount = new Money(100);
+        FinancialAct chargesCredit = createChargesCredit(amount);
+        FinancialAct creditAdjust = createCreditAdjust(amount);
+        FinancialAct payment = createPayment(amount);
+        FinancialAct badDebt = createBadDebt(amount);
+
+        FinancialAct[] acts = {chargesCredit, creditAdjust, payment, badDebt};
+        for (int i = 0; i < acts.length; ++i) {
+            save(acts[i]);
+            BigDecimal multiplier = new BigDecimal(i + 1);
+            checkEquals(amount.multiply(multiplier),
+                        rules.getCreditAmount(customer));
+        }
+    }
+
+    /**
+     * Tests the {@link CustomerBalanceRules#getUnbilledAmount(Party)}  method.
+     */
+    public void testGetUnbilledAmount() {
+        final  Money amount = new Money(100);
+        FinancialAct invoice = createChargesInvoice(amount);
+        FinancialAct counter = createChargesCounter(amount);
+        FinancialAct credit = createChargesCredit(amount);
+        invoice.setStatus(ActStatus.IN_PROGRESS);
+        counter.setStatus(ActStatus.IN_PROGRESS);
+        credit.setStatus(ActStatus.IN_PROGRESS);
+
+        checkEquals(BigDecimal.ZERO, rules.getUnbilledAmount(customer));
+
+        save(invoice);
+        checkEquals(amount, rules.getUnbilledAmount(customer));
+
+        save(counter);
+        checkEquals(amount.multiply(new BigDecimal(2)),
+                    rules.getUnbilledAmount(customer));
+
+        save(credit);
+        checkEquals(amount, rules.getUnbilledAmount(customer));
+
+        credit.setStatus(ActStatus.POSTED);
+        save(credit);
+        checkEquals(amount.multiply(new BigDecimal(2)),
+                    rules.getUnbilledAmount(customer));
+
+        counter.setStatus(ActStatus.POSTED);
+        save(counter);
+        checkEquals(amount, rules.getUnbilledAmount(customer));
+
+        invoice.setStatus(ActStatus.POSTED);
+        save(invoice);
+        checkEquals(BigDecimal.ZERO, rules.getUnbilledAmount(customer));
     }
 
     /**
@@ -299,6 +406,7 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
+        rules = new CustomerBalanceRules();
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient();
         product = TestHelper.createProduct();
@@ -327,20 +435,23 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
     private void checkCalculateBalanceForSameAmount(FinancialAct debit,
                                                     FinancialAct credit) {
         BigDecimal amount = credit.getTotal();
-        assertEquals(amount, debit.getTotal());
+        checkEquals(amount, debit.getTotal());
         assertTrue(credit.isCredit());
         assertFalse(debit.isCredit());
 
-        // save and reload the credit. The allocated amount should be unchanged
-        save(credit);
-        credit = (FinancialAct) get(credit);
-        checkEquals(amount, credit.getTotal());
-        checkEquals(BigDecimal.ZERO, credit.getAllocatedAmount());
-        checkAllocation(credit);
-
-        // save the debit. The allocated amount for the debit and credit should
-        // be the same as the total
+        // save and reload the debit. The allocated amount should be unchanged
         save(debit);
+        debit = (FinancialAct) get(debit);
+        checkEquals(amount, debit.getTotal());
+        checkEquals(BigDecimal.ZERO, debit.getAllocatedAmount());
+        checkAllocation(debit);
+
+        // check the outstanding balance
+        checkEquals(amount, rules.getBalance(customer));
+
+        // save the credit. The allocated amount for the debit and credit should
+        // be the same as the total
+        save(credit);
 
         credit = (FinancialAct) get(credit);
         debit = (FinancialAct) get(debit);
@@ -352,6 +463,9 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
         checkEquals(amount, debit.getTotal());
         checkEquals(amount, debit.getAllocatedAmount());
         checkAllocation(debit, credit);
+
+        // check the outstanding balance
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
     }
 
     /**
@@ -551,6 +665,25 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.customer", customer);
         return act;
+    }
+
+    /**
+     * Helper to create and save a new <em>lookup.customerAccountType</em>
+     * classification with a 30 day accountFeedDays value.
+     *
+     * @param paymentTerms the payment terms
+     * @param paymentUom   the payment units
+     * @return a new classification
+     */
+    private Lookup createAccountType(int paymentTerms, String paymentUom) {
+        Lookup lookup = (Lookup) create("lookup.customerAccountType");
+        IMObjectBean bean = new IMObjectBean(lookup);
+        bean.setValue("code", "XCUSTOMER_BALANCE_RULES_TESTCASE_"
+                + Math.abs(new Random().nextInt()));
+        bean.setValue("paymentTerms", paymentTerms);
+        bean.setValue("paymentUom", paymentUom);
+        save(lookup);
+        return lookup;
     }
 
 }
