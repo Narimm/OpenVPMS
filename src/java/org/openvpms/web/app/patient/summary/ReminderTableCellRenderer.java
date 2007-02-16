@@ -21,12 +21,10 @@ package org.openvpms.web.app.patient.summary;
 import nextapp.echo2.app.Table;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -100,8 +98,6 @@ public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
     private String getStyle(IMObjectTable<IMObject> table, int row) {
         String style = DEFAULT_STYLE;
         try {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
             IMObject object = table.getObjects().get(row);
             if (object instanceof Act) {
                 ActBean act = new ActBean((Act) object);
@@ -112,9 +108,8 @@ public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
                     int interval = bean.getInt("sensitivityInterval");
                     String units = bean.getString("sensitivityUnits");
                     Date now = new Date();
-                    ReminderRules rules = new ReminderRules(service);
-                    Date from = rules.calculateDate(now, -interval, units);
-                    Date to = rules.calculateDate(now, interval, units);
+                    Date from = DateRules.getDate(now, -interval, units);
+                    Date to = DateRules.getDate(now, interval, units);
                     Date dueDate = act.getAct().getActivityEndTime();
                     if (dueDate != null) {
                         if (dueDate instanceof Timestamp) {

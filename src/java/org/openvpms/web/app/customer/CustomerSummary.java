@@ -18,16 +18,18 @@
 
 package org.openvpms.web.app.customer;
 
-import java.math.BigDecimal;
-
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-
+import nextapp.echo2.app.layout.GridLayoutData;
+import org.openvpms.archetype.rules.balance.CustomerBalanceRules;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.im.edit.act.ActHelper;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -47,13 +49,47 @@ public class CustomerSummary {
     public static Component getSummary(Party customer) {
         Component result = null;
         if (customer != null) {
-            Label title = LabelFactory.create("customer.account.balance");
-            Label balance = LabelFactory.create();
-            BigDecimal value = ActHelper.getCustomerAccountBalance(customer);
-            balance.setText(NumberFormatter.format(value));
-            result = RowFactory.create("CellSpacing", title, balance);
+            CustomerBalanceRules rules = new CustomerBalanceRules();
+            Label balanceTitle = create("customer.account.balance");
+            BigDecimal balance = rules.getBalance(customer);
+            Label balanceValue = create(balance);
+
+            Label overdueTitle = create("customer.account.overdue");
+            BigDecimal overdue = rules.getOverdueBalance(customer, new Date());
+            Label overdueValue = create(overdue);
+
+            Label currentTitle = create("customer.account.current");
+            BigDecimal current = balance.subtract(overdue);
+            Label currentValue = create(current);
+
+            Label creditTitle = create("customer.account.credit");
+            BigDecimal credit = rules.getCreditAmount(customer);
+            Label creditValue = create(credit);
+
+            Label unbilledTitle = create("customer.account.unbilled");
+            BigDecimal unbilled = rules.getUnbilledAmount(customer);
+            Label unbilledValue = create(unbilled);
+
+            result = GridFactory.create(2, balanceTitle, balanceValue,
+                                        overdueTitle, overdueValue,
+                                        currentTitle, currentValue,
+                                        creditTitle, creditValue,
+                                        unbilledTitle, unbilledValue);
         }
         return result;
+    }
+
+    private static Label create(String key) {
+        return LabelFactory.create(key);
+    }
+
+    private static Label create(BigDecimal value) {
+        Label label = LabelFactory.create();
+        label.setText(NumberFormatter.format(value));
+        GridLayoutData layout = new GridLayoutData();
+        layout.setAlignment(new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
+        label.setLayoutData(layout);
+        return label;
     }
 
 }

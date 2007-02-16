@@ -50,22 +50,6 @@ import java.util.Set;
 public class ActHelper {
 
     /**
-     * Returns an account balance for a customer.
-     *
-     * @param customer the customer
-     * @return the account balance for <code>customer</code>
-     */
-    public static BigDecimal getCustomerAccountBalance(Party customer) {
-        String[] shortNames = DescriptorHelper.getShortNames(
-                "act.customerAccount*");
-        return getAccountBalance(customer.getObjectReference(), "customer",
-
-                                 "participation.customer", shortNames,
-                                 "act.customerAccountOpeningBalance",
-                                 "act.customerAccountClosingBalance");
-    }
-
-    /**
      * Returns an account balance for a supplier.
      *
      * @param supplier the supplier

@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.edit.payment;
 
+import org.openvpms.archetype.rules.balance.CustomerBalanceRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -59,8 +60,8 @@ public class CustomerPaymentItemEditor extends AbstractIMObjectEditor {
             Party customer = context.getContext().getCustomer();
             if (customer != null) {
                 BigDecimal diff = ActHelper.sum(parent, "amount");
-                BigDecimal current = ActHelper.getCustomerAccountBalance(
-                        customer);
+                CustomerBalanceRules rules = new CustomerBalanceRules();
+                BigDecimal current = rules.getBalance(customer);
                 BigDecimal balance = current.subtract(diff);
                 if (balance.signum() == -1) {
                     balance = (payment) ? BigDecimal.ZERO : balance.negate();
