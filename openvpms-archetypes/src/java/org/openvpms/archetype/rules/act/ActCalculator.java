@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -72,7 +73,7 @@ public class ActCalculator {
      * Sums a node in a list of acts, negating the result if the act
      * is a credit act.
      *
-     * @param act the parent act
+     * @param act  the parent act
      * @param acts the act items
      * @param node the node to sum
      * @return the summed total
@@ -87,21 +88,34 @@ public class ActCalculator {
     }
 
     /**
-     * Sums a node in a list of acts.
+     * Sums a node in a collection of acts.
      *
-     * @param acts    the acts
-     * @param node    the node to sum
+     * @param acts the acts
+     * @param node the node to sum
      * @return the summed total
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal sum(Collection<Act> acts, String node) {
-        BigDecimal result = BigDecimal.ZERO;
-        for (Act act : acts) {
-            BigDecimal amount = getAmount(act, node);
-            result = result.add(amount);
-        }
-        return result;
+        return sum(acts.iterator(), node);
     }
+
+    /**
+        * Sums a node in a collection of acts.
+        *
+        * @param acts an iterator over the act collection
+        * @param node the node to sum
+        * @return the summed total
+        * @throws ArchetypeServiceException for any archetype service error
+        */
+       public BigDecimal sum(Iterator<Act> acts, String node) {
+           BigDecimal result = BigDecimal.ZERO;
+           while (acts.hasNext()) {
+               Act act = acts.next();
+               BigDecimal amount = getAmount(act, node);
+               result = result.add(amount);
+           }
+           return result;
+       }
 
     /**
      * Returns an amount, taking into account any credit node.
@@ -117,15 +131,24 @@ public class ActCalculator {
         if (bean.hasNode(node)) {
             BigDecimal value = bean.getBigDecimal(node);
             if (value != null) {
-                if (isCredit(bean)) {
-                    result = result.subtract(value);
-                } else {
-                    result = result.add(value);
-                }
+                result = addAmount(result, value, isCredit(bean));
             }
         }
 
         return result;
+    }
+
+    /**
+     * Adds an amount to a total.
+     *
+     * @param total    the total
+     * @param amount   the amount to add
+     * @param isCredit if <code>true</code> the amount is a credit, otherwise
+     *                 its a debit
+     */
+    public BigDecimal addAmount(BigDecimal total, BigDecimal amount,
+                                boolean isCredit) {
+        return (isCredit) ? total.subtract(amount) : total.add(amount);
     }
 
     /**

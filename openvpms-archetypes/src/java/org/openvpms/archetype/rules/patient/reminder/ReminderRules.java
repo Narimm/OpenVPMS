@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -36,9 +37,7 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 
@@ -165,7 +164,7 @@ public class ReminderRules {
         EntityBean bean = new EntityBean(reminderType, service);
         int interval = bean.getInt("defaultInterval");
         String units = bean.getString("defaultUnits");
-        return calculateDate(startTime, interval, units);
+        return DateRules.getDate(startTime, interval, units);
     }
 
     /**
@@ -185,7 +184,7 @@ public class ReminderRules {
         EntityBean bean = new EntityBean(reminderType, service);
         int interval = bean.getInt("cancelInterval");
         String units = bean.getString("cancelUnits");
-        Date cancelDate = calculateDate(endTime, interval, units);
+        Date cancelDate = DateRules.getDate(endTime, interval, units);
         return (cancelDate.compareTo(date) > 0);
     }
 
@@ -241,35 +240,8 @@ public class ReminderRules {
                                                      service);
         int interval = templateBean.getInt("interval");
         String units = templateBean.getString("units");
-        Date nextDate = calculateDate(endTime, interval, units);
+        Date nextDate = DateRules.getDate(endTime, interval, units);
         return (nextDate.compareTo(endTime) > 0);
-    }
-
-    /**
-     * Calculates a date for a reminder.
-     *
-     * @param startTime the start time
-     * @param interval  the time interval. May be negative to calculate a date
-     *                  in the past
-     * @param units     the interval units
-     * @return the date for a reminder
-     */
-    public Date calculateDate(Date startTime, int interval, String units) {
-        GregorianCalendar calendar = new GregorianCalendar();
-        calendar.setTime(startTime);
-        if (units != null) {
-            units = units.toLowerCase();
-            if (units.equals("years")) {
-                calendar.add(Calendar.YEAR, interval);
-            } else if (units.equals("months")) {
-                calendar.add(Calendar.MONTH, interval);
-            } else if (units.equals("weeks")) {
-                calendar.add(Calendar.DAY_OF_YEAR, interval * 7);
-            } else if (units.equals("days")) {
-                calendar.add(Calendar.DAY_OF_YEAR, interval);
-            }
-        }
-        return calendar.getTime();
     }
 
     /**

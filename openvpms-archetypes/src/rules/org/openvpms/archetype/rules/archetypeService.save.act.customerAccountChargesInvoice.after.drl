@@ -32,7 +32,7 @@
         <java:consequence>
             import org.openvpms.archetype.rules.balance.CustomerBalanceRules;
             CustomerBalanceRules rules = new CustomerBalanceRules(service);
-            rules.calculateBalance(act);
+            rules.updateBalance(act);
         </java:consequence>
     </rule>
 </rule-set>
