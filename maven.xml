@@ -90,4 +90,22 @@
         </ant:java>
     </goal>
 
+    <goal name="generate-balance" description="Generate account balances">
+        <attainGoal name="java:compile"/>
+        <attainGoal name="java:jar-resources"/>
+        <attainGoal name="generate-hibernate-properties"/>
+        <ant:java
+                classname="org.openvpms.archetype.rules.balance.CustomerBalanceGenerator"
+                failonerror="true"
+                maxmemory="512m"
+                fork="true">
+            <ant:classpath>
+                <ant:pathelement path="${maven.build.dest}"/>
+                <ant:pathelement path="${maven.build.dir}/hibernate"/>
+                <ant:path refid="maven.dependency.classpath"/>
+            </ant:classpath>
+            <arg line="-c application-context.xml"/>
+        </ant:java>
+    </goal>
+
 </project>
