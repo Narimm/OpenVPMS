@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -57,6 +58,11 @@ public class CustomerBalanceGenerator {
     private final IArchetypeService service;
 
     /**
+     * The customer name. May be <code>null</code>
+     */
+    private final String name;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(
@@ -72,9 +78,11 @@ public class CustomerBalanceGenerator {
      * Constructs a new <code>CustomerBalanceGenerator</code>.
      *
      * @param service the archetype service
+     * @param name the customer name. May be <code>null</code>
      */
-    public CustomerBalanceGenerator(IArchetypeService service) {
+    public CustomerBalanceGenerator(IArchetypeService service, String name) {
         this.service = service;
+        this.name = name;
     }
 
     /**
@@ -90,6 +98,7 @@ public class CustomerBalanceGenerator {
                 displayUsage(parser);
             } else {
                 String contextPath = config.getString("context");
+                String name = config.getString("name");
 
                 ApplicationContext context;
                 if (!new File(contextPath).exists()) {
@@ -102,7 +111,7 @@ public class CustomerBalanceGenerator {
                         = (IArchetypeService) context.getBean(
                         "archetypeService");
                 CustomerBalanceGenerator gen = new CustomerBalanceGenerator(
-                        service);
+                        service, name);
                 gen.generate();
             }
         } catch (Throwable throwable) {
@@ -115,7 +124,11 @@ public class CustomerBalanceGenerator {
      */
     public void generate() {
         ArchetypeQuery query = new ArchetypeQuery("party.customer*", true,
-                                                  true);
+                                                  false);
+        query.setMaxResults(100);
+        if (name != null) {
+            query.add(new NodeConstraint("name", name));
+        }
         query.add(new NodeSortConstraint("name"));
         Iterator<Party> iterator = new IMObjectQueryIterator<Party>(service,
                                                                     query);
@@ -154,7 +167,11 @@ public class CustomerBalanceGenerator {
                 if (act.getAllocatedAmount() == null) {
                     act.setAllocatedAmount(new Money(0));
                 }
-                service.save(act);
+                try {
+                    service.save(act);
+                } catch (ValidationException exception) {
+                    log.error(exception, exception);
+                }
                 ++processed;
             }
         }
@@ -169,6 +186,9 @@ public class CustomerBalanceGenerator {
      */
     private static JSAP createParser() throws JSAPException {
         JSAP parser = new JSAP();
+        parser.registerParameter(new FlaggedOption("name").setShortFlag('n')
+                .setLongFlag("name")
+                .setHelp("Customer name. May contain wildcards"));
         parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
                 .setLongFlag("context")
                 .setDefault(APPLICATION_CONTEXT)
