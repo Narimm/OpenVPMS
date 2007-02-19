@@ -29,7 +29,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -78,7 +78,7 @@ public class CustomerBalanceGenerator {
      * Constructs a new <code>CustomerBalanceGenerator</code>.
      *
      * @param service the archetype service
-     * @param name the customer name. May be <code>null</code>
+     * @param name    the customer name. May be <code>null</code>
      */
     public CustomerBalanceGenerator(IArchetypeService service, String name) {
         this.service = service;
@@ -106,7 +106,11 @@ public class CustomerBalanceGenerator {
                 } else {
                     context = new FileSystemXmlApplicationContext(contextPath);
                 }
-
+                if (context.containsBean("ruleEngineProxyCreator")) {
+                    throw new IllegalStateException(
+                            "Rules must be disabled to run "
+                                    + CustomerBalanceGenerator.class.getName());
+                }
                 IArchetypeService service
                         = (IArchetypeService) context.getBean(
                         "archetypeService");
@@ -168,8 +172,10 @@ public class CustomerBalanceGenerator {
                     act.setAllocatedAmount(new Money(0));
                 }
                 try {
+                    rules.addToBalance(act);
                     service.save(act);
-                } catch (ValidationException exception) {
+                    rules.updateBalance(act);
+                } catch (OpenVPMSException exception) {
                     log.error(exception, exception);
                 }
                 ++processed;
