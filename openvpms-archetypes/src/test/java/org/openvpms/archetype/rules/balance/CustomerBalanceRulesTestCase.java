@@ -362,6 +362,16 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
         now = DateRules.getDate(now, 1, DateRules.DAYS);
         overdue = rules.getOverdueBalance(customer, now);
         checkEquals(amount, overdue);
+
+        // now save a credit for the same date as the invoice with total
+        // > invoice total. The balance should be negative, but the overdue
+        // balance should be zero as it only sums debits.
+        FinancialAct credit = createChargesCredit(new Money(150));
+        credit.setActivityStartTime(startTime);
+        save(credit);
+        checkEquals(new Money(-50), rules.getBalance(customer));
+        overdue = rules.getOverdueBalance(customer, now);
+        checkEquals(BigDecimal.ZERO, overdue);
     }
 
     /**
@@ -378,8 +388,10 @@ public class CustomerBalanceRulesTestCase extends ArchetypeServiceTest {
         for (int i = 0; i < acts.length; ++i) {
             save(acts[i]);
             BigDecimal multiplier = new BigDecimal(i + 1);
-            checkEquals(amount.multiply(multiplier),
-                        rules.getCreditAmount(customer));
+
+            // need to negate as credits are negative
+            BigDecimal expected = amount.multiply(multiplier).negate();
+            checkEquals(expected, rules.getCreditAmount(customer));
         }
     }
 
