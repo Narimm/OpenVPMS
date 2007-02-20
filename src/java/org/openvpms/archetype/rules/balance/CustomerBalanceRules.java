@@ -233,8 +233,8 @@ public class CustomerBalanceRules {
 
     /**
      * Calculates the overdue balance for a customer.
-     * This is the sum of unallocated amounts in associated debits and credits
-     * that have a date less than the specified date less the overdue days.
+     * This is the sum of unallocated amounts in associated debits that have a
+     * date less than the specified date less the overdue days.
      * The overdue days are specified in the customer's type node.
      *
      * @param customer the customer
@@ -255,8 +255,19 @@ public class CustomerBalanceRules {
         } else {
             overdue = date;
         }
-        Iterator<FinancialAct> iterator = getUnallocatedActs(customer, overdue);
-        return calculateBalance(iterator);
+
+        // query all overdue debit acts
+        ArchetypeQuery query = createQuery(customer);
+        query.add(new NodeConstraint("startTime", RelationalOp.LT, overdue));
+        query.add(new NodeConstraint("credit", false));
+        Iterator<FinancialAct> iterator
+                = new IMObjectQueryIterator<FinancialAct>(service, query);
+
+        BigDecimal amount = calculateBalance(iterator);
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+            amount = BigDecimal.ZERO;
+        }
+        return amount;
     }
 
     /**
@@ -270,11 +281,7 @@ public class CustomerBalanceRules {
         ArchetypeQuery query = createQuery(customer, CREDIT_SHORT_NAMES);
         Iterator<FinancialAct> iterator
                 = new IMObjectQueryIterator<FinancialAct>(service, query);
-        BigDecimal amount = calculateBalance(iterator);
-
-        // need to negate as calculateBalance treats credits as negative,
-        // but want a positive return value
-        return amount.negate();
+        return calculateBalance(iterator);
     }
 
     /**
@@ -378,21 +385,6 @@ public class CustomerBalanceRules {
      */
     private Iterator<FinancialAct> getUnallocatedActs(Party customer) {
         ArchetypeQuery query = createQuery(customer);
-        return new IMObjectQueryIterator<FinancialAct>(service, query);
-    }
-
-    /**
-     * Returns unallocated acts for a customer whose startTime is less
-     * than that supplied.
-     *
-     * @param customer the customer
-     * @return unallocated acts for the customer
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private Iterator<FinancialAct> getUnallocatedActs(Party customer,
-                                                      Date startTime) {
-        ArchetypeQuery query = createQuery(customer);
-        query.add(new NodeConstraint("startTime", RelationalOp.LT, startTime));
         return new IMObjectQueryIterator<FinancialAct>(service, query);
     }
 
