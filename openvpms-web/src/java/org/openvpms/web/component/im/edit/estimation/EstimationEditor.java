@@ -25,8 +25,10 @@ import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.util.DateFormatter;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 
@@ -53,6 +55,7 @@ public class EstimationEditor extends ActEditor {
             throw new IllegalArgumentException(
                     "Invalid act type:" + act.getArchetypeId().getShortName());
         }
+        addStartEndTimeListeners();
     }
 
     /**
@@ -68,6 +71,26 @@ public class EstimationEditor extends ActEditor {
         BigDecimal high = ActHelper.sum((Act) getObject(), acts, "highTotal");
         lowTotal.setValue(low);
         highTotal.setValue(high);
+    }
+
+    /**
+     * Invoked when the start time changes. Sets the value to today if
+     * start time < today.
+     */
+    @Override
+    protected void onStartTimeChanged() {
+        Date start = getStartTime();
+        if (start != null) {
+            Date today = DateFormatter.getDayMonthYear(new Date());
+            if (start.compareTo(today) < 0) {
+                setStartTime(today);
+            } else {
+                Date end = getEndTime();
+                if (end != null && end.compareTo(start) < 0) {
+                    setEndTime(start);
+                }
+            }
+        }
     }
 
 }
