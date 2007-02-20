@@ -209,6 +209,12 @@ public class CustomerBalanceRules {
                     ACCOUNT_ALLOCATION_SHORTNAME);
             if (!relationships.isEmpty()) {
                 result = true;
+            } else {
+                // check for a zero total.
+                Money total = act.getTotal();
+                if (total != null && total.compareTo(BigDecimal.ZERO) == 0) {
+                    result = true;
+                }
             }
         }
         return result;
