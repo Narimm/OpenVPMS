@@ -63,7 +63,7 @@ public class CustomerSummary {
             Label currentValue = create(current);
 
             Label creditTitle = create("customer.account.credit");
-            BigDecimal credit = rules.getCreditAmount(customer);
+            BigDecimal credit = rules.getCreditBalance(customer);
             Label creditValue = create(credit);
 
             Label unbilledTitle = create("customer.account.unbilled");

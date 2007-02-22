@@ -30,7 +30,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
-import org.openvpms.web.component.im.query.PreloadedResultSet;
+import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 
@@ -110,7 +110,8 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
                     objects.add((Entity) object);
                 }
             }
-            result = new PreloadedResultSet<Entity>(objects, getMaxResults());
+            result = new IMObjectListResultSet<Entity>(objects,
+                                                       getMaxResults());
         }
         return result;
     }

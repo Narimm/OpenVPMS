@@ -127,7 +127,7 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
                 }
             }
         }
-        return new PreloadedResultSet<Product>(matches, getMaxResults());
+        return new IMObjectListResultSet<Product>(matches, getMaxResults());
     }
 
 }

@@ -18,17 +18,8 @@
 
 package org.openvpms.web.component.im.list;
 
-import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Font;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Style;
-import nextapp.echo2.app.list.ListCellRenderer;
-import nextapp.echo2.app.list.StyledListCell;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.resource.util.Styles;
 
 
 /**
@@ -37,126 +28,50 @@ import org.openvpms.web.resource.util.Styles;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class IMObjectListCellRenderer implements ListCellRenderer {
+public class IMObjectListCellRenderer
+        extends AbstractListCellRenderer<IMObject> {
 
     /**
-     * Localised display name for "all".
+     * Constructs a new <code>IMObjectListCellRenderer</code>.
      */
-    private final String ALL = Messages.get("list.all");
+    public IMObjectListCellRenderer() {
+        super(IMObject.class);
+    }
 
     /**
-     * Localised display name for "none".
-     */
-    private final String NONE = Messages.get("list.none");
-
-
-    /**
-     * Renders an item in a list.
+     * Renders an object.
      *
-     * @param list  the list component
-     * @param value the item value
-     * @param index the item index
-     * @return the rendered form of the list cell
+     * @param list   the list component
+     * @param object the object to render
+     * @param index  the object index
+     * @return the rendered object
      */
-    public Object getListCellRendererComponent(Component list, Object value,
-                                               int index) {
-        Object result = null;
-        if (value instanceof IMObject) {
-            IMObject object = (IMObject) value;
-            if (object.equals(IMObjectListModel.ALL)) {
-                result = new BoldListCell(ALL);
-            } else if (object.equals(IMObjectListModel.NONE)) {
-                result = new BoldListCell(NONE);
-            } else {
-                result = object.getName();
-            }
-        }
-        if (result == null) {
-            result = "";
-        }
-        return result;
+    protected Object getComponent(Component list, IMObject object, int index) {
+        return object.getName();
     }
 
     /**
-     * Helper to render a cell in a bold font. Uses the "bold" label style.
+     * Determines if an object represents 'All'.
+     *
+     * @param list   the list component
+     * @param object the object
+     * @param index  the object index
+     * @return <code>true</code> if the object represents 'All'.
      */
-    private static class BoldListCell implements StyledListCell {
-
-        /**
-         * The cell value.
-         */
-        private final String value;
-
-        /**
-         * The foreground.
-         */
-        private Color background;
-
-        /**
-         * The font.
-         */
-        private Font font;
-
-        /**
-         * The background.
-         */
-        private Color foreground;
-
-        /**
-         * Creates a new <code>BoldListCell</code>.
-         *
-         * @param value the cell value
-         */
-        public BoldListCell(String value) {
-            this.value = value;
-            String styleName = Styles.getStyle(Label.class, "bold");
-            if (styleName != null) {
-                Style style = ApplicationInstance.getActive().getStyle(
-                        Label.class,
-                        styleName);
-                background = (Color) style.getProperty(
-                        Component.PROPERTY_BACKGROUND);
-                foreground = (Color) style.getProperty(
-                        Component.PROPERTY_FOREGROUND);
-                font = (Font) style.getProperty(Component.PROPERTY_FONT);
-            }
-        }
-
-        /**
-         * Returns the background of the list item.
-         *
-         * @return the background
-         */
-        public Color getBackground() {
-            return background;
-        }
-
-        /**
-         * Returns the font of the list item.
-         *
-         * @return the font
-         */
-        public Font getFont() {
-            return font;
-        }
-
-        /**
-         * Returns the foreground of the list item.
-         *
-         * @return the foreground
-         */
-        public Color getForeground() {
-            return foreground;
-        }
-
-        /**
-         * Returns the cell value.
-         *
-         * @return the cell value
-         */
-        public String toString() {
-            return value;
-        }
+    protected boolean isAll(Component list, IMObject object, int index) {
+        return object.equals(IMObjectListModel.ALL);
     }
-}
 
+    /**
+     * Determines if an object represents 'None'.
+     *
+     * @param list   the list component
+     * @param object the object
+     * @param index  the object index
+     * @return <code>true</code> if the object represents 'None'.
+     */
+    protected boolean isNone(Component list, IMObject object, int index) {
+        return object.equals(IMObjectListModel.NONE);
+    }
+
+}

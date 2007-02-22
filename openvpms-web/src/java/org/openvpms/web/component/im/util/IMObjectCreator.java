@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.util;
 
+import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -25,7 +26,8 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.SelectionDialog;
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
+import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -125,12 +127,14 @@ public final class IMObjectCreator {
             ErrorHelper.show("imobject.create.noshortnames", type);
             listener.cancelled();
         } else if (shortNames.length > 1) {
-            final ArchetypeShortNameListModel model
-                    = new ArchetypeShortNameListModel(shortNames, false);
+            final ShortNameListModel model
+                    = new ShortNameListModel(shortNames, false);
             String title = Messages.get("imobject.create.title", type);
             String message = Messages.get("imobject.create.message", type);
+            ListBox list = new ListBox(model);
+            list.setCellRenderer(new ShortNameListCellRenderer());
             final SelectionDialog dialog
-                    = new SelectionDialog(title, message, model);
+                    = new SelectionDialog(title, message, list);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
                     int selected = dialog.getSelectedIndex();

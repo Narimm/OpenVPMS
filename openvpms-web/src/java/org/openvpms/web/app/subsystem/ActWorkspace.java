@@ -154,7 +154,7 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
      * @return a component representing the acts
      */
     protected Component getActs(Browser acts) {
-        return GroupBoxFactory.create(this.browser.getComponent());
+        return GroupBoxFactory.create(browser.getComponent());
     }
 
     /**

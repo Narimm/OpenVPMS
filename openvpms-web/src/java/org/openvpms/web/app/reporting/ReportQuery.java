@@ -19,12 +19,12 @@ import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
+import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.EntityResultSet;
-import org.openvpms.web.component.im.query.PreloadedResultSet;
+import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -144,7 +144,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
         }
         // Do the initial archetype query
         BaseArchetypeConstraint archetypes;
-        if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
+        if (type == null || type.equals(ShortNameListModel.ALL)) {
             archetypes = getArchetypes();
             archetypes.setActiveOnly(activeOnly);
         } else {
@@ -171,7 +171,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
             }
         }
 
-        return new PreloadedResultSet<Entity>(result, getMaxResults());
+        return new IMObjectListResultSet<Entity>(result, getMaxResults());
     }
 
 

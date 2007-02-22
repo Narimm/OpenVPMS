@@ -32,7 +32,7 @@ import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.PreloadedResultSet;
+import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -248,7 +248,7 @@ public class AbstractIMObjectCollectionViewer
     protected void populateTable() {
         List<IMObject> objects = getObjects();
         ResultSet<IMObject> set
-                = new PreloadedResultSet<IMObject>(objects, ROWS);
+                = new IMObjectListResultSet<IMObject>(objects, ROWS);
         _table.setResultSet(set);
     }
 

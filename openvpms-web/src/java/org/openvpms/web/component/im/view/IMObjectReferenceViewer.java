@@ -73,6 +73,7 @@ public class IMObjectReferenceViewer {
      * Construct a new <code>IMObjectReferenceViewer</code>.
      *
      * @param reference the reference to view. May be <code>null</code>
+     * @param name      the object name. May be <code>null</code>
      * @param link      if <code>true</code> enable an hyperlink to the object
      */
     public IMObjectReferenceViewer(IMObjectReference reference, String name,
