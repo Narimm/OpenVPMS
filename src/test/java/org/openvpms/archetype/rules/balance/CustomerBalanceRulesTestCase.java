@@ -356,7 +356,7 @@ public class CustomerBalanceRulesTestCase extends AbstractCustomerBalanceTest {
     }
 
     /**
-     * Tests the {@link CustomerBalanceRules#getCreditAmount(Party)} method.
+     * Tests the {@link CustomerBalanceRules#getCreditBalance(Party)} method.
      */
     public void testGetCreditAmount() {
         final Money amount = new Money(100);
@@ -372,7 +372,7 @@ public class CustomerBalanceRulesTestCase extends AbstractCustomerBalanceTest {
 
             // need to negate as credits are negative
             BigDecimal expected = amount.multiply(multiplier).negate();
-            checkEquals(expected, rules.getCreditAmount(getCustomer()));
+            checkEquals(expected, rules.getCreditBalance(getCustomer()));
         }
     }
 

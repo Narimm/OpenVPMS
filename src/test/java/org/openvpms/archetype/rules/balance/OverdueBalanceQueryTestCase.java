@@ -127,7 +127,10 @@ public class OverdueBalanceQueryTestCase extends AbstractCustomerBalanceTest {
                                                         int to) {
         List<Party> result = new ArrayList<Party>();
         OverdueBalanceQuery query = new OverdueBalanceQuery();
-        Iterator<Party> iterator = query.query(date, from, to);
+        query.setDate(date);
+        query.setFrom(from);
+        query.setTo(to);
+        Iterator<Party> iterator = query.query();
         while (iterator.hasNext()) {
             result.add(iterator.next());
         }
