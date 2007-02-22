@@ -36,7 +36,8 @@ import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
+import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
@@ -428,7 +429,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
         String type = getShortName();
         boolean activeOnly = !includeInactive();
         BaseArchetypeConstraint result;
-        if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
+        if (type == null || type.equals(ShortNameListModel.ALL)) {
             result = getArchetypes();
             result.setActiveOnly(activeOnly);
         } else {
@@ -487,8 +488,8 @@ public abstract class AbstractQuery<T> implements Query<T> {
      */
     protected void addShortNameSelector(Component container) {
         if (shortNames.length > 1) {
-            final ArchetypeShortNameListModel model
-                    = new ArchetypeShortNameListModel(shortNames, true);
+            final ShortNameListModel model
+                    = new ShortNameListModel(shortNames, true);
             final SelectField shortNameSelector = SelectFieldFactory.create(
                     model);
             shortNameSelector.addActionListener(new ActionListener() {
@@ -498,6 +499,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
                     setShortName(shortName);
                 }
             });
+            shortNameSelector.setCellRenderer(new ShortNameListCellRenderer());
 
             Label typeLabel = LabelFactory.create(TYPE_ID);
             container.add(typeLabel);

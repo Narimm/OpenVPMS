@@ -26,7 +26,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
-import org.openvpms.web.component.im.query.PreloadedResultSet;
+import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
@@ -78,7 +78,8 @@ public class AppointmentTypeQuery extends AbstractIMObjectQuery<Entity> {
             if (objects == null) {
                 objects = Collections.emptyList();
             }
-            result = new PreloadedResultSet<Entity>(objects, getMaxResults());
+            result = new IMObjectListResultSet<Entity>(objects,
+                                                       getMaxResults());
             if (sort != null) {
                 result.sort(sort);
             }

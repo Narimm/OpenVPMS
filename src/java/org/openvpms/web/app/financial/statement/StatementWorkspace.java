@@ -18,48 +18,23 @@
 
 package org.openvpms.web.app.financial.statement;
 
-import echopointng.DateField;
 import echopointng.GroupBox;
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.ListBox;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
-import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-import nextapp.echo2.app.list.ListModel;
-import nextapp.echo2.app.list.ListSelectionModel;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
-import org.openvpms.web.component.im.list.IMObjectListModel;
+import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.DateFieldFactory;
-import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.GroupBoxFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.ListBoxFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
 
 
 /**
@@ -71,30 +46,9 @@ import java.util.List;
 public class StatementWorkspace extends AbstractWorkspace {
 
     /**
-     * Checkbox to indicate if statments should be generated for all customers,
-     * or a range of customers.
+     * The browser.
      */
-    private CheckBox allCustomers;
-
-    /**
-     * The 'from-customer' label.
-     */
-    private Label customerFromLabel;
-
-    /**
-     * The 'from-customer' field.
-     */
-    private TextField customerFrom;
-
-    /**
-     * The 'to-customer' label.
-     */
-    private Label customerToLabel;
-
-    /**
-     * The 'to-customer' field.
-     */
-    private TextField customerTo;
+    private Browser<ObjectSet> browser;
 
 
     /**
@@ -156,17 +110,29 @@ public class StatementWorkspace extends AbstractWorkspace {
                 "StatementWorkspace.Layout");
         Component heading = super.doLayout();
         root.add(heading);
-        Button run = ButtonFactory.create("run", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onRun();
-            }
-        });
-        Row buttons = RowFactory.create("ControlRow", run);
+        FocusGroup group = new FocusGroup("StatementWorkspace");
+        ButtonRow buttons = new ButtonRow(group);
         SplitPane content = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
                 "StatementWorkspace.Layout", buttons);
-        doLayout(content);
+        doLayout(content, group);
         root.add(content);
+
+        buttons.addButton("processAll", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onProcessAll();
+            }
+        });
+        buttons.addButton("process", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onProcess();
+            }
+        });
+        buttons.addButton("report", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onReport();
+            }
+        });
         return root;
     }
 
@@ -174,123 +140,50 @@ public class StatementWorkspace extends AbstractWorkspace {
      * Lays out the components.
      *
      * @param container the container
+     * @param group     the focus group
      */
-    private void doLayout(Component container) {
-        IPage<IMObject> page = ArchetypeQueryHelper.get(
-                ArchetypeServiceHelper.getArchetypeService(),
-                new String[]{"lookup.customerAccountType"}, true, 0,
-                ArchetypeQuery.ALL_RESULTS);
-        List<IMObject> rows = page.getResults();
-        ListModel model = new IMObjectListModel(rows, true, false);
-        ListBox accountType = ListBoxFactory.create(model);
-        accountType.setCellRenderer(new IMObjectListCellRenderer());
-        accountType.setSelectionMode(ListSelectionModel.MULTIPLE_SELECTION);
-        accountType.setStyleName("StatementWorkspace.AccountTypes");
-
-        Row accountTypeRow = RowFactory.create(accountType);
-        // wrap the list in a row as a workaround for render bug in firefox.
-        // See OVPMS-239
-
-        DateField statementDate = DateFieldFactory.create();
-        Calendar calendar = new GregorianCalendar();
-        calendar.add(Calendar.DAY_OF_MONTH, -1);
-        statementDate.getDateChooser().setSelectedDate(calendar);
-
-        CheckBox preview = CheckBoxFactory.create(false);
-        CheckBox finalise = CheckBoxFactory.create(true);
-        Grid grid = GridFactory.create(2);
-        add(grid, "financial.statement.accountType", accountTypeRow);
-        add(grid, "financial.statement.statementDate", statementDate);
-        add(grid, "financial.statement.preview", preview);
-        add(grid, "financial.statement.finalise", finalise);
-
-        allCustomers = CheckBoxFactory.create(
-                "financial.statement.allCustomers", true);
-        allCustomers.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onAllCustomersChanged();
-            }
-        });
-        customerFromLabel
-                = LabelFactory.create("financial.statement.customerFrom");
-        customerFrom = TextComponentFactory.create();
-        customerToLabel = LabelFactory.create("financial.statement.customerTo");
-        customerTo = TextComponentFactory.create();
-
-        add(grid, "financial.statement.customerRange",
-            createRow(allCustomers,
-                      createRow(customerFromLabel, customerFrom),
-                      createRow(customerToLabel, customerTo)));
-
-        GroupBox box = GroupBoxFactory.create(grid);
+    private void doLayout(Component container, FocusGroup group) {
+        browser = new CustomerBalanceBrowser();
+        GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
-
-        onAllCustomersChanged(); // initialise customer components
+        group.add(browser.getFocusGroup());
     }
 
     /**
-     * Invoked when the 'run' button is pressed.
+     * Invoked when the 'Process All' button is pressed.
      */
-    private void onRun() {
+    private void onProcessAll() {
         String title = Messages.get("financial.statement.run.title");
         String message = Messages.get("financial.statement.run.message");
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(title, message);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    doProcessAll();
+                }
             }
         });
         dialog.show();
-
     }
 
     /**
-     * Invoked when the 'all customers' checkbox is selected.
+     * Processes all customers matching the criteria.
      */
-    private void onAllCustomersChanged() {
-        boolean enabled = !allCustomers.isSelected();
-        enable(customerFromLabel, enabled);
-        enable(customerFrom, enabled);
-        enable(customerTo, enabled);
-        enable(customerToLabel, enabled);
+    private void doProcessAll() {
+        browser.query();
     }
 
     /**
-     * Enable/disable a component.
-     *
-     * @param component the component to update
-     * @param enabled   if <code>true</code> enable the component; otherwise
-     *                  disable it
+     * Invoked when the 'Process' button is pressed.
      */
-    private void enable(Component component, boolean enabled) {
-        component.setEnabled(enabled);
-        if (enabled) {
-            component.setForeground(Color.BLACK);
-        } else {
-            component.setForeground(Color.LIGHTGRAY);
-        }
+    private void onProcess() {
     }
 
     /**
-     * Helper to create a row containing a set of components.
-     *
-     * @param components the components
-     * @return a row containing the components
+     * Invoked when the 'Report' button is pressed.
      */
-    private Row createRow(Component ... components) {
-        return RowFactory.create("CellSpacing", components);
-    }
-
-    /**
-     * Helper to add a label and component to a grid.
-     *
-     * @param grid      the grid
-     * @param key       the label key
-     * @param component the component
-     */
-    private void add(Grid grid, String key, Component component) {
-        grid.add(LabelFactory.create(key));
-        grid.add(component);
+    private void onReport() {
     }
 
 }

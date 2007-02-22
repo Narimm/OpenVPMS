@@ -280,9 +280,9 @@ public class ReportingWorkspace extends AbstractWorkspace<Entity> {
     }
 
     /**
-     * Returns the edit button.
+     * Returns the run button.
      *
-     * @return the edit button
+     * @return the run button
      */
     protected Button getRunButton() {
         if (_run == null) {

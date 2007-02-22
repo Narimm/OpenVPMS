@@ -20,12 +20,7 @@ package org.openvpms.web.component.im.list;
 
 import nextapp.echo2.app.list.AbstractListModel;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +32,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeShortNameListModel extends AbstractListModel {
+public class ShortNameListModel extends AbstractListModel {
 
     /**
      * Short name indicating that all values apply.
@@ -45,28 +40,17 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
     public static final String ALL = "all";
 
     /**
-     * Localised displlay name for "all".
-     */
-    private final String ALL_LOCALISED = Messages.get("list.all");
-
-    /**
      * The short names. The first column is the short name, the second the
      * corresponding display name.
      */
-    private final String[][] _shortNames;
-
-    /**
-     * The logger.
-     */
-    private static final Log _log
-            = LogFactory.getLog(ArchetypeShortNameListModel.class);
+    private final String[][] shortNames;
 
     /**
      * Construct a new <code>LookupListModel</code>.
      *
      * @param shortNames the short names to populate the list with
      */
-    public ArchetypeShortNameListModel(String[] shortNames) {
+    public ShortNameListModel(String[] shortNames) {
         this(shortNames, false);
     }
 
@@ -76,8 +60,8 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
      * @param shortNames the short names to populate the list with
      * @param all        if <code>true</code>, add a localised "All"
      */
-    public ArchetypeShortNameListModel(String[] shortNames, boolean all) {
-        this(shortNames, all, ServiceHelper.getArchetypeService(), true);
+    public ShortNameListModel(String[] shortNames, boolean all) {
+        this(shortNames, all, true);
     }
 
     /**
@@ -86,22 +70,8 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
      * @param shortNames the short names to populate the list with
      * @param all        if <code>true</code>, add a localised "All"
      */
-    public ArchetypeShortNameListModel(List<String> shortNames, boolean all) {
-        this(shortNames.toArray(new String[0]), all,
-             ServiceHelper.getArchetypeService(), true);
-    }
-
-    /**
-     * Construct a new <code>LookupListModel</code>.
-     *
-     * @param shortNames the short names to populate the list with
-     * @param all        if <code>true</code>, add a localised "All"
-     * @param sort       if <code>true</code>, sort the list alphabetically
-     */
-    public ArchetypeShortNameListModel(List<String> shortNames, boolean all,
-                                       boolean sort) {
-        this(shortNames.toArray(new String[0]), all,
-             ServiceHelper.getArchetypeService(), sort);
+    public ShortNameListModel(List<String> shortNames, boolean all) {
+        this(shortNames.toArray(new String[0]), all, true);
     }
 
     /**
@@ -111,10 +81,9 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
      * @param all        if <code>true</code>, add a localised "All"
      * @param sort       if <code>true</code>, sort the list alphabetically
      */
-    public ArchetypeShortNameListModel(String[] shortNames, boolean all,
-                                       boolean sort) {
-        this(shortNames, all,
-             ServiceHelper.getArchetypeService(), sort);
+    public ShortNameListModel(List<String> shortNames, boolean all,
+                              boolean sort) {
+        this(shortNames.toArray(new String[0]), all, sort);
     }
 
     /**
@@ -122,13 +91,9 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
      *
      * @param shortNames the short names to populate the list with
      * @param all        if <code>true</code> add a localised "All"
-     * @param service    the archetype service
-     * @param sort       TODO
+     * @param sort       if <code>true</code>, sort the list alphabetically
      */
-    public ArchetypeShortNameListModel(String[] shortNames,
-                                       boolean all,
-                                       IArchetypeService service,
-                                       boolean sort) {
+    public ShortNameListModel(String[] shortNames, boolean all, boolean sort) {
         if (sort) {
             Arrays.sort(shortNames);
         }
@@ -137,39 +102,31 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
         if (all) {
             ++size;
         }
-        _shortNames = new String[size][2];
+        this.shortNames = new String[size][2];
         if (all) {
-            _shortNames[index][0] = ALL;
-            _shortNames[index][1] = ALL_LOCALISED;
+            this.shortNames[index][0] = ALL;
             ++index;
         }
         for (int i = 0; i < shortNames.length; ++i, ++index) {
             String shortName = shortNames[i];
-            _shortNames[index][0] = shortName;
-            ArchetypeDescriptor descriptor
-                    = service.getArchetypeDescriptor(shortName);
-            String displayName = null;
-            if (descriptor != null) {
-                displayName = descriptor.getDisplayName();
-            } else {
-                _log.error(
-                        "No archetype descriptor for shortname=" + shortName);
-            }
+            this.shortNames[index][0] = shortName;
+            String displayName = DescriptorHelper.getDisplayName(shortName);
             if (StringUtils.isEmpty(displayName)) {
                 displayName = shortName;
             }
-            _shortNames[index][1] = displayName;
+            this.shortNames[index][1] = displayName;
         }
     }
 
     /**
      * Returns the value at the specified index in the list.
+     * This implementation returns the short name.
      *
      * @param index the index
      * @return the value
      */
     public Object get(int index) {
-        return _shortNames[index][1];
+        return getShortName(index);
     }
 
     /**
@@ -178,7 +135,7 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
      * @return the size
      */
     public int size() {
-        return _shortNames.length;
+        return shortNames.length;
     }
 
     /**
@@ -188,7 +145,17 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
      * @return the short name
      */
     public String getShortName(int index) {
-        return _shortNames[index][0];
+        return shortNames[index][0];
+    }
+
+    /**
+     * Returns the display name at the specified index in the list.
+     *
+     * @param index the index
+     * @return the display name
+     */
+    public Object getDisplayName(int index) {
+        return shortNames[index][1];
     }
 
     /**
@@ -200,12 +167,13 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
      */
     public int indexOf(String shortName) {
         int result = -1;
-        for (int i = 0; i < _shortNames.length; ++i) {
-            if (_shortNames[i][0].equals(shortName)) {
+        for (int i = 0; i < shortNames.length; ++i) {
+            if (shortNames[i][0].equals(shortName)) {
                 result = i;
                 break;
             }
         }
         return result;
     }
+
 }

@@ -41,8 +41,9 @@ import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
-import org.openvpms.web.component.im.query.PreloadedResultSet;
+import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
+import org.openvpms.web.component.im.list.ShortNameListModel;
+import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -267,8 +268,8 @@ public abstract class IMObjectTableCollectionEditor
         if (range.length == 1) {
             shortName = range[0];
         } else if (range.length > 1) {
-            final ArchetypeShortNameListModel model
-                    = new ArchetypeShortNameListModel(range, false, false);
+            final ShortNameListModel model
+                    = new ShortNameListModel(range, false, false);
             final SelectField archetypeNames = SelectFieldFactory.create(model);
             int index = archetypeNames.getSelectedIndex();
             shortName = model.getShortName(index);
@@ -281,6 +282,7 @@ public abstract class IMObjectTableCollectionEditor
                     }
                 }
             });
+            archetypeNames.setCellRenderer(new ShortNameListCellRenderer());
             buttons.add(archetypeNames);
             focus.add(archetypeNames);
         }
@@ -421,8 +423,8 @@ public abstract class IMObjectTableCollectionEditor
     protected void populateTable() {
         CollectionPropertyEditor editor = getCollectionPropertyEditor();
         List<IMObject> objects = editor.getObjects();
-        ResultSet<IMObject> set = new PreloadedResultSet<IMObject>(objects,
-                                                                   ROWS);
+        ResultSet<IMObject> set = new IMObjectListResultSet<IMObject>(objects,
+                                                                      ROWS);
         table.setResultSet(set);
     }
 

@@ -43,7 +43,7 @@ public class LookupListModel extends AbstractListModel {
     /**
      * The lookups.
      */
-    private List<Lookup> _lookups;
+    private List<Lookup> lookups;
 
     /**
      * Dummy short name indicating that all values apply.
@@ -58,28 +58,28 @@ public class LookupListModel extends AbstractListModel {
     /**
      * Determines if "all" should be included.
      */
-    private boolean _all;
+    private boolean all;
 
     /**
      * Determines if "none" should be included.
      */
-    private boolean _none;
+    private boolean none;
 
     /**
      * The source object. May be <code>null</code>.
      */
-    private IMObject _object;
+    private IMObject object;
 
     /**
      * The lookup node descriptor. May be <code>null</code>.
      */
-    private NodeDescriptor _descriptor;
+    private NodeDescriptor descriptor;
 
 
     /**
      * The logger.
      */
-    private static final Log _log = LogFactory.getLog(LookupListModel.class);
+    private static final Log log = LogFactory.getLog(LookupListModel.class);
 
 
     /**
@@ -89,8 +89,8 @@ public class LookupListModel extends AbstractListModel {
      * @param all     if <code>true</code>, add a localised "All"
      */
     public LookupListModel(List<Lookup> lookups, boolean all) {
-        _all = all;
-        _lookups = getLookups(lookups);
+        this.all = all;
+        this.lookups = getLookups(lookups);
     }
 
     /**
@@ -100,20 +100,20 @@ public class LookupListModel extends AbstractListModel {
      * @param descriptor the lookup node descriptor
      */
     public LookupListModel(IMObject object, NodeDescriptor descriptor) {
-        _object = object;
-        _descriptor = descriptor;
-        _none = !descriptor.isRequired();
-        _lookups = getLookups();
+        this.object = object;
+        this.descriptor = descriptor;
+        none = !descriptor.isRequired();
+        lookups = getLookups();
     }
 
     /**
      * Returns the value at the specified index in the list.
      *
      * @param index the index
-     * @return the value
+     * @return the lookup code
      */
     public Object get(int index) {
-        return _lookups.get(index).getCode();
+        return getLookup(index).getCode();
     }
 
     /**
@@ -122,7 +122,7 @@ public class LookupListModel extends AbstractListModel {
      * @return the size
      */
     public int size() {
-        return _lookups.size();
+        return lookups.size();
     }
 
     /**
@@ -132,7 +132,7 @@ public class LookupListModel extends AbstractListModel {
      * @return the lookup
      */
     public Lookup getLookup(int index) {
-        return _lookups.get(index);
+        return lookups.get(index);
     }
 
     /**
@@ -144,8 +144,8 @@ public class LookupListModel extends AbstractListModel {
      */
     public int indexOf(String lookup) {
         int result = -1;
-        for (int i = 0; i < _lookups.size(); ++i) {
-            if (StringUtils.equals(lookup, _lookups.get(i).getCode())) {
+        for (int i = 0; i < lookups.size(); ++i) {
+            if (StringUtils.equals(lookup, lookups.get(i).getCode())) {
                 result = i;
                 break;
             }
@@ -157,11 +157,11 @@ public class LookupListModel extends AbstractListModel {
      * Refreshes the model, if needed.
      */
     public void refresh() {
-        if (_object != null) {
+        if (object != null) {
             List<Lookup> lookups = getLookups();
-            if (!_lookups.equals(lookups)) {
-                _lookups = lookups;
-                int last = _lookups.isEmpty() ? 0 : _lookups.size() - 1;
+            if (!this.lookups.equals(lookups)) {
+                this.lookups = lookups;
+                int last = this.lookups.isEmpty() ? 0 : this.lookups.size() - 1;
                 fireContentsChanged(0, last);
             }
         }
@@ -174,11 +174,11 @@ public class LookupListModel extends AbstractListModel {
      */
     protected List<Lookup> getLookups() {
         try {
-            List<Lookup> lookups = FastLookupHelper.getLookups(_descriptor,
-                                                               _object);
+            List<Lookup> lookups = FastLookupHelper.getLookups(descriptor,
+                                                               object);
             return getLookups(lookups);
         } catch (OpenVPMSException exception) {
-            _log.error(exception, exception);
+            log.error(exception, exception);
             return new ArrayList<Lookup>();
         }
     }
@@ -191,16 +191,37 @@ public class LookupListModel extends AbstractListModel {
      *         "none" added when required
      */
     protected List<Lookup> getLookups(List<Lookup> lookups) {
-        if (_all || _none) {
+        if (all || none) {
             lookups = new ArrayList<Lookup>(lookups);
-            if (_all) {
-                lookups.add(0, new Lookup(null, null, ALL));
+            if (all) {
+                lookups.add(0, new Lookup(null, ALL, null));
             }
-            if (_none) {
-                lookups.add(0, new Lookup(null, null, NONE));
+            if (none) {
+                lookups.add(0, new Lookup(null, NONE, null));
             }
         }
         return lookups;
     }
 
+    /**
+     * Determines if a lookup code refers to {@link #ALL}.
+     *
+     * @param code the lookup code
+     * @return <tt>true</tt> if the lookup refers to {@link #ALL}.
+     */
+    public static boolean isAll(String code) {
+        // use identityHashCode to override intellij warnings on ==.
+        return System.identityHashCode(code)
+                == System.identityHashCode(LookupListModel.ALL);
+    }
+
+    /**
+     * Determines if a lookup refers to {@link #ALL}.
+     *
+     * @param lookup the lookup
+     * @return <tt>true</tt> if the lookup refers to {@link #ALL}.
+     */
+    public static boolean isAll(Lookup lookup) {
+        return isAll(lookup.getCode());
+    }
 }

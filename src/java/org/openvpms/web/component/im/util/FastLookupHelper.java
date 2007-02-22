@@ -23,8 +23,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,6 +49,30 @@ import java.util.Map;
 public class FastLookupHelper {
 
     /**
+     * The nodes to return.
+     */
+    private static final List<String> NODES = Arrays.asList("code", "name");
+
+
+    /**
+     * Returns a list of lookups for the specified short name.
+     *
+     * @param shortName the lookup short name
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    @SuppressWarnings("unchecked")
+    public static List<Lookup> getLookups(String shortName) {
+        ArchetypeQuery query
+                = new ArchetypeQuery(new String[]{shortName}, false, true)
+                .setFirstResult(0)
+                .setMaxResults(IArchetypeQuery.ALL_RESULTS);
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        List result = service.get(query, NODES).getResults();
+        return (List<Lookup>) result;
+    }
+
+    /**
      * Return a list of lookups for the specified {@link NodeDescriptor}.
      *
      * @param descriptor the node descriptor
@@ -54,9 +81,8 @@ public class FastLookupHelper {
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
     public static List<Lookup> getLookups(NodeDescriptor descriptor) {
-        List<String> nodes = Arrays.asList("code", "name");
         return LookupHelper.get(ArchetypeServiceHelper.getArchetypeService(),
-                                descriptor, nodes);
+                                descriptor, NODES);
     }
 
     /**
@@ -71,9 +97,8 @@ public class FastLookupHelper {
      */
     public static List<Lookup> getLookups(NodeDescriptor descriptor,
                                           IMObject context) {
-        List<String> nodes = Arrays.asList("code", "name");
         return LookupHelper.get(ArchetypeServiceHelper.getArchetypeService(),
-                                descriptor, context, nodes);
+                                descriptor, context, NODES);
     }
 
     /**

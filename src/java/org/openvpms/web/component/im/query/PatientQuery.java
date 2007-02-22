@@ -31,7 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.LabelFactory;
 
@@ -155,7 +155,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
             if (objects == null) {
                 objects = Collections.emptyList();
             }
-            result = new PreloadedResultSet<Party>(objects, getMaxResults());
+            result = new IMObjectListResultSet<Party>(objects, getMaxResults());
             if (sort != null) {
                 result.sort(sort);
             }
@@ -221,7 +221,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
         boolean activeOnly = !includeInactive();
         boolean idSearch = isIdentitySearch();
 
-        if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
+        if (type == null || type.equals(ShortNameListModel.ALL)) {
             for (String shortName : getShortNames()) {
                 List<Party> matches
                         = filter(patients, shortName, name, idSearch,

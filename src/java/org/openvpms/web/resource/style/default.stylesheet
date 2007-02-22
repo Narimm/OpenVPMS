@@ -503,13 +503,6 @@
         </properties>
     </style>
 
-    <style name="StatementWorkspace.AccountTypes"
-           type="nextapp.echo2.app.ListBox">
-        <properties>
-            <property name="height" value="15em"/>
-        </properties>
-    </style>
-
     <style name="AbstractViewWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>

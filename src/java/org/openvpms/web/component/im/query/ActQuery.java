@@ -30,7 +30,7 @@ import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.util.CollectionHelper;
 
 import java.util.ArrayList;
@@ -271,7 +271,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
         BaseArchetypeConstraint archetypes;
         String type = getShortName();
 
-        if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
+        if (type == null || type.equals(ShortNameListModel.ALL)) {
             archetypes = getArchetypes();
         } else {
             archetypes = getArchetypeConstraint(type);
