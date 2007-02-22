@@ -36,6 +36,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -103,6 +104,22 @@ public class CustomerBalanceRules {
             = "act.customerAccountPayment";
 
     /**
+     * Debit adjust act short name.
+     */
+    private static final String DEBIT_ADJUST = "act.customerAccountDebitAdjust";
+
+    /**
+     * Refund act short name.
+     */
+    private static final String REFUND = "act.customerAccountRefund";
+
+    /**
+     * Initial balance act short name.
+     */
+    private static final String INITIAL_BALANCE
+            = "act.customerAccountInitialBalance";
+
+    /**
      * Short names of the credit and debit acts the affect the balance.
      */
     static final String[] SHORT_NAMES = {
@@ -110,16 +127,23 @@ public class CustomerBalanceRules {
             CHARGES_CREDIT,
             CHARGES_INVOICE,
             CREDIT_ADJUST,
-            "act.customerAccountDebitAdjust",
+            DEBIT_ADJUST,
             PAYMENT,
-            "act.customerAccountRefund",
-            "act.customerAccountInitialBalance",
+            REFUND,
+            INITIAL_BALANCE,
             BAD_DEBT};
+
+    /**
+     * All customer debit act short names.
+     */
+    static final String[] DEBIT_SHORT_NAMES = {
+            CHARGES_COUNTER, CHARGES_INVOICE, DEBIT_ADJUST, REFUND, INITIAL_BALANCE
+    };
 
     /**
      * All customer credit act short names.
      */
-    private static final String[] CREDIT_SHORT_NAMES = {
+    static final String[] CREDIT_SHORT_NAMES = {
             CHARGES_CREDIT, CREDIT_ADJUST, PAYMENT, BAD_DEBT};
 
     /**
@@ -243,6 +267,76 @@ public class CustomerBalanceRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getOverdueBalance(Party customer, Date date) {
+        Date overdue = getOverdueDate(customer, date);
+
+        // query all overdue debit acts
+        ArchetypeQuery query = createQuery(customer, DEBIT_SHORT_NAMES);
+        query.add(new NodeConstraint("startTime", RelationalOp.LT, overdue));
+        Iterator<FinancialAct> iterator
+                = new IMObjectQueryIterator<FinancialAct>(service, query);
+
+        BigDecimal amount = calculateBalance(iterator);
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+            amount = BigDecimal.ZERO;
+        }
+        return amount;
+    }
+
+    /**
+     * Determines if a customer has an overdue balance within the nominated
+     * day range past their standard terms.
+     *
+     * @param customer the customer
+     * @param date     the date
+     * @param from     the from day range
+     * @param to       the to day range. Use <code>&lt;= 0</code> to indicate
+     *                 all dates
+     * @return <code>true</code> if the customer has an overdue balance within
+     *         the day range past their standard terms.
+     */
+    public boolean hasOverdueBalance(Party customer, Date date, int from,
+                                     int to) {
+        Date overdue = getOverdueDate(customer, date);
+        Date overdueFrom = overdue;
+        Date overdueTo = null;
+        if (from > 0) {
+            overdueFrom = DateRules.getDate(overdueFrom, -from, DateRules.DAYS);
+        }
+        if (to > 0) {
+            overdueTo = DateRules.getDate(overdue, -to, DateRules.DAYS);
+        }
+
+        // query all overdue debit acts
+        ArchetypeQuery query = createQuery(customer, DEBIT_SHORT_NAMES);
+
+        NodeConstraint fromStartTime
+                = new NodeConstraint("startTime", RelationalOp.LT, overdueFrom);
+        if (overdueTo == null) {
+            query.add(fromStartTime);
+        } else {
+            NodeConstraint toStartTime = new NodeConstraint("startTime",
+                                                            RelationalOp.GT,
+                                                            overdueTo);
+            AndConstraint and = new AndConstraint();
+            and.add(fromStartTime);
+            and.add(toStartTime);
+            query.add(and);
+        }
+        query.setMaxResults(1);
+        Iterator<FinancialAct> iterator
+                = new IMObjectQueryIterator<FinancialAct>(service, query);
+        return iterator.hasNext();
+    }
+
+    /**
+     * Returns the overdue date relative to the specified date, for a
+     * customer.
+     *
+     * @param customer the customer
+     * @param date     the date
+     * @return the overdue date
+     */
+    public Date getOverdueDate(Party customer, Date date) {
         IMObjectBean bean = new IMObjectBean(customer, service);
         List<Lookup> types = bean.getValues("type", Lookup.class);
         Date overdue;
@@ -255,19 +349,7 @@ public class CustomerBalanceRules {
         } else {
             overdue = date;
         }
-
-        // query all overdue debit acts
-        ArchetypeQuery query = createQuery(customer);
-        query.add(new NodeConstraint("startTime", RelationalOp.LT, overdue));
-        query.add(new NodeConstraint("credit", false));
-        Iterator<FinancialAct> iterator
-                = new IMObjectQueryIterator<FinancialAct>(service, query);
-
-        BigDecimal amount = calculateBalance(iterator);
-        if (amount.compareTo(BigDecimal.ZERO) < 0) {
-            amount = BigDecimal.ZERO;
-        }
-        return amount;
+        return overdue;
     }
 
     /**

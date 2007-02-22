@@ -1,0 +1,281 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
+package org.openvpms.archetype.rules.balance;
+
+import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
+import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+
+import java.math.BigDecimal;
+import java.util.Random;
+
+
+/**
+ * Base class for customer balance test cases.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ */
+public abstract class AbstractCustomerBalanceTest extends ArchetypeServiceTest {
+
+    /**
+     * The customer.
+     */
+    private Party customer;
+
+    /**
+     * The patient.
+     */
+    private Party patient;
+
+    /**
+     * The product.
+     */
+    private Product product;
+
+
+    /**
+     * Returns the customer.
+     *
+     * @return the customer
+     */
+    protected Party getCustomer() {
+        if (customer == null) {
+            customer = TestHelper.createCustomer();
+        }
+        return customer;
+    }
+
+    /**
+     * Returns the patient.
+     *
+     * @return the patient
+     */
+    protected Party getPatient() {
+        if (patient == null) {
+            patient = TestHelper.createPatient();
+        }
+        return patient;
+    }
+
+    /**
+     * Returns the product.
+     *
+     * @return the product
+     */
+    protected Product getProduct() {
+        if (product == null) {
+            product = TestHelper.createProduct();
+        }
+        return product;
+    }
+
+    /**
+     * Verifies two <code>BigDecimals</code> are equal.
+     *
+     * @param a the first value
+     * @param b the second value
+     */
+    protected void checkEquals(BigDecimal a, BigDecimal b) {
+        if (a.compareTo(b) != 0) {
+            fail("Expected " + a + ", but got " + b);
+        }
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountChargesInvoice</em>.
+     *
+     * @param amount the act total
+     * @return a new act
+     */
+    protected FinancialAct createChargesInvoice(Money amount) {
+        return createCharges("act.customerAccountChargesInvoice",
+                             "act.customerAccountInvoiceItem",
+                             "actRelationship.customerAccountInvoiceItem",
+                             amount);
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountChargesCounter</em>.
+     *
+     * @param amount the act total
+     * @return a new act
+     */
+    protected FinancialAct createChargesCounter(Money amount) {
+        return createCharges("act.customerAccountChargesCounter",
+                             "act.customerAccountCounterItem",
+                             "actRelationship.customerAccountCounterItem",
+                             amount);
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountChargesCredit</em>.
+     *
+     * @param amount the act total
+     * @return a new act
+     */
+    protected FinancialAct createChargesCredit(Money amount) {
+        return createCharges("act.customerAccountChargesCredit",
+                             "act.customerAccountCreditItem",
+                             "actRelationship.customerAccountCreditItem",
+                             amount);
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountPayment</em>.
+     *
+     * @param amount the act total
+     * @return a new payment
+     */
+    protected FinancialAct createPayment(Money amount) {
+        return createPaymentRefund("act.customerAccountPayment", amount);
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountRefund</em>.
+     *
+     * @param amount the act total
+     * @return a new payment
+     */
+    protected FinancialAct createRefund(Money amount) {
+        return createPaymentRefund("act.customerAccountRefund", amount);
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountCreditAdjust</em>.
+     *
+     * @param amount the act total
+     * @return a new credit adjustment
+     */
+    protected FinancialAct createCreditAdjust(Money amount) {
+        return createAct("act.customerAccountCreditAdjust", amount);
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountDebitAdjust</em>.
+     *
+     * @param amount the act total
+     * @return a new debit adjustment
+     */
+    protected FinancialAct createDebitAdjust(Money amount) {
+        return createAct("act.customerAccountDebitAdjust", amount);
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountInitialBalance</em>.
+     *
+     * @param amount the act total
+     * @return a new initial balance
+     */
+    protected FinancialAct createInitialBalance(Money amount) {
+        return createAct("act.customerAccountInitialBalance", amount);
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountBadDebt</em>.
+     *
+     * @param amount the act total
+     * @return a new bad debt
+     */
+    protected FinancialAct createBadDebt(Money amount) {
+        return createAct("act.customerAccountBadDebt", amount);
+    }
+
+    /**
+     * Helper to create and save a new <em>lookup.customerAccountType</em>
+     * classification with a 30 day accountFeedDays value.
+     *
+     * @param paymentTerms the payment terms
+     * @param paymentUom   the payment units
+     * @return a new classification
+     */
+    protected Lookup createAccountType(int paymentTerms, String paymentUom) {
+        Lookup lookup = (Lookup) create("lookup.customerAccountType");
+        IMObjectBean bean = new IMObjectBean(lookup);
+        bean.setValue("code", "XCUSTOMER_BALANCE_RULES_TESTCASE_"
+                + Math.abs(new Random().nextInt()));
+        bean.setValue("paymentTerms", paymentTerms);
+        bean.setValue("paymentUom", paymentUom);
+        save(lookup);
+        return lookup;
+    }
+
+    /**
+     * Helper to create a charges act.
+     *
+     * @param shortName the act short name
+     * @param amount    the act total
+     * @return a new act
+     */
+    private FinancialAct createCharges(String shortName,
+                                       String itemShortName,
+                                       String relationshipShortName,
+                                       Money amount) {
+        FinancialAct act = createAct(shortName, amount);
+        ActBean bean = new ActBean(act);
+        FinancialAct item = (FinancialAct) create(itemShortName);
+        item.setTotal(amount);
+        ActBean itemBean = new ActBean(item);
+        itemBean.addParticipation("participation.patient", getPatient());
+        itemBean.addParticipation("participation.product", getProduct());
+        bean.addRelationship(relationshipShortName, item);
+        return act;
+    }
+
+    /**
+     * Helper to create a payment/refund.
+     *
+     * @param shortName the act short name
+     * @param amount    the act total
+     * @return a new payment
+     */
+    private FinancialAct createPaymentRefund(String shortName, Money amount) {
+        FinancialAct act = createAct(shortName, amount);
+        ActBean bean = new ActBean(act);
+        Party till = (Party) create("party.organisationTill");
+        bean.addParticipation("participation.till", till);
+        bean.addParticipation("participation.patient", getPatient());
+        return act;
+    }
+
+    /**
+     * Helper to create a new act, setting the total, adding a customer
+     * participation and setting the status to 'POSTED'.
+     *
+     * @param shortName the act short name
+     * @param amount    the act total
+     * @return a new act
+     */
+    private FinancialAct createAct(String shortName, Money amount) {
+        FinancialAct act = (FinancialAct) create(shortName);
+        act.setStatus(FinancialActStatus.POSTED);
+        act.setTotal(amount);
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.customer", getCustomer());
+        return act;
+    }
+
+}
