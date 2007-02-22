@@ -359,7 +359,7 @@ public class CustomerBalanceRules {
      * @return the credit amount
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal getCreditAmount(Party customer) {
+    public BigDecimal getCreditBalance(Party customer) {
         ArchetypeQuery query = createQuery(customer, CREDIT_SHORT_NAMES);
         Iterator<FinancialAct> iterator
                 = new IMObjectQueryIterator<FinancialAct>(service, query);

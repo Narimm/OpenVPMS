@@ -21,6 +21,7 @@ package org.openvpms.archetype.rules.balance;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 
 import java.util.ArrayList;
@@ -65,6 +66,45 @@ public class OutstandingBalanceQueryTestCase extends AbstractCustomerBalanceTest
         List<Party> now = getCustomersWithOutstandingBalances();
         assertEquals(before.size(), now.size());
         assertFalse(now.contains(customer));
+    }
+
+    /**
+     * Tests the {@link OutstandingBalanceQuery#query} method when used
+     * in conjunction with
+     * {@link OutstandingBalanceQuery#setAccountType(Lookup)}
+     */
+    public void testQueryWithAccountType() {
+        Lookup accountType1 = createAccountType(30, DateRules.DAYS);
+        Lookup accountType2 = createAccountType(60, DateRules.DAYS);
+
+        // verify no customers returned
+        OutstandingBalanceQuery query = new OutstandingBalanceQuery();
+        query.setAccountType(accountType1);
+        assertFalse(query.query().hasNext());
+
+        // add the account type to the customer
+        Party customer = getCustomer();
+        customer.addClassification(accountType1);
+        save(customer);
+
+        // verify no customers returned by query
+        assertFalse(query.query().hasNext());
+
+        // create and save a new invoice
+        final Money amount = new Money(100);
+        Date startTime = java.sql.Date.valueOf("2007-1-1");
+        FinancialAct invoice = createChargesInvoice(amount);
+        invoice.setActivityStartTime(startTime);
+        save(invoice);
+
+        // verify the customer is now returned
+        Iterator<Party> iter = query.query();
+        assertTrue(iter.hasNext());
+        assertEquals(customer, iter.next());
+        assertFalse(iter.hasNext());
+
+        query.setAccountType(accountType2);
+        assertFalse(query.query().hasNext());
     }
 
     /**

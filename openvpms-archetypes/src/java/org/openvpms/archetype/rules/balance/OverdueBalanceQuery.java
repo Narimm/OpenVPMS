@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.balance;
 
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -45,6 +46,26 @@ public class OverdueBalanceQuery {
      */
     private final CustomerBalanceRules rules;
 
+    /**
+     * The date.
+     */
+    private Date date;
+
+    /**
+     * The from-day range.
+     */
+    private int from;
+
+    /**
+     * The to-day range.
+     */
+    private int to;
+
+    /**
+     * The customer account type classification. May be <tt>null</tt>.
+     */
+    private Lookup accountType;
+
 
     /**
      * Creates a new <code>OverdueBalanceQuery</code>.
@@ -61,20 +82,57 @@ public class OverdueBalanceQuery {
     public OverdueBalanceQuery(IArchetypeService service) {
         this.service = service;
         this.rules = new CustomerBalanceRules(service);
+        date = new Date();
+    }
+
+    /**
+     * Sets the date.
+     *
+     * @param date the date
+     */
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    /**
+     * Sets the from day range.
+     *
+     * @param from the from day range
+     */
+    public void setFrom(int from) {
+        this.from = from;
+    }
+
+    /**
+     * Sets the to-day range.
+     *
+     * @param to the to day range. Use <code>&lt;= 0</code> to indicate
+     *           all dates
+     */
+    public void setTo(int to) {
+        this.to = to;
+    }
+
+    /**
+     * Sets the customer account type.
+     *
+     * @param accountType the customer account type (an instance of
+     *                    <em>lookup.customerAccountType</em>).
+     *                    If <tt>null</tt> indicates to query all account types.
+     */
+    public void setAccountType(Lookup accountType) {
+        this.accountType = accountType;
     }
 
     /**
      * Queries all customers that have overdue balances within the nominated
      * day range past their standard terms.
      *
-     * @param date the date
-     * @param from the from day range
-     * @param to   the to day range. Use <code>&lt;= 0</code> to indicate
-     *             all dates
      * @return an iterator over the list of customers
      */
-    public Iterator<Party> query(Date date, int from, int to) {
+    public Iterator<Party> query() {
         OutstandingBalanceQuery query = new OutstandingBalanceQuery(service);
+        query.setAccountType(accountType);
         Iterator<Party> iterator = query.query();
         return new OverdueBalanceIterator(iterator, date, from, to);
     }

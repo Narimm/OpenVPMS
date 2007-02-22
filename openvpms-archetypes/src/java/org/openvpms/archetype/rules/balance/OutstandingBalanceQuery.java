@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.balance;
 
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -26,6 +27,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.IdConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
@@ -46,6 +48,12 @@ public class OutstandingBalanceQuery {
     private final IArchetypeService service;
 
     /**
+     * The customer account type classification. May be <tt>null</tt>.
+     */
+    private Lookup accountType;
+
+
+    /**
      * Creates a new <code>OutstandingBalanceQuery</code>.
      */
     public OutstandingBalanceQuery() {
@@ -59,6 +67,17 @@ public class OutstandingBalanceQuery {
      */
     public OutstandingBalanceQuery(IArchetypeService service) {
         this.service = service;
+    }
+
+    /**
+     * Sets the customer account type.
+     *
+     * @param accountType the customer account type (an instance of
+     *                    <em>lookup.customerAccountType</em>).
+     *                    If <tt>null</tt> indicates to query all account types.
+     */
+    public void setAccountType(Lookup accountType) {
+        this.accountType = accountType;
     }
 
     /**
@@ -81,6 +100,15 @@ public class OutstandingBalanceQuery {
         query.add(customer);
         query.add(new IdConstraint("balance.entity", "customer"));
         query.add(new IdConstraint("balance.act", "act"));
+        if (accountType != null) {
+            ShortNameConstraint type = new ShortNameConstraint(
+                    "type", "lookup.customerAccountType", true, true);
+            ObjectRefConstraint objRef = new ObjectRefConstraint(
+                    "lookup", accountType.getObjectReference());
+            customer.add(new CollectionNodeConstraint("type", type));
+            query.add(objRef);
+            query.add(new IdConstraint("type", "lookup"));
+        }
         query.setDistinct(true);
         return new IMObjectQueryIterator<Party>(service, query);
     }
