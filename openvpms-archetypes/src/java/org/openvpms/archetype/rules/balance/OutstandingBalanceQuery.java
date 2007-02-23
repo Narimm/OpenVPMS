@@ -27,6 +27,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.IdConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -51,6 +52,12 @@ public class OutstandingBalanceQuery {
      * The customer account type classification. May be <tt>null</tt>.
      */
     private Lookup accountType;
+
+    /**
+     * Determines if customers with debit balances or debit/credit balances
+     * should be returned.
+     */
+    private boolean debit = false;
 
 
     /**
@@ -81,14 +88,26 @@ public class OutstandingBalanceQuery {
     }
 
     /**
+     * Determines if customers with debit balances or debit/credit balances
+     * should be returned.
+     *
+     * @param debit if <code>true</code>
+     */
+    public void setDebitOnly(boolean debit) {
+        this.debit = debit;
+    }
+
+    /**
      * Returns all customers that have outstanding balances.
      *
      * @return an iterator over the customers
      * @throws ArchetypeServiceException for any error
      */
     public Iterator<Party> query() {
+        String[] shortNames = (debit) ? CustomerBalanceRules.DEBIT_SHORT_NAMES
+                : CustomerBalanceRules.SHORT_NAMES;
         ShortNameConstraint acts = new ShortNameConstraint(
-                "act", CustomerBalanceRules.DEBIT_SHORT_NAMES, true, true);
+                "act", shortNames, true, true);
         ShortNameConstraint balance = new ShortNameConstraint(
                 "balance", CustomerBalanceRules.ACCOUNT_BALANCE_SHORTNAME,
                 true, true);
@@ -109,6 +128,7 @@ public class OutstandingBalanceQuery {
             query.add(objRef);
             query.add(new IdConstraint("type", "lookup"));
         }
+        query.add(new NodeSortConstraint("customer", "name"));
         query.setDistinct(true);
         return new IMObjectQueryIterator<Party>(service, query);
     }

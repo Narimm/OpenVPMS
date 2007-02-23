@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.balance;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
@@ -129,9 +130,11 @@ public class OverdueBalanceQuery {
      * day range past their standard terms.
      *
      * @return an iterator over the list of customers
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Iterator<Party> query() {
         OutstandingBalanceQuery query = new OutstandingBalanceQuery(service);
+        query.setDebitOnly(true);
         query.setAccountType(accountType);
         Iterator<Party> iterator = query.query();
         return new OverdueBalanceIterator(iterator, date, from, to);
