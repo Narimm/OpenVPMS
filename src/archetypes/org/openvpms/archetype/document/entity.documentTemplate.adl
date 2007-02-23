@@ -1,4 +1,4 @@
-<!-- 
+<!--
  *  Version: 1.0
  *
  *  The contents of this file are subject to the OpenVPMS License Version
@@ -45,6 +45,7 @@
 						<property name="act.patientClinicalEvent" value="Patient Visit" />
 						<property name="act.tillBalance" value="Till Balance" />
 						<property name="act.bankDeposit" value="Bank Deposit" />
+                        <property name="CUSTOMER_BALANCE" value="Customer Account Balance" />
 						<property name="REPORT" value="Report" />
 						<property name="SUBREPORT" value="Sub Report" />
 					</propertyList>

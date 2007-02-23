@@ -33,7 +33,9 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 
 /**
@@ -104,6 +106,19 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      */
     private final CustomerBalanceRules rules;
 
+    private static final Set<String> NAMES;
+
+    static {
+        NAMES = new LinkedHashSet<String>();
+        NAMES.add(CUSTOMER);
+        NAMES.add(BALANCE);
+        NAMES.add(OVERDUE_BALANCE);
+        NAMES.add(CREDIT_BALANCE);
+        NAMES.add(LAST_PAYMENT_DATE);
+        NAMES.add(LAST_PAYMENT_AMOUNT);
+        NAMES.add(LAST_INVOICE_DATE);
+        NAMES.add(LAST_INVOICE_AMOUNT);
+    }
 
     /**
      * Constructs a new <tt>CustomerBalanceSummaryQuery</tt>.
@@ -161,6 +176,9 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Helper to lazily load ObjectSet values.
+     */
     private class BalanceObjectSet extends ObjectSet {
 
         /**
@@ -187,6 +205,16 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         public BalanceObjectSet(Party customer) {
             this.customer = customer;
             add(CUSTOMER, customer);
+        }
+
+        /**
+         * Returns the object names, in the order they were queried.
+         *
+         * @return the object names
+         */
+        @Override
+        public Set<String> getNames() {
+            return NAMES;
         }
 
         /**
@@ -217,7 +245,9 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         }
 
         /**
+         * Returns the last payment date.
          *
+         * @return the last payment date, or <tt>null</tt>
          */
         private Date getLastPaymentDate() {
             if (getLastPaymentDetails()) {
@@ -227,7 +257,9 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         }
 
         /**
+         * Returns the last payment amount.
          *
+         * @return the last payment amount, or <tt>null</tt>
          */
         private BigDecimal getLastPaymentAmount() {
             if (getLastPaymentDetails()) {
@@ -238,6 +270,8 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
 
         /**
          * Gets the last payment details for the customer.
+         *
+         * @return <tt>true</tt> if the details could be found
          */
         private boolean getLastPaymentDetails() {
             if (!queriedLastPayment) {
@@ -248,6 +282,11 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
             return false;
         }
 
+        /**
+         * Returns the last invoice date.
+         *
+         * @return the last invoice date, or <tt>null</tt>
+         */
         private Date getLastInvoiceDate() {
             Date result = null;
             if (!queriedLastInvoice) {
@@ -260,6 +299,15 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
             return result;
         }
 
+        /**
+         * Queries the most recent date and amount for the specified act type.
+         *
+         * @param shortName the act short name
+         * @param dateKey   the key to store the date under
+         * @param amountKey the key to store the amount under
+         * @return <tt>true</tt> if an act corresponding to the short name
+         *         exists
+         */
         private boolean query(String shortName, String dateKey,
                               String amountKey) {
             boolean found = false;
@@ -282,7 +330,11 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
                 set(dateKey, set.get("act.startTime"));
                 set(amountKey, set.get("act.amount"));
                 found = true;
+            } else {
+                set(dateKey, null);
+                set(amountKey, null);
             }
+
             return found;
         }
 
