@@ -50,6 +50,7 @@ public class ObjectSetExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         set.add("date", date);
         Party customer = createCustomer("Foo", "Bar");
         set.add("act.customer", customer);
+        set.add("anull", null);
 
         ObjectSetExpressionEvaluator eval
                 = new ObjectSetExpressionEvaluator(set, service);
@@ -59,6 +60,7 @@ public class ObjectSetExpressionEvaluatorTestCase extends ArchetypeServiceTest {
         assertEquals(customer, eval.getValue("act.customer"));
         assertEquals("Foo", eval.getValue("act.customer.firstName"));
         assertEquals("Bar", eval.getValue("act.customer.lastName"));
+        assertNull(eval.getValue("anull"));
 
         // test invalid nodes
         assertEquals("Invalid object/node name: foo", eval.getValue("foo"));
