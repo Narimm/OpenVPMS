@@ -246,7 +246,7 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
         if (index != -1) {
             LookupListModel model = (LookupListModel) accountType.getModel();
             Lookup lookup = model.getLookup(index);
-            return (LookupListModel.isAll(lookup)) ? null : lookup;
+            return (LookupListModel.ALL == lookup) ? null : lookup;
         }
         return null;
     }

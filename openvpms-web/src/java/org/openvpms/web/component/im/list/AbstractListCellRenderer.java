@@ -55,6 +55,11 @@ public abstract class AbstractListCellRenderer<T>
     private final String NONE = Messages.get("list.none");
 
 
+    /**
+     * Constructs a new <tt>AbstractListCellRenderer</tt>.
+     *
+     * @param type the type that this can render
+     */
     public AbstractListCellRenderer(Class<T> type) {
         this.type = type;
     }
@@ -63,14 +68,14 @@ public abstract class AbstractListCellRenderer<T>
      * Renders an item in a list.
      *
      * @param list  the list component
-     * @param value the item value
+     * @param value the item value. May be <tt>null</tt>
      * @param index the item index
      * @return the rendered form of the list cell
      */
     public Object getListCellRendererComponent(Component list, Object value,
                                                int index) {
         Object result = null;
-        if (value != null && type.isAssignableFrom(value.getClass())) {
+        if (value == null || type.isAssignableFrom(value.getClass())) {
             T object = type.cast(value);
             if (isAll(list, object, index)) {
                 result = new BoldListCell(ALL);
@@ -90,7 +95,7 @@ public abstract class AbstractListCellRenderer<T>
      * Renders an object.
      *
      * @param list   the list component
-     * @param object the object to render
+     * @param object the object to render. May be <tt>null</tt>
      * @param index  the object index
      * @return the rendered object
      */
@@ -100,7 +105,7 @@ public abstract class AbstractListCellRenderer<T>
      * Determines if an object represents 'All'.
      *
      * @param list   the list component
-     * @param object the object
+     * @param object the object. May be <tt>null</tt>
      * @param index  the object index
      * @return <code>true</code> if the object represents 'All'.
      */
@@ -110,7 +115,7 @@ public abstract class AbstractListCellRenderer<T>
      * Determines if an object represents 'None'.
      *
      * @param list   the list component
-     * @param object the object
+     * @param object the object. May be <tt>null</tt>
      * @param index  the object index
      * @return <code>true</code> if the object represents 'None'.
      */

@@ -41,19 +41,19 @@ import java.util.List;
 public class LookupListModel extends AbstractListModel {
 
     /**
+     * Dummy lookup indicating that all values apply.
+     */
+    public static final Lookup ALL = new Lookup(null, null, "all");
+
+    /**
+     * Dummy lookup indicating that no value is required.
+     */
+    public static final Lookup NONE = new Lookup(null, null, "none");
+
+    /**
      * The lookups.
      */
     private List<Lookup> lookups;
-
-    /**
-     * Dummy short name indicating that all values apply.
-     */
-    public static final String ALL = "all";
-
-    /**
-     * Dummy short name indicating that no value is required.
-     */
-    public static final String NONE = "none";
 
     /**
      * Determines if "all" should be included.
@@ -194,34 +194,13 @@ public class LookupListModel extends AbstractListModel {
         if (all || none) {
             lookups = new ArrayList<Lookup>(lookups);
             if (all) {
-                lookups.add(0, new Lookup(null, ALL, null));
+                lookups.add(0, ALL);
             }
             if (none) {
-                lookups.add(0, new Lookup(null, NONE, null));
+                lookups.add(0, NONE);
             }
         }
         return lookups;
     }
 
-    /**
-     * Determines if a lookup code refers to {@link #ALL}.
-     *
-     * @param code the lookup code
-     * @return <tt>true</tt> if the lookup refers to {@link #ALL}.
-     */
-    public static boolean isAll(String code) {
-        // use identityHashCode to override intellij warnings on ==.
-        return System.identityHashCode(code)
-                == System.identityHashCode(LookupListModel.ALL);
-    }
-
-    /**
-     * Determines if a lookup refers to {@link #ALL}.
-     *
-     * @param lookup the lookup
-     * @return <tt>true</tt> if the lookup refers to {@link #ALL}.
-     */
-    public static boolean isAll(Lookup lookup) {
-        return isAll(lookup.getCode());
-    }
 }
