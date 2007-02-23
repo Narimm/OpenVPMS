@@ -140,4 +140,10 @@
               mimeType="text/xml"
               docType="document.other"/>
 
+    <template name="Customer Account Balance Template"
+              archetype="CUSTOMER_BALANCE"
+              path="customerAccountBalance.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
 </templates>

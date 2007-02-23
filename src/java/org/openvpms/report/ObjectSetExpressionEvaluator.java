@@ -74,6 +74,8 @@ public class ObjectSetExpressionEvaluator
                         object = getValue(nodeName, resolver);
                         break;
                     }
+                } else {
+                    break;
                 }
             } else {
                 index = name.indexOf('.', index);
