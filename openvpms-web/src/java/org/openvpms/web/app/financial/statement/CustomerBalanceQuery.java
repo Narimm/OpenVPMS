@@ -29,9 +29,11 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.balance.CustomerBalanceSummaryQuery;
+import org.openvpms.archetype.rules.balance.OutstandingBalanceQuery;
 import org.openvpms.archetype.rules.balance.OverdueBalanceQuery;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -41,6 +43,7 @@ import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.query.AbstractQuery;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.ComponentHelper;
@@ -56,8 +59,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+
 /**
- * Add description here.
+ * Customer balance query.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -94,6 +98,7 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
      */
     private TextField periodTo;
 
+
     /**
      * Constructs a new <tt>CustomerBalanceQuery</tt> .
      *
@@ -105,6 +110,32 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
     }
 
     /**
+     * Refreshes the account types.
+     */
+    public void refreshAccountTypes() {
+        if (accountType != null) {
+            String selected = (String) accountType.getSelectedItem();
+            LookupListModel model = createAccountTypeModel();
+            accountType.setModel(model);
+            int index = model.indexOf(selected);
+            if (index != -1) {
+                accountType.setSelectedIndex(index);
+            }
+        }
+    }
+
+    /**
+     * Determines if customers with overdue balances are being queried.
+     *
+     * @return <tt>true</tt> if customers with overdue balances are being
+     *         queried, <tt>false</tt> if customers with outstanding balances are being
+     *         queried
+     */
+    public boolean queryOverdue() {
+        return overdue.isSelected();
+    }
+
+    /**
      * Lays out the component in a container, and sets focus on the instance
      * name.
      *
@@ -112,9 +143,7 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
      */
     @Override
     protected void doLayout(Component container) {
-        List<Lookup> lookups = FastLookupHelper.getLookups(
-                "lookup.customerAccountType");
-        LookupListModel model = new LookupListModel(lookups, true);
+        LookupListModel model = createAccountTypeModel();
         accountType = SelectFieldFactory.create(model);
         accountType.setCellRenderer(new LookupListCellRenderer());
 
@@ -165,24 +194,45 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
     }
 
     /**
+     * Returns all objects matching the criteria.
+     *
+     * @return all objects matching the criteria
+     */
+    public List<ObjectSet> getObjects() {
+        List<ObjectSet> sets = new ArrayList<ObjectSet>();
+        try {
+            Iterator<Party> iterator;
+            if (overdue.isSelected()) {
+                OverdueBalanceQuery overdueQuery = new OverdueBalanceQuery();
+                overdueQuery.setAccountType(getAccountType());
+                overdueQuery.setFrom(getNumber(periodFrom));
+                overdueQuery.setTo(getNumber(periodTo));
+                iterator = overdueQuery.query();
+            } else {
+                OutstandingBalanceQuery balanceQuery
+                        = new OutstandingBalanceQuery();
+                balanceQuery.setAccountType(getAccountType());
+                iterator = balanceQuery.query();
+            }
+            CustomerBalanceSummaryQuery query
+                    = new CustomerBalanceSummaryQuery(iterator, new Date());
+            while (query.hasNext()) {
+                sets.add(query.next());
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+        return sets;
+    }
+
+    /**
      * Creates the result set.
      *
      * @param sort the sort criteria. May be <code>null</code>
      * @return a new result set
      */
     protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
-        List<ObjectSet> sets = new ArrayList<ObjectSet>();
-        OverdueBalanceQuery overdueQuery = new OverdueBalanceQuery();
-        overdueQuery.setAccountType(getAccountType());
-        overdueQuery.setFrom(getNumber(periodFrom));
-        overdueQuery.setTo(getNumber(periodTo));
-        Iterator<Party> iterator = overdueQuery.query();
-        CustomerBalanceSummaryQuery query
-                = new CustomerBalanceSummaryQuery(iterator, new Date());
-        while (query.hasNext()) {
-            sets.add(query.next());
-        }
-        return new ListResultSet<ObjectSet>(sets, getMaxResults());
+        return new ListResultSet<ObjectSet>(getObjects(), getMaxResults());
     }
 
     /**
@@ -229,6 +279,17 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
         ComponentHelper.enable(periodFrom, enabled);
         ComponentHelper.enable(periodToLabel, enabled);
         ComponentHelper.enable(periodTo, enabled);
+    }
+
+    /**
+     * Creates the lookup list model of account types.
+     *
+     * @return a new lookup list model
+     */
+    private LookupListModel createAccountTypeModel() {
+        List<Lookup> lookups = FastLookupHelper.getLookups(
+                "lookup.customerAccountType");
+        return new LookupListModel(lookups, true);
     }
 
     /**

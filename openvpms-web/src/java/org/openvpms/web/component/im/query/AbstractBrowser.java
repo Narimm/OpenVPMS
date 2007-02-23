@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.query;
 
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
@@ -26,7 +25,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
 
@@ -72,11 +70,6 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      * Style name for this.
      */
     private static final String STYLE = "Browser";
-
-    /**
-     * Cell spacing row style.
-     */
-    private static final String CELLSPACING_STYLE = "CellSpacing";
 
     /**
      * The focus group.
@@ -148,20 +141,16 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
         // query component
         Component component = query.getComponent();
 
-        // query button
-        Button query = ButtonFactory.create(QUERY_ID, new ActionListener() {
+        ButtonRow row = new ButtonRow(focusGroup);
+        row.add(component);
+        row.addButton(QUERY_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onQuery();
             }
         });
-
-        ButtonRow row = new ButtonRow(CELLSPACING_STYLE);
-        row.add(component);
-        row.addButton(query);
         this.component = ColumnFactory.create(STYLE, row);
-        focusGroup.add(query);
 
-        if (this.query.isAuto()) {
+        if (query.isAuto()) {
             query();
         }
     }

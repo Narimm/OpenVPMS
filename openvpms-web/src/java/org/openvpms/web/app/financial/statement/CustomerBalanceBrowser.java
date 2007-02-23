@@ -34,8 +34,8 @@ public class CustomerBalanceBrowser extends TableBrowser<ObjectSet> {
      * Construct a new <tt>CustomerBalanceBrowser</tt> that queries objects and
      * displays them in a table.
      */
-    public CustomerBalanceBrowser() {
-        super(new CustomerBalanceQuery(), null,
+    public CustomerBalanceBrowser(CustomerBalanceQuery query) {
+        super(query, null,
               new CustomerBalanceSummaryTableModel());
     }
 

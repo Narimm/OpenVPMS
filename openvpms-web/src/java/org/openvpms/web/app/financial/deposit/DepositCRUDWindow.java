@@ -18,15 +18,14 @@
 
 package org.openvpms.web.app.financial.deposit;
 
-import static org.openvpms.archetype.rules.deposit.DepositStatus.UNDEPOSITED;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-
-import org.openvpms.archetype.rules.deposit.DepositRules;
 import org.openvpms.archetype.rules.deposit.DepositQuery;
+import org.openvpms.archetype.rules.deposit.DepositRules;
+import static org.openvpms.archetype.rules.deposit.DepositStatus.UNDEPOSITED;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -156,15 +155,18 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
     @Override
     protected void onPrint() {
         FinancialAct object = getObject();
-        IPage<ObjectSet> set = new DepositQuery(object).query();
-        IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
-                set.getResults(), BANK_DEPOSIT);
-        String displayName = DescriptorHelper.getDisplayName(BANK_DEPOSIT);
-        String title = Messages.get("imobject.print.title", displayName);
-        InteractiveIMPrinter<ObjectSet> iPrinter
-                = new InteractiveIMPrinter<ObjectSet>(title, printer);
-        iPrinter.print();
+        try {
+            IPage<ObjectSet> set = new DepositQuery(object).query();
+            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
+                    set.getResults(), BANK_DEPOSIT);
+            String displayName = DescriptorHelper.getDisplayName(BANK_DEPOSIT);
+            String title = Messages.get("imobject.print.title", displayName);
+            InteractiveIMPrinter<ObjectSet> iPrinter
+                    = new InteractiveIMPrinter<ObjectSet>(title, printer);
+            iPrinter.print();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
-
 
 }
