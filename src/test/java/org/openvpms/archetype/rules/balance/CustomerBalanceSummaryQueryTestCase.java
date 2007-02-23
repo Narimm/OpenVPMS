@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -53,11 +54,19 @@ public class CustomerBalanceSummaryQueryTestCase
         Date now = DateRules.getDate(startTime, 60, DateRules.DAYS);
 
         // create and save a new invoice
-        final Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(amount);
+        final Money hundred = new Money(100);
+        FinancialAct invoice = createChargesInvoice(hundred);
         invoice.setActivityStartTime(startTime);
         save(invoice);
 
+        // pay half the invoice
+        Date paymentStartTime = DateRules.getDate(startTime, 1, DateRules.DAYS);
+        final Money fifty = new Money(50);
+        FinancialAct payment = createPayment(fifty);
+        payment.setActivityStartTime(paymentStartTime);
+        save(payment);
+
+        // query the customer
         List<Party> customers = Arrays.asList(customer);
 
         CustomerBalanceSummaryQuery query
@@ -65,12 +74,29 @@ public class CustomerBalanceSummaryQueryTestCase
         assertTrue(query.hasNext());
         ObjectSet set = query.next();
         assertEquals(customer, set.get(CustomerBalanceSummaryQuery.CUSTOMER));
-        set.get(CustomerBalanceSummaryQuery.BALANCE);
-        set.get(CustomerBalanceSummaryQuery.OVERDUE_BALANCE);
-        set.get(CustomerBalanceSummaryQuery.CREDIT_BALANCE);
-        set.get(CustomerBalanceSummaryQuery.LAST_PAYMENT_DATE);
-        set.get(CustomerBalanceSummaryQuery.LAST_PAYMENT_AMOUNT);
-        set.get(CustomerBalanceSummaryQuery.LAST_INVOICE_AMOUNT);
+
+        BigDecimal balance = (BigDecimal) set.get(
+                CustomerBalanceSummaryQuery.BALANCE);
+        BigDecimal overdue = (BigDecimal) set.get(
+                CustomerBalanceSummaryQuery.OVERDUE_BALANCE);
+        BigDecimal credit = (BigDecimal) set.get(
+                CustomerBalanceSummaryQuery.CREDIT_BALANCE);
+        Date paymentDate = (Date) set.get(
+                CustomerBalanceSummaryQuery.LAST_PAYMENT_DATE);
+        BigDecimal paymentAmount = (BigDecimal)
+                set.get(CustomerBalanceSummaryQuery.LAST_PAYMENT_AMOUNT);
+        Date invoiceDate = (Date) set.get(
+                CustomerBalanceSummaryQuery.LAST_INVOICE_DATE);
+        BigDecimal invoiceAmount = (BigDecimal)
+                set.get(CustomerBalanceSummaryQuery.LAST_INVOICE_AMOUNT);
+
+        checkEquals(fifty, balance);
+        checkEquals(fifty, overdue);
+        checkEquals(BigDecimal.ZERO, credit);
+        assertEquals(paymentStartTime, paymentDate);
+        checkEquals(fifty, paymentAmount);
+        assertEquals(startTime, invoiceDate);
+        checkEquals(hundred, invoiceAmount);
 
         assertFalse(query.hasNext());
     }
