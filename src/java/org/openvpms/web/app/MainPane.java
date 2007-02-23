@@ -111,11 +111,6 @@ public class MainPane extends SplitPane implements ContextChangeListener {
     private static final String STYLE = "MainPane";
 
     /**
-     * The menu row style.
-     */
-    private static final String BUTTON_ROW_STYLE = "ControlRow";
-
-    /**
      * The left menu style.
      */
     private static final String LEFT_MENU_STYLE = "MainPane.Left.Menu";
@@ -153,7 +148,7 @@ public class MainPane extends SplitPane implements ContextChangeListener {
 
         OpenVPMSApp.getInstance().setContextChangeListener(this);
 
-        menu = new ButtonRow(BUTTON_ROW_STYLE, BUTTON_STYLE);
+        menu = new ButtonRow(ButtonRow.STYLE, BUTTON_STYLE);
         SplitPaneLayoutData layout = new SplitPaneLayoutData();
         layout.setAlignment(new Alignment(Alignment.CENTER,
                                           Alignment.DEFAULT));

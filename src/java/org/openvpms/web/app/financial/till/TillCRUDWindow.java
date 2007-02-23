@@ -233,15 +233,19 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected void onPrint() {
-        FinancialAct object = getObject();
-        IPage<ObjectSet> set = new TillBalanceQuery(object).query();
-        IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
-                set.getResults(), TILL_BALANCE);
-        String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
-        String title = Messages.get("imobject.print.title", displayName);
-        InteractiveIMPrinter<ObjectSet> iPrinter
-                = new InteractiveIMPrinter<ObjectSet>(title, printer);
-        iPrinter.print();
+        try {
+            FinancialAct object = getObject();
+            IPage<ObjectSet> set = new TillBalanceQuery(object).query();
+            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
+                    set.getResults(), TILL_BALANCE);
+            String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
+            String title = Messages.get("imobject.print.title", displayName);
+            InteractiveIMPrinter<ObjectSet> iPrinter
+                    = new InteractiveIMPrinter<ObjectSet>(title, printer);
+            iPrinter.print();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**

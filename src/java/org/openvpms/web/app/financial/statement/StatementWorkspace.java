@@ -26,10 +26,15 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.GroupBoxFactory;
@@ -46,9 +51,19 @@ import org.openvpms.web.resource.util.Messages;
 public class StatementWorkspace extends AbstractWorkspace {
 
     /**
+     * The query.
+     */
+    private CustomerBalanceQuery query;
+
+    /**
      * The browser.
      */
     private Browser<ObjectSet> browser;
+
+    /**
+     * Determines if this is the first rendering of the workspace.
+     */
+    private boolean rendered;
 
 
     /**
@@ -99,6 +114,23 @@ public class StatementWorkspace extends AbstractWorkspace {
     }
 
     /**
+     * Renders the workspace.
+     *
+     * @return the component representing the workspace
+     */
+    @Override
+    public Component getComponent() {
+        Component component = super.getComponent();
+        if (rendered) {
+            // make sure the account types are up to date
+            query.refreshAccountTypes();
+        } else {
+            rendered = true;
+        }
+        return component;
+    }
+
+    /**
      * Lays out the component.
      *
      * @return the component
@@ -111,7 +143,7 @@ public class StatementWorkspace extends AbstractWorkspace {
         Component heading = super.doLayout();
         root.add(heading);
         FocusGroup group = new FocusGroup("StatementWorkspace");
-        ButtonRow buttons = new ButtonRow(group);
+        ButtonRow buttons = new ButtonRow(group, ButtonRow.STYLE, "default");
         SplitPane content = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
                 "StatementWorkspace.Layout", buttons);
@@ -143,7 +175,8 @@ public class StatementWorkspace extends AbstractWorkspace {
      * @param group     the focus group
      */
     private void doLayout(Component container, FocusGroup group) {
-        browser = new CustomerBalanceBrowser();
+        query = new CustomerBalanceQuery();
+        browser = new CustomerBalanceBrowser(query);
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
         group.add(browser.getFocusGroup());
@@ -153,8 +186,8 @@ public class StatementWorkspace extends AbstractWorkspace {
      * Invoked when the 'Process All' button is pressed.
      */
     private void onProcessAll() {
-        String title = Messages.get("financial.statement.run.title");
-        String message = Messages.get("financial.statement.run.message");
+        String title = Messages.get("financial.statements.run.title");
+        String message = Messages.get("financial.statements.run.message");
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(title, message);
         dialog.addWindowPaneListener(new WindowPaneListener() {
@@ -184,6 +217,22 @@ public class StatementWorkspace extends AbstractWorkspace {
      * Invoked when the 'Report' button is pressed.
      */
     private void onReport() {
+        try {
+            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
+                    query.getObjects(), "CUSTOMER_BALANCE");
+            String type;
+            if (query.queryOverdue()) {
+                type = Messages.get("financial.statements.print.overdue");
+            } else {
+                type = Messages.get("financial.statements.print.outstanding");
+            }
+            String title = Messages.get("imobject.print.title", type);
+            InteractiveIMPrinter<ObjectSet> iPrinter
+                    = new InteractiveIMPrinter<ObjectSet>(title, printer);
+            iPrinter.print();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
 }

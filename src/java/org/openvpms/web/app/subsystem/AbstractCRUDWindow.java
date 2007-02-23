@@ -128,11 +128,6 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      */
     private static final String PRINT_ID = "print";
 
-    /**
-     * Button row style.
-     */
-    private static final String ROW_STYLE = "ControlRow";
-
 
     /**
      * Constructs a new <code>AbstractCRUDWindow</code>.
@@ -247,7 +242,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * Lays out the component.
      */
     protected Component doLayout() {
-        buttons = new ButtonRow(ROW_STYLE);
+        buttons = new ButtonRow();
         ButtonSet set = buttons.getButtons();
         layoutButtons(set);
         enableButtons(set, false);
