@@ -62,7 +62,10 @@ public class LookupListCellRenderer extends AbstractListCellRenderer<String> {
      * @return <code>true</code> if the object represents 'All'.
      */
     protected boolean isAll(Component list, String object, int index) {
-        return LookupListModel.isAll(object);
+        AbstractListComponent l = (AbstractListComponent) list;
+        LookupListModel model = (LookupListModel) l.getModel();
+        Lookup lookup = model.getLookup(index);
+        return (LookupListModel.ALL == lookup);
     }
 
     /**
@@ -74,9 +77,10 @@ public class LookupListCellRenderer extends AbstractListCellRenderer<String> {
      * @return <code>true</code> if the object represents 'None'.
      */
     protected boolean isNone(Component list, String object, int index) {
-        // use identityHashCode to override intellij warnings on ==.
-        return System.identityHashCode(object)
-                == System.identityHashCode(LookupListModel.NONE);
+        AbstractListComponent l = (AbstractListComponent) list;
+        LookupListModel model = (LookupListModel) l.getModel();
+        Lookup lookup = model.getLookup(index);
+        return (LookupListModel.NONE == lookup);
     }
 
 }

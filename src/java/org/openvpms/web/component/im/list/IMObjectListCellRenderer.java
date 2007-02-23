@@ -32,7 +32,7 @@ public class IMObjectListCellRenderer
         extends AbstractListCellRenderer<IMObject> {
 
     /**
-     * Constructs a new <code>IMObjectListCellRenderer</code>.
+     * Constructs a new <tt>IMObjectListCellRenderer</tt>.
      */
     public IMObjectListCellRenderer() {
         super(IMObject.class);
@@ -42,36 +42,36 @@ public class IMObjectListCellRenderer
      * Renders an object.
      *
      * @param list   the list component
-     * @param object the object to render
+     * @param object the object to render. May be <tt>null</tt>
      * @param index  the object index
      * @return the rendered object
      */
     protected Object getComponent(Component list, IMObject object, int index) {
-        return object.getName();
+        return (object != null) ? object.getName() : null;
     }
 
     /**
      * Determines if an object represents 'All'.
      *
      * @param list   the list component
-     * @param object the object
+     * @param object the object. May be <tt>null</tt>
      * @param index  the object index
-     * @return <code>true</code> if the object represents 'All'.
+     * @return <tt>true</tt> if the object represents 'All'.
      */
     protected boolean isAll(Component list, IMObject object, int index) {
-        return object.equals(IMObjectListModel.ALL);
+        return (object != null) && object.equals(IMObjectListModel.ALL);
     }
 
     /**
      * Determines if an object represents 'None'.
      *
      * @param list   the list component
-     * @param object the object
+     * @param object the object. May be <tt>null</tt>
      * @param index  the object index
-     * @return <code>true</code> if the object represents 'None'.
+     * @return <tt>true</tt> if the object represents 'None'.
      */
     protected boolean isNone(Component list, IMObject object, int index) {
-        return object.equals(IMObjectListModel.NONE);
+        return (object != null) && object.equals(IMObjectListModel.NONE);
     }
 
 }
