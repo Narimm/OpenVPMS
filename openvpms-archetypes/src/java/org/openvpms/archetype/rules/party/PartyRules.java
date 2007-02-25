@@ -18,6 +18,11 @@
 
 package org.openvpms.archetype.rules.party;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -33,10 +38,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -169,7 +170,8 @@ public class PartyRules {
 
     /**
      * Returns a formatted billing address for a customer associated with an
-     * act via an <em>participation.customer</em> participation.
+     * act via an <em>participation.customer</em> or an 
+     * <em>participation.patient</em> participation. 
      *
      * @param act the act
      * @return a formatted billing address for a party. May be empty if
@@ -180,6 +182,8 @@ public class PartyRules {
     public String getBillingAddress(Act act) {
         ActBean bean = new ActBean(act, service);
         Party party = (Party) bean.getParticipant("participation.customer");
+        if (party == null)
+        	party = new PatientRules().getOwner(act);
         return (party != null) ? getBillingAddress(party) : "";
     }
 
@@ -196,7 +200,8 @@ public class PartyRules {
 
     /**
      * Returns a formatted correspondence address for a customer associated with
-     * an act via an <em>participation.customer</em> participation.
+     * an act via an <em>participation.customer</em> or an 
+     * <em>participation.patient</em> participation.
      *
      * @param act the act
      * @return a formatted billing address for a party. May be empty if
@@ -207,6 +212,8 @@ public class PartyRules {
     public String getCorrespondenceAddress(Act act) {
         ActBean bean = new ActBean(act, service);
         Party party = (Party) bean.getParticipant("participation.customer");
+        if (party == null)
+        	party = new PatientRules().getOwner(act);
         return (party != null) ? getCorrespondenceAddress(party) : "";
     }
 
@@ -223,6 +230,24 @@ public class PartyRules {
     public String getAddress(Party party, String purpose) {
         Contact contact = getContact(party, "contact.location", purpose);
         return (contact != null) ? formatAddress(contact) : "";
+    }
+
+    /**
+     * Returns a formatted fax number for a party.
+     *
+     * @return a formatted fax number for a party. May be empty if
+     *         there is no corresponding <em>contact.faxNumber</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getFaxNumber(Party party) {
+    	Contact contact = getContact(party, "contact.faxNumber","");
+    	if (contact != null) {
+    		IMObjectBean bean = new IMObjectBean(contact, service);
+    		String areaCode = bean.getString("areaCode");
+    		String faxNumber = bean.getString("faxNumber");
+    		return "(" + areaCode + ")" + faxNumber;  		
+    	}
+    	return "";
     }
 
     /**
@@ -260,16 +285,19 @@ public class PartyRules {
      * @throws LookupHelperException     if the title lookup is incorrect
      */
     private String getPersonName(Party party) {
-        IMObjectBean bean = new IMObjectBean(party, service);
-        NodeDescriptor descriptor = bean.getDescriptor("title");
-        String title = LookupHelper.getName(service, descriptor, party);
-        String firstName = bean.getString("firstName", "");
-        String lastName = bean.getString("lastName", "");
+    	
         StringBuffer result = new StringBuffer();
-        if (title != null) {
-            result.append(title).append(" ");
+        if (party != null) {        	
+            IMObjectBean bean = new IMObjectBean(party, service);
+            NodeDescriptor descriptor = bean.getDescriptor("title");
+            String title = LookupHelper.getName(service, descriptor, party);
+            String firstName = bean.getString("firstName", "");
+            String lastName = bean.getString("lastName", "");
+            if (title != null) {
+                result.append(title).append(" ");
+            }
+            result.append(firstName).append(" ").append(lastName);
         }
-        result.append(firstName).append(" ").append(lastName);
         return result.toString();
     }
 
@@ -284,7 +312,7 @@ public class PartyRules {
      * @return the corresponding contact, or <code>null</code>
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private Contact getContact(Party party, String type, String purpose) {
+    public Contact getContact(Party party, String type, String purpose) {
         Contact result = null;
         if (party != null) {
             for (Contact contact : party.getContacts()) {
