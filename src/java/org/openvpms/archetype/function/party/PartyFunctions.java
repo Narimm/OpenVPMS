@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.function.party;
 
+import java.util.Date;
+import java.util.Set;
+
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
 import org.openvpms.archetype.rules.party.PartyRules;
@@ -28,9 +31,6 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-
-import java.util.Date;
-import java.util.Set;
 
 
 /**
@@ -260,7 +260,37 @@ public class PartyFunctions {
     }
 
     /**
-     * /**
+     * Returns a formatted fax number for a party.
+     *
+     * @param context the expression context. Expected to reference a party 
+     * @return a formatted fax number, or <code>null</code>
+     */
+
+    public static String getFaxNumber(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        Object value = pointer.getValue();
+        if (value instanceof Party) {
+            return getFaxNumber((Party) value);
+        }
+        return null;
+    }
+
+    /**
+     * Returns a formatted fax number for a party.
+     *
+     * @return a formatted fax number for a party. May be empty if
+     *         there is no corresponding <em>contact.faxNumber</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public static String getFaxNumber(Party party) {
+        if (party != null) {
+            return new PartyRules().getFaxNumber(party);
+        }
+        return "";
+    }
+
+    /**
+     * 
      * Returns a formatted contact purpose string for the Contact.
      *
      * @param context the expression context. Expected to reference a contact.
@@ -336,7 +366,7 @@ public class PartyFunctions {
     }
 
     /**
-     * Returhs the referral vet practice for a vet associated with the
+     * Returns the referral vet practice for a vet associated with the
      * supplied act's patient.
      *
      * @param context the expression context. Expected to reference an act.
@@ -353,7 +383,7 @@ public class PartyFunctions {
     }
 
     /**
-     * Returhs the referral vet practice for a vet associated with the
+     * Returns the referral vet practice for a vet associated with the
      * supplied act's patient.
      *
      * @param act the act
@@ -373,7 +403,7 @@ public class PartyFunctions {
     }
 
     /**
-     * Returhs the referral vet practice for a vet overlapping the specified
+     * Returns the referral vet practice for a vet overlapping the specified
      * time.
      *
      * @param vet  the vet
@@ -383,6 +413,22 @@ public class PartyFunctions {
      */
     public static Party getReferralVetPractice(Party vet, Date time) {
         return new SupplierRules().getReferralVetPractice(vet, time);
+    }
+
+    /**
+     * Returns a string form of a patients age.
+     *
+     * @param context the expression context. Expected to reference a party.
+     * @return the stringified form of the party's identities or
+     *         <code>null</code>
+     */
+    public static String getPatientAge(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        if (pointer == null || !(pointer.getValue() instanceof Party)) {
+            return null;
+        }
+        Party party = (Party) pointer.getValue();
+        return new PatientRules().getPatientAge(party);
     }
 
 }

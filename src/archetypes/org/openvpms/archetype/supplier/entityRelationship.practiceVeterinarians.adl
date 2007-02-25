@@ -26,9 +26,11 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="concat('Practice Veterinarian', '(', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')" />
-		<node name="activeStartTime" path="/activeStartTime"
+		<node name="activeStartTime" displayName="From Date" path="/activeStartTime"
 			type="java.util.Date" minCardinality="1"
-			hidden="true" defaultValue="java.util.Date.new()" />
+			defaultValue="java.util.Date.new()" />
+		<node name="activeEndTime" displayName="To Date" path="/activeEndTime"
+			type="java.util.Date" minCardinality="0" />
 		<node name="source" displayName="Practice" path="/source"
 			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
 			<assertion name="archetypeRange">
