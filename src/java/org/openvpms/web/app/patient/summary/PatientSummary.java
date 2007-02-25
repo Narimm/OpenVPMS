@@ -18,16 +18,18 @@
 
 package org.openvpms.web.app.patient.summary;
 
+import java.util.Date;
+
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.apache.commons.lang.time.DateUtils;
+
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -54,10 +56,6 @@ import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 
 
 /**
@@ -189,31 +187,7 @@ public class PatientSummary {
      * @return a string representing the patient age
      */
     private static String getPatientAge(Party patient) {
-        EntityBean bean = new EntityBean(patient);
-        Date birthDate = bean.getDate("dateOfBirth");
-        String result;
-        if (birthDate != null) {
-            Date currentDate = new Date();
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(birthDate);
-            long diffMs = currentDate.getTime() - calendar.getTimeInMillis();
-            long diffdays = diffMs / DateUtils.MILLIS_IN_DAY;
-            if (diffdays < 90) {
-                long weeks = diffdays / 7;
-                if (weeks == 0) {
-                    result = diffdays + " Days";
-                } else {
-                    result = weeks + " Weeks";
-                }
-            } else if (diffdays < (365 * 2)) {
-                result = (diffdays / 31) + " Months";
-            } else {
-                result = (diffdays / 365) + " Years";
-            }
-        } else {
-            result = "No Birthdate";
-        }
-        return result;
+        return new PatientRules().getPatientAge(patient);
     }
 
     /**
