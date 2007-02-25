@@ -28,8 +28,12 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.web.system.SpringApplicationInstance;
 
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -96,15 +100,14 @@ public abstract class ContextApplicationInstance
     private void initUser() {
         Authentication auth
                 = SecurityContextHolder.getContext().getAuthentication();
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
         if (auth != null) {
-            List<IMObject> rows = ArchetypeQueryHelper.get(
-                    service, "system", "security", "user", auth.getName(),
-                    true, 0, 1).getResults();
-            if (!rows.isEmpty()) {
-                User user = (User) rows.get(0);
-                context.setUser(user);
+            ArchetypeQuery query = new ArchetypeQuery("security.user",
+                                                      true, true);
+            query.add(new NodeConstraint("username", auth.getName()));
+            query.setMaxResults(1);
+            Iterator<User> iterator = new IMObjectQueryIterator<User>(query);
+            if (iterator.hasNext()) {
+                context.setUser(iterator.next());
             }
         }
     }
