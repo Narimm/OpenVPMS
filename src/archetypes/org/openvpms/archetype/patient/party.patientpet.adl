@@ -60,6 +60,8 @@
 				defaultValue="false()" />
 			<node name="dateOfBirth" path="/details/attributes/dateOfBirth"
 				type="java.util.Date" minCardinality="0" />
+			<node name="age" type="java.lang.String"
+				path="/details/attributes/age" derived="true" derivedValue="party:getPatientAge()" />
 			<node name="deceased" path="/details/attributes/deceased" type="java.lang.Boolean"
 				defaultValue="false()" />
 		</node>

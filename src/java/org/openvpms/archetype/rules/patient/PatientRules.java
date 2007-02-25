@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -28,7 +29,9 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 
 /**
@@ -146,5 +149,39 @@ public class PatientRules {
     public Party getReferralVet(Party patient, Date time) {
         EntityBean bean = new EntityBean(patient);
         return (Party) bean.getNodeTargetEntity("referrals", time);
+    }
+
+    /**
+     * Returns the age of the patient.
+     * @param patient the patient
+     * @return the age in string format
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getPatientAge(Party patient) {
+        EntityBean bean = new EntityBean(patient);
+        Date birthDate = bean.getDate("dateOfBirth");
+        String result;
+        if (birthDate != null) {
+            Date currentDate = new Date();
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(birthDate);
+            long diffMs = currentDate.getTime() - calendar.getTimeInMillis();
+            long diffdays = diffMs / DateUtils.MILLIS_IN_DAY;
+            if (diffdays < 90) {
+                long weeks = diffdays / 7;
+                if (weeks == 0) {
+                    result = diffdays + " Days";
+                } else {
+                    result = weeks + " Weeks";
+                }
+            } else if (diffdays < (365 * 2)) {
+                result = (diffdays / 31) + " Months";
+            } else {
+                result = (diffdays / 365) + " Years";
+            }
+        } else {
+            result = "No Birthdate";
+        }
+        return result;
     }
 }
