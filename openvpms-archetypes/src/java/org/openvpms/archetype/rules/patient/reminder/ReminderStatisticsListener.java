@@ -11,32 +11,43 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-
-
 /**
- * Reminder processor.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface ReminderProcessor {
+public class ReminderStatisticsListener implements ReminderProcessorListener {
 
     /**
-     * Process a reminder.
-     *
-     * @param reminder the reminder to process
-     * @throws ArchetypeServiceException for any archetype service error
-     * @throws ReminderProcessorException if the reminder cannot be processed
+     * Processing statistics.
      */
-    void process(Act reminder);
+    private final Statistics stats = new Statistics();
+
+    /**
+     * Returns the statistics.
+     *
+     * @return the statistics
+     */
+    public Statistics getStatistics() {
+        return stats;
+    }
+
+    /**
+     * Invoked to process a reminder.
+     *
+     * @param event the event
+     */
+    public void process(ReminderEvent event) {
+        ReminderEvent.Action action = event.getAction();
+        stats.increment(event.getReminderType(), action);
+    }
 
 }

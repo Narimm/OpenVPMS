@@ -25,16 +25,22 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.RelationalOp;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -52,12 +58,14 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     public void testQuery() {
         int initialCount = countReminders(null, null);
         ReminderQuery query = new ReminderQuery();
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
-        assertEquals(initialCount, reminders.getTotalResults());
-        for (Act act : reminders.getResults()) {
-            assertEquals("act.patientReminder",
-                         act.getArchetypeId().getShortName());
-            assertEquals(ActStatus.IN_PROGRESS, act.getStatus());
+        List<ObjectSet> reminders = getReminders(query);
+        assertEquals(initialCount, reminders.size());
+        for (ObjectSet set : reminders) {
+            IMObjectReference actRef =
+                    (IMObjectReference) set.get(ReminderQuery.ACT_REFERENCE);
+            String status = (String) set.get(ReminderQuery.ACT_STATUS);
+            assertTrue(TypeHelper.isA(actRef, "act.patientReminder"));
+            assertEquals(ActStatus.IN_PROGRESS, status);
         }
     }
 
@@ -78,8 +86,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
 
         ReminderQuery query = new ReminderQuery();
         query.setReminderType(reminderType);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
-        assertEquals(count, reminders.getTotalResults());
+        List<ObjectSet> reminders = getReminders(query);
+        assertEquals(count, reminders.size());
     }
 
     /**
@@ -109,45 +117,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         // now verify that the query gives the same count
         ReminderQuery query = new ReminderQuery();
         query.setDueDateRange(dueFrom, dueTo);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
-        assertEquals(rangeCount, reminders.getTotalResults());
-    }
-
-    /**
-     * Verifies that IN_PROGRESS reminders can be queried for a customer range.
-     */
-    public void testQueryCustomerRange() {
-        final int count = 10;
-        // add a new reminder type, and some reminders for a range of
-        // customers/patients
-        String[] names = new String[3];
-        Party[] customers = new Party[names.length];
-        Party[] patients = new Party[names.length];
-
-        long id = System.currentTimeMillis();
-        for (int i = 0; i < names.length; ++i) {
-            String name = "Z" + id + ('A' + i);
-            Party customer = TestHelper.createCustomer("", name, true);
-            customers[i] = customer;
-            names[i] = customer.getName();
-            patients[i] = TestHelper.createPatient(customer);
-        }
-        Entity reminderType = ReminderTestHelper.createReminderType();
-
-        Date dueDate = new Date();
-        for (int i = 0; i < count; ++i) {
-            for (Party patient : patients) {
-                ReminderTestHelper.createReminder(patient, reminderType,
-                                                  dueDate);
-            }
-        }
-        // run the query again, and verify it returns those reminders just
-        // added
-        ReminderQuery query = new ReminderQuery();
-
-        query.setCustomerRange(names[0], names[customers.length - 1]);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
-        assertEquals(count * customers.length, reminders.getTotalResults());
+        List<ObjectSet> reminders = getReminders(query);
+        assertEquals(rangeCount, reminders.size());
     }
 
     /**
@@ -176,156 +147,23 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         ReminderQuery query = new ReminderQuery();
         query.setReminderType(reminderType);
         query.setDueDateRange(dueFrom, dueTo);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
-
-        assertEquals(5, reminders.getTotalResults());
+        List<ObjectSet> reminders = getReminders(query);
+        assertEquals(5, reminders.size());
     }
 
     /**
-     * Verifies that IN_PROGRESS reminders can be queried for a reminder type
-     * and customer range.
+     * Returns all reminders matching a query.
+     *
+     * @param query the query
      */
-    public void testQueryReminderTypeCustomerRange() {
-        final int count = 10;
-        // add a new reminder type, and some reminders for a range of
-        // customers/patients
-        String[] names = new String[3];
-        Party[] customers = new Party[names.length];
-        Party[] patients = new Party[names.length];
-
-        long id = System.currentTimeMillis();
-        for (int i = 0; i < names.length; ++i) {
-            String name = "Z" + id + ('A' + i);
-            Party customer = TestHelper.createCustomer("", name, true);
-            customers[i] = customer;
-            names[i] = customer.getName();
-            patients[i] = TestHelper.createPatient(customer);
+    private List<ObjectSet> getReminders(ReminderQuery query) {
+        List<ObjectSet> result = new ArrayList<ObjectSet>();
+        Iterator<ObjectSet> iterator = query.query();
+        while (iterator.hasNext()) {
+            result.add(iterator.next());
         }
-
-        Entity reminderType1 = ReminderTestHelper.createReminderType();
-        Entity reminderType2 = ReminderTestHelper.createReminderType();
-
-        Date dueDate = new Date();
-
-        for (int i = 0; i < count; ++i) {
-            Entity reminderType = (i % 2 == 0) ? reminderType1 : reminderType2;
-            for (Party patient : patients) {
-                ReminderTestHelper.createReminder(patient, reminderType,
-                                                  dueDate);
-            }
-        }
-
-        // run the query and verify it returns those reminders just added,
-        // for reminderType1
-        ReminderQuery query = new ReminderQuery();
-        query.setReminderType(reminderType1);
-        query.setCustomerRange(names[0], names[customers.length - 1]);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
-
-        assertEquals((count / 2) * customers.length,
-                     reminders.getTotalResults());
+        return result;
     }
-
-    /**
-     * Verifies that IN_PROGRESS reminders can be queried for a date and
-     * customer range.
-     */
-    public void testQueryDateRangeCustomerRange() {
-        final int count = 10;
-        // add a new reminder type, and some reminders for a range of
-        // customers/patients
-        String[] names = new String[3];
-        Party[] customers = new Party[names.length];
-        Party[] patients = new Party[names.length];
-
-        long id = System.currentTimeMillis();
-        for (int i = 0; i < names.length; ++i) {
-            String name = "Z" + id + ('A' + i);
-            Party customer = TestHelper.createCustomer("", name, true);
-            customers[i] = customer;
-            names[i] = customer.getName();
-            patients[i] = TestHelper.createPatient(customer);
-        }
-        Entity reminderType = ReminderTestHelper.createReminderType();
-
-        Calendar calendar = new GregorianCalendar();
-        calendar.set(1980, 0, 1);
-        Date dueFrom = calendar.getTime();
-
-        for (int i = 0; i < count; ++i) {
-            calendar.set(Calendar.DAY_OF_MONTH, i + 1);
-            Date dueDate = calendar.getTime();
-            for (Party patient : patients) {
-                ReminderTestHelper.createReminder(patient, reminderType,
-                                                  dueDate);
-            }
-        }
-
-        // query a subset of the dates just added
-        calendar.set(Calendar.DAY_OF_MONTH, 5);
-        Date dueTo = calendar.getTime();
-
-        // run the query and verify it returns those reminders just added
-        ReminderQuery query = new ReminderQuery();
-
-        query.setCustomerRange(names[0], names[customers.length - 1]);
-        query.setDueDateRange(dueFrom, dueTo);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
-        assertEquals(5 * customers.length, reminders.getTotalResults());
-    }
-
-    /**
-     * Verifies that IN_PROGRESS reminders can be queried for a reminder
-     * type, date and customer range.
-     */
-    public void testQueryReminderTypeDateRangeCustomerRange() {
-        final int count = 10;
-        // add a new reminder type, and some reminders for a range of
-        // customers/patients
-        String[] names = new String[3];
-        Party[] customers = new Party[names.length];
-        Party[] patients = new Party[names.length];
-
-        long id = System.currentTimeMillis();
-        for (int i = 0; i < names.length; ++i) {
-            String name = "Z" + id + ('A' + i);
-            Party customer = TestHelper.createCustomer("", name, true);
-            customers[i] = customer;
-            names[i] = customer.getName();
-            patients[i] = TestHelper.createPatient(customer);
-        }
-        Entity reminderType1 = ReminderTestHelper.createReminderType();
-        Entity reminderType2 = ReminderTestHelper.createReminderType();
-
-        Calendar calendar = new GregorianCalendar();
-        calendar.set(1980, 0, 1);
-        Date dueFrom = calendar.getTime();
-
-        for (int i = 0; i < count; ++i) {
-            calendar.set(Calendar.DAY_OF_MONTH, i + 1);
-            Date dueDate = calendar.getTime();
-            Entity reminderType = (i % 2 == 0) ? reminderType1 : reminderType2;
-            for (Party patient : patients) {
-                ReminderTestHelper.createReminder(patient, reminderType,
-                                                  dueDate);
-            }
-        }
-
-        // query a subset of the dates just added
-        calendar.set(Calendar.DAY_OF_MONTH, 5);
-        Date dueTo = calendar.getTime();
-
-        // run the query and verify it returns those reminders just added,
-        // for reminderType1
-        ReminderQuery query = new ReminderQuery();
-
-        query.setReminderType(reminderType1);
-        query.setCustomerRange(names[0], names[customers.length - 1]);
-        query.setDueDateRange(dueFrom, dueTo);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
-        assertEquals(9, reminders.getTotalResults());
-    }
-
 
     /**
      * Counts IN_PROGRESS reminders for patients with patient-owner relationships.

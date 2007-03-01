@@ -33,16 +33,10 @@ import java.util.Map;
 public class Statistics {
 
     /**
-     * Reminder processing type.
-     */
-    public enum Type {
-        SKIPPED, CANCELLED, PRINTED, EMAILED, LISTED}
-
-    /**
      * Tracks statistics by reminder type.
      */
-    private final Map<Entity, Map<Type, Integer>> statistics
-            = new HashMap<Entity, Map<Type, Integer>>();
+    private final Map<Entity, Map<ReminderEvent.Action, Integer>> statistics
+            = new HashMap<Entity, Map<ReminderEvent.Action, Integer>>();
 
 
     /**
@@ -51,15 +45,15 @@ public class Statistics {
      * @param reminderType the reminderType
      * @param type         the processing type
      */
-    public void increment(Entity reminderType, Type type) {
-        Map<Type, Integer> stats = statistics.get(reminderType);
+    public void increment(Entity reminderType, ReminderEvent.Action type) {
+        Map<ReminderEvent.Action, Integer> stats = statistics.get(reminderType);
         if (stats == null) {
-            stats = new HashMap<Type, Integer>();
+            stats = new HashMap<ReminderEvent.Action, Integer>();
             statistics.put(reminderType, stats);
         }
         Integer count = stats.get(type);
         if (count == null) {
-            stats.put(type, 0);
+            stats.put(type, 1);
         } else {
             stats.put(type, count + 1);
         }
@@ -71,9 +65,9 @@ public class Statistics {
      * @param type the processing type
      * @return the count for the processing type
      */
-    public int getCount(Type type) {
+    public int getCount(ReminderEvent.Action type) {
         int result = 0;
-        for (Map<Type, Integer> stats : statistics.values()) {
+        for (Map<ReminderEvent.Action, Integer> stats : statistics.values()) {
             Integer count = stats.get(type);
             if (count != null) {
                 result += count;
