@@ -386,13 +386,6 @@
         </properties>
     </style>
 
-    <style name="ReminderWorkspace.ReminderTypes"
-           type="nextapp.echo2.app.ListBox">
-        <properties>
-            <property name="height" value="15em"/>
-        </properties>
-    </style>
-
     <style name="WorkflowWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>
@@ -535,12 +528,16 @@
     </style>
 
 
-    <style name="ButtonRow" base-name="ControlRow"
-           type="nextapp.echo2.app.Row"/>
+    <style name="ButtonRow" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="cellSpacing" value="3px"/>
+        </properties>
+    </style>
 
     <style name="DialogButtonRow" base-name="ButtonRow"
            type="nextapp.echo2.app.Row">
         <properties>
+            <property name="insets" value="10px 2px"/>
             <property name="layoutData">
                 <layout-data
                         type="nextapp.echo2.app.layout.SplitPaneLayoutData">

@@ -47,6 +47,11 @@ public abstract class AbstractTask implements Task {
      */
     private boolean required = true;
 
+    /**
+     * Determines if the task has finished.
+     */
+    private boolean finished;
+
 
     /**
      * Registers a listener to be notified of task events.
@@ -88,35 +93,46 @@ public abstract class AbstractTask implements Task {
 
     /**
      * Notifies any registered listener that the task has been skipped.
+     *
+     * @throws IllegalStateException if notification has already occurred
      */
     protected void notifySkipped() {
-        if (listener != null) {
-            listener.taskEvent(new TaskEvent(TaskEvent.Type.SKIPPED, this));
-        }
+        notifyEvent(TaskEvent.Type.SKIPPED);
     }
 
     /**
      * Notifies any registered listener that the task has completed.
+     *
+     * @throws IllegalStateException if notification has already occurred
      */
     protected void notifyCompleted() {
-        if (listener != null) {
-            listener.taskEvent(new TaskEvent(TaskEvent.Type.COMPLETED, this));
-        }
+        notifyEvent(TaskEvent.Type.COMPLETED);
     }
 
     /**
      * Notifies any registered listener that the task has been cancelled.
+     *
+     * @throws IllegalStateException if notification has already occurred
      */
     protected void notifyCancelled() {
-        if (listener != null) {
-            listener.taskEvent(new TaskEvent(TaskEvent.Type.CANCELLED, this));
-        }
+        notifyEvent(TaskEvent.Type.CANCELLED);
+    }
+
+    /**
+     * Determines if the task has finished.
+     *
+     * @return <tt>true</tt> if any of the <tt>notify*</tt> methods have been
+     *         invoked
+     */
+    protected boolean isFinished() {
+        return finished;
     }
 
     /**
      * Helper to display an error and nofity that the task has been cancelled.
      *
      * @param cause the cause of the error
+     * @throws IllegalStateException if notification has already occurred
      */
     protected void notifyCancelledOnError(Throwable cause) {
         ErrorHelper.show(cause, new WindowPaneListener() {
@@ -161,6 +177,23 @@ public abstract class AbstractTask implements Task {
             for (TaskProperty property : list) {
                 bean.setValue(property.getName(), property.getValue(context));
             }
+        }
+    }
+
+    /**
+     * Notifies the registered listener of the completion state of the task.
+     *
+     * @param type the event type
+     * @throws IllegalStateException if notification has already occurred
+     */
+    private void notifyEvent(TaskEvent.Type type) {
+        if (finished) {
+            throw new IllegalStateException(
+                    "Listener has already been notified");
+        }
+        finished = true;
+        if (listener != null) {
+            listener.taskEvent(new TaskEvent(type, this));
         }
     }
 

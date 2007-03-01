@@ -18,13 +18,10 @@
 
 package org.openvpms.web.app.patient.summary;
 
-import java.util.Date;
-
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -56,6 +53,8 @@ import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.Date;
 
 
 /**
@@ -175,7 +174,7 @@ public class PatientSummary {
         time.add(new NodeConstraint("endTime", RelationalOp.IsNULL));
         SortConstraint[] sort = {new NodeSortConstraint("endTime", true)};
 
-        return new ActResultSet<Act>(participants, archetypes, time, statuses,
+        return new ActResultSet<Act>(archetypes, participants, time, statuses,
                                      false, null, 5, sort);
     }
 
@@ -231,7 +230,7 @@ public class PatientSummary {
                                           patient)
         };
         SortConstraint[] sort = {new NodeSortConstraint("endTime", true)};
-        return new ActResultSet<Act>(participants, archetypes, null,
+        return new ActResultSet<Act>(archetypes, participants, null,
                                      statuses, false, null, 10, sort);
     }
 

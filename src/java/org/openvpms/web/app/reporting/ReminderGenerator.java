@@ -22,30 +22,43 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-import org.openvpms.archetype.rules.patient.reminder.AbstractReminderProcessor;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.patient.reminder.DefaultReminderProcessor;
+import org.openvpms.archetype.rules.patient.reminder.ReminderCancelProcessor;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
-import org.openvpms.archetype.rules.patient.reminder.ReminderQueryIterator;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderStatisticsListener;
 import org.openvpms.archetype.rules.patient.reminder.Statistics;
-import static org.openvpms.archetype.rules.patient.reminder.Statistics.Type.SKIPPED;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.report.TemplateHelper;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
-import org.openvpms.web.component.im.print.IMPrinter;
-import org.openvpms.web.component.im.print.IMPrinterListener;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
-import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.workflow.AbstractTask;
+import org.openvpms.web.component.workflow.PrintIMObjectsTask;
+import org.openvpms.web.component.workflow.SynchronousTask;
+import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.component.workflow.TaskEvent;
+import org.openvpms.web.component.workflow.TaskListener;
+import org.openvpms.web.component.workflow.Tasks;
+import org.openvpms.web.component.workflow.Workflow;
+import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Iterator;
 
 
 /**
@@ -54,12 +67,17 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderGenerator extends AbstractReminderProcessor {
+class ReminderGenerator {
+
+    public interface CompletionListener {
+
+        void completed();
+    }
 
     /**
      * The query iterator.
      */
-    private ReminderQueryIterator iterator;
+    private final Iterator<ObjectSet> iterator;
 
     /**
      * Indicates if processing should suspend, so the client can be updated.
@@ -67,108 +85,193 @@ class ReminderGenerator extends AbstractReminderProcessor {
     private boolean suspend;
 
     /**
-     * Reminders that need to be listed to phone.
+     * The processor.
      */
-    private List<Act> phoneReminders = new ArrayList<Act>();
+    private DefaultReminderProcessor processor;
+
+    /**
+     * Phone listener.
+     */
+    private ReminderPhoneListener phone;
+
+    /**
+     * Statistics listener.
+     */
+    private ReminderStatisticsListener stats;
+
+    /**
+     * Invoked when generation is complete.
+     */
+    private CompletionListener listener;
 
 
     /**
-     * Constructs a new <code>ReminderGenerator</code>.
+     * Constructs a new <tt>ReminderGenerator</tt> for a single reminder.
      *
-     * @param query the reminder query
+     * @param reminder the reminder set
+     * @param context  the context
+     * @throws ReminderProcessorException for any error
      */
-    public ReminderGenerator(ReminderQuery query) {
-        iterator = new ReminderQueryIterator(query);
+    public ReminderGenerator(ObjectSet reminder, Context context) {
+        iterator = Arrays.asList(reminder).iterator();
+        init(context);
+    }
+
+    /**
+     * Constructs a new <tt>ReminderGenerator</tt> for reminders
+     * returned by a query.
+     *
+     * @param query the query
+     * @throws ReminderProcessorException for any error
+     */
+    public ReminderGenerator(ReminderQuery query, Context context) {
+        iterator = new ObjectSetQueryIterator(query.createQuery());
+        init(context);
     }
 
     /**
      * Generate reminders.
      */
     public void generate() {
-        suspend = false;
-        while (!suspend && iterator.hasNext()) {
-            Act reminder = iterator.next();
-            process(reminder);
-        }
-        if (!suspend) {
-            // generation completed.
-            // If there are any phone reminders, print them.
-            if (!phoneReminders.isEmpty()) {
-                printPhoneReminders();
+        try {
+            setSuspend(false);
+            while (!isSuspended() && iterator.hasNext()) {
+                ObjectSet set = iterator.next();
+                IMObjectReference ref = (IMObjectReference) set.get(
+                        ReminderQuery.ACT_REFERENCE);
+                Act reminder = (Act) IMObjectHelper.getObject(ref);
+                if (reminder != null) {
+                    processor.process(reminder);
+                }
             }
-            // log statistics.
-            SummaryDialog summary = new SummaryDialog(getStatistics());
-            summary.show();
+            if (!isSuspended()) {
+                // generation completed.
+                onGenerationComplete();
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorDialog.show(exception);
+            notifyCompletionListener();
         }
     }
 
     /**
-     * Phone a reminder.
+     * Sets the listener to invoke when generation is complete.
      *
-     * @param reminder         the reminder
-     * @param reminderType     the reminder type
-     * @param contact          the reminder contact
-     * @param documentTemplate the document template
+     * @param listener the listener. May be <tt>null</tt>
      */
-    @Override
-    protected void phone(Act reminder, Entity reminderType, Contact contact,
-                         Entity documentTemplate) {
-        super.phone(reminder, reminderType, contact, documentTemplate);
-        phoneReminders.add(reminder);
+    public void setListener(CompletionListener listener) {
+        this.listener = listener;
     }
 
     /**
-     * Print a reminder.
+     * Sets the suspend state.
      *
-     * @param reminder         the reminder
-     * @param reminderType     the reminder type
-     * @param contact          the reminder contact
-     * @param documentTemplate the document template
+     * @param suspend if <tt>true</tt> suspend generation
      */
-    @Override
-    protected void print(final Act reminder, final Entity reminderType,
-                         final Contact contact, final Entity documentTemplate) {
-        DocumentAct act = TemplateHelper.getDocumentAct(
-                documentTemplate,
-                ArchetypeServiceHelper.getArchetypeService());
-        if (act != null) {
-            IMPrinter<DocumentAct> printer
-                    = IMObjectPrinterFactory.create(act);
-            InteractiveIMPrinter<DocumentAct> iPrinter
-                    = new InteractiveIMObjectPrinter<DocumentAct>(printer);
-            iPrinter.setListener(new IMPrinterListener() {
-                public void printed() {
-                    ReminderGenerator.super.print(
-                            reminder, reminderType, contact, documentTemplate);
-                    generate();
-                }
+    public void setSuspend(boolean suspend) {
+        this.suspend = suspend;
+    }
 
-                public void cancelled() {
-                }
+    /**
+     * Determines if generation has been suspended.
+     *
+     * @return <tt>true</tt> if generation has been suspended
+     */
+    public boolean isSuspended() {
+        return suspend;
+    }
 
-                public void skipped() {
-                }
+    /**
+     * Initialises this.
+     *
+     * @param context the context
+     * @throws ReminderProcessorException for any error
+     */
+    private void init(Context context) {
+        processor = new DefaultReminderProcessor();
+        phone = new ReminderPhoneListener();
+        stats = new ReminderStatisticsListener();
+        processor.addListener(stats);
 
-                public void failed(Throwable cause) {
-                    ErrorHelper.show(cause, new WindowPaneListener() {
-                        public void windowPaneClosing(
-                                WindowPaneEvent event) {
-                        }
-                    });
-                }
-            });
-            iPrinter.print();
-            suspend = true;
+        Party practice = context.getPractice();
+        if (practice == null) {
+            throw new ReminderProcessorException(
+                    ReminderProcessorException.ErrorCode.InvalidConfiguration,
+                    "Context has no practice");
+        }
+        ReminderRules rules = new ReminderRules();
+        Contact email = rules.getEmailContact(practice.getContacts());
+        if (email == null) {
+            throw new ReminderProcessorException(
+                    ReminderProcessorException.ErrorCode.InvalidConfiguration,
+                    "Practice has no email contact for reminders");
+        }
+        IMObjectBean bean = new IMObjectBean(email);
+        String address = bean.getString("emailAddress");
+        String name = practice.getName();
+        if (StringUtils.isEmpty(address)) {
+            throw new ReminderProcessorException(
+                    ReminderProcessorException.ErrorCode.InvalidConfiguration,
+                    "Practice email contact address is empty");
+        }
 
-        } else {
-            getStatistics().increment(reminderType, SKIPPED);
+        ReminderCancelProcessor canceller = new ReminderCancelProcessor();
+        ReminderEmailProcessor emailer
+                = new ReminderEmailProcessor(ServiceHelper.getMailSender(),
+                                             address, name);
+        ReminderPrintProcessor printer = new ReminderPrintProcessor(this);
+
+        processor.addListener(ReminderEvent.Action.CANCEL, canceller);
+        processor.addListener(ReminderEvent.Action.EMAIL, emailer);
+        processor.addListener(ReminderEvent.Action.PHONE, phone);
+        processor.addListener(ReminderEvent.Action.PRINT, printer);
+    }
+
+    /**
+     * Notifies any registered listener that generation has completed.
+     */
+    private void notifyCompletionListener() {
+        if (listener != null) {
+            listener.completed();
         }
     }
 
     /**
-     * Prints a report of all phone reminders.
+     * Invoked when generation is complete.
+     * Prints any phone reminders and displays statistics.
      */
-    private void printPhoneReminders() {
+    private void onGenerationComplete() {
+        Workflow workflow = new WorkflowImpl();
+        Tasks printTasks = new Tasks();
+
+        PrintIMObjectsTask<Act> printTask = new PrintIMObjectsTask<Act>(
+                phone.getPhoneReminders(), "act.patientReminder");
+        printTask.setRequired(false);
+        printTasks.addTask(printTask);
+        printTasks.addTask(new SynchronousTask() {
+            public void execute(TaskContext context) {
+                phone.updateAll();
+            }
+        });
+        workflow.addTask(printTasks);
+        workflow.addTask(new AbstractTask() {
+            public void start(TaskContext context) {
+                SummaryDialog summary = new SummaryDialog(
+                        stats.getStatistics());
+                summary.show();
+                summary.addWindowPaneListener(new WindowPaneListener() {
+                    public void windowPaneClosing(WindowPaneEvent e) {
+                        notifyCompleted();
+                    }
+                });
+            }
+        });
+        workflow.setTaskListener(new TaskListener() {
+            public void taskEvent(TaskEvent event) {
+                notifyCompletionListener();
+            }
+        });
+        workflow.start();
     }
 
     /**
@@ -188,11 +291,11 @@ class ReminderGenerator extends AbstractReminderProcessor {
             super(Messages.get("reporting.reminder.summary.title"), OK);
             setModal(true);
             Grid grid = new Grid(2);
-            for (Statistics.Type type : Statistics.Type.values()) {
+            for (ReminderEvent.Action action : ReminderEvent.Action.values()) {
                 Label label = LabelFactory.create();
-                label.setText(type.toString());
+                label.setText(action.toString());
                 Label value = LabelFactory.create();
-                value.setText(Integer.toString(stats.getCount(type)));
+                value.setText(Integer.toString(stats.getCount(action)));
                 grid.add(label);
                 grid.add(value);
             }

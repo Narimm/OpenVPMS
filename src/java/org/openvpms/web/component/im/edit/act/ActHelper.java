@@ -85,7 +85,7 @@ public class ActHelper {
         ParticipantConstraint constraint = new ParticipantConstraint(
                 participant, participation, entity);
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
-        ActResultSet<Act> set = new ActResultSet<Act>(constraint, archetypes,
+        ActResultSet<Act> set = new ActResultSet<Act>(archetypes, constraint,
                                                       null, null, statuses, 50,
                                                       sort);
         set.setNodes(new String[]{"amount"});

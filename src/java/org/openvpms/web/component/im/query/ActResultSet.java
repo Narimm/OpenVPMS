@@ -18,20 +18,11 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 
-import java.util.Arrays;
 import java.util.Date;
 
 
@@ -44,127 +35,95 @@ import java.util.Date;
 public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
 
     /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(ActResultSet.class);
-
-
-    /**
-     * Construct a new <code>ActResultSet</code>.
+     * Constructs a new <tt>ActResultSet</tt>.
      *
-     * @param participant the participant constraint
      * @param archetypes  the act archetype constraint
-     * @param from        the act start-from date. May be <code>null</code>
-     * @param to          the act start-to date. May be <code>null</code>
+     * @param participant the participant constraint
+     * @param from        the act start-from date. May be <tt>null</tt>
+     * @param to          the act start-to date. May be <tt>null</tt>
      * @param statuses    the act statuses. If empty, indicates all acts
      * @param pageSize    the maximum no. of results per page
-     * @param sort        the sort criteria. May be <code>null</code>
+     * @param sort        the sort criteria. May be <tt>null</tt>
      */
-    public ActResultSet(ParticipantConstraint participant,
-                        BaseArchetypeConstraint archetypes, Date from, Date to,
+    public ActResultSet(BaseArchetypeConstraint archetypes,
+                        ParticipantConstraint participant,
+                        Date from, Date to,
                         String[] statuses, int pageSize,
                         SortConstraint[] sort) {
-        super(participant, archetypes, from, to, statuses, false, null,
+        super(archetypes, participant, from, to, statuses, false, null,
               pageSize, sort);
     }
 
     /**
-     * Construct a new <code>ActResultSet</code>.
+     * Constructs a new <tt>ActResultSet</tt>.
      *
-     * @param participant the participant constraint
      * @param archetypes  the act archetype constraint
-     * @param from        the act start-from date. May be <code>null</code>
-     * @param to          the act start-to date. May be <code>null</code>
+     * @param participant the participant constraint. May be <tt>null</tt>
+     * @param from        the act start-from date. May be <tt>null</tt>
+     * @param to          the act start-to date. May be <tt>null</tt>
      * @param statuses    the act statuses. If empty, indicates all acts
-     * @param exclude     if <code>true</code> exclude acts with status in
-     *                    <code>statuses</code>; otherwise include them.
+     * @param exclude     if <tt>true</tt> exclude acts with status in
+     *                    <tt>statuses</tt>; otherwise include them.
      * @param constraints additional query constraints. May be
-     *                    <code<null</code>
+     *                    <code<null</tt>
      * @param pageSize    the maximum no. of results per page
-     * @param sort        the sort criteria. May be <code>null</code>
+     * @param sort        the sort criteria. May be <tt>null</tt>
      */
-    public ActResultSet(ParticipantConstraint participant,
-                        BaseArchetypeConstraint archetypes, Date from, Date to,
+    public ActResultSet(BaseArchetypeConstraint archetypes,
+                        ParticipantConstraint participant,
+                        Date from, Date to,
                         String[] statuses, boolean exclude,
                         IConstraint constraints, int pageSize,
                         SortConstraint[] sort) {
-        super(new ParticipantConstraint[]{participant}, archetypes, from, to,
-              statuses, exclude, constraints, pageSize, sort);
+        super(archetypes, participant, from, to, statuses, exclude, constraints,
+              pageSize, sort);
     }
 
     /**
-     * Construct a new <code>ActResultSet</code>.
+     * Constructs a new <tt>ActResultSet</tt>.
      *
-     * @param participants the participant constraints
      * @param archetypes   the act archetype constraint
-     * @param from         the act start-from date. May be <code>null</code>
-     * @param to           the act start-to date. May be <code>null</code>
+     * @param participants the participant constraints. May be <tt>null</tt>
+     * @param from         the act start-from date. May be <tt>null</tt>
+     * @param to           the act start-to date. May be <tt>null</tt>
      * @param statuses     the act statuses. If empty, indicates all acts
-     * @param exclude      if <code>true</code> exclude acts with status in
-     *                     <code>statuses</code>; otherwise include them.
+     * @param exclude      if <tt>true</tt> exclude acts with status in
+     *                     <tt>statuses</tt>; otherwise include them.
      * @param constraints  additional query constraints. May be
-     *                     <code<null</code>
+     *                     <code<null</tt>
      * @param pageSize     the maximum no. of results per page
-     * @param sort         the sort criteria. May be <code>null</code>
+     * @param sort         the sort criteria. May be <tt>null</tt>
      */
-    public ActResultSet(ParticipantConstraint[] participants,
-                        BaseArchetypeConstraint archetypes, Date from, Date to,
+    public ActResultSet(BaseArchetypeConstraint archetypes,
+                        ParticipantConstraint[] participants,
+                        Date from, Date to,
                         String[] statuses, boolean exclude,
                         IConstraint constraints, int pageSize,
                         SortConstraint[] sort) {
-        super(participants, archetypes, from, to, statuses, exclude,
+        super(archetypes, participants, from, to, statuses, exclude,
               constraints, pageSize, sort);
     }
 
     /**
-     * Construct a new <code>ActResultSet</code>.
+     * Constructs a new <tt>ActResultSet</tt>.
      *
-     * @param participants the participant constraints
      * @param archetypes   the act archetype constraint
-     * @param times        the time constraints. May be <code>null</code>
+     * @param participants the participant constraints. May be <tt>null</tt>
+     * @param times        the time constraints. May be <tt>null</tt>
      * @param statuses     the act statuses. If empty, indicates all acts
-     * @param exclude      if <code>true</code> exclude acts with status in
-     *                     <code>statuses</code>; otherwise include them.
-     * @param constraints  additional query constraints. May be
-     *                     <code<null</code>
+     * @param exclude      if <tt>true</tt> exclude acts with status in
+     *                     <tt>statuses</tt>; otherwise include them.
+     * @param constraints  additional query constraints. May be <tt>null</tt>
      * @param pageSize     the maximum no. of results per page
-     * @param sort         the sort criteria. May be <code>null</code>
+     * @param sort         the sort criteria. May be <tt>null</tt>
      */
-    public ActResultSet(ParticipantConstraint[] participants,
-                        BaseArchetypeConstraint archetypes,
+    public ActResultSet(BaseArchetypeConstraint archetypes,
+                        ParticipantConstraint[] participants,
                         IConstraint times, String[] statuses, boolean exclude,
                         IConstraint constraints, int pageSize,
                         SortConstraint[] sort) {
-        super(participants, archetypes, times, statuses, exclude, constraints,
+        super(archetypes, participants, times, statuses, exclude, constraints,
               pageSize, sort);
-    }
-
-    /**
-     * Returns the specified page.
-     *
-     * @param firstResult the first result of the page to retrieve
-     * @param maxResults  the maximun no of results in the page
-     * @return the page corresponding to <code>firstResult</code>, or
-     *         <code>null</code> if none exists
-     */
-    protected IPage<T> getPage(int firstResult, int maxResults) {
-        IPage<T> result = null;
-        try {
-            ArchetypeQuery query = getQuery(firstResult, maxResults);
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            String[] nodes = getNodes();
-            IPage<IMObject> page;
-            if (nodes == null || nodes.length == 0) {
-                page = service.get(query);
-            } else {
-                page = service.get(query, Arrays.asList(nodes));
-            }
-            result = convert(page);
-        } catch (OpenVPMSException exception) {
-            log.error(exception, exception);
-        }
-        return result;
     }
 
 }

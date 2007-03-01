@@ -28,7 +28,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.ActResultSet;
-import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.select.IMObjectSelector;
@@ -46,7 +46,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class MessageQuery extends DefaultActQuery<Act> {
+public class MessageQuery extends DateRangeActQuery<Act> {
 
     /**
      * The clinician selector.
@@ -95,9 +95,9 @@ public class MessageQuery extends DefaultActQuery<Act> {
             } else {
                 participants = new ParticipantConstraint[0];
             }
-            result = new ActResultSet<Act>(participants,
-                                           getArchetypeConstraint(),
-                                           getStartFrom(), getStartTo(),
+            result = new ActResultSet<Act>(getArchetypeConstraint(),
+                                           participants,
+                                           getFrom(), getTo(),
                                            getStatuses(), excludeStatuses(),
                                            getConstraints(), getMaxResults(),
                                            sort);

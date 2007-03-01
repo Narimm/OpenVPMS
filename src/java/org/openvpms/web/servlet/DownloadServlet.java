@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.OpenVPMSApp;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -152,19 +153,11 @@ public class DownloadServlet extends HttpServlet {
      * @throws IOException for any I/O error
      */
     private void serveDocument(Document doc, HttpServletResponse response,
-                               IArchetypeService service)
-            throws IOException {
-        DocumentHandler handler = handlers.get(
-                doc.getName(), doc.getArchetypeId().getShortName(),
-                doc.getMimeType());
-        if (handler == null) {
-            response.sendError(
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            log.error("Unsupported document: name=" + doc.getName()
-                    + ", shortName="
-                    + doc.getArchetypeId().getShortName()
-                    + ", mimeType=" + doc.getMimeType());
-        } else {
+                               IArchetypeService service) throws IOException {
+        try {
+            DocumentHandler handler = handlers.get(
+                    doc.getName(), doc.getArchetypeId().getShortName(),
+                    doc.getMimeType());
             response.setHeader("Content-Disposition",
                                "inline; filename=\"" + doc.getName() + "\"");
             response.setContentType(doc.getMimeType());
@@ -176,12 +169,20 @@ public class DownloadServlet extends HttpServlet {
             } finally {
                 IOUtils.closeQuietly(stream);
             }
-        }
 
-        // todo - need to support case where two users download the same
-        // document simultaneously
-        if (tempDocs.remove(doc.getObjectReference())) {
-            service.remove(doc);
+            // todo - need to support case where two users download the same
+            // document simultaneously
+            if (tempDocs.remove(doc.getObjectReference())) {
+                service.remove(doc);
+            }
+        } catch (OpenVPMSException exception) {
+            response.sendError(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            log.error("Failed to serve document: name=" + doc.getName()
+                    + ", shortName="
+                    + doc.getArchetypeId().getShortName()
+                    + ", mimeType=" + doc.getMimeType(),
+                      exception);
         }
     }
 }

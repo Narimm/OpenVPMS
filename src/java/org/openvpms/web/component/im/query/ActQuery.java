@@ -53,7 +53,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     private final String participant;
 
     /**
-     * The entity participation short name;
+     * The entity participation short name. May be <tt>null</tt>
      */
     private final String participation;
 
@@ -73,26 +73,38 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     private String[] statuses;
 
     /**
-     * The act status lookups.
+     * The act status lookups. May be <tt>null</tt>
      */
     private final List<Lookup> statusLookups;
 
     /**
-     * Status to exclude. May be <code>null</code>
+     * Status to exclude. May be <tt>null</tt>
      */
     private final String excludeStatus;
 
 
     /**
-     * Construct a new <code>ActQuery</code>.
+     * Constructs a new <tt>ActQuery</tt>.
      *
-     * @param entity        the entity to search for. May be <code>null</code>
-     * @param participant   the partcipant node name
-     * @param participation the entity participation short name
+     * @param shortNames the act short names to query
+     * @param statuses   the act statuses to search on. May be
+     *                   <tt>empty</tt>
+     */
+    public ActQuery(String[] shortNames, String[] statuses) {
+        this(null, null, null, shortNames, statuses);
+    }
+
+    /**
+     * Constructs a new <tt>ActQuery</tt>.
+     *
+     * @param entity        the entity to search for. May be <tt>null</tt>
+     * @param participant   the partcipant node name. May be <tt>null</tt>
+     * @param participation the entity participation short name. May be
+     *                      <tt>null</tt>
      * @param entityName    the act entity name
      * @param conceptName   the act concept name
      * @param statusLookups the act status lookups
-     * @param excludeStatus to exclude. May be <code>null</code>
+     * @param excludeStatus to exclude. May be <tt>null</tt>
      */
     public ActQuery(Entity entity, String participant, String participation,
                     String entityName, String conceptName,
@@ -107,14 +119,14 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     }
 
     /**
-     * Construct a new <code>ActQuery</code>.
+     * Constructs a new <tt>ActQuery</tt>.
      *
-     * @param entity        the entity to search for. May be <code>null</code>
-     * @param participant   the partcipant node name
-     * @param participation the entity participation short name
+     * @param entity        the entity to search for. May be <tt>null</tt>
+     * @param participant   the partcipant node name. May be <tt>null</tt>
+     * @param participation the entity participation short name. May be <tt>null</tt>
      * @param shortNames    the act short names
      * @param statusLookups the act status lookups
-     * @param excludeStatus to exclude. May be <code>null</code>
+     * @param excludeStatus to exclude. May be <tt>null</tt>
      */
     public ActQuery(Entity entity, String participant, String participation,
                     String[] shortNames, List<Lookup> statusLookups,
@@ -129,12 +141,13 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     }
 
     /**
-     * Construct a new <code>ActQuery</code> to query acts for a
+     * Constructs a new <tt>ActQuery</tt> to query acts for a
      * specific status.
      *
-     * @param entity        the entity to search for. May be <code>null</code>
-     * @param participant   the partcipant node name
-     * @param participation the entity participation short name
+     * @param entity        the entity to search for. May be <tt>null</tt>
+     * @param participant   the partcipant node name. May be <tt>null</tt>
+     * @param participation the entity participation short name. May be
+     *                      <tt>null</tt>
      * @param entityName    the act entity name
      * @param conceptName   the act concept name
      * @param status        the act status
@@ -151,14 +164,15 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     }
 
     /**
-     * Construct a new  <code>ActQuery</code>.
+     * Construct a new  <tt>ActQuery</tt>.
      *
-     * @param entity        the entity to search for. May be <code>null</code>
-     * @param participant   the participant node name
-     * @param participation the entity participation short name
+     * @param entity        the entity to search for. May be <tt>null</tt>
+     * @param participant   the partcipant node name. May be <tt>null</tt>
+     * @param participation the entity participation short name. May be
+     *                      <tt>null</tt>
      * @param shortNames    the act short names
      * @param statuses      the act statuses to search on. May be
-     *                      <code>empty</code>
+     *                      <tt>empty</tt>
      */
     public ActQuery(Entity entity, String participant, String participation,
                     String[] shortNames, String[] statuses) {
@@ -174,7 +188,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * Sets the entity to search for.
      *
-     * @param entity the entity to search for. May be <code>null</code>
+     * @param entity the entity to search for. May be <tt>null</tt>
      */
     public void setEntity(Entity entity) {
         entityId = (entity != null) ? entity.getObjectReference() : null;
@@ -183,8 +197,8 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @return <code>true</code> if the query should be run automaticaly;
-     *         otherwie <code>false</code>
+     * @return <tt>true</tt> if the query should be run automatically;
+     *         otherwise <tt>false</tt>
      */
     public boolean isAuto() {
         return false;
@@ -195,16 +209,16 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      * These are short names that are always queried independent of the
      * short name selector.
      *
-     * @param shortNames the short names. May be <code>null</code>
+     * @param shortNames the short names. May be <tt>null</tt>
      */
     public void setRequiredShortNames(String[] shortNames) {
         requiredShortNames = shortNames;
     }
 
     /**
-     * Sets the initial status to query on.
+     * Sets the status to query on.
      *
-     * @param status the status to query on. May be <code>null</code>
+     * @param status the status to query on. May be <tt>null</tt>
      */
     public void setStatus(String status) {
         if (status == null) {
@@ -215,17 +229,32 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     }
 
     /**
-     * Performs the query.
+     * Sets the statuses to query on.
      *
-     * @param sort the sort constraint. May be <code>null</code>
-     * @return the query result set. May be <code>null</code>
+     * @param statuses the statuses to query on. May be <tt>null</tt>
+     */
+    public void setStatuses(String[] statuses) {
+        if (statuses == null) {
+            this.statuses = new String[0];
+        } else {
+            this.statuses = statuses;
+        }
+    }
+
+    /**
+     * Performs the query.
+     * If constraining acts to a particular entity, the entity must be non-null
+     * or a <tt>null</tt> will be returned.
+     *
+     * @param sort the sort constraint. May be <tt>null</tt>
+     * @return the query result set. May be <tt>null</tt>
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
     public ResultSet<T> query(SortConstraint[] sort) {
         ResultSet<T> result = null;
 
-        if (entityId != null) {
+        if (participant == null || entityId != null) {
             result = createResultSet(sort);
         }
         return result;
@@ -283,11 +312,17 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * Returns the participant constraint.
      *
-     * @return the participant constraint
+     * @return the participant constraint, or <tt>null</tt> if not restricting
+     *         to a particular entity
      */
     protected ParticipantConstraint getParticipantConstraint() {
-        return new ParticipantConstraint(participant, participation,
-                                         getEntityId());
+        ParticipantConstraint result = null;
+        IMObjectReference entityId = getEntityId();
+        if (entityId != null) {
+            result = new ParticipantConstraint(participant, participation,
+                                               entityId);
+        }
+        return result;
     }
 
     /**
@@ -316,34 +351,34 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * Returns the entity reference.
      *
-     * @return the entity reference
+     * @return the entity reference. May be <tt>null</tt>
      */
     protected IMObjectReference getEntityId() {
         return entityId;
     }
 
     /**
-     * Returns the start-from date.
+     * Returns the 'from' date.
      *
-     * @return the start-from date, or <code>null</code> to query all dates
+     * @return the 'from' date, or <tt>null</tt> to query all dates
      */
-    protected Date getStartFrom() {
+    protected Date getFrom() {
         return null;
     }
 
     /**
-     * Returns the start-to date.
+     * Returns the 'to' date.
      *
-     * @return the start-to date, or <code>null</code> to query all dates
+     * @return the 'to' date, or <tt>null</tt> to query all dates
      */
-    protected Date getStartTo() {
+    protected Date getTo() {
         return null;
     }
 
     /**
      * Returns the act status lookups.
      *
-     * @return the act status lookups. May be <code>null</code>
+     * @return the act status lookups. May be <tt>null</tt>
      */
     protected List<Lookup> getStatusLookups() {
         return statusLookups;
@@ -367,7 +402,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * Determines if act statuses are being excluded.
      *
-     * @return <code>true</code> to exclude acts with status in
+     * @return <tt>true</tt> to exclude acts with status in
      *         {@link #getStatuses()} ; otherwise include them.
      */
     protected boolean excludeStatuses() {
@@ -380,9 +415,9 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      *
      * @param lookups the lookups
      * @param code    the code of the lookup to be removed.
-     *                May be <code>null</code>
+     *                May be <tt>null</tt>
      * @return a copy of the source list with the code removed, or the source
-     *         list if <code>code>code> is null
+     *         list if <tt>code>code> is null
      */
     private List<Lookup> getStatusLookups(List<Lookup> lookups,
                                           String code) {

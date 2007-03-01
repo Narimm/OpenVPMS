@@ -72,7 +72,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
         ParticipantConstraint participant = new ParticipantConstraint(
                 "customer", "participation.customer",
                 party.getObjectReference());
-        ActResultSet set = new ActResultSet(participant, archetypes, from, to,
+        ActResultSet set = new ActResultSet(archetypes, participant, from, to,
                                             statuses, rowsPerPage, sort);
 
         assertFalse(set.hasNext());
@@ -118,7 +118,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
         ParticipantConstraint participant = new ParticipantConstraint(
                 "customer", "participation.customer",
                 _customer.getObjectReference());
-        ActResultSet<Act> set = new ActResultSet<Act>(participant, archetypes,
+        ActResultSet<Act> set = new ActResultSet<Act>(archetypes, participant,
                                                       from, to, statuses,
                                                       rowsPerPage, sort);
 
@@ -155,7 +155,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
         ParticipantConstraint participant = new ParticipantConstraint(
                 "customer", "participation.customer",
                 _customer.getObjectReference());
-        ResultSet<Act> set = new ActResultSet<Act>(participant, archetypes,
+        ResultSet<Act> set = new ActResultSet<Act>(archetypes, participant,
                                                    from, to, statuses,
                                                    rowsPerPage, sort);
 

@@ -74,11 +74,11 @@ public class TaskQuery extends WorkflowQuery<Act> {
     @Override
     protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
         ParticipantConstraint[] participants = getParticipantConstraints();
-        Date from = getStartFrom();
-        Date to = getStartTo();
+        Date from = getFrom();
+        Date to = getTo();
 
         IConstraint range = TaskQueryHelper.createDateRangeConstraint(from, to);
-        return new ActResultSet<Act>(participants, getArchetypeConstraint(),
+        return new ActResultSet<Act>(getArchetypeConstraint(), participants,
                                      range, getStatuses(), excludeStatuses(),
                                      getConstraints(),
                                      ArchetypeQuery.ALL_RESULTS, sort);
