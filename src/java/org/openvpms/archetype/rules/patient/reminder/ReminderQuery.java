@@ -18,26 +18,29 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.Date;
+import java.util.Iterator;
 
 
 /**
- * Queries <em>act.patientReminders</em>.
+ * Queries <em>act.act.patientReminder</em> acts, returning a limited set of
+ * data for performance purposes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -45,9 +48,54 @@ import java.util.Date;
 public class ReminderQuery {
 
     /**
+     * The act reference.
+     */
+    public static final String ACT_REFERENCE = "participation.act";
+
+    /**
+     * The act start time.
+     */
+    public static final String ACT_START_TIME = "act.startTime";
+
+    /**
+     * The act end time.
+     */
+    public static final String ACT_END_TIME = "act.endTime";
+
+    /**
+     * The act status.
+     */
+    public static final String ACT_STATUS = "act.status";
+
+    /**
+     * The customer reference.
+     */
+    public static final String CUSTOMER_REFERENCE = "owner.source";
+
+    /**
+     * The customer name.
+     */
+    public static final String CUSTOMER_NAME = "customer.name";
+
+    /**
+     * The patient reference.
+     */
+    public static final String PATIENT_REFERENCE = "owner.target";
+
+    /**
+     * The patient name.
+     */
+    public static final String PATIENT_NAME = "patient.name";
+
+    /**
+     * The reminder type reference.
+     */
+    public static final String REMINDER_REFERENCE = "reminderType.entity";
+
+    /**
      * The archetype service.
      */
-    private IArchetypeService service;
+    private final IArchetypeService service;
 
     /**
      * The reminder type.
@@ -55,37 +103,25 @@ public class ReminderQuery {
     private Entity reminderType;
 
     /**
-     * The start due date.
+     * The 'from' due date.
      */
-    private Date dueFrom;
+    private Date from;
 
     /**
-     * The end due date.
+     * The 'to' due date.
      */
-    private Date dueTo;
-
-    /**
-     * The start customer name.
-     */
-    private String customerFrom;
-
-    /**
-     * The end customer name.
-     */
-    private String customerTo;
+    private Date to;
 
 
     /**
-     * Constructs a new <code>ReminderQuery</code>.
+     * Constructs a new <tt>ReminderQuery</tt>.
      */
     public ReminderQuery() {
         this(ArchetypeServiceHelper.getArchetypeService());
     }
 
     /**
-     * Constructs a new <code>ReminderQuery</code>.
-     *
-     * @param service the archetype service
+     * Constructs  a new <tt>ReminderQuery</tt>.
      */
     public ReminderQuery(IArchetypeService service) {
         this.service = service;
@@ -94,8 +130,8 @@ public class ReminderQuery {
     /**
      * Sets the reminder type.
      *
-     * @param reminderType the reminder type. If <code>null</code> indicates to
-     *                     query all reminder types.
+     * @param reminderType an <em>entity.reminderType</em>. If <tt>null</tt>
+     *                     indicates to query all reminder types
      */
     public void setReminderType(Entity reminderType) {
         this.reminderType = reminderType;
@@ -105,37 +141,31 @@ public class ReminderQuery {
      * Sets the due date range.
      * If either date is null, indicates to query all due dates.
      *
-     * @param from the from date. May be <code>null</code>
-     * @param to   the to date. May be <code>null</code>
+     * @param from the from due date. May be <tt>null</tt>
+     * @param to   the to due date. May be <tt>null</tt>
      */
     public void setDueDateRange(Date from, Date to) {
-        dueFrom = from;
-        dueTo = to;
-    }
-
-    /**
-     * Sets the customer range.
-     * If either name is null, indicates to query all customers.
-     *
-     * @param from the from customer name
-     * @param to   the to customer name
-     */
-    public void setCustomerRange(String from, String to) {
-        customerFrom = from;
-        customerTo = to;
+        this.from = from;
+        this.to = to;
     }
 
     /**
      * Executes the query.
      *
-     * @param firstResult the first row to return
-     * @param maxResults  the maximum no. of results to return.
-     *                    Use {@link ArchetypeQuery#ALL_RESULTS} to specify all
-     *                    results
-     * @return the query result
+     * @return an iterator over the results
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IPage<Act> query(int firstResult, int maxResults) {
+    public Iterator<ObjectSet> query() {
+        return new ObjectSetQueryIterator(service, createQuery());
+    }
+
+    /**
+     * Creates an {@link ArchetypeQuery} to query <em>act.patientReminder</em>
+     * acts for the specified criteria.
+     *
+     * @return a new query
+     */
+    public ArchetypeQuery createQuery() {
         ShortNameConstraint act = new ShortNameConstraint("act",
                                                           "act.patientReminder",
                                                           true);
@@ -151,11 +181,17 @@ public class ReminderQuery {
                 "reminderType", "participation.reminderType", true);
 
         ArchetypeQuery query = new ArchetypeQuery(act);
-        query.setFirstResult(firstResult);
-        query.setMaxResults(maxResults);
-        query.setCountResults(true);
         query.setDistinct(true);
 
+        query.add(new NodeSelectConstraint("participation", "act"));
+        query.add(new NodeSelectConstraint("act", "startTime"));
+        query.add(new NodeSelectConstraint("act", "endTime"));
+        query.add(new NodeSelectConstraint("act", "status"));
+        query.add(new NodeSelectConstraint("owner", "source"));
+        query.add(new NodeSelectConstraint("customer", "name"));
+        query.add(new NodeSelectConstraint("owner", "target"));
+        query.add(new NodeSelectConstraint("patient", "name"));
+        query.add(new NodeSelectConstraint("reminderType", "entity"));
         query.add(new NodeConstraint("status", ReminderStatus.IN_PROGRESS));
         query.add(new CollectionNodeConstraint("patient", participation));
         query.add(new IdConstraint("act", "participation.act"));
@@ -167,35 +203,25 @@ public class ReminderQuery {
         query.add(new IdConstraint("customer", "owner.source"));
         query.add(new NodeSortConstraint("customer", "name"));
         query.add(new NodeSortConstraint("patient", "name"));
+        query.add(new NodeSortConstraint("act", "endTime"));
 
         if (reminderType != null) {
-            query.add(
-                    new CollectionNodeConstraint("reminderType", reminder).add(
-                            new ObjectRefNodeConstraint("entity",
-                                                        reminderType.getObjectReference())));
+            ObjectRefNodeConstraint objRef
+                    = new ObjectRefNodeConstraint(
+                    "entity", reminderType.getObjectReference());
+            CollectionNodeConstraint constraint = new CollectionNodeConstraint(
+                    "reminderType", reminder);
+            constraint.add(objRef);
+            query.add(constraint);
+        } else {
+            query.add(reminder);
+            query.add(new IdConstraint("reminderType.act", "act"));
         }
-        if (dueFrom != null && dueTo != null) {
+        if (from != null && to != null) {
             query.add(new NodeConstraint("endTime", RelationalOp.BTW,
-                                         dueFrom, dueTo));
+                                         from, to));
         }
-        if (customerFrom != null && customerTo != null) {
-            query.add(new NodeConstraint("customer.name", RelationalOp.BTW,
-                                         customerFrom, customerTo));
-        }
-        return query(query);
-    }
-
-    /**
-     * Executes a query.
-     *
-     * @param query the query
-     * @return the query result
-     */
-    @SuppressWarnings("unchecked")
-    private IPage<Act> query(ArchetypeQuery query) {
-        IPage result;
-        result = service.get(query);
-        return result;
+        return query;
     }
 
 }

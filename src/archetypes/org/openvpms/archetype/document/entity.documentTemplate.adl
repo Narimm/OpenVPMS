@@ -112,6 +112,8 @@
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
+            <node name="emailText" displayName="Email Body" path="/details/attributes/emailText" type="java.lang.String" minCardinality="0"
+                maxLength="1000"/>
         </node>
 		<node name="printers" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 

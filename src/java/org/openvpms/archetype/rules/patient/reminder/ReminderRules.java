@@ -25,9 +25,11 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -39,6 +41,7 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -66,7 +69,14 @@ public class ReminderRules {
 
 
     /**
-     * Creates a new <code>ReminderRules</code>.
+     * Creates a new <tt>ReminderRules</tt>
+     */
+    public ReminderRules() {
+        this(ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Creates a new <tt>ReminderRules</tt>.
      *
      * @param service the archetype service
      */
@@ -185,7 +195,34 @@ public class ReminderRules {
         int interval = bean.getInt("cancelInterval");
         String units = bean.getString("cancelUnits");
         Date cancelDate = DateRules.getDate(endTime, interval, units);
-        return (cancelDate.compareTo(date) > 0);
+        return (cancelDate.compareTo(date) <= 0);
+    }
+
+    /**
+     * Cancels a reminder.
+     *
+     * @param reminder the reminder
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void cancelReminder(Act reminder) {
+        ActBean bean = new ActBean(reminder, service);
+        bean.setStatus(ReminderStatus.CANCELLED);
+        bean.save();
+    }
+
+    /**
+     * Updates a reminder that has been successfully sent.
+     *
+     * @param reminder the reminder
+     * @param lastSent the date when the reminder was sent
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void updateReminder(Act reminder, Date lastSent) {
+        ActBean bean = new ActBean(reminder, service);
+        int count = bean.getInt("reminderCount");
+        bean.setValue("reminderCount", count + 1);
+        bean.setValue("lastSent", lastSent);
+        bean.save();
     }
 
     /**
@@ -246,7 +283,7 @@ public class ReminderRules {
 
     /**
      * Returns a contact for a patient.
-     * Returns the first contact with classifictation 'Reminders' or the
+     * Returns the first contact with classification 'Reminders' or the
      * preferred contact.location if no contact has this classification.
      *
      * @param patient the patient
@@ -254,27 +291,33 @@ public class ReminderRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Contact getContact(Party patient) {
-        Contact reminders = null;
-        Contact location = null;
         Party owner = new PatientRules(service).getOwner(patient);
         if (owner != null) {
-            for (Contact contact : owner.getContacts()) {
-                IMObjectBean contactBean = new IMObjectBean(contact, service);
-                if (contactBean.isA("contact.location")
-                        && contactBean.getBoolean("preferred")) {
-                    location = contact;
-                } else {
-                    List<IMObject> purposes = contactBean.getValues("purposes");
-                    for (IMObject purpose : purposes) {
-                        if ("REMINDERS".equals(purpose.getName())) {
-                            reminders = contact;
-                            break;
-                        }
-                    }
-                }
-            }
+            return getContact(owner.getContacts());
         }
-        return (reminders != null) ? reminders : location;
+        return null;
+    }
+
+    /**
+     * Returns the first contact with classification 'REMINDER' or the
+     * preferred contact.location if no contact has this classification.
+     *
+     * @param contacts the contacts
+     * @return a contact, or <tt>null</tt> if none is found
+     */
+    public Contact getContact(Set<Contact> contacts) {
+        return getContact(contacts, "contact.location", true);
+    }
+
+    /**
+     * Returns the first email contact with classification 'REMINDER' or the
+     * preferred contact.email if no contact has this classification.
+     *
+     * @param contacts the contacts
+     * @return a contact, or <tt>null</tt> if none is found
+     */
+    public Contact getEmailContact(Set<Contact> contacts) {
+        return getContact(contacts, "contact.email", false);
     }
 
     /**
@@ -314,6 +357,46 @@ public class ReminderRules {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the first contact with classification 'REMINDER' or the
+     * preferred contact with the specified short name if no contact has this
+     * classification.
+     *
+     * @param contacts   the contacts
+     * @param shortName  the archetype shortname of the preferred contact
+     * @param anyContact if <tt>true</tt> any contact with a 'REMINDER'
+     *                   classification will be returned.
+     *                   If <tt>false</tt> only those contacts of type
+     *                   <em>shortName</em> will be returned
+     * @return a contact, or <tt>null</tt> if none is found
+     */
+    private Contact getContact(Set<Contact> contacts, String shortName,
+                               boolean anyContact) {
+        Contact reminder = null;
+        Contact fallback = null;
+        for (Contact contact : contacts) {
+            IMObjectBean bean = new IMObjectBean(contact, service);
+            if (bean.isA(shortName) && bean.hasNode("preferred")
+                    && bean.getBoolean("preferred")) {
+                if (fallback == null) {
+                    fallback = contact;
+                }
+            } else {
+                if (anyContact || bean.isA(shortName)) {
+                    List<Lookup> purposes
+                            = bean.getValues("purposes", Lookup.class);
+                    for (Lookup purpose : purposes) {
+                        if ("REMINDER".equals(purpose.getCode())) {
+                            reminder = contact;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return (reminder != null) ? reminder : fallback;
     }
 
 }
