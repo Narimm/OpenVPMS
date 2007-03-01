@@ -468,6 +468,14 @@
     </bean>
 
     <!-- ================================================================== -->
+    <!--                        EMAIL                                       -->
+    <!-- ================================================================== -->
+    <bean id="mailSender"
+          class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value=""/>
+    </bean>
+
+    <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
     <!-- ================================================================== -->
     <bean id="loginApp" class="org.openvpms.web.app.login.LoginApp"

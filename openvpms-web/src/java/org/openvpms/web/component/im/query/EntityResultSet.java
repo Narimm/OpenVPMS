@@ -95,23 +95,14 @@ public class EntityResultSet<T extends Entity> extends NameResultSet<T> {
     }
 
     /**
-     * Returns the query.
+     * Creates a new archetype query.
      *
-     * @param archetypes the archetype constraint
-     * @param name       the name. May be <code>null</code>
-     * @return the query
+     * @return a new archetype query
      */
     @Override
-    protected ArchetypeQuery getQuery(BaseArchetypeConstraint archetypes,
-                                      String name) {
-        ArchetypeQuery query = new ArchetypeQuery(archetypes);
-        query.setDistinct(isDistinct());
-        query.setCountResults(true);
-        IConstraint constraints = getConstraints();
-        if (constraints != null) {
-            query.add(constraints);
-        }
-
+    protected ArchetypeQuery createQuery() {
+        ArchetypeQuery query = new ArchetypeQuery(getArchetypes());
+        String name = getInstanceName();
         if (!StringUtils.isEmpty(name)) {
             NodeConstraint nameConstraint = new NodeConstraint("name", name);
             if (identityShortNames != null) {

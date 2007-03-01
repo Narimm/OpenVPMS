@@ -31,12 +31,10 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,17 +52,17 @@ public abstract class NameResultSet<T extends IMObject>
     /**
      * The archetypes to query.
      */
-    private final BaseArchetypeConstraint _archetypes;
+    private final BaseArchetypeConstraint archetypes;
 
     /**
      * The instance name.
      */
-    private final String _instanceName;
+    private final String instanceName;
 
     /**
      * The logger.
      */
-    private final Log _log = LogFactory.getLog(DefaultResultSet.class);
+    private final Log log = LogFactory.getLog(NameResultSet.class);
 
 
     /**
@@ -82,55 +80,38 @@ public abstract class NameResultSet<T extends IMObject>
                          String instanceName, IConstraint constraints,
                          SortConstraint[] sort, int rows, boolean distinct) {
         super(constraints, rows, sort);
-        _archetypes = archetypes;
-        _instanceName = instanceName;
+        this.archetypes = archetypes;
+        this.instanceName = instanceName;
         setDistinct(distinct);
     }
 
     /**
-     * Returns the specified page.
+     * Returns the archetypes.
      *
-     * @param firstResult the first result of the page to retrieve
-     * @param maxResults  the maximun no of results in the page
-     * @return the page corresponding to <code>firstResult</code>, or
-     *         <code>null</code> if none exists
+     * @return the archetypes
      */
-    protected IPage<T> getPage(int firstResult, int maxResults) {
-        IPage<IMObject> result = null;
-        try {
-            IArchetypeService service = ServiceHelper.getArchetypeService();
-            ArchetypeQuery query = getQuery(_archetypes, _instanceName);
-            query.setFirstResult(firstResult);
-            query.setMaxResults(maxResults);
-            query.setDistinct(isDistinct());
-            for (SortConstraint sort : getSortConstraints()) {
-                query.add(sort);
-            }
-            result = service.get(query);
-        } catch (OpenVPMSException exception) {
-            _log.error(exception, exception);
-        }
-        return convert(result);
+    protected BaseArchetypeConstraint getArchetypes() {
+        return archetypes;
     }
 
     /**
-     * Returns the query.
+     * Returns the instance name.
      *
-     * @param archetypes the archetype constraint
-     * @param name       the name. May be <code>null</code>
-     * @return the query
+     * @return the instance name. May be <tt>null</tt>
      */
-    protected ArchetypeQuery getQuery(BaseArchetypeConstraint archetypes,
-                                      String name) {
+    protected String getInstanceName() {
+        return instanceName;
+    }
+
+    /**
+     * Creates a new archetype query.
+     *
+     * @return a new archetype query
+     */
+    protected ArchetypeQuery createQuery() {
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
-        query.setDistinct(isDistinct());
-        query.setCountResults(true);
-        if (!StringUtils.isEmpty(name)) {
-            query.add(new NodeConstraint("name", name));
-        }
-        IConstraint constraints = getConstraints();
-        if (constraints != null) {
-            query.add(constraints);
+        if (!StringUtils.isEmpty(instanceName)) {
+            query.add(new NodeConstraint("name", instanceName));
         }
         return query;
     }
@@ -180,13 +161,13 @@ public abstract class NameResultSet<T extends IMObject>
      *         <code>false</code>
      */
     private boolean isValidSortNode(String node) {
-        List<ArchetypeDescriptor> archetypes = getArchetypes(_archetypes);
+        List<ArchetypeDescriptor> archetypes = getArchetypes(this.archetypes);
         NodeDescriptor descriptor;
 
         for (ArchetypeDescriptor archetype : archetypes) {
             descriptor = archetype.getNodeDescriptor(node);
             if (descriptor == null) {
-                _log.warn("Can't sort results on node=" + node
+                log.warn("Can't sort results on node=" + node
                         + ". Node not supported by archetype="
                         + archetype.getName());
                 return false;

@@ -49,7 +49,7 @@ public class ButtonRow extends Row implements KeyStrokeHandler {
     /**
      * The default button style.
      */
-    public static final String BUTTON_STYLE = "ButtonRow.Button";
+    public static final String BUTTON_STYLE = "default";
 
 
     /**

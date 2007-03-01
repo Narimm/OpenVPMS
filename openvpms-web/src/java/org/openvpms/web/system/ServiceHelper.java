@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.context.ApplicationContext;
+import org.springframework.mail.javamail.JavaMailSender;
 
 
 /**
@@ -49,6 +50,15 @@ public final class ServiceHelper {
      */
     public static DocumentHandlers getDocumentHandlers() {
         return (DocumentHandlers) getContext().getBean("documentHandlers");
+    }
+
+    /**
+     * Helper to get the mail sender.
+     *
+     * @return the mail sender
+     */
+    public static JavaMailSender getMailSender() {
+        return (JavaMailSender) getContext().getBean("mailSender");
     }
 
     /**

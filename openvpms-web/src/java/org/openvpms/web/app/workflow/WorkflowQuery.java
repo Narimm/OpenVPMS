@@ -175,23 +175,23 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
     }
 
     /**
-     * Returns the start-from date.
+     * Returns the 'from' date.
      *
-     * @return the start-from date, or <code>null</code> to query all dates
+     * @return the 'from' date, or <tt>null</tt> to query all dates
      */
     @Override
-    protected Date getStartFrom() {
+    protected Date getFrom() {
         return getDate();
     }
 
     /**
-     * Returns the start-to date.
+     * Returns the 'to' date.
      *
-     * @return the start-to date, or <code>null</code> to query all dates
+     * @return the 'to' date, or <tt>null</tt> to query all dates
      */
     @Override
-    protected Date getStartTo() {
-        long end = getStartFrom().getTime() + DateUtils.MILLIS_IN_DAY
+    protected Date getTo() {
+        long end = getFrom().getTime() + DateUtils.MILLIS_IN_DAY
                 - DateUtils.MILLIS_IN_SECOND;
         return new Date(end);
     }

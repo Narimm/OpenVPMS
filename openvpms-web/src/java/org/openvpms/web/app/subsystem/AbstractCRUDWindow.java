@@ -242,7 +242,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * Lays out the component.
      */
     protected Component doLayout() {
-        buttons = new ButtonRow();
+        buttons = new ButtonRow("ControlRow");
         ButtonSet set = buttons.getButtons();
         layoutButtons(set);
         enableButtons(set, false);

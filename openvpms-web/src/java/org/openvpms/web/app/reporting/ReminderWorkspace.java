@@ -18,51 +18,26 @@
 
 package org.openvpms.web.app.reporting;
 
-import echopointng.DateField;
 import echopointng.GroupBox;
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.ListBox;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
-import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-import nextapp.echo2.app.list.ListModel;
-import nextapp.echo2.app.list.ListSelectionModel;
-import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
-import org.openvpms.web.component.im.list.IMObjectListModel;
+import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.DateFieldFactory;
-import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.GroupBoxFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.ListBoxFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
 
 
 /**
@@ -74,45 +49,14 @@ import java.util.List;
 public class ReminderWorkspace extends AbstractWorkspace {
 
     /**
-     * Reminder type filter.
+     * The query.
      */
-    private ListBox reminderType;
+    private PatientReminderQuery query;
 
     /**
-     * The 'due from' field.
+     * The browser.
      */
-    private DateField dueFrom;
-
-    /**
-     * The 'due to' field.
-     */
-    private DateField dueTo;
-
-    /**
-     * Checkbox to indicate if statements should be generated for all customers,
-     * or a range of customers.
-     */
-    private CheckBox allCustomers;
-
-    /**
-     * The 'from-customer' label.
-     */
-    private Label customerFromLabel;
-
-    /**
-     * The 'from-customer' field.
-     */
-    private TextField customerFrom;
-
-    /**
-     * The 'to-customer' label.
-     */
-    private Label customerToLabel;
-
-    /**
-     * The 'to-customer' field.
-     */
-    private TextField customerTo;
+    private Browser<ObjectSet> browser;
 
 
     /**
@@ -174,16 +118,23 @@ public class ReminderWorkspace extends AbstractWorkspace {
                 "ReminderWorkspace.Layout");
         Component heading = super.doLayout();
         root.add(heading);
-        Button run = ButtonFactory.create("run", new ActionListener() {
+        FocusGroup group = new FocusGroup("ReminderWorkspace");
+        ButtonRow buttons = new ButtonRow(group, "ControlRow",
+                                          ButtonRow.BUTTON_STYLE);
+        buttons.addButton("process", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                onRun();
+                onProcess();
             }
         });
-        Row buttons = RowFactory.create("ControlRow", run);
+        buttons.addButton("processAll", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onProcessAll();
+            }
+        });
         SplitPane content = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
                 "ReminderWorkspace.Layout", buttons);
-        doLayout(content);
+        doLayout(content, group);
         root.add(content);
         return root;
     }
@@ -192,80 +143,37 @@ public class ReminderWorkspace extends AbstractWorkspace {
      * Lays out the components.
      *
      * @param container the container
+     * @param group     the focus group
      */
-    private void doLayout(Component container) {
-        IPage<IMObject> page = ArchetypeQueryHelper.get(
-                ArchetypeServiceHelper.getArchetypeService(),
-                new String[]{"entity.reminderType"}, true, 0,
-                ArchetypeQuery.ALL_RESULTS);
-        List<IMObject> rows = page.getResults();
-        ListModel model = new IMObjectListModel(rows, true, false);
-        reminderType = ListBoxFactory.create(model);
-        reminderType.setCellRenderer(new IMObjectListCellRenderer());
-        reminderType.setSelectionMode(ListSelectionModel.MULTIPLE_SELECTION);
-        reminderType.setStyleName("ReminderWorkspace.ReminderTypes");
-
-        Row reminderTypeRow = RowFactory.create(reminderType);
-        // wrap the list in a row as a workaround for render bug in firefox.
-        // See OVPMS-239
-
-        // default dueFrom to the 1st of next month
-        dueFrom = DateFieldFactory.create();
-        Calendar calendarFrom = new GregorianCalendar();
-        calendarFrom.set(Calendar.DAY_OF_MONTH, 1);
-        calendarFrom.add(Calendar.MONTH, 1);
-        dueFrom.getDateChooser().setSelectedDate(calendarFrom);
-
-        // default dueTo to the last of next month
-        dueTo = DateFieldFactory.create();
-        Calendar calendarTo = new GregorianCalendar();
-        calendarTo.set(Calendar.DAY_OF_MONTH, 1);
-        calendarTo.add(Calendar.MONTH, 2);
-        calendarTo.add(Calendar.DAY_OF_MONTH, -1);
-        dueTo.getDateChooser().setSelectedDate(calendarTo);
-
-        CheckBox preview = CheckBoxFactory.create(false);
-        CheckBox finalise = CheckBoxFactory.create(true);
-        Grid grid = GridFactory.create(2);
-        add(grid, "reporting.reminder.reminderType", reminderTypeRow);
-        add(grid, "reporting.reminder.preview", preview);
-        add(grid, "reporting.reminder.finalise", finalise);
-
-        add(grid, "reporting.reminder.due",
-            createRow(
-                    createRow(LabelFactory.create("reporting.reminder.dueFrom"),
-                              dueFrom),
-                    createRow(LabelFactory.create("reporting.reminder.dueTo"),
-                              dueTo)));
-
-        allCustomers = CheckBoxFactory.create(
-                "reporting.reminder.allCustomers", true);
-        allCustomers.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onAllCustomersChanged();
-            }
-        });
-        customerFromLabel
-                = LabelFactory.create("reporting.reminder.customerFrom");
-        customerFrom = TextComponentFactory.create();
-        customerToLabel = LabelFactory.create("reporting.reminder.customerTo");
-        customerTo = TextComponentFactory.create();
-
-        add(grid, "reporting.reminder.customerRange",
-            createRow(allCustomers,
-                      createRow(customerFromLabel, customerFrom),
-                      createRow(customerToLabel, customerTo)));
-
-        GroupBox box = GroupBoxFactory.create(grid);
+    private void doLayout(Component container, FocusGroup group) {
+        query = new PatientReminderQuery();
+        browser = new PatientReminderBrowser(query);
+        GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
-
-        onAllCustomersChanged(); // initialise customer components
+        group.add(browser.getFocusGroup());
     }
 
     /**
-     * Invoked when the 'run' button is pressed.
+     * Invoked when the 'Process' button is pressed.
      */
-    private void onRun() {
+    private void onProcess() {
+        try {
+            ObjectSet selected = browser.getSelected();
+            if (selected != null) {
+                GlobalContext context = GlobalContext.getInstance();
+                ReminderGenerator generator
+                        = new ReminderGenerator(selected, context);
+                generateReminders(generator);
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Invoked when the 'Process All' button is pressed.
+     */
+    private void onProcessAll() {
         String title = Messages.get("reporting.reminder.run.title");
         String message = Messages.get("reporting.reminder.run.message");
         final ConfirmationDialog dialog
@@ -279,76 +187,36 @@ public class ReminderWorkspace extends AbstractWorkspace {
 
         });
         dialog.show();
-
     }
 
     /**
      * Generate the reminders.
      */
     private void generateReminders() {
-        ReminderQuery query = new ReminderQuery();
-        IMObject reminder = (IMObject) reminderType.getSelectedValue();
-        if (reminder != IMObjectListModel.ALL) {
-            query.setReminderType((Entity) reminder);
+        try {
+            GlobalContext context = GlobalContext.getInstance();
+            ReminderGenerator generator
+                    = new ReminderGenerator(query.createReminderQuery(),
+                                            context);
+            generateReminders(generator);
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
         }
-        query.setDueDateRange(dueFrom.getSelectedDate().getTime(),
-                              dueTo.getSelectedDate().getTime());
-        if (!allCustomers.isSelected()) {
-            String from = StringUtils.trimToNull(customerFrom.getText());
-            String to = StringUtils.trimToNull(customerTo.getText());
-            query.setCustomerRange(from, to);
-        }
-        ReminderGenerator generator = new ReminderGenerator(query);
+    }
+
+    /**
+     * Generates reminders using the specified generator.
+     * Updates the browser on completion.
+     *
+     * @param generator the generator
+     */
+    private void generateReminders(ReminderGenerator generator) {
+        generator.setListener(new ReminderGenerator.CompletionListener() {
+            public void completed() {
+                browser.query();
+            }
+        });
         generator.generate();
-    }
-
-    /**
-     * Invoked when the 'all customers' checkbox is selected.
-     */
-    private void onAllCustomersChanged() {
-        boolean enabled = !allCustomers.isSelected();
-        enable(customerFromLabel, enabled);
-        enable(customerFrom, enabled);
-        enable(customerTo, enabled);
-        enable(customerToLabel, enabled);
-    }
-
-    /**
-     * Enable/disable a component.
-     *
-     * @param component the component to update
-     * @param enabled   if <code>true</code> enable the component; otherwise
-     *                  disable it
-     */
-    private void enable(Component component, boolean enabled) {
-        component.setEnabled(enabled);
-        if (enabled) {
-            component.setForeground(Color.BLACK);
-        } else {
-            component.setForeground(Color.LIGHTGRAY);
-        }
-    }
-
-    /**
-     * Helper to create a row containing a set of components.
-     *
-     * @param components the components
-     * @return a row containing the components
-     */
-    private Row createRow(Component ... components) {
-        return RowFactory.create("CellSpacing", components);
-    }
-
-    /**
-     * Helper to add a label and component to a grid.
-     *
-     * @param grid      the grid
-     * @param key       the label key
-     * @param component the component
-     */
-    private void add(Grid grid, String key, Component component) {
-        grid.add(LabelFactory.create(key));
-        grid.add(component);
     }
 
 }

@@ -18,10 +18,18 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.system.ServiceHelper;
+
+import java.util.Arrays;
 
 
 /**
@@ -49,6 +57,12 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * The sort criteria. May be <code>null</code>.
      */
     private SortConstraint[] sort;
+
+    /**
+     * The logger.
+     */
+    private static final Log log
+            = LogFactory.getLog(AbstractArchetypeServiceResultSet.class);
 
 
     /**
@@ -142,6 +156,64 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      */
     protected IConstraint getConstraints() {
         return constraints;
+    }
+
+    /**
+     * Creates a new archetype query.
+     *
+     * @return a new archetype query
+     */
+    protected abstract ArchetypeQuery createQuery();
+
+    /**
+     * Returns a new archetype query.
+     * This implementation delegates creation to {@link #createQuery},
+     * before adding any {@link #getConstraints()} and
+     * {@link #getSortConstraints()}.
+     *
+     * @param firstResult the first result of the page to retrieve
+     * @param maxResults  the maximun no of results in the page
+     * @return a new query
+     */
+    protected ArchetypeQuery createQuery(int firstResult, int maxResults) {
+        ArchetypeQuery query = createQuery();
+        query.setFirstResult(firstResult);
+        query.setMaxResults(maxResults);
+        query.setDistinct(isDistinct());
+        query.setCountResults(true);
+        IConstraint constraints = getConstraints();
+        if (constraints != null) {
+            query.add(constraints);
+        }
+        for (SortConstraint sort : getSortConstraints()) {
+            query.add(sort);
+        }
+        return query;
+    }
+
+    /**
+     * Returns the specified page.
+     *
+     * @param firstResult the first result of the page to retrieve
+     * @param maxResults  the maximun no of results in the page
+     * @return the page corresponding to <code>firstResult</code>, or
+     *         <code>null</code> if none exists
+     */
+    protected IPage<T> getPage(int firstResult, int maxResults) {
+        IPage<IMObject> result = null;
+        try {
+            IArchetypeService service = ServiceHelper.getArchetypeService();
+            ArchetypeQuery query = createQuery(firstResult, maxResults);
+            String[] nodes = getNodes();
+            if (nodes == null || nodes.length == 0) {
+                result = service.get(query);
+            } else {
+                result = service.get(query, Arrays.asList(nodes));
+            }
+        } catch (OpenVPMSException exception) {
+            log.error(exception, exception);
+        }
+        return convert(result);
     }
 
     /**
