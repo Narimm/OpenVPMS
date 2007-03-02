@@ -33,7 +33,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -54,18 +54,17 @@ public final class IMObjectDeletor {
     /**
      * Attempts to delete an object.
      *
-     * @param editor the object editor
+     * @param object the object to delete
      */
     @SuppressWarnings("unchecked")
     public static <T extends IMObject> void delete(
-            IMObjectEditor editor, IMObjectDeletorListener<T> listener) {
-        T object = (T) editor.getObject();
+            T object, IMObjectDeletorListener<T> listener) {
         try {
             if (object instanceof Entity) {
                 Entity entity = (Entity) object;
                 if (hasParticipations(entity)) {
                     if (object.isActive()) {
-                        confirmDeactivate(editor, listener);
+                        confirmDeactivate(object, listener);
                     } else {
                         String message = Messages.get(
                                 "imobject.delete.deactivated",
@@ -74,13 +73,13 @@ public final class IMObjectDeletor {
                         ErrorDialog.show(message);
                     }
                 } else if (hasRelationships(entity)) {
-                    confirmDelete(editor, listener,
+                    confirmDelete(object, listener,
                                   "imobject.delete.withrelationships.message");
                 } else {
-                    confirmDelete(editor, listener, "imobject.delete.message");
+                    confirmDelete(object, listener, "imobject.delete.message");
                 }
             } else {
-                confirmDelete(editor, listener, "imobject.delete.message");
+                confirmDelete(object, listener, "imobject.delete.message");
             }
         } catch (OpenVPMSException exception) {
             String title = Messages.get("imobject.delete.failed.title");
@@ -128,15 +127,14 @@ public final class IMObjectDeletor {
      * Pops up a dialog prompting if deletion of an object should proceed,
      * deleting it if OK is selected.
      *
-     * @param editor     the object to delete
+     * @param object     the object to delete
      * @param listener   the listener to notify
      * @param messageKey the message resource bundle key
      */
     @SuppressWarnings("unchecked")
     private static <T extends IMObject> void confirmDelete(
-            final IMObjectEditor editor,
+            final T object,
             final IMObjectDeletorListener<T> listener, String messageKey) {
-        final T object = (T) editor.getObject();
         String type = DescriptorHelper.getDisplayName(object);
         String title = Messages.get("imobject.delete.title", type);
         String message = Messages.get(messageKey, object.getName());
@@ -145,8 +143,15 @@ public final class IMObjectDeletor {
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent e) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    if (editor.delete()) {
+                    try {
+                        IArchetypeService service
+                                = ArchetypeServiceHelper.getArchetypeService();
+                        service.remove(object);
                         listener.deleted(object);
+                    } catch (OpenVPMSException exception) {
+                        String title = Messages.get(
+                                "imobject.delete.failed.title");
+                        ErrorHelper.show(title, exception);
                     }
                 }
             }
@@ -158,14 +163,12 @@ public final class IMObjectDeletor {
      * Pops up a dialog prompting if deactivation of an object should proceed,
      * deactivating it if OK is selected.
      *
-     * @param editor   the object to deactivate
+     * @param object   the object to deactivate
      * @param listener the listener to notify
      */
     @SuppressWarnings("unchecked")
     private static <T extends IMObject> void confirmDeactivate(
-            final IMObjectEditor editor,
-            final IMObjectDeletorListener<T> listener) {
-        final T object = (T) editor.getObject();
+            final T object, final IMObjectDeletorListener<T> listener) {
         String type = DescriptorHelper.getDisplayName(object);
         String title = Messages.get("imobject.deactivate.title", type);
         String message = Messages.get("imobject.deactivate.message",
@@ -176,7 +179,7 @@ public final class IMObjectDeletor {
             public void windowPaneClosing(WindowPaneEvent e) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
                     object.setActive(false);
-                    if (editor.save()) {
+                    if (SaveHelper.save(object)) {
                         listener.deactivated(object);
                     }
                 }

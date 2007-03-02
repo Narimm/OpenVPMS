@@ -38,7 +38,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMPrinter;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
@@ -412,10 +412,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
         if (object == null) {
             ErrorDialog.show(Messages.get("imobject.noexist"), type);
         } else {
-            LayoutContext context = createLayoutContext();
-            final IMObjectEditor editor = createEditor(object, context);
-
-            IMObjectDeletor.delete(editor, new IMObjectDeletorListener<T>() {
+            IMObjectDeletor.delete(object, new IMObjectDeletorListener<T>() {
                 public void deleted(T object) {
                     onDeleted(object);
                 }
@@ -505,11 +502,11 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * Creates a new printer.
      *
      * @param object the object to print
-     * @return an instance of {@link InteractiveIMObjectPrinter}.
+     * @return an instance of {@link InteractiveIMPrinter}.
      */
     protected IMPrinter<T> createPrinter(T object) {
         IMPrinter<T> printer = IMObjectPrinterFactory.create(object);
-        return new InteractiveIMObjectPrinter<T>(printer);
+        return new InteractiveIMPrinter<T>(printer);
     }
 
     /**
