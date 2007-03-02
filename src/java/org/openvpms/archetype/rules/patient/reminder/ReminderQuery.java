@@ -18,19 +18,18 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
@@ -46,51 +45,6 @@ import java.util.Iterator;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ReminderQuery {
-
-    /**
-     * The act reference.
-     */
-    public static final String ACT_REFERENCE = "participation.act";
-
-    /**
-     * The act start time.
-     */
-    public static final String ACT_START_TIME = "act.startTime";
-
-    /**
-     * The act end time.
-     */
-    public static final String ACT_END_TIME = "act.endTime";
-
-    /**
-     * The act status.
-     */
-    public static final String ACT_STATUS = "act.status";
-
-    /**
-     * The customer reference.
-     */
-    public static final String CUSTOMER_REFERENCE = "owner.source";
-
-    /**
-     * The customer name.
-     */
-    public static final String CUSTOMER_NAME = "customer.name";
-
-    /**
-     * The patient reference.
-     */
-    public static final String PATIENT_REFERENCE = "owner.target";
-
-    /**
-     * The patient name.
-     */
-    public static final String PATIENT_NAME = "patient.name";
-
-    /**
-     * The reminder type reference.
-     */
-    public static final String REMINDER_REFERENCE = "reminderType.entity";
 
     /**
      * The archetype service.
@@ -149,26 +103,29 @@ public class ReminderQuery {
         this.to = to;
     }
 
-    /**
-     * Executes the query.
-     *
-     * @return an iterator over the results
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Iterator<ObjectSet> query() {
-        return new ObjectSetQueryIterator(service, createQuery());
-    }
 
     /**
-     * Creates an {@link ArchetypeQuery} to query <em>act.patientReminder</em>
-     * acts for the specified criteria.
+     * Returns an iterator over the reminder acts matching the query
+     * criteria.
+     * Note that each iteration may throw {@link ArchetypeServiceException}.
      *
-     * @return a new query
+     * @return an iterator over the reminder acts
      */
+    public Iterable<Act> query() {
+        return new Iterable<Act>() {
+            public Iterator<Act> iterator() {
+                return new IMObjectQueryIterator<Act>(service, createQuery());
+            }
+        };
+    }
+
     public ArchetypeQuery createQuery() {
         ShortNameConstraint act = new ShortNameConstraint("act",
                                                           "act.patientReminder",
                                                           true);
+        ArchetypeQuery query = new ArchetypeQuery(act);
+        query.setDistinct(true);
+
         ShortNameConstraint participation = new ShortNameConstraint(
                 "participation", "participation.patient", true);
         ShortNameConstraint owner = new ShortNameConstraint(
@@ -180,19 +137,8 @@ public class ReminderQuery {
         ShortNameConstraint reminder = new ShortNameConstraint(
                 "reminderType", "participation.reminderType", true);
 
-        ArchetypeQuery query = new ArchetypeQuery(act);
-        query.setDistinct(true);
-
-        query.add(new NodeSelectConstraint("participation", "act"));
-        query.add(new NodeSelectConstraint("act", "startTime"));
-        query.add(new NodeSelectConstraint("act", "endTime"));
-        query.add(new NodeSelectConstraint("act", "status"));
-        query.add(new NodeSelectConstraint("owner", "source"));
-        query.add(new NodeSelectConstraint("customer", "name"));
-        query.add(new NodeSelectConstraint("owner", "target"));
-        query.add(new NodeSelectConstraint("patient", "name"));
-        query.add(new NodeSelectConstraint("reminderType", "entity"));
         query.add(new NodeConstraint("status", ReminderStatus.IN_PROGRESS));
+
         query.add(new CollectionNodeConstraint("patient", participation));
         query.add(new IdConstraint("act", "participation.act"));
         query.add(owner);
@@ -223,5 +169,60 @@ public class ReminderQuery {
         }
         return query;
     }
+
+    /**
+     * Adapts an <tt>Iterable<ObjectSet></tt> returned by the { @link #query} to an
+     */
+    /**
+     *
+     private class IterableObjectSetAdapter implements Iterable<Act> {
+
+     private final Iterable<ObjectSet> objects;
+
+
+     public IterableObjectSetAdapter(Iterable<ObjectSet> objects) {
+     this.objects = objects;
+     }
+
+     public Iterator<Act> iterator() {
+     return new ReminderIteratorAdaptor(objects.iterator());
+     }
+
+     private class ReminderIteratorAdaptor implements Iterator<Act> {
+     private final Iterator<ObjectSet> iterator;
+     private Act next;
+
+     public ReminderIteratorAdaptor(Iterator<ObjectSet> iterator) {
+     this.iterator = iterator;
+     }
+
+     public boolean hasNext() {
+     // scan through the iterator until the end is reached or
+     // an act can be retrieved
+     while (next == null && iterator.hasNext()) {
+     ObjectSet set = iterator.next();
+     IMObjectReference ref = (IMObjectReference) set.get(
+     ReminderQuery.ACT_REFERENCE);
+     if (ref != null) {
+     next = (Act) ArchetypeQueryHelper.getByObjectReference(
+     service, ref);
+     }
+     }
+     return next != null;
+     }
+
+     public Act next() {
+     if (next == null) {
+     throw new NoSuchElementException();
+     }
+     return next;
+     }
+
+     public void remove() {
+     iterator.remove();
+     }
+     }
+     }
+     */
 
 }
