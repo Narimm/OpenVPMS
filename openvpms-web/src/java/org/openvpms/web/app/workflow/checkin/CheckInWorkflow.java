@@ -125,15 +125,17 @@ public class CheckInWorkflow extends WorkflowImpl {
         addTask(new CreateIMObjectTask(task, taskProps));
         addTask(new EditCustomerTask(task));
 
-        // optionally select and print an act.patientDocumentForm
-        addTask(new PrintDocumentFormTask());
+        if (patient != null) {
+            // optionally select and print an act.patientDocumentForm
+            addTask(new PrintDocumentFormTask());
 
-        // create a new act.patientClinicalEvent
-        TaskProperties eventProps = new TaskProperties();
-        eventProps.add("reason", "Appointment");
-        addTask(new EditIMObjectTask(event, eventProps, true));
+            // create a new act.patientClinicalEvent 
+            TaskProperties eventProps = new TaskProperties();
+            eventProps.add("reason", "Appointment");
+            addTask(new EditIMObjectTask(event, eventProps, true));
 
-        // prompt for a patient weight.
-        addTask(new PatientWeightTask());
+            // prompt for a patient weight.
+            addTask(new PatientWeightTask());        	
+        }
     }
 }
