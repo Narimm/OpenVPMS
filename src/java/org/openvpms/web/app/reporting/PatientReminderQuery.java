@@ -22,19 +22,15 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.ListModel;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
@@ -57,7 +53,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientReminderQuery extends AbstractQuery<ObjectSet> {
+public class PatientReminderQuery extends AbstractQuery<Act> {
 
     /**
      * Reminder type filter.
@@ -68,11 +64,6 @@ public class PatientReminderQuery extends AbstractQuery<ObjectSet> {
      * The date range.
      */
     private ActDateRange dateRange;
-
-    /**
-     * The logger.
-     */
-    private final Log log = LogFactory.getLog(PatientReminderQuery.class);
 
 
     /**
@@ -142,29 +133,14 @@ public class PatientReminderQuery extends AbstractQuery<ObjectSet> {
      * @return a new result set
      */
     @Override
-    protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
-        return new AbstractArchetypeServiceResultSet<ObjectSet>(
+    protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
+        return new AbstractArchetypeServiceResultSet<Act>(
                 getMaxResults(), sort) {
 
             protected ArchetypeQuery createQuery() {
                 return createReminderQuery().createQuery();
             }
 
-            @Override
-            protected IPage<ObjectSet> getPage(int firstResult,
-                                               int maxResults) {
-                IPage<ObjectSet> result = null;
-                try {
-                    IArchetypeService service
-                            = ArchetypeServiceHelper.getArchetypeService();
-                    ArchetypeQuery query = createQuery(firstResult, maxResults);
-                    query.setDistinct(true);
-                    result = service.getObjects(query);
-                } catch (OpenVPMSException exception) {
-                    log.error(exception, exception);
-                }
-                return result;
-            }
         };
     }
 

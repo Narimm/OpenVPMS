@@ -25,12 +25,15 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.print.IMObjectReportPrinter;
+import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
@@ -56,7 +59,7 @@ public class ReminderWorkspace extends AbstractWorkspace {
     /**
      * The browser.
      */
-    private Browser<ObjectSet> browser;
+    private Browser<Act> browser;
 
 
     /**
@@ -131,6 +134,11 @@ public class ReminderWorkspace extends AbstractWorkspace {
                 onProcessAll();
             }
         });
+        buttons.addButton("print", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onPrint();
+            }
+        });
         SplitPane content = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
                 "ReminderWorkspace.Layout", buttons);
@@ -158,7 +166,7 @@ public class ReminderWorkspace extends AbstractWorkspace {
      */
     private void onProcess() {
         try {
-            ObjectSet selected = browser.getSelected();
+            Act selected = browser.getSelected();
             if (selected != null) {
                 GlobalContext context = GlobalContext.getInstance();
                 ReminderGenerator generator
@@ -168,6 +176,19 @@ public class ReminderWorkspace extends AbstractWorkspace {
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Invoked when the 'Print' button is pressed.
+     */
+    private void onPrint() {
+        Iterable<Act> objects = query.createReminderQuery().query();
+        IMPrinter<Act> printer
+                = new IMObjectReportPrinter<Act>(objects,
+                                                 "act.patientReminder");
+        InteractiveIMPrinter<Act> iPrinter
+                = new InteractiveIMPrinter<Act>(printer);
+        iPrinter.print();
     }
 
     /**
@@ -220,3 +241,4 @@ public class ReminderWorkspace extends AbstractWorkspace {
     }
 
 }
+

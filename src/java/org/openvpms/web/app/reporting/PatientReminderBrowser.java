@@ -18,7 +18,7 @@
 
 package org.openvpms.web.app.reporting;
 
-import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.TableBrowser;
 
@@ -29,7 +29,7 @@ import org.openvpms.web.component.im.query.TableBrowser;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientReminderBrowser extends TableBrowser<ObjectSet> {
+public class PatientReminderBrowser extends TableBrowser<Act> {
 
     /**
      * Construct a new <tt>PatientReminderBrowser</tt> that queries reminders
@@ -37,7 +37,7 @@ public class PatientReminderBrowser extends TableBrowser<ObjectSet> {
      *
      * @param query the query
      */
-    public PatientReminderBrowser(Query<ObjectSet> query) {
+    public PatientReminderBrowser(Query<Act> query) {
         super(query, null, new PatientReminderTableModel());
     }
 

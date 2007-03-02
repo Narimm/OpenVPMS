@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.IMReportException;
@@ -32,8 +33,6 @@ import org.openvpms.report.PrintProperties;
 import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.system.ServiceHelper;
-
-import java.util.Collection;
 
 
 /**
@@ -62,14 +61,14 @@ public class IMObjectReportPrinter<T extends IMObject>
     }
 
     /**
-     * Constructs a new <tt>IMReportPrinter</tt> to print a
-     * collection of objects.
+     * Constructs a new <tt>IMReportPrinter</tt> to print a collection of
+     * objects.
      *
      * @param objects   the objects to print
      * @param shortName the archetype short name to determine the template to
      *                  use
      */
-    public IMObjectReportPrinter(Collection<T> objects, String shortName) {
+    public IMObjectReportPrinter(Iterable<T> objects, String shortName) {
         super(objects);
         this.shortName = shortName;
     }
@@ -92,6 +91,15 @@ public class IMObjectReportPrinter<T extends IMObject>
             printer = TemplateHelper.getPrinter(template, practice, service);
         }
         return printer;
+    }
+
+    /**
+     * Returns a display name for the objects being printed.
+     *
+     * @return a display name for the objects being printed
+     */
+    public String getDisplayName() {
+        return DescriptorHelper.getDisplayName(shortName);
     }
 
     /**

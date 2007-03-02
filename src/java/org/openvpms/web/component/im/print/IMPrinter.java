@@ -21,8 +21,6 @@ package org.openvpms.web.component.im.print;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
-import java.util.List;
-
 
 /**
  * Prints an object.
@@ -37,7 +35,14 @@ public interface IMPrinter<T> {
      *
      * @return the objects being printed
      */
-    List<T> getObjects();
+    Iterable<T> getObjects();
+
+    /**
+     * Returns a display name for the objects being printed.
+     *
+     * @return a display name for the objects being printed
+     */
+    String getDisplayName();
 
     /**
      * Prints the object to the default printer.

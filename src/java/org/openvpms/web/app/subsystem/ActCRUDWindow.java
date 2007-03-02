@@ -33,7 +33,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterListener;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -185,12 +185,12 @@ public abstract class ActCRUDWindow<T extends Act>
      * Creates a new printer.
      *
      * @param object the object to print
-     * @return an instance of {@link InteractiveIMObjectPrinter}.
+     * @return an instance of {@link InteractiveIMPrinter}.
      */
     @Override
     protected IMPrinter<T> createPrinter(final T object) {
-        InteractiveIMObjectPrinter<T> printer
-                = (InteractiveIMObjectPrinter<T>) super.createPrinter(object);
+        InteractiveIMPrinter<T> printer
+                = (InteractiveIMPrinter<T>) super.createPrinter(object);
         printer.setListener(new IMPrinterListener() {
             public void printed() {
                 ActCRUDWindow.this.printed(object);

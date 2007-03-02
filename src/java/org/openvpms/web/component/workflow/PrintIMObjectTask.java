@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterListener;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 
 
@@ -63,7 +62,7 @@ public class PrintIMObjectTask extends AbstractTask {
                     object);
             boolean skip = !isRequired();
             InteractiveIMPrinter<IMObject> iPrinter
-                    = new InteractiveIMObjectPrinter<IMObject>(printer, skip);
+                    = new InteractiveIMPrinter<IMObject>(printer, skip);
 
 
             iPrinter.setListener(new IMPrinterListener() {

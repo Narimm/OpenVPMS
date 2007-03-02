@@ -32,17 +32,13 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderStatisticsListener;
 import org.openvpms.archetype.rules.patient.reminder.Statistics;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.workflow.AbstractTask;
@@ -77,7 +73,7 @@ class ReminderGenerator {
     /**
      * The query iterator.
      */
-    private final Iterator<ObjectSet> iterator;
+    private final Iterator<Act> iterator;
 
     /**
      * Indicates if processing should suspend, so the client can be updated.
@@ -108,11 +104,11 @@ class ReminderGenerator {
     /**
      * Constructs a new <tt>ReminderGenerator</tt> for a single reminder.
      *
-     * @param reminder the reminder set
+     * @param reminder the reminder
      * @param context  the context
      * @throws ReminderProcessorException for any error
      */
-    public ReminderGenerator(ObjectSet reminder, Context context) {
+    public ReminderGenerator(Act reminder, Context context) {
         iterator = Arrays.asList(reminder).iterator();
         init(context);
     }
@@ -125,7 +121,7 @@ class ReminderGenerator {
      * @throws ReminderProcessorException for any error
      */
     public ReminderGenerator(ReminderQuery query, Context context) {
-        iterator = new ObjectSetQueryIterator(query.createQuery());
+        iterator = query.query().iterator();
         init(context);
     }
 
@@ -136,10 +132,7 @@ class ReminderGenerator {
         try {
             setSuspend(false);
             while (!isSuspended() && iterator.hasNext()) {
-                ObjectSet set = iterator.next();
-                IMObjectReference ref = (IMObjectReference) set.get(
-                        ReminderQuery.ACT_REFERENCE);
-                Act reminder = (Act) IMObjectHelper.getObject(ref);
+                Act reminder = iterator.next();
                 if (reminder != null) {
                     processor.process(reminder);
                 }
@@ -149,7 +142,7 @@ class ReminderGenerator {
                 onGenerationComplete();
             }
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            ErrorHelper.show(exception);
             notifyCompletionListener();
         }
     }

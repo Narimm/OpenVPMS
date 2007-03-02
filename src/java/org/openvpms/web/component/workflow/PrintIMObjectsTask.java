@@ -21,7 +21,6 @@ package org.openvpms.web.component.workflow;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinterListener;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 
 import java.util.Collection;
@@ -72,7 +71,7 @@ public class PrintIMObjectsTask<T extends IMObject> extends AbstractTask {
             IMObjectReportPrinter<T> printer
                     = new IMObjectReportPrinter<T>(objects, shortName);
             InteractiveIMPrinter<T> iPrinter
-                    = new InteractiveIMObjectPrinter<T>(printer, skip);
+                    = new InteractiveIMPrinter<T>(printer, skip);
 
             iPrinter.setListener(new IMPrinterListener() {
                 public void printed() {

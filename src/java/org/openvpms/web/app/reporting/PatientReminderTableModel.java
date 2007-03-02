@@ -22,22 +22,26 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
-import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
+import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.table.AbstractIMTableModel;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.DescriptorTableColumn;
+import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import java.util.Date;
+import java.util.Iterator;
 
 
 /**
@@ -46,72 +50,46 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientReminderTableModel extends AbstractIMTableModel<ObjectSet> {
-
-    /**
-     * The due date.
-     */
-    private static final int DUE_DATE_INDEX = 0;
-
-    /**
-     * The reminder type name index.
-     */
-    private static final int REMINDER_INDEX = 1;
-
-    /**
-     * The customer name index.
-     */
-    private static final int CUSTOMER_INDEX = 2;
-
-    /**
-     * The patient name index.
-     */
-    private static final int PATIENT_INDEX = 3;
-
-    /**
-     * The action index.
-     */
-    private static final int ACTION_INDEX = 4;
-
-    /**
-     * The column names.
-     */
-    private final String[] columnNames = {
-            Messages.get("patientremindertablemodel.dueDate"),
-            Messages.get("patientremindertablemodel.reminder"),
-            Messages.get("patientremindertablemodel.customer"),
-            Messages.get("patientremindertablemodel.patient"),
-            Messages.get("patientremindertablemodel.action"),
-    };
+public class PatientReminderTableModel extends AbstractActTableModel {
 
     /**
      * The reminder rules.
      */
     private final ReminderRules rules;
 
+    /**
+     * The patient rules.
+     */
+    private final PatientRules patientRules;
+
+    /**
+     * The customer column index.
+     */
+    private int customerIndex;
+
+    /**
+     * The action column index.
+     */
+    private int actionIndex;
+
+    /**
+     * The last retrieved patient.
+     */
+    private Party lastPatient;
+
+    /**
+     * The last retrieved patient owner.
+     */
+    private Party lastOwner;
+
 
     /**
      * Creates a new <tt>PatientReminderTableModel</tt>.
      */
     public PatientReminderTableModel() {
-        DefaultTableColumnModel model = new DefaultTableColumnModel();
-        for (int i = 0; i < columnNames.length; ++i) {
-            model.addColumn(new TableColumn(i));
-        }
-        setTableColumnModel(model);
-
+        super(new String[]{"act.patientReminder"});
         rules = new ReminderRules();
-    }
-
-    /**
-     * Returns the name of the specified column number.
-     *
-     * @param column the column index (0-based)
-     * @return the column name
-     */
-    @Override
-    public String getColumnName(int column) {
-        return columnNames[column];
+        patientRules = new PatientRules();
     }
 
     /**
@@ -130,45 +108,103 @@ public class PatientReminderTableModel extends AbstractIMTableModel<ObjectSet> {
     /**
      * Returns the value found at the given coordinate within the table.
      *
-     * @param set    the object
-     * @param column the column
-     * @param row    the row
-     * @return the value at the given coordinate.
+     * @param act    the object the object
+     * @param column the table column
+     * @param row    the table row
+     * @return the value at the given coordinate
      */
-    protected Object getValue(ObjectSet set, TableColumn column, int row) {
+    @Override
+    protected Object getValue(Act act, TableColumn column, int row) {
         Object result = null;
         int index = column.getModelIndex();
-        switch (index) {
-            case DUE_DATE_INDEX:
-                Date date = (Date) set.get(ReminderQuery.ACT_END_TIME);
-                Label label = LabelFactory.create();
-                if (date != null) {
-                    label.setText(DateFormatter.formatDate(date, false));
-                }
-                result = label;
-                break;
-            case REMINDER_INDEX:
-                result = getViewer(set, ReminderQuery.REMINDER_REFERENCE);
-                break;
-            case CUSTOMER_INDEX:
-                result = getViewer(set, ReminderQuery.CUSTOMER_REFERENCE,
-                                   ReminderQuery.CUSTOMER_NAME);
-                break;
-            case PATIENT_INDEX:
-                result = getViewer(set, ReminderQuery.PATIENT_REFERENCE,
-                                   ReminderQuery.PATIENT_NAME);
-                break;
-            case ACTION_INDEX:
-                result = getAction(set);
+        if (index == customerIndex) {
+            Party customer = getPatientOwner(act);
+            if (customer != null) {
+                IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
+                        customer.getObjectReference(),
+                        customer.getName(), true);
+                result = viewer.getComponent();
+            }
+        } else if (index == actionIndex) {
+            result = getAction(act);
+        } else {
+            result = super.getValue(act, column, row);
         }
         return result;
     }
 
-    private Component getAction(ObjectSet set) {
+    /**
+     * Creates a column model for a set of archetypes.
+     *
+     * @param shortNames the archetype short names
+     * @param context    the layout context
+     * @return a new column model
+     */
+    @Override
+    protected TableColumnModel createColumnModel(String[] shortNames,
+                                                 LayoutContext context) {
+        DefaultTableColumnModel model
+                = (DefaultTableColumnModel) super.createColumnModel(shortNames,
+                                                                    context);
+        customerIndex = getNextModelIndex(model);
+        TableColumn customerColumn = createTableColumn(
+                customerIndex, "patientremindertablemodel.customer");
+        model.addColumn(customerColumn);
+        model.moveColumn(model.getColumnCount() - 1,
+                         getColumnOffset(model, "patient"));
+
+        actionIndex = getNextModelIndex(model);
+        TableColumn actionColumn = createTableColumn(
+                actionIndex, "patientremindertablemodel.action");
+        model.addColumn(actionColumn);
+
+        return model;
+    }
+
+
+    /**
+     * Returns a list of descriptor names to include in the table.
+     * This implementation returns <code>null</code> to indicate that the
+     * intersection should be calculated from all descriptors.
+     *
+     * @return the list of descriptor names to include in the table
+     */
+    @Override
+    protected String[] getDescriptorNames() {
+        return new String[]{"endTime", "reminderType", "patient",
+                            "reminderCount", "lastSent"};
+    }
+
+    /**
+     * Returns a column offset given its node name.
+     *
+     * @param model the model
+     * @param name  the node name
+     * @return the column offset, or <code>-1</code> if a column with the
+     *         specified name doesn't exist
+     */
+    private int getColumnOffset(TableColumnModel model, String name) {
+        int result = -1;
+        int offset = 0;
+        Iterator iterator = model.getColumns();
+        while (iterator.hasNext()) {
+            TableColumn col = (TableColumn) iterator.next();
+            if (col instanceof DescriptorTableColumn) {
+                NodeDescriptor descriptor
+                        = ((DescriptorTableColumn) col).getDescriptor();
+                if (name.equals(descriptor.getName())) {
+                    result = offset;
+                    break;
+                }
+            }
+            ++offset;
+        }
+        return result;
+    }
+
+    private Component getAction(Act act) {
         Label result = LabelFactory.create();
-        IMObjectReference ref = (IMObjectReference) set.get(
-                ReminderQuery.CUSTOMER_REFERENCE);
-        Party customer = (Party) IMObjectHelper.getObject(ref);
+        Party customer = getPatientOwner(act);
         if (customer != null) {
             Contact contact = rules.getContact(customer.getContacts());
             if (contact != null) {
@@ -188,32 +224,26 @@ public class PatientReminderTableModel extends AbstractIMTableModel<ObjectSet> {
     }
 
     /**
-     * Returns a viewer for an object reference.
+     * Returns the patient owner for a patient.
      *
-     * @param set    the object set
-     * @param refKey the object reference key
-     * @return a new component to view the object reference
+     * @param act the act
+     * @return the patient owner, or <tt>null</tt>
      */
-    private Component getViewer(ObjectSet set, String refKey) {
-        IMObjectReference ref = (IMObjectReference) set.get(refKey);
-        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref,
-                                                                     false);
-        return viewer.getComponent();
+    private Party getPatientOwner(Act act) {
+        ActBean bean = new ActBean(act);
+        IMObjectReference ref = bean.getParticipantRef("participation.patient");
+        if (ref != null) {
+            if (lastPatient == null
+                    || !lastPatient.getObjectReference().equals(ref)) {
+                lastPatient = (Party) IMObjectHelper.getObject(ref);
+                if (lastPatient != null) {
+                    lastOwner = patientRules.getOwner(lastPatient);
+                } else {
+                    lastOwner = null;
+                }
+            }
+        }
+        return lastOwner;
     }
 
-    /**
-     * Returns a viewer for an object reference.
-     *
-     * @param set     the object set
-     * @param refKey  the object reference key
-     * @param nameKey the entity name key
-     * @return a new component to view the object reference
-     */
-    private Component getViewer(ObjectSet set, String refKey, String nameKey) {
-        IMObjectReference ref = (IMObjectReference) set.get(refKey);
-        String name = (String) set.get(nameKey);
-        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
-                ref, name, true);
-        return viewer.getComponent();
-    }
 }

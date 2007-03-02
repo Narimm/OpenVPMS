@@ -38,7 +38,6 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
@@ -196,7 +195,7 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
         IMPrinter<IMObject> printer
                 = new IMObjectReportPrinter<IMObject>(object);
         InteractiveIMPrinter<IMObject> iPrinter
-                = new InteractiveIMObjectPrinter<IMObject>(printer);
+                = new InteractiveIMPrinter<IMObject>(printer);
         iPrinter.print();
     }
 

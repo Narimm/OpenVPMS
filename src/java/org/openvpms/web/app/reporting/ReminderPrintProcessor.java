@@ -32,7 +32,6 @@ import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterListener;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 
@@ -74,7 +73,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessorListener {
                 documentTemplate, ArchetypeServiceHelper.getArchetypeService());
         IMPrinter<DocumentAct> printer = IMObjectPrinterFactory.create(act);
         InteractiveIMPrinter<DocumentAct> iPrinter
-                = new InteractiveIMObjectPrinter<DocumentAct>(printer);
+                = new InteractiveIMPrinter<DocumentAct>(printer);
         iPrinter.setListener(new IMPrinterListener() {
             public void printed() {
                 try {
