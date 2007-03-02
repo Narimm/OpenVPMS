@@ -25,21 +25,19 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -58,14 +56,11 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     public void testQuery() {
         int initialCount = countReminders(null, null);
         ReminderQuery query = new ReminderQuery();
-        List<ObjectSet> reminders = getReminders(query);
+        List<Act> reminders = getReminders(query);
         assertEquals(initialCount, reminders.size());
-        for (ObjectSet set : reminders) {
-            IMObjectReference actRef =
-                    (IMObjectReference) set.get(ReminderQuery.ACT_REFERENCE);
-            String status = (String) set.get(ReminderQuery.ACT_STATUS);
-            assertTrue(TypeHelper.isA(actRef, "act.patientReminder"));
-            assertEquals(ActStatus.IN_PROGRESS, status);
+        for (Act act : reminders) {
+            assertTrue(TypeHelper.isA(act, "act.patientReminder"));
+            assertEquals(ActStatus.IN_PROGRESS, act.getStatus());
         }
     }
 
@@ -86,7 +81,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
 
         ReminderQuery query = new ReminderQuery();
         query.setReminderType(reminderType);
-        List<ObjectSet> reminders = getReminders(query);
+        List<Act> reminders = getReminders(query);
         assertEquals(count, reminders.size());
     }
 
@@ -117,7 +112,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         // now verify that the query gives the same count
         ReminderQuery query = new ReminderQuery();
         query.setDueDateRange(dueFrom, dueTo);
-        List<ObjectSet> reminders = getReminders(query);
+        List<Act> reminders = getReminders(query);
         assertEquals(rangeCount, reminders.size());
     }
 
@@ -147,7 +142,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         ReminderQuery query = new ReminderQuery();
         query.setReminderType(reminderType);
         query.setDueDateRange(dueFrom, dueTo);
-        List<ObjectSet> reminders = getReminders(query);
+        List<Act> reminders = getReminders(query);
         assertEquals(5, reminders.size());
     }
 
@@ -155,12 +150,12 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      * Returns all reminders matching a query.
      *
      * @param query the query
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    private List<ObjectSet> getReminders(ReminderQuery query) {
-        List<ObjectSet> result = new ArrayList<ObjectSet>();
-        Iterator<ObjectSet> iterator = query.query();
-        while (iterator.hasNext()) {
-            result.add(iterator.next());
+    private List<Act> getReminders(ReminderQuery query) {
+        List<Act> result = new ArrayList<Act>();
+        for (Act set : query.query()) {
+            result.add(set);
         }
         return result;
     }
