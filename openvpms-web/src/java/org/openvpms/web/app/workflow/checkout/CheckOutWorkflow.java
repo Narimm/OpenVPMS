@@ -55,19 +55,13 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
 
     /**
-     * Constructs a new <code>CheckOutWorkflow</code> from an
+     * Constructs a new <tt>CheckOutWorkflow</tt> from an
      * <em>act.customerAppointment</em> or <em>act.customerTask</em>.
      *
      * @param act the act
      */
     public CheckOutWorkflow(Act act) {
-        ActBean bean = new ActBean(act);
-        Party customer = (Party) bean.getParticipant("participation.customer");
-        Party patient = (Party) bean.getParticipant("participation.patient");
-        final User clinician
-                = (User) bean.getParticipant("participation.clinician");
-
-        initialise(customer, patient, clinician);
+        initialise(act);
 
         // update the act status
         TaskProperties appProps = new TaskProperties();
@@ -91,11 +85,15 @@ public class CheckOutWorkflow extends WorkflowImpl {
     /**
      * Initialise the workflow.
      *
-     * @param customer  the customer
-     * @param patient   the patient
-     * @param clinician the clinician. May be <code>null</code>
+     * @param act the act
      */
-    private void initialise(Party customer, Party patient, User clinician) {
+    private void initialise(Act act) {
+        ActBean bean = new ActBean(act);
+        Party customer = (Party) bean.getParticipant("participation.customer");
+        Party patient = (Party) bean.getParticipant("participation.patient");
+        final User clinician
+                = (User) bean.getParticipant("participation.clinician");
+
         initial = new TaskContextImpl();
         initial.setCustomer(customer);
         initial.setPatient(patient);
@@ -128,9 +126,26 @@ public class CheckOutWorkflow extends WorkflowImpl {
                 invoiceTitle, invoiceMsg), postTasks);
         addTask(post);
         post.setRequired(false);
-        PrintDocumentsTask printDocs = new PrintDocumentsTask();
+        Date startTime = getStartTime(act);
+        PrintDocumentsTask printDocs = new PrintDocumentsTask(startTime);
         printDocs.setRequired(false);
         addTask(printDocs);
+    }
+
+    /**
+     * Returns a start time for printing documents. This is the act start time,
+     * or now, whichever is smaller.
+     *
+     * @param act the act
+     * @return the start time
+     */
+    private Date getStartTime(Act act) {
+        Date startTime = act.getActivityStartTime();
+        Date now = new Date();
+        if (startTime.getTime() > now.getTime()) {
+            startTime = now;
+        }
+        return startTime;
     }
 
 }

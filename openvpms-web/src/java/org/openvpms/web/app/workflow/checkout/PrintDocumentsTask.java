@@ -30,11 +30,11 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterListener;
-import org.openvpms.web.component.im.print.InteractiveIMObjectPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
@@ -43,17 +43,34 @@ import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 
 /**
- * Task to allow the user to selectively print any unprinted documents.
+ * Task to allow the user to selectively print any unprinted documents
+ * from a particular time.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 class PrintDocumentsTask extends AbstractTask {
+
+    /**
+     * The time to select unprinted documents from.
+     */
+    private final Date startTime;
+
+
+    /**
+     * Constructs a new <tt>PrintDocumentsTask</tt>.
+     *
+     * @param startTime the act start time.
+     */
+    public PrintDocumentsTask(Date startTime) {
+        this.startTime = startTime;
+    }
 
     /**
      * Starts the task.
@@ -153,6 +170,7 @@ class PrintDocumentsTask extends AbstractTask {
                 "entity", party.getObjectReference()));
 
         query.add(participations);
+        query.add(new NodeConstraint("startTime", RelationalOp.GTE, startTime));
         query.add(new NodeConstraint("printed", false));
 
         IArchetypeService service
@@ -196,7 +214,7 @@ class PrintDocumentsTask extends AbstractTask {
                 IMPrinter<IMObject> printer
                         = IMObjectPrinterFactory.create(object);
                 InteractiveIMPrinter<IMObject> iPrinter
-                        = new InteractiveIMObjectPrinter<IMObject>(printer);
+                        = new InteractiveIMPrinter<IMObject>(printer);
                 iPrinter.setListener(this);
                 iPrinter.print();
             } else {
