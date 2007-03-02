@@ -38,9 +38,7 @@ import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.OrientationRequested;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.Arrays;
 
 
 /**
@@ -54,7 +52,7 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
     /**
      * The objects to print.
      */
-    private final List<T> objects;
+    private final Iterable<T> objects;
 
     /**
      * The object to print.
@@ -68,8 +66,7 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
      * @param object the object to print
      */
     public AbstractIMPrinter(T object) {
-        objects = new ArrayList<T>();
-        objects.add(object);
+        objects = Arrays.asList(object);
         this.object = object;
     }
 
@@ -79,8 +76,8 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
      *
      * @param objects the objects to print
      */
-    public AbstractIMPrinter(Collection<T> objects) {
-        this.objects = new ArrayList<T>(objects);
+    public AbstractIMPrinter(Iterable<T> objects) {
+        this.objects = objects;
         object = null;
     }
 
@@ -89,7 +86,7 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
      *
      * @return the objects being printed
      */
-    public List<T> getObjects() {
+    public Iterable<T> getObjects() {
         return objects;
     }
 

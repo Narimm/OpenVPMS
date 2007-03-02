@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.IMReport;
@@ -35,8 +36,6 @@ import org.openvpms.report.PrintProperties;
 import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.system.ServiceHelper;
-
-import java.util.Collection;
 
 
 /**
@@ -58,6 +57,11 @@ public class ObjectSetReportPrinter
      */
     private Document document;
 
+    /**
+     * The archetype short name.
+     */
+    private final String shortName;
+
 
     /**
      * Constructs a new <code>ObjectSetReportPrinter</code>.
@@ -67,8 +71,7 @@ public class ObjectSetReportPrinter
      * @throws DocumentException         if the document template can't be found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public ObjectSetReportPrinter(Collection<ObjectSet> set,
-                                  String shortName) {
+    public ObjectSetReportPrinter(Iterable<ObjectSet> set, String shortName) {
         super(set);
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
@@ -80,6 +83,16 @@ public class ObjectSetReportPrinter
         if (document == null) {
             throw new DocumentException(NotFound);
         }
+        this.shortName = shortName;
+    }
+
+    /**
+     * Returns a display name for the objects being printed.
+     *
+     * @return a display name for the objects being printed
+     */
+    public String getDisplayName() {
+        return DescriptorHelper.getDisplayName(shortName);
     }
 
     /**

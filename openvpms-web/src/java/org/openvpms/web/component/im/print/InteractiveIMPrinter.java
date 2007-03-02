@@ -27,8 +27,6 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
-import java.util.List;
-
 
 /**
  * Interactive {@link IMPrinter}. Pops up a dialog with options to print,
@@ -71,20 +69,20 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
     }
 
     /**
-     * Constructs a new <code>InteractiveIMPrinter</code>.
+     * Constructs a new <tt>InteractiveIMPrinter</tt>.
      *
      * @param printer the printer to delegate to
      * @param skip    if <code>triue</code> display a 'skip' button that simply
      *                closes the dialog
      */
     public InteractiveIMPrinter(IMPrinter<T> printer, boolean skip) {
-        this(Messages.get("printdialog.title"), printer, skip);
+        this(null, printer, skip);
     }
 
     /**
-     * Constructs a new <code>InteractiveIMPrinter</code>.
+     * Constructs a new <tt>InteractiveIMPrinter</tt>.
      *
-     * @param title   the dialog title
+     * @param title   the dialog title. May be <tt>null</tt>
      * @param printer the printer to delegate to
      */
     public InteractiveIMPrinter(String title, IMPrinter<T> printer) {
@@ -94,7 +92,7 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
     /**
      * Constructs a new <code>InteractiveIMPrinter</code>.
      *
-     * @param title   the dialog title
+     * @param title   the dialog title. May be <tt>null</tt>
      * @param printer the printer to delegate to
      * @param skip    if <code>triue</code> display a 'skip' button that simply
      *                closes the dialog
@@ -107,11 +105,20 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
     }
 
     /**
+     * Returns a display name for the objects being printed.
+     *
+     * @return a display name for the objects being printed
+     */
+    public String getDisplayName() {
+        return printer.getDisplayName();
+    }
+
+    /**
      * Returns the objects being printed.
      *
      * @return the objects being printed
      */
-    public List<T> getObjects() {
+    public Iterable<T> getObjects() {
         return printer.getObjects();
     }
 
@@ -205,7 +212,10 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
      * @return a title for the print dialog
      */
     protected String getTitle() {
-        return title;
+        if (title != null) {
+            return title;
+        }
+        return Messages.get("imobject.print.title", getDisplayName());
     }
 
     /**

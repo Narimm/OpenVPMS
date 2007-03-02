@@ -382,7 +382,7 @@
            type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="30px"/>
+            <property name="separatorPosition" value="32px"/>
         </properties>
     </style>
 

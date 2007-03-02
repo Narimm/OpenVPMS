@@ -28,7 +28,7 @@ package org.openvpms.web.app.patient.mr;
 public class ReminderActTableModel extends PatientRecordActTableModel {
 
     /**
-     * Creates a new <code>PatientMedicationActTableModel</code>.
+     * Creates a new <tt>ReminderActTableModel</tt>.
      *
      * @param shortNames the act archetype short names
      */
