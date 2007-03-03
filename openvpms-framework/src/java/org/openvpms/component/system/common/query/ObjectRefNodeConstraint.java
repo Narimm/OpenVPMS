@@ -45,7 +45,20 @@ public class ObjectRefNodeConstraint extends AbstractNodeConstraint {
      */
     public ObjectRefNodeConstraint(String nodeName,
                                    IMObjectReference reference) {
-        super(nodeName, RelationalOp.EQ, new Object[]{reference});
+        this(nodeName, RelationalOp.EQ, reference);
+    }
+
+    /**
+     * Construct a constraint on the specified node, operator and the passed in
+     * object reference.
+     *
+     * @param nodeName  the name of the node descriptor
+     * @param operator  the operator
+     * @param reference the object reference
+     */
+    public ObjectRefNodeConstraint(String nodeName, RelationalOp operator,
+                                   IMObjectReference reference) {
+        super(nodeName, operator, new Object[]{reference});
     }
 
     /**
