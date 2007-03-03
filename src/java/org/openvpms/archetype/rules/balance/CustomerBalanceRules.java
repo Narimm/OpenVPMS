@@ -213,7 +213,7 @@ public class CustomerBalanceRules {
             if (customer == null) {
                 throw new CustomerBalanceRuleException(MissingCustomer, act);
             }
-            updateBalance(customer);
+            updateBalance(act, customer);
         }
     }
 
@@ -251,7 +251,7 @@ public class CustomerBalanceRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getBalance(Party customer) {
-        Iterator<FinancialAct> iterator = getUnallocatedActs(customer);
+        Iterator<FinancialAct> iterator = getUnallocatedActs(customer, null);
         return calculateBalance(iterator);
     }
 
@@ -270,7 +270,8 @@ public class CustomerBalanceRules {
         Date overdue = getOverdueDate(customer, date);
 
         // query all overdue debit acts
-        ArchetypeQuery query = createQuery(customer, DEBIT_SHORT_NAMES);
+        ArchetypeQuery query = createQuery(customer, DEBIT_SHORT_NAMES,
+                                           null);
         query.add(new NodeConstraint("startTime", RelationalOp.LT, overdue));
         Iterator<FinancialAct> iterator
                 = new IMObjectQueryIterator<FinancialAct>(service, query);
@@ -307,7 +308,7 @@ public class CustomerBalanceRules {
         }
 
         // query all overdue debit acts
-        ArchetypeQuery query = createQuery(customer, DEBIT_SHORT_NAMES);
+        ArchetypeQuery query = createQuery(customer, DEBIT_SHORT_NAMES, null);
 
         NodeConstraint fromStartTime
                 = new NodeConstraint("startTime", RelationalOp.LT, overdueFrom);
@@ -360,7 +361,7 @@ public class CustomerBalanceRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getCreditBalance(Party customer) {
-        ArchetypeQuery query = createQuery(customer, CREDIT_SHORT_NAMES);
+        ArchetypeQuery query = createQuery(customer, CREDIT_SHORT_NAMES, null);
         Iterator<FinancialAct> iterator
                 = new IMObjectQueryIterator<FinancialAct>(service, query);
         return calculateBalance(iterator);
@@ -392,19 +393,26 @@ public class CustomerBalanceRules {
     /**
      * Calculates the balance for the supplied customer.
      *
+     * @param act the act that triggered the update
      * @param customer the customer
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private void updateBalance(Party customer) {
-        Iterator<FinancialAct> results = getUnallocatedActs(customer);
+    private void updateBalance(FinancialAct act, Party customer) {
+        Iterator<FinancialAct> results = getUnallocatedActs(customer, act);
         List<BalanceAct> debits = new ArrayList<BalanceAct>();
         List<BalanceAct> credits = new ArrayList<BalanceAct>();
+
+        if (act.isCredit()) {
+            credits.add(new BalanceAct(act));
+        } else {
+            debits.add(new BalanceAct(act));
+        }
         while (results.hasNext()) {
-            FinancialAct act = results.next();
-            if (act.isCredit()) {
-                credits.add(new BalanceAct(act));
+            FinancialAct a = results.next();
+            if (a.isCredit()) {
+                credits.add(new BalanceAct(a));
             } else {
-                debits.add(new BalanceAct(act));
+                debits.add(new BalanceAct(a));
             }
         }
         List<IMObject> modified = new ArrayList<IMObject>();
@@ -462,11 +470,14 @@ public class CustomerBalanceRules {
      * Returns unallocated acts for a customer.
      *
      * @param customer the customer
+     * @param exclude the act to exclude. May be <tt>null</tt>
      * @return unallocated acts for the customer
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private Iterator<FinancialAct> getUnallocatedActs(Party customer) {
-        ArchetypeQuery query = createQuery(customer);
+    private Iterator<FinancialAct> getUnallocatedActs(Party customer,
+                                                      Act exclude) {
+        ArchetypeQuery query = createQuery(customer, exclude);
+
         return new IMObjectQueryIterator<FinancialAct>(service, query);
     }
 
@@ -474,10 +485,11 @@ public class CustomerBalanceRules {
      * Creates a query for unallocated acts for the specified customer.
      *
      * @param customer the customer
+     * @param exclude the act to exclude. May be <tt>null</tt
      * @return a new query
      */
-    private ArchetypeQuery createQuery(Party customer) {
-        return createQuery(customer, SHORT_NAMES);
+    private ArchetypeQuery createQuery(Party customer, Act exclude) {
+        return createQuery(customer, SHORT_NAMES, exclude);
     }
 
     /**
@@ -485,14 +497,20 @@ public class CustomerBalanceRules {
      *
      * @param customer   the customer
      * @param shortNames the act short names
+     * @param exclude the act to exclude. May be <tt>null</tt>
      * @return a new query
      */
-    private ArchetypeQuery createQuery(Party customer, String[] shortNames) {
+    private ArchetypeQuery createQuery(Party customer, String[] shortNames,
+                                       Act exclude) {
         ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
         CollectionNodeConstraint constraint = new CollectionNodeConstraint(
                 "accountBalance", ACCOUNT_BALANCE_SHORTNAME, true, true);
         constraint.add(new ObjectRefNodeConstraint(
                 "entity", customer.getObjectReference()));
+        if (exclude != null) {
+            constraint.add(new ObjectRefNodeConstraint(
+                    "act", RelationalOp.NE, exclude.getObjectReference()));
+        }
         query.add(constraint);
         query.add(new NodeSortConstraint("startTime", false));
         return query;
