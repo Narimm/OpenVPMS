@@ -18,6 +18,12 @@ drop column repeat_number;
 alter table entities
 drop column code;
 
+# drop primary key of *classifications tables
+alter table entity_classifications drop primary key;
+
+alter table contact_classifications drop primary key;
+
+alter table product_price_classifications drop primary key;
 
 # drop foreign key constraints referencing classifications table
 alter table entity_classifications
@@ -80,6 +86,12 @@ set lookup_id = (select l.lookup_id
                  where pp.classification_id = c.classification_id
                        and c.linkId = l.linkId);
 
+# add primary keys
+alter table entity_classifications add primary key (entity_id, lookup_id);
+
+alter table contact_classifications add primary key (contact_id, lookup_id);
+
+alter table product_price_classifications add primary key (product_price_id, lookup_id);
 
 # add foreign key constraints referencing the lookups table
 alter table entity_classifications
