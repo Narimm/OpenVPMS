@@ -23,7 +23,6 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.IMObjectProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -81,7 +80,7 @@ public class TaskTableModel extends AbstractActTableModel {
      * @return the value at the specified column
      */
     @Override
-    protected Object getValue(IMObject object, DescriptorTableColumn column) {
+    protected Object getValue(Act object, DescriptorTableColumn column) {
         NodeDescriptor descriptor = column.getDescriptor();
         if (descriptor.getName().equals("taskType")) {
             LayoutContext context = new DefaultLayoutContext();
