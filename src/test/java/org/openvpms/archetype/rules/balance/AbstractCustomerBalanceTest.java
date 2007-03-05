@@ -56,6 +56,11 @@ public abstract class AbstractCustomerBalanceTest extends ArchetypeServiceTest {
      */
     private Product product;
 
+    /**
+     * The till.
+     */
+    private Party till;
+
 
     /**
      * Returns the customer.
@@ -91,6 +96,20 @@ public abstract class AbstractCustomerBalanceTest extends ArchetypeServiceTest {
             product = TestHelper.createProduct();
         }
         return product;
+    }
+
+    /**
+     * Returns the till.
+     *
+     * @return the till
+     */
+    protected Party getTill() {
+        if (till == null) {
+            till = (Party) create("party.organisationTill");
+            till.setName("XAbstractCustomerBalanceTest-Till" + hashCode());
+            save(till);
+        }
+        return till;
     }
 
     /**
@@ -255,8 +274,7 @@ public abstract class AbstractCustomerBalanceTest extends ArchetypeServiceTest {
     private FinancialAct createPaymentRefund(String shortName, Money amount) {
         FinancialAct act = createAct(shortName, amount);
         ActBean bean = new ActBean(act);
-        Party till = (Party) create("party.organisationTill");
-        bean.addParticipation("participation.till", till);
+        bean.addParticipation("participation.till", getTill());
         bean.addParticipation("participation.patient", getPatient());
         return act;
     }

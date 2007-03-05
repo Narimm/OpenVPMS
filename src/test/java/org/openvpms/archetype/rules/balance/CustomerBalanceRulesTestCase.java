@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -415,6 +416,104 @@ public class CustomerBalanceRulesTestCase extends AbstractCustomerBalanceTest {
     }
 
     /**
+     * Tests the reversal of customer account acts.
+     */
+    public void testReverse() {
+        checkReverse(createChargesInvoice(new Money(100)),
+                     "act.customerAccountChargesCredit");
+
+        checkReverse(createChargesCredit(new Money(50)),
+                     "act.customerAccountChargesInvoice");
+
+        checkReverse(createChargesCounter(new Money(40)),
+                     "act.customerAccountChargesCredit");
+
+        checkReverse(createPayment(new Money(75)), "act.customerAccountRefund");
+
+        checkReverse(createRefund(new Money(10)), "act.customerAccountPayment");
+
+        checkReverse(createDebitAdjust(new Money(5)),
+                     "act.customerAccountCreditAdjust");
+        checkReverse(createCreditAdjust(new Money(15)),
+                     "act.customerAccountDebitAdjust");
+
+        checkReverse(createBadDebt(new Money(20)),
+                     "act.customerAccountDebitAdjust");
+
+        checkReverse(createInitialBalance(new Money(25)),
+                     "act.customerAccountCreditAdjust");
+    }
+
+    /**
+     * Tests reversal of an allocated act.
+     */
+    public void testReverseAllocated() {
+        Money amount = new Money(100);
+        FinancialAct invoice = createChargesInvoice(amount);
+        save(invoice);
+
+        FinancialAct payment = createPayment(amount);
+        save(payment);
+
+        checkEquals(BigDecimal.ZERO, rules.getBalance(getCustomer()));
+
+        rules.reverse(payment, new Date());
+        checkEquals(amount, rules.getBalance(getCustomer()));
+    }
+
+    /**
+     * Tests reversal of an unallocated act.
+     */
+    public void testReverseUnallocated() {
+        Money amount = new Money(100);
+        FinancialAct invoice = createChargesInvoice(amount);
+        save(invoice);
+
+        checkEquals(amount, rules.getBalance(getCustomer()));
+
+        rules.reverse(invoice, new Date());
+        checkEquals(BigDecimal.ZERO, rules.getBalance(getCustomer()));
+    }
+
+    /**
+     * Tests reversal of a partially allocated act.
+     */
+    public void testReversePartiallyAllocated() {
+        Money amount = new Money(100);
+        Money sixty = new Money(60);
+        Money forty = new Money(40);
+
+        // create a new invoice for $100
+        FinancialAct invoice = createChargesInvoice(amount);
+        save(invoice);
+        checkEquals(BigDecimal.ZERO, invoice.getAllocatedAmount());
+
+        // pay $60. Payment is fully allocated, $60 of invoice is allocated.
+        FinancialAct payment = createPayment(sixty);
+        save(payment);
+        checkEquals(sixty, payment.getAllocatedAmount());
+
+        invoice = (FinancialAct) get(invoice);
+        checkEquals(sixty, invoice.getAllocatedAmount());
+
+        // $40 outstanding balance
+        checkEquals(forty, rules.getBalance(getCustomer()));
+
+        // reverse the payment.
+        FinancialAct reversal = rules.reverse(payment, new Date());
+        checkEquals(BigDecimal.ZERO, reversal.getAllocatedAmount());
+
+        // invoice and payment retain their allocations
+        invoice = (FinancialAct) get(invoice);
+        checkEquals(sixty, invoice.getAllocatedAmount());
+
+        payment  = (FinancialAct) get(payment);
+        checkEquals(sixty, payment.getAllocatedAmount());
+
+        checkEquals(amount, rules.getBalance(getCustomer()));
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -524,6 +623,29 @@ public class CustomerBalanceRulesTestCase extends AbstractCustomerBalanceTest {
         checkEquals(act.getAllocatedAmount(), total);
 
         assertEquals(acts.length, matches.size());
+    }
+
+    /**
+     * Verifies that an act can be reversed by
+     * {@link CustomerBalanceRules#reverse}.
+     *
+     * @param act       the act to reverse
+     * @param shortName the reversal act short name
+     */
+    private void checkReverse(FinancialAct act, String shortName) {
+        BigDecimal amount = act.getTotal();
+        save(act);
+
+        // check the balance
+        BigDecimal balance = act.isCredit() ? amount.negate() : amount;
+        checkEquals(balance, rules.getBalance(getCustomer()));
+
+        Date now = new Date();
+        FinancialAct reversal = rules.reverse(act, now);
+        assertTrue(TypeHelper.isA(reversal, shortName));
+
+        // check the balance
+        checkEquals(BigDecimal.ZERO, rules.getBalance(getCustomer()));
     }
 
 }
