@@ -80,6 +80,20 @@ public interface Context {
     Party getPractice();
 
     /**
+     * Sets the current location.
+     *
+     * @param location the current location
+     */
+    void setLocation(Party location);
+
+    /**
+     * Returns the current location.
+     *
+     * @return the current location
+     */
+    Party getLocation();
+
+    /**
      * Sets the current customer.
      *
      * @param customer the current customer. May be <code>null</code>
@@ -138,6 +152,21 @@ public interface Context {
      *         product
      */
     Product getProduct();
+
+    /**
+     * Sets the current deposit.
+     *
+     * @param deposit the current deposit.
+     */
+    void setDeposit(Party deposit);
+
+    /**
+     * Returns the current deposit.
+     *
+     * @return the current deposit, or <code>null</code> if there is no current
+     *         deposit
+     */
+    Party getDeposit();
 
     /**
      * Sets the current till.
