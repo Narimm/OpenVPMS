@@ -52,6 +52,11 @@ public class ActDateRange {
     private final FocusGroup focus;
 
     /**
+     * Determines if the 'allDates' check box should be displayed.
+     */
+    private final boolean showAll;
+
+    /**
      * Indicates if all dates should be queried. If so, the from and to dates
      * are ignored.
      */
@@ -99,7 +104,19 @@ public class ActDateRange {
      * @param focus the focus group
      */
     public ActDateRange(FocusGroup focus) {
+        this(focus, true);
+    }
+
+    /**
+     * Constructs a new <tt>ActDateRange</tt>
+     *
+     * @param focus   the focus group
+     * @param showAll determines if an 'all' checkbox should be displayed
+     *                to select all dates
+     */
+    public ActDateRange(FocusGroup focus, boolean showAll) {
         this.focus = focus;
+        this.showAll = showAll;
     }
 
     /**
@@ -108,7 +125,7 @@ public class ActDateRange {
      * @return the 'from' date, or <tt>null</tt> to query all dates
      */
     public Date getFrom() {
-        return allDates.isSelected() ? null : getDate(from);
+        return getAllDates() ? null : getDate(from);
     }
 
     /**
@@ -126,7 +143,7 @@ public class ActDateRange {
      * @return the 'to' date, or <tt>null</tt> to query all dates
      */
     public Date getTo() {
-        return allDates.isSelected() ? null : getDate(to);
+        return getAllDates() ? null : getDate(to);
     }
 
     /**
@@ -157,12 +174,14 @@ public class ActDateRange {
      * @return the component
      */
     protected Component doLayout() {
-        allDates = CheckBoxFactory.create("actquery.all", true);
-        allDates.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onAllDatesChanged();
-            }
-        });
+        if (showAll) {
+            allDates = CheckBoxFactory.create("actquery.all", true);
+            allDates.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    onAllDatesChanged();
+                }
+            });
+        }
 
         fromLabel = LabelFactory.create("actquery.from");
         from = DateFieldFactory.create();
@@ -185,11 +204,17 @@ public class ActDateRange {
                 CELLSPACING_STYLE,
                 fromLabel, from,
                 toLabel, to);
-        Row startRow = RowFactory.create(ROW_STYLE, allDates, startRange);
+        Row startRow = RowFactory.create(ROW_STYLE);
+        if (showAll) {
+            startRow.add(allDates);
+        }
+        startRow.add(startRange);
 
         onAllDatesChanged();
 
-        focus.add(allDates);
+        if (showAll) {
+            focus.add(allDates);
+        }
         focus.add(from);
         focus.add(to);
         return startRow;
@@ -220,10 +245,19 @@ public class ActDateRange {
     }
 
     /**
+     * Determines if all dates are being queried.
+     *
+     * @return <tt>true</tt> if all dates are being queried
+     */
+    private boolean getAllDates() {
+        return showAll && allDates.isSelected();
+    }
+
+    /**
      * Invoked when the 'all dates' check box changes.
      */
     private void onAllDatesChanged() {
-        boolean enabled = !allDates.isSelected();
+        boolean enabled = !getAllDates();
         ComponentHelper.enable(fromLabel, enabled);
         ComponentHelper.enable(from, enabled);
         ComponentHelper.enable(toLabel, enabled);

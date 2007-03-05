@@ -134,6 +134,31 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     }
 
     /**
+     * Returns a value for a given column.
+     *
+     * @param object the object to operate on
+     * @param column the column
+     * @return the value for the column
+     */
+    @Override
+    protected Object getValue(Act object, DescriptorTableColumn column) {
+        Object result = null;
+        if (column.getDescriptor(object).getName().equals("reminderType")) {
+            ActBean bean = new ActBean(object);
+            IMObjectReference ref = bean.getParticipantRef(
+                    "participation.reminderType");
+            if (ref != null) {
+                IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
+                        ref, false);
+                result = viewer.getComponent();
+            }
+        } else {
+            result = super.getValue(object, column);
+        }
+        return result;
+    }
+
+    /**
      * Creates a column model for a set of archetypes.
      *
      * @param shortNames the archetype short names
@@ -202,6 +227,12 @@ public class PatientReminderTableModel extends AbstractActTableModel {
         return result;
     }
 
+    /**
+     * Returns the action of an act.
+     *
+     * @param act the act
+     * @return the action component, or <tt>null</tt>
+     */
     private Component getAction(Act act) {
         Label result = LabelFactory.create();
         Party customer = getPatientOwner(act);

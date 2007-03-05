@@ -176,7 +176,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * @param column the column
      * @return the value for the column
      */
-    protected Object getValue(IMObject object, DescriptorTableColumn column) {
+    protected Object getValue(T object, DescriptorTableColumn column) {
         Object result;
         IMObjectComponentFactory factory = context.getComponentFactory();
         NodeDescriptor descriptor = column.getDescriptor(object);
