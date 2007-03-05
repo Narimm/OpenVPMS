@@ -67,6 +67,12 @@ public abstract class AbstractContext implements Context {
             = "party.organisationPractice";
 
     /**
+     * Location short name.
+     */
+    private static final String LOCATION_SHORTNAME
+            = "party.organisationLocation";
+
+    /**
      * Customer short name.
      */
     private static final String CUSTOMER_SHORTNAME = "party.customer*";
@@ -92,6 +98,11 @@ public abstract class AbstractContext implements Context {
     private static final String TILL_SHORT_NAME = "party.organisationTill";
 
     /**
+     * Bank Deposit short name.
+     */
+    private static final String DEPOSIT_SHORT_NAME = "party.organisationDeposit";
+
+    /**
      * Clinician short name.
      */
     private static final String CLINICIAN_SHORT_NAME = "security.user";
@@ -114,7 +125,8 @@ public abstract class AbstractContext implements Context {
     private static final String[] SHORT_NAMES = {
             CUSTOMER_SHORTNAME, PATIENT_SHORT_NAME, SUPPLIER_SHORT_NAME,
             PRODUCT_SHORT_NAME, TILL_SHORT_NAME, CLINICIAN_SHORT_NAME,
-            SCHEDULE_SHORT_NAME, WORKLIST_SHORT_NAME};
+            SCHEDULE_SHORT_NAME, WORKLIST_SHORT_NAME, LOCATION_SHORTNAME,
+            DEPOSIT_SHORT_NAME};
 
     /**
      * The current schedule date.
@@ -182,6 +194,24 @@ public abstract class AbstractContext implements Context {
      */
     public Party getPractice() {
         return (Party) getObject(PRACTICE_SHORTNAME);
+    }
+
+    /**
+     * Sets the current practice location.
+     *
+     * @param location the current practice location
+     */
+    public void setLocation(Party location) {
+        setObject(LOCATION_SHORTNAME, location);
+    }
+
+    /**
+     * Returns the current practice location.
+     *
+     * @return the current location
+     */
+    public Party getLocation() {
+        return (Party) getObject(LOCATION_SHORTNAME);
     }
 
     /**
@@ -286,6 +316,25 @@ public abstract class AbstractContext implements Context {
      */
     public Party getTill() {
         return (Party) getObject(TILL_SHORT_NAME);
+    }
+
+    /**
+     * Sets the current deposit account.
+     *
+     * @param deposit the current deposit account.
+     */
+    public void setDeposit(Party deposit) {
+        setObject(DEPOSIT_SHORT_NAME, deposit);
+    }
+
+    /**
+     * Returns the current depsoit account.
+     *
+     * @return the current depsoit, or <code>null</code> if there is no current
+     *         deposit
+     */
+    public Party getDeposit() {
+        return (Party) getObject(DEPOSIT_SHORT_NAME);
     }
 
     /**
