@@ -36,6 +36,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -391,9 +392,27 @@ public class CustomerBalanceRules {
     }
 
     /**
+     * Reverses an act.
+     *
+     * @param act       the act to reverse
+     * @param startTime the start time of the reversal
+     * @return the reversal of <tt>act</tt>
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public FinancialAct reverse(FinancialAct act, Date startTime) {
+        IMObjectCopier copier
+                = new IMObjectCopier(new CustomerActReversalHandler(act));
+        FinancialAct reversal = (FinancialAct) copier.copy(act);
+        reversal.setStatus(FinancialActStatus.POSTED);
+        reversal.setActivityStartTime(startTime);
+        service.save(reversal);
+        return reversal;
+    }
+
+    /**
      * Calculates the balance for the supplied customer.
      *
-     * @param act the act that triggered the update
+     * @param act      the act that triggered the update
      * @param customer the customer
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -470,7 +489,7 @@ public class CustomerBalanceRules {
      * Returns unallocated acts for a customer.
      *
      * @param customer the customer
-     * @param exclude the act to exclude. May be <tt>null</tt>
+     * @param exclude  the act to exclude. May be <tt>null</tt>
      * @return unallocated acts for the customer
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -485,7 +504,7 @@ public class CustomerBalanceRules {
      * Creates a query for unallocated acts for the specified customer.
      *
      * @param customer the customer
-     * @param exclude the act to exclude. May be <tt>null</tt
+     * @param exclude  the act to exclude. May be <tt>null</tt
      * @return a new query
      */
     private ArchetypeQuery createQuery(Party customer, Act exclude) {
@@ -497,7 +516,7 @@ public class CustomerBalanceRules {
      *
      * @param customer   the customer
      * @param shortNames the act short names
-     * @param exclude the act to exclude. May be <tt>null</tt>
+     * @param exclude    the act to exclude. May be <tt>null</tt>
      * @return a new query
      */
     private ArchetypeQuery createQuery(Party customer, String[] shortNames,
