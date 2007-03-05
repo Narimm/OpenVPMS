@@ -24,9 +24,8 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.archetype.rules.balance.CustomerBalanceRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
@@ -34,7 +33,6 @@ import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -208,7 +206,6 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         }
     }
 
-
     /**
      * Reverse an invoice or credit act.
      *
@@ -216,16 +213,12 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     private void reverse(FinancialAct act) {
         try {
-            IMObjectCopier copier
-                    = new IMObjectCopier(new CustomerActReversalHandler(act));
-            Act reversal = (Act) copier.copy(act);
-            reversal.setStatus(FinancialActStatus.POSTED);
-            reversal.setActivityStartTime(new Date());
-            setPrintStatus(reversal, false);
-            SaveHelper.save(reversal);
+            CustomerBalanceRules rules = new CustomerBalanceRules();
+            rules.reverse(act, new Date());
         } catch (OpenVPMSException exception) {
-            String title = Messages.get("customer.account.reverse.failed",
-                                        getArchetypeDescriptor().getDisplayName());
+            String title = Messages.get(
+                    "customer.account.reverse.failed",
+                    getArchetypeDescriptor().getDisplayName());
             ErrorHelper.show(title, exception);
         }
         onRefresh(act);
