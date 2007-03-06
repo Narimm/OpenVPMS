@@ -36,7 +36,7 @@
       <property name="rmName" access="property" column="arch_rm_name"
         type="string" length="100" />
       <property name="concept" access="property" column="arch_concept"
-        type="string" length="100" />
+        type="string" length="100" index="participation_arch_concept_idx"/>
       <property name="entityName" access="property" column="arch_entity_name"
         type="string" length="100" />
       <property name="version" access="property" column="arch_version"
