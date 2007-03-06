@@ -21,7 +21,6 @@ package org.openvpms.web.component.bound;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
 import org.openvpms.web.component.edit.Property;
 
 
@@ -36,40 +35,41 @@ public class BoundCheckBox extends CheckBox {
     /**
      * The property binder.
      */
-    private final Binder _binder;
+    private final Binder binder;
 
     /**
      * Checkbox listener.
      */
-    private final ActionListener _listener;
+    private final ActionListener listener;
 
 
     /**
-     * Construct a new <code>BoundCheckBox</code>.
+     * Construct a new <tt>BoundCheckBox</tt>.
      *
      * @param property the property to bind
      */
     public BoundCheckBox(Property property) {
-        _listener = new ActionListener() {
+        listener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                _binder.setProperty();
+                binder.setProperty();
             }
         };
+        addActionListener(listener);
 
-        _binder = new Binder(property) {
+        binder = new Binder(property) {
             protected Object getFieldValue() {
                 return isSelected();
             }
 
             protected void setFieldValue(Object value) {
                 if (value != null) {
-                    removeActionListener(_listener);
+                    removeActionListener(listener);
                     setSelected((Boolean) value);
-                    addActionListener(_listener);
+                    addActionListener(listener);
                 }
             }
         };
-        _binder.setField();
+        binder.setField();
 
     }
 
