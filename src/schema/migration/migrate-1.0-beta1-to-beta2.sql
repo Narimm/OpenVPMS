@@ -9,3 +9,6 @@ add column allocated_amount numeric(19,2);
 update financial_acts
 set allocated_amount = 0
 where allocated_amount is null;
+
+# add index on participation concept
+create index participation_arch_concept_idx on participations (arch_concept)
