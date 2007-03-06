@@ -31,6 +31,7 @@ import org.openvpms.component.system.common.query.QueryIterator;
 import org.openvpms.web.component.app.ContextException;
 import org.openvpms.web.component.workflow.AddActRelationshipTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
+import org.openvpms.web.component.workflow.DeleteIMObjectTask;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.NodeConditionTask;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -98,8 +99,11 @@ class PatientWeightTask extends WorkflowImpl {
         AddActRelationshipTask relationshipTask = new AddActRelationshipTask(
                 event, PATIENT_WEIGHT,
                 "actRelationship.patientClinicalEventItem");
+        DeleteIMObjectTask deleteWeightTask
+                = new DeleteIMObjectTask(PATIENT_WEIGHT);
         ConditionalTask condition = new ConditionalTask(weightZero,
-                                                        relationshipTask);
+                                                        relationshipTask,
+                                                        deleteWeightTask);
         addTask(condition);
         setRequired(false);
         setBreakOnSkip(true);

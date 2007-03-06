@@ -29,40 +29,33 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DeleteIMObjectTask extends AbstractTask {
+public class DeleteIMObjectTask extends SynchronousTask {
 
     /**
      * The short name of the object to delete.
      */
     private final String shortName;
 
+
     /**
-     * Constructs a new <code>DeleteIMObjectTask</code> to delte an object
+     * Constructs a new <tt>DeleteIMObjectTask</tt> to delete an object
      * in the {@link TaskContext}.
      *
      * @param shortName the short name of the object to delete
      */
     public DeleteIMObjectTask(String shortName) {
         this.shortName = shortName;
-
     }
 
     /**
-     * Starts the task.
-     * <p/>
-     * The registered {@link TaskListener} will be notified on completion or
-     * failure.
+     * Executes the task.
      *
-     * @param context the task context
      * @throws OpenVPMSException for any error
      */
-    public void start(TaskContext context) {
+    public void execute(TaskContext context) {
         IMObject object = context.getObject(shortName);
-        if (object != null) {
-            if (!object.isNew()) {
-                ArchetypeServiceHelper.getArchetypeService().remove(object);
-            }
-            notifyCompleted();
+        if (object != null && !object.isNew()) {
+            ArchetypeServiceHelper.getArchetypeService().remove(object);
         }
     }
 
