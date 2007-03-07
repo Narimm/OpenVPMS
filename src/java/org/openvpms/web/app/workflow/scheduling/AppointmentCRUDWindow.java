@@ -29,6 +29,7 @@ import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
@@ -123,13 +124,20 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
      * Invoked when the 'check-in' button is pressed.
      */
     private void onCheckIn() {
-        CheckInWorkflow workflow = new CheckInWorkflow(getObject());
-        workflow.setTaskListener(new TaskListener() {
-            public void taskEvent(TaskEvent event) {
-                onRefresh(getObject());
-            }
-        });
-        workflow.start();
+        Act act = IMObjectHelper.reload(getObject());
+        // make sure the act is still available and PENDING prior to beginning
+        // workflow
+        if (act != null && AppointmentStatus.PENDING.equals(act.getStatus())) {
+            CheckInWorkflow workflow = new CheckInWorkflow(act);
+            workflow.setTaskListener(new TaskListener() {
+                public void taskEvent(TaskEvent event) {
+                    onRefresh(getObject());
+                }
+            });
+            workflow.start();
+        } else {
+            onRefresh(getObject());
+        }
     }
 
 }
