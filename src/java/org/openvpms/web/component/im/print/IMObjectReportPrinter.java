@@ -18,8 +18,12 @@
 
 package org.openvpms.web.component.im.print;
 
+import org.openvpms.archetype.rules.doc.DocumentException;
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -49,6 +53,11 @@ public class IMObjectReportPrinter<T extends IMObject>
      */
     private final String shortName;
 
+    /**
+     * The document template to use.
+     */
+    private Entity template;
+
 
     /**
      * Constructs a new <tt>IMObjectReportPrinter</tt>.
@@ -56,8 +65,19 @@ public class IMObjectReportPrinter<T extends IMObject>
      * @param object the object to print
      */
     public IMObjectReportPrinter(T object) {
+        this(object, null);
+    }
+
+    /**
+     * Constructs a new <tt>IMObjectReportPrinter</tt>.
+     *
+     * @param object   the object to print
+     * @param template the document template to use. May be <tt>null</tt>
+     */
+    public IMObjectReportPrinter(T object, Entity template) {
         super(object);
         shortName = object.getArchetypeId().getShortName();
+        this.template = template;
     }
 
     /**
@@ -69,8 +89,23 @@ public class IMObjectReportPrinter<T extends IMObject>
      *                  use
      */
     public IMObjectReportPrinter(Iterable<T> objects, String shortName) {
+        this(objects, shortName, null);
+    }
+
+    /**
+     * Constructs a new <tt>IMReportPrinter</tt> to print a collection of
+     * objects.
+     *
+     * @param objects   the objects to print
+     * @param shortName the archetype short name to determine the template to
+     *                  use
+     * @param template  the document template to use. May be <tt>null</tt>
+     */
+    public IMObjectReportPrinter(Iterable<T> objects, String shortName,
+                                 Entity template) {
         super(objects);
         this.shortName = shortName;
+        this.template = template;
     }
 
     /**
@@ -82,8 +117,7 @@ public class IMObjectReportPrinter<T extends IMObject>
      */
     public String getDefaultPrinter() {
         String printer = null;
-        Entity template = TemplateHelper.getTemplateForArchetype(
-                shortName, ArchetypeServiceHelper.getArchetypeService());
+        Entity template = getTemplate();
         Party practice = GlobalContext.getInstance().getPractice();
         if (template != null && practice != null) {
             IArchetypeService service
@@ -111,9 +145,23 @@ public class IMObjectReportPrinter<T extends IMObject>
      */
     @SuppressWarnings("unchecked")
     protected IMReport<T> createReport() {
-        IMReport report = IMReportFactory.createIMObjectReport(
-                shortName, ArchetypeServiceHelper.getArchetypeService(),
-                ServiceHelper.getDocumentHandlers());
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        Entity template = getTemplate();
+        DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
+        IMReport<IMObject> report;
+        if (template == null) {
+            report = IMReportFactory.createIMObjectReport(shortName, service,
+                                                          handlers);
+        } else {
+            Document doc = TemplateHelper.getDocumentFromTemplate(template,
+                                                                  service);
+            if (doc == null) {
+                throw new DocumentException(NotFound);
+            }
+            report = IMReportFactory.createIMObjectReport(doc, service,
+                                                          handlers);
+        }
         return (IMReport<T>) report;
     }
 
@@ -127,8 +175,7 @@ public class IMObjectReportPrinter<T extends IMObject>
     @Override
     protected PrintProperties getProperties(String printer) {
         PrintProperties properties = super.getProperties(printer);
-        Entity template = TemplateHelper.getTemplateForArchetype(
-                shortName, ArchetypeServiceHelper.getArchetypeService());
+        Entity template = getTemplate();
         if (template != null) {
             properties.setMediaSize(getMediaSize(template));
             properties.setOrientation(getOrientation(template));
@@ -136,6 +183,20 @@ public class IMObjectReportPrinter<T extends IMObject>
         }
 
         return properties;
+    }
+
+    /**
+     * Returns the document template.
+     *
+     * @return the document template, or <tt>null</tt> if none can be found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private Entity getTemplate() {
+        if (template == null) {
+            template = TemplateHelper.getTemplateForArchetype(
+                    shortName, ArchetypeServiceHelper.getArchetypeService());
+        }
+        return template;
     }
 
 }

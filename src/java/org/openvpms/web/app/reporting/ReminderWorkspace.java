@@ -25,6 +25,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -169,8 +170,10 @@ public class ReminderWorkspace extends AbstractWorkspace {
             Act selected = browser.getSelected();
             if (selected != null) {
                 GlobalContext context = GlobalContext.getInstance();
+                ReminderQuery q = query.createReminderQuery();
                 ReminderGenerator generator
-                        = new ReminderGenerator(selected, context);
+                        = new ReminderGenerator(selected, q.getFrom(),
+                                                q.getTo(), context);
                 generateReminders(generator);
             }
         } catch (OpenVPMSException exception) {
@@ -186,8 +189,9 @@ public class ReminderWorkspace extends AbstractWorkspace {
         IMPrinter<Act> printer
                 = new IMObjectReportPrinter<Act>(objects,
                                                  "act.patientReminder");
+        String title = Messages.get("reporting.reminder.print.title");
         InteractiveIMPrinter<Act> iPrinter
-                = new InteractiveIMPrinter<Act>(printer);
+                = new InteractiveIMPrinter<Act>(title, printer);
         iPrinter.print();
     }
 

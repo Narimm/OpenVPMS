@@ -23,13 +23,11 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.patient.reminder.AbstractReminderProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
-import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.report.TemplateHelper;
-import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
+import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterListener;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -69,11 +67,10 @@ class ReminderPrintProcessor extends AbstractReminderProcessorListener {
     public void process(final ReminderEvent event) {
         generator.setSuspend(true);
         Entity documentTemplate = event.getDocumentTemplate();
-        DocumentAct act = TemplateHelper.getDocumentAct(
-                documentTemplate, ArchetypeServiceHelper.getArchetypeService());
-        IMPrinter<DocumentAct> printer = IMObjectPrinterFactory.create(act);
-        InteractiveIMPrinter<DocumentAct> iPrinter
-                = new InteractiveIMPrinter<DocumentAct>(printer);
+        IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(
+                event.getReminder(), documentTemplate);
+        InteractiveIMPrinter<Act> iPrinter
+                = new InteractiveIMPrinter<Act>(printer);
         iPrinter.setListener(new IMPrinterListener() {
             public void printed() {
                 try {

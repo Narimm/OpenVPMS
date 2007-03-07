@@ -42,12 +42,12 @@ import org.openvpms.web.component.im.util.ArchetypeHandlers;
  * <tr><td>act.customerAccountChargesInvoice.*</td><td>org.openvpms.web.component.im.print.CPrinter</td></tr>
  * </table>
  * <p/>
- * Multiple <em>IMObjectPrinterFactory.properties</em> may be used.
+ * Multiple <em>IMPrinterFactory.properties</em> may be used.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-08-17 06:51:11Z $
  */
-public final class IMObjectPrinterFactory {
+public final class IMPrinterFactory {
 
     /**
      * IMPrinter implementations.
@@ -57,14 +57,13 @@ public final class IMObjectPrinterFactory {
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(
-            IMObjectPrinterFactory.class);
+    private static final Log log = LogFactory.getLog(IMPrinterFactory.class);
 
 
     /**
      * Prevent construction.
      */
-    private IMObjectPrinterFactory() {
+    private IMPrinterFactory() {
     }
 
     /**
@@ -104,7 +103,7 @@ public final class IMObjectPrinterFactory {
     private static ArchetypeHandlers<IMPrinter> getPrinters() {
         if (printers == null) {
             printers = new ArchetypeHandlers<IMPrinter>(
-                    "IMObjectPrinterFactory.properties",
+                    "IMPrinterFactory.properties",
                     IMPrinter.class);
         }
         return printers;

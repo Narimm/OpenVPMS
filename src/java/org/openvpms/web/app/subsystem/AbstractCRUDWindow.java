@@ -36,8 +36,8 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectCreator;
@@ -505,7 +505,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @return an instance of {@link InteractiveIMPrinter}.
      */
     protected IMPrinter<T> createPrinter(T object) {
-        IMPrinter<T> printer = IMObjectPrinterFactory.create(object);
+        IMPrinter<T> printer = IMPrinterFactory.create(object);
         return new InteractiveIMPrinter<T>(printer);
     }
 
