@@ -21,7 +21,12 @@ package org.openvpms.web.component.workflow;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.im.edit.SaveHelper;
 
 
 /**
@@ -30,7 +35,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class UpdateIMObjectTask extends AbstractTask {
+public class UpdateIMObjectTask extends SynchronousTask {
 
     /**
      * The object short name.
@@ -41,6 +46,12 @@ public class UpdateIMObjectTask extends AbstractTask {
      * The object to update.
      */
     private IMObject object;
+
+    /**
+     * The reference of the object to update. Resolved at time of
+     * update.
+     */
+    private IMObjectReference reference;
 
     /**
      * Properties to populate the created object with.
@@ -60,7 +71,7 @@ public class UpdateIMObjectTask extends AbstractTask {
 
 
     /**
-     * Creates a new <code>UpdateIMObjectTask</code>.
+     * Creates a new <tt>UpdateIMObjectTask</tt>.
      * The object is saved on update.
      *
      * @param shortName  the short name of the object to update
@@ -71,7 +82,7 @@ public class UpdateIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Creates a new <code>UpdateIMObjectTask</code>.
+     * Creates a new <tt>UpdateIMObjectTask</tt>.
      *
      * @param shortName  the short name of the object to update
      * @param properties properties to populate the object with
@@ -85,7 +96,7 @@ public class UpdateIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Creates a new <code>UpdateIMObjectTask</code>.
+     * Creates a new <tt>UpdateIMObjectTask</tt>.
      * The object is saved on update.
      *
      * @param object     the object to update
@@ -96,7 +107,7 @@ public class UpdateIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Creates a new <code>UpdateIMObjectTask</code>.
+     * Creates a new <tt>UpdateIMObjectTask</tt>.
      *
      * @param object     the object to update
      * @param properties properties to populate the object with
@@ -110,26 +121,57 @@ public class UpdateIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Starts the task.
-     * <p/>
-     * The registered {@link TaskListener} will be notified on completion or
-     * failure.
+     * Creates a new <tt>UpdateIMObjectTask</tt>.
+     * The object is saved on update.
      *
-     * @param context the task context
+     * @param reference  reference to the object to update
+     * @param properties properties to populate the object with
      */
-    public void start(final TaskContext context) {
+    public UpdateIMObjectTask(IMObjectReference reference,
+                              TaskProperties properties) {
+        this(reference, properties, true);
+    }
+
+    /**
+     * Creates a new <tt>UpdateIMObjectTask</tt>.
+     *
+     * @param reference  reference to the object to update
+     * @param properties properties to populate the object with
+     * @param save       determines if the object should be saved
+     */
+    public UpdateIMObjectTask(IMObjectReference reference,
+                              TaskProperties properties, boolean save) {
+        this.reference = reference;
+        this.properties = properties;
+        this.save = save;
+    }
+
+    /**
+     * Executes the task.
+     *
+     * @throws OpenVPMSException for any error
+     */
+    public void execute(TaskContext context) {
         if (object == null) {
-            object = context.getObject(shortName);
+            if (reference != null) {
+                IArchetypeService service
+                        = ArchetypeServiceHelper.getArchetypeService();
+                object = ArchetypeQueryHelper.getByObjectReference(
+                        service, reference);
+            } else {
+                object = context.getObject(shortName);
+            }
         }
         if (object != null) {
             populate(object, properties, context);
             if (save) {
-                ArchetypeServiceHelper.getArchetypeService().save(object);
+                if (!SaveHelper.save(object)) {
+                    notifyCancelled();
+                }
             }
-            notifyCompleted();
         } else {
             log.error("Cannot update object: no object with shortName=" +
-                    shortName);
+                    shortName + ", reference=" + reference);
             notifyCancelled();
         }
     }

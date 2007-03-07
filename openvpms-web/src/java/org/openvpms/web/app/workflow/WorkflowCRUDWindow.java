@@ -22,6 +22,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
@@ -29,6 +30,7 @@ import org.openvpms.web.app.workflow.checkout.CheckOutWorkflow;
 import org.openvpms.web.app.workflow.consult.ConsultWorkflow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
@@ -149,26 +151,42 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
      * Invoked when the 'consult' button is pressed.
      */
     private void onConsult() {
-        ConsultWorkflow workflow = new ConsultWorkflow(getObject());
-        workflow.setTaskListener(new TaskListener() {
-            public void taskEvent(TaskEvent event) {
-                onRefresh(getObject());
-            }
-        });
-        workflow.start();
+        Act act = IMObjectHelper.reload(getObject());
+        // make sure the act is still available and CHECKED_IN prior to
+        // beginning workflow
+        if (act != null &&
+                AppointmentStatus.CHECKED_IN.equals(act.getStatus())) {
+            ConsultWorkflow workflow = new ConsultWorkflow(act);
+            workflow.setTaskListener(new TaskListener() {
+                public void taskEvent(TaskEvent event) {
+                    onRefresh(getObject());
+                }
+            });
+            workflow.start();
+        } else {
+            onRefresh(getObject());
+        }
     }
 
     /**
      * Invoked when the 'check-out' button is pressed.
      */
     private void onCheckOut() {
-        CheckOutWorkflow workflow = new CheckOutWorkflow(getObject());
-        workflow.setTaskListener(new TaskListener() {
-            public void taskEvent(TaskEvent event) {
-                onRefresh(getObject());
-            }
-        });
-        workflow.start();
+        Act act = IMObjectHelper.reload(getObject());
+        // make sure the act is still available and CHECKED_IN prior to
+        // beginning workflow
+        if (act != null
+                && AppointmentStatus.CHECKED_IN.equals(act.getStatus())) {
+            CheckOutWorkflow workflow = new CheckOutWorkflow(act);
+            workflow.setTaskListener(new TaskListener() {
+                public void taskEvent(TaskEvent event) {
+                    onRefresh(getObject());
+                }
+            });
+            workflow.start();
+        } else {
+            onRefresh(getObject());
+        }
     }
 
 }

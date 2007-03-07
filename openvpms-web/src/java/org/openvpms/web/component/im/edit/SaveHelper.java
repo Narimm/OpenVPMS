@@ -61,10 +61,9 @@ public class SaveHelper {
             service.save(object);
             saved = true;
         } catch (OpenVPMSException exception) {
-            String title = Messages.get(
-                    "imobject.save.failed",
-                    DescriptorHelper.getDisplayName(object));
-            ErrorHelper.show(title, exception);
+            String displayName = DescriptorHelper.getDisplayName(object);
+            String title = Messages.get("imobject.save.failed", displayName);
+            ErrorHelper.show(title, displayName, exception);
         }
         return saved;
     }
@@ -83,9 +82,8 @@ public class SaveHelper {
             service.remove(object);
             removed = true;
         } catch (OpenVPMSException exception) {
-            String title = Messages.get("imobject.delete.failed",
-                                        DescriptorHelper.getDisplayName(
-                                                object));
+            String displayName = DescriptorHelper.getDisplayName(object);
+            String title = Messages.get("imobject.delete.failed", displayName);
             ErrorHelper.show(title, exception);
         }
         return removed;

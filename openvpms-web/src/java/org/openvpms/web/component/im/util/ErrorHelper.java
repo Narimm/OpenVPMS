@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -35,7 +36,7 @@ public class ErrorHelper {
     /**
      * The logger.
      */
-    private static final Log _log = LogFactory.getLog(ErrorHelper.class);
+    private static final Log log = LogFactory.getLog(ErrorHelper.class);
 
 
     /**
@@ -44,7 +45,7 @@ public class ErrorHelper {
      * @param error the error
      */
     public static void show(String error) {
-        _log.error(error);
+        log.error(error);
         ErrorDialog.show(error);
     }
 
@@ -55,7 +56,7 @@ public class ErrorHelper {
      * @param error the error
      */
     public static void show(String title, String error) {
-        _log.error(error);
+        log.error(error);
         ErrorDialog.show(title, error);
     }
 
@@ -66,8 +67,21 @@ public class ErrorHelper {
      * @param error the error
      */
     public static void show(String title, Throwable error) {
-        _log.error(error.getLocalizedMessage(), error);
-        ErrorDialog.show(title, error.getLocalizedMessage());
+        show(title, null, error);
+    }
+
+    /**
+     * Display and log an error.
+     *
+     * @param title       the title
+     * @param displayName the display name to include in the error message.
+     *                    May be <tt>null</tt>
+     * @param error       the error
+     */
+    public static void show(String title, String displayName, Throwable error) {
+        String message = getError(error, displayName);
+        log.error(message, error);
+        ErrorDialog.show(title, message);
     }
 
     /**
@@ -76,8 +90,9 @@ public class ErrorHelper {
      * @param error the error
      */
     public static void show(Throwable error) {
-        _log.error(error.getLocalizedMessage(), error);
-        ErrorDialog.show(error.getLocalizedMessage());
+        String message = getError(error);
+        log.error(message, error);
+        ErrorDialog.show(message);
     }
 
     /**
@@ -87,9 +102,59 @@ public class ErrorHelper {
      * @param listener the listener to notify
      */
     public static void show(Throwable error, WindowPaneListener listener) {
-        _log.error(error.getLocalizedMessage(), error);
-        ErrorDialog dialog = new ErrorDialog(error.getLocalizedMessage());
+        String message = getError(error);
+        log.error(message, error);
+        ErrorDialog dialog = new ErrorDialog(message);
         dialog.addWindowPaneListener(listener);
         dialog.show();
     }
+
+    /**
+     * Returns the preferred exception message from an exception heirarchy.
+     *
+     * @param exception the exception
+     * @return the exception message
+     */
+    private static String getError(Throwable exception) {
+        return getError(exception, null);
+    }
+
+    /**
+     * Returns the preferred exception message from an exception heirarchy.
+     *
+     * @param exception   the exception
+     * @param displayName the display name to include in the message.
+     *                    May be <tt>null</tt>
+     * @return the exception message
+     */
+    private static String getError(Throwable exception, String displayName) {
+        exception = getRootCause(exception);
+        String result = null;
+        if (displayName != null) {
+            String key = exception.getClass().getName() + ".formatted";
+            result = Messages.get(key, true, displayName);
+        }
+        if (result == null) {
+            result = Messages.get(exception.getClass().getName(), true);
+        }
+        if (result == null) {
+            result = exception.getLocalizedMessage();
+        }
+        return result;
+    }
+
+    /**
+     * Returns the root cause of an exception.
+     *
+     * @param exception the exception
+     * @return the root cause of the exception, or <tt>exception</tt> if it
+     *         is the root
+     */
+    private static Throwable getRootCause(Throwable exception) {
+        if (exception.getCause() != null) {
+            return getRootCause(exception.getCause());
+        }
+        return exception;
+    }
+
 }
