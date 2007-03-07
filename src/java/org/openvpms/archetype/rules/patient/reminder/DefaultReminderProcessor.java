@@ -49,9 +49,22 @@ import java.util.Map;
 public class DefaultReminderProcessor implements ReminderProcessor {
 
     /**
-     * The processing date.
+     * The processing date, used to determine when reminders should be
+     * cancelled.
      */
     private final Date processingDate;
+
+    /**
+     * The 'from' date. If non-null, only process reminders that have a next-due
+     * date >= from.
+     */
+    private final Date from;
+
+    /**
+     * The 'to' date. If non-null, only process reminders that have a next-due
+     * date <= to.
+     */
+    private final Date to;
 
     /**
      * The archetype service.
@@ -78,29 +91,39 @@ public class DefaultReminderProcessor implements ReminderProcessor {
     /**
      * Constructs a new <tt>DefaultReminderProcessor</tt>, using the current
      * time as the processing date.
+     *
+     * @param from the 'from' date. May be <tt>null</tt>
+     * @param to   the 'to' date. Nay be <tt>null</tt>
      */
-    public DefaultReminderProcessor() {
-        this(ArchetypeServiceHelper.getArchetypeService());
+    public DefaultReminderProcessor(Date from, Date to) {
+        this(from, to, ArchetypeServiceHelper.getArchetypeService());
     }
 
     /**
      * Constructs a new <code>ReminderProcessor</code>, using the current time
      * as the processing date.
      *
+     * @param from    the 'from' date. May be <tt>null</tt>
+     * @param to      the 'to' date. Nay be <tt>null</tt>
      * @param service the archetype service
      */
-    public DefaultReminderProcessor(IArchetypeService service) {
-        this(new Date(), service);
+    public DefaultReminderProcessor(Date from, Date to,
+                                    IArchetypeService service) {
+        this(from, to, new Date(), service);
     }
 
     /**
      * Constructs a new <code>ReminderProcessor</code>.
      *
+     * @param from           the 'from' date. May be <tt>null</tt>
+     * @param to             the 'to' date. Nay be <tt>null</tt>
      * @param processingDate the processing date
      * @param service        the archetype service
      */
-    public DefaultReminderProcessor(Date processingDate,
+    public DefaultReminderProcessor(Date from, Date to, Date processingDate,
                                     IArchetypeService service) {
+        this.from = from;
+        this.to = to;
         this.processingDate = processingDate;
         this.service = service;
         listeners = new ArrayList<ReminderProcessorListener>();
@@ -122,17 +145,23 @@ public class DefaultReminderProcessor implements ReminderProcessor {
         if (reminderType == null) {
             throw new ReminderProcessorException(NoReminderType);
         }
-        Date endTime = reminder.getActivityEndTime();
-        if (rules.shouldCancel(endTime, reminderType, processingDate)) {
+        Date due = reminder.getActivityEndTime();
+        if (rules.shouldCancel(due, reminderType, processingDate)) {
             cancel(reminder, reminderType);
         } else {
             int reminderCount = bean.getInt("reminderCount");
             EntityRelationship template = rules.getReminderTypeTemplate(
                     reminderCount, reminderType);
-            if (template == null || !rules.isDue(endTime, template)) {
+            if (template == null) {
                 skip(reminder, reminderType);
             } else {
-                generate(reminder, reminderType, template);
+                Date nextDue = rules.getNextDueDate(due, template);
+                if ((from == null || nextDue.compareTo(from) >= 0)
+                        && (to == null || nextDue.compareTo(to) <= 0)) {
+                    generate(reminder, reminderType, template);
+                } else {
+                    skip(reminder, reminderType);
+                }
             }
         }
     }

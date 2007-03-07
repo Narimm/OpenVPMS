@@ -103,6 +103,23 @@ public class ReminderQuery {
         this.to = to;
     }
 
+    /**
+     * Returns the 'from' date.
+     *
+     * @return the 'from' date. May be <tt>null</tt>
+     */
+    public Date getFrom() {
+        return from;
+    }
+
+    /**
+     * Returns the 'to' date.
+     *
+     * @return the 'to' date. May be <tt>null</tt>
+     */
+    public Date getTo() {
+        return to;
+    }
 
     /**
      * Returns an iterator over the reminder acts matching the query
@@ -119,6 +136,11 @@ public class ReminderQuery {
         };
     }
 
+    /**
+     * Returns a new {@link ArchetypeQuery matching the constraints.
+     *
+     * @return a new query
+     */
     public ArchetypeQuery createQuery() {
         ShortNameConstraint act = new ShortNameConstraint("act",
                                                           "act.patientReminder",
@@ -164,65 +186,10 @@ public class ReminderQuery {
             query.add(new IdConstraint("reminderType.act", "act"));
         }
         if (from != null && to != null) {
-            query.add(new NodeConstraint("endTime", RelationalOp.BTW,
-                                         from, to));
+            query.add(new NodeConstraint("endTime", RelationalOp.BTW, from,
+                                         to));
         }
         return query;
     }
-
-    /**
-     * Adapts an <tt>Iterable<ObjectSet></tt> returned by the { @link #query} to an
-     */
-    /**
-     *
-     private class IterableObjectSetAdapter implements Iterable<Act> {
-
-     private final Iterable<ObjectSet> objects;
-
-
-     public IterableObjectSetAdapter(Iterable<ObjectSet> objects) {
-     this.objects = objects;
-     }
-
-     public Iterator<Act> iterator() {
-     return new ReminderIteratorAdaptor(objects.iterator());
-     }
-
-     private class ReminderIteratorAdaptor implements Iterator<Act> {
-     private final Iterator<ObjectSet> iterator;
-     private Act next;
-
-     public ReminderIteratorAdaptor(Iterator<ObjectSet> iterator) {
-     this.iterator = iterator;
-     }
-
-     public boolean hasNext() {
-     // scan through the iterator until the end is reached or
-     // an act can be retrieved
-     while (next == null && iterator.hasNext()) {
-     ObjectSet set = iterator.next();
-     IMObjectReference ref = (IMObjectReference) set.get(
-     ReminderQuery.ACT_REFERENCE);
-     if (ref != null) {
-     next = (Act) ArchetypeQueryHelper.getByObjectReference(
-     service, ref);
-     }
-     }
-     return next != null;
-     }
-
-     public Act next() {
-     if (next == null) {
-     throw new NoSuchElementException();
-     }
-     return next;
-     }
-
-     public void remove() {
-     iterator.remove();
-     }
-     }
-     }
-     */
 
 }
