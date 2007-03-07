@@ -249,36 +249,19 @@ public class ReminderRules {
     }
 
     /**
-     * Determines if a reminder is due, given its due date, the no. of times
-     * a reminder has been sent and the reminder type.
-     *
-     * @param endTime       the due date
-     * @param reminderCount the no. of times a reminder has been sent
-     * @param reminderType  the reminder type
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public boolean isDue(Date endTime, int reminderCount, Entity reminderType) {
-        EntityRelationship template = getReminderTypeTemplate(reminderCount,
-                                                              reminderType);
-        return isDue(endTime, template);
-    }
-
-    /**
-     * Determines if a reminder is due, given its due date and the reminder
-     * type template.
+     * Calculates the next due date for a reminder.
      *
      * @param endTime              the due date
      * @param reminderTypeTemplate the reminder type template
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public boolean isDue(Date endTime,
-                         EntityRelationship reminderTypeTemplate) {
+    public Date getNextDueDate(Date endTime,
+                               EntityRelationship reminderTypeTemplate) {
         IMObjectBean templateBean = new IMObjectBean(reminderTypeTemplate,
                                                      service);
         int interval = templateBean.getInt("interval");
         String units = templateBean.getString("units");
-        Date nextDate = DateRules.getDate(endTime, interval, units);
-        return (nextDate.compareTo(endTime) > 0);
+        return DateRules.getDate(endTime, interval, units);
     }
 
     /**
