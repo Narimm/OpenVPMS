@@ -112,6 +112,8 @@
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
+            <node name="emailSubject" path="/details/attributes/emailSubject" type="java.lang.String" minCardinality="0"
+                maxLength="80"/>
             <node name="emailText" displayName="Email Body" path="/details/attributes/emailText" type="java.lang.String" minCardinality="0"
                 maxLength="1000"/>
         </node>

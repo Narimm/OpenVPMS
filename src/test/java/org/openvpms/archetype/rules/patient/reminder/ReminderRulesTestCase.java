@@ -23,8 +23,11 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
 
@@ -84,6 +87,64 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ReminderRules#getContact(Party)} method.
+     */
+    public void testGetContact() {
+        // create a patient, and owner. Remove default contacts from owner
+        ReminderRules rules = new ReminderRules();
+        Party owner = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient(owner);
+        for (Contact contact : owner.getContacts().toArray(new Contact[0])) {
+            owner.removeContact(contact);
+        }
+
+        // add an email contact to the owner, and verify it is returned
+        owner.addContact(createEmail());
+        save(owner);
+        Contact email = rules.getContact(patient);
+        assertTrue(TypeHelper.isA(email, "contact.email"));
+
+        // add an preferred phone contact to the owner, and verify it is
+        // returned instead of the email contact
+        owner.addContact(createPhone(true));
+        save(owner);
+        Contact contact = rules.getContact(patient);
+        assertTrue(TypeHelper.isA(contact, "contact.phoneNumber"));
+
+        // add a location contact to the owner, and verify the preferred phone
+        // contact is still returned
+        owner.addContact(createLocation(false));
+        save(owner);
+        contact = rules.getContact(patient);
+        assertTrue(TypeHelper.isA(contact, "contact.phoneNumber"));
+
+        // add a preferred location contact to the owner, and verify it is
+        // returned instead of the phone contact
+        owner.addContact(createLocation(true));
+        save(owner);
+        Contact location = rules.getContact(patient);
+        assertTrue(TypeHelper.isA(location, "contact.location"));
+
+        // add a REMINDER classification to the email contact and verify it is
+        // returned instead of the preferred location contact
+        email = (Contact) get(email);
+        Lookup reminder = TestHelper.getClassification("lookup.contactPurpose",
+                                                       "REMINDER");
+        email.addClassification(reminder);
+        save(email);
+        contact = rules.getContact(patient);
+        assertTrue(TypeHelper.isA(contact, "contact.email"));
+
+        // add a REMINDER classification to the location contact and verify it
+        // is returned instead of the email contact
+        location = (Contact) get(location);
+        location.addClassification(reminder);
+        save(location);
+        contact = rules.getContact(patient);
+        assertTrue(TypeHelper.isA(contact, "contact.location"));
+    }
+
+    /**
      * Helper to create a reminder.
      *
      * @param patient the patient
@@ -130,4 +191,46 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
             assertNull(date);
         }
     }
+
+    /**
+     * Helper to create an email contact.
+     *
+     * @return a new email contact
+     */
+    private Contact createEmail() {
+        Contact contact = (Contact) create("contact.email");
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("emailAddress", "foo@bar.com");
+        bean.save();
+        return contact;
+    }
+
+    /**
+     * Helper to create a phone contact.
+     *
+     * @param preferred determines if it is the preferred contact
+     * @return a new phone contact
+     */
+    private Contact createPhone(boolean preferred) {
+        Contact contact = (Contact) create("contact.phoneNumber");
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("preferred", preferred);
+        save(contact);
+        return contact;
+    }
+
+    /**
+     * Helper to create a location contact.
+     *
+     * @param preferred determines if it is the preferred contact
+     * @return a new location contact
+     */
+    private Contact createLocation(boolean preferred) {
+        Contact contact = (Contact) create("contact.location");
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("preferred", preferred);
+        save(contact);
+        return contact;
+    }
+
 }
