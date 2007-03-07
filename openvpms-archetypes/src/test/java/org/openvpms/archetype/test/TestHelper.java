@@ -254,7 +254,7 @@ public class TestHelper extends Assert {
      * @param code      the classification code
      * @return the classification
      */
-    private static Lookup getClassification(String shortName, String code) {
+    public static Lookup getClassification(String shortName, String code) {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
         query.add(new NodeConstraint("code", code));
         query.setMaxResults(1);

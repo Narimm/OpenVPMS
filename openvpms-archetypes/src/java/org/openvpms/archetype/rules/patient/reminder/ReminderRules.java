@@ -34,6 +34,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -238,11 +239,12 @@ public class ReminderRules {
     public EntityRelationship getReminderTypeTemplate(int reminderCount,
                                                       Entity reminderType) {
         EntityBean reminderBean = new EntityBean(reminderType, service);
-        List<IMObject> templates = reminderBean.getValues("templates");
-        for (IMObject template : templates) {
+        List<EntityRelationship> templates
+                = reminderBean.getValues("templates", EntityRelationship.class);
+        for (EntityRelationship template : templates) {
             IMObjectBean templateBean = new IMObjectBean(template, service);
             if (templateBean.getInt("reminderCount") == reminderCount) {
-                return (EntityRelationship) template;
+                return template;
             }
         }
         return null;
@@ -282,8 +284,10 @@ public class ReminderRules {
     }
 
     /**
-     * Returns the first contact with classification 'REMINDER' or the
-     * preferred contact.location if no contact has this classification.
+     * Returns the first contact with classification 'REMINDER', or; the
+     * preferred contact.location if no contact has this classification,
+     * or; the first contact.location if none is preferred, or; the first
+     * location if there are no contact.locations.
      *
      * @param contacts the contacts
      * @return a contact, or <tt>null</tt> if none is found
@@ -350,7 +354,9 @@ public class ReminderRules {
      * @param contacts   the contacts
      * @param shortName  the archetype shortname of the preferred contact
      * @param anyContact if <tt>true</tt> any contact with a 'REMINDER'
-     *                   classification will be returned.
+     *                   classification will be returned. If there is
+     *                   no 'REMINDER' contact, and no preferred contact, the
+     *                   first contact will be returned.
      *                   If <tt>false</tt> only those contacts of type
      *                   <em>shortName</em> will be returned
      * @return a contact, or <tt>null</tt> if none is found
@@ -358,28 +364,40 @@ public class ReminderRules {
     private Contact getContact(Set<Contact> contacts, String shortName,
                                boolean anyContact) {
         Contact reminder = null;
+        Contact preferred = null;
         Contact fallback = null;
         for (Contact contact : contacts) {
             IMObjectBean bean = new IMObjectBean(contact, service);
-            if (bean.isA(shortName) && bean.hasNode("preferred")
-                    && bean.getBoolean("preferred")) {
-                if (fallback == null) {
-                    fallback = contact;
-                }
-            } else {
-                if (anyContact || bean.isA(shortName)) {
-                    List<Lookup> purposes
-                            = bean.getValues("purposes", Lookup.class);
-                    for (Lookup purpose : purposes) {
-                        if ("REMINDER".equals(purpose.getCode())) {
+            boolean match = bean.isA(shortName) || anyContact;
+
+            if (reminder == null || !TypeHelper.isA(reminder, shortName)) {
+                List<Lookup> purposes = bean.getValues("purposes",
+                                                       Lookup.class);
+                for (Lookup purpose : purposes) {
+                    if ("REMINDER".equals(purpose.getCode())) {
+                        if (match) {
                             reminder = contact;
-                            break;
                         }
+                        break;
                     }
                 }
             }
+
+            if (preferred == null || !TypeHelper.isA(preferred, shortName)) {
+                if (bean.hasNode("preferred") && bean.getBoolean("preferred")) {
+                    if (match) {
+                        preferred = contact;
+                    }
+                }
+            }
+            if (fallback == null || !TypeHelper.isA(fallback, shortName)) {
+                if (match) {
+                    fallback = contact;
+                }
+            }
         }
-        return (reminder != null) ? reminder : fallback;
+        return (reminder != null) ? reminder :
+                (preferred != null) ? preferred : fallback;
     }
 
 }
