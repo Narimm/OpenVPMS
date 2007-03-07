@@ -30,8 +30,8 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.IMPrinterListener;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
@@ -140,7 +140,7 @@ public abstract class ActCRUDWindow<T extends Act>
     protected void onPost() {
         try {
             final IMPrinter<T> printer
-                    = IMObjectPrinterFactory.create(getObject());
+                    = IMPrinterFactory.create(getObject());
 
             final PostDialog dialog = new PostDialog(
                     Messages.get("act.post.title", getTypeDisplayName()));
@@ -173,7 +173,7 @@ public abstract class ActCRUDWindow<T extends Act>
     protected void onPreview() {
         try {
             final IMPrinter<T> printer
-                    = IMObjectPrinterFactory.create(getObject());
+                    = IMPrinterFactory.create(getObject());
             Document document = printer.getDocument();
             DownloadServlet.startDownload(document);
         } catch (OpenVPMSException exception) {

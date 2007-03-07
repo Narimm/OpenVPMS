@@ -54,6 +54,7 @@ import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 
 
@@ -105,12 +106,15 @@ class ReminderGenerator {
      * Constructs a new <tt>ReminderGenerator</tt> for a single reminder.
      *
      * @param reminder the reminder
+     * @param from     only process reminder if its next due date &gt;= from
+     * @param to       only process reminder if its next due date &lt;= to
      * @param context  the context
      * @throws ReminderProcessorException for any error
      */
-    public ReminderGenerator(Act reminder, Context context) {
+    public ReminderGenerator(Act reminder, Date from, Date to,
+                             Context context) {
         iterator = Arrays.asList(reminder).iterator();
-        init(context);
+        init(from, to, context);
     }
 
     /**
@@ -122,7 +126,7 @@ class ReminderGenerator {
      */
     public ReminderGenerator(ReminderQuery query, Context context) {
         iterator = query.query().iterator();
-        init(context);
+        init(query.getFrom(), query.getTo(), context);
     }
 
     /**
@@ -180,8 +184,8 @@ class ReminderGenerator {
      * @param context the context
      * @throws ReminderProcessorException for any error
      */
-    private void init(Context context) {
-        processor = new DefaultReminderProcessor();
+    private void init(Date from, Date to, Context context) {
+        processor = new DefaultReminderProcessor(from, to);
         phone = new ReminderPhoneListener();
         stats = new ReminderStatisticsListener();
         processor.addListener(stats);

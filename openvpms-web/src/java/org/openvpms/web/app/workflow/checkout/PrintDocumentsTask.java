@@ -32,8 +32,8 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.IMPrinterListener;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
@@ -212,7 +212,7 @@ class PrintDocumentsTask extends AbstractTask {
             if (iterator.hasNext()) {
                 object = iterator.next();
                 IMPrinter<IMObject> printer
-                        = IMObjectPrinterFactory.create(object);
+                        = IMPrinterFactory.create(object);
                 InteractiveIMPrinter<IMObject> iPrinter
                         = new InteractiveIMPrinter<IMObject>(printer);
                 iPrinter.setListener(this);
