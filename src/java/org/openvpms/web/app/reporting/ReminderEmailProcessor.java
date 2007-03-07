@@ -105,6 +105,10 @@ public class ReminderEmailProcessor extends AbstractReminderProcessorListener {
 
             IMObjectBean templateBean
                     = new IMObjectBean(documentTemplate);
+            String subject = templateBean.getString("emailSubject");
+            if (StringUtils.isEmpty(subject)) {
+                subject = documentTemplate.getName();
+            }
             String body = templateBean.getString("emailText");
             if (StringUtils.isEmpty(body)) {
                 throw new ReminderProcessorException(
@@ -120,7 +124,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessorListener {
                     reminder.getArchetypeId().getShortName(),
                     reminder.getMimeType());
 
-            helper.setSubject(documentTemplate.getName());
+            helper.setSubject(subject);
             helper.addAttachment(
                     reminder.getName(), new InputStreamSource() {
                 public InputStream getInputStream() {
