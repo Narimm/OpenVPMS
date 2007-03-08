@@ -24,10 +24,10 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.reminder.DefaultReminderProcessor;
+import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderCancelProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
-import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderStatisticsListener;
 import org.openvpms.archetype.rules.patient.reminder.Statistics;
@@ -72,9 +72,14 @@ class ReminderGenerator {
     }
 
     /**
-     * The query iterator.
+     * The reminders.
      */
-    private final Iterator<Act> iterator;
+    private final Iterable<Act> reminders;
+
+    /**
+     * The iterator over the reminders.
+     */
+    private Iterator<Act> iterator;
 
     /**
      * Indicates if processing should suspend, so the client can be updated.
@@ -113,19 +118,19 @@ class ReminderGenerator {
      */
     public ReminderGenerator(Act reminder, Date from, Date to,
                              Context context) {
-        iterator = Arrays.asList(reminder).iterator();
+        reminders = Arrays.asList(reminder);
         init(from, to, context);
     }
 
     /**
-     * Constructs a new <tt>ReminderGenerator</tt> for reminders
-     * returned by a query.
+     * Constructs a new <tt>ReminderGenerator</tt> for reminders returned by a
+     * query.
      *
      * @param query the query
      * @throws ReminderProcessorException for any error
      */
-    public ReminderGenerator(ReminderQuery query, Context context) {
-        iterator = query.query().iterator();
+    public ReminderGenerator(DueReminderQuery query, Context context) {
+        reminders = query.query();
         init(query.getFrom(), query.getTo(), context);
     }
 
@@ -135,11 +140,9 @@ class ReminderGenerator {
     public void generate() {
         try {
             setSuspend(false);
-            while (!isSuspended() && iterator.hasNext()) {
-                Act reminder = iterator.next();
-                if (reminder != null) {
-                    processor.process(reminder);
-                }
+            Act reminder;
+            while (!isSuspended() && (reminder = getNext()) != null) {
+                processor.process(reminder);
             }
             if (!isSuspended()) {
                 // generation completed.
@@ -269,6 +272,23 @@ class ReminderGenerator {
             }
         });
         workflow.start();
+    }
+
+    /**
+     * Returns the next reminder.
+     * Note that as reminders may be cancelled, the underlying QueryIterator
+     * may skip reminders when performing paging, so multiple calls to
+     * <tt>reminders.iterator()</tt> must be made to ensure all reminders
+     * are processed. One consequence of this is that reminders won't
+     * necessarily be processed in alphabetical customer/patient order.
+     *
+     * @return the next reminder, or <tt>null</tt> if none can be found
+     */
+    private Act getNext() {
+        if (iterator == null || iterator.hasNext()) {
+            iterator = reminders.iterator();
+        }
+        return (iterator.hasNext()) ? iterator.next() : null;
     }
 
     /**
