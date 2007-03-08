@@ -129,6 +129,7 @@ public class PatientReminderTableModel extends AbstractActTableModel {
             if (due != null) {
                 Label label = LabelFactory.create();
                 label.setText(DateFormatter.formatDate(due, false));
+                result = label;
             }
         } else if (index == customerIndex) {
             Party customer = getPatientOwner(act);

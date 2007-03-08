@@ -53,9 +53,11 @@ import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -70,11 +72,6 @@ class ReminderGenerator {
 
         void completed();
     }
-
-    /**
-     * The reminders.
-     */
-    private final Iterable<Act> reminders;
 
     /**
      * The iterator over the reminders.
@@ -118,7 +115,7 @@ class ReminderGenerator {
      */
     public ReminderGenerator(Act reminder, Date from, Date to,
                              Context context) {
-        reminders = Arrays.asList(reminder);
+        iterator = Arrays.asList(reminder).iterator();
         init(from, to, context);
     }
 
@@ -130,7 +127,11 @@ class ReminderGenerator {
      * @throws ReminderProcessorException for any error
      */
     public ReminderGenerator(DueReminderQuery query, Context context) {
-        reminders = query.query();
+        List<Act> reminders = new ArrayList<Act>();
+        for (Act reminder : query.query()) {
+            reminders.add(reminder);
+        }
+        iterator = reminders.iterator();
         init(query.getFrom(), query.getTo(), context);
     }
 
@@ -140,8 +141,8 @@ class ReminderGenerator {
     public void generate() {
         try {
             setSuspend(false);
-            Act reminder;
-            while (!isSuspended() && (reminder = getNext()) != null) {
+            while (!isSuspended() && iterator.hasNext()) {
+                Act reminder = iterator.next();
                 processor.process(reminder);
             }
             if (!isSuspended()) {
@@ -272,23 +273,6 @@ class ReminderGenerator {
             }
         });
         workflow.start();
-    }
-
-    /**
-     * Returns the next reminder.
-     * Note that as reminders may be cancelled, the underlying QueryIterator
-     * may skip reminders when performing paging, so multiple calls to
-     * <tt>reminders.iterator()</tt> must be made to ensure all reminders
-     * are processed. One consequence of this is that reminders won't
-     * necessarily be processed in alphabetical customer/patient order.
-     *
-     * @return the next reminder, or <tt>null</tt> if none can be found
-     */
-    private Act getNext() {
-        if (iterator == null || iterator.hasNext()) {
-            iterator = reminders.iterator();
-        }
-        return (iterator.hasNext()) ? iterator.next() : null;
     }
 
     /**
