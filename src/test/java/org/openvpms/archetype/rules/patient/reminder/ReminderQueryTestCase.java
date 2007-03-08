@@ -111,7 +111,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
 
         // now verify that the query gives the same count
         ReminderQuery query = new ReminderQuery();
-        query.setDueDateRange(dueFrom, dueTo);
+        query.setFrom(dueFrom);
+        query.setTo(dueTo);
         List<Act> reminders = getReminders(query);
         assertEquals(rangeCount, reminders.size());
     }
@@ -141,7 +142,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
 
         ReminderQuery query = new ReminderQuery();
         query.setReminderType(reminderType);
-        query.setDueDateRange(dueFrom, dueTo);
+        query.setFrom(dueFrom);
+        query.setTo(dueTo);
         List<Act> reminders = getReminders(query);
         assertEquals(5, reminders.size());
     }

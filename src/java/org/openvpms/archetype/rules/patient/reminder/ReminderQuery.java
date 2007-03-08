@@ -38,8 +38,8 @@ import java.util.Iterator;
 
 
 /**
- * Queries <em>act.act.patientReminder</em> acts, returning a limited set of
- * data for performance purposes.
+ * Queries <em>act.act.patientReminder</em> acts.
+ * The acts are sorted on customer name, patient name and endTime.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -92,15 +92,15 @@ public class ReminderQuery {
     }
 
     /**
-     * Sets the due date range.
-     * If either date is null, indicates to query all due dates.
+     * Sets the 'from' date.
+     * This excludes all reminders with a due date prior to the specified
+     * date.
      *
-     * @param from the from due date. May be <tt>null</tt>
-     * @param to   the to due date. May be <tt>null</tt>
+     * @param from the from date. If <tt>null</tt> don't set a lower bound for
+     *             due dates
      */
-    public void setDueDateRange(Date from, Date to) {
+    public void setFrom(Date from) {
         this.from = from;
-        this.to = to;
     }
 
     /**
@@ -110,6 +110,18 @@ public class ReminderQuery {
      */
     public Date getFrom() {
         return from;
+    }
+
+    /**
+     * Sets the 'to' date.
+     * This filters excludes reminders with a due date after the specified
+     * date.
+     *
+     * @param to the to date. If <tt>null</tt> don't set an upper bound for due
+     *           dates
+     */
+    public void setTo(Date to) {
+        this.to = to;
     }
 
     /**
@@ -125,6 +137,8 @@ public class ReminderQuery {
      * Returns an iterator over the reminder acts matching the query
      * criteria.
      * Note that each iteration may throw {@link ArchetypeServiceException}.
+     * Also note that the behaviour is undefined if any of the attributes
+     * are modified while an iteration is in progress.
      *
      * @return an iterator over the reminder acts
      */
@@ -185,9 +199,11 @@ public class ReminderQuery {
             query.add(reminder);
             query.add(new IdConstraint("reminderType.act", "act"));
         }
-        if (from != null && to != null) {
-            query.add(new NodeConstraint("endTime", RelationalOp.BTW, from,
-                                         to));
+        if (from != null) {
+            query.add(new NodeConstraint("endTime", RelationalOp.GTE, from));
+        }
+        if (to != null) {
+            query.add(new NodeConstraint("endTime", RelationalOp.LTE, to));
         }
         return query;
     }

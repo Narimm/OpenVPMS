@@ -179,6 +179,27 @@ public class ReminderRules {
     }
 
     /**
+     * Determines if a reminder needs to be cancelled, based on its due
+     * date and the specified date. Reminders should be cancelled if:
+     * <em>endTime + (reminderType.cancelInterval * reminderType.cancelUnits)
+     * &lt; date</em>
+     *
+     * @param reminder the reminder
+     * @return <code>true</code> if the reminder needs to be cancelled,
+     *         otherwise <code> false
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public boolean shouldCancel(Act reminder, Date date) {
+        ActBean bean = new ActBean(reminder, service);
+        Entity reminderType = bean.getParticipant("participation.reminderType");
+        if (reminderType != null) {
+            Date due = reminder.getActivityEndTime();
+            return shouldCancel(due, reminderType, date);
+        }
+        return false;
+    }
+
+    /**
      * Determines if a reminder needs to be cancelled, based on its due date
      * and the specified date. Reminders should be cancelled if:
      * <em>endTime + (reminderType.cancelInterval * reminderType.cancelUnits)
@@ -253,8 +274,30 @@ public class ReminderRules {
     /**
      * Calculates the next due date for a reminder.
      *
+     * @param reminder the reminder
+     * @return the next due date for the reminder, or <tt>null</tt>
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Date getNextDueDate(Act reminder) {
+        ActBean bean = new ActBean(reminder, service);
+        int count = bean.getInt("reminderCount");
+        Entity reminderType = bean.getParticipant("participation.reminderType");
+        if (reminderType != null) {
+            EntityRelationship template
+                    = getReminderTypeTemplate(count, reminderType);
+            if (template != null) {
+                return getNextDueDate(reminder.getActivityEndTime(), template);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Calculates the next due date for a reminder.
+     *
      * @param endTime              the due date
      * @param reminderTypeTemplate the reminder type template
+     * @return the next due date for the reminder
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Date getNextDueDate(Date endTime,
