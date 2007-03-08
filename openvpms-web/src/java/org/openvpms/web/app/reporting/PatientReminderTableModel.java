@@ -38,9 +38,11 @@ import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
+import java.util.Date;
 import java.util.Iterator;
 
 
@@ -61,6 +63,11 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      * The patient rules.
      */
     private final PatientRules patientRules;
+
+    /**
+     * The next due column index.
+     */
+    private int nextDueIndex;
 
     /**
      * The customer column index.
@@ -117,7 +124,13 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     protected Object getValue(Act act, TableColumn column, int row) {
         Object result = null;
         int index = column.getModelIndex();
-        if (index == customerIndex) {
+        if (index == nextDueIndex) {
+            Date due = rules.getNextDueDate(act);
+            if (due != null) {
+                Label label = LabelFactory.create();
+                label.setText(DateFormatter.formatDate(due, false));
+            }
+        } else if (index == customerIndex) {
             Party customer = getPatientOwner(act);
             if (customer != null) {
                 IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
@@ -143,7 +156,8 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     @Override
     protected Object getValue(Act object, DescriptorTableColumn column) {
         Object result = null;
-        if (column.getDescriptor(object).getName().equals("reminderType")) {
+        String name = column.getDescriptor(object).getName();
+        if (name.equals("reminderType")) {
             ActBean bean = new ActBean(object);
             IMObjectReference ref = bean.getParticipantRef(
                     "participation.reminderType");
@@ -171,6 +185,13 @@ public class PatientReminderTableModel extends AbstractActTableModel {
         DefaultTableColumnModel model
                 = (DefaultTableColumnModel) super.createColumnModel(shortNames,
                                                                     context);
+        nextDueIndex = getNextModelIndex(model);
+        TableColumn nextDueColumn = createTableColumn(
+                nextDueIndex, "patientremindertablemodel.nextDue");
+        model.addColumn(nextDueColumn);
+        model.moveColumn(model.getColumnCount() - 1,
+                         getColumnOffset(model, "reminderType"));
+
         customerIndex = getNextModelIndex(model);
         TableColumn customerColumn = createTableColumn(
                 customerIndex, "patientremindertablemodel.customer");
@@ -235,19 +256,25 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      */
     private Component getAction(Act act) {
         Label result = LabelFactory.create();
-        Party customer = getPatientOwner(act);
-        if (customer != null) {
-            Contact contact = rules.getContact(customer.getContacts());
-            if (contact != null) {
-                if (TypeHelper.isA(contact, "contact.location")) {
-                    result.setText(
-                            Messages.get("patientremindertablemodel.post"));
-                } else if (TypeHelper.isA(contact, "contact.email")) {
-                    result.setText(
-                            Messages.get("patientremindertablemodel.email"));
-                } else if (TypeHelper.isA(contact, "contact.phoneNumber")) {
-                    result.setText(
-                            Messages.get("patientremindertablemodel.list"));
+        if (rules.shouldCancel(act, new Date())) {
+            result.setText(
+                    Messages.get("patientremindertablemodel.cancel"));
+        } else {
+            Party customer = getPatientOwner(act);
+            if (customer != null) {
+                Contact contact = rules.getContact(customer.getContacts());
+                if (contact != null) {
+                    if (TypeHelper.isA(contact, "contact.location")) {
+                        result.setText(
+                                Messages.get("patientremindertablemodel.post"));
+                    } else if (TypeHelper.isA(contact, "contact.email")) {
+                        result.setText(
+                                Messages.get(
+                                        "patientremindertablemodel.email"));
+                    } else if (TypeHelper.isA(contact, "contact.phoneNumber")) {
+                        result.setText(
+                                Messages.get("patientremindertablemodel.list"));
+                    }
                 }
             }
         }

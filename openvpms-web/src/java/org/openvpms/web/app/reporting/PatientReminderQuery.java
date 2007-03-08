@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.ListModel;
+import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -34,16 +35,19 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
-import org.openvpms.web.component.im.query.AbstractArchetypeServiceResultSet;
 import org.openvpms.web.component.im.query.AbstractQuery;
 import org.openvpms.web.component.im.query.ActDateRange;
+import org.openvpms.web.component.im.query.ListResultSet;
+import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -74,6 +78,7 @@ public class PatientReminderQuery extends AbstractQuery<Act> {
      */
     public PatientReminderQuery() {
         super(new String[]{"act.patientReminder"});
+        QueryFactory.initialise(this);
     }
 
     /**
@@ -81,14 +86,16 @@ public class PatientReminderQuery extends AbstractQuery<Act> {
      *
      * @return a new query
      */
-    public ReminderQuery createReminderQuery() {
+    public DueReminderQuery createReminderQuery() {
         IMObject obj = (IMObject) reminderType.getSelectedItem();
         Entity entity = (obj instanceof Entity) ? (Entity) obj : null;
         Date from = dateRange.getFrom();
         Date to = dateRange.getTo();
-        ReminderQuery query = new ReminderQuery();
+        DueReminderQuery query = new DueReminderQuery();
         query.setReminderType(entity);
-        query.setDueDateRange(from, to);
+        query.setFrom(from);
+        query.setTo(to);
+        query.setCancelDate(new Date());
         return query;
     }
 
@@ -134,14 +141,13 @@ public class PatientReminderQuery extends AbstractQuery<Act> {
      */
     @Override
     protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
-        return new AbstractArchetypeServiceResultSet<Act>(
-                getMaxResults(), sort) {
-
-            protected ArchetypeQuery createQuery() {
-                return createReminderQuery().createQuery();
-            }
-
-        };
+        DueReminderQuery query = createReminderQuery();
+        Iterator<Act> iterator = query.query().iterator();
+        List<Act> due = new ArrayList<Act>();
+        while (iterator.hasNext()) {
+            due.add(iterator.next());
+        }
+        return new ListResultSet<Act>(due, getMaxResults());
     }
 
     /**

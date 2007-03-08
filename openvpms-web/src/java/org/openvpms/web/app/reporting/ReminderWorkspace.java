@@ -25,7 +25,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
+import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -170,7 +170,7 @@ public class ReminderWorkspace extends AbstractWorkspace {
             Act selected = browser.getSelected();
             if (selected != null) {
                 GlobalContext context = GlobalContext.getInstance();
-                ReminderQuery q = query.createReminderQuery();
+                DueReminderQuery q = query.createReminderQuery();
                 ReminderGenerator generator
                         = new ReminderGenerator(selected, q.getFrom(),
                                                 q.getTo(), context);
