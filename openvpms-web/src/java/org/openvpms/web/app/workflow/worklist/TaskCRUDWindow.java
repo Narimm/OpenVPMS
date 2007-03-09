@@ -19,7 +19,7 @@
 package org.openvpms.web.app.workflow.worklist;
 
 import nextapp.echo2.app.Button;
-import org.openvpms.archetype.rules.workflow.WorkflowStatus;
+import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
@@ -62,18 +62,24 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
         buttons.remove(checkOut);
         if (enable) {
             Act act = getObject();
-            String status = act.getStatus();
-            if (WorkflowStatus.PENDING.equals(status) 
-            		|| WorkflowStatus.IN_PROGRESS.equals(status)
-            		|| WorkflowStatus.BILLED.equals(status)) {
+            if (canCheckoutOrConsult(act)) {
                 buttons.add(consult);
-            }
-            if (WorkflowStatus.PENDING.equals(status)
-                    || WorkflowStatus.IN_PROGRESS.equals(status)
-                    || WorkflowStatus.BILLED.equals(status)) {
                 buttons.add(checkOut);
             }
         }
+    }
+
+    /**
+     * Determines if a consulation or checkout can be performed on an act.
+     *
+     * @param act the act
+     * @return <tt>true</tt> if consultation can be performed
+     */
+    protected boolean canCheckoutOrConsult(Act act) {
+        String status = act.getStatus();
+        return (TaskStatus.PENDING.equals(status)
+                || TaskStatus.IN_PROGRESS.equals(status)
+                || TaskStatus.BILLED.equals(status));
     }
 
 }

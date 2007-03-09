@@ -22,7 +22,6 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
@@ -148,14 +147,21 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
     }
 
     /**
+     * Determines if a consulation or checkout can be performed on an act.
+     *
+     * @param act the act
+     * @return <tt>true</tt> if consultation can be performed
+     */
+    protected abstract boolean canCheckoutOrConsult(Act act);
+
+    /**
      * Invoked when the 'consult' button is pressed.
      */
     private void onConsult() {
         Act act = IMObjectHelper.reload(getObject());
-        // make sure the act is still available and CHECKED_IN prior to
+        // make sure the act is still available and has a valid status prior to
         // beginning workflow
-        if (act != null &&
-                AppointmentStatus.CHECKED_IN.equals(act.getStatus())) {
+        if (act != null && canCheckoutOrConsult(act)) {
             ConsultWorkflow workflow = new ConsultWorkflow(act);
             workflow.setTaskListener(new TaskListener() {
                 public void taskEvent(TaskEvent event) {
@@ -173,10 +179,9 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
      */
     private void onCheckOut() {
         Act act = IMObjectHelper.reload(getObject());
-        // make sure the act is still available and CHECKED_IN prior to
-        // beginning workflow
-        if (act != null
-                && AppointmentStatus.CHECKED_IN.equals(act.getStatus())) {
+        // make sure the act is still available and has a valid status prior
+        // to beginning workflow
+        if (act != null && canCheckoutOrConsult(act)) {
             CheckOutWorkflow workflow = new CheckOutWorkflow(act);
             workflow.setTaskListener(new TaskListener() {
                 public void taskEvent(TaskEvent event) {
