@@ -147,8 +147,32 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getReferralVet(Party patient, Date time) {
-        EntityBean bean = new EntityBean(patient);
+        EntityBean bean = new EntityBean(patient, service);
         return (Party) bean.getNodeTargetEntity("referrals", time);
+    }
+
+    /**
+     * Marks a patient as being deceased.
+     *
+     * @param patient the patient
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void setDeceased(Party patient) {
+        EntityBean bean = new EntityBean(patient, service);
+        bean.setValue("deceased", true);
+        bean.save();
+    }
+
+    /**
+     * Marks a patient as being desexed.
+     *
+     * @param patient the patient
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void setDesexed(Party patient) {
+        EntityBean bean = new EntityBean(patient, service);
+        bean.setValue("desexed", true);
+        bean.save();
     }
 
     /**
@@ -156,9 +180,10 @@ public class PatientRules {
      * @param patient the patient
      * @return the age in string format
      * @throws ArchetypeServiceException for any archetype service error
+     * todo - should be localised
      */
     public String getPatientAge(Party patient) {
-        EntityBean bean = new EntityBean(patient);
+        EntityBean bean = new EntityBean(patient, service);
         Date birthDate = bean.getDate("dateOfBirth");
         String result;
         if (birthDate != null) {

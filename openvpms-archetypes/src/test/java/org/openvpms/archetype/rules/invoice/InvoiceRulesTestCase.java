@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.invoice;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import static org.openvpms.archetype.rules.act.ActStatus.*;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
@@ -26,11 +27,13 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
@@ -283,6 +286,29 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that demographic updates associated with a product are processed
+     * when an invoice is posted.
+     */
+    public void testDemographicUpdates() {
+        Product product = createDesexingProduct();
+        ActBean invoice = createInvoice();
+        ActBean item = createInvoiceItem();
+        item.addParticipation("participation.product", product);
+        item.save();
+
+        IMObjectBean bean = new IMObjectBean(get(patient));
+        assertFalse(bean.getBoolean("desexed"));
+
+        invoice.addRelationship("actRelationship.customerAccountInvoiceItem",
+                                item.getAct());
+        invoice.setStatus(ActStatus.POSTED);
+        invoice.save();
+
+        bean = new IMObjectBean(get(patient));
+        assertFalse(bean.getBoolean("desexed"));
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -369,6 +395,23 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
                                  template);
         }
         bean.save();
+        return product;
+    }
+
+    /**
+     * Creates and saves a new desexing product, with associated
+     * <em>lookup.demographicUpdate</em> to perform the desexing update.
+     */
+    private  Product createDesexingProduct() {
+        Product product = TestHelper.createProduct();
+        Lookup lookup = (Lookup) create("lookup.demographicUpdate");
+        lookup.setCode("XDESEXING_" + System.currentTimeMillis());
+        IMObjectBean bean = new IMObjectBean(lookup);
+        bean.setValue("nodeName", "patient.entity");
+        bean.setValue("expression", "party:setPatientDesexed(.)");
+        bean.save();
+        product.addClassification(lookup);
+        save(product);
         return product;
     }
 

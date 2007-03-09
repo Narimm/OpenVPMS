@@ -222,6 +222,19 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
+        <node name="updates" path="/classifications" parentChild="false"
+            type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+            filter="lookup.demographicUpdates" >
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                            value="lookup.demographicUpdates" />
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
 		<node name="type" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
 			filter="entityRelationship.productTypeProduct" >
