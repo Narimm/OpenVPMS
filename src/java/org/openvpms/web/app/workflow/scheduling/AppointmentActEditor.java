@@ -283,11 +283,15 @@ public class AppointmentActEditor extends AbstractActEditor {
             ComponentState result;
             String name = property.getDescriptor().getName();
             if (name.equals("startTime") || name.equals("endTime")) {
+                Date date = (Date) property.getValue();
+                if (date == null) {
+                    date = context.getContext().getScheduleDate();
+                }
                 IMObjectProperty timeProperty = (IMObjectProperty) property;
                 TimePropertyTransformer transformer
                         = new TimePropertyTransformer(parent,
                                                       property.getDescriptor());
-                transformer.setDate(context.getContext().getScheduleDate());
+                transformer.setDate(date);
                 timeProperty.setTransformer(transformer);
                 result = new ComponentState(TimeFieldFactory.create(property),
                                             property);

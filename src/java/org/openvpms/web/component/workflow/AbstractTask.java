@@ -20,6 +20,7 @@ package org.openvpms.web.component.workflow;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -175,7 +176,15 @@ public abstract class AbstractTask implements Task {
         if (!list.isEmpty()) {
             IMObjectBean bean = new IMObjectBean(object);
             for (TaskProperty property : list) {
-                bean.setValue(property.getName(), property.getValue(context));
+                String name = property.getName();
+                NodeDescriptor descriptor = bean.getDescriptor(name);
+                Object value = property.getValue(context);
+                // todo - better error handling
+                if (descriptor != null && descriptor.isCollection()) {
+                    bean.addValue(name, (IMObject) value);
+                } else {
+                    bean.setValue(name, value);
+                }
             }
         }
     }

@@ -26,11 +26,12 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.workflow.InvoiceTask;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalTask;
+import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.NodeConditionTask;
 import org.openvpms.web.component.workflow.TaskContext;
-import org.openvpms.web.component.workflow.TaskContextImpl;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.WorkflowImpl;
@@ -78,10 +79,11 @@ public class ConsultWorkflow extends WorkflowImpl {
         final User clinician
                 = (User) bean.getParticipant("participation.clinician");
 
-        initial = new TaskContextImpl();
+        initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);
         initial.setPatient(patient);
         initial.setClinician(clinician);
+        initial.setUser(GlobalContext.getInstance().getUser());
 
         // get/create the clinical event, and edit it
         addTask(new PatientClinicalEventTask());

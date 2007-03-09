@@ -19,7 +19,7 @@
 package org.openvpms.web.component.im.layout;
 
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -125,7 +125,7 @@ public class DefaultLayoutContext implements LayoutContext {
      */
     public Context getContext() {
         if (context == null) {
-            context = ContextApplicationInstance.getInstance().getContext();
+            context = GlobalContext.getInstance();
         }
         return context;
     }
