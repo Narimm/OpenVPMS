@@ -32,6 +32,7 @@ import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -300,6 +301,29 @@ public class ArchetypeServiceQueryTestCase extends
         assertEquals(1, contact2.getClassificationsAsArray().length);
         Lookup purpose2 = contact2.getClassificationsAsArray()[0];
         assertEquals("HOME", purpose2.getCode());
+    }
+
+    /**
+     * Verifies that additional constraints can be use with
+     * {@link ObjectRefConstraint}.
+     */
+    public void testOBF155() {
+        Party person = (Party) service.create("person.person");
+        person.getDetails().setAttribute("lastName", "Anderson");
+        person.getDetails().setAttribute("firstName", "Tim");
+        person.getDetails().setAttribute("title", "MR");
+        service.save(person);
+
+        ArchetypeQuery query = new ArchetypeQuery(person.getObjectReference());
+
+        // verify that the page only has a single element
+        IPage<IMObject> page = service.get(query);
+        assertEquals(1, page.getResults().size());
+
+        // constrain the query, and verify the page is empty
+        query.add(new NodeConstraint("name", "Mr Foo"));
+        page = service.get(query);
+        assertEquals(0, page.getResults().size());
     }
 
 }
