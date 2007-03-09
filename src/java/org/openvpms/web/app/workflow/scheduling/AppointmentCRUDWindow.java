@@ -103,7 +103,7 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
             String status = act.getStatus();
             if (AppointmentStatus.PENDING.equals(status)) {
                 buttons.add(checkIn);
-            } else if (AppointmentStatus.CHECKED_IN.equals(status)) {
+            } else if (canCheckoutOrConsult(act)) {
                 buttons.add(consult);
                 buttons.add(checkOut);
             }
@@ -118,6 +118,18 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor) {
         return new AppointmentEditDialog(editor);
+    }
+
+    /**
+     * Determines if a checkout or consult can be performed on an act.
+     *
+     * @param act the act
+     */
+    protected boolean canCheckoutOrConsult(Act act) {
+        String status = act.getStatus();
+        return AppointmentStatus.CHECKED_IN.equals(status)
+                || AppointmentStatus.IN_PROGRESS.equals(status)
+                || AppointmentStatus.COMPLETED.equals(status);
     }
 
     /**
