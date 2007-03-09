@@ -105,7 +105,8 @@ public class PatientRules {
         Date startTime = act.getActivityStartTime();
         if (patient != null && startTime != null) {
             EntityBean patientBean = new EntityBean(patient, service);
-            return (Party) patientBean.getSourceEntity(PATIENT_OWNER, startTime);
+            return (Party) patientBean.getSourceEntity(PATIENT_OWNER,
+                                                       startTime);
         }
         return null;
     }
@@ -159,8 +160,10 @@ public class PatientRules {
      */
     public void setDeceased(Party patient) {
         EntityBean bean = new EntityBean(patient, service);
-        bean.setValue("deceased", true);
-        bean.save();
+        if (!bean.getBoolean("deceased")) {
+            bean.setValue("deceased", true);
+            bean.save();
+        }
     }
 
     /**
@@ -171,16 +174,19 @@ public class PatientRules {
      */
     public void setDesexed(Party patient) {
         EntityBean bean = new EntityBean(patient, service);
-        bean.setValue("desexed", true);
-        bean.save();
+        if (!bean.getBoolean("desexed")) {
+            bean.setValue("desexed", true);
+            bean.save();
+        }
     }
 
     /**
      * Returns the age of the patient.
+     *
      * @param patient the patient
      * @return the age in string format
      * @throws ArchetypeServiceException for any archetype service error
-     * todo - should be localised
+     *                                   todo - should be localised
      */
     public String getPatientAge(Party patient) {
         EntityBean bean = new EntityBean(patient, service);

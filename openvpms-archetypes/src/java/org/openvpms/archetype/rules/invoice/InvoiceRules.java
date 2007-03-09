@@ -39,6 +39,8 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBeanExce
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -99,8 +101,31 @@ public class InvoiceRules {
     }
 
     /**
+     * Invoked <em>after</em> an invoice is saved. Processes any demographic
+     * updates if the invoice is 'Posted'.
+     */
+    public void saveInvoice(FinancialAct invoice) {
+        if (!TypeHelper.isA(invoice, "act.customerAccountChargesInvoice")) {
+            throw new IllegalArgumentException("Invalid argument 'invoice'");
+        }
+        if (ActStatus.POSTED.equals(invoice.getStatus())) {
+            ActBean bean = new ActBean(invoice, service);
+            List<Act> acts = bean.getActs("act.customerAccountInvoiceItem");
+            for (Act act : acts) {
+                ActBean actBean = new ActBean(act, service);
+                Entity product = actBean.getParticipant(
+                        "participation.product");
+                if (product != null) {
+                    EntityBean productBean = new EntityBean(product, service);
+                    processUpdates(actBean, productBean);
+                }
+            }
+        }
+    }
+
+    /**
      * Invoked <em>prior</em> to an invoice being removed. Removes any reminders
-     * or documents that don't have status 'Completed.
+     * or documents that don't have status 'Completed'.
      * <p/>
      * TODO - all modifications should be done within a transaction
      *
@@ -110,7 +135,7 @@ public class InvoiceRules {
         if (!TypeHelper.isA(invoice, "act.customerAccountChargesInvoice")) {
             throw new IllegalArgumentException("Invalid argument 'invoice'");
         }
-        ActBean bean = new ActBean(invoice);
+        ActBean bean = new ActBean(invoice, service);
         List<Act> acts = bean.getActs("act.customerAccountInvoiceItem");
         for (Act act : acts) {
             removeInvoiceItem((FinancialAct) act);
@@ -359,7 +384,7 @@ public class InvoiceRules {
      * Processes an demographic updates associated with a product, if the
      * parent invoice is POSTED.
      *
-     * @param actBean the invoice act item
+     * @param actBean     the invoice act item
      * @param productBean the product
      */
     private void processUpdates(ActBean actBean, EntityBean productBean) {
@@ -385,7 +410,9 @@ public class InvoiceRules {
                 "actRelationship.customerAccountInvoiceItem");
         if (!relationships.isEmpty()) {
             ActRelationship relationship = relationships.get(0);
-            ArchetypeQuery query = new ArchetypeQuery(relationship.getSource());
+            ArchetypeQuery query = new ArchetypeQuery(
+                    new ObjectRefConstraint("act", relationship.getSource()));
+            query.add(new NodeSelectConstraint("act.status"));
             query.add(new NodeConstraint("status", ActStatus.POSTED));
             query.setMaxResults(1);
             if (!service.getObjects(query).getResults().isEmpty()) {

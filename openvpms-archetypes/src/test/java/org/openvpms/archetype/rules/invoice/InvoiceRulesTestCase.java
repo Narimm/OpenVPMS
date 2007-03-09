@@ -305,7 +305,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         invoice.save();
 
         bean = new IMObjectBean(get(patient));
-        assertFalse(bean.getBoolean("desexed"));
+        assertTrue(bean.getBoolean("desexed"));
     }
 
     /**
