@@ -21,6 +21,7 @@ package org.openvpms.archetype.rules.invoice;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.product.DemographicUpdater;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -28,6 +29,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -35,6 +37,8 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NodeConstraint;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -53,7 +57,7 @@ public class InvoiceRules {
     /**
      * The archetype service.
      */
-    private final IArchetypeService _service;
+    private final IArchetypeService service;
 
 
     /**
@@ -62,7 +66,7 @@ public class InvoiceRules {
      * @param service the archetype service
      */
     public InvoiceRules(IArchetypeService service) {
-        _service = service;
+        this.service = service;
     }
 
     /**
@@ -77,16 +81,20 @@ public class InvoiceRules {
         if (!TypeHelper.isA(act, "act.customerAccountInvoiceItem")) {
             throw new IllegalArgumentException("Invalid argument 'act'");
         }
-        ActBean actBean = new ActBean(act, _service);
+        ActBean actBean = new ActBean(act, service);
         Entity product = actBean.getParticipant("participation.product");
         EntityBean productBean = null;
         if (product != null) {
-            productBean = new EntityBean(product, _service);
+            productBean = new EntityBean(product, service);
         }
         boolean save = addReminders(actBean, productBean);
         save |= addDocuments(actBean, productBean);
         if (save) {
             actBean.save();
+        }
+
+        if (productBean != null) {
+            processUpdates(actBean, productBean);
         }
     }
 
@@ -158,7 +166,7 @@ public class InvoiceRules {
 
         // remove any existing reminders not referenced by the current product
         for (Act reminder : reminders) {
-            ActBean bean = new ActBean(reminder, _service);
+            ActBean bean = new ActBean(reminder, service);
             IMObjectReference type
                     = bean.getParticipantRef("participation.reminderType");
             if (type == null || !productReminders.contains(type)) {
@@ -213,7 +221,7 @@ public class InvoiceRules {
 
         // remove any existing documents not referenced by the current product
         for (Act document : documents) {
-            ActBean bean = new ActBean(document, _service);
+            ActBean bean = new ActBean(document, service);
             IMObjectReference template
                     = bean.getParticipantRef("participation.documentTemplate");
             if (template == null || !productDocs.contains(template)) {
@@ -248,13 +256,13 @@ public class InvoiceRules {
      * @throws IMObjectBeanException     if the reminders node does't exist
      */
     private void removeInvoiceItemReminders(FinancialAct item) {
-        ActBean bean = new ActBean(item, _service);
+        ActBean bean = new ActBean(item, service);
         List<Act> acts = bean.getActsForNode("reminders");
 
         for (Act act : acts) {
             ActRelationship r = bean.getRelationship(act);
             if (!ActStatus.COMPLETED.equals(act.getStatus())) {
-                _service.remove(act);
+                service.remove(act);
                 bean.removeRelationship(r);
             }
         }
@@ -270,7 +278,7 @@ public class InvoiceRules {
      * @throws IMObjectBeanException     if the documents node does't exist
      */
     private void removeInvoiceItemDocuments(FinancialAct item) {
-        ActBean bean = new ActBean(item, _service);
+        ActBean bean = new ActBean(item, service);
         List<Act> acts = bean.getActsForNode("documents");
 
         for (Act act : acts) {
@@ -278,7 +286,7 @@ public class InvoiceRules {
             ActRelationship r = bean.getRelationship(act);
             if (!ActStatus.COMPLETED.equals(status)
                     && !ActStatus.POSTED.equals(status)) {
-                _service.remove(act);
+                service.remove(act);
                 bean.removeRelationship(r);
             }
         }
@@ -292,11 +300,11 @@ public class InvoiceRules {
      * @param reminderType the reminder type
      */
     private void addReminder(ActBean item, Entity reminderType) {
-        Act act = (Act) _service.create("act.patientReminder");
+        Act act = (Act) service.create("act.patientReminder");
         Date startTime = item.getAct().getActivityStartTime();
         Date endTime = null;
         if (startTime != null) {
-            ReminderRules rules = new ReminderRules(_service);
+            ReminderRules rules = new ReminderRules(service);
             endTime = rules.calculateReminderDueDate(startTime, reminderType);
         }
         act.setActivityStartTime(startTime);
@@ -320,12 +328,12 @@ public class InvoiceRules {
      * @param document the document template
      */
     private void addDocument(ActBean item, Entity document) {
-        EntityBean bean = new EntityBean(document, _service);
+        EntityBean bean = new EntityBean(document, service);
         String shortName = bean.getString("archetype");
         if (StringUtils.isEmpty(shortName)) {
             shortName = "act.patientDocumentForm";
         }
-        IMObject object = _service.create(shortName);
+        IMObject object = service.create(shortName);
         if (TypeHelper.isA(object, "act.patientDocument*")) {
             Act act = (Act) object;
             act.setActivityStartTime(item.getAct().getActivityStartTime());
@@ -336,14 +344,55 @@ public class InvoiceRules {
             documentAct.addParticipation("participation.documentTemplate",
                                          document);
             if (TypeHelper.isA(act, "act.patientDocumentForm")) {
-            	
-                IMObjectReference product = item.getParticipantRef("participation.product");
+
+                IMObjectReference product = item.getParticipantRef(
+                        "participation.product");
                 documentAct.addParticipation("participation.product", product);
             }
             documentAct.save();
             item.addRelationship("actRelationship.invoiceItemDocument",
                                  documentAct.getAct());
         }
+    }
+
+    /**
+     * Processes an demographic updates associated with a product, if the
+     * parent invoice is POSTED.
+     *
+     * @param actBean the invoice act item
+     * @param productBean the product
+     */
+    private void processUpdates(ActBean actBean, EntityBean productBean) {
+        List<Lookup> updates = null;
+        if (productBean.hasNode("updates")) {
+            updates = productBean.getValues("updates", Lookup.class);
+        }
+        if (updates != null && !updates.isEmpty() && invoicePosted(actBean)) {
+            DemographicUpdater updater = new DemographicUpdater(
+                    service);
+            updater.evaluate(actBean.getAct(), updates);
+        }
+    }
+
+    /**
+     * Determines if the parent invoice is posted.
+     *
+     * @param actBean the invoice act item
+     * @return <tt>true</tt> if the parent invoice is posted
+     */
+    private boolean invoicePosted(ActBean actBean) {
+        List<ActRelationship> relationships = actBean.getRelationships(
+                "actRelationship.customerAccountInvoiceItem");
+        if (!relationships.isEmpty()) {
+            ActRelationship relationship = relationships.get(0);
+            ArchetypeQuery query = new ArchetypeQuery(relationship.getSource());
+            query.add(new NodeConstraint("status", ActStatus.POSTED));
+            query.setMaxResults(1);
+            if (!service.getObjects(query).getResults().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -355,7 +404,7 @@ public class InvoiceRules {
      */
     private IMObject getObject(IMObjectReference ref) {
         if (ref != null) {
-            return ArchetypeQueryHelper.getByObjectReference(_service, ref);
+            return ArchetypeQueryHelper.getByObjectReference(service, ref);
         }
         return null;
     }

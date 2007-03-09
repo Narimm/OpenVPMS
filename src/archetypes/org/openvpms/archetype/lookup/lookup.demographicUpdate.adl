@@ -16,9 +16,9 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-lookup-lookup.productGroup.1.0"
+	<archetype name="openvpms-lookup-lookup.demographicUpdate.1.0"
 		latest="true"
-		type="org.openvpms.component.business.domain.im.lookup.Lookup"  displayName="Product Group" >
+		type="org.openvpms.component.business.domain.im.lookup.Lookup"  displayName="Demographic Update" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
         <node name="code" path="/code" type="java.lang.String" hidden="true"
               minCardinality="1">
@@ -31,6 +31,12 @@
 			minCardinality="1" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat(/name, ' Product Group')" />
-	</archetype>
+			derivedValue="concat(/name, ' Demographic Update')" />
+		<node name="details" path="/details" hidden="true"
+			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+			minCardinality="1" maxCardinality="1">
+			<node name="expression" path="/details/attributes/expression" type="java.lang.String" minCardinality="1" />
+            <node name="nodeName" path="/details/attributes/nodeName" type="java.lang.String" minCardinality="0" />
+        </node>
+    </archetype>
 </archetypes>

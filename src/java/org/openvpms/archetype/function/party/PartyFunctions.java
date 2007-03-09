@@ -18,9 +18,6 @@
 
 package org.openvpms.archetype.function.party;
 
-import java.util.Date;
-import java.util.Set;
-
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
 import org.openvpms.archetype.rules.party.PartyRules;
@@ -31,6 +28,9 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+
+import java.util.Date;
+import java.util.Set;
 
 
 /**
@@ -128,6 +128,24 @@ public class PartyFunctions {
      */
     public static Party getPatientOwner(Act act) {
         return new PatientRules().getOwner(act);
+    }
+
+    /**
+     * Marks a patient as being deceased.
+     *
+     * @param patient the patient
+     */
+    public static void setPatientDeceased(Party patient) {
+        new PatientRules().setDeceased(patient);
+    }
+
+    /**
+     * Marks a patient as being desexed.
+     *
+     * @param patient the patient
+     */
+    public static void setPatientDesexed(Party patient) {
+        new PatientRules().setDesexed(patient);
     }
 
     /**
@@ -262,7 +280,7 @@ public class PartyFunctions {
     /**
      * Returns a formatted fax number for a party.
      *
-     * @param context the expression context. Expected to reference a party 
+     * @param context the expression context. Expected to reference a party
      * @return a formatted fax number, or <code>null</code>
      */
 
@@ -290,7 +308,6 @@ public class PartyFunctions {
     }
 
     /**
-     * 
      * Returns a formatted contact purpose string for the Contact.
      *
      * @param context the expression context. Expected to reference a contact.

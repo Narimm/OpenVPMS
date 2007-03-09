@@ -11,55 +11,69 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.archetype.rules.tax;
+package org.openvpms.archetype.rules.product;
 
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
- * Exception class for exceptions raised by tax rules.
+ * Exception class for exceptions raised by {@link DemographicUpdater}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaxRuleException extends OpenVPMSException {
+public class DemographicUpdateException extends OpenVPMSException {
 
     /**
-     * An enumeration of error codes
+     * An enumeration of error codes.
      */
     public enum ErrorCode {
-        InvalidActForTax
+        InvalidDemographicUpdate,
+        NoContext,
+        FailedToEvaluate
     }
 
     /**
      * The error code.
      */
-    private final ErrorCode _errorCode;
+    private final ErrorCode errorCode;
 
-    
+
     /**
      * The appropriate resource file is loaded cached into memory when this
      * class is loaded.
      */
     private static Messages MESSAGES
             = Messages.getMessages(
-            "org.openvpms.archetype.rules.tax."
+            "org.openvpms.archetype.rules.product."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
-     * Constructs a new <code>TaxRuleException</code>.
+     * Constructs a new <tt>DemographicUpdateException</tt>.
      *
      * @param errorCode the error code
      */
-    public TaxRuleException(ErrorCode errorCode, Object ... args) {
-        super(TaxRuleException.MESSAGES.getMessage(errorCode.toString(), args));
-        _errorCode = errorCode;
+    public DemographicUpdateException(ErrorCode errorCode, Object ... args) {
+        super(MESSAGES.getMessage(errorCode.toString(), args));
+        this.errorCode = errorCode;
+    }
+
+    /**
+     * Constructs a new <tt>DemographicUpdateException</tt>.
+     *
+     * @param errorCode the error code
+     * @param cause     the root cause
+     */
+    public DemographicUpdateException(ErrorCode errorCode, Throwable cause,
+                                      Object ... args) {
+        super(MESSAGES.getMessage(errorCode.toString(), args), cause);
+        this.errorCode = errorCode;
     }
 
     /**
@@ -67,7 +81,8 @@ public class TaxRuleException extends OpenVPMSException {
      *
      * @return the error code
      */
-    public TaxRuleException.ErrorCode getErrorCode() {
-        return _errorCode;
+    public ErrorCode getErrorCode() {
+        return errorCode;
     }
+
 }
