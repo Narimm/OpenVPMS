@@ -328,7 +328,7 @@ public abstract class AbstractContext implements Context {
     }
 
     /**
-     * Returns the current depsoit account.
+     * Returns the current deposit account.
      *
      * @return the current depsoit, or <code>null</code> if there is no current
      *         deposit
@@ -465,6 +465,12 @@ public abstract class AbstractContext implements Context {
      *         <code>null</code> if none is found
      */
     public IMObject getObject(String key) {
+        for (String shortName : SHORT_NAMES) {
+            if (TypeHelper.matches(key, shortName)) {
+                key = shortName;
+                break;
+            }
+        }
         return objects.get(key);
     }
 

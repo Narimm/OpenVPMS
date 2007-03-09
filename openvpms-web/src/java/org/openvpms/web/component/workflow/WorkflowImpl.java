@@ -98,7 +98,7 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
      * Starts the workflow.
      */
     public void start() {
-        start(new TaskContextImpl());
+        start(new DefaultTaskContext());
     }
 
     /**

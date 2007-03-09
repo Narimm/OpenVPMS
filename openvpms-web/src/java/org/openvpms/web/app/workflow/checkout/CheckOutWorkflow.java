@@ -25,11 +25,12 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.workflow.InvoiceTask;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
+import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
-import org.openvpms.web.component.workflow.TaskContextImpl;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.Tasks;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
@@ -94,10 +95,11 @@ public class CheckOutWorkflow extends WorkflowImpl {
         final User clinician
                 = (User) bean.getParticipant("participation.clinician");
 
-        initial = new TaskContextImpl();
+        initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);
         initial.setPatient(patient);
         initial.setClinician(clinician);
+        initial.setUser(GlobalContext.getInstance().getUser());
 
         // get/create the invoice, and edit it
         addTask(new InvoiceTask());

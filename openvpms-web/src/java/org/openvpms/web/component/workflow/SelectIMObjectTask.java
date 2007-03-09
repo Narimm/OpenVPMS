@@ -49,37 +49,58 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      */
     private final Query<T> query;
 
+    /**
+     * Task to delegate to if creation of a new object is selected.
+     */
+    private final Task createTask;
+
 
     /**
-     * Constructs a new <code>SelectIMObjectTask</code>.
+     * Constructs a new <tt>SelectIMObjectTask</tt>.
      *
      * @param shortName the short name to query on. May contain wildcards
      * @param context   the context
      */
     public SelectIMObjectTask(String shortName, Context context) {
-        query = QueryFactory.create(shortName, context);
-        type = getType(query.getShortNames());
+        this(shortName, context, null);
     }
 
     /**
-     * Constructs a new <code>SelectIMObjectTask</code>.
+     * Constructs a new <tt>SelectIMObjectTask</tt>.
+     *
+     * @param shortName  the short name to query on. May contain wildcards
+     * @param context    the context
+     * @param createTask if non-null, handles creation of new objects
+     */
+    public SelectIMObjectTask(String shortName, Context context,
+                              Task createTask) {
+        query = QueryFactory.create(shortName, context);
+        type = getType(query.getShortNames());
+        this.createTask = createTask;
+    }
+
+    /**
+     * Constructs a new <tt>SelectIMObjectTask</tt>.
      * The selected object updates the local context.
      *
      * @param query the query
      */
     public SelectIMObjectTask(Query<T> query) {
-        this(getType(query.getShortNames()), query);
+        this(getType(query.getShortNames()), query, null);
     }
 
     /**
-     * Constructs a new <code>SelectIMObjectTask</code>.
+     * Constructs a new <tt>SelectIMObjectTask</tt>.
      *
-     * @param type  the collective noun for the types this may select
-     * @param query the query
+     * @param type       the collective noun for the types this may select
+     * @param query      the query
+     * @param createTask if non-null, handles creation of new objects
      */
-    public SelectIMObjectTask(String type, Query<T> query) {
+    public SelectIMObjectTask(String type, Query<T> query,
+                              Task createTask) {
         this.type = type;
         this.query = query;
+        this.createTask = createTask;
     }
 
     /**
@@ -96,23 +117,28 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
                 "imobject.select.title", type);
         String[] buttons = isRequired()
                 ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
-        final BrowserDialog<T> dialog = new BrowserDialog<T>(title, buttons,
-                                                             browser);
+        boolean addNew = (createTask != null);
+        final BrowserDialog<T> dialog
+                = new BrowserDialog<T>(title, buttons, browser, addNew);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
-                T selected = dialog.getSelected();
-                if (selected != null) {
-                    context.addObject(selected);
-                    notifyCompleted();
-                } else if (dialog.getAction().equals(PopupDialog.SKIP_ID)) {
-                    notifySkipped();
+                if (dialog.createNew()) {
+                    createTask.setTaskListener(getTaskListener());
+                    createTask.start(context);
                 } else {
-                    notifyCancelled();
+                    T selected = dialog.getSelected();
+                    if (selected != null) {
+                        context.addObject(selected);
+                        notifyCompleted();
+                    } else if (PopupDialog.SKIP_ID.equals(dialog.getAction())) {
+                        notifySkipped();
+                    } else {
+                        notifyCancelled();
+                    }
                 }
             }
         });
         dialog.show();
     }
-
 
 }
