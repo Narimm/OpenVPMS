@@ -544,6 +544,11 @@ public class QueryBuilder {
         context.addWhereConstraint(alias, "linkId", RelationalOp.EQ,
                                    constraint.getLinkId());
 
+        // process the embedded constraints.
+        for (IConstraint oc : constraint.getConstraints()) {
+            processConstraint(oc, context);
+        }
+        
         // pop the stack when we have finished processing this constraint
         context.popTypeSet();
         context.popLogicalOperator();
