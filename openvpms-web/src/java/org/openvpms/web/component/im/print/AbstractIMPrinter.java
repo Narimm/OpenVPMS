@@ -18,19 +18,19 @@
 
 package org.openvpms.web.component.im.print;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.doc.MediaHelper;
+import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.IMReportException;
 import org.openvpms.report.PrintProperties;
-import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.servlet.DownloadServlet;
 
@@ -59,6 +59,15 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
      */
     private final T object;
 
+    /**
+     * Determines if printing should be interactive.
+     */
+    private boolean interactive = true;
+
+    /**
+     * The template helper.
+     */
+    private final TemplateHelper helper;
 
     /**
      * Constructs a new <code>AbstractIMPrinter</code> to print a single object.
@@ -68,6 +77,7 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
     public AbstractIMPrinter(T object) {
         objects = Arrays.asList(object);
         this.object = object;
+        helper = new TemplateHelper();
     }
 
     /**
@@ -79,6 +89,7 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
     public AbstractIMPrinter(Iterable<T> objects) {
         this.objects = objects;
         object = null;
+        helper = new TemplateHelper();
     }
 
     /**
@@ -108,6 +119,16 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
     public void print(String printer) {
         IMReport<T> report = createReport();
         report.print(getObjects().iterator(), getProperties(printer));
+    }
+
+    /**
+     * Determines if printing should occur interactively.
+     *
+     * @return <tt>true</tt> if printing should occur interactively,
+     *         <tt>false</tt> if it can be performed non-interactively
+     */
+    public boolean getInteractive() {
+        return interactive;
     }
 
     /**
@@ -141,6 +162,24 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
     }
 
     /**
+     * Returns the print properties for an object.
+     *
+     * @param printer  the printer
+     * @param template an <em>entity.documentTemplate</em>. May be <tt>null</tt>
+     * @return the print properties
+     * @throws OpenVPMSException for any error
+     */
+    protected PrintProperties getProperties(String printer, Entity template) {
+        PrintProperties properties = new PrintProperties(printer);
+        if (template != null) {
+            properties.setMediaSize(getMediaSize(template));
+            properties.setOrientation(getOrientation(template));
+            properties.setMediaTray(getMediaTray(template, printer));
+        }
+        return properties;
+    }
+
+    /**
      * Generates a document and downloads it to the client.
      *
      * @throws OpenVPMSException for any error
@@ -148,6 +187,34 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
     protected void download() {
         Document document = getDocument();
         DownloadServlet.startDownload(document);
+    }
+
+    /**
+     * Determines if printing should occur interactively.
+     *
+     * @param interactive if <tt>true</tt> print interactively
+     */
+    protected void setInteractive(boolean interactive) {
+        this.interactive = interactive;
+    }
+
+    /**
+     * Helper to return the default printer for a template for the current
+     * practice.
+     *
+     * @param template an <em>entity.documentTemplate</em>
+     */
+    protected String getDefaultPrinter(Entity template) {
+        String result = null;
+        Party practice = GlobalContext.getInstance().getPractice();
+        if (practice != null) {
+            EntityRelationship printer = helper.getDocumentTemplatePrinter(
+                    template, practice);
+            if (printer != null) {
+                result = helper.getPrinter(printer);
+            }
+        }
+        return result;
     }
 
     /**
@@ -188,7 +255,35 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
     }
 
     /**
-     * Helper to return the media tray for a document template.
+     * Helper to return the <em>entityRelationship.documentTemplatePrinter</em>
+     * for a template and printer and current practice.
+     *
+     * @param template an <em>entity.documentTemplate</em>
+     * @param printer  the printer
+     * @return the corresponding
+     *         <em>entityRelationship.documentTemplatePrinter</em>
+     *         or <tt>null</tt> if none is found
+     */
+    protected EntityRelationship getDocumentTemplatePrinter(Entity template,
+                                                            String printer) {
+        Party practice = GlobalContext.getInstance().getPractice();
+        if (practice != null) {
+            EntityRelationship relationship
+                    = helper.getDocumentTemplatePrinter(template, practice);
+            if (relationship != null) {
+                // make sure the relationship is for the same printer
+                if (ObjectUtils.equals(printer,
+                                       helper.getPrinter(relationship))) {
+                    return relationship;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Helper to return the media tray for a document template for a particular
+     * printer for the current practice.
      *
      * @param template an <em>entity.documentTemplate</em>
      * @param printer  the printer name
@@ -196,14 +291,26 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
      *         is defined
      */
     protected MediaTray getMediaTray(Entity template, String printer) {
-        Party practice = GlobalContext.getInstance().getPractice();
-        if (practice != null) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            return TemplateHelper.getMediaTray(template, practice, printer,
-                                               service);
+        EntityRelationship r = getDocumentTemplatePrinter(template, printer);
+        return (r != null) ? helper.getMediaTray(r) : null;
+    }
+
+    /**
+     * Helper to determine if printing should occur interactively for a
+     * particular document template, printer and the current practice.
+     * If no relationship is defined, defaults to <tt>true</tt>.
+     *
+     * @param template an <em>entity.documentTemplate</em>
+     * @param printer  the printer name
+     * @return <tt>true</tt> if printing should occur interactively
+     */
+    protected boolean getInteractive(Entity template, String printer) {
+        boolean result = true;
+        EntityRelationship r = getDocumentTemplatePrinter(template, printer);
+        if (r != null) {
+            result = helper.getInteractive(r);
         }
-        return null;
+        return result;
     }
 
 }

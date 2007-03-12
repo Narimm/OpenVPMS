@@ -39,12 +39,32 @@ public class PrintIMObjectTask extends AbstractTask {
     private final String shortName;
 
     /**
-     * Creates a new <code>PrintIMObjectTask</code>.
+     * Determines if objects should be printed interactively.
+     * If <tt>false</tt>, indicates to try and print in the background unless
+     * printing requires user intervention.
+     */
+    private final boolean interactive;
+
+
+    /**
+     * Creates a new <tt>PrintIMObjectTask</tt>.
      *
      * @param shortName the short name of the object to print
      */
     public PrintIMObjectTask(String shortName) {
+        this(shortName, true);
+    }
+
+    /**
+     * Creates a new <tt>PrintIMObjectTask</tt>.
+     *
+     * @param shortName   the short name of the object to print
+     * @param interactive if <tt>true</tt> print interactively, otherwise
+     *                    attempt to print in the background
+     */
+    public PrintIMObjectTask(String shortName, boolean interactive) {
         this.shortName = shortName;
+        this.interactive = interactive;
     }
 
     /**
@@ -63,7 +83,7 @@ public class PrintIMObjectTask extends AbstractTask {
             boolean skip = !isRequired();
             InteractiveIMPrinter<IMObject> iPrinter
                     = new InteractiveIMPrinter<IMObject>(printer, skip);
-
+            iPrinter.setInteractive(interactive);
 
             iPrinter.setListener(new IMPrinterListener() {
                 public void printed() {

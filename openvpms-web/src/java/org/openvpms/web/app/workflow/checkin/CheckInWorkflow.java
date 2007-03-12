@@ -140,7 +140,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         // create a new act.patientClinicalEvent
         TaskProperties eventProps = new TaskProperties();
         eventProps.add("reason", "Appointment");
-        addTask(new EditIMObjectTask(event, eventProps, true));
+        addTask(new EditIMObjectTask(event, eventProps, false));
 
         // prompt for a patient weight.
         addTask(new PatientWeightTask());
@@ -154,6 +154,7 @@ public class CheckInWorkflow extends WorkflowImpl {
     }
 
     private class UpdateAppointmentTask extends UpdateIMObjectTask {
+
         /**
          * Creates a new <tt>UpdateAppointmentTask</tt>.
          *

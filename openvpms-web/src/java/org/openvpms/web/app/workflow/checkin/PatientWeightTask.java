@@ -87,7 +87,7 @@ class PatientWeightTask extends WorkflowImpl {
             }
         });
         EditIMObjectTask editWeightTask
-                = new EditIMObjectTask(PATIENT_WEIGHT, properties, false);
+                = new EditIMObjectTask(PATIENT_WEIGHT, properties, true);
         editWeightTask.setRequired(false);
         editWeightTask.setSkip(true);
         editWeightTask.setDeleteOnCancelOrSkip(true);

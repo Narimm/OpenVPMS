@@ -20,12 +20,11 @@ package org.openvpms.web.component.im.print;
 
 import org.openvpms.archetype.rules.doc.DocumentException;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
+import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -33,8 +32,6 @@ import org.openvpms.report.IMReport;
 import org.openvpms.report.IMReportException;
 import org.openvpms.report.IMReportFactory;
 import org.openvpms.report.PrintProperties;
-import org.openvpms.report.TemplateHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.system.ServiceHelper;
 
 
@@ -73,17 +70,17 @@ public class ObjectSetReportPrinter
      */
     public ObjectSetReportPrinter(Iterable<ObjectSet> set, String shortName) {
         super(set);
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        template = TemplateHelper.getTemplateForArchetype(shortName, service);
+        TemplateHelper helper = new TemplateHelper();
+        template = helper.getTemplateForArchetype(shortName);
         if (template == null) {
             throw new DocumentException(NotFound);
         }
-        document = TemplateHelper.getDocumentFromTemplate(template, service);
+        document = helper.getDocumentFromTemplate(template);
         if (document == null) {
             throw new DocumentException(NotFound);
         }
         this.shortName = shortName;
+        setInteractive(getInteractive(template, getDefaultPrinter()));
     }
 
     /**
@@ -102,14 +99,7 @@ public class ObjectSetReportPrinter
      *         none defined
      */
     public String getDefaultPrinter() {
-        String printer = null;
-        Party practice = GlobalContext.getInstance().getPractice();
-        if (practice != null) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            printer = TemplateHelper.getPrinter(template, practice, service);
-        }
-        return printer;
+        return getDefaultPrinter(template);
     }
 
     /**
@@ -134,14 +124,7 @@ public class ObjectSetReportPrinter
      */
     @Override
     protected PrintProperties getProperties(String printer) {
-        PrintProperties properties = super.getProperties(printer);
-        if (document != null) {
-            properties.setMediaSize(getMediaSize(template));
-            properties.setOrientation(getOrientation(template));
-            properties.setMediaTray(getMediaTray(template, printer));
-        }
-
-        return properties;
+        return super.getProperties(printer, template);
     }
 
 }

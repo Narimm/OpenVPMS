@@ -215,6 +215,7 @@ class PrintDocumentsTask extends AbstractTask {
                         = IMPrinterFactory.create(object);
                 InteractiveIMPrinter<IMObject> iPrinter
                         = new InteractiveIMPrinter<IMObject>(printer);
+                iPrinter.setInteractive(false);
                 iPrinter.setListener(this);
                 iPrinter.print();
             } else {
