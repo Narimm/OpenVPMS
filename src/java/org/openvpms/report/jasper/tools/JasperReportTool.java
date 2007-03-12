@@ -28,13 +28,13 @@ import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import net.sf.jasperreports.view.JasperViewer;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.IMReportException;
 import static org.openvpms.report.IMReportException.ErrorCode.FailedToCreateReport;
-import org.openvpms.report.TemplateHelper;
 import org.openvpms.report.jasper.DynamicJasperReport;
 import org.openvpms.report.jasper.JasperIMReport;
 import org.openvpms.report.jasper.JasperReportHelper;
@@ -151,8 +151,8 @@ public class JasperReportTool extends ReportTool {
         IArchetypeService service = getArchetypeService();
         DocumentHandlers handlers = getDocumentHandlers();
         String shortName = object.getArchetypeId().getShortName();
-        Document doc = TemplateHelper.getDocumentForArchetype(
-                shortName, service);
+        TemplateHelper helper = new TemplateHelper(service);
+        Document doc = helper.getDocumentForArchetype(shortName);
         JasperIMReport<IMObject> report = null;
         try {
             if (doc != null) {

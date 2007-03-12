@@ -19,6 +19,7 @@
 package org.openvpms.report;
 
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -80,8 +81,8 @@ public class IMReportFactory {
     public static IMReport<IMObject> createIMObjectReport(
             String shortName, IArchetypeService service,
             DocumentHandlers handlers) {
-        Document doc = TemplateHelper.getDocumentForArchetype(shortName,
-                                                              service);
+        TemplateHelper helper = new TemplateHelper(service);
+        Document doc = helper.getDocumentForArchetype(shortName);
         if (doc == null) {
             return new DynamicJasperReport(
                     service.getArchetypeDescriptor(shortName), service,
