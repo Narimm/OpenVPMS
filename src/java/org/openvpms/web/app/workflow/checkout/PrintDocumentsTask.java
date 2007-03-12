@@ -211,13 +211,17 @@ class PrintDocumentsTask extends AbstractTask {
         public void print() {
             if (iterator.hasNext()) {
                 object = iterator.next();
-                IMPrinter<IMObject> printer
-                        = IMPrinterFactory.create(object);
-                InteractiveIMPrinter<IMObject> iPrinter
-                        = new InteractiveIMPrinter<IMObject>(printer);
-                iPrinter.setInteractive(false);
-                iPrinter.setListener(this);
-                iPrinter.print();
+                try {
+                    IMPrinter<IMObject> printer
+                            = IMPrinterFactory.create(object);
+                    InteractiveIMPrinter<IMObject> iPrinter
+                            = new InteractiveIMPrinter<IMObject>(printer);
+                    iPrinter.setInteractive(false);
+                    iPrinter.setListener(this);
+                    iPrinter.print();
+                } catch (OpenVPMSException exception) {
+                    failed(exception);
+                }
             } else {
                 notifyCompleted();
             }

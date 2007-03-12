@@ -190,9 +190,13 @@ public class ReminderWorkspace extends AbstractWorkspace {
                 = new IMObjectReportPrinter<Act>(objects,
                                                  "act.patientReminder");
         String title = Messages.get("reporting.reminder.print.title");
-        InteractiveIMPrinter<Act> iPrinter
-                = new InteractiveIMPrinter<Act>(title, printer);
-        iPrinter.print();
+        try {
+            InteractiveIMPrinter<Act> iPrinter
+                    = new InteractiveIMPrinter<Act>(title, printer);
+            iPrinter.print();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**

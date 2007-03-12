@@ -432,8 +432,12 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      */
     protected void onPrint() {
         T object = getObject();
-        IMPrinter<T> printer = createPrinter(object);
-        printer.print();
+        try {
+            IMPrinter<T> printer = createPrinter(object);
+            printer.print();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**
@@ -505,6 +509,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * @return an instance of {@link InteractiveIMPrinter}. This overrides
      *         the default interactive behaviour so that printing is always
      *         interactive
+     * @throws OpenVPMSException for any error
      */
     protected IMPrinter<T> createPrinter(T object) {
         IMPrinter<T> printer = IMPrinterFactory.create(object);

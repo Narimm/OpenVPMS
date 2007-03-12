@@ -30,6 +30,7 @@ import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -39,6 +40,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -192,11 +194,15 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
      * Invoked when the 'Print Label' button is pressed.
      */
     private void onPrintLabel(IMObject object) {
-        IMPrinter<IMObject> printer
-                = new IMObjectReportPrinter<IMObject>(object);
-        InteractiveIMPrinter<IMObject> iPrinter
-                = new InteractiveIMPrinter<IMObject>(printer);
-        iPrinter.print();
+        try {
+            IMPrinter<IMObject> printer
+                    = new IMObjectReportPrinter<IMObject>(object);
+            InteractiveIMPrinter<IMObject> iPrinter
+                    = new InteractiveIMPrinter<IMObject>(printer);
+            iPrinter.print();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**

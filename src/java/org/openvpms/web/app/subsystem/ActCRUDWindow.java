@@ -186,6 +186,7 @@ public abstract class ActCRUDWindow<T extends Act>
      *
      * @param object the object to print
      * @return an instance of {@link InteractiveIMPrinter}.
+     * @throws OpenVPMSException for any error
      */
     @Override
     protected IMPrinter<T> createPrinter(final T object) {
