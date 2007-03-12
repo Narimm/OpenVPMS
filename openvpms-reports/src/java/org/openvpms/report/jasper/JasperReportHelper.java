@@ -25,11 +25,11 @@ import org.apache.commons.io.IOUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.TemplateHelper;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -87,7 +87,8 @@ public class JasperReportHelper {
     public static JasperDesign getReport(String name, IArchetypeService service,
                                          DocumentHandlers handlers)
             throws JRException {
-        Document document = TemplateHelper.getDocument(name, service);
+        TemplateHelper helper = new TemplateHelper(service);
+        Document document = helper.getDocument(name);
         if (document != null) {
             return getReport(document, handlers);
         }
@@ -111,8 +112,8 @@ public class JasperReportHelper {
                                                      IArchetypeService service,
                                                      DocumentHandlers handlers)
             throws JRException {
-        Document document = TemplateHelper.getDocumentForArchetype(shortName,
-                                                                   service);
+        TemplateHelper helper = new TemplateHelper(service);
+        Document document = helper.getDocumentForArchetype(shortName);
         if (document != null) {
             return getReport(document, handlers);
         }
