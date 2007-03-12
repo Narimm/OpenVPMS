@@ -27,13 +27,11 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
+import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.app.OpenVPMSApp;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
@@ -327,10 +325,8 @@ public class ReportingWorkspace extends AbstractWorkspace<Entity> {
      * Need to create proper report generator implementation.
      */
     protected void onRun() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        Document doc = TemplateHelper.getDocumentFromTemplate(
-                getObject(), service);
+        TemplateHelper helper = new TemplateHelper();
+        Document doc = helper.getDocumentFromTemplate(getObject());
         String uri = "http://localhost:8080/openvpms-viewer/frameset?__report=report/" + doc.getName();
         Command command = new BrowserOpenWindowCommand(
                 uri, "OpenVPMS Report Viewer",

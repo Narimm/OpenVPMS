@@ -20,13 +20,11 @@ package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
+import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -84,11 +82,9 @@ public class DocumentTemplateLayoutStrategy extends AbstractLayoutStrategy {
     public ComponentState apply(IMObject object, PropertySet properties,
                                 IMObject parent, LayoutContext context) {
         if (content == null) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
+            TemplateHelper helper = new TemplateHelper();
             Participation participation
-                    = TemplateHelper.getDocumentParticipation((Entity) object,
-                                                              service);
+                    = helper.getDocumentParticipation((Entity) object);
             if (participation != null) {
                 content = context.getComponentFactory().create(participation,
                                                                object, null);

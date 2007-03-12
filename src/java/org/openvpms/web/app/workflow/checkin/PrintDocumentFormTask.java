@@ -89,8 +89,10 @@ class PrintDocumentFormTask extends WorkflowImpl {
             }
         };
 
-        // task to print the act.patientDocumentForm. May be skipped
-        PrintIMObjectTask printTask = new PrintIMObjectTask(DOCUMENT_FORM);
+        // task to print the act.patientDocumentForm. May be skipped if
+        // printing interactively
+        PrintIMObjectTask printTask = new PrintIMObjectTask(DOCUMENT_FORM,
+                                                            false);
         printTask.setRequired(false);
 
         // task to save the act.patientDocumentForm, setting its 'printed'

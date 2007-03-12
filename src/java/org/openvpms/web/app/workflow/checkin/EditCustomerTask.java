@@ -47,7 +47,7 @@ class EditCustomerTask extends EditIMObjectTask {
      * @param shortName the object short name
      */
     public EditCustomerTask(String shortName) {
-        super(shortName, false, true);
+        super(shortName, false, false);
     }
 
     /**

@@ -76,4 +76,13 @@ public interface IMPrinter<T> {
      * @throws OpenVPMSException for any error
      */
     Document getDocument();
+
+    /**
+     * Determines if printing should occur interactively.
+     *
+     * @return <tt>true</tt> if printing should occur interactively,
+     *         <tt>false</tt> if it can be performed non-interactively
+     * @throws OpenVPMSException for any error
+     */
+    boolean getInteractive();
 }

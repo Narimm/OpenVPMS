@@ -22,19 +22,14 @@ import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.IMReportException;
 import org.openvpms.report.PrintProperties;
-import org.openvpms.report.TemplateHelper;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.print.AbstractIMPrinter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
@@ -67,6 +62,8 @@ public class DocumentActPrinter extends AbstractIMPrinter<IMObject> {
     public DocumentActPrinter(DocumentAct object) {
         super(object);
         generator = new ReportGenerator(object);
+        setInteractive(getInteractive(generator.getTemplate(),
+                                      getDefaultPrinter()));
     }
 
     /**
@@ -127,14 +124,7 @@ public class DocumentActPrinter extends AbstractIMPrinter<IMObject> {
      * @throws OpenVPMSException for any error
      */
     public String getDefaultPrinter() {
-        Party practice = GlobalContext.getInstance().getPractice();
-        if (practice != null) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            return TemplateHelper.getPrinter(generator.getTemplate(), practice,
-                                             service);
-        }
-        return null;
+        return getDefaultPrinter(generator.getTemplate());
     }
 
     /**
@@ -157,11 +147,7 @@ public class DocumentActPrinter extends AbstractIMPrinter<IMObject> {
      */
     @Override
     protected PrintProperties getProperties(String printer) {
-        PrintProperties properties = super.getProperties(printer);
-        properties.setMediaSize(getMediaSize(generator.getTemplate()));
-        properties.setOrientation(getOrientation(generator.getTemplate()));
-        properties.setMediaTray(getMediaTray(generator.getTemplate(), printer));
-        return properties;
+        return getProperties(printer, generator.getTemplate());
     }
 
 }

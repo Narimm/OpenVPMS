@@ -29,8 +29,9 @@ import org.openvpms.web.servlet.DownloadServlet;
 
 
 /**
- * Interactive {@link IMPrinter}. Pops up a dialog with options to print,
- * preview, or cancel.
+ * {@link IMPrinter} implementation that provides interactive support if
+ * the underlying implementation requires it. Pops up a dialog with options to
+ * print, preview, or cancel.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -57,6 +58,13 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
      * dialog.
      */
     private final boolean skip;
+
+    /**
+     * Determines if printing should occur interactively or be performed
+     * without user intervention. If the printer doesn't support non-interactive
+     * printing, requests to do non-interactive printing are ignored.
+     */
+    private boolean interactive;
 
 
     /**
@@ -102,6 +110,7 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
         this.title = title;
         this.printer = printer;
         this.skip = skip;
+        interactive = printer.getInteractive();
     }
 
     /**
@@ -133,13 +142,29 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
 
     /**
      * Initiates printing of an object.
-     * Pops up a {@link PrintDialog} prompting if printing of an object should
+     * If the underlying printer requires interactive support, pops up a
+     * {@link PrintDialog} prompting if printing of an object should
      * proceed, invoking {@link #doPrint} if 'OK' is selected, or
      * {@link #doPrintPreview} if 'preview' is selected.
      *
      * @param printer the printer name. May be <code>null</code>
      */
     public void print(String printer) {
+        if (interactive) {
+            printInteractive(printer);
+        } else {
+            printDirect(printer);
+        }
+    }
+
+    protected void printDirect(String printer) {
+        if (printer == null) {
+            printer = getDefaultPrinter();
+        }
+        doPrint(printer);
+    }
+
+    protected void printInteractive(String printer) {
         final PrintDialog dialog = new PrintDialog(getTitle(), true, skip) {
             @Override
             protected void onPreview() {
@@ -195,6 +220,34 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
      */
     public Document getDocument() {
         return printer.getDocument();
+    }
+
+    /**
+     * Determines if printing should occur interactively or be performed
+     * without user intervention. If the printer doesn't support non-interactive
+     * printing, requests to do non-interactive printing are ignored.
+     *
+     * @param interactive if <tt>true</tt> print interactively
+     * @throws OpenVPMSException for any error
+     */
+    public void setInteractive(boolean interactive) {
+        if (printer.getInteractive()) {
+            // must print interactively.
+            this.interactive = true;
+        } else {
+            this.interactive = interactive;
+        }
+    }
+
+    /**
+     * Determines if printing should occur interactively.
+     *
+     * @return <tt>true</tt> if printing should occur interactively,
+     *         <tt>false</tt> if it can be performed non-interactively
+     * @throws OpenVPMSException for any error
+     */
+    public boolean getInteractive() {
+        return printer.getInteractive();
     }
 
     /**

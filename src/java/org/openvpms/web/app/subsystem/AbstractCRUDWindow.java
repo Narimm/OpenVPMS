@@ -502,11 +502,15 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * Creates a new printer.
      *
      * @param object the object to print
-     * @return an instance of {@link InteractiveIMPrinter}.
+     * @return an instance of {@link InteractiveIMPrinter}. This overrides
+     *         the default interactive behaviour so that printing is always
+     *         interactive
      */
     protected IMPrinter<T> createPrinter(T object) {
         IMPrinter<T> printer = IMPrinterFactory.create(object);
-        return new InteractiveIMPrinter<T>(printer);
+        InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer);
+        iPrinter.setInteractive(true);
+        return iPrinter;
     }
 
     /**

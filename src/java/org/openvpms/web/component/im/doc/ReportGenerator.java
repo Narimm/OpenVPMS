@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.doc;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -34,7 +35,6 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.IMReportException;
 import org.openvpms.report.IMReportFactory;
-import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -139,13 +139,13 @@ public class ReportGenerator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMReport<IMObject> createReport() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        Document doc = TemplateHelper.getDocumentFromTemplate(template,
-                                                              service);
+        TemplateHelper helper = new TemplateHelper();
+        Document doc = helper.getDocumentFromTemplate(template);
         if (doc == null) {
             throw new DocumentException(NotFound);
         }
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
         DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
         return IMReportFactory.createIMObjectReport(doc, service, handlers);
     }

@@ -18,13 +18,11 @@
 
 package org.openvpms.web.component.im.doc;
 
+import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
@@ -63,10 +61,8 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
     public DocumentTemplateEditor(Entity template, IMObject parent,
                                   LayoutContext context) {
         super(template, parent, context);
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        Participation participation = TemplateHelper.getDocumentParticipation(
-                template, service);
+        TemplateHelper helper = new TemplateHelper();
+        Participation participation = helper.getDocumentParticipation(template);
         if (participation == null) {
             participation = (Participation) IMObjectCreator.create(
                     "participation.document");
