@@ -19,6 +19,7 @@
 package org.openvpms.web.component.workflow;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.IMPrinterListener;
@@ -78,31 +79,35 @@ public class PrintIMObjectTask extends AbstractTask {
     public void start(final TaskContext context) {
         IMObject object = context.getObject(shortName);
         if (object != null) {
-            IMPrinter<IMObject> printer = IMPrinterFactory.create(
-                    object);
-            boolean skip = !isRequired();
-            InteractiveIMPrinter<IMObject> iPrinter
-                    = new InteractiveIMPrinter<IMObject>(printer, skip);
-            iPrinter.setInteractive(interactive);
+            try {
+                IMPrinter<IMObject> printer = IMPrinterFactory.create(
+                        object);
+                boolean skip = !isRequired();
+                InteractiveIMPrinter<IMObject> iPrinter
+                        = new InteractiveIMPrinter<IMObject>(printer, skip);
+                iPrinter.setInteractive(interactive);
 
-            iPrinter.setListener(new IMPrinterListener() {
-                public void printed() {
-                    notifyCompleted();
-                }
+                iPrinter.setListener(new IMPrinterListener() {
+                    public void printed() {
+                        notifyCompleted();
+                    }
 
-                public void cancelled() {
-                    notifyCancelled();
-                }
+                    public void cancelled() {
+                        notifyCancelled();
+                    }
 
-                public void skipped() {
-                    notifySkipped();
-                }
+                    public void skipped() {
+                        notifySkipped();
+                    }
 
-                public void failed(Throwable cause) {
-                    notifyCancelledOnError(cause);
-                }
-            });
-            iPrinter.print();
+                    public void failed(Throwable cause) {
+                        notifyCancelledOnError(cause);
+                    }
+                });
+                iPrinter.print();
+            } catch (OpenVPMSException exception) {
+                notifyCancelledOnError(exception);
+            }
         } else {
             notifyCancelled();
         }

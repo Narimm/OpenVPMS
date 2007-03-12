@@ -148,55 +148,13 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
      * {@link #doPrintPreview} if 'preview' is selected.
      *
      * @param printer the printer name. May be <code>null</code>
+     * @throws OpenVPMSException for any error
      */
     public void print(String printer) {
         if (interactive) {
             printInteractive(printer);
         } else {
             printDirect(printer);
-        }
-    }
-
-    protected void printDirect(String printer) {
-        if (printer == null) {
-            printer = getDefaultPrinter();
-        }
-        doPrint(printer);
-    }
-
-    protected void printInteractive(String printer) {
-        final PrintDialog dialog = new PrintDialog(getTitle(), true, skip) {
-            @Override
-            protected void onPreview() {
-                doPrintPreview();
-            }
-        };
-
-        try {
-            if (printer == null) {
-                printer = getDefaultPrinter();
-            }
-            dialog.setDefaultPrinter(printer);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    String action = dialog.getAction();
-                    if (PrintDialog.OK_ID.equals(action)) {
-                        String printer = dialog.getPrinter();
-                        if (printer == null) {
-                            doPrintPreview();
-                        } else {
-                            doPrint(printer);
-                        }
-                    } else if (PrintDialog.SKIP_ID.equals(action)) {
-                        skipped();
-                    } else {
-                        cancelled();
-                    }
-                }
-            });
-            dialog.show();
-        } catch (OpenVPMSException exception) {
-            failed(exception);
         }
     }
 
@@ -272,9 +230,60 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
     }
 
     /**
+     * Prints interactively.
+     *
+     * @param printer the default printer to print to
+     * @throws OpenVPMSException for any error
+     */
+    protected void printInteractive(String printer) {
+        final PrintDialog dialog = new PrintDialog(getTitle(), true, skip) {
+            @Override
+            protected void onPreview() {
+                doPrintPreview();
+            }
+        };
+
+        if (printer == null) {
+            printer = getDefaultPrinter();
+        }
+        dialog.setDefaultPrinter(printer);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                String action = dialog.getAction();
+                if (PrintDialog.OK_ID.equals(action)) {
+                    String printer = dialog.getPrinter();
+                    if (printer == null) {
+                        doPrintPreview();
+                    } else {
+                        doPrint(printer);
+                    }
+                } else if (PrintDialog.SKIP_ID.equals(action)) {
+                    skipped();
+                } else {
+                    cancelled();
+                }
+            }
+        });
+        dialog.show();
+    }
+
+    /**
+     * Print directly to the printer, without popping up any dialogs.
+     *
+     * @param printer the printer
+     * @throws OpenVPMSException for any error
+     */
+    protected void printDirect(String printer) {
+        if (printer == null) {
+            printer = getDefaultPrinter();
+        }
+        doPrint(printer);
+    }
+
+    /**
      * Prints the object.
      *
-     * @param printerName the printer name
+     * @param printerName the printer name. May be <tt>null</tt>
      */
     protected void doPrint(String printerName) {
         try {
