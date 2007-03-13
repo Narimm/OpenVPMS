@@ -28,10 +28,19 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 
 
 /**
@@ -215,4 +224,36 @@ public class PatientRules {
         }
         return result;
     }
+
+    /**
+     * Returns the description node of the most recent
+     * <em>act.patientWeight</em> for a patient.
+     *
+     * @param patient the patient
+     * @return the description node or <tt>null</tt> if no act can be found
+     */
+    public String getPatientWeight(Party patient) {
+        String result = null;
+        ShortNameConstraint shortName
+                = new ShortNameConstraint("act", "act.patientWeight");
+        ArchetypeQuery query = new ArchetypeQuery(shortName);
+        query.add(new NodeSelectConstraint("act.description"));
+        CollectionNodeConstraint participation
+                = new CollectionNodeConstraint("patient",
+                                               "participation.patient", true,
+                                               true);
+        ObjectRefNodeConstraint patientRef = new ObjectRefNodeConstraint(
+                "entity", patient.getObjectReference());
+        participation.add(patientRef);
+        query.add(participation);
+        query.add(new NodeSortConstraint("startTime", false));
+        query.setMaxResults(1);
+        Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(query);
+        ObjectSet set = (iterator.hasNext()) ? iterator.next() : null;
+        if (set != null) {
+            result = (String) set.get("act.description");
+        }
+        return result;
+    }
+
 }
