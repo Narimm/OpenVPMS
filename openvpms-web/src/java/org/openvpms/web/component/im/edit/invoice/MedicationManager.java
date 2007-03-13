@@ -20,16 +20,21 @@ package org.openvpms.web.component.im.edit.invoice;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.edit.act.PatientMedicationActEditor;
 import org.openvpms.web.component.im.edit.medication.PatientMedicationActLayoutStrategy;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.LinkedList;
 
@@ -103,14 +108,16 @@ class MedicationManager {
             final IMObjectEditor editor = collectionEditor.createEditor(
                     object, context);
             final EditDialog dialog = new EditDialog(editor, false);
+            dialog.setTitle(getTitle(editor));
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
                     editing = false;
-                    listener.completed();
                     if (EditDialog.OK_ID.equals(dialog.getAction())) {
                         collectionEditor.addEdited(editor);
+                        listener.completed();
                         editNext();
                     } else {
+                        listener.completed();
                         cancel();
                     }
                 }
@@ -121,6 +128,33 @@ class MedicationManager {
         } else {
             listener.completed();
         }
+    }
+
+    /**
+     * Returns a title for the edit dialog.
+     *
+     * @param editor the editor
+     * @return a title for the edit dialog
+     */
+    private String getTitle(IMObjectEditor editor) {
+        String title = editor.getTitle();
+        if (editor instanceof PatientMedicationActEditor) {
+            PatientMedicationActEditor meditor
+                    = (PatientMedicationActEditor) editor;
+            Party patient = (Party) IMObjectHelper.getObject(
+                    meditor.getPatient());
+            if (patient != null) {
+                PatientRules rules = new PatientRules();
+                String name = patient.getName();
+                String weight = rules.getPatientWeight(patient);
+                if (weight == null) {
+                    weight = Messages.get("patient.noweight");
+                }
+                title = Messages.get("patient.medication.dialog.title",
+                                     title, name, weight);
+            }
+        }
+        return title;
     }
 
     /**

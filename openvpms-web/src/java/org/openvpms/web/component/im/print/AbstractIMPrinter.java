@@ -306,9 +306,12 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
      */
     protected boolean getInteractive(Entity template, String printer) {
         boolean result = true;
-        EntityRelationship r = getDocumentTemplatePrinter(template, printer);
-        if (r != null) {
-            result = helper.getInteractive(r);
+        if (template != null) {
+            EntityRelationship r = getDocumentTemplatePrinter(template,
+                                                              printer);
+            if (r != null) {
+                result = helper.getInteractive(r);
+            }
         }
         return result;
     }
