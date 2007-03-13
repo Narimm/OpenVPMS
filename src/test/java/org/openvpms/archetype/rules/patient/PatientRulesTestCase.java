@@ -20,11 +20,14 @@ package org.openvpms.archetype.rules.patient;
 
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 
@@ -53,7 +56,6 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         Party patient2 = TestHelper.createPatient();
         rules.addPatientOwnerRelationship(customer, patient2);
         assertEquals(customer, rules.getOwner(patient2));
-
 
         deactivateOwnerRelationship(patient2);
         assertNull(rules.getOwner(patient2));
@@ -84,7 +86,6 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         EntityBean bean = new EntityBean(patient);
         EntityRelationship referral
                 = bean.addRelationship("entityRelationship.referredFrom", vet);
-        PatientRules rules = new PatientRules();
 
         // verify the vet is returned for a time > the default start time
         Party vet2 = rules.getReferralVet(patient, new Date());
@@ -102,6 +103,22 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         referral.setActiveStartTime(start);
         referral.setActiveEndTime(end);
         assertNull(rules.getReferralVet(patient, later));
+    }
+
+    /**
+     * Tests the {@link PatientRules#getPatientWeight(Party)} method.
+     */
+    public void testGetPatientWeight() {
+        Party patient = TestHelper.createPatient();
+        assertNull(rules.getPatientWeight(patient));
+
+        Date date1 = java.sql.Date.valueOf("2006-12-22");
+        createWeight(date1, patient, new BigDecimal("5.0"), "KILOGRAMS");
+        assertEquals("5 Kilograms", rules.getPatientWeight(patient));
+
+        Date date2 = java.sql.Date.valueOf("2007-2-25");
+        createWeight(date2, patient, new BigDecimal("13"), "POUNDS");
+        assertEquals("13 Pounds", rules.getPatientWeight(patient));
     }
 
     /**
@@ -128,6 +145,25 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
                 relationship.setActive(false);
             }
         }
+    }
+
+    /**
+     * Creates a new <em>act.patientWeight</em> for a patient and saves it.
+     *
+     * @param date    the date
+     * @param patient the patient
+     * @param weight  the weight
+     * @param units   the weight units
+     */
+    private void createWeight(Date date, Party patient, BigDecimal weight,
+                              String units) {
+        Act act = (Act) create("act.patientWeight");
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+        bean.setValue("startTime", date);
+        bean.setValue("weight", weight);
+        bean.setValue("units", units);
+        save(act);
     }
 
 }

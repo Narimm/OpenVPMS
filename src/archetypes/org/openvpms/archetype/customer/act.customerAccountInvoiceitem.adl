@@ -55,7 +55,7 @@
 		<node name="credit" path="/credit" type="java.lang.Boolean"
 			defaultValue="false()" readOnly="true" hidden="true" />
         <node name="dispensing" path="/sourceActRelationships"
-			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="1"
 			filter="actRelationship.invoiceItemDispensing" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
