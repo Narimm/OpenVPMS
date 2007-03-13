@@ -28,6 +28,8 @@ import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
+import java.math.BigDecimal;
+
 
 /**
  * Editor for <em>act.patientMedication</em> acts.
@@ -111,6 +113,15 @@ public class PatientMedicationActEditor extends AbstractActEditor {
      */
     public IMObjectReference getPatient() {
         return getParticipantRef("patient");
+    }
+
+    /**
+     * Sets the quantity.
+     *
+     * @param quantity the quantity
+     */
+    public void setQuantity(BigDecimal quantity) {
+        getProperty("quantity").setValue(quantity);
     }
 
 

@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -52,7 +53,9 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -90,6 +93,16 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
      * The medication manager.
      */
     private MedicationManager medicationMgr;
+
+    /**
+     * Listener for changes to the quantity.
+     */
+    private final ModifiableListener quantityListener;
+
+    /**
+     * Listener for changes to the medication quantity.
+     */
+    private final ModifiableListener medicationQuantityListener;
 
 
     /**
@@ -135,6 +148,19 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
         getProperty("fixedPrice").addModifiableListener(discountListener);
         getProperty("quantity").addModifiableListener(discountListener);
         getProperty("unitPrice").addModifiableListener(discountListener);
+
+        quantityListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateMedicationQuantity();
+            }
+        };
+        getProperty("quantity").addModifiableListener(quantityListener);
+
+        medicationQuantityListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateQuantity();
+            }
+        };
     }
 
     /**
@@ -206,6 +232,10 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                     updateMedicationPatient();
                 }
             });
+        }
+        final ActRelationshipCollectionEditor editors = getMedicationEditors();
+        if (editors != null) {
+            editors.addModifiableListener(medicationQuantityListener);
         }
     }
 
@@ -346,7 +376,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                     // update the current editor as well. If this refers to a
                     // new object, it may not be in the list of 'committed' acts
                     // returned by the above.
-                    current.setPatient(getPatient());
+                    current.setProduct(product.getObjectReference());
                 }
             } else {
                 // queue editing of a new medication act
@@ -357,6 +387,69 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                     }
                 });
             }
+        }
+    }
+
+    /**
+     * Updates the medication quantity from the invoice.
+     */
+    private void updateMedicationQuantity() {
+        ActRelationshipCollectionEditor editors = getMedicationEditors();
+        BigDecimal quantity = (BigDecimal) getProperty("quantity").getValue();
+        if (editors != null && quantity != null) {
+            editors.removeModifiableListener(medicationQuantityListener);
+            try {
+                PatientMedicationActEditor editor
+                        = (PatientMedicationActEditor)
+                        editors.getCurrentEditor();
+                if (editor != null) {
+                    editor.setQuantity(quantity);
+                } else {
+                    for (Act act : editors.getActs()) {
+                        // should only be 1 dispensing act, but zero out any
+                        // additional ones just in case...
+                        ActBean bean = new ActBean(act);
+                        bean.setValue("quantity", quantity);
+                        quantity = BigDecimal.ZERO;
+                    }
+                }
+                editors.refresh();
+            } finally {
+                editors.addModifiableListener(medicationQuantityListener);
+            }
+        }
+    }
+
+    /**
+     * Updates the invoice quantity when a medication act changes.
+     */
+    private void updateQuantity() {
+        Property property = getProperty("quantity");
+        property.removeModifiableListener(quantityListener);
+        try {
+            ActRelationshipCollectionEditor editors = getMedicationEditors();
+            if (editors != null) {
+                Set<Act> acts = new HashSet<Act>(editors.getActs());
+                PatientMedicationActEditor current
+                        = (PatientMedicationActEditor)
+                        editors.getCurrentEditor();
+                if (current != null) {
+                    acts.add((Act) current.getObject());
+                }
+                if (!acts.isEmpty()) {
+                    BigDecimal total = BigDecimal.ZERO;
+                    for (Act act : acts) {
+                        ActBean bean = new ActBean(act);
+                        BigDecimal quantity = bean.getBigDecimal(
+                                "quantity", BigDecimal.ZERO);
+                        total = total.add(quantity);
+                    }
+                    property.setValue(total);
+                }
+                editors.refresh();
+            }
+        } finally {
+            property.addModifiableListener(quantityListener);
         }
     }
 

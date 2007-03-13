@@ -371,4 +371,13 @@ public abstract class AbstractIMObjectCollectionEditor
         return _collection.save();
     }
 
+    /**
+     * Invoked when a editor changes.
+     *
+     * @param modifiable the modifiable
+     */
+    protected void onEditorChanged(Modifiable modifiable) {
+        // no-op
+    }
+
 }

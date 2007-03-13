@@ -299,11 +299,9 @@ public abstract class IMObjectTableCollectionEditor
     @Override
     protected boolean addEdited(IMObjectEditor editor) {
         boolean added = super.addEdited(editor);
-        if (added) {
-            populateTable();
-            IMObject object = editor.getObject();
-            table.getTable().setSelected(object);
-        }
+        populateTable();  // refresh the table
+        IMObject object = editor.getObject();
+        table.getTable().setSelected(object);
         return added;
     }
 
