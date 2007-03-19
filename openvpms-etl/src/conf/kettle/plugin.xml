@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin id="MapValuesPlugin"
+        iconfile="plugin.png"
+        description="Map Values Plugin"
+        tooltip="This is an OpenVPMS ETL plugin step"
+        category="Transform"
+        classname="org.openvpms.etl.kettle.MapValuesPluginMeta">
+    <libraries>
+        <library name="${pom.ArtifactId}-${pom.CurrentVersion}.jar"/>
+        #foreach ($dep in $pom.getDependencies())
+        #if ($dep.getProperty("kettle.plugin"))
+        <library name="${dep.Artifact}"/>
+        #end
+        #end
+    </libraries>
+
+</plugin>

@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!--
+  #  Version: 1.0
+  #
+  #  The contents of this file are subject to the OpenVPMS License Version
+  #  1.0 (the 'License'); you may not use this file except in compliance with
+  #  the License. You may obtain a copy of the License at
+  #  http://www.openvpms.org/license/
+  #
+  #  Software distributed under the License is distributed on an 'AS IS' basis,
+  #  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  #  for the specific language governing rights and limitations under the
+  #  License.
+  #
+  #  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+  #
+  #  $Id$
+-->
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="org.openvpms.etl.ETLNode" table="etl_node">
+        <cache usage="read-write"/>
+        <id name="nodeId">
+            <column name="node_id"/>
+            <generator class="native"/>
+        </id>
+        <version name="version" access="property" type="long"/>
+        <property name="name" access="property" column="name"
+                  type="string" length="32"/>
+
+        <many-to-one name="object" column="object_id" not-null="true"/>
+
+        <joined-subclass name="org.openvpms.etl.ETLValueNode"
+                         table="etl_value_node">
+            <key column="node_id"/>
+            <property name="value" access="property" column="value"
+                      type="string" length="1024"/>
+        </joined-subclass>
+
+        <joined-subclass name="org.openvpms.etl.ETLCollectionNode"
+                         table="etl_collection_node">
+            <key column="node_id"/>
+            <set name="values" access="property" inverse="true"
+                 cascade="all, delete-orphan" table="etl_collection">
+                <key column="node_id" not-null="true"/>
+                <many-to-many column="object_id"
+                              class="org.openvpms.etl.ETLObject"/>
+            </set>
+        </joined-subclass>
+    </class>
+
+
+</hibernate-mapping>
