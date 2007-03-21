@@ -18,6 +18,7 @@ package org.openvpms.etl;/*
 
 import junit.framework.TestCase;
 
+
 /**
  * Add description here.
  *
@@ -30,19 +31,15 @@ public class ETLObjectDAOTestCase extends TestCase {
         ETLObjectDAO dao = new ETLObjectDAO();
 
         ETLObject object = new ETLObject("party.customerperson");
-        object.addNode(new ETLValueNode("firstName", "Foo"));
-        object.addNode(new ETLValueNode("lastName", "Bar"));
-
+        object.addValue("firstName", new ETLText("Foo"));
+        object.addValue("lastName", new ETLText("Bar"));
         dao.save(object);
 
-        ETLCollectionNode collection = new ETLCollectionNode();
         ETLObject contact = new ETLObject("contact.phoneNumber");
-        contact.addNode(new ETLValueNode("telephoneNumber", "12345678"));
+        contact.addValue("telephoneNumber", new ETLText("12345678"));
         dao.save(contact);
 
-        collection.addValue(new ETLReference(contact));
-        object.addNode(collection);
-
+        object.addValue("contacts", new ETLReference(contact));
         dao.save(object);
 
         object = dao.get(object.getObjectId());

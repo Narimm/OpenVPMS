@@ -20,17 +20,26 @@
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-    <class name="org.openvpms.etl.ETLReference" table="etl_reference">
+    <class name="org.openvpms.etl.ETLValue" table="etl_value">
         <cache usage="read-write"/>
-        <id name="referenceId">
-            <column name="reference_id"/>
+        <id name="valueId">
+            <column name="value_id"/>
             <generator class="native"/>
         </id>
-        <version name="version" access="property" type="long"/>
-        <many-to-one name="object" column="object_id"
-                     class="org.openvpms.etl.ETLObject"/>
-        <property name="reference" access="property" column="reference"
-                  type="string" length="64"/>
-    </class>
+        <discriminator column="is_reference" type="boolean"/>
 
+        <version name="version" access="property" type="long"/>
+
+        <many-to-one name="node" column="node_id" not-null="true"/>
+
+        <property name="value" access="property" column="value"
+                  type="string" length="4096"/>
+
+        <subclass name="org.openvpms.etl.ETLText" discriminator-value="false"/>
+
+        <subclass name="org.openvpms.etl.ETLReference" discriminator-value="true">
+            <many-to-one name="object" column="object_id"
+                         class="org.openvpms.etl.ETLObject"/>
+        </subclass>
+    </class>
 </hibernate-mapping>

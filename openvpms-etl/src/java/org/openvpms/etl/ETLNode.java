@@ -18,6 +18,10 @@
 
 package org.openvpms.etl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 /**
  * Add description here.
  *
@@ -30,9 +34,9 @@ public class ETLNode {
     private String name;
     private ETLObject object;
     private long version;
+    private List<ETLValue> values;
 
     public ETLNode() {
-
     }
 
     public ETLNode(String name) {
@@ -70,4 +74,21 @@ public class ETLNode {
     public void setObject(ETLObject object) {
         this.object = object;
     }
+
+    public List<ETLValue> getValues() {
+        return values;
+    }
+
+    public void addValue(ETLValue value) {
+        if (values == null) {
+            values = new ArrayList<ETLValue>();
+        }
+        value.setNode(this);
+        values.add(value);
+    }
+
+    protected void setValues(List<ETLValue> values) {
+        this.values = values;
+    }
+
 }

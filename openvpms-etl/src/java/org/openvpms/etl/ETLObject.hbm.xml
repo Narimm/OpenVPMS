@@ -31,7 +31,7 @@
         <property name="archetype" access="property" column="archetype"
                   type="string" length="32"/>
         <bag name="nodes" access="property" inverse="true"
-             cascade="all,delete-orphan">
+             cascade="all,delete-orphan" lazy="false">
             <key column="object_id"/>
             <one-to-many class="org.openvpms.etl.ETLNode"/>
         </bag>

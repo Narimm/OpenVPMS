@@ -25,54 +25,26 @@ package org.openvpms.etl;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ETLReference {
+public class ETLReference extends ETLValue {
 
-    private long referenceId;
     private ETLObject object;
-    private String reference;
-    private long version;
 
     public ETLReference() {
     }
 
     public ETLReference(ETLObject object) {
-        this.object = object;
+        setObject(object);
     }
 
     public ETLReference(String reference) {
-        this.reference = reference;
-    }
-
-    public void setReferenceId(long referenceId) {
-        this.referenceId = referenceId;
-    }
-
-    public long getReferenceId() {
-        return referenceId;
-    }
-
-    public void setObject(ETLObject object) {
-        this.object = object;
-        reference = null;
+        super(reference);
     }
 
     public ETLObject getObject() {
         return object;
     }
 
-    public void setReference(String reference) {
-        this.reference = reference;
-    }
-
-    public String getReference() {
-        return reference;
-    }
-
-    public long getVersion() {
-        return version;
-    }
-
-    public void setVersion(long version) {
-        this.version = version;
+    public void setObject(ETLObject object) {
+        this.object = object;
     }
 }

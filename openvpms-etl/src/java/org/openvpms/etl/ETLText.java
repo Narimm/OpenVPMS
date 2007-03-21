@@ -18,28 +18,20 @@
 
 package org.openvpms.etl;
 
+
 /**
  * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ETLReferenceNode extends ETLNode {
+public class ETLText extends ETLValue {
 
-    private ETLReference reference;
-
-    public ETLReferenceNode() {
+    public ETLText() {
     }
 
-    public ETLReferenceNode(String name) {
-        super(name);
+    public ETLText(String value) {
+        super(value);
     }
 
-    public ETLReference getReference() {
-        return reference;
-    }
-
-    public void setReference(ETLReference reference) {
-        this.reference = reference;
-    }
 }
