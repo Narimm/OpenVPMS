@@ -199,7 +199,11 @@ public class MapValuesPluginDialog extends BaseStepDialog
                                new String[]{"Y", "N"}, true),
                 new ColumnInfo(Messages.getString(
                         "MapValuesDialog.ColumnInfo.Value"),
-                               ColumnInfo.COLUMN_TYPE_TEXT, false)};
+                               ColumnInfo.COLUMN_TYPE_TEXT, false),
+                new ColumnInfo(Messages.getString(
+                        "MapValuesDialog.ColumnInfo.Reference"),
+                               ColumnInfo.COLUMN_TYPE_CCOMBO,
+                               new String[]{"Y", "N"}, true)};
 
         mappingTable = new TableView(wSelectComp,
                                      SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI,
@@ -330,6 +334,11 @@ public class MapValuesPluginDialog extends BaseStepDialog
             if (mapping.getValue() != null) {
                 item.setText(4, mapping.getValue());
             }
+            if (mapping.getIsReference()) {
+                item.setText(5, "Y");
+            } else {
+                item.setText(5, "N");
+            }
         }
         mappingTable.setRowNums();
         mappingTable.optWidth(true);
@@ -356,6 +365,8 @@ public class MapValuesPluginDialog extends BaseStepDialog
             boolean exclude = "Y".equals(item.getText(3));
             mapping.setExcludeNull(exclude);
             mapping.setValue(item.getText(4));
+            boolean reference = "Y".equals(item.getText(5));
+            mapping.setIsReference(reference);
             mappings.addMapping(mapping);
         }
         input.setMappings(mappings);

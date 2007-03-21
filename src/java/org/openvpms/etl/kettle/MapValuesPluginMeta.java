@@ -181,10 +181,16 @@ public class MapValuesPluginMeta extends BaseStepMeta
                                                               "target");
             String value = repository.getStepAttributeString(stepId, i,
                                                              "value");
+            boolean reference = repository.getStepAttributeBoolean(
+                    stepId, i, "isReference");
+            boolean excludeNull = repository.getStepAttributeBoolean(
+                    stepId, i, "excludeNull");
             Mapping mapping = new Mapping();
             mapping.setSource(source);
             mapping.setTarget(target);
             mapping.setValue(value);
+            mapping.setIsReference(reference);
+            mapping.setExcludeNull(excludeNull);
             mappings.addMapping(mapping);
         }
     }
@@ -211,13 +217,19 @@ public class MapValuesPluginMeta extends BaseStepMeta
                                          "target", mapping.getTarget());
             repository.saveStepAttribute(transformationId, stepId, i,
                                          "value", mapping.getValue());
+            repository.saveStepAttribute(
+                    transformationId, stepId, i, "isReference",
+                    mapping.getIsReference());
+            repository.saveStepAttribute(
+                    transformationId, stepId, i, "excludeNull",
+                    mapping.getExcludeNull());
         }
     }
 
     /**
      * Checks the settings of this step and puts the findings in a remarks List.
      *
-     * @param remarks  the list to put the remarks in @see be.ibridge.kettle.core.CheckResult
+     * @param remarks  the list to put the remarks in
      * @param stepMeta the stepMeta to help checking
      * @param prev     the fields coming from the previous step
      * @param input    the input step names

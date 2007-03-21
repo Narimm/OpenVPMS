@@ -36,15 +36,21 @@ import java.util.Properties;
  */
 public class ETLObjectDAO {
 
-    private SessionFactory factory;
+    private final SessionFactory factory;
+    private ThreadLocal<Session> session = new ThreadLocal<Session>();
 
     public ETLObjectDAO(Properties properties) {
         this(new Configuration().addProperties(properties));
     }
 
+    public ETLObjectDAO(SessionFactory factory) {
+        this.factory = factory;
+    }
+
     protected ETLObjectDAO(Configuration config) {
         config.addClass(ETLObject.class);
         config.addClass(ETLNode.class);
+        config.addClass(ETLReference.class);
         factory = config.buildSessionFactory();
     }
 
@@ -57,7 +63,7 @@ public class ETLObjectDAO {
     }
 
     public void save(Iterable<ETLObject> objects) {
-        Session session = factory.openSession();
+        Session session = getSession();
         Transaction tx = session.beginTransaction();
         try {
             for (ETLObject object : objects) {
@@ -69,9 +75,16 @@ public class ETLObjectDAO {
                 tx.rollback();
             }
             throw exception;
-        } finally {
-            session.close();
         }
+    }
+
+    private Session getSession() {
+        Session result = session.get();
+        if (result == null) {
+            result = factory.openSession();
+            session.set(result);
+        }
+        return result;
     }
 
     public ETLObject get(long objectId) {
@@ -82,17 +95,54 @@ public class ETLObjectDAO {
         queryString.append(ETLObject.class.getName());
         queryString.append(" as o where o.objectId = :objectId");
 
-        Session session = factory.openSession();
-        try {
-            Query query = session.createQuery(queryString.toString());
-            query.setParameter("objectId", objectId);
-            List set = query.list();
-            if (!set.isEmpty()) {
-                result = (ETLObject) set.get(0);
-            }
-        } finally {
-            session.close();
+        Session session = getSession();
+        Query query = session.createQuery(queryString.toString());
+        query.setParameter("objectId", objectId);
+        List set = query.list();
+        if (!set.isEmpty()) {
+            result = (ETLObject) set.get(0);
         }
         return result;
+    }
+
+    public ETLObject get(String archetype, String legacyId) {
+        ETLObject result = null;
+        StringBuffer queryString = new StringBuffer();
+
+        queryString.append("select o from ");
+        queryString.append(ETLObject.class.getName());
+        queryString.append(" as o where o.legacyId = :legacyId and " +
+                "o.archetype = :archetype");
+
+        Session session = getSession();
+        Query query = session.createQuery(queryString.toString());
+        query.setParameter("legacyId", legacyId);
+        query.setParameter("archetype", archetype);
+        query.setMaxResults(2);
+        List set = query.list();
+        if (!set.isEmpty()) {
+            if (set.size() > 1) {
+                throw new RuntimeException("Query resolves to > 1 object");
+            }
+            result = (ETLObject) set.get(0);
+        }
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ETLObject> get(int firstResult, int maxResults) {
+        List result;
+        StringBuffer queryString = new StringBuffer();
+
+        queryString.append("select o from ");
+        queryString.append(ETLObject.class.getName());
+        queryString.append(" as o order by o.objectId");
+
+        Session session = getSession();
+        Query query = session.createQuery(queryString.toString());
+        query.setFirstResult(firstResult);
+        query.setMaxResults(maxResults);
+        result = query.list();
+        return (List<ETLObject>) result;
     }
 }

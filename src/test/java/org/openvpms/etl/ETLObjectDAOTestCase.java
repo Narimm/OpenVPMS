@@ -29,16 +29,18 @@ public class ETLObjectDAOTestCase extends TestCase {
     public void testSave() {
         ETLObjectDAO dao = new ETLObjectDAO();
 
-        ETLObject object = new ETLObject("party.customerPerson");
+        ETLObject object = new ETLObject("party.customerperson");
         object.addNode(new ETLValueNode("firstName", "Foo"));
         object.addNode(new ETLValueNode("lastName", "Bar"));
 
         dao.save(object);
 
         ETLCollectionNode collection = new ETLCollectionNode();
-        ETLObject contact = new ETLObject("contact.location");
-        contact.addNode(new ETLValueNode("phoneNumber", "12345678"));
-        collection.addValue(contact);
+        ETLObject contact = new ETLObject("contact.phoneNumber");
+        contact.addNode(new ETLValueNode("telephoneNumber", "12345678"));
+        dao.save(contact);
+
+        collection.addValue(new ETLReference(contact));
         object.addNode(collection);
 
         dao.save(object);

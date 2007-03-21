@@ -29,7 +29,7 @@ import java.util.HashSet;
  */
 public class ETLCollectionNode extends ETLNode {
 
-    private Set<ETLObject> values;
+    private Set<ETLReference> values;
 
     public ETLCollectionNode() {
 
@@ -39,18 +39,18 @@ public class ETLCollectionNode extends ETLNode {
         super(name);
     }
 
-    public Set<ETLObject> getValues() {
+    public Set<ETLReference> getValues() {
         return values;
     }
 
-    public void addValue(ETLObject value) {
+    public void addValue(ETLReference value) {
         if (values == null) {
-            values = new HashSet<ETLObject>();
+            values = new HashSet<ETLReference>();
         }
         values.add(value);
     }
 
-    protected void setValues(Set<ETLObject> values) {
+    protected void setValues(Set<ETLReference> values) {
         this.values = values;
     }
 }

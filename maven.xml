@@ -9,29 +9,31 @@
     <!-- Generates java sources using castor                                  -->
     <!-- ==================================================================== -->
     <goal name="generate-castor-srcs">
-      <attainGoal name="castor:prepare-filesystem"/>
-      <castor:generate schema="${basedir}/src/schema/mapping.xsd"
-                       package="org.openvpms.etl.kettle"
-                       types="j2"/>
+        <attainGoal name="castor:prepare-filesystem"/>
+        <castor:generate schema="${basedir}/src/schema/mapping.xsd"
+                         package="org.openvpms.etl.kettle"
+                         types="j2"/>
     </goal>
 
     <!-- ==================================================================== -->
     <!-- Generates sources prior to compilation                               -->
     <!-- ==================================================================== -->
     <preGoal name="java:compile">
-      <attainGoal name="generate-castor-srcs"/>
+        <attainGoal name="generate-castor-srcs"/>
     </preGoal>
 
     <preGoal name="test:test">
-       <attainGoal name="generate-hibernate-properties"/>
-       <copy todir="${maven.test.dest}" file="${maven.hibernate.properties}"/>
+        <attainGoal name="generate-hibernate-properties"/>
+        <copy todir="${maven.test.dest}" file="${maven.hibernate.properties}"/>
     </preGoal>
 
     <preGoal name="hibernate:schema-export">
+        <attainGoal name="java:jar-resources"/>
         <attainGoal name="generate-hibernate-properties"/>
     </preGoal>
 
     <preGoal name="hibernate:schema-update">
+        <attainGoal name="java:jar-resources"/>
         <attainGoal name="generate-hibernate-properties"/>
     </preGoal>
 
@@ -50,8 +52,6 @@
             </filterset>
         </copy>
     </goal>
-
-
 
     <goal name="pluginlib">
         <velocity:merge name="${maven.build.dir}/plugin.xml"
@@ -79,6 +79,39 @@
                 </j:if>
             </j:if>
         </j:forEach>
+    </goal>
+
+    <goal name="generate-appcontext">
+        <copy tofile="${maven.build.dir}/applicationContext.xml"
+              file="src/conf/spring/applicationContext.xml">
+            <filterset>
+                <filter token="HIBERNATE_DIALECT" value="${hibernate.dialect}"/>
+                <filter token="JDBC_DRIVER"
+                        value="${hibernate.connection.driver_class}"/>
+                <filter token="JDBC_URL" value="${hibernate.connection.url}"/>
+                <filter token="JDBC_USERNAME"
+                        value="${hibernate.connection.username}"/>
+                <filter token="JDBC_PASSWORD"
+                        value="${hibernate.connection.password}"/>
+            </filterset>
+        </copy>
+    </goal>
+
+    <goal name="etl:load">
+        <attainGoal name="generate-appcontext"/>
+        <attainGoal name="java:compile"/>
+        <attainGoal name="java:jar-resources"/>
+        <attainGoal name="generate-hibernate-properties"/>
+        <ant:java classname="org.openvpms.etl.load.Loader"
+                  failonerror="true"
+                  maxmemory="512m"
+                  fork="true">
+            <ant:classpath>
+                <ant:pathelement path="${maven.build.dest}"/>
+                <ant:path refid="maven.dependency.classpath"/>
+            </ant:classpath>
+            <arg line="-c ${maven.build.dir}/applicationContext.xml"/>
+        </ant:java>
     </goal>
 
 </project>
