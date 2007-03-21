@@ -180,7 +180,7 @@
                     /org/openvpms/etl/ETLNode.hbm.xml
                 </value>
                 <value>
-                    /org/openvpms/etl/ETLReference.hbm.xml
+                    /org/openvpms/etl/ETLValue.hbm.xml
                 </value>
             </list>
         </property>

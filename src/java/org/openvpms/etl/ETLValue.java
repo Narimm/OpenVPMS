@@ -18,41 +18,57 @@
 
 package org.openvpms.etl;
 
-
 /**
  * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ETLValueNode extends ETLNode {
+public class ETLValue {
 
+    private long valueId;
+    private long version;
+    private ETLNode node;
     private String value;
 
-    private boolean reference;
-
-    public ETLValueNode() {
+    public ETLValue() {
+        this(null);
     }
 
-    public ETLValueNode(String name, String value) {
-        setName(name);
-        setValue(value);
+    public ETLValue(String value) {
+        this.value = value;
     }
-    
-    public String getValue() {
-        return value;
+
+    public long getValueId() {
+        return valueId;
+    }
+
+    public void setValueId(long valueId) {
+        this.valueId = valueId;
+    }
+
+    public long getVersion() {
+        return version;
+    }
+
+    public void setNode(ETLNode node) {
+        this.node = node;
+    }
+
+    public ETLNode getNode() {
+        return node;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
     }
 
     public void setValue(String value) {
         this.value = value;
     }
 
-    public void setReference(boolean reference) {
-        this.reference = reference;
-    }
-
-    public boolean isReference() {
-        return reference;
+    public String getValue() {
+        return value;
     }
 
 }

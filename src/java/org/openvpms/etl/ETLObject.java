@@ -70,12 +70,15 @@ public class ETLObject {
     }
 
     public ETLNode getNode(String name) {
-        for (ETLNode node : nodes) {
-            if (name.equals(node.getName())) {
-                return node;
+        ETLNode result = null;
+        if (nodes != null) {
+            for (ETLNode node : nodes) {
+                if (name.equals(node.getName())) {
+                    result = node;
+                }
             }
         }
-        return null;
+        return result;
     }
 
     public void addNode(ETLNode node) {
@@ -84,6 +87,15 @@ public class ETLObject {
         }
         nodes.add(node);
         node.setObject(this);
+    }
+
+    public void addValue(String name, ETLValue value) {
+        ETLNode node = getNode(name);
+        if (node == null) {
+            node = new ETLNode(name);
+            addNode(node);
+        }
+        node.addValue(value);
     }
 
     protected void setNodes(List<ETLNode> nodes) {

@@ -50,7 +50,7 @@ public class ETLObjectDAO {
     protected ETLObjectDAO(Configuration config) {
         config.addClass(ETLObject.class);
         config.addClass(ETLNode.class);
-        config.addClass(ETLReference.class);
+        config.addClass(ETLValue.class);
         factory = config.buildSessionFactory();
     }
 

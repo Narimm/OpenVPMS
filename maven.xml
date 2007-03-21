@@ -28,11 +28,13 @@
     </preGoal>
 
     <preGoal name="hibernate:schema-export">
+        <attainGoal name="java:compile"/>
         <attainGoal name="java:jar-resources"/>
         <attainGoal name="generate-hibernate-properties"/>
     </preGoal>
 
     <preGoal name="hibernate:schema-update">
+        <attainGoal name="java:compile"/>
         <attainGoal name="java:jar-resources"/>
         <attainGoal name="generate-hibernate-properties"/>
     </preGoal>

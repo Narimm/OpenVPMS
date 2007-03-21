@@ -30,12 +30,12 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.etl.ETLCollectionNode;
 import org.openvpms.etl.ETLNode;
 import org.openvpms.etl.ETLObject;
 import org.openvpms.etl.ETLObjectDAO;
 import org.openvpms.etl.ETLReference;
-import org.openvpms.etl.ETLValueNode;
+import org.openvpms.etl.ETLText;
+import org.openvpms.etl.ETLValue;
 import org.openvpms.etl.Reference;
 import org.openvpms.etl.ReferenceParser;
 import static org.openvpms.etl.load.LoaderException.ErrorCode.*;
@@ -109,10 +109,9 @@ public class Loader {
         IMObject result = null;
         ETLObject object = source.getObject();
         if (object == null) {
-            Reference ref = ReferenceParser.parse(source.getReference());
+            Reference ref = ReferenceParser.parse(source.getValue());
             if (ref == null) {
-                throw new LoaderException(InvalidReference,
-                                          source.getReference());
+                throw new LoaderException(InvalidReference, source.getValue());
             }
             if (ref.getLegacyId() != null) {
                 ETLObject target = dao.get(ref.getArchetype(),
@@ -156,14 +155,16 @@ public class Loader {
             loaded.put(source.getObjectId(), state);
             IMObjectBean bean = new IMObjectBean(target, service);
             for (ETLNode node : source.getNodes()) {
-                if (node instanceof ETLValueNode) {
-                    ETLValueNode value = (ETLValueNode) node;
-                    bean.setValue(value.getName(), value.getValue());
-                } else {
-                    ETLCollectionNode collection = (ETLCollectionNode) node;
-                    for (ETLReference reference : collection.getValues()) {
-                        IMObject child = load(reference);
-                        bean.addValue(collection.getName(), child);
+                for (ETLValue value : node.getValues()) {
+                    if (value instanceof ETLText) {
+                        ETLText text = (ETLText) value;
+                        bean.setValue(node.getName(), text.getValue());
+                        // todo - need to handle multiple values for simple
+                        // node
+                    } else {
+                        ETLReference ref = (ETLReference) value;
+                        IMObject child = load(ref);
+                        bean.addValue(node.getName(), child);
                     }
                 }
             }

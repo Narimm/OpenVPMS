@@ -22,17 +22,16 @@ import be.ibridge.kettle.core.Row;
 import be.ibridge.kettle.core.exception.KettleException;
 import be.ibridge.kettle.core.value.Value;
 import junit.framework.TestCase;
-import org.openvpms.etl.ETLCollectionNode;
 import org.openvpms.etl.ETLNode;
 import org.openvpms.etl.ETLObject;
 import org.openvpms.etl.ETLObjectDAO;
-import org.openvpms.etl.ETLValueNode;
 import org.openvpms.etl.ETLReference;
+import org.openvpms.etl.ETLText;
+import org.openvpms.etl.ETLValue;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -146,17 +145,14 @@ public class RowMapperTestCase extends TestCase {
         checkCollectionNode(contact, "purposes", ref);
     }
 
-    private void checkNode(ETLObject object, String name,
-                           String value) {
-        checkNode(object, name, value, false);
-    }
-
-    private void checkNode(ETLObject object, String name,
-                           String value, boolean reference) {
+    private void checkNode(ETLObject object, String name, String value) {
         ETLNode node = object.getNode(name);
         assertNotNull(node);
-        assertEquals(value, ((ETLValueNode) node).getValue());
-        assertEquals(reference, ((ETLValueNode) node).isReference());
+        List<ETLValue> values = node.getValues();
+        assertNotNull(values);
+        assertEquals(1, values.size());
+        ETLText text = (ETLText) values.get(0);
+        assertEquals(value, text.getValue());
     }
 
     private void checkObject(ETLObject object, String shortName,
@@ -168,13 +164,15 @@ public class RowMapperTestCase extends TestCase {
 
     private void checkCollectionNode(ETLObject object, String name,
                                      ETLObject ... expected) {
-        ETLCollectionNode node = (ETLCollectionNode) object.getNode(name);
+        ETLNode node = object.getNode(name);
         assertNotNull(node);
-        Set<ETLReference> values = node.getValues();
+        List<ETLValue> values = node.getValues();
         assertEquals(expected.length, values.size());
         for (ETLObject o : expected) {
             boolean found = false;
-            for (ETLReference reference : values) {
+            for (ETLValue value : values) {
+                assertTrue(value instanceof ETLReference);
+                ETLReference reference = (ETLReference) value;
                 if (o.equals(reference.getObject())) {
                     found = true;
                     break;
@@ -186,14 +184,16 @@ public class RowMapperTestCase extends TestCase {
 
     private void checkCollectionNode(ETLObject object, String name,
                                      String ... expected) {
-        ETLCollectionNode node = (ETLCollectionNode) object.getNode(name);
+        ETLNode node = object.getNode(name);
         assertNotNull(node);
-        Set<ETLReference> values = node.getValues();
+        List<ETLValue> values = node.getValues();
         assertEquals(expected.length, values.size());
         for (String o : expected) {
             boolean found = false;
-            for (ETLReference reference : values) {
-                if (o.equals(reference.getReference())) {
+            for (ETLValue value : values) {
+                assertTrue(value instanceof ETLReference);
+                ETLReference reference = (ETLReference) value;
+                if (o.equals(reference.getValue())) {
                     found = true;
                     break;
                 }
@@ -201,7 +201,6 @@ public class RowMapperTestCase extends TestCase {
             assertTrue(found);
         }
     }
-
 
     private Value createValue(String name, String value) {
         Value result = new Value(name, Value.VALUE_TYPE_STRING);

@@ -22,10 +22,10 @@ import be.ibridge.kettle.core.Row;
 import be.ibridge.kettle.core.exception.KettleException;
 import be.ibridge.kettle.core.value.Value;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.etl.ETLCollectionNode;
+import org.openvpms.etl.ETLNode;
 import org.openvpms.etl.ETLObject;
 import org.openvpms.etl.ETLReference;
-import org.openvpms.etl.ETLValueNode;
+import org.openvpms.etl.ETLText;
 import org.openvpms.etl.Reference;
 import org.openvpms.etl.ReferenceParser;
 
@@ -42,13 +42,23 @@ import java.util.Map;
 class RowMapper {
 
     private final Mappings mappings;
-    private final Map<String, ETLCollectionNode> collections = new HashMap<String, ETLCollectionNode>();
+    private final Map<String, Node> nodes = new HashMap<String, Node>();
+    private final Map<String, ETLNode> collections = new HashMap<String, ETLNode>();
     private Map<String, ETLObject> objects = new LinkedHashMap<String, ETLObject>();
     private final RowMapperListener listener;
 
-    public RowMapper(Mappings mappings, RowMapperListener listener) {
+    public RowMapper(Mappings mappings, RowMapperListener listener)
+            throws KettleException {
         this.mappings = mappings;
         this.listener = listener;
+        for (Mapping mapping : mappings.getMapping()) {
+            String target = mapping.getTarget();
+            Node node = NodeParser.parse(target);
+            if (node == null) {
+                throw new KettleException("Failed to parse " + target);
+            }
+            nodes.put(target, node);
+        }
     }
 
     public void map(Row row) throws KettleException {
@@ -77,7 +87,6 @@ class RowMapper {
                     source = new Value(source.getName(), mapping.getValue());
                 }
                 mapValue(id, source, mapping);
-
             }
         }
         listener.output(objects.values());
@@ -94,12 +103,8 @@ class RowMapper {
 
     private void mapValue(String legacyId, Value source, Mapping mapping)
             throws KettleException {
-        String target = mapping.getTarget();
-        Node node = NodeParser.parse(target);
-        if (node == null) {
-            throw new KettleException("Failed to parse " + target);
-        }
-        ETLCollectionNode collection = null;
+        Node node = nodes.get(mapping.getTarget());
+        ETLNode collection = null;
         String name = null;
         ETLObject object = null;
         while (node != null) {
@@ -118,7 +123,7 @@ class RowMapper {
             if (node.getIndex() != -1) {
                 collection = collections.get(node.getPath());
                 if (collection == null) {
-                    collection = new ETLCollectionNode(node.getName());
+                    collection = new ETLNode(name);
                     collections.put(node.getPath(), collection);
                     object.addNode(collection);
                 }
@@ -140,11 +145,9 @@ class RowMapper {
             }
             collection.addValue(new ETLReference(ref.toString()));
         } else {
-            ETLValueNode value = new ETLValueNode(name, source.getString());
-            if (mapping.getIsReference()) {
-                value.setReference(true);
-            }
-            object.addNode(value);
+            ETLNode etl = new ETLNode(name);
+            etl.addValue(new ETLText(source.getString()));
+            object.addNode(etl);
         }
     }
 

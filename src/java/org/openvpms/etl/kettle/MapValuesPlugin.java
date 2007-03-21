@@ -57,6 +57,11 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
      */
     private int batchSize = 100;
 
+    /**
+     * The row mapper.
+     */
+    private RowMapper mapper;
+
 
     /**
      * Constructs a new <tt>MapValuesPlugin</tt>.
@@ -102,8 +107,7 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
         Row row = getRow();    // get row, blocks when needed
         if (row != null) {
             try {
-                RowMapper mapper = new RowMapper(metaData.getMappings(),
-                                                 listener);
+                RowMapper mapper = getRowMapper();
                 mapper.map(row);
             } catch (Throwable exception) {
                 throw new KettleException(exception);
@@ -115,7 +119,6 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
                 // Some basic logging every 5000 rows.
                 logBasic("Linenr " + linesRead);
             }
-            flushBatch();
         } else {
             // no more input to be expected...
             setOutputDone();
@@ -131,7 +134,6 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
             }
             try {
                 Properties properties = new Properties();
-                // properties.put("hibernate.dialect","org.hibernate.dialect.MySQLDialect");
                 properties.put("hibernate.connection.driver_class",
                                database.getDriverClass());
                 properties.put("hibernate.connection.url", database.getURL());
@@ -204,6 +206,7 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
                     flushBatch();
                 }
             }
+            flushBatch();
         } catch (Exception exception) {
             logError("Unexpected error : " + exception.toString());
             logError(Const.getStackTracker(exception));
@@ -214,6 +217,19 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
             logBasic("Finished, processing " + linesRead + " rows");
             markStop();
         }
+    }
+
+    /**
+     * Returns the row mapper.
+     *
+     * @return the row mapper
+     * @throws KettleException for any error
+     */
+    private RowMapper getRowMapper() throws KettleException {
+        if (mapper == null) {
+            mapper = new RowMapper(metaData.getMappings(), listener);
+        }
+        return mapper;
     }
 
     /**
