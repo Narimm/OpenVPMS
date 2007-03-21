@@ -27,29 +27,36 @@ import org.openvpms.etl.ETLNode;
 import org.openvpms.etl.ETLObject;
 import org.openvpms.etl.ETLObjectDAO;
 import org.openvpms.etl.ETLValueNode;
+import org.openvpms.etl.ETLReference;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.Collection;
+
 
 /**
- * Add description here.
+ * Tests the {@link RowMapper} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class RowMapperTestCase extends TestCase {
 
-    public void testSimpleNode() throws Exception {
+    /**
+     * Tests a single node.
+     *
+     * @throws Exception for any error
+     */
+    public void testSingleNode() throws Exception {
         TestETLObjectDAO dao = new TestETLObjectDAO();
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
 
         Mapping firstNameMap = createMapping("FIRST_NAME",
-                                             "<party.customerPerson>firstName");
+                                             "<party.customerperson>firstName");
         Mapping lastNameMap = createMapping("LAST_NAME",
-                                            "<party.customerPerson>lastName");
+                                            "<party.customerperson>lastName");
         mappings.addMapping(firstNameMap);
         mappings.addMapping(lastNameMap);
 
@@ -67,17 +74,23 @@ public class RowMapperTestCase extends TestCase {
         List<ETLObject> objects = dao.getObjects();
         assertEquals(1, objects.size());
         ETLObject object = objects.get(0);
-        checkObject(object, "party.customerPerson", "ID1", 2);
+        checkObject(object, "party.customerperson", "ID1", 2);
         checkNode(object, "firstName", "Foo");
         checkNode(object, "lastName", "Bar");
     }
 
+    /**
+     * Tests a single collection node.
+     *
+     * @throws Exception for any error
+     */
     public void testSingleCollectionNode() throws Exception {
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
 
-        Mapping suburbMap = createMapping("SUBURB",
-                                          "<party.customerPerson>contacts[0]<contact.location>suburb");
+        Mapping suburbMap = createMapping(
+                "SUBURB",
+                "<party.customerperson>contacts[0]<contact.location>suburb");
         mappings.addMapping(suburbMap);
 
         TestETLObjectDAO dao = new TestETLObjectDAO();
@@ -95,7 +108,7 @@ public class RowMapperTestCase extends TestCase {
 
         ETLObject person = objects.get(0);
         ETLObject contact = objects.get(1);
-        checkObject(person, "party.customerPerson", "ID1", 1);
+        checkObject(person, "party.customerperson", "ID1", 1);
         checkCollectionNode(person, "contacts", contact);
         checkObject(contact, "contact.location", "ID1", 1);
         checkNode(contact, "suburb", "Coburg");
@@ -105,39 +118,45 @@ public class RowMapperTestCase extends TestCase {
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
 
-        Mapping suburbMap = createMapping("PURPOSE",
-                                          "<party.customerPerson>contacts[0]<contact.location>purposes[1]<lookup.contactPurpose>code");
+        Mapping suburbMap = createMapping("ADDRESS",
+                                          "<party.customerperson>contacts[0]<contact.location>purposes[1]");
+        suburbMap.setIsReference(true);
+        String ref = "<lookup.contactPurpose>code=MAILING";
+        suburbMap.setValue(ref);
         mappings.addMapping(suburbMap);
 
         TestETLObjectDAO dao = new TestETLObjectDAO();
         RowMapper mapper = new RowMapper(mappings, dao);
         Row row = new Row();
         Value legacyId = createValue("LEGACY_ID", "ID1");
-        Value mailing = createValue("PURPOSE", "MAILING");
+        Value mailing = createValue("ADDRESS", "49 Foo St Bar");
         legacyId.setValue("ID1");
         row.addValue(legacyId);
         row.addValue(mailing);
         mapper.map(row);
 
         List<ETLObject> objects = dao.getObjects();
-        assertEquals(3, objects.size());
+        assertEquals(2, objects.size());
 
         ETLObject person = objects.get(0);
         ETLObject contact = objects.get(1);
-        ETLObject purpose = objects.get(2);
-        checkObject(person, "party.customerPerson", "ID1", 1);
+        checkObject(person, "party.customerperson", "ID1", 1);
         checkCollectionNode(person, "contacts", contact);
         checkObject(contact, "contact.location", "ID1", 1);
-        checkCollectionNode(contact, "purposes", purpose);
-        checkObject(purpose, "lookup.contactPurpose", "ID1", 1);
-        checkNode(purpose, "code", "MAILING");
+        checkCollectionNode(contact, "purposes", ref);
     }
 
     private void checkNode(ETLObject object, String name,
                            String value) {
+        checkNode(object, name, value, false);
+    }
+
+    private void checkNode(ETLObject object, String name,
+                           String value, boolean reference) {
         ETLNode node = object.getNode(name);
         assertNotNull(node);
         assertEquals(value, ((ETLValueNode) node).getValue());
+        assertEquals(reference, ((ETLValueNode) node).isReference());
     }
 
     private void checkObject(ETLObject object, String shortName,
@@ -151,10 +170,35 @@ public class RowMapperTestCase extends TestCase {
                                      ETLObject ... expected) {
         ETLCollectionNode node = (ETLCollectionNode) object.getNode(name);
         assertNotNull(node);
-        Set<ETLObject> values = node.getValues();
+        Set<ETLReference> values = node.getValues();
         assertEquals(expected.length, values.size());
         for (ETLObject o : expected) {
-            assertTrue(values.contains(o));
+            boolean found = false;
+            for (ETLReference reference : values) {
+                if (o.equals(reference.getObject())) {
+                    found = true;
+                    break;
+                }
+            }
+            assertTrue(found);
+        }
+    }
+
+    private void checkCollectionNode(ETLObject object, String name,
+                                     String ... expected) {
+        ETLCollectionNode node = (ETLCollectionNode) object.getNode(name);
+        assertNotNull(node);
+        Set<ETLReference> values = node.getValues();
+        assertEquals(expected.length, values.size());
+        for (String o : expected) {
+            boolean found = false;
+            for (ETLReference reference : values) {
+                if (o.equals(reference.getReference())) {
+                    found = true;
+                    break;
+                }
+            }
+            assertTrue(found);
         }
     }
 
@@ -175,7 +219,8 @@ public class RowMapperTestCase extends TestCase {
     private class TestETLObjectDAO extends ETLObjectDAO
             implements RowMapperListener {
 
-        public void output(Collection<ETLObject> objects) throws KettleException {
+        public void output(Collection<ETLObject> objects) throws
+                                                          KettleException {
             save(objects);
         }
 

@@ -24,7 +24,10 @@ import be.ibridge.kettle.core.value.Value;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.etl.ETLCollectionNode;
 import org.openvpms.etl.ETLObject;
+import org.openvpms.etl.ETLReference;
 import org.openvpms.etl.ETLValueNode;
+import org.openvpms.etl.Reference;
+import org.openvpms.etl.ReferenceParser;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -71,10 +74,9 @@ class RowMapper {
             if (!source.isNull()
                     || (source.isNull() && !mapping.getExcludeNull())) {
                 if (!StringUtils.isEmpty(mapping.getValue())) {
-                    source = new Value(mapping.getValue(),
-                                       Value.VALUE_TYPE_STRING);
+                    source = new Value(source.getName(), mapping.getValue());
                 }
-                mapValue(id, source, mapping.getTarget());
+                mapValue(id, source, mapping);
 
             }
         }
@@ -90,8 +92,9 @@ class RowMapper {
         return value;
     }
 
-    private void mapValue(String legacyId, Value source, String target)
+    private void mapValue(String legacyId, Value source, Mapping mapping)
             throws KettleException {
+        String target = mapping.getTarget();
         Node node = NodeParser.parse(target);
         if (node == null) {
             throw new KettleException("Failed to parse " + target);
@@ -109,7 +112,7 @@ class RowMapper {
             }
 
             if (collection != null) {
-                collection.addValue(object);
+                collection.addValue(new ETLReference(object));
                 collection = null;
             }
             if (node.getIndex() != -1) {
@@ -122,7 +125,27 @@ class RowMapper {
             }
             node = node.getChild();
         }
-        object.addNode(new ETLValueNode(name, source.getString()));
+        if (collection != null) {
+            if (!mapping.getIsReference()) {
+                throw new KettleException(
+                        "Last node is a collection with no child and mapping doesn't specify a reference");
+            }
+            if (source.isNull()) {
+                throw new KettleException("Reference is null");
+            }
+            Reference ref = ReferenceParser.parse(source.getString());
+            if (ref == null) {
+                throw new KettleException(
+                        "Failed to parse reference: " + source.getString());
+            }
+            collection.addValue(new ETLReference(ref.toString()));
+        } else {
+            ETLValueNode value = new ETLValueNode(name, source.getString());
+            if (mapping.getIsReference()) {
+                value.setReference(true);
+            }
+            object.addNode(value);
+        }
     }
 
 }

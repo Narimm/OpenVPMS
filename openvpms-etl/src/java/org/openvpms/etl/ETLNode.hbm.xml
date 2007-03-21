@@ -39,14 +39,21 @@
                       type="string" length="1024"/>
         </joined-subclass>
 
+        <!--joined-subclass name="org.openvpms.etl.ETLReferenceNode"
+                table="etl_reference_node">
+            <key column="node_id"/>
+            <many-to-one name="reference" column="reference_id"
+                         class="org.openvpms.etl.ETLReference"/>
+        </joined-subclass-->
+
         <joined-subclass name="org.openvpms.etl.ETLCollectionNode"
                          table="etl_collection_node">
             <key column="node_id"/>
             <set name="values" access="property" inverse="true"
                  cascade="all, delete-orphan" table="etl_collection">
                 <key column="node_id" not-null="true"/>
-                <many-to-many column="object_id"
-                              class="org.openvpms.etl.ETLObject"/>
+                <many-to-many column="reference_id"
+                              class="org.openvpms.etl.ETLReference"/>
             </set>
         </joined-subclass>
     </class>
