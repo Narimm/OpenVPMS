@@ -39,7 +39,7 @@
 
         <subclass name="org.openvpms.etl.ETLReference" discriminator-value="true">
             <many-to-one name="object" column="object_id"
-                         class="org.openvpms.etl.ETLObject"/>
+                         class="org.openvpms.etl.ETLObject" lazy="false"/>
         </subclass>
     </class>
 </hibernate-mapping>
