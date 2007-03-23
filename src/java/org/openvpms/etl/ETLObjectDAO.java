@@ -75,6 +75,10 @@ public class ETLObjectDAO {
                 tx.rollback();
             }
             throw exception;
+        } finally {
+            session.clear();
+            session.close();
+            this.session.set(null);
         }
     }
 

@@ -143,6 +143,10 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
                                database.getPassword());
                 properties.put("hibernate.show_sql", "false");
                 properties.put("hibernate.jdbc.batch_size", "100");
+                properties.put("hibernate.cache.use_second_level_cache",
+                               "false");
+                properties.put("hibernate.cache.use_query_cache", "false");
+/*
                 properties.put("hibernate.c3p0.min_size", "5");
                 properties.put("hibernate.c3p0.max_size", "20");
                 properties.put("hibernate.c3p0.timeout", "1800");
@@ -152,6 +156,7 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
                 properties.put("hibernate.cache.use_second_level_cache",
                                "true");
                 properties.put("hibernate.cache.use_query_cache", "true");
+*/
                 properties.put("hibernate.query.factory_class",
                                "org.hibernate.hql.ast.ASTQueryTranslatorFactory");
 
