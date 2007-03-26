@@ -22,35 +22,63 @@ import be.ibridge.kettle.core.Row;
 import be.ibridge.kettle.core.exception.KettleException;
 import be.ibridge.kettle.core.value.Value;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.etl.ETLNode;
-import org.openvpms.etl.ETLObject;
-import org.openvpms.etl.ETLReference;
-import org.openvpms.etl.ETLText;
-import org.openvpms.etl.Reference;
-import org.openvpms.etl.ReferenceParser;
+import org.openvpms.etl.ETLValue;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+
 /**
- * Add description here.
+ * Maps input rows according to a {@link Mappings}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 class RowMapper {
 
+    /**
+     * The mappings.
+     */
     private final Mappings mappings;
-    private final Map<String, Node> nodes = new HashMap<String, Node>();
-    private final Map<String, ETLNode> collections = new HashMap<String, ETLNode>();
-    private Map<String, ETLObject> objects = new LinkedHashMap<String, ETLObject>();
-    private final RowMapperListener listener;
 
-    public RowMapper(Mappings mappings, RowMapperListener listener)
-            throws KettleException {
+    /**
+     * The nodes to map, keyed on input field name.
+     */
+    private final Map<String, Node> nodes = new HashMap<String, Node>();
+
+    /**
+     * Object identifiers ({@link ETLValue#getObjectId()}, keyed on object
+     * path {@link Node#getObjectPath()}.
+     */
+    private Map<String, String> objectIds = new HashMap<String, String>();
+
+    /**
+     * Mapped values, keyed on object id.
+     */
+    private Map<String, ETLValue> values = new HashMap<String, ETLValue>();
+
+    /**
+     * The mapped values.
+     */
+    private List<ETLValue> mapped = new ArrayList<ETLValue>();
+
+    /**
+     * Seed for generating object identifiers.
+     */
+    private int seed;
+
+
+    /**
+     * Constructs a new <tt>RowMapper</tt>.
+     *
+     * @param mappings the mappings
+     * @throws KettleException
+     */
+    public RowMapper(Mappings mappings) throws KettleException {
         this.mappings = mappings;
-        this.listener = listener;
         for (Mapping mapping : mappings.getMapping()) {
             String target = mapping.getTarget();
             Node node = NodeParser.parse(target);
@@ -61,20 +89,29 @@ class RowMapper {
         }
     }
 
-    public void map(Row row) throws KettleException {
+    /**
+     * Maps a row,
+     *
+     * @param row the row to map
+     * @return the mapped values
+     * @throws KettleException
+     */
+    public List<ETLValue> map(Row row) throws KettleException {
         Value idValue = row.searchValue(mappings.getIdColumn());
         if (idValue == null) {
             throw new KettleException(
                     "Failed to find id column: " + mappings.getIdColumn());
         }
-        String id = getId(idValue);
+        String id = getLegacyId(idValue);
         if (StringUtils.isEmpty(id)) {
             throw new KettleException(
                     "id column null: " + mappings.getIdColumn());
         }
 
-        objects.clear();
-        collections.clear();
+        seed = 0;
+        objectIds.clear();
+        values.clear();
+        mapped.clear();
         for (Mapping mapping : mappings.getMapping()) {
             Value source = row.searchValue(mapping.getSource());
             if (source == null) {
@@ -89,66 +126,106 @@ class RowMapper {
                 mapValue(id, source, mapping);
             }
         }
-        listener.output(objects.values());
+        return mapped;
     }
 
-    private String getId(Value id) {
-        String value = id.getString();
+    /**
+     * Maps a value.
+     *
+     * @param legacyId the legacy identifier
+     * @param source   the value to map
+     * @param mapping  the mapping
+     */
+    private void mapValue(String legacyId, Value source, Mapping mapping) {
+        Node node = nodes.get(mapping.getTarget());
+        String objectPath = node.getObjectPath();
+        String objectId = objectIds.get(objectPath);
+        ETLValue value;
+        ETLValue parent = null;
+        while (node.getChild() != null) {
+            if (objectId == null) {
+                objectId = newObjectId(legacyId, objectPath);
+            }
+            value = values.get(node.getNodePath());
+            if (value == null) {
+                value = new ETLValue(objectId, node.getArchetype(), legacyId,
+                                     node.getName(), node.getIndex());
+                mapped.add(value);
+                values.put(node.getNodePath(), value);
+            }
+            if (parent != null && parent.getValue() == null) {
+                parent.setReference(true);
+                parent.setValue(objectId);
+            }
+            parent = value;
+            node = node.getChild();
+            objectPath = node.getObjectPath();
+            objectId = objectIds.get(objectPath);
+        }
+        if (objectId == null) {
+            objectId = newObjectId(legacyId, objectPath);
+        }
+        value = new ETLValue(objectId, node.getArchetype(), legacyId,
+                             node.getName(), node.getIndex(), convert(source));
+        if (mapping.getIsReference()) {
+            value.setReference(true);
+        }
+        mapped.add(value);
+        values.put(node.getNodePath(), value);
+        if (parent != null && parent.getValue() == null) {
+            parent.setReference(true);
+            parent.setValue(objectId);
+        }
+    }
+
+    /**
+     * Allocates a new object id, based on a legacy identifier and seed.
+     *
+     * @param legacyId   the legacy identifier
+     * @param objectPath the object path
+     * @return a new object id
+     */
+    private String newObjectId(String legacyId, String objectPath) {
+        ++seed;
+        String objectId = legacyId + "." + seed;
+        objectIds.put(objectPath, objectId);
+        return objectId;
+    }
+
+    /**
+     * Helper to get a stringified form of the legacy identifier.
+     * In particular, this removes any trailing .0 decimal place for
+     * numeric identifiers.
+     *
+     * @param id the legacy id
+     * @return the stringified form of the legacy identifier
+     */
+    private String getLegacyId(Value id) {
+        String value = convert(id);
         if (value != null && id.getType() == Value.VALUE_TYPE_NUMBER
                 && id.getPrecision() == 0 && value.endsWith(".0")) {
             value = value.substring(0, value.length() - 2);
         }
+
         return value;
     }
 
-    private void mapValue(String legacyId, Value source, Mapping mapping)
-            throws KettleException {
-        Node node = nodes.get(mapping.getTarget());
-        ETLNode collection = null;
-        String name = null;
-        ETLObject object = null;
-        while (node != null) {
-            name = node.getName();
-            object = objects.get(node.getObjectPath());
-            if (object == null) {
-                object = new ETLObject(node.getArchetype());
-                object.setLegacyId(legacyId);
-                objects.put(node.getObjectPath(), object);
-            }
-
-            if (collection != null) {
-                collection.addValue(new ETLReference(object));
-                collection = null;
-            }
-            if (node.getIndex() != -1) {
-                collection = collections.get(node.getPath());
-                if (collection == null) {
-                    collection = new ETLNode(name);
-                    collections.put(node.getPath(), collection);
-                    object.addNode(collection);
-                }
-            }
-            node = node.getChild();
-        }
-        if (collection != null) {
-            if (!mapping.getIsReference()) {
-                throw new KettleException(
-                        "Last node is a collection with no child and mapping doesn't specify a reference");
-            }
-            if (source.isNull()) {
-                throw new KettleException("Reference is null");
-            }
-            Reference ref = ReferenceParser.parse(source.getString());
-            if (ref == null) {
-                throw new KettleException(
-                        "Failed to parse reference: " + source.getString());
-            }
-            collection.addValue(new ETLReference(ref.toString()));
+    /**
+     * Converts a {@link Value} to a string.
+     * Dates are formatted using JDBC timestamp escape format.
+     *
+     * @param value the value to convert
+     * @return the converted value
+     */
+    private String convert(Value value) {
+        String result;
+        if (value.getType() == Value.VALUE_TYPE_DATE && !value.isNull()) {
+            Timestamp datetime = new Timestamp(value.getDate().getTime());
+            result = datetime.toString();
         } else {
-            ETLNode etl = new ETLNode(name);
-            etl.addValue(new ETLText(source.getString()));
-            object.addNode(etl);
+            result = value.toString();
         }
+        return result;
     }
 
 }

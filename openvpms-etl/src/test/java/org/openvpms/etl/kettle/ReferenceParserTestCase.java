@@ -24,28 +24,56 @@ import org.openvpms.etl.ReferenceParser;
 
 
 /**
- * Add description here.
+ * Tests the {@link ReferenceParser}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ReferenceParserTestCase extends TestCase {
 
-    public void testReferenceParser() {
-        Reference ref1 = ReferenceParser.parse("<party.customerperson>1234");
-        assertNotNull(ref1);
-        assertEquals("party.customerperson", ref1.getArchetype());
-        assertEquals("1234", ref1.getLegacyId());
-        assertNull(ref1.getName());
-        assertNull(ref1.getValue());
+    /**
+     * Tests the single object id form.
+     */
+    public void testObjectId() {
+        checkReference("1234.1", "1234.1", null, null, null, null);
+    }
 
+    /**
+     * Tests the archetype/legacyId form.
+     */
+    public void testArchjetypeLegacyId() {
+        checkReference("<party.customerperson>1234.1", null,
+                       "party.customerperson", "1234.1", null, null);
+    }
 
-        Reference ref2 = ReferenceParser.parse(
-                "<lookup.contactPurpose>code=MAILING");
-        assertNotNull(ref2);
-        assertEquals("lookup.contactPurpose", ref2.getArchetype());
-        assertEquals("code", ref2.getName());
-        assertEquals("MAILING", ref2.getValue());
+    /**
+     * Tests the archetype/name/value form.
+     */
+    public void testArchetypeNameValue() {
+        checkReference("<lookup.contactPurpose>code=MAILING", null,
+                       "lookup.contactPurpose", null, "code", "MAILING");
+    }
+
+    /**
+     * Checks that a reference can be parsed.
+     *
+     * @param reference the reference
+     * @param objectId  the expected object id
+     * @param archetype the expected archetype
+     * @param legacyId  the expected legacy id
+     * @param name      the expected name
+     * @param value     the expected value
+     */
+    private void checkReference(String reference, String objectId,
+                                String archetype, String legacyId, String name,
+                                String value) {
+        Reference ref = ReferenceParser.parse(reference);
+        assertNotNull(ref);
+        assertEquals(objectId, ref.getObjectId());
+        assertEquals(archetype, ref.getArchetype());
+        assertEquals(legacyId, ref.getLegacyId());
+        assertEquals(name, ref.getName());
+        assertEquals(value, ref.getValue());
     }
 
 }

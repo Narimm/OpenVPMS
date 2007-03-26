@@ -1,10 +1,26 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
 package org.openvpms.etl.kettle;
 
 import be.ibridge.kettle.core.CheckResult;
 import be.ibridge.kettle.core.LogWriter;
 import be.ibridge.kettle.core.Row;
 import be.ibridge.kettle.core.exception.KettleException;
-import be.ibridge.kettle.core.exception.KettleStepException;
 import be.ibridge.kettle.core.exception.KettleXMLException;
 import be.ibridge.kettle.repository.Repository;
 import be.ibridge.kettle.trans.Trans;
@@ -24,6 +40,13 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+
+/**
+ * The 'Map Values' plugin meta data.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ */
 public class MapValuesPluginMeta extends BaseStepMeta
         implements StepMetaInterface {
 
@@ -96,43 +119,12 @@ public class MapValuesPluginMeta extends BaseStepMeta
     }
 
     /**
-     * Determines which fields are added to the stream.
-     *
-     * @param row  the row containing fields that are used as input for the
-     *             step.
-     * @param name the name of the step
-     * @param info the fields used as extra lookup information
-     * @return the fields that are being put out by this step
-     */
-    @Override
-    public Row getFields(Row row, String name, Row info)
-            throws KettleStepException {
-        if (row == null) {
-            row = new Row();
-        } else {
-            // Note. The implementation of this is wierd. Kettle wants the input
-            // row modified.
-            //row.clear();
-        }
-        return row;
-    }
-
-    /**
-     * Clones this.
-     *
-     * @return a clone of this
-     */
-    public Object clone() {
-        return super.clone();
-    }
-
-    /**
-     * Load the values for this step from an XML Node
+     * Load the values for this step from an XML Node.
      *
      * @param stepNode  the Node to get the info from
-     * @param databases The available list of databases to reference to
-     * @param counters  Counters to reference.
-     * @throws KettleXMLException When an unexpected XML error occurred. (malformed etc.)
+     * @param databases the available list of databases to reference to
+     * @param counters  counters to reference
+     * @throws KettleXMLException for any XML error
      */
     public void loadXML(Node stepNode, ArrayList databases,
                         Hashtable counters) throws KettleXMLException {
@@ -159,8 +151,7 @@ public class MapValuesPluginMeta extends BaseStepMeta
      * @param stepId     the step ID
      * @param databases  the databases to reference
      * @param counters   the counters to reference
-     * @throws KettleException When an unexpected error occurred
-     *                         (database, network, etc)
+     * @throws KettleException for any error
      */
     public void readRep(Repository repository, long stepId, ArrayList databases,
                         Hashtable counters) throws KettleException {
@@ -289,12 +280,13 @@ public class MapValuesPluginMeta extends BaseStepMeta
     }
 
     /**
-     * We know which dialog to open...
+     * Creates the dialog.
      *
      * @param shell     The shell to open the dialog on
      * @param meta      The step info
      * @param transMeta The transformation meta-data
      * @param stepname  The name of the step
+     * @return a new {@link MapValuesPluginDialog}
      */
     public StepDialogInterface getDialog(Shell shell, StepMetaInterface meta,
                                          TransMeta transMeta, String stepname) {
@@ -311,6 +303,7 @@ public class MapValuesPluginMeta extends BaseStepMeta
      * @param copyNr    The copy nr to get
      * @param transMeta The transformation info
      * @param trans     The launching transformation
+     * @return a new {@link MapValuesPlugin}
      */
     public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepData,
                                  int copyNr, TransMeta transMeta, Trans trans) {
@@ -328,7 +321,7 @@ public class MapValuesPluginMeta extends BaseStepMeta
      * It basically contains the persisting data that needs to live on, even if
      * a worker thread is terminated.
      *
-     * @return The appropriate StepDataInterface class.
+     * @return a new {@link MapValuesPluginData}
      */
     public StepDataInterface getStepData() {
         return new MapValuesPluginData();

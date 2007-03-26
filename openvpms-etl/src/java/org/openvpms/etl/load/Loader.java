@@ -18,39 +18,34 @@
 
 package org.openvpms.etl.load;
 
-import com.martiansoftware.jsap.FlaggedOption;
-import com.martiansoftware.jsap.JSAP;
-import com.martiansoftware.jsap.JSAPException;
-import com.martiansoftware.jsap.JSAPResult;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.etl.ETLNode;
-import org.openvpms.etl.ETLObject;
-import org.openvpms.etl.ETLObjectDAO;
-import org.openvpms.etl.ETLReference;
-import org.openvpms.etl.ETLText;
 import org.openvpms.etl.ETLValue;
+import org.openvpms.etl.ETLValueDAO;
 import org.openvpms.etl.Reference;
 import org.openvpms.etl.ReferenceParser;
 import static org.openvpms.etl.load.LoaderException.ErrorCode.*;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import java.io.File;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+
 /**
- * Add description here.
+ * Loads {@link IMObject} instances, mapping them from {@link ETLValue}
+ * instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -58,25 +53,27 @@ import java.util.Map;
 public class Loader {
 
     /**
-     * The default application context.
-     */
-    private static final String APPLICATION_CONTEXT = "applicationContext.xml";
-
-    /**
      * The source.
      */
-    private final ETLObjectDAO dao;
+    protected final ETLValueDAO dao;
 
     /**
      * The archetype service.
      */
-    private final IArchetypeService service;
+    protected final IArchetypeService service;
 
     /**
-     * The loaded objects.
+     * Reference to object id mapping.
      */
-    private Map<Long, State> loaded
-            = new HashMap<Long, State>();
+    protected Map<String, String> references = new HashMap<String, String>();
+
+    /**
+     * The mapped objects, keyed on {@link ETLValue#getObjectId()}.
+     * Objects that are only partially mapped non-null {@link LoadState#getObject()}
+     * and {@link LoadState#getBean()} values. There's are set to null once the
+     * object has been completely processed.
+     */
+    protected Map<String, LoadState> mapped = new HashMap<String, LoadState>();
 
 
     /**
@@ -84,42 +81,66 @@ public class Loader {
      *
      * @param service the archetype service
      */
-    public Loader(ETLObjectDAO dao, IArchetypeService service) {
+    public Loader(ETLValueDAO dao, IArchetypeService service) {
         this.dao = dao;
         this.service = service;
     }
 
-    public void load() {
-        List<ETLObject> objects;
-        int first = 0;
-        int count = 100;
-        while (true) {
-            objects = dao.get(first, count);
-            if (objects.isEmpty()) {
-                break;
+    /**
+     * Loads all objects.
+     *
+     * @return the no. of objects loaded
+     * @throws LoaderException           for any load error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public int load() {
+        List<ETLValue> values = new ArrayList<ETLValue>();
+        Iterator<ETLValue> iterator = new ETLValueIterator(dao);
+        String objectId = null;
+        String archetype = null;
+        while (iterator.hasNext()) {
+            ETLValue value = iterator.next();
+            if (objectId != null) {
+                if (!objectId.equals(value.getObjectId())) {
+                    load(objectId, archetype, values);
+                    values.clear();
+                } else if (!archetype.equals(value.getArchetype())) {
+                    throw new LoaderException(ArchetypeMismatch, objectId,
+                                              archetype, value.getArchetype());
+                }
             }
-            first += count;
-            for (ETLObject object : objects) {
-                load(object);
-            }
+            values.add(value);
+            objectId = value.getObjectId();
+            archetype = value.getArchetype();
         }
+        if (!values.isEmpty()) {
+            load(objectId, archetype, values);
+        }
+        return mapped.size();
     }
 
-    private IMObject load(ETLReference source) {
+    /**
+     * Loads the object associated with reference.
+     *
+     * @param reference the reference to load
+     * @return the object corresponding to the reference
+     * @throws LoaderException if the reference is invalid
+     */
+    protected IMObject loadReference(String reference) {
         IMObject result = null;
-        ETLObject object = source.getObject();
-        if (object == null) {
-            Reference ref = ReferenceParser.parse(source.getValue());
+        String objectId = references.get(reference);
+        if (objectId == null) {
+            Reference ref = ReferenceParser.parse(reference);
             if (ref == null) {
-                throw new LoaderException(InvalidReference, source.getValue());
+                throw new LoaderException(InvalidReference, reference);
             }
-            if (ref.getLegacyId() != null) {
-                ETLObject target = dao.get(ref.getArchetype(),
-                                           ref.getLegacyId());
-                if (target == null) {
-                    throw new LoaderException(ObjectNotFound, ref);
-                }
-                result = load(target);
+            if (ref.getObjectId() != null) {
+                List<ETLValue> values = dao.get(ref.getObjectId());
+                result = loadReference(values, reference);
+            } else if (ref.getLegacyId() != null) {
+                List<ETLValue> values = dao.get(ref.getLegacyId(),
+                                                ref.getArchetype());
+                result = loadReference(values, reference);
             } else {
                 ArchetypeQuery query = new ArchetypeQuery(ref.getArchetype(),
                                                           true, true);
@@ -131,140 +152,165 @@ public class Loader {
                     result = iterator.next();
                     if (iterator.hasNext()) {
                         throw new LoaderException(
-                                LoaderException.ErrorCode.RefResolvesMultipleObjects,
-                                ref.toString());
+                                RefResolvesMultipleObjects, ref.toString());
                     }
                 }
             }
         } else {
-            result = load(source.getObject());
+            LoadState state = mapped.get(objectId);
+            result = getObject(state);
         }
         return result;
     }
 
-    private IMObject load(ETLObject source) {
+    /**
+     * Loads an object.
+     *
+     * @param objectId  the object's identifier
+     * @param archetype the object's archetype
+     * @param values    the values to construct the object from
+     * @return the object
+     * @throws LoaderException for any error
+     */
+    protected IMObject load(String objectId, String archetype,
+                            List<ETLValue> values) {
         IMObject target;
-        State state = loaded.get(source.getObjectId());
+        LoadState state = mapped.get(objectId);
         if (state == null) {
-            target = service.create(source.getArchetype());
+            target = service.create(archetype);
             if (target == null) {
-                throw new LoaderException(ArchetypeNotFound,
-                                          source.getArchetype());
+                throw new LoaderException(ArchetypeNotFound, archetype);
             }
-            state = new State(target);
-            loaded.put(source.getObjectId(), state);
-            IMObjectBean bean = new IMObjectBean(target, service);
-            for (ETLNode node : source.getNodes()) {
-                for (ETLValue value : node.getValues()) {
-                    if (value instanceof ETLText) {
-                        ETLText text = (ETLText) value;
-                        bean.setValue(node.getName(), text.getValue());
-                        // todo - need to handle multiple values for simple
-                        // node
-                    } else {
-                        ETLReference ref = (ETLReference) value;
-                        IMObject child = load(ref);
-                        bean.addValue(node.getName(), child);
-                    }
-                }
+            state = new LoadState(target, service);
+            mapped.put(objectId, state);
+            IMObjectBean bean = state.getBean();
+            for (ETLValue value : values) {
+                setValue(value, bean, objectId);
             }
             service.save(target);
             state.setNull();
         } else {
-            target = state.getObject();
-            if (target == null) {
-                target = ArchetypeQueryHelper.getByObjectReference(
-                        service, state.getRef());
-            }
-            if (target == null) {
-                throw new LoaderException(ObjectNotFound, state.getRef());
-            }
+            target = getObject(state);
         }
         return target;
     }
 
     /**
-     * Main line.
+     * Sets a value on a object.
      *
-     * @param args command line arguments
+     * @param value    the value to set
+     * @param bean     the bean wrapping the object
+     * @param objectId the source object id
+     * @throws LoaderException if the node is invalid
      */
-    public static void main(String[] args) {
-        try {
-            JSAP parser = createParser();
-            JSAPResult config = parser.parse(args);
-            if (!config.success()) {
-                displayUsage(parser);
+    protected void setValue(ETLValue value, IMObjectBean bean,
+                            String objectId) {
+        String name = value.getName();
+        NodeDescriptor descriptor = bean.getDescriptor(name);
+        if (descriptor == null) {
+            String archetype = bean.getObject().getArchetypeId().getShortName();
+            throw new LoaderException(InvalidNode, objectId, archetype, name);
+        }
+        if (value.isReference()) {
+            if (descriptor.isCollection()) {
+                IMObject child = loadReference(value.getValue());
+                bean.addValue(name, child);
             } else {
-                String contextPath = config.getString("context");
-
-                ApplicationContext context;
-                if (!new File(contextPath).exists()) {
-                    context = new ClassPathXmlApplicationContext(contextPath);
-                } else {
-                    context = new FileSystemXmlApplicationContext(contextPath);
-                }
-
-                ETLObjectDAO dao = (ETLObjectDAO) context.getBean(
-                        "ETLObjectDAO");
-                IArchetypeService service = (IArchetypeService) context.getBean(
-                        "archetypeService");
-                Loader loader = new Loader(dao, service);
-                loader.load();
+                bean.setValue(name, getReference(value.getValue()));
             }
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
+        } else {
+            bean.setValue(name, convert(value, descriptor, objectId));
         }
     }
 
     /**
-     * Creates a new command line parser.
+     * Converts an {@link ETLValue} in order to populate it on an
+     * {@link IMObject}. In particular, this handles stringified date/times in
+     * JDBC escape format, converting them to <tt>java.util.Date</tt> instances.
      *
-     * @return a new parser
-     * @throws JSAPException if the parser can't be created
+     * @param value      the value to convert
+     * @param descriptor the node descriptor
+     * @param objectId   the source object id
+     * @return the converted object
+     * @throws LoaderException if  the value cannot be converted
      */
-    private static JSAP createParser() throws JSAPException {
-        JSAP parser = new JSAP();
-        parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
-                .setLongFlag("context")
-                .setDefault(APPLICATION_CONTEXT)
-                .setHelp("Application context path"));
-        return parser;
+    protected Object convert(ETLValue value, NodeDescriptor descriptor,
+                             String objectId) {
+        Object result;
+        if (descriptor.isDate()) {
+            if (StringUtils.isEmpty(value.getValue())) {
+                result = null;
+            } else {
+                try {
+                    result = Timestamp.valueOf(value.getValue());
+                } catch (IllegalArgumentException exception) {
+                    throw new LoaderException(InvalidTimestamp, objectId,
+                                              value.getValue(),
+                                              value.getName());
+                }
+            }
+        } else {
+            result = value.getValue();
+        }
+        return result;
     }
 
     /**
-     * Prints usage information.
+     * Returns the {@link IMObjectReference} associated with a reference.
+     *
+     * @param reference the reference
+     * @return the corresponding {@link IMObjectReference}
+     * @throws LoaderException if the reference is invalid
      */
-    private static void displayUsage(JSAP parser) {
-        System.err.println();
-        System.err
-                .println("Usage: java " + Loader.class.getName());
-        System.err.println("                " + parser.getUsage());
-        System.err.println();
-        System.err.println(parser.getHelp());
-        System.exit(1);
+    protected IMObjectReference getReference(String reference) {
+        IMObject object = loadReference(reference);
+        return object.getObjectReference();
     }
 
-    private static class State {
-
-        private final IMObjectReference reference;
-        private IMObject object;
-
-        public State(IMObject object) {
-            reference = object.getObjectReference();
-            this.object = object;
+    /**
+     * Gets an object, given its load state.
+     *
+     * @param state the load state
+     * @return the object
+     * @throws LoaderException           for any loader error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected IMObject getObject(LoadState state) {
+        IMObject target;
+        target = state.getObject();
+        if (target == null) {
+            target = ArchetypeQueryHelper.getByObjectReference(
+                    service, state.getRef());
         }
-
-        public IMObjectReference getRef() {
-            return reference;
+        if (target == null) {
+            throw new LoaderException(ObjectNotFound, state.getRef());
         }
-
-        public IMObject getObject() {
-            return object;
-        }
-
-        public void setNull() {
-            object = null;
-        }
+        return target;
     }
+
+    private IMObject loadReference(List<ETLValue> values, String reference) {
+        if (values.isEmpty()) {
+            throw new LoaderException(ObjectNotFound, reference);
+        }
+        String objectId = null;
+        String archetype = null;
+        for (ETLValue value : values) {
+            if (objectId == null) {
+                objectId = value.getObjectId();
+                archetype = value.getArchetype();
+            } else if (!objectId.equals(value.getObjectId())) {
+                throw new LoaderException(RefResolvesMultipleObjects,
+                                          reference);
+            } else if (!archetype.equals(value.getArchetype())) {
+                throw new LoaderException(ArchetypeMismatch, objectId,
+                                          archetype,
+                                          value.getArchetype());
+            }
+        }
+        IMObject result = load(objectId, archetype, values);
+        references.put(reference, objectId);
+        return result;
+    }
+
 
 }

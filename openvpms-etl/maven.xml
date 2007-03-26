@@ -104,7 +104,7 @@
         <attainGoal name="java:compile"/>
         <attainGoal name="java:jar-resources"/>
         <attainGoal name="generate-hibernate-properties"/>
-        <ant:java classname="org.openvpms.etl.load.Loader"
+        <ant:java classname="org.openvpms.etl.load.Main"
                   failonerror="true"
                   maxmemory="512m"
                   fork="true">
@@ -113,6 +113,23 @@
                 <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
             <arg line="-c ${maven.build.dir}/applicationContext.xml"/>
+        </ant:java>
+    </goal>
+
+    <goal name="etl:validate">
+        <attainGoal name="generate-appcontext"/>
+        <attainGoal name="java:compile"/>
+        <attainGoal name="java:jar-resources"/>
+        <attainGoal name="generate-hibernate-properties"/>
+        <ant:java classname="org.openvpms.etl.load.Main"
+                  failonerror="true"
+                  maxmemory="512m"
+                  fork="true">
+            <ant:classpath>
+                <ant:pathelement path="${maven.build.dest}"/>
+                <ant:path refid="maven.dependency.classpath"/>
+            </ant:classpath>
+            <arg line="-c ${maven.build.dir}/applicationContext.xml --validateOnly"/>
         </ant:java>
     </goal>
 

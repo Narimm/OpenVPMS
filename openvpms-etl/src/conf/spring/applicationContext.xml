@@ -174,12 +174,6 @@
                     /org/openvpms/component/business/domain/im/security/ArchetypeAwareGrantedAuthority.hbm.xml
                 </value>
                 <value>
-                    /org/openvpms/etl/ETLObject.hbm.xml
-                </value>
-                <value>
-                    /org/openvpms/etl/ETLNode.hbm.xml
-                </value>
-                <value>
                     /org/openvpms/etl/ETLValue.hbm.xml
                 </value>
             </list>
@@ -240,7 +234,7 @@
     <!-- ================================================================== -->
     <!--                         ETL DEFINITIONS                            -->
     <!-- ================================================================== -->
-    <bean id="ETLObjectDAO" class="org.openvpms.etl.ETLObjectDAO">
+    <bean id="ETLObjectDAO" class="org.openvpms.etl.ETLValueDAO">
         <constructor-arg>
             <ref local="sessionFactory"/>
         </constructor-arg>
