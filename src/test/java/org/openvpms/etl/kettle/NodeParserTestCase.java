@@ -20,26 +20,53 @@ package org.openvpms.etl.kettle;
 
 import junit.framework.TestCase;
 
+
 /**
- * Add description here.
+ * Tests the {@link NodeParser}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class NodeParserTestCase extends TestCase {
 
-    public void testNodeParser() {
-        Node node1 = NodeParser.parse("<party.customerPerson>firstName");
-        assertNotNull(node1);
-        checkNode(node1, "party.customerPerson", "firstName", -1);
-
-        Node node2 = NodeParser.parse(
-                "<party.customerPerson>contacts[0]<contact.location>address");
-        assertNotNull(node2);
-        checkNode(node2, "party.customerPerson", "contacts", 0);
-        checkNode(node2.getChild(), "contact.location", "address", -1);
+    /**
+     * Tests a single node.
+     */
+    public void testSingleNode() {
+        Node node = NodeParser.parse("<party.customerPerson>firstName");
+        assertNotNull(node);
+        checkNode(node, "party.customerPerson", "firstName", -1);
     }
 
+    /**
+     * Tests a collection node.
+     */
+    public void testNodeParser() {
+        Node node = NodeParser.parse(
+                "<party.customerPerson>contacts[0]<contact.location>address");
+        assertNotNull(node);
+        checkNode(node, "party.customerPerson", "contacts", 0);
+        checkNode(node.getChild(), "contact.location", "address", -1);
+    }
+
+    /**
+     * Tests that invalid nodes can't be parsed.
+     */
+    public void testInvalid() {
+        assertNull(NodeParser.parse(""));
+        assertNull(NodeParser.parse("<party.customerPerson>"));
+        assertNull(NodeParser.parse("<party.customerPerson>[0]"));
+        assertNull(NodeParser.parse("<party.customerPerson>xnode[0]ynode"));
+    }
+
+    /**
+     * Checks a node.
+     *
+     * @param node      the node to check
+     * @param archetype the expected archetype
+     * @param name      the expected name
+     * @param index     the expected index
+     */
     private void checkNode(Node node, String archetype, String name,
                            int index) {
         assertNotNull(node);

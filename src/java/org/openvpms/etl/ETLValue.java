@@ -25,17 +25,42 @@ package org.openvpms.etl;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ETLValue {
-
     private long valueId;
     private long version;
-    private ETLNode node;
+    private String archetype;
+    private String objectId;
+    private String legacyId;
+    private boolean isReference;
+    private String name;
+    private int index;
     private String value;
 
+
     public ETLValue() {
-        this(null);
+        this(null, null, null);
     }
 
-    public ETLValue(String value) {
+    public ETLValue(String objectId, String archetype, String legacyId) {
+        this(objectId, archetype, legacyId, null, -1);
+    }
+
+    public ETLValue(String objectId, String archetype, String legacyId,
+                    String name, int index) {
+        this(objectId, archetype, legacyId, name, index, null);
+    }
+
+    public ETLValue(String objectId, String archetype, String legacyId,
+                    String name, String value) {
+        this(objectId, archetype, legacyId, name, -1, value);
+    }
+
+    public ETLValue(String objectId, String archetype, String legacyId,
+                    String name, int index, String value) {
+        this.objectId = objectId;
+        this.archetype = archetype;
+        this.legacyId = legacyId;
+        this.name = name;
+        this.index = index;
         this.value = value;
     }
 
@@ -51,14 +76,6 @@ public class ETLValue {
         return version;
     }
 
-    public void setNode(ETLNode node) {
-        this.node = node;
-    }
-
-    public ETLNode getNode() {
-        return node;
-    }
-
     public void setVersion(long version) {
         this.version = version;
     }
@@ -71,4 +88,51 @@ public class ETLValue {
         return value;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public String getArchetype() {
+        return archetype;
+    }
+
+    public void setArchetype(String archetype) {
+        this.archetype = archetype;
+    }
+
+    public String getObjectId() {
+        return objectId;
+    }
+
+    public void setObjectId(String objectId) {
+        this.objectId = objectId;
+    }
+
+    public String getLegacyId() {
+        return legacyId;
+    }
+
+    public void setLegacyId(String legacyId) {
+        this.legacyId = legacyId;
+    }
+
+    public boolean isReference() {
+        return isReference;
+    }
+
+    public void setReference(boolean reference) {
+        isReference = reference;
+    }
 }

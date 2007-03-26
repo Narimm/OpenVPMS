@@ -18,14 +18,23 @@
 
 package org.openvpms.etl;
 
+
 /**
- * Add description here.
+ * A symbolic reference to an object.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class Reference {
 
+    /**
+     * The object id. May be <tt>null</tt>
+     */
+    private final String objectId;
+
+    /**
+     * The object archetype.
+     */
     private final String archetype;
 
     private final String legacyId;
@@ -34,7 +43,15 @@ public class Reference {
 
     private final String value;
 
+    public Reference(String objectId) {
+        this.objectId = objectId;
+        archetype = null;
+        legacyId = null;
+        name = null;
+        value = null;
+    }
     public Reference(String archetype, String legacyId) {
+        this.objectId = null;
         this.archetype = archetype;
         this.legacyId = legacyId;
         this.name = null;
@@ -42,10 +59,15 @@ public class Reference {
     }
 
     public Reference(String archetype, String name, String value) {
+        this.objectId = null;
         this.archetype = archetype;
         this.legacyId = null;
         this.name = name;
         this.value = value;
+    }
+
+    public String getObjectId() {
+        return objectId;
     }
 
     public String getArchetype() {

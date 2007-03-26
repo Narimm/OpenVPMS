@@ -1,3 +1,21 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
 package org.openvpms.etl.kettle;
 
 import be.ibridge.kettle.core.ColumnInfo;
@@ -33,6 +51,13 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
+
+/**
+ * The 'Map Values' plugin dialog.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ */
 public class MapValuesPluginDialog extends BaseStepDialog
         implements StepDialogInterface {
 
@@ -75,7 +100,6 @@ public class MapValuesPluginDialog extends BaseStepDialog
         super(parent, in, transMeta, stepName);
         input = in;
     }
-
 
     /**
      * Opens the dialog.
@@ -159,10 +183,7 @@ public class MapValuesPluginDialog extends BaseStepDialog
         tabFolder = new CTabFolder(shell, SWT.BORDER);
         props.setLook(tabFolder, Props.WIDGET_STYLE_TAB);
 
-        //////////////////////////
-        // START OF MAP TAB ///
-        //////////////////////////
-
+        // the mapping tab
         CTabItem mapTab = new CTabItem(tabFolder, SWT.NONE);
         mapTab.setText(Messages.getString(
                 "MapValuesDialog.MapTab.TabItem"));
@@ -248,10 +269,7 @@ public class MapValuesPluginDialog extends BaseStepDialog
         fdTabFolder.right = new FormAttachment(100, 0);
         fdTabFolder.bottom = new FormAttachment(100, -50);
         tabFolder.setLayoutData(fdTabFolder);
-
-        /////////////////////////////////////////////////////////////
-        /// END OF TAB FOLDER
-        /////////////////////////////////////////////////////////////
+        // end of the tab folder
 
         Button ok = new Button(shell, SWT.PUSH);
         ok.setText(Messages.getString("System.Button.OK"));

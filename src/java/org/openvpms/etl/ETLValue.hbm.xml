@@ -26,20 +26,16 @@
             <column name="value_id"/>
             <generator class="native"/>
         </id>
-        <discriminator column="is_reference" type="boolean"/>
-
-        <version name="version" access="property" type="long"/>
-
-        <many-to-one name="node" column="node_id" not-null="true"/>
-
+        <property name="objectId" access="property" column="object_id"
+                  type="string" length="32" index="etl_value_object_id_idx"/>
+        <property name="legacyId" access="property" column="legacy_id"
+                  type="string" length="32" index="etl_value_ref_idx"/>
+        <property name="archetype" access="property" type="string" length="32"
+                  index="etl_value_ref_idx"/>
+        <property name="reference" column="is_reference" type="boolean"/>
+        <property name="name" access="property" column="name" type="string"
+                  length="32"/>
         <property name="value" access="property" column="value"
                   type="string" length="4096"/>
-
-        <subclass name="org.openvpms.etl.ETLText" discriminator-value="false"/>
-
-        <subclass name="org.openvpms.etl.ETLReference" discriminator-value="true">
-            <many-to-one name="object" column="object_id"
-                         class="org.openvpms.etl.ETLObject" lazy="false"/>
-        </subclass>
     </class>
 </hibernate-mapping>

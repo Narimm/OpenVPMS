@@ -19,18 +19,10 @@
 package org.openvpms.etl.kettle;
 
 import be.ibridge.kettle.core.Row;
-import be.ibridge.kettle.core.exception.KettleException;
 import be.ibridge.kettle.core.value.Value;
 import junit.framework.TestCase;
-import org.openvpms.etl.ETLNode;
-import org.openvpms.etl.ETLObject;
-import org.openvpms.etl.ETLObjectDAO;
-import org.openvpms.etl.ETLReference;
-import org.openvpms.etl.ETLText;
 import org.openvpms.etl.ETLValue;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 
@@ -48,7 +40,6 @@ public class RowMapperTestCase extends TestCase {
      * @throws Exception for any error
      */
     public void testSingleNode() throws Exception {
-        TestETLObjectDAO dao = new TestETLObjectDAO();
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
 
@@ -59,7 +50,7 @@ public class RowMapperTestCase extends TestCase {
         mappings.addMapping(firstNameMap);
         mappings.addMapping(lastNameMap);
 
-        RowMapper mapper = new RowMapper(mappings, dao);
+        RowMapper mapper = new RowMapper(mappings);
         Row row = new Row();
         Value legacyId = createValue("LEGACY_ID", "ID1");
         Value firstName = createValue("FIRST_NAME", "Foo");
@@ -68,14 +59,15 @@ public class RowMapperTestCase extends TestCase {
         row.addValue(legacyId);
         row.addValue(firstName);
         row.addValue(lastName);
-        mapper.map(row);
+        List<ETLValue> values = mapper.map(row);
 
-        List<ETLObject> objects = dao.getObjects();
-        assertEquals(1, objects.size());
-        ETLObject object = objects.get(0);
-        checkObject(object, "party.customerperson", "ID1", 2);
-        checkNode(object, "firstName", "Foo");
-        checkNode(object, "lastName", "Bar");
+        assertEquals(2, values.size());
+        ETLValue firstNameVal = values.get(0);
+        ETLValue lastNameVal = values.get(1);
+        checkValue(firstNameVal, "ID1.1", "party.customerperson", "ID1",
+                   "firstName", "Foo");
+        checkValue(lastNameVal, "ID1.1", "party.customerperson", "ID1",
+                   "lastName", "Bar");
     }
 
     /**
@@ -87,159 +79,140 @@ public class RowMapperTestCase extends TestCase {
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
 
+        Mapping addressMap = createMapping(
+                "ADDRESS",
+                "<party.customerperson>contacts[0]<contact.location>address");
         Mapping suburbMap = createMapping(
                 "SUBURB",
                 "<party.customerperson>contacts[0]<contact.location>suburb");
+        mappings.addMapping(addressMap);
         mappings.addMapping(suburbMap);
 
-        TestETLObjectDAO dao = new TestETLObjectDAO();
-        RowMapper mapper = new RowMapper(mappings, dao);
+        RowMapper mapper = new RowMapper(mappings);
         Row row = new Row();
         Value legacyId = createValue("LEGACY_ID", "ID1");
+        Value address = createValue("ADDRESS", "49 Foo St Bar");
         Value suburb = createValue("SUBURB", "Coburg");
         legacyId.setValue("ID1");
         row.addValue(legacyId);
+        row.addValue(address);
         row.addValue(suburb);
-        mapper.map(row);
+        List<ETLValue> objects = mapper.map(row);
 
-        List<ETLObject> objects = dao.getObjects();
-        assertEquals(2, objects.size());
+        assertEquals(3, objects.size());
 
-        ETLObject person = objects.get(0);
-        ETLObject contact = objects.get(1);
-        checkObject(person, "party.customerperson", "ID1", 1);
-        checkCollectionNode(person, "contacts", contact);
-        checkObject(contact, "contact.location", "ID1", 1);
-        checkNode(contact, "suburb", "Coburg");
+        ETLValue personVal = objects.get(0);
+        ETLValue addressVal = objects.get(1);
+        ETLValue suburbVal = objects.get(2);
+        checkValue(personVal, "ID1.1", "party.customerperson", "ID1",
+                   "contacts", 0, "ID1.2");
+        checkValue(addressVal, "ID1.2", "contact.location", "ID1",
+                   "address", -1, "49 Foo St Bar");
+        checkValue(suburbVal, "ID1.2", "contact.location", "ID1",
+                   "suburb", -1, "Coburg");
     }
 
+    /**
+     * Tests a collection heirarchy.
+     *
+     * @throws Exception for any error
+     */
     public void testCollectionHeirarchy() throws Exception {
         Mappings mappings = new Mappings();
         mappings.setIdColumn("LEGACY_ID");
 
-        Mapping suburbMap = createMapping("ADDRESS",
-                                          "<party.customerperson>contacts[0]<contact.location>purposes[1]");
+        Mapping suburbMap = createMapping(
+                "ADDRESS",
+                "<party.customerperson>contacts[0]<contact.location>purposes[1]");
         suburbMap.setIsReference(true);
         String ref = "<lookup.contactPurpose>code=MAILING";
         suburbMap.setValue(ref);
         mappings.addMapping(suburbMap);
 
-        TestETLObjectDAO dao = new TestETLObjectDAO();
-        RowMapper mapper = new RowMapper(mappings, dao);
+        RowMapper mapper = new RowMapper(mappings);
         Row row = new Row();
         Value legacyId = createValue("LEGACY_ID", "ID1");
         Value mailing = createValue("ADDRESS", "49 Foo St Bar");
         legacyId.setValue("ID1");
         row.addValue(legacyId);
         row.addValue(mailing);
-        mapper.map(row);
+        List<ETLValue> objects = mapper.map(row);
 
-        List<ETLObject> objects = dao.getObjects();
         assertEquals(2, objects.size());
 
-        ETLObject person = objects.get(0);
-        ETLObject contact = objects.get(1);
-        checkObject(person, "party.customerperson", "ID1", 1);
-        checkCollectionNode(person, "contacts", contact);
-        checkObject(contact, "contact.location", "ID1", 1);
-        checkCollectionNode(contact, "purposes", ref);
+        ETLValue person = objects.get(0);
+        ETLValue contact = objects.get(1);
+        checkValue(person, "ID1.1", "party.customerperson", "ID1",
+                   "contacts", 0, "ID1.2");
+        checkValue(contact, "ID1.2", "contact.location", "ID1",
+                   "purposes", 1, "<lookup.contactPurpose>code=MAILING");
     }
 
-    private void checkNode(ETLObject object, String name, String value) {
-        ETLNode node = object.getNode(name);
-        assertNotNull(node);
-        List<ETLValue> values = node.getValues();
-        assertNotNull(values);
-        assertEquals(1, values.size());
-        ETLText text = (ETLText) values.get(0);
-        assertEquals(value, text.getValue());
+    /**
+     * Helper to check a value.
+     *
+     * @param v         the value to check
+     * @param objectId  the expected object id
+     * @param archetype the expected archetype
+     * @param legacyId  the expected legacy id
+     * @param name      the expected name
+     * @param value     the expected value
+     */
+    private void checkValue(ETLValue v, String objectId, String archetype,
+                            String legacyId, String name, String value) {
+        checkValue(v, objectId, archetype, legacyId, name, -1, value);
     }
 
-    private void checkObject(ETLObject object, String shortName,
-                             String legacyId, int size) {
-        assertEquals(shortName, object.getArchetype());
-        assertEquals(legacyId, object.getLegacyId());
-        assertEquals(size, object.getNodes().size());
-    }
-
-    private void checkCollectionNode(ETLObject object, String name,
-                                     ETLObject ... expected) {
-        ETLNode node = object.getNode(name);
-        assertNotNull(node);
-        List<ETLValue> values = node.getValues();
-        assertEquals(expected.length, values.size());
-        for (ETLObject o : expected) {
-            boolean found = false;
-            for (ETLValue value : values) {
-                assertTrue(value instanceof ETLReference);
-                ETLReference reference = (ETLReference) value;
-                if (o.equals(reference.getObject())) {
-                    found = true;
-                    break;
-                }
-            }
-            assertTrue(found);
+    /**
+     * Helper to check a value.
+     *
+     * @param v         the value to check
+     * @param objectId  the expected object id
+     * @param archetype the expected archetype
+     * @param legacyId  the expected legacy id
+     * @param name      the expected name
+     * @param index     the expected index
+     * @param value     the expected value
+     */
+    private void checkValue(ETLValue v, String objectId, String archetype,
+                            String legacyId, String name, int index,
+                            String value) {
+        assertEquals(objectId, v.getObjectId());
+        assertEquals(archetype, v.getArchetype());
+        assertEquals(legacyId, v.getLegacyId());
+        assertEquals(name, v.getName());
+        assertEquals(index, v.getIndex());
+        if (index != -1) {
+            assertTrue(v.isReference());
         }
+        assertEquals(value, v.getValue());
     }
 
-    private void checkCollectionNode(ETLObject object, String name,
-                                     String ... expected) {
-        ETLNode node = object.getNode(name);
-        assertNotNull(node);
-        List<ETLValue> values = node.getValues();
-        assertEquals(expected.length, values.size());
-        for (String o : expected) {
-            boolean found = false;
-            for (ETLValue value : values) {
-                assertTrue(value instanceof ETLReference);
-                ETLReference reference = (ETLReference) value;
-                if (o.equals(reference.getValue())) {
-                    found = true;
-                    break;
-                }
-            }
-            assertTrue(found);
-        }
-    }
-
+    /**
+     * Helper to create a new value.
+     *
+     * @param name  the name
+     * @param value the value
+     * @return a new value
+     */
     private Value createValue(String name, String value) {
         Value result = new Value(name, Value.VALUE_TYPE_STRING);
         result.setValue(value);
         return result;
     }
 
+    /**
+     * Helper to create a new mapping.
+     *
+     * @param source the source to map
+     * @param target the target to map to
+     * @return a new mapping
+     */
     private Mapping createMapping(String source, String target) {
         Mapping mapping = new Mapping();
         mapping.setSource(source);
         mapping.setTarget(target);
         return mapping;
-    }
-
-    private class TestETLObjectDAO extends ETLObjectDAO
-            implements RowMapperListener {
-
-        public void output(Collection<ETLObject> objects) throws
-                                                          KettleException {
-            save(objects);
-        }
-
-        private List<ETLObject> objects = new ArrayList<ETLObject>();
-
-        @Override
-        public void save(ETLObject object) {
-            objects.add(object);
-        }
-
-        @Override
-        public void save(Iterable<ETLObject> objects) {
-            for (ETLObject object : objects) {
-                save(object);
-            }
-        }
-
-        public List<ETLObject> getObjects() {
-            return objects;
-        }
     }
 
 }

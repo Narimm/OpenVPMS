@@ -43,7 +43,10 @@ public class LoaderException extends OpenVPMSException {
         ArchetypeNotFound,
         ObjectNotFound,
         InvalidReference,
-        RefResolvesMultipleObjects
+        RefResolvesMultipleObjects,
+        ArchetypeMismatch,
+        InvalidNode,
+        InvalidTimestamp
     }
 
     /**

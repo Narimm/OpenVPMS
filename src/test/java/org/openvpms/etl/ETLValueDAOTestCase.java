@@ -20,30 +20,26 @@ import junit.framework.TestCase;
 
 
 /**
- * Add description here.
+ * Tests the {@link ETLValueDAO} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ETLObjectDAOTestCase extends TestCase {
+public class ETLValueDAOTestCase extends TestCase {
 
     public void testSave() {
-        ETLObjectDAO dao = new ETLObjectDAO();
+        ETLValueDAO dao = new ETLValueDAO();
 
-        ETLObject object = new ETLObject("party.customerperson");
-        object.addValue("firstName", new ETLText("Foo"));
-        object.addValue("lastName", new ETLText("Bar"));
+        ETLValue object = new ETLValue("ID1.1", "party.customerperson", "ID1");
+        ETLValue firstName = new ETLValue("ID1.1", "party.customerperson",
+                                          "ID1", "firstName", "Foo");
+        ETLValue lastName = new ETLValue("ID1.1", "party.customerperson", "ID1",
+                                         "lastName", "Bar");
         dao.save(object);
+        dao.save(firstName);
+        dao.save(lastName);
 
-        ETLObject contact = new ETLObject("contact.phoneNumber");
-        contact.addValue("telephoneNumber", new ETLText("12345678"));
-        dao.save(contact);
-
-        object.addValue("contacts", new ETLReference(contact));
-        dao.save(object);
-
-        object = dao.get(object.getObjectId());
+        object = dao.get(object.getValueId());
         assertNotNull(object);
-
     }
 }

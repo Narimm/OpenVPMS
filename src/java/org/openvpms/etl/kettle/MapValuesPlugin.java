@@ -1,3 +1,21 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
 package org.openvpms.etl.kettle;
 
 import be.ibridge.kettle.core.Const;
@@ -13,17 +31,19 @@ import be.ibridge.kettle.trans.step.StepMeta;
 import be.ibridge.kettle.trans.step.StepMetaInterface;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.openvpms.etl.ETLObject;
-import org.openvpms.etl.ETLObjectDAO;
+import org.openvpms.etl.ETLValue;
+import org.openvpms.etl.ETLValueDAO;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Collection;
 
 
 /**
- * Map values step plugin.
+ * 'Map values' kettle plugin.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class MapValuesPlugin extends BaseStep implements StepInterface {
 
@@ -40,17 +60,12 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
     /**
      * The DAO.
      */
-    private ETLObjectDAO dao;
-
-    /**
-     * The row mapper listener.
-     */
-    private RowMapperListener listener;
+    private ETLValueDAO dao;
 
     /**
      * The batch save cache.
      */
-    private List<ETLObject> batch = new ArrayList<ETLObject>();
+    private List<ETLValue> batch = new ArrayList<ETLValue>();
 
     /**
      * The batch size.
@@ -78,14 +93,6 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
                            int copyNr, TransMeta transMeta, Trans trans) {
         super(stepMeta, data, copyNr, transMeta, trans);
         Logger.getRootLogger().setLevel(Level.INFO);
-        listener = new RowMapperListener() {
-            public void output(Collection<ETLObject> objects) throws KettleException {
-                batch.addAll(objects);
-                if (batch.size() >= batchSize) {
-                    flushBatch();
-                }
-            }
-        };
     }
 
     /**
@@ -108,7 +115,11 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
         if (row != null) {
             try {
                 RowMapper mapper = getRowMapper();
-                mapper.map(row);
+                List<ETLValue> values = mapper.map(row);
+                batch.addAll(values);
+                if (batch.size() >= batchSize) {
+                    flushBatch();
+                }
             } catch (Throwable exception) {
                 throw new KettleException(exception);
             }
@@ -117,57 +128,13 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
             result = true;
             if ((linesRead % Const.ROWS_UPDATE) == 0) {
                 // Some basic logging every 5000 rows.
-                logBasic("Linenr " + linesRead);
+                logBasic("Lines " + linesRead);
             }
         } else {
             // no more input to be expected...
             setOutputDone();
         }
         return result;
-    }
-
-    private ETLObjectDAO getDAO() throws KettleException {
-        if (dao == null) {
-            DatabaseMeta database = data.getDatabase();
-            if (database == null) {
-                throw new KettleException("No database selected");
-            }
-            try {
-                Properties properties = new Properties();
-                properties.put("hibernate.connection.driver_class",
-                               database.getDriverClass());
-                properties.put("hibernate.connection.url", database.getURL());
-                properties.put("hibernate.connection.username",
-                               database.getUsername());
-                properties.put("hibernate.connection.password",
-                               database.getPassword());
-                properties.put("hibernate.show_sql", "false");
-                properties.put("hibernate.jdbc.batch_size", "100");
-                properties.put("hibernate.cache.use_second_level_cache",
-                               "false");
-                properties.put("hibernate.cache.use_query_cache", "false");
-/*
-                properties.put("hibernate.c3p0.min_size", "5");
-                properties.put("hibernate.c3p0.max_size", "20");
-                properties.put("hibernate.c3p0.timeout", "1800");
-                properties.put("hibernate.c3p0.max_statements", "50");
-                properties.put("hibernate.cache.provider_class",
-                               "org.hibernate.cache.EhCacheProvider");
-                properties.put("hibernate.cache.use_second_level_cache",
-                               "true");
-                properties.put("hibernate.cache.use_query_cache", "true");
-*/
-                properties.put("hibernate.query.factory_class",
-                               "org.hibernate.hql.ast.ASTQueryTranslatorFactory");
-
-                dao = new ETLObjectDAO(properties);
-            } catch (KettleException exception) {
-                throw exception;
-            } catch (Throwable exception) {
-                throw new KettleException(exception);
-            }
-        }
-        return dao;
     }
 
     /**
@@ -200,16 +167,15 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
         super.dispose(stepMeta, stepData);
     }
 
-    // Run is were the action happens!
+    /**
+     * Run the step.
+     */
     public void run() {
         logBasic("Starting to run...");
         try {
             boolean process = true;
             while (process) {
                 process = processRow(metaData, data) && !isStopped();
-                if (batch.size() >= batchSize) {
-                    flushBatch();
-                }
             }
             flushBatch();
         } catch (Exception exception) {
@@ -232,7 +198,7 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
      */
     private RowMapper getRowMapper() throws KettleException {
         if (mapper == null) {
-            mapper = new RowMapper(metaData.getMappings(), listener);
+            mapper = new RowMapper(metaData.getMappings());
         }
         return mapper;
     }
@@ -252,4 +218,52 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
             }
         }
     }
+
+    /**
+     * Returns the DAO, initialising it if it hasn't already been initialised
+     *
+     * @return the DAO
+     * @throws KettleException for any error
+     */
+    private ETLValueDAO getDAO() throws KettleException {
+        if (dao == null) {
+            DatabaseMeta database = data.getDatabase();
+            if (database == null) {
+                throw new KettleException("No database selected");
+            }
+            try {
+                Properties properties = new Properties();
+                properties.put("hibernate.connection.driver_class",
+                               database.getDriverClass());
+                properties.put("hibernate.connection.url", database.getURL());
+                properties.put("hibernate.connection.username",
+                               database.getUsername());
+                properties.put("hibernate.connection.password",
+                               database.getPassword());
+                properties.put("hibernate.show_sql", "false");
+                properties.put("hibernate.jdbc.batch_size", "1000");
+                properties.put("hibernate.cache.use_second_level_cache",
+                               "false");
+                properties.put("hibernate.cache.use_query_cache", "false");
+/*
+                properties.put("hibernate.c3p0.min_size", "5");
+                properties.put("hibernate.c3p0.max_size", "20");
+                properties.put("hibernate.c3p0.timeout", "1800");
+                properties.put("hibernate.c3p0.max_statements", "50");
+                properties.put("hibernate.cache.provider_class",
+                               "org.hibernate.cache.EhCacheProvider");
+                properties.put("hibernate.cache.use_second_level_cache",
+                               "true");
+                properties.put("hibernate.cache.use_query_cache", "true");
+*/
+                dao = new ETLValueDAO(properties);
+            } catch (KettleException exception) {
+                throw exception;
+            } catch (Throwable exception) {
+                throw new KettleException(exception);
+            }
+        }
+        return dao;
+    }
+
 }

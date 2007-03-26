@@ -45,7 +45,7 @@ public class ReferenceParser {
      * The pattern.
      */
     private static final Pattern pattern
-            = Pattern.compile("<([^<>]+)>(\\w+)(=(\\w+))?");
+            = Pattern.compile("(<([^<>]+)>)?([^<>\\s=]+)(=(\\w+))?");
 
     /**
      * Parses a reference.
@@ -60,14 +60,19 @@ public class ReferenceParser {
             if (matcher.start() != 0 || matcher.end() != reference.length()) {
                 return null;
             }
-            String archetype = matcher.group(1);
-            if (matcher.group(3) != null) {
-                String name = matcher.group(2);
-                String value = matcher.group(4);
-                result = new Reference(archetype, name, value);
+            if (matcher.group(1) != null) {
+                String archetype = matcher.group(2);
+                if (matcher.group(4) != null) {
+                    String name = matcher.group(3);
+                    String value = matcher.group(5);
+                    result = new Reference(archetype, name, value);
+                } else {
+                    String legacyId = matcher.group(3);
+                    result = new Reference(archetype, legacyId);
+                }
             } else {
-                String legacyId = matcher.group(2);
-                result = new Reference(archetype, legacyId);
+                String objectId = matcher.group(3);
+                result = new Reference(objectId);
             }
         }
         return result;
