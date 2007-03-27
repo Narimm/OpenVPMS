@@ -19,12 +19,14 @@
 package org.openvpms.etl.load;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -171,15 +173,17 @@ public class Loader {
      * @param values    the values to construct the object from
      * @return the object
      * @throws LoaderException for any error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     protected IMObject load(String objectId, String archetype,
                             List<ETLValue> values) {
         IMObject target;
         LoadState state = mapped.get(objectId);
         if (state == null) {
-            target = service.create(archetype);
+            target = create(archetype, values);
             if (target == null) {
-                throw new LoaderException(ArchetypeNotFound, archetype);
+                throw new LoaderException(ArchetypeNotFound, objectId,
+                                          archetype);
             }
             state = new LoadState(target, service);
             mapped.put(objectId, state);
@@ -191,6 +195,45 @@ public class Loader {
             state.setNull();
         } else {
             target = getObject(state);
+        }
+        return target;
+    }
+
+    /**
+     * Creates a new {@link IMObject}.
+     *
+     * @param archetype the archetype short name
+     * @param values    the values associated with the object, used to determine
+     *                  if default child objects should be removed
+     * @return a new object, or <tt>null</tt> if there is no corresponding
+     *         archetype descriptor for <tt>archetype</tt>
+     * @throws ArchetypeServiceException if the object can't be created
+     */
+    protected IMObject create(String archetype, List<ETLValue> values) {
+        IMObject target;
+        target = service.create(archetype);
+        if (target != null) {
+            boolean remove = false;
+            for (ETLValue value : values) {
+                if (value.getRemoveDefaultObjects()) {
+                    remove = true;
+                    break;
+                }
+            }
+            if (remove) {
+                ArchetypeDescriptor descriptor
+                        = DescriptorHelper.getArchetypeDescriptor(target,
+                                                                  service);
+                for (NodeDescriptor node : descriptor.getAllNodeDescriptors()) {
+                    if (node.isCollection()) {
+                        IMObject[] children = node.getChildren(target).toArray(
+                                new IMObject[0]);
+                        for (IMObject child : children) {
+                            node.removeChildFromCollection(target, child);
+                        }
+                    }
+                }
+            }
         }
         return target;
     }
@@ -311,6 +354,5 @@ public class Loader {
         references.put(reference, objectId);
         return result;
     }
-
 
 }

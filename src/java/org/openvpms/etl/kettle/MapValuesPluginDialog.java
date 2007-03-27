@@ -224,6 +224,10 @@ public class MapValuesPluginDialog extends BaseStepDialog
                 new ColumnInfo(Messages.getString(
                         "MapValuesDialog.ColumnInfo.Reference"),
                                ColumnInfo.COLUMN_TYPE_CCOMBO,
+                               new String[]{"Y", "N"}, true),
+                new ColumnInfo(Messages.getString(
+                        "MapValuesDialog.ColumnInfo.RemoveDefaultObjects"),
+                               ColumnInfo.COLUMN_TYPE_CCOMBO,
                                new String[]{"Y", "N"}, true)};
 
         mappingTable = new TableView(wSelectComp,
@@ -357,6 +361,11 @@ public class MapValuesPluginDialog extends BaseStepDialog
             } else {
                 item.setText(5, "N");
             }
+            if (mapping.getRemoveDefaultObjects()) {
+                item.setText(6, "Y");
+            } else {
+                item.setText(6, "N");
+            }
         }
         mappingTable.setRowNums();
         mappingTable.optWidth(true);
@@ -385,6 +394,8 @@ public class MapValuesPluginDialog extends BaseStepDialog
             mapping.setValue(item.getText(4));
             boolean reference = "Y".equals(item.getText(5));
             mapping.setIsReference(reference);
+            boolean removeDefaultObjects = "Y".equals(item.getText(6));
+            mapping.setRemoveDefaultObjects(removeDefaultObjects);
             mappings.addMapping(mapping);
         }
         input.setMappings(mappings);

@@ -176,12 +176,15 @@ public class MapValuesPluginMeta extends BaseStepMeta
                     stepId, i, "isReference");
             boolean excludeNull = repository.getStepAttributeBoolean(
                     stepId, i, "excludeNull");
+            boolean removeDefaultObjects = repository.getStepAttributeBoolean(
+                    stepId, i, "removeDefaultObjects");
             Mapping mapping = new Mapping();
             mapping.setSource(source);
             mapping.setTarget(target);
             mapping.setValue(value);
             mapping.setIsReference(reference);
             mapping.setExcludeNull(excludeNull);
+            mapping.setRemoveDefaultObjects(removeDefaultObjects);
             mappings.addMapping(mapping);
         }
     }
@@ -214,6 +217,9 @@ public class MapValuesPluginMeta extends BaseStepMeta
             repository.saveStepAttribute(
                     transformationId, stepId, i, "excludeNull",
                     mapping.getExcludeNull());
+            repository.saveStepAttribute(
+                    transformationId, stepId, i, "removeDefaultObjects",
+                    mapping.getRemoveDefaultObjects());
         }
     }
 

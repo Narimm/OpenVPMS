@@ -170,6 +170,9 @@ class RowMapper {
         if (mapping.getIsReference()) {
             value.setReference(true);
         }
+        if (mapping.getRemoveDefaultObjects()) {
+            value.setRemoveDefaultObjects(true);
+        }
         mapped.add(value);
         values.put(node.getNodePath(), value);
         if (parent != null && parent.getValue() == null) {
