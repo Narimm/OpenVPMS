@@ -21,6 +21,7 @@ package org.openvpms.etl.load;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
@@ -60,7 +61,8 @@ public class ValidatingLoader extends Loader {
      * @param archetype the object's archetype
      * @param values    the values to construct the object from
      * @return the object
-     * @throws LoaderException for any error
+     * @throws LoaderException           for any error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
     protected IMObject load(String objectId, String archetype,
@@ -69,7 +71,7 @@ public class ValidatingLoader extends Loader {
         LoadState state = mapped.get(objectId);
         boolean validate = true;
         if (state == null) {
-            target = service.create(archetype);
+            target = create(archetype, values);
             if (target == null) {
                 log.error("Error processing objectId=" + objectId +
                         ": Archetype not found: " + archetype);

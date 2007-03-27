@@ -37,5 +37,7 @@
                   length="32"/>
         <property name="value" access="property" column="value"
                   type="string" length="4096"/>
+        <property name="removeDefaultObjects" access="property"
+                  column="remove_default_objects" type="boolean"/>
     </class>
 </hibernate-mapping>
