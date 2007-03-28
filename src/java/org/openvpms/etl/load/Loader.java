@@ -39,8 +39,10 @@ import static org.openvpms.etl.load.LoaderException.ErrorCode.*;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,25 +59,36 @@ public class Loader {
     /**
      * The source.
      */
-    protected final ETLValueDAO dao;
+    private final ETLValueDAO dao;
 
     /**
      * The archetype service.
      */
-    protected final IArchetypeService service;
+    private final IArchetypeService service;
 
     /**
      * Reference to object id mapping.
      */
-    protected Map<String, String> references = new HashMap<String, String>();
+    private Map<String, String> references = new HashMap<String, String>();
 
     /**
      * The mapped objects, keyed on {@link ETLValue#getObjectId()}.
      * Objects that are only partially mapped non-null {@link LoadState#getObject()}
-     * and {@link LoadState#getBean()} values. There's are set to null once the
+     * and {@link LoadState#getBean()} values. These are set to null once the
      * object has been completely processed.
      */
-    protected Map<String, LoadState> mapped = new HashMap<String, LoadState>();
+    private Map<String, LoadState> mapped = new HashMap<String, LoadState>();
+
+    /**
+     * The batch of unsaved objects.
+     */
+    private final Map<IMObjectReference, IMObject> batch
+            = new LinkedHashMap<IMObjectReference, IMObject>();
+
+    /**
+     * The batch size.
+     */
+    private final int batchSize = 100;
 
 
     /**
@@ -118,7 +131,11 @@ public class Loader {
         if (!values.isEmpty()) {
             load(objectId, archetype, values);
         }
-        return mapped.size();
+        flushBatch();
+        int count = mapped.size();
+        mapped.clear();
+        references.clear();
+        return count;
     }
 
     /**
@@ -172,7 +189,7 @@ public class Loader {
      * @param archetype the object's archetype
      * @param values    the values to construct the object from
      * @return the object
-     * @throws LoaderException for any error
+     * @throws LoaderException           for any error
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected IMObject load(String objectId, String archetype,
@@ -180,18 +197,17 @@ public class Loader {
         IMObject target;
         LoadState state = mapped.get(objectId);
         if (state == null) {
-            target = create(archetype, values);
-            if (target == null) {
+            state = create(objectId, archetype, values);
+            if (state == null) {
                 throw new LoaderException(ArchetypeNotFound, objectId,
                                           archetype);
             }
-            state = new LoadState(target, service);
-            mapped.put(objectId, state);
             IMObjectBean bean = state.getBean();
             for (ETLValue value : values) {
                 setValue(value, bean, objectId);
             }
-            service.save(target);
+            target = bean.getObject();
+            queue(objectId, state.getRef(), target);
             state.setNull();
         } else {
             target = getObject(state);
@@ -200,16 +216,65 @@ public class Loader {
     }
 
     /**
+     * Queues an object to be saved, flushing the batch if the batch size is
+     * reached.
+     *
+     * @param objectId  the source object identifier
+     * @param reference the object reference
+     * @param target    the object to queue
+     * @throws ArchetypeServiceException for any error
+     */
+    protected void queue(String objectId, IMObjectReference reference,
+                         IMObject target) {
+        batch.put(reference, target);
+        if (batch.size() >= batchSize) {
+            flushBatch();
+        }
+    }
+
+    /**
+     * Saves a set of mapped objects.
+     *
+     * @param objects the objects to save
+     * @throws ArchetypeServiceException for any error
+     */
+    protected void save(Collection<IMObject> objects) {
+        service.save(objects);
+    }
+
+    /**
+     * Determines if an object has been loaded.
+     *
+     * @param objectId the object identifier
+     * @return <tt>true</tt> if the object has been loaded
+     */
+    protected boolean isLoaded(String objectId) {
+        return mapped.containsKey(objectId);
+    }
+
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getService() {
+        return service;
+    }
+
+    /**
      * Creates a new {@link IMObject}.
      *
-     * @param archetype the archetype short name
+     * @param objectId  the object's identifier
+     * @param archetype the object's archetype
      * @param values    the values associated with the object, used to determine
      *                  if default child objects should be removed
      * @return a new object, or <tt>null</tt> if there is no corresponding
      *         archetype descriptor for <tt>archetype</tt>
      * @throws ArchetypeServiceException if the object can't be created
      */
-    protected IMObject create(String archetype, List<ETLValue> values) {
+    protected LoadState create(String objectId, String archetype,
+                               List<ETLValue> values) {
+        LoadState state = null;
         IMObject target;
         target = service.create(archetype);
         if (target != null) {
@@ -234,8 +299,20 @@ public class Loader {
                     }
                 }
             }
+            state = new LoadState(target, service);
+            mapped.put(objectId, state);
         }
-        return target;
+        return state;
+    }
+
+    /**
+     * Saves the current batch of objects.
+     *
+     * @throws ArchetypeServiceException for any error
+     */
+    private void flushBatch() {
+        save(batch.values());
+        batch.clear();
     }
 
     /**
@@ -246,8 +323,8 @@ public class Loader {
      * @param objectId the source object id
      * @throws LoaderException if the node is invalid
      */
-    protected void setValue(ETLValue value, IMObjectBean bean,
-                            String objectId) {
+    private void setValue(ETLValue value, IMObjectBean bean,
+                          String objectId) {
         String name = value.getName();
         NodeDescriptor descriptor = bean.getDescriptor(name);
         if (descriptor == null) {
@@ -277,8 +354,8 @@ public class Loader {
      * @return the converted object
      * @throws LoaderException if  the value cannot be converted
      */
-    protected Object convert(ETLValue value, NodeDescriptor descriptor,
-                             String objectId) {
+    private Object convert(ETLValue value, NodeDescriptor descriptor,
+                           String objectId) {
         Object result;
         if (descriptor.isDate()) {
             if (StringUtils.isEmpty(value.getValue())) {
@@ -305,7 +382,7 @@ public class Loader {
      * @return the corresponding {@link IMObjectReference}
      * @throws LoaderException if the reference is invalid
      */
-    protected IMObjectReference getReference(String reference) {
+    private IMObjectReference getReference(String reference) {
         IMObject object = loadReference(reference);
         return object.getObjectReference();
     }
@@ -318,15 +395,18 @@ public class Loader {
      * @throws LoaderException           for any loader error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected IMObject getObject(LoadState state) {
+    private IMObject getObject(LoadState state) {
         IMObject target;
         target = state.getObject();
         if (target == null) {
-            target = ArchetypeQueryHelper.getByObjectReference(
-                    service, state.getRef());
-        }
-        if (target == null) {
-            throw new LoaderException(ObjectNotFound, state.getRef());
+            target = batch.get(state.getRef());  // see if it needs to be saved
+            if (target == null) {
+                target = ArchetypeQueryHelper.getByObjectReference(
+                        service, state.getRef());
+                if (target == null) {
+                    throw new LoaderException(IMObjectNotFound, state.getRef());
+                }
+            }
         }
         return target;
     }

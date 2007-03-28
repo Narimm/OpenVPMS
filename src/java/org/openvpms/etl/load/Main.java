@@ -27,7 +27,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.etl.ETLValueDAO;
+import org.openvpms.etl.ETLValueDAOImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -76,7 +76,7 @@ public class Main {
                     context = new FileSystemXmlApplicationContext(contextPath);
                 }
 
-                ETLValueDAO dao = (ETLValueDAO) context.getBean(
+                ETLValueDAOImpl dao = (ETLValueDAOImpl) context.getBean(
                         "ETLObjectDAO");
                 IArchetypeService service = (IArchetypeService) context.getBean(
                         "archetypeService");

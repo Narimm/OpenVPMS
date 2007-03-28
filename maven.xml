@@ -25,6 +25,9 @@
     <preGoal name="test:test">
         <attainGoal name="generate-hibernate-properties"/>
         <copy todir="${maven.test.dest}" file="${maven.hibernate.properties}"/>
+        <attainGoal name="generate-appcontext"/>
+        <copy todir="${maven.test.dest}"
+              file="${maven.build.dir}/applicationContext.xml"/>
     </preGoal>
 
     <preGoal name="hibernate:schema-export">

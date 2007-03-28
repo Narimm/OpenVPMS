@@ -234,7 +234,7 @@
     <!-- ================================================================== -->
     <!--                         ETL DEFINITIONS                            -->
     <!-- ================================================================== -->
-    <bean id="ETLObjectDAO" class="org.openvpms.etl.ETLValueDAO">
+    <bean id="ETLObjectDAO" class="org.openvpms.etl.ETLValueDAOImpl">
         <constructor-arg>
             <ref local="sessionFactory"/>
         </constructor-arg>

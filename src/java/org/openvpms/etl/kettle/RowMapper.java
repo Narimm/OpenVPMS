@@ -118,8 +118,8 @@ class RowMapper {
                 throw new KettleException(
                         "No column named " + mapping.getSource());
             }
-            if (!source.isNull()
-                    || (source.isNull() && !mapping.getExcludeNull())) {
+            if (!mapping.getExcludeNull()
+                    || (mapping.getExcludeNull() && !isNull(source))) {
                 if (!StringUtils.isEmpty(mapping.getValue())) {
                     source = new Value(source.getName(), mapping.getValue());
                 }
@@ -128,6 +128,7 @@ class RowMapper {
         }
         return mapped;
     }
+
 
     /**
      * Maps a value.
@@ -221,12 +222,32 @@ class RowMapper {
      * @return the converted value
      */
     private String convert(Value value) {
-        String result;
-        if (value.getType() == Value.VALUE_TYPE_DATE && !value.isNull()) {
-            Timestamp datetime = new Timestamp(value.getDate().getTime());
-            result = datetime.toString();
-        } else {
-            result = value.toString();
+        String result = null;
+        if (!value.isNull()) {
+            if (value.getType() == Value.VALUE_TYPE_DATE) {
+                Timestamp datetime = new Timestamp(value.getDate().getTime());
+                result = datetime.toString();
+            } else {
+                result = value.toString(false); // no paddding
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines if a value is null.
+     * A value is null if <tt>Value.isNull</tt> returns <tt>true</tt> or
+     * if it is a string that is empty or contains only whitespace.
+     *
+     * @param value the value
+     * @return <tt>true</tt> if the value is null
+     */
+    private boolean isNull(Value value) {
+        boolean result = value.isNull();
+        if (!result && value.getType() == Value.VALUE_TYPE_STRING) {
+            if (StringUtils.trimToNull(value.getString()) == null) {
+                result = true;
+            }
         }
         return result;
     }

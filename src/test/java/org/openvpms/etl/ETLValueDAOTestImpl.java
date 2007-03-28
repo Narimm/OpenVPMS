@@ -18,30 +18,44 @@
 
 package org.openvpms.etl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
 /**
- * Data access object for {@link ETLValue} instances.
+ * Mock implementation of {@link ETLValueDAO}, for testing purposes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface ETLValueDAO {
+public class ETLValueDAOTestImpl implements ETLValueDAO {
+
+    /**
+     * The values.
+     */
+    private List<ETLValue> values = new ArrayList<ETLValue>();
 
     /**
      * Save a value.
      *
      * @param value the value to save
      */
-    void save(ETLValue value);
+    public void save(ETLValue value) {
+        save(Arrays.asList(value));
+    }
 
     /**
-     * Save a collection of values
+     * Save a collection of values.
      *
      * @param values the values to save
      */
-    void save(Iterable<ETLValue> values);
+    public void save(Iterable<ETLValue> values) {
+        for (ETLValue value : values) {
+            this.values.add(value);
+        }
+    }
 
     /**
      * Returns a collection of values.
@@ -51,7 +65,17 @@ public interface ETLValueDAO {
      *                    results
      * @return a collection of values
      */
-    List<ETLValue> get(int firstResult, int maxResults);
+    public List<ETLValue> get(int firstResult, int maxResults) {
+        List<ETLValue> result = Collections.emptyList();
+        if (firstResult < values.size()) {
+            int to = (maxResults != -1) ? firstResult + maxResults : -1;
+            if (to == -1 || to > values.size()) {
+                to = values.size();
+            }
+            result = values.subList(firstResult, to);
+        }
+        return result;
+    }
 
     /**
      * Returns an {@link ETLValue} given its value identifier.
@@ -59,7 +83,14 @@ public interface ETLValueDAO {
      * @param valueId the value identifier
      * @return the corresponding value, or <tt>null</tt> if none is found
      */
-    ETLValue get(long valueId);
+    public ETLValue get(long valueId) {
+        for (ETLValue value : values) {
+            if (value.getValueId() == valueId) {
+                return value;
+            }
+        }
+        return null;
+    }
 
     /**
      * Returns all {@link ETLValue}s associated with an object identifier.
@@ -67,7 +98,15 @@ public interface ETLValueDAO {
      * @param objectId the object identifier
      * @return all values with matching <tt>objectId</tt>
      */
-    List<ETLValue> get(String objectId);
+    public List<ETLValue> get(String objectId) {
+        List<ETLValue> result = new ArrayList<ETLValue>();
+        for (ETLValue value : values) {
+            if (value.getObjectId().equals(objectId)) {
+                result.add(value);
+            }
+        }
+        return result;
+    }
 
     /**
      * Returns all {@link ETLValue}s associated with a legacy identifier and
@@ -77,6 +116,15 @@ public interface ETLValueDAO {
      * @param archetype the archetype short name
      * @return all values with matching <tt>legacyId</tt> and <tt>archetype</tt>
      */
-    List<ETLValue> get(String legacyId, String archetype);
+    public List<ETLValue> get(String legacyId, String archetype) {
+        List<ETLValue> result = new ArrayList<ETLValue>();
+        for (ETLValue value : values) {
+            if (value.getLegacyId().equals(legacyId)
+                    && value.getArchetype().equals(archetype)) {
+                result.add(value);
+            }
+        }
+        return result;
+    }
 
 }
