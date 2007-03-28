@@ -24,11 +24,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.etl.ETLValue;
-import org.openvpms.etl.ETLValueDAO;
+import org.openvpms.etl.ETLValueDAOImpl;
+import static org.openvpms.etl.load.LoaderException.ErrorCode.IMObjectNotFound;
 
+import java.util.Collection;
 import java.util.List;
 
 
@@ -45,12 +45,13 @@ public class ValidatingLoader extends Loader {
      */
     private final Log log = LogFactory.getLog(ValidatingLoader.class);
 
+
     /**
      * Constructs a new <tt>ValidatingLoader</tt>.
      *
      * @param service the archetype service
      */
-    public ValidatingLoader(ETLValueDAO dao, IArchetypeService service) {
+    public ValidatingLoader(ETLValueDAOImpl dao, IArchetypeService service) {
         super(dao, service);
     }
 
@@ -60,58 +61,46 @@ public class ValidatingLoader extends Loader {
      * @param objectId  the object's identifier
      * @param archetype the object's archetype
      * @param values    the values to construct the object from
-     * @return the object
+     * @return the object, or <tt>null</tt> if it cannot be loaded
      * @throws LoaderException           for any error
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
     protected IMObject load(String objectId, String archetype,
                             List<ETLValue> values) {
-        IMObject target;
-        LoadState state = mapped.get(objectId);
-        boolean validate = true;
-        if (state == null) {
-            target = create(archetype, values);
-            if (target == null) {
-                log.error("Error processing objectId=" + objectId +
-                        ": Archetype not found: " + archetype);
-            } else {
-                state = new LoadState(target, service);
-                mapped.put(objectId, state);
-                IMObjectBean bean = state.getBean();
-                for (ETLValue value : values) {
-                    try {
-                        setValue(value, bean, objectId);
-                    } catch (LoaderException exception) {
-                        log.error(exception.getMessage());
-                        validate = false; // no point validating
-                    }
+        IMObject target = null;
+        boolean validate = !isLoaded(objectId);
+        try {
+            target = super.load(objectId, archetype, values);
+            if (validate) {
+                try {
+                    getService().validateObject(target);
+                } catch (ValidationException exception) {
+                    log.error("Error processing objectId=" + objectId
+                            + ": Failed to validate: "
+                            + exception.toString());
                 }
-                if (validate) {
-                    try {
-                        service.validateObject(target);
-                    } catch (ValidationException exception) {
-                        log.error("Error processing objectId=" + objectId
-                                + ": Failed to validate: "
-                                + exception.toString());
-                    }
-                }
-                state.setNull();
             }
-        } else {
-            target = getObject(state);
+        } catch (LoaderException exception) {
+            // ignore IMObjectNotFound errors as it probably indicates that a
+            // reference to an object cannot be resolved as the ValidatingLoader
+            // discards rather than saves objects
+            if (!exception.getErrorCode().equals(IMObjectNotFound)) {
+                log.error(exception.getMessage());
+            }
         }
         return target;
     }
 
+    /**
+     * Saves a set of mapped objects.
+     * This operation is a no-op as the <tt>ValidatingLoader</tt> does not save.
+     *
+     * @param objects the objects to save
+     * @throws ArchetypeServiceException for any error
+     */
     @Override
-    protected IMObject getObject(LoadState state) {
-        IMObject target;
-        target = state.getObject();
-        if (target == null) {
-            target = ArchetypeQueryHelper.getByObjectReference(
-                    service, state.getRef());
-        }
-        return target;
+    protected void save(Collection<IMObject> objects) {
     }
+
 }

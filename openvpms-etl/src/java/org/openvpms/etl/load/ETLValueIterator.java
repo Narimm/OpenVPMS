@@ -18,8 +18,9 @@
 
 package org.openvpms.etl.load;
 
-import org.openvpms.etl.ETLValueDAO;
 import org.openvpms.etl.ETLValue;
+import org.openvpms.etl.ETLValueDAO;
+import org.openvpms.etl.ETLValueDAOImpl;
 
 import java.util.Iterator;
 import java.util.List;
@@ -28,7 +29,7 @@ import java.util.NoSuchElementException;
 
 /**
  * Paging iterator for {@link ETLValue} instances returned by
- * {@link ETLValueDAO#get(int, int)}.
+ * {@link ETLValueDAOImpl#get(int, int)}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

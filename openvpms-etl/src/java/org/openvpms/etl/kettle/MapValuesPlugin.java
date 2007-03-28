@@ -32,6 +32,7 @@ import be.ibridge.kettle.trans.step.StepMetaInterface;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.openvpms.etl.ETLValue;
+import org.openvpms.etl.ETLValueDAOImpl;
 import org.openvpms.etl.ETLValueDAO;
 
 import java.util.ArrayList;
@@ -256,7 +257,7 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
                                "true");
                 properties.put("hibernate.cache.use_query_cache", "true");
 */
-                dao = new ETLValueDAO(properties);
+                dao = new ETLValueDAOImpl(properties);
             } catch (KettleException exception) {
                 throw exception;
             } catch (Throwable exception) {

@@ -141,12 +141,30 @@ public class ETLValue {
      */
     public ETLValue(String objectId, String archetype, String legacyId,
                     String name, int index, String value) {
+        this(objectId, archetype, legacyId, name, index, value, false);
+    }
+
+    /**
+     * Constructs a new <tt>ETLValue</tt>.
+     *
+     * @param objectId  the object id
+     * @param archetype the archetype short name
+     * @param legacyId  the legacy id
+     * @param name      the node name
+     * @param index     the collection index. May be <tt>-1</tt> to indicate
+     *                  that the value is not part of a collection
+     * @param value     the node value
+     * @param reference denotes if the value species a reference
+     */
+    public ETLValue(String objectId, String archetype, String legacyId,
+                    String name, int index, String value, boolean reference) {
         this.objectId = objectId;
         this.archetype = archetype;
         this.legacyId = legacyId;
         this.name = name;
         this.index = index;
         this.value = value;
+        this.isReference = reference;
     }
 
     /**

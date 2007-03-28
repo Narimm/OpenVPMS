@@ -42,6 +42,7 @@ public class LoaderException extends OpenVPMSException {
     public enum ErrorCode {
         ArchetypeNotFound,
         ObjectNotFound,
+        IMObjectNotFound,
         InvalidReference,
         RefResolvesMultipleObjects,
         ArchetypeMismatch,

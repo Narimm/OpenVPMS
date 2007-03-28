@@ -20,7 +20,7 @@ import junit.framework.TestCase;
 
 
 /**
- * Tests the {@link ETLValueDAO} class.
+ * Tests the {@link ETLValueDAOImpl} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -28,7 +28,7 @@ import junit.framework.TestCase;
 public class ETLValueDAOTestCase extends TestCase {
 
     public void testSave() {
-        ETLValueDAO dao = new ETLValueDAO();
+        ETLValueDAO dao = new ETLValueDAOImpl();
 
         ETLValue object = new ETLValue("ID1.1", "party.customerperson", "ID1");
         ETLValue firstName = new ETLValue("ID1.1", "party.customerperson",
