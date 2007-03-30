@@ -18,6 +18,7 @@
 
 package org.openvpms.etl;
 
+import java.util.Collection;
 import java.util.List;
 
 
@@ -78,5 +79,36 @@ public interface ETLValueDAO {
      * @return all values with matching <tt>legacyId</tt> and <tt>archetype</tt>
      */
     List<ETLValue> get(String legacyId, String archetype);
+
+    /**
+     * Returns all distinct archetypes and their corresponding nodes referred
+     * to by {@link ETLValue} instances.
+     *
+     * @return the archetypes and their corresponding nodes
+     */
+    Collection<ETLArchetype> getArchetypes();
+
+    /**
+     * Returns all distinct values for an archetype and node name referred
+     * to by {@link ETLValue} instances. This excludes reference values.
+     *
+     * @param archetype the archetype short name
+     * @param name      the node name
+     * @return distinct values for the archetype and node name
+     */
+    Collection<String> getDistinctValues(String archetype, String name);
+
+    /**
+     * Returns all distinct value pairs for an archetype and node pair,
+     * referred to by {@link ETLValue} instances with the same objectId.
+     * This excludes reference values.
+     *
+     * @param archetype the archetype short name
+     * @param name1     the first node name
+     * @param name2     the second node name
+     * @return distinct values for the archetype and node name
+     */
+    Collection<ETLPair> getDistinctValuePairs(String archetype, String name1,
+                                              String name2);
 
 }

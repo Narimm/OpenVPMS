@@ -86,24 +86,44 @@ public class Main {
                 } else {
                     loader = new Loader(dao, service);
                 }
+                loadLookups(dao, service, validateOnly);
+
                 long start = System.currentTimeMillis();
                 int count = loader.load();
                 long end = System.currentTimeMillis();
-                dumpStats(count, start, end);
+                dumpStats("Loader", count, start, end);
             }
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
     }
 
+    private static void loadLookups(ETLValueDAOImpl dao,
+                                    IArchetypeService service,
+                                    boolean validateOnly) {
+        LookupLoaderHandler handler;
+        if (validateOnly) {
+            handler = new ValidatingLookupLoaderHandler(service);
+        } else {
+            handler = new DefaultLookupLoaderHandler(service);
+        }
+        LookupLoader lookupLoader = new LookupLoader(dao, service, handler);
+        long start = System.currentTimeMillis();
+        lookupLoader.load();
+        long end = System.currentTimeMillis();
+        dumpStats("Lookup loader", handler.getCount(), start, end);
+    }
+
     /**
      * Dumps statistics.
      *
+     * @param name  the name of the loader
      * @param count the no. of objects saved
      * @param start the start time
      * @param end   the end time
      */
-    private static void dumpStats(int count, long start, long end) {
+    private static void dumpStats(String name, int count, long start,
+                                  long end) {
         long elapsed = end - start;
         long hours = elapsed / DateUtils.MILLIS_IN_HOUR;
         long mins = (elapsed - hours * DateUtils.MILLIS_IN_HOUR)
@@ -113,7 +133,7 @@ public class Main {
                 / DateUtils.MILLIS_IN_SECOND;
         double rate = (double) count / (elapsed / DateUtils.MILLIS_IN_SECOND);
         String rateStr = new DecimalFormat("#,##0.00").format(rate);
-        log.info("Processed " + count + " objects in " + hours + ":" +
+        log.info(name + ": Processed " + count + " objects in " + hours + ":" +
                 mins + ":" + secs + " (" + rateStr + " per sec)");
     }
 

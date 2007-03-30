@@ -20,8 +20,15 @@ package org.openvpms.etl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
 
 /**
@@ -127,4 +134,81 @@ public class ETLValueDAOTestImpl implements ETLValueDAO {
         return result;
     }
 
+    /**
+     * Returns all distinct archetypes and their corresponding nodes referred
+     * to {@link ETLValue} instances.
+     *
+     * @return the archetypes and their corresponding nodes
+     */
+    public Collection<ETLArchetype> getArchetypes() {
+        Map<String, ETLArchetype> result = new HashMap<String, ETLArchetype>();
+        for (ETLValue value : values) {
+            ETLArchetype archetype = result.get(value.getArchetype());
+            if (archetype == null) {
+                archetype = new ETLArchetype(value.getArchetype(),
+                                             new ArrayList<String>());
+                result.put(value.getArchetype(), archetype);
+            }
+            List<String> names = archetype.getNames();
+            if (!names.contains(value.getName())) {
+                names.add(value.getName());
+            }
+        }
+        return result.values();
+    }
+
+    /**
+     * Returns all distinct values for an archetype and node name referred
+     * to by {@link ETLValue} instances. This excludes reference values.
+     *
+     * @param archetype the archetype short name
+     * @param name      the node name
+     * @return distinct values for the archetype and node name
+     */
+    public Collection<String> getDistinctValues(String archetype, String name) {
+        Set<String> result = new HashSet<String>();
+        for (ETLValue value : values) {
+            if (!value.isReference() && value.getArchetype().equals(
+                    archetype) && value.getName().equals(name)) {
+                result.add(value.getValue());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all distinct value pairs for an archetype and node pair,
+     * referred to by {@link ETLValue} instances with the same objectId.
+     * This excludes reference values.
+     *
+     * @param archetype the archetype short name
+     * @param name1     the first node name
+     * @param name2     the second node name
+     * @return distinct values for the archetype and node name
+     */
+    public Collection<ETLPair> getDistinctValuePairs(String archetype,
+                                                     String name1,
+                                                     String name2) {
+        Map<String, ETLPair> byObjectId = new LinkedHashMap<String, ETLPair>();
+        for (ETLValue value : values) {
+            if (!value.isReference()
+                    && value.getArchetype().equals(archetype)) {
+                String name = value.getName();
+                if (name.equals(name1) || name.equals(name2)) {
+                    ETLPair pair = byObjectId.get(value.getObjectId());
+                    if (pair == null) {
+                        pair = new ETLPair();
+                        byObjectId.put(value.getObjectId(), pair);
+                    }
+                    if (name.equals(name1)) {
+                        pair.setValue1(value.getValue());
+                    } else {
+                        pair.setValue2(value.getValue());
+                    }
+                }
+            }
+        }
+        return new LinkedHashSet<ETLPair>(byObjectId.values());
+    }
 }
+

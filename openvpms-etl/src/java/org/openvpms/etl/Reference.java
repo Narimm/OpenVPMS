@@ -28,21 +28,35 @@ package org.openvpms.etl;
 public class Reference {
 
     /**
-     * The object id. May be <tt>null</tt>
+     * The object identifier. May be <tt>null</tt>
      */
     private final String objectId;
 
     /**
-     * The object archetype.
+     * The object archetype. May be <tt>null</tt>
      */
     private final String archetype;
 
+    /**
+     * The legacy identifier. May be <tt>null</tt>.
+     */
     private final String legacyId;
 
+    /**
+     * The node name. May be <tt>null</tt>.
+     */
     private final String name;
 
+    /**
+     * The value. May be <tt>null</tt>.
+     */
     private final String value;
 
+    /**
+     * Constructs a new <tt>Reference</tt> containing an object identifier.
+     *
+     * @param objectId the object identifier.
+     */
     public Reference(String objectId) {
         this.objectId = objectId;
         archetype = null;
@@ -50,6 +64,14 @@ public class Reference {
         name = null;
         value = null;
     }
+
+    /**
+     * Constructs a new <tt>Reference</tt> containing an archetype and
+     * legacy identifier.
+     *
+     * @param archetype the archetype short name
+     * @param legacyId  the legacy identifier
+     */
     public Reference(String archetype, String legacyId) {
         this.objectId = null;
         this.archetype = archetype;
@@ -58,6 +80,14 @@ public class Reference {
         this.value = null;
     }
 
+    /**
+     * Constructs a new <tt>Reference</tt> containing an archetype, node name
+     * and value.
+     *
+     * @param archetype the archetype short name
+     * @param name      the node name
+     * @param value     the node value
+     */
     public Reference(String archetype, String name, String value) {
         this.objectId = null;
         this.archetype = archetype;
@@ -66,33 +96,67 @@ public class Reference {
         this.value = value;
     }
 
+    /**
+     * Returns the object identifier.
+     *
+     * @return the object identifier. May be <tt>null</tt>
+     */
     public String getObjectId() {
         return objectId;
     }
 
+    /**
+     * Returns the archetype short name.
+     *
+     * @return the short name. May be <tt>null</tt>
+     */
     public String getArchetype() {
         return archetype;
     }
 
+    /**
+     * Returns the legacy identifier.
+     *
+     * @return the legacy identifier. May be <tt>null</tt>
+     */
     public String getLegacyId() {
         return legacyId;
     }
 
+    /**
+     * Returns the node name.
+     *
+     * @return the node name. May be <tt>null</tt>
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Returns the node value.
+     *
+     * @return the node value. May be <tt>null</tt>
+     */
     public String getValue() {
         return value;
     }
 
+    /**
+     * Returns a string representation of the reference.
+     *
+     * @return the string representation of this
+     */
     public String toString() {
-        StringBuffer result= new StringBuffer();
-        result.append("<").append(archetype).append(">");
-        if (legacyId != null) {
-            result.append(legacyId);
+        StringBuffer result = new StringBuffer();
+        if (objectId != null) {
+            result.append(objectId);
         } else {
-            result.append(name).append("=").append(value);
+            result.append("<").append(archetype).append(">");
+            if (legacyId != null) {
+                result.append(legacyId);
+            } else {
+                result.append(name).append("=").append(value);
+            }
         }
         return result.toString();
     }
