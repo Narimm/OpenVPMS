@@ -24,17 +24,20 @@ import java.util.regex.Pattern;
 
 /**
  * Parses references of the form:
- * <code>
- * reference = "&lt;" &lt;archetype&gt; "&gt;" &lt;expression&gt;
- * expression = &lt;query&gt;&lt;legacyid&gt;
+ * <pre>
+ * reference = objectRef | archetypeRef
+ * objectRef = &lt;string&gt;
+ * archetypeRef = "&lt;" &lt;archetype&gt; "&gt;" &lt;expression&gt;
+ * expression = &lt;query&gt; | &lt;legacyid&gt;
  * query=&lt;name&gt;=&lt;value&gt;
- * </code>
+ * </pre>
  * <p/>
  * E.g:
- * <code>
+ * <pre>
+ * IDCUST1
  * &lt;lookup.contactPurpose&gt;code=MAILING
  * <party.customerPerson>12345
- * </code>
+ * </pre>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

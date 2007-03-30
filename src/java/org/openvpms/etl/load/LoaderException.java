@@ -47,7 +47,11 @@ public class LoaderException extends OpenVPMSException {
         RefResolvesMultipleObjects,
         ArchetypeMismatch,
         InvalidNode,
-        InvalidTimestamp
+        InvalidTimestamp,
+        LookupArchetypeNotFound,
+        LookupSourceNodeNotFound,
+        LookupRelationshipTargetNotFound,
+        LookupNotFound
     }
 
     /**

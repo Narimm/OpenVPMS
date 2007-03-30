@@ -94,6 +94,7 @@ public class Loader {
     /**
      * Constructs a new <tt>Loader</tt>.
      *
+     * @param dao the DAO
      * @param service the archetype service
      */
     public Loader(ETLValueDAO dao, IArchetypeService service) {
