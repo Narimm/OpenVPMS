@@ -54,22 +54,53 @@ public final class DescriptorHelper {
      * @throws ArchetypeServiceException for any error
      */
     public static ArchetypeDescriptor getArchetypeDescriptor(String shortName) {
-        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        return getArchetypeDescriptor(shortName, service);
+    }
+
+    /**
+     * Returns an archetype descriptor, given its shortname.
+     *
+     * @param shortName the shortname
+     * @param service   the archetype service
+     * @return the descriptor corresponding to <code>shortName</code>, or
+     *         <code>null</code> if none exists
+     * @throws ArchetypeServiceException for any error
+     */
+    public static ArchetypeDescriptor getArchetypeDescriptor(
+            String shortName, IArchetypeService service) {
         return service.getArchetypeDescriptor(shortName);
     }
 
     /**
      * Returns an archetype descriptor, given a reference.
      *
-     * @param reference the object reference.
+     * @param reference the object reference
      * @return the descriptor corresponding to <code>reference</code>, or
      *         <code>null</code> if none exists
      * @throws ArchetypeServiceException for any error
      */
     public static ArchetypeDescriptor getArchetypeDescriptor(
             IMObjectReference reference) {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        return getArchetypeDescriptor(reference, service);
+    }
+
+    /**
+     * Returns an archetype descriptor, given a reference.
+     *
+     * @param reference the object reference
+     * @param service   the archetype service
+     * @return the descriptor corresponding to <code>reference</code>, or
+     *         <code>null</code> if none exists
+     * @throws ArchetypeServiceException for any error
+     */
+    public static ArchetypeDescriptor getArchetypeDescriptor(
+            IMObjectReference reference, IArchetypeService service) {
         ArchetypeId id = reference.getArchetypeId();
-        return getArchetypeDescriptor(id.getShortName());
+        return getArchetypeDescriptor(id.getShortName(), service);
     }
 
     /**
@@ -88,7 +119,7 @@ public final class DescriptorHelper {
     /**
      * Returns the archetype descriptor for the specified object.
      *
-     * @param object the object
+     * @param object  the object
      * @param service the archetype service
      * @return the archetype descriptor corresponding to <code>object</code>
      * @throws ArchetypeServiceException for any error
@@ -124,8 +155,20 @@ public final class DescriptorHelper {
      */
     public static List<ArchetypeDescriptor> getArchetypeDescriptors(
             String[] range) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
+        return getArchetypeDescriptors(
+                range, ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns the archetype descriptors for an archetype range.
+     *
+     * @param range   the archetype range. May contain wildcards
+     * @param service the archetype service
+     * @return a list of archetype descriptors
+     * @throws ArchetypeServiceException for any error
+     */
+    public static List<ArchetypeDescriptor> getArchetypeDescriptors(
+            String[] range, IArchetypeService service) {
         List<ArchetypeDescriptor> result = new ArrayList<ArchetypeDescriptor>();
         for (String shortName : range) {
             result.addAll(service.getArchetypeDescriptors(shortName));
@@ -145,12 +188,31 @@ public final class DescriptorHelper {
      * @throws ArchetypeServiceException for any error
      */
     public static String[] getShortNames(NodeDescriptor descriptor) {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        return getShortNames(descriptor, service);
+    }
+
+    /**
+     * Returns archetype short names from a descriptor.
+     * This expands any wildcards. If the {@link NodeDescriptor#getFilter}
+     * is non-null, matching shortnames are
+     * returned, otherwise matching short names from
+     * {@link NodeDescriptor#getArchetypeRange()} are returned.
+     *
+     * @param descriptor the node descriptor
+     * @return a list of short names
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String[] getShortNames(NodeDescriptor descriptor,
+                                         IArchetypeService service) {
         String filter = descriptor.getFilter();
         String[] names;
         if (!StringUtils.isEmpty(filter)) {
-            names = getShortNames(filter, false);
+            names = getShortNames(filter, false, service);
         } else {
-            names = getShortNames(descriptor.getArchetypeRange(), false);
+            names = getShortNames(descriptor.getArchetypeRange(), false,
+                                  service);
         }
         return names;
     }
@@ -167,8 +229,24 @@ public final class DescriptorHelper {
     public static String[] getShortNames(String refModelName,
                                          String entityName,
                                          String conceptName) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
+        return getShortNames(refModelName, entityName, conceptName,
+                             ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns primary archetype short names matching the specified criteria.
+     *
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
+     * @param service      the archetype service
+     * @return a list of short names matching the criteria
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String[] getShortNames(String refModelName,
+                                         String entityName,
+                                         String conceptName,
+                                         IArchetypeService service) {
         List<String> names = service.getArchetypeShortNames(refModelName,
                                                             entityName,
                                                             conceptName,
@@ -184,7 +262,21 @@ public final class DescriptorHelper {
      * @throws ArchetypeServiceException for any error
      */
     public static String[] getShortNames(String shortName) {
-        return getShortNames(new String[]{shortName}, true);
+        return getShortNames(shortName,
+                             ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns primary archetype short names matching the specified criteria.
+     *
+     * @param shortName the short name. May contain wildcards
+     * @param service   the archetype service
+     * @return a list of short names matching the criteria
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String[] getShortNames(String shortName,
+                                         IArchetypeService service) {
+        return getShortNames(shortName, true, service);
     }
 
     /**
@@ -197,7 +289,23 @@ public final class DescriptorHelper {
      */
     public static String[] getShortNames(String shortName,
                                          boolean primaryOnly) {
-        return getShortNames(new String[]{shortName}, primaryOnly);
+        return getShortNames(shortName, primaryOnly,
+                             ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns archetype short names matching the specified criteria.
+     *
+     * @param shortName   the short name. May contain wildcards
+     * @param primaryOnly if <code>true</code> only include primary archetypes
+     * @param service     the archetype service
+     * @return a list of short names matching the criteria
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String[] getShortNames(String shortName,
+                                         boolean primaryOnly,
+                                         IArchetypeService service) {
+        return getShortNames(new String[]{shortName}, primaryOnly, service);
     }
 
     /**
@@ -223,6 +331,21 @@ public final class DescriptorHelper {
                                          boolean primaryOnly) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
+        return getShortNames(shortNames, primaryOnly, service);
+    }
+
+    /**
+     * Returns archetype short names matching the specified criteria.
+     *
+     * @param shortNames  the shortNames. May contain wildcards
+     * @param primaryOnly if <code>true</code> only include primary archetypes
+     * @param service     the archetype service
+     * @return a list of short names matching the criteria
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String[] getShortNames(String[] shortNames,
+                                         boolean primaryOnly,
+                                         IArchetypeService service) {
         Set<String> result = new LinkedHashSet<String>();
         for (String shortName : shortNames) {
             List<String> matches = service.getArchetypeShortNames(
@@ -240,7 +363,22 @@ public final class DescriptorHelper {
      * @throws ArchetypeServiceException for any error
      */
     public static String getDisplayName(String shortName) {
-        ArchetypeDescriptor descriptor = getArchetypeDescriptor(shortName);
+        return getDisplayName(shortName,
+                              ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns the display name for an archetype.
+     *
+     * @param shortName the archetype short name
+     * @param service   the archetype service
+     * @return the archetype display name, or <code>null</code> if none exists
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String getDisplayName(String shortName,
+                                        IArchetypeService service) {
+        ArchetypeDescriptor descriptor = getArchetypeDescriptor(shortName,
+                                                                service);
         return (descriptor != null) ? descriptor.getDisplayName() : null;
     }
 
@@ -253,7 +391,23 @@ public final class DescriptorHelper {
      * @throws ArchetypeServiceException for any error
      */
     public static String getDisplayName(IMObject object) {
-        ArchetypeDescriptor descriptor = getArchetypeDescriptor(object);
+        return getDisplayName(object,
+                              ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns the display name for an object.
+     *
+     * @param object  the object
+     * @param service the archeype service
+     * @return a display name for the object, or <code>null</code> if none
+     *         exists
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String getDisplayName(IMObject object,
+                                        IArchetypeService service) {
+        ArchetypeDescriptor descriptor = getArchetypeDescriptor(object,
+                                                                service);
         return (descriptor != null) ? descriptor.getDisplayName() : null;
     }
 
@@ -266,8 +420,23 @@ public final class DescriptorHelper {
      * @throws ArchetypeServiceException for any error
      */
     public static String getDisplayName(IMObject object, String node) {
+        return getDisplayName(object, node,
+                              ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns the display name for a node.
+     *
+     * @param object  the object
+     * @param node    the node
+     * @param service the archetype service
+     * @return a display name for the node, or <code>null</code> if none eixsts
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String getDisplayName(IMObject object, String node,
+                                        IArchetypeService service) {
         String result = null;
-        ArchetypeDescriptor archetype = getArchetypeDescriptor(object);
+        ArchetypeDescriptor archetype = getArchetypeDescriptor(object, service);
         if (archetype != null) {
             NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
             if (descriptor != null) {
@@ -276,5 +445,4 @@ public final class DescriptorHelper {
         }
         return result;
     }
-
 }
