@@ -115,7 +115,7 @@
                 <ant:pathelement path="${maven.build.dest}"/>
                 <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
-            <arg line="-c ${maven.build.dir}/applicationContext.xml"/>
+            <arg line="${openvpms.etl.load.cmdline}"/>
         </ant:java>
     </goal>
 
@@ -132,7 +132,7 @@
                 <ant:pathelement path="${maven.build.dest}"/>
                 <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
-            <arg line="-c ${maven.build.dir}/applicationContext.xml --validateOnly"/>
+            <arg line="${openvpms.etl.validate.cmdline}"/>
         </ant:java>
     </goal>
 

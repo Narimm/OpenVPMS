@@ -80,13 +80,16 @@ public class Main {
                         "ETLObjectDAO");
                 IArchetypeService service = (IArchetypeService) context.getBean(
                         "archetypeService");
+
+                if (!config.getBoolean("nolookups")) {
+                    loadLookups(dao, service, validateOnly);
+                }
                 Loader loader;
                 if (validateOnly) {
                     loader = new ValidatingLoader(dao, service);
                 } else {
                     loader = new Loader(dao, service);
                 }
-                loadLookups(dao, service, validateOnly);
 
                 long start = System.currentTimeMillis();
                 int count = loader.load();
@@ -148,6 +151,9 @@ public class Main {
         parser.registerParameter(new Switch("validateOnly")
                 .setLongFlag("validateOnly").setDefault("false").setHelp(
                 "Only validate the data file. Do not process."));
+        parser.registerParameter(new Switch("nolookups")
+                .setLongFlag("nolookups").setDefault("false").setHelp(
+                "Don't derive lookups from source data."));
         parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
                 .setLongFlag("context")
                 .setDefault(APPLICATION_CONTEXT)
