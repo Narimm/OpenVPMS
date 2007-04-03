@@ -156,7 +156,7 @@ public class Main {
         parser.registerParameter(new Switch("nolookups")
                 .setLongFlag("nolookups").setDefault("false").setHelp(
                 "Don't derive lookups from source data."));
-        parser.registerParameter(new Switch("validateOnly")
+        parser.registerParameter(new Switch("novalidate")
                 .setLongFlag("novalidate").setDefault("false").setHelp(
                 "Don't perform any validation. Use with caution. Ignored if "
                         + "--validateOnly is specified"));
