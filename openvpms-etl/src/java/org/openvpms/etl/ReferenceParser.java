@@ -25,8 +25,7 @@ import java.util.regex.Pattern;
 /**
  * Parses references of the form:
  * <pre>
- * reference = objectRef | archetypeRef
- * objectRef = &lt;string&gt;
+ * reference = &lt;objectId&gt; | &lt;archetypeRef&gt;
  * archetypeRef = "&lt;" &lt;archetype&gt; "&gt;" &lt;expression&gt;
  * expression = &lt;query&gt; | &lt;legacyid&gt;
  * query=&lt;name&gt;=&lt;value&gt;
@@ -36,7 +35,7 @@ import java.util.regex.Pattern;
  * <pre>
  * IDCUST1
  * &lt;lookup.contactPurpose&gt;code=MAILING
- * <party.customerPerson>12345
+ * &lt;party.customerPerson&gt;12345
  * </pre>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>

@@ -67,6 +67,11 @@ public class Loader {
     private final IArchetypeService service;
 
     /**
+     * Determines if validation should occur.
+     */
+    private final boolean validate;
+
+    /**
      * Reference to object id mapping.
      */
     private Map<String, String> references = new HashMap<String, String>();
@@ -94,12 +99,15 @@ public class Loader {
     /**
      * Constructs a new <tt>Loader</tt>.
      *
-     * @param dao the DAO
-     * @param service the archetype service
+     * @param dao      the DAO
+     * @param service  the archetype service
+     * @param validate if <tt>true</tt> validate objects prior to saving them
      */
-    public Loader(ETLValueDAO dao, IArchetypeService service) {
+    public Loader(ETLValueDAO dao, IArchetypeService service,
+                  boolean validate) {
         this.dao = dao;
         this.service = service;
+        this.validate = validate;
     }
 
     /**
@@ -237,10 +245,11 @@ public class Loader {
      * Saves a set of mapped objects.
      *
      * @param objects the objects to save
+     * @param validate if <tt>true</tt> validate objects prior to saving them
      * @throws ArchetypeServiceException for any error
      */
-    protected void save(Collection<IMObject> objects) {
-        service.save(objects);
+    protected void save(Collection<IMObject> objects, boolean validate) {
+        service.save(objects, validate);
     }
 
     /**
@@ -312,7 +321,7 @@ public class Loader {
      * @throws ArchetypeServiceException for any error
      */
     private void flushBatch() {
-        save(batch.values());
+        save(batch.values(), validate);
         batch.clear();
     }
 

@@ -133,7 +133,6 @@ public class RowMapperTestCase extends TestCase {
         Row row = new Row();
         Value legacyId = createValue("LEGACY_ID", "ID1");
         Value mailing = createValue("ADDRESS", "49 Foo St Bar");
-        legacyId.setValue("ID1");
         row.addValue(legacyId);
         row.addValue(mailing);
         List<ETLValue> objects = mapper.map(row);
@@ -146,6 +145,72 @@ public class RowMapperTestCase extends TestCase {
                    "contacts", 0, "ID1.2");
         checkValue(contact, "ID1.2", "contact.location", "ID1",
                    "purposes", 1, "<lookup.contactPurpose>code=MAILING");
+    }
+
+    /**
+     * Verifies that the string <em>$value</em> is expanded with the input
+     * value.
+     */
+    public void testValueExpansion() throws Exception {
+        Mappings mappings = new Mappings();
+        mappings.setIdColumn("LEGACY_ID");
+
+        Mapping mapping = createMapping(
+                "INVOICEID",
+                "<actRelationship.customerAccountChargesInvoice>source");
+        mapping.setValue("<act.customerAccountChargesInvoice>$value");
+        mappings.addMapping(mapping);
+
+        RowMapper mapper = new RowMapper(mappings);
+        Row row = new Row();
+        Value legacyId = createValue("LEGACY_ID", "ID1");
+        Value invoiceId = createValue("INVOICEID", "INVOICE1");
+        row.addValue(legacyId);
+        row.addValue(invoiceId);
+        List<ETLValue> objects = mapper.map(row);
+
+        assertEquals(1, objects.size());
+
+        ETLValue value = objects.get(0);
+        checkValue(value, "ID1.1",
+                   "actRelationship.customerAccountChargesInvoice", "ID1",
+                   "source", -1, "<act.customerAccountChargesInvoice>INVOICE1");
+    }
+
+    /**
+     * Verifies that a null mapping value when the mapping is a reference
+     * defaults to a legacy id reference of the form &lt;archetype&gt;legacyId
+     */
+    public void testDefaultReference() throws Exception {
+        Mappings mappings = new Mappings();
+        mappings.setIdColumn("LEGACY_ID");
+
+        Mapping mapping = createMapping(
+                "INVOICEID",
+                "<act.customerAccountChargesInvoice>items[0]<actRelationship.customerAccountChargesInvoice>source");
+        mapping.setIsReference(true);
+        mappings.addMapping(mapping);
+
+        RowMapper mapper = new RowMapper(mappings);
+        Row row = new Row();
+        Value legacyId = createValue("LEGACY_ID", "ID1");
+        Value invoiceId = createValue("INVOICEID", "INVOICE1");
+        row.addValue(legacyId);
+        row.addValue(invoiceId);
+        List<ETLValue> objects = mapper.map(row);
+
+        assertEquals(2, objects.size());
+
+        ETLValue invoice = objects.get(0);
+        ETLValue source = objects.get(1);
+        checkValue(invoice, "ID1.1",
+                   "act.customerAccountChargesInvoice", "ID1",
+                   "items", 0, "ID1.2");
+        assertTrue(invoice.isReference());
+        checkValue(source, "ID1.2",
+                   "actRelationship.customerAccountChargesInvoice", "ID1",
+                   "source", -1, "<act.customerAccountChargesInvoice>INVOICE1");
+        assertTrue(source.isReference());
     }
 
     /**

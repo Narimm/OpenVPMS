@@ -228,7 +228,7 @@ public class LookupLoaderTestCase
          * @param service the archetype service
          */
         public TestDefaultLookupLoaderHandler(IArchetypeService service) {
-            super(service);
+            super(service, true);
         }
 
         /**
