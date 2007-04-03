@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.discount;
 
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -88,7 +89,7 @@ public class DiscountRules {
                                                    service);
             }
         }
-        return discount;
+        return MathRules.round(discount);
     }
 
     /**
@@ -113,20 +114,23 @@ public class DiscountRules {
 
         for (IMObject discount : discounts) {
             IMObjectBean discountBean = new IMObjectBean(discount, service);
-            String discountType = discountBean.getString("type","");
-            BigDecimal rate = discountBean.getBigDecimal("rate", BigDecimal.ZERO);
+            String discountType = discountBean.getString("type", "");
+            BigDecimal rate = discountBean.getBigDecimal("rate",
+                                                         BigDecimal.ZERO);
             Boolean discountFixed = discountBean.getBoolean("discountFixed");
             BigDecimal dFixedPrice;
-            if (discountFixed)
+            if (discountFixed) {
                 dFixedPrice = calcDiscount(fixedPrice, rate, discountType);
-            else
-                dFixedPrice = new BigDecimal("0.0");
+            } else {
+                dFixedPrice = BigDecimal.ZERO;
+            }
             BigDecimal dUnitPrice = calcDiscount(unitPrice, rate, discountType);
             BigDecimal amount;
-            if (discountType.equalsIgnoreCase("Percentage"))
+            if (discountType.equalsIgnoreCase("Percentage")) {
                 amount = quantity.multiply(dUnitPrice).add(dFixedPrice);
-            else
+            } else {
                 amount = dUnitPrice.add(dFixedPrice);
+            }
             result = result.add(amount);
         }
         return result;
@@ -139,13 +143,15 @@ public class DiscountRules {
      * @param rate   the rate
      * @return amount * discountRate/100
      */
-    private static BigDecimal calcDiscount(BigDecimal amount, BigDecimal rate, String discountType) {
-        if(discountType.equalsIgnoreCase("Percentage")) {
-            final BigDecimal hundred = new BigDecimal(100);           
-            return amount.multiply(rate).divide(hundred, 3, RoundingMode.HALF_UP);
-        }
-        else
+    private static BigDecimal calcDiscount(BigDecimal amount, BigDecimal rate,
+                                           String discountType) {
+        if (discountType.equalsIgnoreCase("Percentage")) {
+            final BigDecimal hundred = new BigDecimal(100);
+            return amount.multiply(rate).divide(hundred, 3,
+                                                RoundingMode.HALF_UP);
+        } else {
             return rate;
+        }
     }
 
     /**
@@ -182,15 +188,14 @@ public class DiscountRules {
      */
     private static Set<IMObject> getPartyDiscounts(Party party,
                                                    IArchetypeService service) {
-    	if (party != null) {
-	        IMObjectBean bean = new IMObjectBean(party, service);
-	        List<IMObject> discounts = bean.getValues("discounts");
-	        return new HashSet<IMObject>(discounts);
-    	}
-    	else {
-    		return new HashSet<IMObject>();
-    	}
-    		
+        if (party != null) {
+            IMObjectBean bean = new IMObjectBean(party, service);
+            List<IMObject> discounts = bean.getValues("discounts");
+            return new HashSet<IMObject>(discounts);
+        } else {
+            return new HashSet<IMObject>();
+        }
+
     }
 
     /**

@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.act;
 
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -43,6 +44,11 @@ public class ActCalculator {
      */
     private final IArchetypeService service;
 
+    /**
+     * The scale of the returned values, or <tt>0</tt> to indicate no scale.
+     */
+    private final int scale;
+
 
     /**
      * Construct a new <code>ActCalculator</code>.
@@ -50,7 +56,19 @@ public class ActCalculator {
      * @param service the archetype service
      */
     public ActCalculator(IArchetypeService service) {
+        this(service, 2);
+    }
+
+    /**
+     * Construct a new <code>ActCalculator</code>.
+     *
+     * @param service the archetype service
+     * @param scale   the scale of the returned values. Use <tt>0</tt> to
+     *                indicate no scale
+     */
+    public ActCalculator(IArchetypeService service, int scale) {
         this.service = service;
+        this.scale = scale;
     }
 
     /**
@@ -100,22 +118,22 @@ public class ActCalculator {
     }
 
     /**
-        * Sums a node in a collection of acts.
-        *
-        * @param acts an iterator over the act collection
-        * @param node the node to sum
-        * @return the summed total
-        * @throws ArchetypeServiceException for any archetype service error
-        */
-       public BigDecimal sum(Iterator<Act> acts, String node) {
-           BigDecimal result = BigDecimal.ZERO;
-           while (acts.hasNext()) {
-               Act act = acts.next();
-               BigDecimal amount = getAmount(act, node);
-               result = result.add(amount);
-           }
-           return result;
-       }
+     * Sums a node in a collection of acts.
+     *
+     * @param acts an iterator over the act collection
+     * @param node the node to sum
+     * @return the summed total
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal sum(Iterator<Act> acts, String node) {
+        BigDecimal result = BigDecimal.ZERO;
+        while (acts.hasNext()) {
+            Act act = acts.next();
+            BigDecimal amount = getAmount(act, node);
+            result = result.add(amount);
+        }
+        return round(result);
+    }
 
     /**
      * Returns an amount, taking into account any credit node.
@@ -148,7 +166,9 @@ public class ActCalculator {
      */
     public BigDecimal addAmount(BigDecimal total, BigDecimal amount,
                                 boolean isCredit) {
-        return (isCredit) ? total.subtract(amount) : total.add(amount);
+        BigDecimal result = (isCredit) ? total.subtract(amount) : total.add(
+                amount);
+        return round(result);
     }
 
     /**
@@ -177,6 +197,20 @@ public class ActCalculator {
             return bean.getBoolean("credit");
         }
         return false;
+    }
+
+    /**
+     * Rounds an amount to the scale supplied at construction, if it is
+     * non-zero.
+     *
+     * @param amount the amount to round
+     * @return the rounded amount
+     */
+    private BigDecimal round(BigDecimal amount) {
+        if (scale != 0) {
+            return MathRules.round(amount, scale);
+        }
+        return amount;
     }
 
 }
