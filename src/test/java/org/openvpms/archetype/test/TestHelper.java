@@ -243,6 +243,7 @@ public class TestHelper extends Assert {
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("firstName", "J");
         bean.setValue("lastName", "XSupplierVet");
+        bean.setValue("title", "MR");
         bean.save();
         return party;
     }

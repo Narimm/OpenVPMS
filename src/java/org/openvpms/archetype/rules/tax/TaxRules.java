@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.tax;
 
+import org.openvpms.archetype.rules.math.MathRules;
 import static org.openvpms.archetype.rules.tax.TaxRuleException.ErrorCode.InvalidActForTax;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -243,6 +244,7 @@ public class TaxRules {
                 taxTotal = taxTotal.add(tax);
             }
         }
+        taxTotal = MathRules.round(taxTotal);
         act.setTaxAmount(new Money(taxTotal));
         return taxTotal;
     }
@@ -316,6 +318,5 @@ public class TaxRules {
         }
         return taxes;
     }
-
 
 }

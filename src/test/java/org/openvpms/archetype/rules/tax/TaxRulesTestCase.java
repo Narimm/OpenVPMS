@@ -70,7 +70,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         product.addClassification(taxType);
         save(product);
 
-        checkCalculateTax(customer, product, new BigDecimal("0.091"));
+        checkCalculateTax(customer, product, new BigDecimal("0.09"));
     }
 
     /**
@@ -81,7 +81,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         Party customer = createCustomer();
         Product product = createProductWithProductTypeTax();
 
-        checkCalculateTax(customer, product, new BigDecimal("0.091"));
+        checkCalculateTax(customer, product, new BigDecimal("0.09"));
     }
 
     /**
