@@ -96,7 +96,8 @@ public abstract class AbstractExpressionEvaluator<T>
             }
         }
         catch (Exception exception) {
-            return exception.getLocalizedMessage();
+        	// TODO Modified to return standard String rather than large exception error.   
+            return "Expression Error";
         }
     }
 
