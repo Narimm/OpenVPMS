@@ -23,10 +23,10 @@
               hidden="true" readOnly="true"/>
         <node name="code" path="/code" type="java.lang.String"
               hidden="true" minCardinality="1">
-            <!--assertion name="regularExpression">
+            <assertion name="regularExpression">
                 <property name="expression" value="[A-Z0-9_]*"/>
                 <errorMessage>errorMessage</errorMessage>
-            </assertion-->
+            </assertion>
         </node>
         <node name="name" type="java.lang.String" path="/name"
               minCardinality="1"/>
