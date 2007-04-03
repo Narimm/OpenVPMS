@@ -23,6 +23,7 @@ import be.ibridge.kettle.core.exception.KettleException;
 import be.ibridge.kettle.core.value.Value;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.etl.ETLValue;
+import org.openvpms.etl.Reference;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -90,7 +91,7 @@ class RowMapper {
     }
 
     /**
-     * Maps a row,
+     * Maps a row.
      *
      * @param row the row to map
      * @return the mapped values
@@ -120,15 +121,11 @@ class RowMapper {
             }
             if (!mapping.getExcludeNull()
                     || (mapping.getExcludeNull() && !isNull(source))) {
-                if (!StringUtils.isEmpty(mapping.getValue())) {
-                    source = new Value(source.getName(), mapping.getValue());
-                }
                 mapValue(id, source, mapping);
             }
         }
         return mapped;
     }
-
 
     /**
      * Maps a value.
@@ -143,6 +140,9 @@ class RowMapper {
         String objectId = objectIds.get(objectPath);
         ETLValue value;
         ETLValue parent = null;
+
+        String targetValue = transformValue(source, node, mapping);
+
         while (node.getChild() != null) {
             if (objectId == null) {
                 objectId = newObjectId(legacyId, objectPath);
@@ -167,7 +167,7 @@ class RowMapper {
             objectId = newObjectId(legacyId, objectPath);
         }
         value = new ETLValue(objectId, node.getArchetype(), legacyId,
-                             node.getName(), node.getIndex(), convert(source));
+                             node.getName(), node.getIndex(), targetValue);
         if (mapping.getIsReference()) {
             value.setReference(true);
         }
@@ -180,6 +180,34 @@ class RowMapper {
             parent.setReference(true);
             parent.setValue(objectId);
         }
+    }
+
+    /**
+     * Transforms a value based on the corresponding {@link Mapping}.
+     * If the mapping specifies a value, any occurrences of <em>$value</em>
+     * are replaced with <tt>source</tt> and the result returned.
+     * If the mapping is a reference and the mapping doesn't specify a value,
+     * then a reference is generated from the node archetype and the value.
+     * If neither of the above are true, the stringified version of the value
+     * is returned.
+     *
+     * @param source  the value to transform
+     * @param node    the root mapping node
+     * @param mapping the mapping
+     * @return the transformed value
+     */
+    private String transformValue(Value source, Node node, Mapping mapping) {
+        String result;
+        if (!StringUtils.isEmpty(mapping.getValue())) {
+            String value = mapping.getValue();
+            result = value.replaceAll("\\$value", convert(source));
+        } else if (mapping.getIsReference()) {
+            Reference ref = new Reference(node.getArchetype(), convert(source));
+            result = ref.toString();
+        } else {
+            result = convert(source);
+        }
+        return result;
     }
 
     /**

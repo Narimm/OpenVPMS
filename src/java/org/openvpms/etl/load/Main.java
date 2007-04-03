@@ -67,6 +67,7 @@ public class Main {
                 displayUsage(parser);
             } else {
                 boolean validateOnly = config.getBoolean("validateOnly");
+                boolean validate = !config.getBoolean("novalidate");
                 String contextPath = config.getString("context");
 
                 ApplicationContext context;
@@ -82,13 +83,13 @@ public class Main {
                         "archetypeService");
 
                 if (!config.getBoolean("nolookups")) {
-                    loadLookups(dao, service, validateOnly);
+                    loadLookups(dao, service, validateOnly, validate);
                 }
                 Loader loader;
                 if (validateOnly) {
                     loader = new ValidatingLoader(dao, service);
                 } else {
-                    loader = new Loader(dao, service);
+                    loader = new Loader(dao, service, validate);
                 }
 
                 long start = System.currentTimeMillis();
@@ -103,12 +104,13 @@ public class Main {
 
     private static void loadLookups(ETLValueDAOImpl dao,
                                     IArchetypeService service,
-                                    boolean validateOnly) {
+                                    boolean validateOnly,
+                                    boolean validate) {
         LookupLoaderHandler handler;
         if (validateOnly) {
             handler = new ValidatingLookupLoaderHandler(service);
         } else {
-            handler = new DefaultLookupLoaderHandler(service);
+            handler = new DefaultLookupLoaderHandler(service, validate);
         }
         LookupLoader lookupLoader = new LookupLoader(dao, service, handler);
         long start = System.currentTimeMillis();
@@ -150,10 +152,14 @@ public class Main {
         JSAP parser = new JSAP();
         parser.registerParameter(new Switch("validateOnly")
                 .setLongFlag("validateOnly").setDefault("false").setHelp(
-                "Only validate the data file. Do not process."));
+                "Only validate the data. Do not save."));
         parser.registerParameter(new Switch("nolookups")
                 .setLongFlag("nolookups").setDefault("false").setHelp(
                 "Don't derive lookups from source data."));
+        parser.registerParameter(new Switch("validateOnly")
+                .setLongFlag("novalidate").setDefault("false").setHelp(
+                "Don't perform any validation. Use with caution. Ignored if "
+                        + "--validateOnly is specified"));
         parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
                 .setLongFlag("context")
                 .setDefault(APPLICATION_CONTEXT)

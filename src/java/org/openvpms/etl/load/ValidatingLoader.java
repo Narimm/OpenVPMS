@@ -52,7 +52,7 @@ public class ValidatingLoader extends Loader {
      * @param service the archetype service
      */
     public ValidatingLoader(ETLValueDAOImpl dao, IArchetypeService service) {
-        super(dao, service);
+        super(dao, service, true);
     }
 
     /**
@@ -97,10 +97,11 @@ public class ValidatingLoader extends Loader {
      * This operation is a no-op as the <tt>ValidatingLoader</tt> does not save.
      *
      * @param objects the objects to save
+     * @param validate if <tt>true</tt> validate objects prior to saving them
      * @throws ArchetypeServiceException for any error
      */
     @Override
-    protected void save(Collection<IMObject> objects) {
+    protected void save(Collection<IMObject> objects, boolean validate) {
     }
 
 }

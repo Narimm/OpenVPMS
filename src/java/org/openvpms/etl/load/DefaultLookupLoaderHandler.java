@@ -51,14 +51,22 @@ public class DefaultLookupLoaderHandler extends AbstractLookupLoaderHandler {
      */
     private final List<IMObject> batch = new ArrayList<IMObject>();
 
+    /**
+     * Determines if validation should occur.
+     */
+    private final boolean validate;
+
 
     /**
      * Constructs a new <tt>LookupLoaderListener</tt>.
      *
-     * @param service the archetype service
+     * @param service  the archetype service
+     * @param validate if <tt>true</tt> validate objects prior to saving them
      */
-    public DefaultLookupLoaderHandler(IArchetypeService service) {
+    public DefaultLookupLoaderHandler(IArchetypeService service,
+                                      boolean validate) {
         super(service);
+        this.validate = validate;
     }
 
     /**
@@ -125,7 +133,7 @@ public class DefaultLookupLoaderHandler extends AbstractLookupLoaderHandler {
      * @param objects the objects to save
      */
     protected void save(List<IMObject> objects) {
-        getService().save(objects);
+        getService().save(objects, validate);
     }
 
     /**
