@@ -18,15 +18,18 @@
 
 package org.openvpms.web.component.edit;
 
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.resource.util.Messages;
 
+import java.math.BigDecimal;
+
 
 /**
- * Validator for numeric nodes..
+ * Validator for numeric nodes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -63,9 +66,11 @@ public class NumericPropertyTransformer implements PropertyTransformer {
      * in loss of precision, without error</li>
      * <li>conversion from a string to an integer type will produce a
      * ValidationException if the string contains a decimal point.</li>
-     * </ul>
      * The inconsistency is tolerable in that all user input is via strings
      * and implicit conversion is not desired.
+     * <li>BigDecimals are rounded to the application-wide default decimal
+     * places using {@link MathRules#round}</li>
+     * </ul>
      *
      * @param object the object to convert
      * @return the transformed object, or <code>object</code> if no
@@ -77,6 +82,9 @@ public class NumericPropertyTransformer implements PropertyTransformer {
         try {
             Class type = descriptor.getClazz();
             result = CONVERTER.convert(object, type);
+            if (result instanceof BigDecimal) {
+                result = MathRules.round((BigDecimal) result);
+            }
         } catch (Throwable exception) {
             String message = Messages.get("node.error.invalidnumeric",
                                           descriptor.getDisplayName());
