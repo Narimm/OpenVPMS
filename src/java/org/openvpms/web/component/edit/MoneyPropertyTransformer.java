@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.edit;
 
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ValidationException;
@@ -61,20 +62,20 @@ public class MoneyPropertyTransformer implements PropertyTransformer {
      * @throws ValidationException if the object is invalid
      */
     public Object apply(Object object) throws ValidationException {
-        Object result;
+        BigDecimal result;
         try {
             if (object instanceof String) {
-                result = new Money((String) object);
+                result = new BigDecimal((String) object);
             } else if (object instanceof BigDecimal) {
-                result = new Money(object.toString());
+                result = new BigDecimal(object.toString());
             } else if (object instanceof BigInteger) {
-                result = new Money((BigInteger) object);
+                result = new BigDecimal((BigInteger) object);
             } else if (object instanceof Short
                     || object instanceof Integer
                     || object instanceof Long) {
-                result = new Money(((Number) object).longValue());
+                result = new BigDecimal(((Number) object).longValue());
             } else if (object instanceof Float || object instanceof Double) {
-                result = new Money(((Number) object).doubleValue());
+                result = new BigDecimal(((Number) object).doubleValue());
             } else {
                 throw getException(null);
             }
@@ -82,7 +83,7 @@ public class MoneyPropertyTransformer implements PropertyTransformer {
             throw getException(exception);
         }
 
-        return result;
+        return new Money(MathRules.round(result));
     }
 
     /**
