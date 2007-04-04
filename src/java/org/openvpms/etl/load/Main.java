@@ -67,6 +67,8 @@ public class Main {
                 displayUsage(parser);
             } else {
                 boolean validateOnly = config.getBoolean("validateOnly");
+                boolean translateLookups = config.getBoolean(
+                        "translateLookups");
                 boolean validate = !config.getBoolean("novalidate");
                 String contextPath = config.getString("context");
 
@@ -83,13 +85,16 @@ public class Main {
                         "archetypeService");
 
                 if (!config.getBoolean("nolookups")) {
-                    loadLookups(dao, service, validateOnly, validate);
+                    loadLookups(dao, service, translateLookups, validateOnly,
+                                validate);
                 }
                 Loader loader;
                 if (validateOnly) {
-                    loader = new ValidatingLoader(dao, service);
+                    loader = new ValidatingLoader(dao, service,
+                                                  translateLookups);
                 } else {
-                    loader = new Loader(dao, service, validate);
+                    loader = new Loader(dao, service, translateLookups,
+                                        validate);
                 }
 
                 long start = System.currentTimeMillis();
@@ -104,6 +109,7 @@ public class Main {
 
     private static void loadLookups(ETLValueDAOImpl dao,
                                     IArchetypeService service,
+                                    boolean translateLookups,
                                     boolean validateOnly,
                                     boolean validate) {
         LookupLoaderHandler handler;
@@ -112,7 +118,8 @@ public class Main {
         } else {
             handler = new DefaultLookupLoaderHandler(service, validate);
         }
-        LookupLoader lookupLoader = new LookupLoader(dao, service, handler);
+        LookupLoader lookupLoader = new LookupLoader(dao, service, handler,
+                                                     translateLookups);
         long start = System.currentTimeMillis();
         lookupLoader.load();
         long end = System.currentTimeMillis();
@@ -153,6 +160,9 @@ public class Main {
         parser.registerParameter(new Switch("validateOnly")
                 .setLongFlag("validateOnly").setDefault("false").setHelp(
                 "Only validate the data. Do not save."));
+        parser.registerParameter(new Switch("translateLookups")
+                .setLongFlag("translateLookups").setDefault("false").setHelp(
+                "Translate lookup values to lookup codes."));
         parser.registerParameter(new Switch("nolookups")
                 .setLongFlag("nolookups").setDefault("false").setHelp(
                 "Don't derive lookups from source data."));

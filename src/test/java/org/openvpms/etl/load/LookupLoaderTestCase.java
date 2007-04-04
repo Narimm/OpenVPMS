@@ -56,21 +56,21 @@ public class LookupLoaderTestCase
      */
     public void testLoadLookup() {
         ETLValue mr = new ETLValue("IDCUST1", "party.customerperson",
-                                   "ID1", "title", "MR");
+                                   "ID1", "title", "Mr");
         ETLValue ms = new ETLValue("IDCUST2", "party.customerperson",
-                                   "ID2", "title", "MS");
+                                   "ID2", "title", "Ms");
         ETLValueDAO dao = new ETLValueDAOTestImpl();
         dao.save(mr);
         dao.save(ms);
 
         TestDefaultLookupLoaderHandler listener = new TestDefaultLookupLoaderHandler(
                 service);
-        LookupLoader loader = new LookupLoader(dao, service, listener);
+        LookupLoader loader = new LookupLoader(dao, service, listener, true);
         loader.load();
         List<IMObject> objects = listener.getObjects();
         assertEquals(2, objects.size());
-        checkLookup(objects, "lookup.personTitle", "MR");
-        checkLookup(objects, "lookup.personTitle", "MS");
+        checkLookup(objects, "lookup.personTitle", "MR", "Mr");
+        checkLookup(objects, "lookup.personTitle", "MS", "Ms");
     }
 
     /**
@@ -93,16 +93,16 @@ public class LookupLoaderTestCase
 
         TestDefaultLookupLoaderHandler listener = new TestDefaultLookupLoaderHandler(
                 service);
-        LookupLoader loader = new LookupLoader(dao, service, listener);
+        LookupLoader loader = new LookupLoader(dao, service, listener, false);
         loader.load();
         List<IMObject> objects = listener.getObjects();
         assertEquals(6, objects.size());
-        checkLookup(objects, "lookup.species", "CANINE");
-        checkLookup(objects, "lookup.breed", "BEAGLE");
+        checkLookup(objects, "lookup.species", "CANINE", "CANINE");
+        checkLookup(objects, "lookup.breed", "BEAGLE", "BEAGLE");
         checkRelationship(objects, "lookupRelationship.speciesBreed",
                           "CANINE", "BEAGLE");
-        checkLookup(objects, "lookup.species", "FELINE");
-        checkLookup(objects, "lookup.breed", "BURMESE");
+        checkLookup(objects, "lookup.species", "FELINE", "FELINE");
+        checkLookup(objects, "lookup.breed", "BURMESE", "BURMESE");
         checkRelationship(objects, "lookupRelationship.speciesBreed",
                           "FELINE", "BURMESE");
     }
@@ -112,16 +112,16 @@ public class LookupLoaderTestCase
      */
     public void testLookupLocal() {
         ETLValue male = new ETLValue("IDPET1", "party.patientpet",
-                                         "ID1", "sex", "MALE");
+                                     "ID1", "sex", "MALE");
         ETLValue female = new ETLValue("IDPET2", "party.patientpet",
                                        "ID1", "sex", "FEMALE");
         ETLValueDAO dao = new ETLValueDAOTestImpl();
         dao.save(male);
         dao.save(female);
 
-        TestDefaultLookupLoaderHandler listener = new TestDefaultLookupLoaderHandler(
-                service);
-        LookupLoader loader = new LookupLoader(dao, service, listener);
+        TestDefaultLookupLoaderHandler listener
+                = new TestDefaultLookupLoaderHandler( service);
+        LookupLoader loader = new LookupLoader(dao, service, listener, false);
         loader.load();
         assertTrue(listener.getObjects().isEmpty());
     }
@@ -154,24 +154,29 @@ public class LookupLoaderTestCase
      * @param objects   the objects to check
      * @param shortName the expected lookup short name
      * @param code      the expected lookup code
+     * @param name      the expected lookup name
      */
     private void checkLookup(List<IMObject> objects, String shortName,
-                             String code) {
-        boolean found = false;
+                             String code, String name) {
+        Lookup found = null;
         for (IMObject object : objects) {
             if (object instanceof Lookup && TypeHelper.isA(object, shortName)) {
                 Lookup lookup = (Lookup) object;
                 if (code.equals(lookup.getCode())) {
-                    found = true;
+                    found = lookup;
                     break;
                 }
             }
         }
-        assertTrue(found);
+        assertNotNull(found);
+        assertEquals(name, found.getName());
         ArchetypeQuery query = new ArchetypeQuery(shortName, true, true);
         query.add(new NodeConstraint("code", code));
         List<IMObject> match = service.get(query).getResults();
         assertEquals(1, match.size());
+        // Note that the retrieved lookup could have a different name to that
+        // loaded, if the lookup existed prior to the load, as it doesn't
+        // get overwritten.
     }
 
     /**
@@ -205,8 +210,10 @@ public class LookupLoaderTestCase
         }
         assertTrue(found);
         ArchetypeQuery query = new ArchetypeQuery(shortName, true, true);
-        query.add(new ObjectRefNodeConstraint("source", source.getObjectReference()));
-        query.add(new ObjectRefNodeConstraint("target", target.getObjectReference()));
+        query.add(new ObjectRefNodeConstraint("source",
+                                              source.getObjectReference()));
+        query.add(new ObjectRefNodeConstraint("target",
+                                              target.getObjectReference()));
         List<IMObject> results = service.get(query).getResults();
         assertEquals(1, results.size());
     }
@@ -214,7 +221,8 @@ public class LookupLoaderTestCase
     /**
      * Test lookup loader listener.
      */
-    private class TestDefaultLookupLoaderHandler extends DefaultLookupLoaderHandler {
+    private class TestDefaultLookupLoaderHandler
+            extends DefaultLookupLoaderHandler {
 
         /**
          * The loaded objects.

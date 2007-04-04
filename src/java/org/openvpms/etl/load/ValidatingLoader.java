@@ -49,10 +49,13 @@ public class ValidatingLoader extends Loader {
     /**
      * Constructs a new <tt>ValidatingLoader</tt>.
      *
+     * @param dao              the DAO
      * @param service the archetype service
+     * @param translateLookups if <tt>true</tt> translate values for lookup
      */
-    public ValidatingLoader(ETLValueDAOImpl dao, IArchetypeService service) {
-        super(dao, service, true);
+    public ValidatingLoader(ETLValueDAOImpl dao, IArchetypeService service,
+                            boolean translateLookups) {
+        super(dao, service, translateLookups, true);
     }
 
     /**

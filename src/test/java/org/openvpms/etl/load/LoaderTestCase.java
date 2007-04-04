@@ -287,7 +287,7 @@ public class LoaderTestCase
          * @param service the archetype service
          */
         public TestLoader(ETLValueDAO dao, IArchetypeService service) {
-            super(dao, service, true);
+            super(dao, service, true, true);
         }
 
         /**

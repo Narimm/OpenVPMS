@@ -81,7 +81,7 @@ public class DefaultLookupLoaderHandler extends AbstractLookupLoaderHandler {
     public Lookup getLookup(String shortName, String code) {
         Lookup result = super.getLookup(shortName, code);
         if (result == null && !batch.isEmpty()) {
-            flushBatch();
+            flush();
             result = super.getLookup(shortName, code);
         }
         return result;
@@ -102,7 +102,10 @@ public class DefaultLookupLoaderHandler extends AbstractLookupLoaderHandler {
      */
     @Override
     public void flush() {
-        flushBatch();
+        if (!batch.isEmpty()) {
+            save(batch);
+            batch.clear();
+        }
     }
 
     /**
@@ -123,7 +126,7 @@ public class DefaultLookupLoaderHandler extends AbstractLookupLoaderHandler {
         batch.add(object);
         ++count;
         if (batch.size() >= batchSize) {
-            flushBatch();
+            flush();
         }
     }
 
@@ -133,15 +136,14 @@ public class DefaultLookupLoaderHandler extends AbstractLookupLoaderHandler {
      * @param objects the objects to save
      */
     protected void save(List<IMObject> objects) {
+        if (!validate) {
+            // validation normally does derivation of values, so when not
+            // validating, need to do it explicitly
+            for (IMObject object : objects) {
+                getService().deriveValues(object);
+            }
+        }
         getService().save(objects, validate);
-    }
-
-    /**
-     * Flush the batch.
-     */
-    protected void flushBatch() {
-        save(batch);
-        batch.clear();
     }
 
 }

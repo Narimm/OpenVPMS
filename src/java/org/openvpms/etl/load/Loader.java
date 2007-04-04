@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.etl.ETLHelper;
 import org.openvpms.etl.ETLValue;
 import org.openvpms.etl.ETLValueDAO;
 import org.openvpms.etl.Reference;
@@ -67,6 +68,12 @@ public class Loader {
     private final IArchetypeService service;
 
     /**
+     * Determines if values for lookup nodes need to be translated to
+     * lookup codes.
+     */
+    private final boolean translateLookups;
+
+    /**
      * Determines if validation should occur.
      */
     private final boolean validate;
@@ -77,12 +84,24 @@ public class Loader {
     private Map<String, String> references = new HashMap<String, String>();
 
     /**
+     * The level of loading recursion. Objects cannot be saved unless recursion
+     * is 0, as it indicates that an object is not yet complete.
+     */
+    private int recursion;
+
+    /**
      * The mapped objects, keyed on {@link ETLValue#getObjectId()}.
-     * Objects that are only partially mapped non-null {@link LoadState#getObject()}
-     * and {@link LoadState#getBean()} values. These are set to null once the
-     * object has been completely processed.
+     * Objects that are only partially mapped have non-null
+     * {@link LoadState#getObject()} and {@link LoadState#getBean()} values.
+     * These are set to null once the object has been processed.
      */
     private Map<String, LoadState> mapped = new HashMap<String, LoadState>();
+
+    /**
+     * The set of incomplete objects.
+     */
+    private final Map<IMObjectReference, IMObject> incomplete
+            = new LinkedHashMap<IMObjectReference, IMObject>();
 
     /**
      * The batch of unsaved objects.
@@ -99,14 +118,17 @@ public class Loader {
     /**
      * Constructs a new <tt>Loader</tt>.
      *
-     * @param dao      the DAO
-     * @param service  the archetype service
-     * @param validate if <tt>true</tt> validate objects prior to saving them
+     * @param dao              the DAO
+     * @param service          the archetype service
+     * @param translateLookups if <tt>true</tt> translate values for lookup
+     * @param validate         if <tt>true</tt> validate objects prior to saving
+     *                         them
      */
     public Loader(ETLValueDAO dao, IArchetypeService service,
-                  boolean validate) {
+                  boolean translateLookups, boolean validate) {
         this.dao = dao;
         this.service = service;
+        this.translateLookups = translateLookups;
         this.validate = validate;
     }
 
@@ -122,6 +144,7 @@ public class Loader {
         Iterator<ETLValue> iterator = new ETLValueIterator(dao);
         String objectId = null;
         String archetype = null;
+        recursion = 0;
         while (iterator.hasNext()) {
             ETLValue value = iterator.next();
             if (objectId != null) {
@@ -148,7 +171,7 @@ public class Loader {
     }
 
     /**
-     * Loads the object associated with reference.
+     * Loads the object associated with a reference.
      *
      * @param reference the reference to load
      * @return the object corresponding to the reference
@@ -163,8 +186,7 @@ public class Loader {
                 throw new LoaderException(InvalidReference, reference);
             }
             if (ref.getObjectId() != null) {
-                List<ETLValue> values = dao.get(ref.getObjectId());
-                result = loadReference(values, reference);
+                result = loadObjectIdReference(ref.getObjectId());
             } else if (ref.getLegacyId() != null) {
                 List<ETLValue> values = dao.get(ref.getLegacyId(),
                                                 ref.getArchetype());
@@ -203,6 +225,7 @@ public class Loader {
      */
     protected IMObject load(String objectId, String archetype,
                             List<ETLValue> values) {
+        setRecursion(recursion + 1);
         IMObject target;
         LoadState state = mapped.get(objectId);
         if (state == null) {
@@ -221,12 +244,12 @@ public class Loader {
         } else {
             target = getObject(state);
         }
+        setRecursion(recursion - 1);
         return target;
     }
 
     /**
-     * Queues an object to be saved, flushing the batch if the batch size is
-     * reached.
+     * Queues an object to be saved.
      *
      * @param objectId  the source object identifier
      * @param reference the object reference
@@ -235,20 +258,24 @@ public class Loader {
      */
     protected void queue(String objectId, IMObjectReference reference,
                          IMObject target) {
-        batch.put(reference, target);
-        if (batch.size() >= batchSize) {
-            flushBatch();
-        }
+        incomplete.put(reference, target);
     }
 
     /**
      * Saves a set of mapped objects.
      *
-     * @param objects the objects to save
+     * @param objects  the objects to save
      * @param validate if <tt>true</tt> validate objects prior to saving them
      * @throws ArchetypeServiceException for any error
      */
     protected void save(Collection<IMObject> objects, boolean validate) {
+        if (!validate) {
+            // validation normally does derivation of values, so when not
+            // validating, need to do it explicitly
+            for (IMObject object : objects) {
+                getService().deriveValues(object);
+            }
+        }
         service.save(objects, validate);
     }
 
@@ -316,6 +343,23 @@ public class Loader {
     }
 
     /**
+     * Sets the current recursion level. If the level is <tt>0</tt>,
+     * moves all incomplete objects to the save batch.
+     *
+     * @param level the recursion level
+     */
+    private void setRecursion(int level) {
+        recursion = level;
+        if (recursion <= 0) {
+            batch.putAll(incomplete);
+            incomplete.clear();
+            if (batch.size() >= batchSize) {
+                flushBatch();
+            }
+        }
+    }
+
+    /**
      * Saves the current batch of objects.
      *
      * @throws ArchetypeServiceException for any error
@@ -379,6 +423,8 @@ public class Loader {
                                               value.getName());
                 }
             }
+        } else if (descriptor.isLookup() && translateLookups) {
+            result = ETLHelper.getLookupCode(value.getValue());
         } else {
             result = value.getValue();
         }
@@ -409,18 +455,54 @@ public class Loader {
         IMObject target;
         target = state.getObject();
         if (target == null) {
-            target = batch.get(state.getRef());  // see if it needs to be saved
+            // see if it needs to be saved
+            IMObjectReference ref = state.getRef();
+            target = incomplete.get(ref);
             if (target == null) {
-                target = ArchetypeQueryHelper.getByObjectReference(
-                        service, state.getRef());
+                target = batch.get(ref);
                 if (target == null) {
-                    throw new LoaderException(IMObjectNotFound, state.getRef());
+                    // try and load from the database
+                    target = ArchetypeQueryHelper.getByObjectReference(
+                            service, ref);
+                    if (target == null) {
+                        throw new LoaderException(IMObjectNotFound, ref);
+                    }
                 }
             }
         }
         return target;
     }
 
+    /**
+     * Loads a reference by object identifier.
+     *
+     * @param objectId the object identifier
+     * @return the object corresponding to the reference
+     * @throws LoaderException           for any loader error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private IMObject loadObjectIdReference(String objectId) {
+        IMObject result;
+        LoadState state = mapped.get(objectId);
+        if (state != null) {
+            result = getObject(state);
+            references.put(objectId, objectId);
+        } else {
+            List<ETLValue> values = dao.get(objectId);
+            result = loadReference(values, objectId);
+        }
+        return result;
+    }
+
+    /**
+     * Loads a reference.
+     *
+     * @param values    the values associated with the reference
+     * @param reference the reference
+     * @return the associated object
+     * @throws LoaderException           for any loader error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
     private IMObject loadReference(List<ETLValue> values, String reference) {
         if (values.isEmpty()) {
             throw new LoaderException(ObjectNotFound, reference);
