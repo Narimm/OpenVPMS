@@ -18,6 +18,7 @@
 
 package org.openvpms.etl.load;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -312,7 +313,11 @@ public class LookupLoader {
      * @return the lookup code
      */
     protected String getCode(String value) {
-        return (translateLookups) ? ETLHelper.getLookupCode(value) : value;
+        value = StringUtils.trimToNull(value);
+        if (translateLookups && value != null) {
+            return ETLHelper.getLookupCode(value);
+        }
+        return value;
     }
 
     /**
@@ -351,31 +356,34 @@ public class LookupLoader {
                                            Collection<ETLPair> values) {
         handler.flush(); // need to flush any unsaved lookups
         for (ETLPair value : values) {
-            LookupRelationshipHelper rel
-                    = new LookupRelationshipHelper(shortName, service);
             String sourceCode = getCode(value.getValue1());
             String targetCode = getCode(value.getValue2());
-            Lookup source = handler.getLookup(rel.getSource(), sourceCode);
-            Lookup target = handler.getLookup(rel.getTarget(), targetCode);
+            if (sourceCode != null && targetCode != null) {
+                LookupRelationshipHelper rel
+                        = new LookupRelationshipHelper(shortName, service);
+                Lookup source = handler.getLookup(rel.getSource(), sourceCode);
+                Lookup target = handler.getLookup(rel.getTarget(), targetCode);
 
-            if (source != null && target != null) {
-                IMObject relationship = service.create(shortName);
-                if (relationship != null) {
-                    IMObjectBean bean = new IMObjectBean(relationship, service);
-                    bean.setValue("source", source.getObjectReference());
-                    bean.setValue("target", target.getObjectReference());
-                    handler.add(relationship, null);
+                if (source != null && target != null) {
+                    IMObject relationship = service.create(shortName);
+                    if (relationship != null) {
+                        IMObjectBean bean = new IMObjectBean(relationship,
+                                                             service);
+                        bean.setValue("source", source.getObjectReference());
+                        bean.setValue("target", target.getObjectReference());
+                        handler.add(relationship, null);
+                    } else {
+                        raise(new LoaderException(LookupArchetypeNotFound,
+                                                  shortName));
+                        break;
+                    }
+                } else if (source == null) {
+                    raise(new LoaderException(LookupNotFound, rel.getSource(),
+                                              sourceCode));
                 } else {
-                    raise(new LoaderException(LookupArchetypeNotFound,
-                                              shortName));
-                    break;
+                    raise(new LoaderException(LookupNotFound, rel.getTarget(),
+                                              targetCode));
                 }
-            } else if (source == null) {
-                raise(new LoaderException(LookupNotFound, rel.getSource(),
-                                          sourceCode));
-            } else {
-                raise(new LoaderException(LookupNotFound, rel.getTarget(),
-                                          targetCode));
             }
         }
     }

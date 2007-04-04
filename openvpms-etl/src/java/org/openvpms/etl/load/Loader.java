@@ -406,7 +406,8 @@ public class Loader {
                                               value.getName());
                 }
             }
-        } else if (descriptor.isLookup() && translateLookups) {
+        } else if (descriptor.isLookup() && translateLookups
+                && !StringUtils.isEmpty(value.getValue())) {
             result = ETLHelper.getLookupCode(value.getValue());
         } else {
             result = value.getValue();
