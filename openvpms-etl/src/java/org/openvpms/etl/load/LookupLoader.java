@@ -328,18 +328,20 @@ public class LookupLoader {
      */
     private void createLookups(String shortName, Collection<String> values) {
         for (String value : values) {
-            Lookup lookup = (Lookup) service.create(shortName);
-            if (lookup != null) {
-                lookup.setCode(getCode(value));
-                lookup.setName(value);
-                handler.add(lookup, null);
-            } else {
-                LoaderException exception = new LoaderException(
-                        LookupArchetypeNotFound, shortName);
-                if (handler.error(null, exception, null)) {
-                    throw exception;
+            if (!StringUtils.isEmpty(value)) {
+                Lookup lookup = (Lookup) service.create(shortName);
+                if (lookup != null) {
+                    lookup.setCode(getCode(value));
+                    lookup.setName(value);
+                    handler.add(lookup, null);
                 } else {
-                    break;
+                    LoaderException exception = new LoaderException(
+                            LookupArchetypeNotFound, shortName);
+                    if (handler.error(null, exception, null)) {
+                        throw exception;
+                    } else {
+                        break;
+                    }
                 }
             }
         }
