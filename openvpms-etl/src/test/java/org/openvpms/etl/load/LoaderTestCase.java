@@ -21,6 +21,7 @@ package org.openvpms.etl.load;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.etl.ETLValue;
@@ -310,18 +311,22 @@ public class LoaderTestCase
         }
 
         /**
-         * Queues an object to be saved, flushing the batch if the batch size is
-         * reached.
+         * Loads an object.
          *
-         * @param objectId  the source object identifier
-         * @param reference the object reference
-         * @param target    the object to queue
+         * @param objectId  the object's identifier
+         * @param archetype the object's archetype
+         * @param values    the values to construct the object from
+         * @return the object
+         * @throws LoaderException           for any error
+         * @throws ArchetypeServiceException for any archetype service error
          */
         @Override
-        protected void queue(String objectId, IMObjectReference reference,
-                             IMObject target) {
-            super.queue(objectId, reference, target);
-            loaded.put(objectId, target);
+        protected IMObject load(String objectId, String archetype,
+                                List<ETLValue> values) {
+            IMObject object = super.load(objectId, archetype, values);
+            loaded.put(objectId, object);
+            return object;
         }
+
     }
 }
