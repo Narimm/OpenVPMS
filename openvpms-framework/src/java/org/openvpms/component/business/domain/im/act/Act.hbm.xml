@@ -80,7 +80,7 @@
     <joined-subclass
       name="org.openvpms.component.business.domain.im.act.FinancialAct"
       table="financial_acts">
-      <key column="financial_act_id" />
+      <key column="financial_act_id" on-delete="cascade"/>
       <property name="quantity" access="property" column="quantity"
         type="big_decimal" />
       <property name="fixedAmount" access="property" column="fixed_amount"
@@ -102,7 +102,7 @@
     <joined-subclass
       name="org.openvpms.component.business.domain.im.act.DocumentAct"
       table="document_acts">
-      <key column="document_act_id" />
+      <key column="document_act_id" on-delete="cascade"/>
       <property name="docVersion" access="property" column="doc_version"
         type="string" />
       <property name="fileName" access="property" column="file_name"

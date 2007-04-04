@@ -60,7 +60,7 @@
 			type="boolean" />
 		<map name="nodeDescriptors" access="property" lazy="false" inverse="true"
 			table="node_descriptors" cascade="all,delete-orphan">
-			<key column="archetype_desc_id" />
+			<key column="archetype_desc_id" on-delete="cascade"/>
 			<map-key column="name" type="string" />
 			<one-to-many
 				class="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor" />
