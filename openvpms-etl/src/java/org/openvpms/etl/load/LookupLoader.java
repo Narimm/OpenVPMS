@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.etl.ETLArchetype;
+import org.openvpms.etl.ETLHelper;
 import org.openvpms.etl.ETLPair;
 import org.openvpms.etl.ETLValueDAO;
 import static org.openvpms.etl.load.LoaderException.ErrorCode.*;
@@ -61,19 +62,28 @@ public class LookupLoader {
      */
     private final LookupLoaderHandler handler;
 
+    /**
+     * Determines if values for lookup nodes need to be translated to
+     * lookup codes.
+     */
+    private final boolean translateLookups;
+
 
     /**
      * Constructs a new <tt>LookupLoader</tt>.
      *
-     * @param dao     the source DAO
-     * @param service the archeype service
-     * @param handler the lookup handler
+     * @param dao              the source DAO
+     * @param service          the archeype service
+     * @param handler          the lookup handler
+     * @param translateLookups if <tt>true</tt> translate values for lookup
      */
     public LookupLoader(ETLValueDAO dao, IArchetypeService service,
-                        LookupLoaderHandler handler) {
+                        LookupLoaderHandler handler,
+                        boolean translateLookups) {
         this.dao = dao;
         this.service = service;
         this.handler = handler;
+        this.translateLookups = translateLookups;
     }
 
     /**
@@ -296,6 +306,16 @@ public class LookupLoader {
     }
 
     /**
+     * Returns a lookup code for a given lookup value.
+     *
+     * @param value the lookup value
+     * @return the lookup code
+     */
+    protected String getCode(String value) {
+        return (translateLookups) ? ETLHelper.getLookupCode(value) : value;
+    }
+
+    /**
      * Creates lookups with the given short name, for each value.
      *
      * @param shortName the lookup short name
@@ -305,7 +325,8 @@ public class LookupLoader {
         for (String value : values) {
             Lookup lookup = (Lookup) service.create(shortName);
             if (lookup != null) {
-                lookup.setCode(value);
+                lookup.setCode(getCode(value));
+                lookup.setName(value);
                 handler.add(lookup, null);
             } else {
                 LoaderException exception = new LoaderException(
@@ -319,16 +340,23 @@ public class LookupLoader {
         }
     }
 
+    /**
+     * Creates lookuip relationships of the specified type for a collection
+     * of pairs.
+     *
+     * @param shortName the lookup relationship short name
+     * @param values    the lookup values
+     */
     private void createLookupRelationships(String shortName,
                                            Collection<ETLPair> values) {
         handler.flush(); // need to flush any unsaved lookups
         for (ETLPair value : values) {
             LookupRelationshipHelper rel
                     = new LookupRelationshipHelper(shortName, service);
-            Lookup source = handler.getLookup(rel.getSource(),
-                                              value.getValue1());
-            Lookup target = handler.getLookup(rel.getTarget(),
-                                              value.getValue2());
+            String sourceCode = getCode(value.getValue1());
+            String targetCode = getCode(value.getValue2());
+            Lookup source = handler.getLookup(rel.getSource(), sourceCode);
+            Lookup target = handler.getLookup(rel.getTarget(), targetCode);
 
             if (source != null && target != null) {
                 IMObject relationship = service.create(shortName);
@@ -337,13 +365,17 @@ public class LookupLoader {
                     bean.setValue("source", source.getObjectReference());
                     bean.setValue("target", target.getObjectReference());
                     handler.add(relationship, null);
+                } else {
+                    raise(new LoaderException(LookupArchetypeNotFound,
+                                              shortName));
+                    break;
                 }
             } else if (source == null) {
                 raise(new LoaderException(LookupNotFound, rel.getSource(),
-                                          value.getValue1()));
+                                          sourceCode));
             } else {
                 raise(new LoaderException(LookupNotFound, rel.getTarget(),
-                                          value.getValue2()));
+                                          targetCode));
             }
         }
     }
