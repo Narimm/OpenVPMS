@@ -18,7 +18,7 @@
 # Copy this file to hibernate.properties and make the appropriate
 # entries. 
 #
-hibernate.dialect=org.hibernate.dialect.MySQLDialect
+hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
 hibernate.connection.driver_class=com.mysql.jdbc.Driver
 hibernate.connection.url=jdbc:mysql://localhost:3306/openvpms_prod
 hibernate.connection.username=mysql

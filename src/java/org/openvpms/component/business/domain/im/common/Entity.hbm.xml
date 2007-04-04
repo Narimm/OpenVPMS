@@ -58,19 +58,19 @@
     </set>
     <set name="identities" access="property" inverse="true"
          cascade="all,delete-orphan">
-      <key column="entity_id" not-null="true" />
+      <key column="entity_id" not-null="true" on-delete="cascade"/>
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityIdentity" />
     </set>
     <set name="sourceEntityRelationships" access="property"
          cascade="all,delete-orphan" inverse="true">
-      <key column="source_linkId" property-ref="linkId" not-null="true" />
+      <key column="source_linkId" property-ref="linkId" not-null="true" on-delete="cascade"/>
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
     </set>
     <set name="targetEntityRelationships" access="property"
          cascade="all,delete-orphan" inverse="true">
-      <key column="target_linkId" property-ref="linkId" not-null="true" />
+      <key column="target_linkId" property-ref="linkId" not-null="true" on-delete="cascade"/>
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
     </set>
@@ -79,7 +79,7 @@
     <joined-subclass
       name="org.openvpms.component.business.domain.im.security.User"
       table="users">
-      <key column="user_id" />
+      <key column="user_id" on-delete="cascade"/>
       <property name="username" access="property" column="user_name"
            type="string" length="20" index="user_name_idx" not-null="true"/>
       <property name="password" access="property" column="password"
@@ -97,10 +97,10 @@
     <joined-subclass
       name="org.openvpms.component.business.domain.im.party.Party"
       table="parties">
-      <key column="party_id" />
+      <key column="party_id" on-delete="cascade" />
       <set name="contacts" access="property" inverse="true"
            cascade="all,delete-orphan">
-        <key column="party_id" />
+        <key column="party_id" on-delete="cascade"/>
         <one-to-many
           class="org.openvpms.component.business.domain.im.party.Contact" />
       </set>
@@ -110,10 +110,10 @@
     <joined-subclass
       name="org.openvpms.component.business.domain.im.product.Product"
       table="products">
-      <key column="product_id" />
+      <key column="product_id" on-delete="cascade"/>
       <set name="productPrices" access="property" inverse="true"
            cascade="all,delete-orphan">
-        <key column="product_id" />
+        <key column="product_id" on-delete="cascade"/>
         <one-to-many
           class="org.openvpms.component.business.domain.im.product.ProductPrice" />
       </set>
