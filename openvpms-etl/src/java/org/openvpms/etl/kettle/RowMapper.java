@@ -38,7 +38,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class RowMapper {
+public class RowMapper {
 
     /**
      * The mappings.

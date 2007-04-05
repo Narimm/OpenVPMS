@@ -147,17 +147,37 @@ public class Reference {
      * @return the string representation of this
      */
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        String result;
         if (objectId != null) {
-            result.append(objectId);
+            result = objectId;
+        } else if (legacyId != null) {
+            result = create(archetype, legacyId);
         } else {
-            result.append("<").append(archetype).append(">");
-            if (legacyId != null) {
-                result.append(legacyId);
-            } else {
-                result.append(name).append("=").append(value);
-            }
+            result = create(archetype, name, value);
         }
-        return result.toString();
+        return result;
+    }
+
+    /**
+     * Creates a reference string from an archetype and legacy identifier.
+     *
+     * @param archetype the archetype
+     * @param legacyId  the legacy identifier
+     * @return a new reference string
+     */
+    public static String create(String archetype, String legacyId) {
+        return "<" + archetype + ">" + legacyId;
+    }
+
+    /**
+     * Creates a reference string from an archetype, node name and value.
+     *
+     * @param archetype the archetype
+     * @param name      the node name
+     * @param value     the node value
+     * @return a new reference string
+     */
+    public static String create(String archetype, String name, String value) {
+        return "<" + archetype + ">" + name + "=" + value;
     }
 }

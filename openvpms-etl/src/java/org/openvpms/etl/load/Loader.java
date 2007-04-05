@@ -18,6 +18,7 @@
 
 package org.openvpms.etl.load;
 
+import static org.openvpms.etl.load.LoaderException.ErrorCode.RefResolvesMultipleObjects;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -188,9 +189,7 @@ public class Loader {
             if (ref.getObjectId() != null) {
                 result = loadObjectIdReference(ref.getObjectId());
             } else if (ref.getLegacyId() != null) {
-                List<ETLValue> values = dao.get(ref.getLegacyId(),
-                                                ref.getArchetype());
-                result = loadReference(values, reference);
+                result = loadReference(ref.getArchetype(), ref.getLegacyId());
             } else {
                 ArchetypeQuery query = new ArchetypeQuery(ref.getArchetype(),
                                                           true, true);
@@ -212,6 +211,35 @@ public class Loader {
             result = getObject(loaded);
         }
         return result;
+    }
+
+    private IMObject loadReference(String archetype, String legacyId) {
+        if (archetype.contains("*")) {
+            // expand any wildcards, and see if the object has already been
+            // loaded
+            String[] shortNames = DescriptorHelper.getShortNames(archetype,
+                                                                 service);
+            IMObjectReference found = null;
+            for (String shortName : shortNames) {
+                String reference = Reference.create(shortName, legacyId);
+                IMObjectReference loaded = references.get(reference);
+                if (loaded != null) {
+                    if (found == null) {
+                        found = loaded;
+                    } else {
+                        throw new LoaderException(
+                                RefResolvesMultipleObjects,
+                                Reference.create(archetype, legacyId));
+                    }
+                }
+            }
+            if (found != null) {
+                return getObject(found);
+            }
+        }
+        List<ETLValue> values = dao.get(legacyId, archetype);
+        String reference = Reference.create(archetype, legacyId);
+        return loadReference(values, reference);
     }
 
     /**

@@ -18,17 +18,20 @@
 
 package org.openvpms.etl;
 
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.Comparator;
 
 
 /**
@@ -62,10 +65,16 @@ public class ETLValueDAOTestImpl implements ETLValueDAO {
         for (ETLValue value : values) {
             this.values.add(value);
         }
+        Collections.sort(this.values, new Comparator<ETLValue>() {
+            public int compare(ETLValue o1, ETLValue o2) {
+                return o1.getObjectId().compareTo(o2.getObjectId());
+            }
+        });
     }
 
     /**
-     * Returns a collection of values.
+     * Returns a collection of values, ordered on
+     * {@link ETLValue#getObjectId()}.
      *
      * @param firstResult the index of the first result
      * @param maxResults  the maximum no. of results, or <tt>-1</tt> for all
@@ -127,7 +136,7 @@ public class ETLValueDAOTestImpl implements ETLValueDAO {
         List<ETLValue> result = new ArrayList<ETLValue>();
         for (ETLValue value : values) {
             if (value.getLegacyId().equals(legacyId)
-                    && value.getArchetype().equals(archetype)) {
+                    && TypeHelper.matches(value.getArchetype(), archetype)) {
                 result.add(value);
             }
         }
