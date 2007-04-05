@@ -18,7 +18,6 @@
 
 package org.openvpms.etl.load;
 
-import static org.openvpms.etl.load.LoaderException.ErrorCode.RefResolvesMultipleObjects;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -401,7 +400,10 @@ public class Loader {
         if (value.isReference()) {
             if (descriptor.isCollection()) {
                 IMObject child = loadReference(value.getValue());
-                bean.addValue(name, child);
+                if (child != null) {
+                    // todo - null check required for ValidatingLoader...
+                    bean.addValue(name, child);
+                }
             } else {
                 bean.setValue(name, getReference(value.getValue()));
             }
@@ -533,7 +535,10 @@ public class Loader {
             }
         }
         IMObject result = load(objectId, archetype, values);
-        references.put(reference, result.getObjectReference());
+        if (result != null) {
+            // todo - null test required for ValidatingLoader
+            references.put(reference, result.getObjectReference());
+        }
         return result;
     }
 
