@@ -97,33 +97,37 @@ public class Node {
 
     /**
      * Returns the object path.
-     * This is the concatenation of the parent node path, the parent
-     * collection index (if not <tt>-1</tt>) and the archetype.
+     * This is the concatenation of the parent node path and the archetype.
      *
      * @return the object path
      */
     public String getObjectPath() {
-        String result = "<" + archetype + ">";
+        StringBuffer result = new StringBuffer();
         if (parent != null) {
-            result = parent.getNodePath() + result;
-            if (parent.getIndex() != -1) {
-                result += "[" + parent.getIndex() + "]";
-            }
+            result.append(parent.getNodePath());
         }
-        return result;
+        result.append("<");
+        result.append(archetype);
+        result.append(">");
+        return result.toString();
     }
 
     /**
      * Returns the node path.
      * This is the concatention of the {@link #getObjectPath()} with
-     * the node name.
+     * the node name and the index, if not <tt>-1</tt>.
      *
      * @return the node path
      */
     public String getNodePath() {
-        String result = getObjectPath();
-        result += name;
-        return result;
+        StringBuffer result = new StringBuffer(getObjectPath());
+        result.append(name);
+        if (index != -1) {
+            result.append("[");
+            result.append(index);
+            result.append("]");
+        }
+        return result.toString();
     }
 
     /**

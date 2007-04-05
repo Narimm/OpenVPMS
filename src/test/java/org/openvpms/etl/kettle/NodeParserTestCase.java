@@ -33,20 +33,30 @@ public class NodeParserTestCase extends TestCase {
      * Tests a single node.
      */
     public void testSingleNode() {
-        Node node = NodeParser.parse("<party.customerPerson>firstName");
+        Node node = NodeParser.parse("<party.customerperson>firstName");
         assertNotNull(node);
-        checkNode(node, "party.customerPerson", "firstName", -1);
+        checkNode(node, "party.customerperson", "firstName", -1);
+        assertEquals("<party.customerperson>firstName", node.getNodePath());
+        assertEquals("<party.customerperson>", node.getObjectPath());
     }
 
     /**
      * Tests a collection node.
      */
-    public void testNodeParser() {
+    public void testCollectionNode() {
         Node node = NodeParser.parse(
-                "<party.customerPerson>contacts[0]<contact.location>address");
+                "<party.customerperson>contacts[0]<contact.location>address");
         assertNotNull(node);
-        checkNode(node, "party.customerPerson", "contacts", 0);
+        checkNode(node, "party.customerperson", "contacts", 0);
         checkNode(node.getChild(), "contact.location", "address", -1);
+
+        assertEquals("<party.customerperson>contacts[0]", node.getNodePath());
+        assertEquals("<party.customerperson>", node.getObjectPath());
+        assertEquals(
+                "<party.customerperson>contacts[0]<contact.location>address",
+                node.getChild().getNodePath());
+        assertEquals("<party.customerperson>contacts[0]<contact.location>",
+                     node.getChild().getObjectPath());
     }
 
     /**
@@ -54,9 +64,9 @@ public class NodeParserTestCase extends TestCase {
      */
     public void testInvalid() {
         assertNull(NodeParser.parse(""));
-        assertNull(NodeParser.parse("<party.customerPerson>"));
-        assertNull(NodeParser.parse("<party.customerPerson>[0]"));
-        assertNull(NodeParser.parse("<party.customerPerson>xnode[0]ynode"));
+        assertNull(NodeParser.parse("<party.customerperson>"));
+        assertNull(NodeParser.parse("<party.customerperson>[0]"));
+        assertNull(NodeParser.parse("<party.customerperson>xnode[0]ynode"));
     }
 
     /**

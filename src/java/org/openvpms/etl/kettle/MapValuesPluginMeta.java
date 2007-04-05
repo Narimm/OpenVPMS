@@ -20,6 +20,7 @@ package org.openvpms.etl.kettle;
 import be.ibridge.kettle.core.CheckResult;
 import be.ibridge.kettle.core.LogWriter;
 import be.ibridge.kettle.core.Row;
+import be.ibridge.kettle.core.XMLHandler;
 import be.ibridge.kettle.core.exception.KettleException;
 import be.ibridge.kettle.core.exception.KettleXMLException;
 import be.ibridge.kettle.repository.Repository;
@@ -34,6 +35,7 @@ import be.ibridge.kettle.trans.step.StepMetaInterface;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.widgets.Shell;
 import org.exolab.castor.xml.Unmarshaller;
+import org.exolab.castor.xml.Marshaller;
 import org.w3c.dom.Node;
 
 import java.io.StringWriter;
@@ -108,7 +110,9 @@ public class MapValuesPluginMeta extends BaseStepMeta
         if (mappings != null) {
             StringWriter writer = new StringWriter();
             try {
-                mappings.marshal(writer);
+                Marshaller marshaller = new Marshaller(writer);
+                marshaller.setSupressXMLDeclaration(true);
+                marshaller.marshal(mappings);
                 result = writer.toString();
             } catch (Throwable exception) {
                 log.println(LogWriter.LOG_LEVEL_ERROR, getClass().getName(),
@@ -129,8 +133,8 @@ public class MapValuesPluginMeta extends BaseStepMeta
     public void loadXML(Node stepNode, ArrayList databases,
                         Hashtable counters) throws KettleXMLException {
         try {
-            mappings = (Mappings) Unmarshaller.unmarshal(Mappings.class,
-                                                         stepNode);
+            Node node = XMLHandler.getSubNode(stepNode, "mappings");
+            mappings = (Mappings) Unmarshaller.unmarshal(Mappings.class, node);
         } catch (Exception exception) {
             throw new KettleXMLException(
                     "Unable to read step info from XML node", exception);
