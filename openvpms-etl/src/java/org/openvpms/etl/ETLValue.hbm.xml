@@ -30,7 +30,7 @@
                   type="string" length="32" index="etl_value_object_id_idx"/>
         <property name="legacyId" access="property" column="legacy_id"
                   type="string" length="32" index="etl_value_ref_idx"/>
-        <property name="archetype" access="property" type="string" length="32"
+        <property name="archetype" access="property" type="string" length="100"
                   index="etl_value_ref_idx"/>
         <property name="reference" column="is_reference" type="boolean"/>
         <property name="name" access="property" column="name" type="string"
