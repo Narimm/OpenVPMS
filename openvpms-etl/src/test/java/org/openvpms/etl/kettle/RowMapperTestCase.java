@@ -113,6 +113,63 @@ public class RowMapperTestCase extends TestCase {
     }
 
     /**
+     * Tests multiple collection elements in a single collection.
+     *
+     * @throws Exception for any error
+     */
+    public void testCollection() throws Exception {
+        Mappings mappings = new Mappings();
+        mappings.setIdColumn("LEGACY_ID");
+
+        Mapping addressMap = createMapping(
+                "ADDRESS",
+                "<party.customerperson>contacts[0]<contact.location>address");
+        Mapping phoneMap = createMapping(
+                "PHONE",
+                "<party.customerperson>contacts[1]<contact.phoneNumber>telephoneNumber");
+        Mapping faxMap = createMapping(
+                "FAX",
+                "<party.customerperson>contacts[2]<contact.fax>faxNumber");
+        mappings.addMapping(addressMap);
+        mappings.addMapping(phoneMap);
+        mappings.addMapping(faxMap);
+
+        RowMapper mapper = new RowMapper(mappings);
+        Row row = new Row();
+        Value legacyId = createValue("LEGACY_ID", "ID1");
+        Value address = createValue("ADDRESS", "49 Foo St Bar");
+        Value phone = createValue("PHONE", "12345678");
+        Value fax = createValue("FAX", "87654321");
+        legacyId.setValue("ID1");
+        row.addValue(legacyId);
+        row.addValue(address);
+        row.addValue(phone);
+        row.addValue(fax);
+        List<ETLValue> objects = mapper.map(row);
+
+        assertEquals(6, objects.size());
+
+        ETLValue contacts0 = objects.get(0);
+        ETLValue addressVal = objects.get(1);
+        ETLValue contacts1 = objects.get(2);
+        ETLValue phoneValue = objects.get(3);
+        ETLValue contacts2 = objects.get(4);
+        ETLValue faxVal = objects.get(5);
+        checkValue(contacts0, "ID1.1", "party.customerperson", "ID1",
+                   "contacts", 0, "ID1.2");
+        checkValue(addressVal, "ID1.2", "contact.location", "ID1",
+                   "address", -1, "49 Foo St Bar");
+        checkValue(contacts1, "ID1.1", "party.customerperson", "ID1",
+                   "contacts", 1, "ID1.3");
+        checkValue(phoneValue, "ID1.3", "contact.phoneNumber", "ID1",
+                   "telephoneNumber", -1, "12345678");
+        checkValue(contacts2, "ID1.1", "party.customerperson", "ID1",
+                   "contacts", 2, "ID1.4");
+        checkValue(faxVal, "ID1.4", "contact.fax", "ID1",
+                   "faxNumber", -1, "87654321");
+    }
+
+    /**
      * Tests a collection heirarchy.
      *
      * @throws Exception for any error

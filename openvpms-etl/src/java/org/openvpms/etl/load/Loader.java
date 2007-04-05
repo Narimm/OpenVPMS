@@ -178,7 +178,7 @@ public class Loader {
      * @throws LoaderException if the reference is invalid
      */
     protected IMObject loadReference(String reference) {
-        IMObject result = null;
+        IMObject result;
         IMObjectReference loaded = references.get(reference);
         if (loaded == null) {
             Reference ref = ReferenceParser.parse(reference);
@@ -204,6 +204,8 @@ public class Loader {
                         throw new LoaderException(
                                 RefResolvesMultipleObjects, ref.toString());
                     }
+                } else {
+                    throw new LoaderException(IMObjectNotFound, reference);
                 }
             }
         } else {
