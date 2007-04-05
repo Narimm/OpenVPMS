@@ -45,7 +45,8 @@ public interface ETLValueDAO {
     void save(Iterable<ETLValue> values);
 
     /**
-     * Returns a collection of values.
+     * Returns a collection of values, ordered on
+     * {@link ETLValue#getObjectId()}.
      *
      * @param firstResult the index of the first result
      * @param maxResults  the maximum no. of results, or <tt>-1</tt> for all

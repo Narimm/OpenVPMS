@@ -112,7 +112,8 @@ public class ETLValueDAOImpl implements ETLValueDAO {
     }
 
     /**
-     * Returns a collection of values.
+     * Returns a collection of values, ordered on
+     * {@link ETLValue#getObjectId()}.
      *
      * @param firstResult the index of the first result
      * @param maxResults  the maximum no. of results, or <tt>-1</tt> for all
@@ -211,8 +212,13 @@ public class ETLValueDAOImpl implements ETLValueDAO {
 
         queryString.append("select v from ");
         queryString.append(ETLValue.class.getName());
-        queryString.append(" as v where v.legacyId = :legacyId and " +
-                "v.archetype = :archetype");
+        queryString.append(" as v where v.legacyId = :legacyId and ");
+        if (archetype.contains("*")) {
+            archetype = archetype.replace("*", "%");
+            queryString.append("v.archetype like :archetype");
+        } else {
+            queryString.append("v.archetype = :archetype");
+        }
 
         Session session = factory.openSession();
         List set;

@@ -18,6 +18,8 @@
 
 package org.openvpms.etl.load;
 
+import be.ibridge.kettle.core.Row;
+import be.ibridge.kettle.core.value.Value;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -26,6 +28,9 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.etl.ETLValue;
 import org.openvpms.etl.ETLValueDAO;
 import org.openvpms.etl.ETLValueDAOTestImpl;
+import org.openvpms.etl.kettle.Mapping;
+import org.openvpms.etl.kettle.Mappings;
+import org.openvpms.etl.kettle.RowMapper;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.util.ArrayList;
@@ -158,6 +163,68 @@ public class LoaderTestCase
     }
 
     /**
+     * Tests wildcarded archetype/legacy id references.
+     *
+     * @throws Exception for any error
+     */
+    public void testWildcardedArchetypeLegacyIdReferences() throws Exception {
+        ETLValueDAO dao = new ETLValueDAOTestImpl();
+        List<ETLValue> patientValues = createPatient("IDPET");
+        List<ETLValue> productValues = createProduct("IDPRODUCT");
+        dao.save(patientValues);
+        dao.save(productValues);
+        Mappings mappings = new Mappings();
+        mappings.setIdColumn("INVOICEITEMID");
+        Mapping patientEntityMap = createMapping(
+                "PATIENTID",
+                "<act.customerAccountInvoiceItem>patient[0]<participation.patient>entity",
+                "<party.patient*>$value", true);
+        Mapping patientActMap = createMapping(
+                "INVOICEITEMID",
+                "<act.customerAccountInvoiceItem>patient[0]<participation.patient>act",
+                "<act.customerAccountInvoiceItem>$value", true);
+        Mapping productEntityMap = createMapping(
+                "PRODUCTID",
+                "<act.customerAccountInvoiceItem>product[0]<participation.product>entity",
+                "<product.*>$value", true);
+        Mapping productActMap = createMapping(
+                "INVOICEITEMID",
+                "<act.customerAccountInvoiceItem>product[0]<participation.product>act",
+                "<act.customerAccountInvoiceItem>$value", true);
+        mappings.addMapping(patientEntityMap);
+        mappings.addMapping(patientActMap);
+        mappings.addMapping(productEntityMap);
+        mappings.addMapping(productActMap);
+
+        RowMapper mapper = new RowMapper(mappings);
+        Row row = new Row();
+        row.addValue(new Value("INVOICEITEMID", "IDITEM"));
+        row.addValue(new Value("PATIENTID", "IDPET"));
+        row.addValue(new Value("PRODUCTID", "IDPRODUCT"));
+        List<ETLValue> values = mapper.map(row);
+        dao.save(values);
+
+        TestLoader loader = new TestLoader(dao, service);
+        int count = loader.load();
+
+        assertEquals(5, count);
+        assertEquals(5, loader.getObjects().size());
+
+        IMObject patient = loader.getObject("IDPET");
+        IMObject product = loader.getObject("IDPRODUCT");
+        IMObject invoiceItem = loader.getObject("IDITEM.1");
+        IMObject patientPartic = loader.getObject("IDITEM.2");
+        IMObject productPartic = loader.getObject("IDITEM.3");
+
+        assertTrue(TypeHelper.isA(patient, "party.patientpet"));
+        assertTrue(TypeHelper.isA(product, "product.medication"));
+        assertTrue(TypeHelper.isA(invoiceItem,
+                                  "act.customerAccountInvoiceItem"));
+        assertTrue(TypeHelper.isA(patientPartic, "participation.patient"));
+        assertTrue(TypeHelper.isA(productPartic, "participation.product"));
+    }
+
+    /**
      * Returns the location of the spring config files.
      *
      * @return an array of config locations
@@ -257,16 +324,35 @@ public class LoaderTestCase
 
     private List<ETLValue> createPatient(String objectId) {
         ETLValue name = new ETLValue(objectId, "party.patientpet",
-                                     "ID1", "name", "XSpot");
+                                     objectId, "name", "XSpot");
         ETLValue species = new ETLValue(objectId, "party.patientpet",
-                                        "ID1", "species", "CANINE");
+                                        objectId, "species", "CANINE");
         return Arrays.asList(name, species);
     }
 
     private List<ETLValue> createProduct(String objectId) {
         ETLValue name = new ETLValue(objectId, "product.medication",
-                                     "ID1", "name", "XMedication");
+                                     objectId, "name", "XMedication");
         return Arrays.asList(name);
+    }
+
+    /**
+     * Helper to create a new mapping.
+     *
+     * @param source    the source to map
+     * @param target    the target to map to
+     * @param value     the value. May be <tt>null</tt>
+     * @param reference determines if the value is a reference
+     * @return a new mapping
+     */
+    private Mapping createMapping(String source, String target, String value,
+                                  boolean reference) {
+        Mapping mapping = new Mapping();
+        mapping.setSource(source);
+        mapping.setTarget(target);
+        mapping.setValue(value);
+        mapping.setIsReference(reference);
+        return mapping;
     }
 
     /**
