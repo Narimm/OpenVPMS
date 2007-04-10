@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.reporting;
+package org.openvpms.web.app.patient.reminder;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.query.Query;

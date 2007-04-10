@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.reporting;
+package org.openvpms.web.app.patient.reminder;
 
 import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
@@ -67,7 +67,7 @@ public class ReminderWorkspace extends AbstractWorkspace {
      * Construct a new <code>ReminderWorkspace</code>.
      */
     public ReminderWorkspace() {
-        super("reporting", "reminder");
+        super("patient", "reminder");
     }
 
     /**
@@ -189,7 +189,7 @@ public class ReminderWorkspace extends AbstractWorkspace {
         IMPrinter<Act> printer
                 = new IMObjectReportPrinter<Act>(objects,
                                                  "act.patientReminder");
-        String title = Messages.get("reporting.reminder.print.title");
+        String title = Messages.get("patient.reminder.print.title");
         try {
             InteractiveIMPrinter<Act> iPrinter
                     = new InteractiveIMPrinter<Act>(title, printer);
@@ -203,8 +203,8 @@ public class ReminderWorkspace extends AbstractWorkspace {
      * Invoked when the 'Process All' button is pressed.
      */
     private void onProcessAll() {
-        String title = Messages.get("reporting.reminder.run.title");
-        String message = Messages.get("reporting.reminder.run.message");
+        String title = Messages.get("patient.reminder.run.title");
+        String message = Messages.get("patient.reminder.run.message");
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(title, message);
         dialog.addWindowPaneListener(new WindowPaneListener() {

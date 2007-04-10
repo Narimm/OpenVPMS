@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.reporting;
+package org.openvpms.web.app.patient.reminder;
 
 import org.openvpms.archetype.rules.patient.reminder.AbstractReminderProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;

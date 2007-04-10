@@ -33,7 +33,6 @@ public class ReportingSubsystem extends AbstractSubsystem {
     public ReportingSubsystem() {
         super("reporting");
         addWorkspace(new ReportingWorkspace());
-        addWorkspace(new ReminderWorkspace());
     }
 
 }
