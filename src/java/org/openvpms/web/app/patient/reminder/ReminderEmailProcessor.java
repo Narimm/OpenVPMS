@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.reporting;
+package org.openvpms.web.app.patient.reminder;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;

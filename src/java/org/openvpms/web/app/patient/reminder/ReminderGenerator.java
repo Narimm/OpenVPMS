@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.reporting;
+package org.openvpms.web.app.patient.reminder;
 
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
@@ -289,7 +289,7 @@ class ReminderGenerator {
          * @param stats the statistics to display
          */
         public SummaryDialog(Statistics stats) {
-            super(Messages.get("reporting.reminder.summary.title"), OK);
+            super(Messages.get("patient.reminder.summary.title"), OK);
             setModal(true);
             Grid grid = new Grid(2);
             for (ReminderEvent.Action action : ReminderEvent.Action.values()) {

@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.reporting;
+package org.openvpms.web.app.patient.reminder;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
