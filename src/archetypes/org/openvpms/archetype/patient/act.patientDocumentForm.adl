@@ -48,6 +48,8 @@
         <node name="product" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.product" />
+        <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+			filter="participation.clinician" />
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
