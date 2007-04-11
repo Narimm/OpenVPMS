@@ -368,6 +368,12 @@ public class InvoiceRules {
             documentAct.addParticipation("participation.patient", patient);
             documentAct.addParticipation("participation.documentTemplate",
                                          document);
+            IMObjectReference clinician = item.getParticipantRef(
+            "participation.clinician");
+            if (clinician != null) {
+            	documentAct.addParticipation("participation.clinician", clinician);
+            }
+            
             if (TypeHelper.isA(act, "act.patientDocumentForm")) {
 
                 IMObjectReference product = item.getParticipantRef(
