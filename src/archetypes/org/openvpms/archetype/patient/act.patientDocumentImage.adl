@@ -39,6 +39,8 @@
             </assertion>
         </node>
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
+        <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+			filter="participation.clinician" />
         <node displayName="Image" name="docReference" path="/docReference" minCardinality="0"
               maxCardinality="1"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference">
