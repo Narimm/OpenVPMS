@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Product - Lab Conversion</name>
+    <name>Receipt Conversion</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -38,7 +38,7 @@
     <clusterschemas>
       </clusterschemas>
   <modified_user>admin</modified_user>
-  <modified_date>2007&#47;04&#47;09 17:01:13.040</modified_date>
+  <modified_date>2007&#47;04&#47;09 12:20:17.563</modified_date>
     </info>
   <notepads>
     </notepads>
@@ -103,11 +103,11 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Lab Input</from><to>Select Lab fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Lab fields</from><to>Transform Lab Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Lab Fields</from><to>OpenVPMS Lab Output</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Receipts Input</from><to>Select Receipt Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Receipt Fields</from><to>Transform Receipt Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Receipt Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Receipt Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Refund Output</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
-    <name>Lab Input</name>
-    <type>XBaseInput</type>
+    <name>Filter rows</name>
+    <type>FilterRows</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>
@@ -116,7 +116,55 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <file_dbf>F:\VETAID\LABTEST.DBF</file_dbf>
+<send_true_to>Receipt Output</send_true_to>
+<send_false_to>Refund Output</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>AMOUNT</leftvalue>
+ <function>&gt;=</function>
+ <rightvalue/>
+ <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>521</xloc>
+      <yloc>137</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Receipt Output</name>
+    <type>MapValuesPlugin</type>
+    <description/>
+    <distribute>N</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>RECEIPTNO</idColumn><mapping><source>STATUS</source><target>&lt;act.customerAccountPayment>status</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>RECDATE</source><target>&lt;act.customerAccountPayment>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountPayment>amount</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLNUMBER</source><target>&lt;act.customerAccountPayment>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>RECEIPTNO</source><target>&lt;act.customerAccountPayment>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPayment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>654</xloc>
+      <yloc>135</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Receipts Input</name>
+    <type>XBaseInput</type>
+    <description/>
+    <distribute>N</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <file_dbf>F:\VETAID\RECEIPT.DBF</file_dbf>
     <limit>0</limit>
     <add_rownr>N</add_rownr>
     <field_rownr/>
@@ -127,33 +175,33 @@
     <accept_stepname/>
      <cluster_schema/>
     <GUI>
-      <xloc>91</xloc>
-      <yloc>113</yloc>
+      <xloc>87</xloc>
+      <yloc>135</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>OpenVPMS Lab Output</name>
+    <name>Refund Output</name>
     <type>MapValuesPlugin</type>
     <description/>
-    <distribute>Y</distribute>
+    <distribute>N</distribute>
     <copies>1</copies>
          <partitioning>
            <method>none</method>
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>NAME</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.service>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TESTCOST</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>RECEIPTNO</idColumn><mapping><source>STATUS</source><target>&lt;act.customerAccountRefund>status</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>RECDATE</source><target>&lt;act.customerAccountRefund>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountRefund>amount</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLNUMBER</source><target>&lt;act.customerAccountRefund>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>RECEIPTNO</source><target>&lt;act.customerAccountRefund>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPayment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>554</xloc>
-      <yloc>112</yloc>
+      <xloc>658</xloc>
+      <yloc>230</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Select Lab fields</name>
+    <name>Select Receipt Fields</name>
     <type>SelectValues</type>
     <description/>
     <distribute>Y</distribute>
@@ -163,56 +211,70 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <fields>      <field>        <name>TESTNO</name>
+    <fields>      <field>        <name>CLNUMBER</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>TESTGROUP</name>
+        </field>      <field>        <name>INVOICENO</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>TESTITEM</name>
+        </field>      <field>        <name>RECEIPTNO</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>TESTCOST</name>
+        </field>      <field>        <name>RECDATE</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>DEACTIVATE</name>
+        </field>      <field>        <name>AMOUNT</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <meta>        <name>TESTNO</name>
-        <rename>PRODUCTID</rename>
-        <type>String</type>
-        <length>20</length>
-        <precision>0</precision>
-        </meta>      <meta>        <name>TESTGROUP</name>
+        </field>      <field>        <name>TYPE</name>
         <rename/>
-        <type>-</type>
-        <length>25</length>
+        <length>-2</length>
         <precision>-2</precision>
-        </meta>      <meta>        <name>TESTITEM</name>
-        <rename/>
-        <type>-</type>
-        <length>30</length>
-        <precision>-2</precision>
-        </meta>      <meta>        <name>TESTCOST</name>
+        </field>      <meta>        <name>CLNUMBER</name>
         <rename/>
         <type>-</type>
         <length>6</length>
+        <precision>0</precision>
+        </meta>      <meta>        <name>INVOICENO</name>
+        <rename/>
+        <type>-</type>
+        <length>6</length>
+        <precision>0</precision>
+        </meta>      <meta>        <name>RECEIPTNO</name>
+        <rename/>
+        <type>-</type>
+        <length>6</length>
+        <precision>0</precision>
+        </meta>      <meta>        <name>RECDATE</name>
+        <rename/>
+        <type>-</type>
+        <length>-2</length>
+        <precision>-2</precision>
+        </meta>      <meta>        <name>AMOUNT</name>
+        <rename/>
+        <type>-</type>
+        <length>8</length>
         <precision>2</precision>
+        </meta>      <meta>        <name>TYPE</name>
+        <rename/>
+        <type>-</type>
+        <length>1</length>
+        <precision>-2</precision>
         </meta>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>219</xloc>
-      <yloc>113</yloc>
+      <xloc>239</xloc>
+      <yloc>135</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Transform Lab Fields</name>
+    <name>Transform Receipt Fields</name>
     <type>ScriptValueMod</type>
     <description/>
     <distribute>Y</distribute>
@@ -226,29 +288,16 @@
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
-var wordUtils = Packages.org.apache.commons.lang.WordUtils;
-
-&#47;&#47; Transform ProductID
-PRODUCTID.setString(&quot;LAB&quot; + PRODUCTID.getString())
-
-&#47;&#47;Transform name
-var NAME = TESTGROUP.getString() + &quot; - &quot; + TESTITEM.getString()
-
-var ACTIVE = !DEACTIVATE.getBool()</jsScript_script>
-        </jsScript>     </jsScripts>    <fields>      <field>        <name>NAME</name>
-        <rename>NAME</rename>
+var STATUS = &quot;POSTED&quot;</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>STATUS</name>
+        <rename>STATUS</rename>
         <type>String</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        </field>      <field>        <name>ACTIVE</name>
-        <rename>ACTIVE</rename>
-        <type>Boolean</type>
         <length>-1</length>
         <precision>-1</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>377</xloc>
-      <yloc>114</yloc>
+      <xloc>375</xloc>
+      <yloc>134</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
