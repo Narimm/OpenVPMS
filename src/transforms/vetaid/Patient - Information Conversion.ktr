@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>Patient - Information Conversion</name>
+    <directory>&#47;</directory>
+    <log>
+      <read/>
+      <write/>
+      <input/>
+      <output/>
+      <update/>
+      <connection/>
+      <table/>
+      <use_batchid>Y</use_batchid>
+      <use_logfield>N</use_logfield>
+      </log>
+    <maxdate>
+      <connection/>
+      <table/>
+      <field/>
+      <offset>0.0</offset>
+      <maxdiff>0.0</maxdiff>
+      </maxdate>
+    <size_rowset>1000</size_rowset>
+    <sleep_time_empty>1</sleep_time_empty>
+    <sleep_time_full>1</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>5000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <dependencies>
+      </dependencies>
+    <partitionschemas>
+      </partitionschemas>
+    <slaveservers>
+      </slaveservers>
+    <clusterschemas>
+      </clusterschemas>
+  <modified_user>admin</modified_user>
+  <modified_date>2007&#47;04&#47;09 10:47:10.000</modified_date>
+    </info>
+  <notepads>
+    </notepads>
+  <connection>
+    <name>archetypes</name>
+    <server/>
+    <type>MYSQL</type>
+    <access>Native</access>
+    <database>openvpms</database>
+    <port>3306</port>
+    <username>openvpms</username>
+    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
+      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>conversion</name>
+    <server>localhost</server>
+    <type>MYSQL</type>
+    <access>Native</access>
+    <database>conversion</database>
+    <port>3306</port>
+    <username>openvpms</username>
+    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
+      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>openvpms</name>
+    <server>localhost</server>
+    <type>MYSQL</type>
+    <access>Native</access>
+    <database>openvpms</database>
+    <port>3306</port>
+    <username>openvpms</username>
+    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
+    </attributes>
+  </connection>
+  <order>
+  <hop> <from>Patient Input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>OpenVPMS Output</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>OpenVPMS Output</name>
+    <type>MapValuesPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>PETNUMBER</idColumn><mapping><source>PETNAME</source><target>&lt;party.patientpet>name</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETTYPE</source><target>&lt;party.patientpet>species</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETBREED</source><target>&lt;party.patientpet>breed</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>COLOUR</source><target>&lt;party.patientpet>colour</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>BIRTHDATE</source><target>&lt;party.patientpet>dateOfBirth</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETSEX</source><target>&lt;party.patientpet>sex</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESEXED</source><target>&lt;party.patientpet>desexed</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DECEASED</source><target>&lt;party.patientpet>deceased</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAGNO</source><target>&lt;party.patientpet>identities[0]&lt;entityIdentity.microchip>microchip</target><excludeNull>true</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>468</xloc>
+      <yloc>146</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Patient Input</name>
+    <type>XBaseInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <file_dbf>F:\VETAID\animal.dbf</file_dbf>
+    <limit>0</limit>
+    <add_rownr>N</add_rownr>
+    <field_rownr/>
+    <include>N</include>
+    <include_field/>
+    <accept_filenames>N</accept_filenames>
+    <accept_field/>
+    <accept_stepname/>
+     <cluster_schema/>
+    <GUI>
+      <xloc>66</xloc>
+      <yloc>144</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select Fields</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>CLNUMBER</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>PETNUMBER</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>PETNAME</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>PETTYPE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>SIZE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>PETBREED</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>COLOUR</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>LOCATION</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>EUTHDATE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>BIRTHDATE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>WEIGHT</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>PETSEX</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>DESEXED</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>TAGNO</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>STATUS</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <meta>        <name>CLNUMBER</name>
+        <rename/>
+        <type>String</type>
+        <length>20</length>
+        <precision>-2</precision>
+        </meta>      <meta>        <name>PETNUMBER</name>
+        <rename/>
+        <type>String</type>
+        <length>20</length>
+        <precision>-2</precision>
+        </meta>      <meta>        <name>LOCATION</name>
+        <rename/>
+        <type>String</type>
+        <length>20</length>
+        <precision>-2</precision>
+        </meta>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>212</xloc>
+      <yloc>145</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform Fields</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+var wordUtils = Packages.org.apache.commons.lang.WordUtils;
+
+&#47;&#47; Set up primary key id
+if (PETNUMBER.getString() != &quot;&quot;|| PETNUMBER.getString() != &quot;null&quot;)
+	PETNUMBER.setString(&quot;PET&quot; + PETNUMBER.getString())
+
+&#47;&#47; Transform Name information
+PETNAME.setString(wordUtils.capitalizeFully(trim(PETNAME.getString())))
+if (PETNAME.getString() == &quot;&quot;) {
+	PETNAME.setString(&quot;No Name&quot;)
+}
+PETTYPE.setString(trim(PETTYPE.getString()))
+if (PETTYPE.getString() == &quot;&quot;) {
+	PETTYPE.setString(&quot;Other&quot;)
+}
+PETBREED.setString(trim(PETBREED.getString()))
+COLOUR.setString(wordUtils.capitalizeFully(trim(COLOUR.getString())))
+
+&#47;&#47; Transform Sex
+if (PETSEX.getString() == &quot;F&quot;)
+	PETSEX.setString(&quot;FEMALE&quot;);
+else if (PETSEX.getString() == &quot;M&quot;)
+	PETSEX.setString(&quot;MALE&quot;);
+else
+	PETSEX.setString(&quot;UNSPECIFIED&quot;)
+
+&#47;&#47;Transform Euthanased Date
+var DECEASED = false
+if (EUTHDATE.getDate() != null)
+	DECEASED = true
+</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>DECEASED</name>
+        <rename>DECEASED</rename>
+        <type>Boolean</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>343</xloc>
+      <yloc>146</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+</transformation>
