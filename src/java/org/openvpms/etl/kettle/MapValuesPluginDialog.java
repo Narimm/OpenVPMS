@@ -90,6 +90,7 @@ public class MapValuesPluginDialog extends BaseStepDialog
 
     private static final String YES = "Y";  // NON-NLS
     private static final String NO = "N";   // NON-NLS
+    private Button skipProcessed;
 
 
     /**
@@ -283,7 +284,12 @@ public class MapValuesPluginDialog extends BaseStepDialog
         Button cancel = new Button(shell, SWT.PUSH);
         cancel.setText(Messages.get("System.Button.Cancel")); // NON-NLS
 
-        setButtonPositions(new Button[]{ok, cancel}, margin, tabFolder);
+        skipProcessed = new Button(shell, SWT.CHECK);
+        skipProcessed.setText(
+                Messages.get("MapValuesPluginDialog.SkipProcessed"));
+
+        setButtonPositions(new Button[]{ok, cancel, skipProcessed}, margin,
+                           tabFolder);
 
         // Add listeners
         ok.addListener(SWT.Selection, new Listener() {
@@ -345,6 +351,9 @@ public class MapValuesPluginDialog extends BaseStepDialog
         if (mappings.getIdColumn() != null) {
             idName.setText(mappings.getIdColumn());
         }
+
+        skipProcessed.setSelection(mappings.getSkipProcessed());
+
         Mapping[] list = mappings.getMapping();
         for (int i = 0; i < list.length; ++i) {
             TableItem item = mappingTable.table.getItem(i);
@@ -364,9 +373,9 @@ public class MapValuesPluginDialog extends BaseStepDialog
                 item.setText(4, mapping.getValue());
             }
             if (mapping.getRemoveDefaultObjects()) {
-                item.setText(6, YES);
+                item.setText(5, YES);
             } else {
-                item.setText(6, NO);
+                item.setText(5, NO);
             }
         }
         mappingTable.setRowNums();
@@ -385,6 +394,7 @@ public class MapValuesPluginDialog extends BaseStepDialog
         Mappings mappings = new Mappings();
         mappings.setConnection(connection.getText());
         mappings.setIdColumn(idName.getText());
+        mappings.setSkipProcessed(skipProcessed.getSelection());
         int count = mappingTable.nrNonEmpty();
         for (int i = 0; i < count; i++) {
             TableItem item = mappingTable.getNonEmpty(i);
