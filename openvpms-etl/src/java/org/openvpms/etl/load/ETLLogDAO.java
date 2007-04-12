@@ -65,6 +65,15 @@ public interface ETLLogDAO {
     List<ETLLog> get(String loader, String rowId, String archetype);
 
     /**
+     * Determines if a legacy row has been successfully processed.
+     *
+     * @param loader the loader name
+     * @param rowId the legacy row identifier
+     * @return <tt>true> if the row has been sucessfully processed
+     */
+    boolean processed(String loader, String rowId);
+
+    /**
      * Deletes all {@link ETLLog}s associated with a loader and legacy row
      * identifier.
      *

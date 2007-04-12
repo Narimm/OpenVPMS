@@ -19,7 +19,6 @@
                 <xs:element name="target" type="xs:string" minOccurs="0"/>
                 <xs:element name="excludeNull" type="xs:boolean"/>
                 <xs:element name="value" type="xs:string" minOccurs="0"/>
-                <xs:element name="isReference" type="xs:boolean"/>
                 <xs:element name="removeDefaultObjects" type="xs:boolean"/>
             </xs:sequence>
         </xs:complexType>

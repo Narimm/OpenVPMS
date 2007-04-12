@@ -85,7 +85,6 @@ public class MapValuesPluginMeta extends BaseStepMeta
     private static final String SOURCE = "source";  // NON-NLS
     private static final String TARGET = "target"; // NON-NLS
     private static final String VALUE = "value"; // NON-NLS
-    private static final String IS_REFERENCE = "isReference"; // NON-NLS
     private static final String EXCLUDE_NULL = "excludeNull"; // NON-NLS
     private static final String REMOVE_DEFAULT_OBJECTS
             = "removeDefaultObjects"; // NON-NLS
@@ -206,8 +205,6 @@ public class MapValuesPluginMeta extends BaseStepMeta
                     stepId, i, TARGET);
             String value = repository.getStepAttributeString(
                     stepId, i, VALUE);
-            boolean reference = repository.getStepAttributeBoolean(
-                    stepId, i, IS_REFERENCE);
             boolean excludeNull = repository.getStepAttributeBoolean(
                     stepId, i, EXCLUDE_NULL);
             boolean removeDefaultObjects
@@ -217,7 +214,6 @@ public class MapValuesPluginMeta extends BaseStepMeta
             mapping.setSource(source);
             mapping.setTarget(target);
             mapping.setValue(value);
-            mapping.setIsReference(reference);
             mapping.setExcludeNull(excludeNull);
             mapping.setRemoveDefaultObjects(removeDefaultObjects);
             mappings.addMapping(mapping);
@@ -246,9 +242,6 @@ public class MapValuesPluginMeta extends BaseStepMeta
                                          TARGET, mapping.getTarget());
             repository.saveStepAttribute(transformationId, stepId, i,
                                          VALUE, mapping.getValue());
-            repository.saveStepAttribute(
-                    transformationId, stepId, i, IS_REFERENCE,
-                    mapping.getIsReference());
             repository.saveStepAttribute(
                     transformationId, stepId, i, EXCLUDE_NULL,
                     mapping.getExcludeNull());
