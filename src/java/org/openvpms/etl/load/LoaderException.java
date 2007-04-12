@@ -41,17 +41,13 @@ public class LoaderException extends OpenVPMSException {
      */
     public enum ErrorCode {
         ArchetypeNotFound,
-        ObjectNotFound,
         IMObjectNotFound,
-        InvalidReference,
-        RefResolvesMultipleObjects,
-        ArchetypeMismatch,
+        InvalidMapping,
         InvalidNode,
-        InvalidTimestamp,
-        LookupArchetypeNotFound,
-        LookupSourceNodeNotFound,
-        LookupRelationshipTargetNotFound,
-        LookupNotFound
+        InvalidReference,
+        MissingRowValue,
+        RefResolvesMultipleObjects,
+        ReferencedObjectNotMapped
     }
 
     /**
@@ -64,8 +60,8 @@ public class LoaderException extends OpenVPMSException {
      * class is loaded.
      */
     private static Messages MESSAGES
-            = Messages.getMessages(
-            "org.openvpms.etl.load." + OpenVPMSException.ERRMESSAGES_FILE);
+            = Messages.getMessages("org.openvpms.etl.load." // NON-NLS
+            + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
      * Constructs a new <code>IMObjectBeanException</code>.

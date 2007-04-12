@@ -20,7 +20,6 @@ package org.openvpms.etl.kettle;
 
 import be.ibridge.kettle.core.Const;
 import be.ibridge.kettle.core.Row;
-import be.ibridge.kettle.core.database.DatabaseMeta;
 import be.ibridge.kettle.core.exception.KettleException;
 import be.ibridge.kettle.trans.Trans;
 import be.ibridge.kettle.trans.TransMeta;
@@ -31,13 +30,13 @@ import be.ibridge.kettle.trans.step.StepMeta;
 import be.ibridge.kettle.trans.step.StepMetaInterface;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.openvpms.etl.ETLValue;
-import org.openvpms.etl.ETLValueDAOImpl;
-import org.openvpms.etl.ETLValueDAO;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.etl.load.ETLLogDAO;
+import org.openvpms.etl.load.ErrorListener;
+import org.springframework.context.ApplicationContext;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 
 /**
@@ -59,24 +58,9 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
     private MapValuesPluginMeta metaData;
 
     /**
-     * The DAO.
+     * The loader.
      */
-    private ETLValueDAO dao;
-
-    /**
-     * The batch save cache.
-     */
-    private List<ETLValue> batch = new ArrayList<ETLValue>();
-
-    /**
-     * The batch size.
-     */
-    private int batchSize = 100;
-
-    /**
-     * The row mapper.
-     */
-    private RowMapper mapper;
+    private MapValuesPluginLoader loader;
 
 
     /**
@@ -114,22 +98,25 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
 
         Row row = getRow();    // get row, blocks when needed
         if (row != null) {
+            Thread thread = Thread.currentThread();
+            ClassLoader current = thread.getContextClassLoader();
             try {
-                RowMapper mapper = getRowMapper();
-                List<ETLValue> values = mapper.map(row);
-                batch.addAll(values);
-                if (batch.size() >= batchSize) {
-                    flushBatch();
+                ClassLoader classLoader
+                        = MapValuesPlugin.class.getClassLoader();
+                thread.setContextClassLoader(classLoader);
+                List<IMObject> loaded = loader.load(row);
+                if (loaded.isEmpty()) {
+                    ++linesSkipped;
                 }
-            } catch (Throwable exception) {
-                throw new KettleException(exception);
+            } finally {
+                thread.setContextClassLoader(current);
             }
             putRow(row);
 
             result = true;
             if ((linesRead % Const.ROWS_UPDATE) == 0) {
-                // Some basic logging every 5000 rows.
-                logBasic("Lines " + linesRead);
+                // log progress
+                logBasic(Messages.get("MapValuesPlugin.Processed", linesRead));
             }
         } else {
             // no more input to be expected...
@@ -172,99 +159,54 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
      * Run the step.
      */
     public void run() {
-        logBasic("Starting to run...");
+        logBasic(Messages.get("MapValuesPlugin.Start"));
         try {
+            getLoader();
             boolean process = true;
             while (process) {
                 process = processRow(metaData, data) && !isStopped();
             }
-            flushBatch();
-        } catch (Exception exception) {
-            logError("Unexpected error : " + exception.toString());
+        } catch (Throwable exception) {
+            logError(Messages.get("MapValuesPlugin.UnexpectedError",
+                                  exception.getMessage()));
             logError(Const.getStackTracker(exception));
             setErrors(1);
             stopAll();
         } finally {
             dispose(metaData, data);
-            logBasic("Finished, processing " + linesRead + " rows");
+            logBasic(Messages.get("MapValuesPlugin.Finished", linesRead));
             markStop();
         }
     }
 
     /**
-     * Returns the row mapper.
+     * Returns the loader, creating it if required
      *
-     * @return the row mapper
+     * @return a new loader
      * @throws KettleException for any error
      */
-    private RowMapper getRowMapper() throws KettleException {
-        if (mapper == null) {
-            mapper = new RowMapper(metaData.getMappings());
-        }
-        return mapper;
-    }
-
-    /**
-     * Saves all objects in the batch.
-     *
-     * @throws KettleException for any error
-     */
-    private void flushBatch() throws KettleException {
-        if (!batch.isEmpty()) {
-            try {
-                getDAO().save(batch);
-                batch.clear();
-            } catch (Throwable exception) {
-                throw new KettleException(exception);
+    private MapValuesPluginLoader getLoader() throws KettleException {
+        if (loader == null) {
+            ApplicationContext context = data.getContext();
+            if (context == null) {
+                throw new KettleException(
+                        Messages.get("MapValuesPlugin.NoContext"));
             }
+            ETLLogDAO dao = (ETLLogDAO) context.getBean("ETLLogDAO"); // NON-NLS
+            IArchetypeService service
+                    = (IArchetypeService) context.getBean(
+                    "archetypeService"); // NON-NLS
+            loader = new MapValuesPluginLoader(getStepname(),
+                                               metaData.getMappings(),
+                                               dao, service);
+            loader.setErrorListener(new ErrorListener() {
+                public void error(String legacyId, Throwable exception) {
+                    logBasic(Messages.get("MapValuesPlugin.FailedToProcess",
+                                          legacyId, exception));
+                }
+            });
         }
-    }
-
-    /**
-     * Returns the DAO, initialising it if it hasn't already been initialised
-     *
-     * @return the DAO
-     * @throws KettleException for any error
-     */
-    private ETLValueDAO getDAO() throws KettleException {
-        if (dao == null) {
-            DatabaseMeta database = data.getDatabase();
-            if (database == null) {
-                throw new KettleException("No database selected");
-            }
-            try {
-                Properties properties = new Properties();
-                properties.put("hibernate.connection.driver_class",
-                               database.getDriverClass());
-                properties.put("hibernate.connection.url", database.getURL());
-                properties.put("hibernate.connection.username",
-                               database.getUsername());
-                properties.put("hibernate.connection.password",
-                               database.getPassword());
-                properties.put("hibernate.show_sql", "false");
-                properties.put("hibernate.jdbc.batch_size", "1000");
-                properties.put("hibernate.cache.use_second_level_cache",
-                               "false");
-                properties.put("hibernate.cache.use_query_cache", "false");
-/*
-                properties.put("hibernate.c3p0.min_size", "5");
-                properties.put("hibernate.c3p0.max_size", "20");
-                properties.put("hibernate.c3p0.timeout", "1800");
-                properties.put("hibernate.c3p0.max_statements", "50");
-                properties.put("hibernate.cache.provider_class",
-                               "org.hibernate.cache.EhCacheProvider");
-                properties.put("hibernate.cache.use_second_level_cache",
-                               "true");
-                properties.put("hibernate.cache.use_query_cache", "true");
-*/
-                dao = new ETLValueDAOImpl(properties);
-            } catch (KettleException exception) {
-                throw exception;
-            } catch (Throwable exception) {
-                throw new KettleException(exception);
-            }
-        }
-        return dao;
+        return loader;
     }
 
 }

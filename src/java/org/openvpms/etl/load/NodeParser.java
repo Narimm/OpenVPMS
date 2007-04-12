@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.etl.kettle;
+package org.openvpms.etl.load;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +43,7 @@ public class NodeParser {
     /**
      * The pattern.
      */
+    @SuppressWarnings({"HardCodedStringLiteral"})
     private static final Pattern pattern
             = Pattern.compile("<([^<>]+)>(\\w+)(\\[(\\d+)\\])?");
 

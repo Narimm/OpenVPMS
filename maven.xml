@@ -11,7 +11,7 @@
     <goal name="generate-castor-srcs">
         <attainGoal name="castor:prepare-filesystem"/>
         <castor:generate schema="${basedir}/src/schema/mapping.xsd"
-                         package="org.openvpms.etl.kettle"
+                         package="org.openvpms.etl.load"
                          types="j2"/>
     </goal>
 
@@ -100,40 +100,6 @@
                         value="${hibernate.connection.password}"/>
             </filterset>
         </copy>
-    </goal>
-
-    <goal name="etl:load">
-        <attainGoal name="generate-appcontext"/>
-        <attainGoal name="java:compile"/>
-        <attainGoal name="java:jar-resources"/>
-        <attainGoal name="generate-hibernate-properties"/>
-        <ant:java classname="org.openvpms.etl.load.Main"
-                  failonerror="true"
-                  maxmemory="512m"
-                  fork="true">
-            <ant:classpath>
-                <ant:pathelement path="${maven.build.dest}"/>
-                <ant:path refid="maven.dependency.classpath"/>
-            </ant:classpath>
-            <arg line="${openvpms.etl.load.cmdline}"/>
-        </ant:java>
-    </goal>
-
-    <goal name="etl:validate">
-        <attainGoal name="generate-appcontext"/>
-        <attainGoal name="java:compile"/>
-        <attainGoal name="java:jar-resources"/>
-        <attainGoal name="generate-hibernate-properties"/>
-        <ant:java classname="org.openvpms.etl.load.Main"
-                  failonerror="true"
-                  maxmemory="512m"
-                  fork="true">
-            <ant:classpath>
-                <ant:pathelement path="${maven.build.dest}"/>
-                <ant:path refid="maven.dependency.classpath"/>
-            </ant:classpath>
-            <arg line="${openvpms.etl.validate.cmdline}"/>
-        </ant:java>
     </goal>
 
 </project>

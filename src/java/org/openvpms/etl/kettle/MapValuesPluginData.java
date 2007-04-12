@@ -17,9 +17,9 @@
  */
 package org.openvpms.etl.kettle;
 
-import be.ibridge.kettle.core.database.DatabaseMeta;
 import be.ibridge.kettle.trans.step.BaseStepData;
 import be.ibridge.kettle.trans.step.StepDataInterface;
+import org.springframework.context.ApplicationContext;
 
 
 /**
@@ -32,9 +32,10 @@ public class MapValuesPluginData extends BaseStepData
         implements StepDataInterface {
 
     /**
-     * The database.
+     * The application context.
      */
-    private DatabaseMeta database;
+    private ApplicationContext context;
+
 
     /**
      * Constructs a new <tt>MapValuesPluginData</tt>.
@@ -43,20 +44,20 @@ public class MapValuesPluginData extends BaseStepData
     }
 
     /**
-     * Returns the database.
+     * Returns the application context.
      *
-     * @return the database
+     * @return the application context
      */
-    public DatabaseMeta getDatabase() {
-        return database;
+    public ApplicationContext getContext() {
+        return context;
     }
 
     /**
-     * Sets the database.
+     * Sets the application context.
      *
-     * @param database the database
+     * @param context the application context
      */
-    public void setDatabase(DatabaseMeta database) {
-        this.database = database;
+    public void setContext(ApplicationContext context) {
+        this.context = context;
     }
 }

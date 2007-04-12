@@ -31,40 +31,48 @@ public class Messages {
 
     private static final String PACKAGE = Messages.class.getPackage().getName();
 
-    public static String getString(String key) {
-        return BaseMessages.getString(PACKAGE, key);
+    /**
+     * Returns a formatted, localised message.
+     *
+     * @param key  the message key.
+     * @param args message arguments
+     * @return a formatted message
+     */
+    public static String get(String key, Object ... args) {
+        switch (args.length) {
+            case 0:
+                return BaseMessages.getString(PACKAGE, key);
+            case 1:
+                return BaseMessages.getString(PACKAGE, key, getArg(args[0]));
+            case 2:
+                return BaseMessages.getString(PACKAGE, key, getArg(args[0]),
+                                              getArg(args[1]));
+            case 3:
+                return BaseMessages.getString(PACKAGE, key, getArg(args[0]),
+                                              getArg(args[1]), getArg(args[2]));
+            case 4:
+                return BaseMessages.getString(PACKAGE, key, getArg(args[0]),
+                                              getArg(args[1]), getArg(args[2]),
+                                              getArg(args[3]));
+            case 5:
+                return BaseMessages.getString(PACKAGE, key, getArg(args[0]),
+                                              getArg(args[1]), getArg(args[2]),
+                                              getArg(args[3]), getArg(args[4]));
+            default:
+                return BaseMessages.getString(PACKAGE, key, getArg(args[0]),
+                                              getArg(args[1]), getArg(args[2]),
+                                              getArg(args[3]), getArg(args[4]),
+                                              getArg(args[5]));
+        }
     }
 
-    public static String getString(String key, String param1) {
-        return BaseMessages.getString(PACKAGE, key, param1);
-    }
-
-    public static String getString(String key, String param1, String param2) {
-        return BaseMessages.getString(PACKAGE, key, param1, param2);
-    }
-
-    public static String getString(String key, String param1, String param2,
-                                   String param3) {
-        return BaseMessages.getString(PACKAGE, key, param1, param2, param3);
-    }
-
-    public static String getString(String key, String param1, String param2,
-                                   String param3, String param4) {
-        return BaseMessages.getString(PACKAGE, key, param1, param2, param3,
-                                      param4);
-    }
-
-    public static String getString(String key, String param1, String param2,
-                                   String param3, String param4,
-                                   String param5) {
-        return BaseMessages.getString(PACKAGE, key, param1, param2, param3,
-                                      param4, param5);
-    }
-
-    public static String getString(String key, String param1, String param2,
-                                   String param3, String param4, String param5,
-                                   String param6) {
-        return BaseMessages.getString(PACKAGE, key, param1, param2, param3,
-                                      param4, param5, param6);
+    /**
+     * Helper to convert an argument to a string.
+     *
+     * @param arg the argument
+     * @return the string form of <tt>arg</tt>, or <tt>null</tt>
+     */
+    private static String getArg(Object arg) {
+        return (arg != null) ? arg.toString() : null;
     }
 }

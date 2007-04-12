@@ -18,9 +18,11 @@
 package org.openvpms.etl.kettle;
 
 import be.ibridge.kettle.core.CheckResult;
+import be.ibridge.kettle.core.Const;
 import be.ibridge.kettle.core.LogWriter;
 import be.ibridge.kettle.core.Row;
 import be.ibridge.kettle.core.XMLHandler;
+import be.ibridge.kettle.core.database.DatabaseMeta;
 import be.ibridge.kettle.core.exception.KettleException;
 import be.ibridge.kettle.core.exception.KettleXMLException;
 import be.ibridge.kettle.repository.Repository;
@@ -34,8 +36,16 @@ import be.ibridge.kettle.trans.step.StepMeta;
 import be.ibridge.kettle.trans.step.StepMetaInterface;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.widgets.Shell;
-import org.exolab.castor.xml.Unmarshaller;
 import org.exolab.castor.xml.Marshaller;
+import org.exolab.castor.xml.Unmarshaller;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.etl.load.Mapping;
+import org.openvpms.etl.load.Mappings;
+import org.openvpms.etl.load.NodeParser;
+import org.openvpms.etl.load.ReferenceParser;
+import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Node;
 
 import java.io.StringWriter;
@@ -53,6 +63,11 @@ public class MapValuesPluginMeta extends BaseStepMeta
         implements StepMetaInterface {
 
     /**
+     * The database.
+     */
+    private DatabaseMeta database;
+
+    /**
      * The mappings.
      */
     private Mappings mappings = new Mappings();
@@ -61,6 +76,19 @@ public class MapValuesPluginMeta extends BaseStepMeta
      * The logger.
      */
     private final LogWriter log = LogWriter.getInstance();
+
+    /**
+     * Repository attribute names.
+     */
+    private static final String CONNECTION = "connection"; // NON-NLS
+    private static final String ID_COLUMN = "idColumn"; // NON-NLS
+    private static final String SOURCE = "source";  // NON-NLS
+    private static final String TARGET = "target"; // NON-NLS
+    private static final String VALUE = "value"; // NON-NLS
+    private static final String IS_REFERENCE = "isReference"; // NON-NLS
+    private static final String EXCLUDE_NULL = "excludeNull"; // NON-NLS
+    private static final String REMOVE_DEFAULT_OBJECTS
+            = "removeDefaultObjects"; // NON-NLS
 
 
     /**
@@ -133,8 +161,9 @@ public class MapValuesPluginMeta extends BaseStepMeta
     public void loadXML(Node stepNode, ArrayList databases,
                         Hashtable counters) throws KettleXMLException {
         try {
-            Node node = XMLHandler.getSubNode(stepNode, "mappings");
+            Node node = XMLHandler.getSubNode(stepNode, "mappings"); // NON-NLS
             mappings = (Mappings) Unmarshaller.unmarshal(Mappings.class, node);
+            database = Const.findDatabase(databases, mappings.getConnection());
         } catch (Exception exception) {
             throw new KettleXMLException(
                     "Unable to read step info from XML node", exception);
@@ -160,28 +189,30 @@ public class MapValuesPluginMeta extends BaseStepMeta
     public void readRep(Repository repository, long stepId, ArrayList databases,
                         Hashtable counters) throws KettleException {
         mappings = new Mappings();
-
-        String connection = repository.getStepAttributeString(stepId,
-                                                              "connection");
+        String connection = repository.getStepAttributeString(
+                stepId, CONNECTION);
         mappings.setConnection(connection);
+        database = Const.findDatabase(databases, connection);
 
-        String idColumn = repository.getStepAttributeString(stepId, "idColumn");
+        String idColumn = repository.getStepAttributeString(
+                stepId, ID_COLUMN);
         mappings.setIdColumn(idColumn);
 
-        int count = repository.countNrStepAttributes(stepId, "source");
+        int count = repository.countNrStepAttributes(stepId, SOURCE);
         for (int i = 0; i < count; ++i) {
-            String source = repository.getStepAttributeString(stepId, i,
-                                                              "source");
-            String target = repository.getStepAttributeString(stepId, i,
-                                                              "target");
-            String value = repository.getStepAttributeString(stepId, i,
-                                                             "value");
+            String source = repository.getStepAttributeString(
+                    stepId, i, SOURCE);
+            String target = repository.getStepAttributeString(
+                    stepId, i, TARGET);
+            String value = repository.getStepAttributeString(
+                    stepId, i, VALUE);
             boolean reference = repository.getStepAttributeBoolean(
-                    stepId, i, "isReference");
+                    stepId, i, IS_REFERENCE);
             boolean excludeNull = repository.getStepAttributeBoolean(
-                    stepId, i, "excludeNull");
-            boolean removeDefaultObjects = repository.getStepAttributeBoolean(
-                    stepId, i, "removeDefaultObjects");
+                    stepId, i, EXCLUDE_NULL);
+            boolean removeDefaultObjects
+                    = repository.getStepAttributeBoolean(
+                    stepId, i, REMOVE_DEFAULT_OBJECTS);
             Mapping mapping = new Mapping();
             mapping.setSource(source);
             mapping.setTarget(target);
@@ -203,26 +234,26 @@ public class MapValuesPluginMeta extends BaseStepMeta
      */
     public void saveRep(Repository repository, long transformationId,
                         long stepId) throws KettleException {
-        repository.saveStepAttribute(transformationId, stepId, "connection",
+        repository.saveStepAttribute(transformationId, stepId, CONNECTION,
                                      mappings.getConnection());
-        repository.saveStepAttribute(transformationId, stepId, "idColumn",
+        repository.saveStepAttribute(transformationId, stepId, ID_COLUMN,
                                      mappings.getIdColumn());
         for (int i = 0; i < mappings.getMappingCount(); ++i) {
             Mapping mapping = mappings.getMapping(i);
             repository.saveStepAttribute(transformationId, stepId, i,
-                                         "source", mapping.getSource());
+                                         SOURCE, mapping.getSource());
             repository.saveStepAttribute(transformationId, stepId, i,
-                                         "target", mapping.getTarget());
+                                         TARGET, mapping.getTarget());
             repository.saveStepAttribute(transformationId, stepId, i,
-                                         "value", mapping.getValue());
+                                         VALUE, mapping.getValue());
             repository.saveStepAttribute(
-                    transformationId, stepId, i, "isReference",
+                    transformationId, stepId, i, IS_REFERENCE,
                     mapping.getIsReference());
             repository.saveStepAttribute(
-                    transformationId, stepId, i, "excludeNull",
+                    transformationId, stepId, i, EXCLUDE_NULL,
                     mapping.getExcludeNull());
             repository.saveStepAttribute(
-                    transformationId, stepId, i, "removeDefaultObjects",
+                    transformationId, stepId, i, REMOVE_DEFAULT_OBJECTS,
                     mapping.getRemoveDefaultObjects());
         }
     }
@@ -237,55 +268,43 @@ public class MapValuesPluginMeta extends BaseStepMeta
      * @param output   the output step names
      * @param info     the fields that are used as information by the step
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "HardCodedStringLiteral"})
     public void check(ArrayList remarks, StepMeta stepMeta, Row prev,
                       String input[], String output[], Row info) {
-        CheckResult cr;
+        if (database == null) {
+            addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
+                      "MapValuesPluginMeta.NoConnection");
+        }
+
         if (prev == null || prev.size() == 0) {
-            cr = new CheckResult(CheckResult.TYPE_RESULT_WARNING,
-                                 "Not receiving any fields from previous steps",
-                                 stepMeta);
-            remarks.add(cr);
+            addRemark(remarks, CheckResult.TYPE_RESULT_WARNING,
+                      stepMeta, "MapValuesPluginMeta.NoFields");
         } else {
+            // check mappings
             String idColumn = mappings.getIdColumn();
             if (StringUtils.isEmpty(idColumn)) {
-                cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR,
-                                     "No id column specified", stepMeta);
-                remarks.add(cr);
+                addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
+                          "MapValuesPluginMeta.NoId");
             } else {
                 if (prev.searchValueIndex(idColumn) == -1) {
-                    cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR,
-                                         "Field not in previous step: "
-                                                 + idColumn, stepMeta);
-                    remarks.add(cr);
+                    addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
+                              "MapValuesPluginMeta.NoField", idColumn);
                 }
             }
+            IArchetypeService service = getService();
             for (Mapping mapping : mappings.getMapping()) {
-                if (prev.searchValueIndex(mapping.getSource()) == -1) {
-                    cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR,
-                                         "Field not in previous step: "
-                                                 + mapping.getSource(),
-                                         stepMeta);
-                    remarks.add(cr);
-                }
+                checkMapping(remarks, mapping, prev, stepMeta, service);
             }
-            cr = new CheckResult(CheckResult.TYPE_RESULT_OK,
-                                 "Step is connected to previous one, receiving "
-                                         + prev.size() + " fields",
-                                 stepMeta);
-            remarks.add(cr);
+            addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
+                      "MapValuesPluginMeta.StepConnected", prev.size());
         }
         // See if we have input streams leading to this step
         if (input.length > 0) {
-            cr = new CheckResult(CheckResult.TYPE_RESULT_OK,
-                                 "Step is receiving info from other steps.",
-                                 stepMeta);
-            remarks.add(cr);
+            addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
+                      "MapValuesPlugin.StepReceiveInput");
         } else {
-            cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR,
-                                 "No input received from other steps",
-                                 stepMeta);
-            remarks.add(cr);
+            addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
+                      "MapValuesPlugin.StepReceiveNoInput");
         }
     }
 
@@ -318,11 +337,8 @@ public class MapValuesPluginMeta extends BaseStepMeta
     public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepData,
                                  int copyNr, TransMeta transMeta, Trans trans) {
         MapValuesPluginData data = (MapValuesPluginData) stepData;
-        if (mappings.getConnection() != null) {
-            data.setDatabase(transMeta.findDatabase(mappings.getConnection()));
-        }
-        return new MapValuesPlugin(stepMeta, data,
-                                   copyNr, transMeta, trans);
+        data.setContext(getContext());
+        return new MapValuesPlugin(stepMeta, data, copyNr, transMeta, trans);
     }
 
     /**
@@ -354,5 +370,153 @@ public class MapValuesPluginMeta extends BaseStepMeta
     public void setMappings(Mappings mappings) {
         this.mappings = mappings;
     }
+
+    /**
+     * Gets the application context.
+     *
+     * @return the application context, or <tt>null</tt> if the load fails or
+     *         the database is not specified
+     */
+    protected ApplicationContext getContext() {
+        ApplicationContext context = null;
+        if (database != null) {
+            try {
+                context = ApplicationContextMgr.getContext(database);
+            } catch (Throwable exception) {
+                log.println(LogWriter.LOG_LEVEL_ERROR, getClass().getName(),
+                            exception.getMessage());
+            }
+        } else {
+            log.println(LogWriter.LOG_LEVEL_ERROR, getClass().getName(),
+                        Messages.get("MapValuesPluginMeta.NoConnection"));
+        }
+
+        return context;
+    }
+
+    /**
+     * Helper to check a mapping.
+     *
+     * @param remarks  the remarks to add to
+     * @param mapping  the mapping to check
+     * @param stepMeta the step meta
+     * @param service  the archetype service. May be <tt>null</tt>
+     */
+    private void checkMapping(ArrayList remarks, Mapping mapping,
+                              Row row, StepMeta stepMeta,
+                              IArchetypeService service) {
+        if (row.searchValueIndex(mapping.getSource()) == -1) {
+            addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
+                      "MapValuesPluginMeta.NoField",
+                      mapping.getSource());
+        }
+        org.openvpms.etl.load.Node node = NodeParser.parse(mapping.getTarget());
+        if (node == null) {
+            addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
+                      "MapValuesPluginMeta.InvalidMapping",
+                      mapping.getSource(), mapping.getTarget());
+        } else if (service != null) {
+            while (node != null) {
+                checkNode(remarks, node, mapping, stepMeta, service);
+                node = node.getChild();
+            }
+        }
+    }
+
+    /**
+     * Helper to check a node mapping.
+     *
+     * @param remarks  the remarks to add to
+     * @param node     the node to check
+     * @param mapping  the mapping to check
+     * @param stepMeta the step meta
+     * @param service  the archetype service
+     */
+    private void checkNode(ArrayList remarks, org.openvpms.etl.load.Node node,
+                           Mapping mapping,
+                           StepMeta stepMeta, IArchetypeService service) {
+        ArchetypeDescriptor archetype
+                = service.getArchetypeDescriptor(node.getArchetype());
+        if (archetype == null) {
+            addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
+                      "MapValuesPluginMeta.InvalidArchetype",
+                      node.getArchetype(), mapping.getTarget());
+        } else {
+            NodeDescriptor descriptor = archetype.getNodeDescriptor(
+                    node.getName());
+            if (descriptor == null) {
+                addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
+                          stepMeta,
+                          "MapValuesPluginMeta.InvalidNode",
+                          node.getArchetype(), node.getName(),
+                          mapping.getTarget());
+            } else {
+                boolean checkReference = false;
+                if (descriptor.isCollection()) {
+                    checkReference = true;
+                    if (node.getIndex() < 0) {
+                        addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
+                                  stepMeta,
+                                  "MapValuesPluginMeta.ExpectedCollection",
+                                  node.getArchetype(), node.getName(),
+                                  mapping.getTarget());
+                    }
+                } else {
+                    if (node.getIndex() >= 0) {
+                        addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
+                                  stepMeta,
+                                  "MapValuesPluginMeta.NodeNotCollection",
+                                  node.getArchetype(), node.getName(),
+                                  mapping.getTarget());
+                    }
+                    if (descriptor.isObjectReference()) {
+                        checkReference = true;
+                    }
+                }
+                if (checkReference &&
+                        !StringUtils.isEmpty(mapping.getValue())) {
+                    if (ReferenceParser.parse(mapping.getValue()) == null) {
+                        addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
+                                  stepMeta,
+                                  "MapValuesPluginMeta.InvalidReference",
+                                  mapping.getValue(), mapping.getTarget());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper to add a new <tt>CheckResult</tt> to remarks.
+     *
+     * @param remarks  the remarks
+     * @param type     the result type
+     * @param stepMeta the step meta
+     * @param key      the localisation message key
+     * @param args     the localisation message args
+     */
+    @SuppressWarnings("unchecked")
+    private void addRemark(ArrayList remarks, int type, StepMeta stepMeta,
+                           String key, Object ... args) {
+        CheckResult remark = new CheckResult(type, Messages.get(key, args),
+                                             stepMeta);
+        remarks.add(remark);
+    }
+
+    /**
+     * Helper to return the archetype service.
+     *
+     * @return the archetype service, or <tt>null</tt> if it cannot be
+     *         initialised
+     */
+    private IArchetypeService getService() {
+        ApplicationContext context = getContext();
+        if (context != null) {
+            return (IArchetypeService) context.getBean(
+                    "archetypeService"); // NON-NLS
+        }
+        return null;
+    }
+
 
 }

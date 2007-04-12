@@ -50,6 +50,8 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.openvpms.etl.load.Mapping;
+import org.openvpms.etl.load.Mappings;
 
 
 /**
@@ -85,6 +87,9 @@ public class MapValuesPluginDialog extends BaseStepDialog
      * The database connection combo box.
      */
     private CCombo connection;
+
+    private static final String YES = "Y";  // NON-NLS
+    private static final String NO = "N";   // NON-NLS
 
 
     /**
@@ -127,15 +132,15 @@ public class MapValuesPluginDialog extends BaseStepDialog
         formLayout.marginHeight = Const.FORM_MARGIN;
 
         shell.setLayout(formLayout);
-        shell.setText(Messages.getString("MapValuesDialog.Shell.Label"));
+        shell.setText(Messages.get("MapValuesPluginDialog.Shell.Label"));
 
         int middle = props.getMiddlePct();
         int margin = Const.MARGIN;
 
         // Stepname line
         Label stepNameLabel = new Label(shell, SWT.RIGHT);
-        stepNameLabel.setText(Messages.getString(
-                "MapValuesDialog.Stepname.Label"));
+        stepNameLabel.setText(Messages.get(
+                "MapValuesPluginDialog.Stepname.Label"));
         props.setLook(stepNameLabel);
         fdlStepname = new FormData();
         fdlStepname.left = new FormAttachment(0, 0);
@@ -162,7 +167,8 @@ public class MapValuesPluginDialog extends BaseStepDialog
 
         // legacy id field line
         Label idLabel = new Label(shell, SWT.RIGHT);
-        idLabel.setText(Messages.getString("MapValuesDialog.IdField.Label"));
+        idLabel.setText(
+                Messages.get("MapValuesPluginDialog.IdField.Label"));
         props.setLook(idLabel);
         FormData idLabelFormData = new FormData();
         idLabelFormData.left = new FormAttachment(0, 0);
@@ -185,8 +191,8 @@ public class MapValuesPluginDialog extends BaseStepDialog
 
         // the mapping tab
         CTabItem mapTab = new CTabItem(tabFolder, SWT.NONE);
-        mapTab.setText(Messages.getString(
-                "MapValuesDialog.MapTab.TabItem"));
+        mapTab.setText(Messages.get(
+                "MapValuesPluginDialog.MapTab.TabItem"));
 
         Composite wSelectComp = new Composite(tabFolder, SWT.NONE);
         props.setLook(wSelectComp);
@@ -197,8 +203,8 @@ public class MapValuesPluginDialog extends BaseStepDialog
         wSelectComp.setLayout(selectLayout);
 
         Label wlFields = new Label(wSelectComp, SWT.NONE);
-        wlFields.setText(Messages.getString(
-                "MapValuesDialog.Fields.Label"));
+        wlFields.setText(Messages.get(
+                "MapValuesPluginDialog.Fields.Label"));
         props.setLook(wlFields);
         FormData fdlFields = new FormData();
         fdlFields.left = new FormAttachment(0, 0);
@@ -208,27 +214,27 @@ public class MapValuesPluginDialog extends BaseStepDialog
         final int rowCount = input.getMappings().getMappingCount();
 
         ColumnInfo[] columns = new ColumnInfo[]{
-                new ColumnInfo(Messages.getString(
-                        "MapValuesDialog.ColumnInfo.Fieldname"),
+                new ColumnInfo(Messages.get(
+                        "MapValuesPluginDialog.ColumnInfo.Fieldname"),
                                ColumnInfo.COLUMN_TYPE_TEXT, false),
-                new ColumnInfo(Messages.getString(
-                        "MapValuesDialog.ColumnInfo.MapTo"),
+                new ColumnInfo(Messages.get(
+                        "MapValuesPluginDialog.ColumnInfo.MapTo"),
                                ColumnInfo.COLUMN_TYPE_TEXT, false),
-                new ColumnInfo(Messages.getString(
-                        "MapValuesDialog.ColumnInfo.ExcludeIfNull"),
+                new ColumnInfo(Messages.get(
+                        "MapValuesPluginDialog.ColumnInfo.ExcludeIfNull"),
                                ColumnInfo.COLUMN_TYPE_CCOMBO,
-                               new String[]{"Y", "N"}, true),
-                new ColumnInfo(Messages.getString(
-                        "MapValuesDialog.ColumnInfo.Value"),
+                               getYesNo(), true),
+                new ColumnInfo(Messages.get(
+                        "MapValuesPluginDialog.ColumnInfo.Value"),
                                ColumnInfo.COLUMN_TYPE_TEXT, false),
-                new ColumnInfo(Messages.getString(
-                        "MapValuesDialog.ColumnInfo.Reference"),
+                new ColumnInfo(Messages.get(
+                        "MapValuesPluginDialog.ColumnInfo.Reference"),
                                ColumnInfo.COLUMN_TYPE_CCOMBO,
-                               new String[]{"Y", "N"}, true),
-                new ColumnInfo(Messages.getString(
-                        "MapValuesDialog.ColumnInfo.RemoveDefaultObjects"),
+                               getYesNo(), true),
+                new ColumnInfo(Messages.get(
+                        "MapValuesPluginDialog.ColumnInfo.RemoveDefaultObjects"),
                                ColumnInfo.COLUMN_TYPE_CCOMBO,
-                               new String[]{"Y", "N"}, true)};
+                               getYesNo(), true)};
 
         mappingTable = new TableView(wSelectComp,
                                      SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI,
@@ -239,7 +245,8 @@ public class MapValuesPluginDialog extends BaseStepDialog
         );
 
         Button getButton = new Button(wSelectComp, SWT.PUSH);
-        getButton.setText(Messages.getString("MapValuesDialog.GetMap.Button"));
+        getButton.setText(
+                Messages.get("MapValuesPluginDialog.GetMap.Button"));
         getButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
                 get();
@@ -276,9 +283,9 @@ public class MapValuesPluginDialog extends BaseStepDialog
         // end of the tab folder
 
         Button ok = new Button(shell, SWT.PUSH);
-        ok.setText(Messages.getString("System.Button.OK"));
+        ok.setText(Messages.get("System.Button.OK"));  // NON-NLS
         Button cancel = new Button(shell, SWT.PUSH);
-        cancel.setText(Messages.getString("System.Button.Cancel"));
+        cancel.setText(Messages.get("System.Button.Cancel")); // NON-NLS
 
         setButtonPositions(new Button[]{ok, cancel}, margin, tabFolder);
 
@@ -325,6 +332,10 @@ public class MapValuesPluginDialog extends BaseStepDialog
         return stepname;
     }
 
+    private String[] getYesNo() {
+        return new String[]{YES, NO};
+    }
+
     /**
      * Copy information from the meta-data input to the dialog fields.
      */
@@ -349,22 +360,22 @@ public class MapValuesPluginDialog extends BaseStepDialog
                 item.setText(2, mapping.getTarget());
             }
             if (mapping.getExcludeNull()) {
-                item.setText(3, "Y");
+                item.setText(3, YES);
             } else {
-                item.setText(3, "N");
+                item.setText(3, NO);
             }
             if (mapping.getValue() != null) {
                 item.setText(4, mapping.getValue());
             }
             if (mapping.getIsReference()) {
-                item.setText(5, "Y");
+                item.setText(5, YES);
             } else {
-                item.setText(5, "N");
+                item.setText(5, NO);
             }
             if (mapping.getRemoveDefaultObjects()) {
-                item.setText(6, "Y");
+                item.setText(6, YES);
             } else {
-                item.setText(6, "N");
+                item.setText(6, NO);
             }
         }
         mappingTable.setRowNums();
@@ -389,12 +400,12 @@ public class MapValuesPluginDialog extends BaseStepDialog
             Mapping mapping = new Mapping();
             mapping.setSource(item.getText(1));
             mapping.setTarget(item.getText(2));
-            boolean exclude = "Y".equals(item.getText(3));
+            boolean exclude = YES.equals(item.getText(3));
             mapping.setExcludeNull(exclude);
             mapping.setValue(item.getText(4));
-            boolean reference = "Y".equals(item.getText(5));
+            boolean reference = YES.equals(item.getText(5));
             mapping.setIsReference(reference);
-            boolean removeDefaultObjects = "Y".equals(item.getText(6));
+            boolean removeDefaultObjects = YES.equals(item.getText(6));
             mapping.setRemoveDefaultObjects(removeDefaultObjects);
             mappings.addMapping(mapping);
         }
@@ -428,10 +439,10 @@ public class MapValuesPluginDialog extends BaseStepDialog
                 }
             }
         } catch (KettleException exception) {
-            new ErrorDialog(shell, Messages.getString(
-                    "MapValuesDialog.FailedToGetFields.DialogTitle"),
-                            Messages.getString(
-                                    "MapValuesDialog.FailedToGetFields.DialogMessage"),
+            new ErrorDialog(shell, Messages.get(
+                    "MapValuesPluginDialog.FailedToGetFields.DialogTitle"),
+                            Messages.get(
+                                    "MapValuesPluginDialog.FailedToGetFields.DialogMessage"),
                             exception);
         }
     }

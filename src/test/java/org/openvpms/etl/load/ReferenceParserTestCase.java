@@ -16,11 +16,9 @@
  *  $Id$
  */
 
-package org.openvpms.etl.kettle;
+package org.openvpms.etl.load;
 
 import junit.framework.TestCase;
-import org.openvpms.etl.Reference;
-import org.openvpms.etl.ReferenceParser;
 
 
 /**
@@ -29,28 +27,22 @@ import org.openvpms.etl.ReferenceParser;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class ReferenceParserTestCase extends TestCase {
 
     /**
-     * Tests the single object id form.
+     * Tests the archetype/rowId form.
      */
-    public void testObjectId() {
-        checkReference("1234.1", "1234.1", null, null, null, null);
-    }
-
-    /**
-     * Tests the archetype/legacyId form.
-     */
-    public void testArchjetypeLegacyId() {
-        checkReference("<party.customerperson>1234.1", null,
-                       "party.customerperson", "1234.1", null, null);
+    public void testArchetypeRowId() {
+        checkReference("<party.customerperson>1234.1", "party.customerperson",
+                       "1234.1", null, null);
     }
 
     /**
      * Tests the archetype/name/value form.
      */
     public void testArchetypeNameValue() {
-        checkReference("<lookup.contactPurpose>code=MAILING", null,
+        checkReference("<lookup.contactPurpose>code=MAILING",
                        "lookup.contactPurpose", null, "code", "MAILING");
     }
 
@@ -58,20 +50,17 @@ public class ReferenceParserTestCase extends TestCase {
      * Checks that a reference can be parsed.
      *
      * @param reference the reference
-     * @param objectId  the expected object id
      * @param archetype the expected archetype
-     * @param legacyId  the expected legacy id
+     * @param rowId     the expected row id
      * @param name      the expected name
      * @param value     the expected value
      */
-    private void checkReference(String reference, String objectId,
-                                String archetype, String legacyId, String name,
-                                String value) {
+    private void checkReference(String reference, String archetype,
+                                String rowId, String name, String value) {
         Reference ref = ReferenceParser.parse(reference);
         assertNotNull(ref);
-        assertEquals(objectId, ref.getObjectId());
         assertEquals(archetype, ref.getArchetype());
-        assertEquals(legacyId, ref.getLegacyId());
+        assertEquals(rowId, ref.getRowId());
         assertEquals(name, ref.getName());
         assertEquals(value, ref.getValue());
     }

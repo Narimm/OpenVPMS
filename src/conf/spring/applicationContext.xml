@@ -4,8 +4,7 @@
 
 <beans>
 
-    <!--  The MySQL DataSource -->
-    <bean id="mySQLDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
         <property name="driverClassName" value="@JDBC_DRIVER@"/>
         <property name="url" value="@JDBC_URL@"/>
         <property name="username" value="@JDBC_USERNAME@"/>
@@ -95,7 +94,7 @@
     <bean id="sessionFactory"
           class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
         <property name="dataSource">
-            <ref local="mySQLDataSource"/>
+            <ref local="dataSource"/>
         </property>
         <property name="entityInterceptor">
             <ref local="entityInterceptor"/>
@@ -103,7 +102,6 @@
 
         <property name="hibernateProperties">
             <props>
-                <prop key="hibernate.dialect">@HIBERNATE_DIALECT@</prop>
                 <prop key="hibernate.show_sql">false</prop>
                 <prop key="hibernate.max_fetch_depth">3</prop>
                 <prop key="hibernate.jdbc.use_scrollable_resultset">true</prop>
@@ -174,7 +172,7 @@
                     /org/openvpms/component/business/domain/im/security/ArchetypeAwareGrantedAuthority.hbm.xml
                 </value>
                 <value>
-                    /org/openvpms/etl/ETLValue.hbm.xml
+                    /org/openvpms/etl/load/ETLLog.hbm.xml
                 </value>
             </list>
         </property>
@@ -234,7 +232,7 @@
     <!-- ================================================================== -->
     <!--                         ETL DEFINITIONS                            -->
     <!-- ================================================================== -->
-    <bean id="ETLObjectDAO" class="org.openvpms.etl.ETLValueDAOImpl">
+    <bean id="ETLLogDAO" class="org.openvpms.etl.load.ETLLogDAOImpl">
         <constructor-arg>
             <ref local="sessionFactory"/>
         </constructor-arg>

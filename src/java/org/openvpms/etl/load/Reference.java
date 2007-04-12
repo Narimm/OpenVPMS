@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.etl;
+package org.openvpms.etl.load;
 
 
 /**
@@ -28,19 +28,14 @@ package org.openvpms.etl;
 public class Reference {
 
     /**
-     * The object identifier. May be <tt>null</tt>
-     */
-    private final String objectId;
-
-    /**
      * The object archetype. May be <tt>null</tt>
      */
     private final String archetype;
 
     /**
-     * The legacy identifier. May be <tt>null</tt>.
+     * The legacy row identifier. May be <tt>null</tt>.
      */
-    private final String legacyId;
+    private final String rowId;
 
     /**
      * The node name. May be <tt>null</tt>.
@@ -52,18 +47,6 @@ public class Reference {
      */
     private final String value;
 
-    /**
-     * Constructs a new <tt>Reference</tt> containing an object identifier.
-     *
-     * @param objectId the object identifier.
-     */
-    public Reference(String objectId) {
-        this.objectId = objectId;
-        archetype = null;
-        legacyId = null;
-        name = null;
-        value = null;
-    }
 
     /**
      * Constructs a new <tt>Reference</tt> containing an archetype and
@@ -73,9 +56,8 @@ public class Reference {
      * @param legacyId  the legacy identifier
      */
     public Reference(String archetype, String legacyId) {
-        this.objectId = null;
         this.archetype = archetype;
-        this.legacyId = legacyId;
+        this.rowId = legacyId;
         this.name = null;
         this.value = null;
     }
@@ -89,20 +71,10 @@ public class Reference {
      * @param value     the node value
      */
     public Reference(String archetype, String name, String value) {
-        this.objectId = null;
         this.archetype = archetype;
-        this.legacyId = null;
+        this.rowId = null;
         this.name = name;
         this.value = value;
-    }
-
-    /**
-     * Returns the object identifier.
-     *
-     * @return the object identifier. May be <tt>null</tt>
-     */
-    public String getObjectId() {
-        return objectId;
     }
 
     /**
@@ -115,12 +87,12 @@ public class Reference {
     }
 
     /**
-     * Returns the legacy identifier.
+     * Returns the legacy row identifier.
      *
-     * @return the legacy identifier. May be <tt>null</tt>
+     * @return the legacy row identifier. May be <tt>null</tt>
      */
-    public String getLegacyId() {
-        return legacyId;
+    public String getRowId() {
+        return rowId;
     }
 
     /**
@@ -148,10 +120,8 @@ public class Reference {
      */
     public String toString() {
         String result;
-        if (objectId != null) {
-            result = objectId;
-        } else if (legacyId != null) {
-            result = create(archetype, legacyId);
+        if (rowId != null) {
+            result = create(archetype, rowId);
         } else {
             result = create(archetype, name, value);
         }
@@ -159,14 +129,14 @@ public class Reference {
     }
 
     /**
-     * Creates a reference string from an archetype and legacy identifier.
+     * Creates a reference string from an archetype and row identifier.
      *
      * @param archetype the archetype
-     * @param legacyId  the legacy identifier
+     * @param rowId  the legacy identifier
      * @return a new reference string
      */
-    public static String create(String archetype, String legacyId) {
-        return "<" + archetype + ">" + legacyId;
+    public static String create(String archetype, String rowId) {
+        return "<" + archetype + ">" + rowId;
     }
 
     /**
