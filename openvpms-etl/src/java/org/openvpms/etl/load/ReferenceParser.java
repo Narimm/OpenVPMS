@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.etl;
+package org.openvpms.etl.load;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,15 +25,13 @@ import java.util.regex.Pattern;
 /**
  * Parses references of the form:
  * <pre>
- * reference = &lt;objectId&gt; | &lt;archetypeRef&gt;
- * archetypeRef = "&lt;" &lt;archetype&gt; "&gt;" &lt;expression&gt;
- * expression = &lt;query&gt; | &lt;legacyid&gt;
+ * reference = "&lt;" &lt;archetype&gt; "&gt;" &lt;expression&gt;
+ * expression = &lt;query&gt; | &lt;rowId&gt;
  * query=&lt;name&gt;=&lt;value&gt;
  * </pre>
  * <p/>
  * E.g:
  * <pre>
- * IDCUST1
  * &lt;lookup.contactPurpose&gt;code=MAILING
  * &lt;party.customerPerson&gt;12345
  * </pre>
@@ -47,7 +45,7 @@ public class ReferenceParser {
      * The pattern.
      */
     private static final Pattern pattern
-            = Pattern.compile("(<([^<>]+)>)?([^<>\\s=]+)(=(\\w+))?");
+            = Pattern.compile("<([^<>]+)>([^<>\\s=]+)(=(\\w+))?"); // NON-NLS
 
     /**
      * Parses a reference.
@@ -62,19 +60,14 @@ public class ReferenceParser {
             if (matcher.start() != 0 || matcher.end() != reference.length()) {
                 return null;
             }
-            if (matcher.group(1) != null) {
-                String archetype = matcher.group(2);
-                if (matcher.group(4) != null) {
-                    String name = matcher.group(3);
-                    String value = matcher.group(5);
-                    result = new Reference(archetype, name, value);
-                } else {
-                    String legacyId = matcher.group(3);
-                    result = new Reference(archetype, legacyId);
-                }
+            String archetype = matcher.group(1);
+            if (matcher.group(3) != null) {
+                String name = matcher.group(2);
+                String value = matcher.group(4);
+                result = new Reference(archetype, name, value);
             } else {
-                String objectId = matcher.group(3);
-                result = new Reference(objectId);
+                String rowId = matcher.group(2);
+                result = new Reference(archetype, rowId);
             }
         }
         return result;

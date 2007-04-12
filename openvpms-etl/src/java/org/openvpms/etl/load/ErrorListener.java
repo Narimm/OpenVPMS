@@ -18,25 +18,20 @@
 
 package org.openvpms.etl.load;
 
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-
 
 /**
- * Handler for {@link LookupLoader}.
+ * Listener for {@link Loader} errors.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface LookupLoaderHandler extends LoaderListener {
+public interface ErrorListener {
 
     /**
-     * Resolves a lookup given its archetype short name and code.
+     * Invoked when an error occurs.
      *
-     * @param shortName the lookup short name
-     * @param code      the lookup code
-     * @return the corresponding lookup or <tt>null</tt> if none is found
-     * @throws ArchetypeServiceException for any error
+     * @param rowId     the identifier of the row that triggered the error
+     * @param exception the exception
      */
-    Lookup getLookup(String shortName, String code);
+    void error(String rowId, Throwable exception);
 }

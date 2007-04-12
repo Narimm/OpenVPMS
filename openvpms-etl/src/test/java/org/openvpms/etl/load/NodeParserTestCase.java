@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.etl.kettle;
+package org.openvpms.etl.load;
 
 import junit.framework.TestCase;
 
@@ -27,6 +27,7 @@ import junit.framework.TestCase;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class NodeParserTestCase extends TestCase {
 
     /**

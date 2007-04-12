@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.etl.kettle;
+package org.openvpms.etl.load;
 
 
 /**
@@ -52,6 +52,7 @@ public class Node {
      * The child node. May be <tt>null</tt>
      */
     private Node child;
+    
 
     /**
      * Constructs a new <tt>Node</tt>.
