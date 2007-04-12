@@ -210,6 +210,29 @@ public class LoaderTestCase
     }
 
     /**
+     * Verifies that an object isn't created if 'excludeNull' is specified
+     * and the input field is null.
+     */
+    public void testExcludeNull() throws Exception {
+        Mappings mappings = new Mappings();
+        mappings.setIdColumn("CUSTID");
+
+        Mapping mapping = createMapping(
+                "FAXNUMBER",
+                "<party.customerperson>contacts[0]<contact.faxNumber>faxNumber");
+        mapping.setExcludeNull(true);
+        mappings.addMapping(mapping);
+
+        Loader loader = createLoader("CUSTLOAD", mappings);
+        ETLRow row = new ETLRow("CUSTID");
+        row.add("FAXNUMBER", null);
+        List<IMObject> objects = loader.load(row);
+        loader.close();
+
+        assertEquals(0, objects.size());
+    }
+
+    /**
      * Returns the location of the spring config files.
      *
      * @return an array of config locations

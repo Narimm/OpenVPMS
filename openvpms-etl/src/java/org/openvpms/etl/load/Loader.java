@@ -55,6 +55,11 @@ public class Loader {
      */
     private final RowMapper mapper;
 
+    /**
+     * Determines if already processed rows should be skipped.
+     */
+    private boolean skipProcessed;
+
 
     /**
      * Constructs a new <tt>Loader</tt>.
@@ -85,6 +90,7 @@ public class Loader {
         this.dao = dao;
         this.handler = handler;
         mapper = new RowMapper(mappings, this.handler, service);
+        skipProcessed = mappings.getSkipProcessed();
     }
 
     /**
@@ -98,7 +104,7 @@ public class Loader {
      */
     public List<IMObject> load(ETLRow row) {
         List<IMObject> objects = Collections.emptyList();
-        if (!dao.processed(name, row.getRowId())) {
+        if (!skipProcessed || !dao.processed(name, row.getRowId())) {
             try {
                 objects = mapper.map(row);
                 handler.commit();

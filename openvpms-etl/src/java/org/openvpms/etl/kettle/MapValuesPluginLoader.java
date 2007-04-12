@@ -122,7 +122,13 @@ public class MapValuesPluginLoader {
      */
     private Object getValue(Value value) {
         Object result = null;
-        if (!value.isNull()) {
+        if (value.getType() == Value.VALUE_TYPE_STRING) {
+            // need to trim whitespace
+            if (!value.isNull()) {
+                String str = value.toString(false);
+                result = StringUtils.trimToNull(str);
+            }
+        } else if (!value.isNull()) {
             if (value.getType() == Value.VALUE_TYPE_DATE) {
                 result = value.getDate();
             } else if (value.getType() == Value.VALUE_TYPE_NUMBER ||

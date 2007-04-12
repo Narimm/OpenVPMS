@@ -86,6 +86,7 @@ public class MapValuesPluginMeta extends BaseStepMeta
     private static final String TARGET = "target"; // NON-NLS
     private static final String VALUE = "value"; // NON-NLS
     private static final String EXCLUDE_NULL = "excludeNull"; // NON-NLS
+    private static final String SKIP_PROCESSED = "skipProcessed"; // NON-NLS
     private static final String REMOVE_DEFAULT_OBJECTS
             = "removeDefaultObjects"; // NON-NLS
 
@@ -197,6 +198,9 @@ public class MapValuesPluginMeta extends BaseStepMeta
                 stepId, ID_COLUMN);
         mappings.setIdColumn(idColumn);
 
+        mappings.setSkipProcessed(repository.getStepAttributeBoolean(
+                stepId, SKIP_PROCESSED));
+
         int count = repository.countNrStepAttributes(stepId, SOURCE);
         for (int i = 0; i < count; ++i) {
             String source = repository.getStepAttributeString(
@@ -234,6 +238,10 @@ public class MapValuesPluginMeta extends BaseStepMeta
                                      mappings.getConnection());
         repository.saveStepAttribute(transformationId, stepId, ID_COLUMN,
                                      mappings.getIdColumn());
+
+        repository.saveStepAttribute(transformationId, stepId, SKIP_PROCESSED,
+                                     mappings.getSkipProcessed());
+
         for (int i = 0; i < mappings.getMappingCount(); ++i) {
             Mapping mapping = mappings.getMapping(i);
             repository.saveStepAttribute(transformationId, stepId, i,
