@@ -228,10 +228,6 @@ public class MapValuesPluginDialog extends BaseStepDialog
                         "MapValuesPluginDialog.ColumnInfo.Value"),
                                ColumnInfo.COLUMN_TYPE_TEXT, false),
                 new ColumnInfo(Messages.get(
-                        "MapValuesPluginDialog.ColumnInfo.Reference"),
-                               ColumnInfo.COLUMN_TYPE_CCOMBO,
-                               getYesNo(), true),
-                new ColumnInfo(Messages.get(
                         "MapValuesPluginDialog.ColumnInfo.RemoveDefaultObjects"),
                                ColumnInfo.COLUMN_TYPE_CCOMBO,
                                getYesNo(), true)};
@@ -367,11 +363,6 @@ public class MapValuesPluginDialog extends BaseStepDialog
             if (mapping.getValue() != null) {
                 item.setText(4, mapping.getValue());
             }
-            if (mapping.getIsReference()) {
-                item.setText(5, YES);
-            } else {
-                item.setText(5, NO);
-            }
             if (mapping.getRemoveDefaultObjects()) {
                 item.setText(6, YES);
             } else {
@@ -403,9 +394,7 @@ public class MapValuesPluginDialog extends BaseStepDialog
             boolean exclude = YES.equals(item.getText(3));
             mapping.setExcludeNull(exclude);
             mapping.setValue(item.getText(4));
-            boolean reference = YES.equals(item.getText(5));
-            mapping.setIsReference(reference);
-            boolean removeDefaultObjects = YES.equals(item.getText(6));
+            boolean removeDefaultObjects = YES.equals(item.getText(5));
             mapping.setRemoveDefaultObjects(removeDefaultObjects);
             mappings.addMapping(mapping);
         }

@@ -77,17 +77,17 @@ public class ETLLogDAOTestImpl implements ETLLogDAO {
     }
 
     /**
-     * Returns all {@link ETLLog}s associated with a loader, legacy identifier
-     * and archetype.
+     * Returns all {@link ETLLog}s associated with a loader, legacy row
+     * identifier and archetype.
      *
      * @param loader    the loader name. May be <tt>null</tt> to indicate all
      *                  loaders
-     * @param legacyId  the legacy identifier.
+     * @param rowId     the legacy row identifier
      * @param archetype the archetype short name. May be <tt>null</tt> to
      *                  indicate all objects with the same legacy identifier
      * @return all logs matching the criteria
      */
-    public List<ETLLog> get(String loader, String legacyId, String archetype) {
+    public List<ETLLog> get(String loader, String rowId, String archetype) {
         List<ETLLog> result = new ArrayList<ETLLog>();
         for (ETLLog log : logs.values()) {
             if (loader != null && !log.getLoader().equals(loader)) {
@@ -96,7 +96,7 @@ public class ETLLogDAOTestImpl implements ETLLogDAO {
             if (archetype != null && !log.getArchetype().equals(archetype)) {
                 continue;
             }
-            if (log.getRowId().equals(legacyId)) {
+            if (log.getRowId().equals(rowId)) {
                 result.add(log);
             }
         }
@@ -104,17 +104,37 @@ public class ETLLogDAOTestImpl implements ETLLogDAO {
     }
 
     /**
-     * Deletes all {@link ETLLog}s associated with a loader and legacy
+     * Determines if a legacy row has been successfully processed.
+     *
+     * @param loader the loader name
+     * @param rowId  the legacy row identifier
+     * @return <tt>true> if the row has been sucessfully processed
+     */
+    public boolean processed(String loader, String rowId) {
+        List<ETLLog> logs = get(loader, rowId, null);
+        if (logs.isEmpty()) {
+            return false;
+        }
+        for (ETLLog log : logs) {
+            if (log.getErrors() != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Deletes all {@link ETLLog}s associated with a loader and legacy row
      * identifier.
      *
-     * @param loader   the loader name
-     * @param legacyId the legacy identifier
+     * @param loader the loader name
+     * @param rowId  the legacy row identifier
      */
-    public void remove(String loader, String legacyId) {
+    public void remove(String loader, String rowId) {
         Iterator<ETLLog> iterator = logs.values().iterator();
         while (iterator.hasNext()) {
             ETLLog log = iterator.next();
-            if (log.getRowId().equals(legacyId)
+            if (log.getRowId().equals(rowId)
                     && log.getLoader().equals(loader)) {
                 iterator.remove();
             }

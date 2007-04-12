@@ -98,7 +98,7 @@ public class Loader {
      */
     public List<IMObject> load(ETLRow row) {
         List<IMObject> objects = Collections.emptyList();
-        if (!processed(row)) {
+        if (!dao.processed(name, row.getRowId())) {
             try {
                 objects = mapper.map(row);
                 handler.commit();
@@ -128,29 +128,6 @@ public class Loader {
     public void close() {
         handler.end();
         handler.close();
-    }
-
-    /**
-     * Determines if a row has already been successfully processed.
-     *
-     * @param row the row
-     * @return <tt>true</tt> if the row has been successfully processed,
-     *         otherwise <tt>false</tt>
-     */
-    private boolean processed(ETLRow row) {
-        boolean result = true;
-        List<ETLLog> logs = dao.get(name, row.getRowId(), null);
-        if (logs.isEmpty()) {
-            result = false;
-        } else {
-            for (ETLLog log : logs) {
-                if (log.getErrors() != null) {
-                    result = false;
-                    break;
-                }
-            }
-        }
-        return result;
     }
 
 }

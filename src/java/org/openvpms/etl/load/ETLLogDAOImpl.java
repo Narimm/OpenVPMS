@@ -188,6 +188,36 @@ public class ETLLogDAOImpl implements ETLLogDAO {
     }
 
     /**
+     * Determines if a legacy row has been successfully processed.
+     *
+     * @param loader the loader name
+     * @param rowId  the legacy row identifier
+     * @return <tt>true> if the row has been sucessfully processed
+     */
+    @SuppressWarnings("HardCodedStringLiteral")
+    public boolean processed(String loader, String rowId) {
+        boolean processed;
+        StringBuffer queryString = new StringBuffer();
+
+        queryString.append("select count(l) from ");
+        queryString.append(ETLLog.class.getName());
+        queryString.append(" as l where l.rowId = :rowId and ");
+        queryString.append("l.loader = :loader and errors is null");
+        Session session = factory.openSession();
+        try {
+            Query query = session.createQuery(queryString.toString());
+            query.setParameter("rowId", rowId);
+            query.setParameter("loader", loader);
+            long count = (Long) query.list().get(0);
+            processed = (count > 0);
+        } finally {
+            session.clear();
+            session.close();
+        }
+        return processed;
+    }
+
+    /**
      * Deletes all {@link ETLLog}s associated with a loader and legacy row
      * identifier.
      *
