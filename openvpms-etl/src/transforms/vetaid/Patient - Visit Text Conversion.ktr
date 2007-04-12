@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>Visit Text Conversion</name>
+    <directory>&#47;</directory>
+    <log>
+      <read/>
+      <write/>
+      <input/>
+      <output/>
+      <update/>
+      <connection/>
+      <table/>
+      <use_batchid>Y</use_batchid>
+      <use_logfield>N</use_logfield>
+      </log>
+    <maxdate>
+      <connection/>
+      <table/>
+      <field/>
+      <offset>0.0</offset>
+      <maxdiff>0.0</maxdiff>
+      </maxdate>
+    <size_rowset>1000</size_rowset>
+    <sleep_time_empty>1</sleep_time_empty>
+    <sleep_time_full>1</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>5000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <dependencies>
+      </dependencies>
+    <partitionschemas>
+      </partitionschemas>
+    <slaveservers>
+      </slaveservers>
+    <clusterschemas>
+      </clusterschemas>
+  <modified_user>-</modified_user>
+  <modified_date>2007&#47;04&#47;10 10:05:11.810</modified_date>
+    </info>
+  <notepads>
+    </notepads>
+  <connection>
+    <name>openvpms</name>
+    <server>localhost</server>
+    <type>MYSQL</type>
+    <access>Native</access>
+    <database>openvpms</database>
+    <port>3306</port>
+    <username>openvpms</username>
+    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
+      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <order>
+  <hop> <from>Visit Text Input</from><to>Transform Visit Text Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Visit Text Fields</from><to>Group text together</to><enabled>Y</enabled> </hop>  <hop> <from>Group text together</from><to>Transform into lines</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>XBase input</from><to>Select Visit Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Visit Fields</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Transform into lines</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Join</from><to>OpenVPMS Visit Text Output</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>Transform Visit Text Fields</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47; Prefix text strings with type
+if (TYPE.getString() == &quot;D&quot;) {
+	TEXT.setString(&quot;Diagnosis: &quot; + TEXT.getString())
+}
+else if (TYPE.getString() == &quot;E&quot;) {
+	TEXT.setString(&quot;Exam: &quot; + TEXT.getString())
+}
+else if (TYPE.getString() == &quot;T&quot;) {
+	TEXT.setString(&quot;Treatment: &quot; + TEXT.getString())
+}
+else if (TYPE.getString() == &quot;C&quot;) {
+	TEXT.setString(&quot;Reason: &quot; + TEXT.getString())
+}
+else {
+	TEXT.setString(&quot;History: &quot; + TEXT.getString())
+}
+
+</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>217</xloc>
+      <yloc>222</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Visit Text Input</name>
+    <type>XBaseInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <file_dbf>F:\VETAID\CONTEXT.DBF</file_dbf>
+    <limit>0</limit>
+    <add_rownr>N</add_rownr>
+    <field_rownr/>
+    <include>N</include>
+    <include_field/>
+    <accept_filenames>N</accept_filenames>
+    <accept_field/>
+    <accept_stepname/>
+     <cluster_schema/>
+    <GUI>
+      <xloc>97</xloc>
+      <yloc>223</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Group text together</name>
+    <type>GroupBy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <all_rows>N</all_rows>
+      <ignore_aggregate>N</ignore_aggregate>
+      <field_ignore/>
+      <directory>%%java.io.tmpdir%%</directory>
+      <prefix>grp</prefix>
+      <add_linenr>N</add_linenr>
+      <linenr_fieldname/>
+      <group>
+        <field>
+          <name>TREATNO</name>
+        </field>
+        </group>
+      <fields>
+        <field>
+          <aggregate>TEXT</aggregate>
+          <subject>TEXT</subject>
+          <type>CONCAT_COMMA</type>
+        </field>
+        </fields>
+     <cluster_schema/>
+    <GUI>
+      <xloc>349</xloc>
+      <yloc>221</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Add sequence</name>
+    <type>Sequence</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <valuename>VISITITEMID</valuename>
+      <use_database>N</use_database>
+      <connection/>
+      <schema/>
+      <seqname>SEQ_</seqname>
+      <use_counter>Y</use_counter>
+      <counter_name/>
+      <start_at>1</start_at>
+      <increment_by>1</increment_by>
+      <max_value>9999999</max_value>
+     <cluster_schema/>
+    <GUI>
+      <xloc>595</xloc>
+      <yloc>220</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>XBase input</name>
+    <type>XBaseInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <file_dbf>F:\VETAID\CONSULT.DBF</file_dbf>
+    <limit>0</limit>
+    <add_rownr>N</add_rownr>
+    <field_rownr/>
+    <include>N</include>
+    <include_field/>
+    <accept_filenames>N</accept_filenames>
+    <accept_field/>
+    <accept_stepname/>
+     <cluster_schema/>
+    <GUI>
+      <xloc>98</xloc>
+      <yloc>98</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select Visit Fields</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>PETNUMBER</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>TREATNO</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>TREATDATE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>245</xloc>
+      <yloc>98</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Merge Join</name>
+    <type>MergeJoin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<join_type>INNER</join_type>
+<step1>Select Visit Fields</step1>
+<step2>Add sequence</step2>
+    <keys_1>
+      <key>TREATNO</key>
+    </keys_1>
+    <keys_2>
+      <key>TREATNO</key>
+    </keys_2>
+     <cluster_schema/>
+    <GUI>
+      <xloc>593</xloc>
+      <yloc>96</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform into lines</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+TEXT.setString(replace(TEXT.getString(),&quot;,&quot;,&quot;\n\r&quot;))</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>471</xloc>
+      <yloc>220</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>OpenVPMS Visit Text Output</name>
+    <type>MapValuesPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>VISITITEMID</idColumn><mapping><source>TEXT</source><target>&lt;act.patientClinicalNote>note</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TREATDATE</source><target>&lt;act.patientClinicalNote>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETNUMBER</source><target>&lt;act.patientClinicalNote>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TREATNO</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>true</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITITEMID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>true</excludeNull><value>&lt;act.patientWeight>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>751</xloc>
+      <yloc>96</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+</transformation>

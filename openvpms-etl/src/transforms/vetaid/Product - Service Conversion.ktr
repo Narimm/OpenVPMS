@@ -214,7 +214,7 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>NAME</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.service>active</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;product.service>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>NAME</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.service>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;product.service>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
     <GUI>
       <xloc>900</xloc>
       <yloc>313</yloc>
@@ -233,7 +233,7 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>NAME</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.service>active</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;product.service>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>NAME</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.service>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;product.service>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
     <GUI>
       <xloc>899</xloc>
       <yloc>205</yloc>
@@ -517,6 +517,38 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
     </step>
 
   <step>
+    <name>Select Service Reference Fields</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>SERVICENO</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>DESCRIPT</name>
+        <rename>SERVICE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <meta>        <name>SERVICENO</name>
+        <rename>PRODUCTID</rename>
+        <type>String</type>
+        <length>20</length>
+        <precision>0</precision>
+        </meta>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>208</xloc>
+      <yloc>212</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Select Service fields</name>
     <type>SelectValues</type>
     <description/>
@@ -544,6 +576,34 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
     <GUI>
       <xloc>175</xloc>
       <yloc>314</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Service input Reference</name>
+    <type>XBaseInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <file_dbf>F:\VETAID\SERVICES.DBF</file_dbf>
+    <limit>0</limit>
+    <add_rownr>N</add_rownr>
+    <field_rownr/>
+    <include>N</include>
+    <include_field/>
+    <accept_filenames>N</accept_filenames>
+    <accept_field/>
+    <accept_stepname/>
+     <cluster_schema/>
+    <GUI>
+      <xloc>64</xloc>
+      <yloc>210</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -825,66 +885,6 @@ var FIXEDPRICE = 0.0
     <GUI>
       <xloc>759</xloc>
       <yloc>315</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Service input Reference</name>
-    <type>XBaseInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <file_dbf>F:\VETAID\SERVICES.DBF</file_dbf>
-    <limit>0</limit>
-    <add_rownr>N</add_rownr>
-    <field_rownr/>
-    <include>N</include>
-    <include_field/>
-    <accept_filenames>N</accept_filenames>
-    <accept_field/>
-    <accept_stepname/>
-     <cluster_schema/>
-    <GUI>
-      <xloc>64</xloc>
-      <yloc>210</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Select Service Reference Fields</name>
-    <type>SelectValues</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <fields>      <field>        <name>SERVICENO</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>DESCRIPT</name>
-        <rename>SERVICE</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <meta>        <name>SERVICENO</name>
-        <rename>PRODUCTID</rename>
-        <type>String</type>
-        <length>20</length>
-        <precision>0</precision>
-        </meta>      </fields>     <cluster_schema/>
-    <GUI>
-      <xloc>208</xloc>
-      <yloc>212</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

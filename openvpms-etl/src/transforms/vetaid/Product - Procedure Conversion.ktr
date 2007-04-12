@@ -116,7 +116,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>DESCRIPT</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>COMPONENT</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TOTALCH</source><target>&lt;product.service>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><isReference>false</isReference><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>DESCRIPT</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>COMPONENT</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TOTALCH</source><target>&lt;product.service>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
     <GUI>
       <xloc>554</xloc>
       <yloc>112</yloc>
