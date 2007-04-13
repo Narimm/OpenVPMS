@@ -82,13 +82,13 @@ public class MapValuesPluginLoader {
     public List<IMObject> load(Row row) throws KettleException {
         Value idValue = row.searchValue(mappings.getIdColumn());
         if (idValue == null) {
-            String msg = Messages.get("MissingColumn",     // NON-NLS
+            String msg = Messages.get("MapValuesPluginLoader.MissingColumn",
                                       mappings.getIdColumn());
             throw new KettleException(msg);
         }
         String id = getLegacyId(idValue);
         if (StringUtils.isEmpty(id)) {
-            String msg = Messages.get("NullIdColumn",       // NON-NLS
+            String msg = Messages.get("MapValuesPluginLoader.NullIdColumn",
                                       mappings.getIdColumn());
             throw new KettleException(msg);
         }
@@ -96,7 +96,7 @@ public class MapValuesPluginLoader {
         for (Mapping mapping : mappings.getMapping()) {
             Value value = row.searchValue(mapping.getSource());
             if (value == null) {
-                String msg = Messages.get("MissingColumn",     // NON-NLS
+                String msg = Messages.get("MapValuesPluginLoader.MissingColumn",
                                           mapping.getSource());
                 throw new KettleException(msg);
             }

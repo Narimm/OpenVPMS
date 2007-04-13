@@ -20,25 +20,38 @@ package org.openvpms.etl.load;
 
 
 /**
- * Listener for {@link Loader} errors.
+ * Lookup code and name pair.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface ErrorListener {
+public class CodeName extends Pair {
 
     /**
-     * Invoked when an error occurs for a particular row.
+     * Constructs a new <tt>CodeName</tt>.
      *
-     * @param rowId     the identifier of the row that triggered the error
-     * @param exception the exception
+     * @param code the code
+     * @param name the name
      */
-    void error(String rowId, Throwable exception);
+    public CodeName(String code, String name) {
+        super(code, name);
+    }
 
     /**
-     * Invoked when an error occurs.
+     * Returns the lookup code.
      *
-     * @param exception the exception
+     * @return the lookup code
      */
-    void error(Throwable exception);
+    public String getCode() {
+        return getValue1();
+    }
+
+    /**
+     * Returns the lookup name.
+     *
+     * @return the lookup name
+     */
+    public String getName() {
+        return getValue2();
+    }
 }

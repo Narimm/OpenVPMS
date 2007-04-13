@@ -33,8 +33,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+
 /**
- * Add description here.
+ * Tests the {@link Loader}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

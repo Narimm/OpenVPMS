@@ -90,6 +90,15 @@ public class MapValuesPluginDialog extends BaseStepDialog
 
     private static final String YES = "Y";  // NON-NLS
     private static final String NO = "N";   // NON-NLS
+
+    /**
+     * Check-box to determine if lookups should be generated.
+     */
+    private Button generateLookups;
+
+    /**
+     * Check-box to determine if processed rows should be skipped.
+     */
     private Button skipProcessed;
 
 
@@ -233,13 +242,9 @@ public class MapValuesPluginDialog extends BaseStepDialog
                                ColumnInfo.COLUMN_TYPE_CCOMBO,
                                getYesNo(), true)};
 
-        mappingTable = new TableView(wSelectComp,
-                                     SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI,
-                                     columns,
-                                     rowCount,
-                                     modifyListener,
-                                     props
-        );
+        mappingTable = new TableView(
+                wSelectComp, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI,
+                columns, rowCount, modifyListener, props);
 
         Button getButton = new Button(wSelectComp, SWT.PUSH);
         getButton.setText(
@@ -284,12 +289,16 @@ public class MapValuesPluginDialog extends BaseStepDialog
         Button cancel = new Button(shell, SWT.PUSH);
         cancel.setText(Messages.get("System.Button.Cancel")); // NON-NLS
 
+        generateLookups = new Button(shell, SWT.CHECK);
+        generateLookups.setText(
+                Messages.get("MapValuesPluginDialog.GenerateLookups"));
+
         skipProcessed = new Button(shell, SWT.CHECK);
         skipProcessed.setText(
                 Messages.get("MapValuesPluginDialog.SkipProcessed"));
 
-        setButtonPositions(new Button[]{ok, cancel, skipProcessed}, margin,
-                           tabFolder);
+        setButtonPositions(new Button[]{ok, cancel, generateLookups,
+                                        skipProcessed}, margin, tabFolder);
 
         // Add listeners
         ok.addListener(SWT.Selection, new Listener() {
@@ -352,6 +361,8 @@ public class MapValuesPluginDialog extends BaseStepDialog
             idName.setText(mappings.getIdColumn());
         }
 
+        generateLookups.setSelection(mappings.getGenerateLookups());
+
         skipProcessed.setSelection(mappings.getSkipProcessed());
 
         Mapping[] list = mappings.getMapping();
@@ -394,6 +405,7 @@ public class MapValuesPluginDialog extends BaseStepDialog
         Mappings mappings = new Mappings();
         mappings.setConnection(connection.getText());
         mappings.setIdColumn(idName.getText());
+        mappings.setGenerateLookups(generateLookups.getSelection());
         mappings.setSkipProcessed(skipProcessed.getSelection());
         int count = mappingTable.nrNonEmpty();
         for (int i = 0; i < count; i++) {

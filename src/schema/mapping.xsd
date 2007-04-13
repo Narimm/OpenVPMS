@@ -8,6 +8,7 @@
                 <xs:element name="connection" type="xs:string" minOccurs="0"/>
                 <xs:element name="idColumn" type="xs:string" minOccurs="0"/>
                 <xs:element ref="mapping" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="generateLookups" type="xs:boolean" default="true" minOccurs="0"/>
                 <xs:element name="skipProcessed" type="xs:boolean" default="true" minOccurs="0"/>
             </xs:sequence>
         </xs:complexType>
