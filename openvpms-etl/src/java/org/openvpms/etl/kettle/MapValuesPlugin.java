@@ -201,8 +201,13 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
                                                dao, service);
             loader.setErrorListener(new ErrorListener() {
                 public void error(String legacyId, Throwable exception) {
-                    logBasic(Messages.get("MapValuesPlugin.FailedToProcess",
+                    logBasic(Messages.get("MapValuesPlugin.FailedToProcessRow",
                                           legacyId, exception));
+                }
+
+                public void error(Throwable exception) {
+                    logBasic(Messages.get("MapValuesPlugin.FailedToProcess",
+                                          exception));
                 }
             });
         }

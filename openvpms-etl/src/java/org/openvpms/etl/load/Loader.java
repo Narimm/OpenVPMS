@@ -56,6 +56,11 @@ public class Loader {
     private final RowMapper mapper;
 
     /**
+     * The lookup handler.
+     */
+    private final LookupHandler lookupHandler;
+
+    /**
      * Determines if already processed rows should be skipped.
      */
     private boolean skipProcessed;
@@ -89,7 +94,8 @@ public class Loader {
         this.name = name;
         this.dao = dao;
         this.handler = handler;
-        mapper = new RowMapper(mappings, this.handler, service);
+        lookupHandler = new LookupHandler(mappings, service);
+        mapper = new RowMapper(mappings, handler, lookupHandler, service);
         skipProcessed = mappings.getSkipProcessed();
     }
 
@@ -132,6 +138,10 @@ public class Loader {
      * @throws ArchetypeServiceException for any archetyype service error
      */
     public void close() {
+        if (lookupHandler != null) {
+            lookupHandler.commit();
+            lookupHandler.close();
+        }
         handler.end();
         handler.close();
     }

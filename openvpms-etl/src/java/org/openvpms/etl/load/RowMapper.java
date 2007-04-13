@@ -77,6 +77,17 @@ class RowMapper {
             = new LinkedHashMap<String, IMObject>();
 
     /**
+     * Lookup codes for the current row.
+     */
+    private Map<NodeDescriptor, CodeName> lookups
+            = new HashMap<NodeDescriptor, CodeName>();
+
+    /**
+     * Lookup handler.
+     */
+    private LookupHandler lookupHandler;
+
+    /**
      * Value token that gets expanded with the column value.
      */
     private static final String VALUE_TOKEN = "\\$value";    // NON-NLS
@@ -85,12 +96,14 @@ class RowMapper {
     /**
      * Constructs a new <tt>RowMapper</tt>.
      *
-     * @param mappings the row mappings
-     * @param handler  the object handler
-     * @param service  the archetype service
+     * @param mappings      the row mappings
+     * @param handler       the object handler
+     * @param lookupHandler the lookup handler, or <tt>null</tt> if lookups
+     *                      aren't being generated
+     * @param service       the archetype service
      */
     public RowMapper(Mappings mappings, ObjectHandler handler,
-                     IArchetypeService service) {
+                     LookupHandler lookupHandler, IArchetypeService service) {
         this.mappings = mappings;
         this.handler = handler;
         this.service = service;
@@ -103,6 +116,7 @@ class RowMapper {
             }
             nodes.put(target, node);
         }
+        this.lookupHandler = lookupHandler;
     }
 
     /**
@@ -115,6 +129,7 @@ class RowMapper {
      */
     public List<IMObject> map(ETLRow row) {
         objects.clear();
+        lookups.clear();
         rowId = row.getRowId();
         for (Mapping mapping : mappings.getMapping()) {
             if (!row.exists(mapping.getSource())) {
@@ -125,6 +140,9 @@ class RowMapper {
                     || (mapping.getExcludeNull() && value != null)) {
                 mapValue(value, mapping);
             }
+        }
+        if (lookupHandler != null && !lookups.isEmpty()) {
+            lookupHandler.add(lookups);
         }
         List<IMObject> result = new ArrayList<IMObject>(objects.values());
         objects.clear();
@@ -160,6 +178,13 @@ class RowMapper {
         } else if (descriptor.isCollection()) {
             String targetValue = getStringValue(value, mapping);
             bean.addValue(name, handler.getObject(targetValue));
+        } else if (lookupHandler != null && descriptor.isLookup()) {
+            String targetValue = getStringValue(value, mapping);
+            String code = lookupHandler.getCode(targetValue);
+            bean.setValue(name, code);
+            if (lookupHandler.isGeneratedLookup(descriptor)) {
+                lookups.put(descriptor, new CodeName(code, targetValue));
+            }
         } else {
             Object targetValue = getValue(value, mapping);
             bean.setValue(name, targetValue);
