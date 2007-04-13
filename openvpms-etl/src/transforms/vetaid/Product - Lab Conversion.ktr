@@ -103,7 +103,7 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Lab Input</from><to>Select Lab fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Lab fields</from><to>Transform Lab Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Lab Fields</from><to>OpenVPMS Lab Output</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Lab Input</from><to>Select Lab fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Lab fields</from><to>Transform Lab Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Lab Fields</from><to>Product Lab Output</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Lab Input</name>
@@ -134,7 +134,7 @@
     </step>
 
   <step>
-    <name>OpenVPMS Lab Output</name>
+    <name>Product Lab Output</name>
     <type>MapValuesPlugin</type>
     <description/>
     <distribute>Y</distribute>

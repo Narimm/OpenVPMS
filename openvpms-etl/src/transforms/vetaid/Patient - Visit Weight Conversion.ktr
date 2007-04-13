@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Visit Weight Conversion</name>
+    <name>Patient - Visit Weight Conversion</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -106,20 +106,73 @@
   <hop> <from>Visits Input</from><to>Select Visit Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Visit Fields</from><to>Visit Weight Item Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select Visit Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Visit Fields</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
-    <name>Visit Weight Item Output</name>
-    <type>MapValuesPlugin</type>
+    <name>Dummy (do nothing)</name>
+    <type>Dummy</type>
     <description/>
-    <distribute>N</distribute>
+    <distribute>Y</distribute>
     <copies>1</copies>
          <partitioning>
            <method>none</method>
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>VISITITEMID</idColumn><mapping><source>PETNUMBER</source><target>&lt;act.patientWeight>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TREATDATE</source><target>&lt;act.pateintWeight>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WEIGHT</source><target>&lt;act.patientWeight>weight</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WEIGHTUOM</source><target>&lt;act.patientWeight>units</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TREATNO</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>true</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITITEMID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>true</excludeNull><value>&lt;act.patientWeight>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
+     <cluster_schema/>
     <GUI>
-      <xloc>591</xloc>
-      <yloc>135</yloc>
+      <xloc>342</xloc>
+      <yloc>242</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter rows</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Transform Visit Fields</send_true_to>
+<send_false_to>Dummy (do nothing)</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>WEIGHT</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <conditions>
+    <condition>
+     <negated>N</negated>
+     <leftvalue>PETNUMBER</leftvalue>
+     <function>IS NOT NULL</function>
+     <rightvalue/>
+     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>AND</operator>
+     <leftvalue>TREATNO</leftvalue>
+     <function>IS NOT NULL</function>
+     <rightvalue/>
+     </condition>
+    </conditions>
+   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>338</xloc>
+      <yloc>136</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -151,27 +204,7 @@
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <meta>        <name>PETNUMBER</name>
-        <rename/>
-        <type>String</type>
-        <length>20</length>
-        <precision>0</precision>
-        </meta>      <meta>        <name>TREATNO</name>
-        <rename/>
-        <type>String</type>
-        <length>20</length>
-        <precision>0</precision>
-        </meta>      <meta>        <name>TREATDATE</name>
-        <rename/>
-        <type>-</type>
-        <length>-2</length>
-        <precision>-2</precision>
-        </meta>      <meta>        <name>WEIGHT</name>
-        <rename/>
-        <type>-</type>
-        <length>7</length>
-        <precision>2</precision>
-        </meta>      </fields>     <cluster_schema/>
+        </field>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>245</xloc>
       <yloc>134</yloc>
@@ -193,8 +226,7 @@
     <script/>
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
-        <jsScript_script>PETNUMBER.setString(&quot;PET&quot; + PETNUMBER.getString());
-TREATNO.setString(&quot;VISIT&quot; + TREATNO.getString());
+        <jsScript_script>
 var VISITITEMID = &quot;WEIGHT&quot; + TREATNO.getString();
 var WEIGHTUOM = &quot;KILOGRAMS&quot;
 </jsScript_script>
@@ -211,6 +243,25 @@ var WEIGHTUOM = &quot;KILOGRAMS&quot;
         </field>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>441</xloc>
+      <yloc>134</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Visit Weight Item Output</name>
+    <type>MapValuesPlugin</type>
+    <description/>
+    <distribute>N</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>VISITITEMID</idColumn><mapping><source>TREATDATE</source><target>&lt;act.patientWeight>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WEIGHT</source><target>&lt;act.patientWeight>weight</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WEIGHTUOM</source><target>&lt;act.patientWeight>units</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETNUMBER</source><target>&lt;act.patientWeight>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITITEMID</source><target>&lt;act.patientWeight>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.patientWeight>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TREATNO</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>true</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITITEMID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>true</excludeNull><value>&lt;act.patientWeight>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>590</xloc>
       <yloc>135</yloc>
       <draw>Y</draw>
       </GUI>
@@ -240,54 +291,6 @@ var WEIGHTUOM = &quot;KILOGRAMS&quot;
     <GUI>
       <xloc>95</xloc>
       <yloc>135</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter rows</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<send_true_to>Transform Visit Fields</send_true_to>
-<send_false_to>Dummy (do nothing)</send_false_to>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue>WEIGHT</leftvalue>
- <function>&lt;&gt;</function>
- <rightvalue/>
- <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
-    </compare>
-     <cluster_schema/>
-    <GUI>
-      <xloc>338</xloc>
-      <yloc>136</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Dummy (do nothing)</name>
-    <type>Dummy</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-     <cluster_schema/>
-    <GUI>
-      <xloc>336</xloc>
-      <yloc>240</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

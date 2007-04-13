@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Visit Conversion</name>
+    <name>Patient - Visit Conversion</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -103,10 +103,77 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Visits Input</from><to>Select Visit Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Visit Fields</from><to>OpenVPMS Visit Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select Visit Fields</from><to>Transform Visit Fields</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Visits Input</from><to>Select Visit Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Visit Fields</from><to>Patient Visit Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select Visit Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Visit Fields</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
-    <name>OpenVPMS Visit Output</name>
+    <name>Dummy (do nothing)</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+    <GUI>
+      <xloc>324</xloc>
+      <yloc>241</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter rows</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Transform Visit Fields</send_true_to>
+<send_false_to>Dummy (do nothing)</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>PETNUMBER</leftvalue>
+   <function>IS NOT NULL</function>
+   <rightvalue/>
+   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PETNUMBER</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>TREATNO</leftvalue>
+   <function>IS NOT NULL</function>
+   <rightvalue/>
+   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>324</xloc>
+      <yloc>134</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Patient Visit Output</name>
     <type>MapValuesPlugin</type>
     <description/>
     <distribute>N</distribute>
@@ -116,10 +183,10 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>TREATNO</idColumn><mapping><source>PETNUMBER</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TREATDATE</source><target>&lt;act.patientClinicalEvent>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>STATUS</source><target>&lt;act.patientClinicalEvent>status</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REASON</source><target>&lt;act.patientClinicalEvent>reason</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>TREATNO</idColumn><mapping><source>TREATDATE</source><target>&lt;act.patientClinicalEvent>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>STATUS</source><target>&lt;act.patientClinicalEvent>status</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REASON</source><target>&lt;act.patientClinicalEvent>reason</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETNUMBER</source><target>&lt;act.patientClinicalEvent>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TREATNO</source><target>&lt;act.patientClinicalEvent>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>588</xloc>
-      <yloc>136</yloc>
+      <xloc>573</xloc>
+      <yloc>135</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -159,39 +226,9 @@
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <meta>        <name>PETNUMBER</name>
-        <rename/>
-        <type>String</type>
-        <length>20</length>
-        <precision>0</precision>
-        </meta>      <meta>        <name>TREATNO</name>
-        <rename/>
-        <type>String</type>
-        <length>20</length>
-        <precision>0</precision>
-        </meta>      <meta>        <name>TREATDATE</name>
-        <rename/>
-        <type>-</type>
-        <length>-2</length>
-        <precision>-2</precision>
-        </meta>      <meta>        <name>WEIGHT</name>
-        <rename/>
-        <type>-</type>
-        <length>7</length>
-        <precision>2</precision>
-        </meta>      <meta>        <name>TEMPERATE</name>
-        <rename/>
-        <type>-</type>
-        <length>6</length>
-        <precision>2</precision>
-        </meta>      <meta>        <name>STATUS</name>
-        <rename/>
-        <type>-</type>
-        <length>1</length>
-        <precision>-2</precision>
-        </meta>      </fields>     <cluster_schema/>
+        </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>266</xloc>
+      <xloc>224</xloc>
       <yloc>135</yloc>
       <draw>Y</draw>
       </GUI>
@@ -211,9 +248,7 @@
     <script/>
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
-        <jsScript_script>PETNUMBER.setString(&quot;PET&quot; + PETNUMBER.getString());
-TREATNO.setString(&quot;VISIT&quot; + TREATNO.getString());
-STATUS.setString(&quot;COMPLETED&quot;)
+        <jsScript_script>STATUS.setString(&quot;COMPLETED&quot;)
 var REASON = &quot;Consultation&quot;</jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>REASON</name>
         <rename>REASON</rename>
@@ -251,7 +286,7 @@ var REASON = &quot;Consultation&quot;</jsScript_script>
      <cluster_schema/>
     <GUI>
       <xloc>99</xloc>
-      <yloc>136</yloc>
+      <yloc>135</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

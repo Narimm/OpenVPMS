@@ -103,10 +103,10 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Procedures Input</from><to>Select Procedure fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Procedure fields</from><to>Transform Procedure Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Procedure Fields</from><to>OpenVPMS Procedure Output</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Procedures Input</from><to>Select Procedure fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Procedure fields</from><to>Transform Procedure Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Procedure Fields</from><to>Product Procedure Output</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
-    <name>OpenVPMS Procedure Output</name>
+    <name>Product Procedure Output</name>
     <type>MapValuesPlugin</type>
     <description/>
     <distribute>Y</distribute>
