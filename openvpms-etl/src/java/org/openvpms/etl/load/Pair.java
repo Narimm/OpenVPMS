@@ -18,7 +18,7 @@
 
 package org.openvpms.etl.load;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.ObjectUtils;
 
 
 /**
@@ -101,14 +101,14 @@ public class Pair {
      *         otherwise <tt>false</tt>
      */
     public boolean equals(Object other) {
-        if (!(other instanceof Pair)) {
+        if (this == other) {
+            return true;
+        } else if (!(other instanceof Pair)) {
             return false;
         }
         Pair pair = (Pair) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(pair))
-                .append(value1, pair.value1)
-                .append(value2, pair.value2).isEquals();
+        return ObjectUtils.equals(value1, pair.value1)
+                && ObjectUtils.equals(value2, pair.value2);
     }
 
     /**
