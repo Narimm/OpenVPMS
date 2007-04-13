@@ -103,7 +103,7 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Client Input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>OpenVPMS Output</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Client Input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Customer Output</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Client Input</name>
@@ -127,14 +127,14 @@
     <accept_stepname/>
      <cluster_schema/>
     <GUI>
-      <xloc>66</xloc>
+      <xloc>65</xloc>
       <yloc>149</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>OpenVPMS Output</name>
+    <name>Customer Output</name>
     <type>MapValuesPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -144,9 +144,9 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>CLNUMBER</idColumn><mapping><source>CLTITLE</source><target>&lt;party.customerperson>title</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINITS</source><target>&lt;party.customerperson>initials</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLFSTNAME</source><target>&lt;party.customerperson>firstName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLSURNAME</source><target>&lt;party.customerperson>lastName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;party.customerperson>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLPHONENUM</source><target>&lt;party.customerperson>contacts[0]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLPHONEAREA</source><target>&lt;party.customerperson>contacts[0]&lt;contact.phoneNumber>areaCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLPHONENUM</source><target>&lt;party.customerperson>contacts[0]&lt;contact.phoneNumber>purposes[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.contactPurpose>code=HOME</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WKPHONENUM</source><target>&lt;party.customerperson>contacts[1]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WKPHONEAREA</source><target>&lt;party.customerperson>contacts[1]&lt;contact.phoneNumber>areaCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WKPHONENUM</source><target>&lt;party.customerperson>contacts[1]&lt;contact.phoneNumber>purposes[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.contactPurpose>code=WORK</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLADDRESS</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>address</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLSUBURB</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>suburb</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLSTATE</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>state</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLPOSTCODE</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>postcode</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FAXPHONEAREA</source><target>&lt;party.customerperson>contacts[4]&lt;contact.faxNumber>areaCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FAXPHONENUM</source><target>&lt;party.customerperson>contacts[4]&lt;contact.faxNumber>faxNumber</target><excludeNull>true</excludeNull><value>&lt;lookup.contactPurpose>code=WORK</value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>CLNUMBER</idColumn><mapping><source>CLTITLE</source><target>&lt;party.customerperson>title</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLINITS</source><target>&lt;party.customerperson>initials</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLFSTNAME</source><target>&lt;party.customerperson>firstName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLSURNAME</source><target>&lt;party.customerperson>lastName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;party.customerperson>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLPHONENUM</source><target>&lt;party.customerperson>contacts[0]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLPHONEAREA</source><target>&lt;party.customerperson>contacts[0]&lt;contact.phoneNumber>areaCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLPHONENUM</source><target>&lt;party.customerperson>contacts[0]&lt;contact.phoneNumber>purposes[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.contactPurpose>code=HOME</value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>WKPHONENUM</source><target>&lt;party.customerperson>contacts[1]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>WKPHONEAREA</source><target>&lt;party.customerperson>contacts[1]&lt;contact.phoneNumber>areaCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>WKPHONENUM</source><target>&lt;party.customerperson>contacts[1]&lt;contact.phoneNumber>purposes[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.contactPurpose>code=WORK</value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLADDRESS</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>address</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLSUBURB</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>suburb</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLSTATE</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>state</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLPOSTCODE</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>postcode</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>FAXPHONEAREA</source><target>&lt;party.customerperson>contacts[4]&lt;contact.faxNumber>areaCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>FAXPHONENUM</source><target>&lt;party.customerperson>contacts[4]&lt;contact.faxNumber>faxNumber</target><excludeNull>true</excludeNull><value>&lt;lookup.contactPurpose>code=WORK</value><removeDefaultObjects>true</removeDefaultObjects></mapping><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>468</xloc>
+      <xloc>466</xloc>
       <yloc>148</yloc>
       <draw>Y</draw>
       </GUI>
@@ -389,7 +389,7 @@ var ACTIVE = !DEACTIVATE.getBool()</jsScript_script>
         </field>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>342</xloc>
-      <yloc>147</yloc>
+      <yloc>148</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

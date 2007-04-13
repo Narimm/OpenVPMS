@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Invoice Drug Items Conversion</name>
+    <name>Customer - Invoice Drug Items Conversion</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -103,7 +103,7 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Merge Join</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  <hop> <from>Modified Java Script Value</from><to>Invoice Item Mapper</to><enabled>Y</enabled> </hop>  <hop> <from>Drug Items Input</from><to>Select Drug Items</to><enabled>Y</enabled> </hop>  <hop> <from>Select Drug Items</from><to>Transform Drug Items</to><enabled>Y</enabled> </hop>  <hop> <from>Invoices input</from><to>Select Invoice Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Invoice Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Drug Items</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Merge Join</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  <hop> <from>Modified Java Script Value</from><to>Invoice Drug Items</to><enabled>Y</enabled> </hop>  <hop> <from>Drug Items Input</from><to>Select Drug Items</to><enabled>Y</enabled> </hop>  <hop> <from>Select Drug Items</from><to>Transform Drug Items</to><enabled>Y</enabled> </hop>  <hop> <from>Invoices input</from><to>Select Invoice Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Invoice Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Drug Items</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Add sequence</name>
@@ -156,8 +156,8 @@
     <accept_stepname/>
      <cluster_schema/>
     <GUI>
-      <xloc>53</xloc>
-      <yloc>321</yloc>
+      <xloc>54</xloc>
+      <yloc>325</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -223,7 +223,7 @@
     </step>
 
   <step>
-    <name>Invoice Item Mapper</name>
+    <name>Invoice Drug Items</name>
     <type>MapValuesPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -311,9 +311,7 @@
     <script/>
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
-        <jsScript_script>CLNUMBER.setString(&quot;CUST&quot; + CLNUMBER.getString());
-INVOICENO.setString(&quot;INV&quot; + INVOICENO.getString());
-PETNUMBER.setString(&quot;PET&quot; + PETNUMBER.getString());</jsScript_script>
+        <jsScript_script/>
         </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>781</xloc>
@@ -365,7 +363,7 @@ PETNUMBER.setString(&quot;PET&quot; + PETNUMBER.getString());</jsScript_script>
         </meta>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>200</xloc>
-      <yloc>322</yloc>
+      <yloc>323</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -397,17 +395,7 @@ PETNUMBER.setString(&quot;PET&quot; + PETNUMBER.getString());</jsScript_script>
         <rename>STARTDATE</rename>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <meta>        <name>CLNUMBER</name>
-        <rename/>
-        <type>String</type>
-        <length>20</length>
-        <precision>-2</precision>
-        </meta>      <meta>        <name>PETNUMBER</name>
-        <rename/>
-        <type>String</type>
-        <length>20</length>
-        <precision>-2</precision>
-        </meta>      </fields>     <cluster_schema/>
+        </field>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>200</xloc>
       <yloc>215</yloc>

@@ -116,7 +116,7 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
     </attributes>
   </connection>
   <order>
-  <hop> <from>Services Input</from><to>Select Service fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Service Fields</from><to>Sort by product Id</to><enabled>Y</enabled> </hop>  <hop> <from>Charges Input</from><to>Select Charge fields</to><enabled>Y</enabled> </hop>  <hop> <from>Row Normaliser</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Sort Charge Rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Charge Rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Join</from><to>Transform Service Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Service Reference Fields</from><to>OpenVPMS Service References</to><enabled>Y</enabled> </hop>  <hop> <from>Sort by product Id</from><to>Unique product Id&apos;s</to><enabled>Y</enabled> </hop>  <hop> <from>Unique product Id&apos;s</from><to>OpenVPMS Product Services</to><enabled>Y</enabled> </hop>  <hop> <from>Select Service fields</from><to>Sort Service Rows</to><enabled>Y</enabled> </hop>  <hop> <from>Select Charge fields</from><to>Row Normaliser</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Service Rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Service input Reference</from><to>Select Service Reference Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Service Reference Fields</from><to>Transform Service Reference Fields</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Services Input</from><to>Select Service fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Service Fields</from><to>Sort by product Id</to><enabled>Y</enabled> </hop>  <hop> <from>Charges Input</from><to>Select Charge fields</to><enabled>Y</enabled> </hop>  <hop> <from>Row Normaliser</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Sort Charge Rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Charge Rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Join</from><to>Transform Service Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Service Reference Fields</from><to>Product Service Reference Output</to><enabled>Y</enabled> </hop>  <hop> <from>Sort by product Id</from><to>Unique product Id&apos;s</to><enabled>Y</enabled> </hop>  <hop> <from>Unique product Id&apos;s</from><to>Product Service Charges Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select Service fields</from><to>Sort Service Rows</to><enabled>Y</enabled> </hop>  <hop> <from>Select Charge fields</from><to>Row Normaliser</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Service Rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Service input Reference</from><to>Select Service Reference Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Service Reference Fields</from><to>Transform Service Reference Fields</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Charges Input</name>
@@ -204,7 +204,7 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
     </step>
 
   <step>
-    <name>OpenVPMS Product Services</name>
+    <name>Product Service Charges Output</name>
     <type>MapValuesPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -223,7 +223,7 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
     </step>
 
   <step>
-    <name>OpenVPMS Service References</name>
+    <name>Product Service Reference Output</name>
     <type>MapValuesPlugin</type>
     <description/>
     <distribute>Y</distribute>

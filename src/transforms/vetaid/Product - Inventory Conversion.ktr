@@ -103,7 +103,7 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Inventory Input</from><to>Select Inventory Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Inventory Fields</from><to>Lookup Dispensing Fee</to><enabled>Y</enabled> </hop>  <hop> <from>Charges Input</from><to>Filter Dispensing Fee Charge</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Dispensing Fee Charge</from><to>Select Charge fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Charge fields</from><to>Row Normaliser</to><enabled>Y</enabled> </hop>  <hop> <from>Row Normaliser</from><to>Lookup Dispensing Fee</to><enabled>Y</enabled> </hop>  <hop> <from>Lookup Dispensing Fee</from><to>Transform Inventory Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Inventory Fields</from><to>OpenVPMS Medication product</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Inventory Input</from><to>Select Inventory Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Inventory Fields</from><to>Lookup Dispensing Fee</to><enabled>Y</enabled> </hop>  <hop> <from>Charges Input</from><to>Filter Dispensing Fee Charge</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Dispensing Fee Charge</from><to>Select Charge fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Charge fields</from><to>Row Normaliser</to><enabled>Y</enabled> </hop>  <hop> <from>Row Normaliser</from><to>Lookup Dispensing Fee</to><enabled>Y</enabled> </hop>  <hop> <from>Lookup Dispensing Fee</from><to>Transform Inventory Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Inventory Fields</from><to>Product Medication Output</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Charges Input</name>
@@ -227,7 +227,7 @@
     </step>
 
   <step>
-    <name>OpenVPMS Medication product</name>
+    <name>Product Medication Output</name>
     <type>MapValuesPlugin</type>
     <description/>
     <distribute>Y</distribute>
