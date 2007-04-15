@@ -135,7 +135,7 @@ public class Loader {
      * Closes the loader.
      *
      * @throws LoaderException           for any loader exception
-     * @throws ArchetypeServiceException for any archetyype service error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public void close() {
         if (lookupHandler != null) {

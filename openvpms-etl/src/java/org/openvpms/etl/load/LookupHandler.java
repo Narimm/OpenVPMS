@@ -104,7 +104,7 @@ class LookupHandler {
                 if (archetype != null) {
                     NodeDescriptor descriptor = archetype.getNodeDescriptor(
                             node.getName());
-                    if (descriptor.isLookup()) {
+                    if (descriptor != null && descriptor.isLookup()) {
                         if (isLookupType(descriptor)) {
                             processLookupDescriptor(descriptor);
                         }

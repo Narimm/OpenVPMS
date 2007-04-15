@@ -166,6 +166,8 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
             while (process) {
                 process = processRow(metaData, data) && !isStopped();
             }
+            loader.close();
+            loader = null;
         } catch (Throwable exception) {
             logError(Messages.get("MapValuesPlugin.UnexpectedError",
                                   exception.getMessage()));
