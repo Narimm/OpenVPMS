@@ -23,11 +23,13 @@ import be.ibridge.kettle.core.exception.KettleException;
 import be.ibridge.kettle.core.value.Value;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.etl.load.ETLLogDAO;
 import org.openvpms.etl.load.ETLRow;
 import org.openvpms.etl.load.ErrorListener;
 import org.openvpms.etl.load.Loader;
+import org.openvpms.etl.load.LoaderException;
 import org.openvpms.etl.load.Mapping;
 import org.openvpms.etl.load.Mappings;
 
@@ -112,6 +114,16 @@ public class MapValuesPluginLoader {
      */
     public void setErrorListener(ErrorListener listener) {
         loader.setErrorListener(listener);
+    }
+
+    /**
+     * Closes the loader.
+     *
+     * @throws LoaderException           for any loader exception
+     * @throws ArchetypeServiceException for any archetyype service error
+     */
+    public void close() {
+        loader.close();
     }
 
     /**
