@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Patient - Information Conversion</name>
+    <name>Patient - Relationships Conversion</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -99,11 +99,15 @@
     <data_tablespace/>
     <index_tablespace/>
     <attributes>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
       <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
     </attributes>
   </connection>
   <order>
-  <hop> <from>Patient Input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Patient Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Patient Input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Patient Relationship Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Dummy (do nothing)</name>
@@ -118,8 +122,8 @@
            </partitioning>
      <cluster_schema/>
     <GUI>
-      <xloc>293</xloc>
-      <yloc>245</yloc>
+      <xloc>258</xloc>
+      <yloc>234</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -144,13 +148,13 @@
   <condition>
    <negated>N</negated>
    <leftvalue>PETNUMBER</leftvalue>
-   <function>&lt;&gt;</function>
+   <function>IS NOT NULL</function>
    <rightvalue/>
-   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+   </condition>
   <condition>
    <negated>N</negated>
    <operator>AND</operator>
-   <leftvalue>PETNUMBER</leftvalue>
+   <leftvalue>CLNUMBER</leftvalue>
    <function>IS NOT NULL</function>
    <rightvalue/>
    </condition>
@@ -159,7 +163,7 @@
     </compare>
      <cluster_schema/>
     <GUI>
-      <xloc>296</xloc>
+      <xloc>255</xloc>
       <yloc>145</yloc>
       <draw>Y</draw>
       </GUI>
@@ -187,14 +191,14 @@
     <accept_stepname/>
      <cluster_schema/>
     <GUI>
-      <xloc>65</xloc>
+      <xloc>66</xloc>
       <yloc>144</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Patient Output</name>
+    <name>Patient Relationship Output</name>
     <type>MapValuesPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -204,10 +208,10 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PETNUMBER</idColumn><mapping><source>PETNAME</source><target>&lt;party.patientpet>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETTYPE</source><target>&lt;party.patientpet>species</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETBREED</source><target>&lt;party.patientpet>breed</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>COLOUR</source><target>&lt;party.patientpet>colour</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>BIRTHDATE</source><target>&lt;party.patientpet>dateOfBirth</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETSEX</source><target>&lt;party.patientpet>sex</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESEXED</source><target>&lt;party.patientpet>desexed</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DECEASED</source><target>&lt;party.patientpet>deceased</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MICROCHIP</source><target>&lt;party.patientpet>identities[0]&lt;entityIdentity.microchip>microchip</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>PETNUMBER</idColumn><mapping><source>PETNUMBER</source><target>&lt;entityRelationship.patientOwner>target</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLNUMBER</source><target>&lt;entityRelationship.patientOwner>source</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>531</xloc>
-      <yloc>145</yloc>
+      <xloc>468</xloc>
+      <yloc>144</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -223,31 +227,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <fields>      <field>        <name>CLNUMBER</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>PETNUMBER</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>PETNAME</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>PETTYPE</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>SIZE</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>PETBREED</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>COLOUR</name>
+    <fields>      <field>        <name>PETNUMBER</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
@@ -255,38 +235,14 @@
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>EUTHDATE</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>BIRTHDATE</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>WEIGHT</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>PETSEX</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>DESEXED</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>TAGNO</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>STATUS</name>
+        </field>      <field>        <name>CLNUMBER</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>206</xloc>
-      <yloc>145</yloc>
+      <xloc>169</xloc>
+      <yloc>143</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -308,48 +264,10 @@
         <jsScript_script>&#47;&#47;Script here
 var wordUtils = Packages.org.apache.commons.lang.WordUtils;
 
-&#47;&#47; Transform Name information
-PETNAME.setString(wordUtils.capitalizeFully(trim(PETNAME.getString())))
-if (PETNAME.getString() == &quot;&quot;) {
-	PETNAME.setString(&quot;No Name&quot;)
-}
-PETTYPE.setString(trim(PETTYPE.getString()))
-if (PETTYPE.getString() == &quot;&quot;) {
-	PETTYPE.setString(&quot;Other&quot;)
-}
-PETBREED.setString(trim(PETBREED.getString()))
-COLOUR.setString(wordUtils.capitalizeFully(trim(COLOUR.getString())))
-
-&#47;&#47; Transform Sex
-if (PETSEX.getString() == &quot;F&quot;)
-	PETSEX.setString(&quot;FEMALE&quot;);
-else if (PETSEX.getString() == &quot;M&quot;)
-	PETSEX.setString(&quot;MALE&quot;);
-else
-	PETSEX.setString(&quot;UNSPECIFIED&quot;)
-
-&#47;&#47;Transform Euthanased Date
-var DECEASED = false
-if (EUTHDATE.getDate() != null)
-	DECEASED = true
-
-&#47;&#47;Transform Identity field
-var MICROCHIP = null
-if (TAGNO.getString() != &quot;&quot;)
-	MICROCHIP = TAGNO.getString()</jsScript_script>
-        </jsScript>     </jsScripts>    <fields>      <field>        <name>DECEASED</name>
-        <rename>DECEASED</rename>
-        <type>Boolean</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        </field>      <field>        <name>MICROCHIP</name>
-        <rename>MICROCHIP</rename>
-        <type>String</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        </field>      </fields>     <cluster_schema/>
+</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>385</xloc>
+      <xloc>343</xloc>
       <yloc>146</yloc>
       <draw>Y</draw>
       </GUI>
