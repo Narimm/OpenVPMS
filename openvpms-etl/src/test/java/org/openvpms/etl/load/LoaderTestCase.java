@@ -20,7 +20,9 @@ package org.openvpms.etl.load;
 
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -54,8 +56,9 @@ public class LoaderTestCase
      */
     private ETLLogDAO dao;
 
+
     /**
-     * Tests a single objet.
+     * Tests a single object.
      *
      * @throws Exception for any error
      */
@@ -234,6 +237,56 @@ public class LoaderTestCase
     }
 
     /**
+     * Verifies that wildcards can be specified for archetype/legacyId
+     * references.
+     */
+    public void testReferenceWildcards() {
+        // create a product
+        Product product = (Product) service.create("product.medication");
+        assertNotNull(product);
+        product.setName("XLoaderTestCaseProduct" + System.currentTimeMillis());
+        service.save(product);
+
+        // add a log for the product, so it can be referenced
+        ETLLog productLog = new ETLLog("PRODLOADER", "PROD1",
+                                       "product.medication");
+        productLog.setLinkId(product.getLinkId());
+        dao.save(productLog);
+
+        // create a product participation mapping
+        Mappings mappings = new Mappings();
+        mappings.setIdColumn("INVOICEID");
+        Mapping productMap = createMapping(
+                "PRODUCTID",
+                "<act.customerAccountInvoiceItem>product[0]<participation.product>entity",
+                "<product.*>$value");
+        mappings.addMapping(productMap);
+
+        // load a (partial) invoice item
+        Loader loader = createLoader("INVLOAD", mappings);
+        ETLRow row = new ETLRow("INVOICEID");
+        row.add("INVOICEID", "INV1");
+        row.add("PRODUCTID", "PROD1");
+        List<IMObject> objects = loader.load(row);
+        loader.close();
+
+        // verify the invoice and participation objects were created and
+        // that they reference each other
+        assertEquals(2, objects.size());
+        IMObjectBean act = new IMObjectBean(objects.get(0));
+        IMObjectBean participation = new IMObjectBean(objects.get(1));
+        assertTrue(act.isA("act.customerAccountInvoiceItem"));
+        assertTrue(participation.isA("participation.product"));
+
+        List<Participation> participations
+                = act.getValues("product", Participation.class);
+        assertEquals(1, participations.size());
+        assertEquals(participations.get(0), participation.getObject());
+        assertEquals(product.getObjectReference(),
+                     participation.getValue("entity"));
+    }
+
+    /**
      * Returns the location of the spring config files.
      *
      * @return an array of config locations
@@ -279,9 +332,22 @@ public class LoaderTestCase
      * @return a new mapping
      */
     private Mapping createMapping(String source, String target) {
+        return createMapping(source, target, null);
+    }
+
+    /**
+     * Helper to create a new mapping.
+     *
+     * @param source the source to map
+     * @param target the target to map to
+     * @param value  the value. May be <tt>null</tt>
+     * @return a new mapping
+     */
+    private Mapping createMapping(String source, String target, String value) {
         Mapping mapping = new Mapping();
         mapping.setSource(source);
         mapping.setTarget(target);
+        mapping.setValue(value);
         return mapping;
     }
 
@@ -313,11 +379,11 @@ public class LoaderTestCase
 
 
     private class TestObjectHandler extends DefaultObjectHandler {
+
         public TestObjectHandler(String loaderName, ETLLogDAO dao,
                                  IArchetypeService service) {
             super(loaderName, dao, service);
         }
-
 
         /**
          * Saves a set of mapped objects.
