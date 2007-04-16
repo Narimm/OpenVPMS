@@ -107,7 +107,7 @@
 
   <step>
     <name>OpenVPMS Reminder Output</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>N</distribute>
     <copies>1</copies>

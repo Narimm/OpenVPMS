@@ -136,7 +136,7 @@
 
   <step>
     <name>Receipt Output</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>N</distribute>
     <copies>1</copies>
@@ -183,7 +183,7 @@
 
   <step>
     <name>Refund Output</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>N</distribute>
     <copies>1</copies>

@@ -107,7 +107,7 @@
 
   <step>
     <name>Customer Credit Output</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>N</distribute>
     <copies>1</copies>
@@ -126,7 +126,7 @@
 
   <step>
     <name>Customer Invoice Output</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>N</distribute>
     <copies>1</copies>

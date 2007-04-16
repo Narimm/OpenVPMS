@@ -44,7 +44,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class MapValuesPluginLoader {
+public class LoaderAdapter {
 
     /**
      * The mappings.
@@ -58,15 +58,15 @@ public class MapValuesPluginLoader {
 
 
     /**
-     * Constructs a new <tt>MapValuesPluginLoader</tt>.
+     * Constructs a new <tt>LoaderAdapter</tt>.
      *
      * @param name     the loader name
      * @param mappings the mappings
      * @param dao      the DAO
      * @param service  the archetype service
      */
-    public MapValuesPluginLoader(String name, Mappings mappings, ETLLogDAO dao,
-                                 IArchetypeService service) {
+    public LoaderAdapter(String name, Mappings mappings, ETLLogDAO dao,
+                         IArchetypeService service) {
         this.mappings = mappings;
         loader = new Loader(name, mappings, dao, service);
     }
@@ -84,13 +84,13 @@ public class MapValuesPluginLoader {
     public List<IMObject> load(Row row) throws KettleException {
         Value idValue = row.searchValue(mappings.getIdColumn());
         if (idValue == null) {
-            String msg = Messages.get("MapValuesPluginLoader.MissingColumn",
+            String msg = Messages.get("LoaderAdapter.MissingColumn",
                                       mappings.getIdColumn());
             throw new KettleException(msg);
         }
         String id = getLegacyId(idValue);
         if (StringUtils.isEmpty(id)) {
-            String msg = Messages.get("MapValuesPluginLoader.NullIdColumn",
+            String msg = Messages.get("LoaderAdapter.NullIdColumn",
                                       mappings.getIdColumn());
             throw new KettleException(msg);
         }
@@ -98,7 +98,7 @@ public class MapValuesPluginLoader {
         for (Mapping mapping : mappings.getMapping()) {
             Value value = row.searchValue(mapping.getSource());
             if (value == null) {
-                String msg = Messages.get("MapValuesPluginLoader.MissingColumn",
+                String msg = Messages.get("LoaderAdapter.MissingColumn",
                                           mapping.getSource());
                 throw new KettleException(msg);
             }

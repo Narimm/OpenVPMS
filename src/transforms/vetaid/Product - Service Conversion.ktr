@@ -205,7 +205,7 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
 
   <step>
     <name>Product Service Charges Output</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>
@@ -224,7 +224,7 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
 
   <step>
     <name>Product Service Reference Output</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>

@@ -250,7 +250,7 @@ var WEIGHTUOM = &quot;KILOGRAMS&quot;
 
   <step>
     <name>Visit Weight Item Output</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>N</distribute>
     <copies>1</copies>

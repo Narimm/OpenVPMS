@@ -224,7 +224,7 @@
 
   <step>
     <name>Invoice Drug Items</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>

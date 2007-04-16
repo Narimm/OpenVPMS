@@ -164,7 +164,7 @@
 
   <step>
     <name>Invoice Item Mapper</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>

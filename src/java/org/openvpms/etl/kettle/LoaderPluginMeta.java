@@ -54,12 +54,12 @@ import java.util.Hashtable;
 
 
 /**
- * The 'Map Values' plugin meta data.
+ * The OpenVPMS Loader plugin meta data.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class MapValuesPluginMeta extends BaseStepMeta
+public class LoaderPluginMeta extends BaseStepMeta
         implements StepMetaInterface {
 
     /**
@@ -92,27 +92,27 @@ public class MapValuesPluginMeta extends BaseStepMeta
 
 
     /**
-     * Constructs a new <tt>MapValuesPluginMeta</tt>.
+     * Constructs a new <tt>LoaderPluginMeta</tt>.
      */
-    public MapValuesPluginMeta() {
+    public LoaderPluginMeta() {
     }
 
     /**
-     * Constructs a new <tt>MapValuesPluginMeta</tt> from an XML Node.
+     * Constructs a new <tt>LoaderPluginMeta</tt> from an XML Node.
      *
      * @param stepNode  the Node to get the info from
      * @param databases the available list of databases to reference
      * @param counters  counters to reference
      * @throws KettleXMLException for any XML error
      */
-    public MapValuesPluginMeta(Node stepNode, ArrayList databases,
-                               Hashtable counters)
+    public LoaderPluginMeta(Node stepNode, ArrayList databases,
+                            Hashtable counters)
             throws KettleXMLException {
         loadXML(stepNode, databases, counters);
     }
 
     /**
-     * Constructs a new <tt>MapValuesPluginMeta</tt> from a Kettle repository.
+     * Constructs a new <tt>LoaderPluginMeta</tt> from a Kettle repository.
      *
      * @param repository the repository to read from
      * @param stepId     the step ID
@@ -120,9 +120,9 @@ public class MapValuesPluginMeta extends BaseStepMeta
      * @param counters   the counters to reference
      * @throws KettleException for any error
      */
-    public MapValuesPluginMeta(Repository repository, long stepId,
-                               ArrayList databases,
-                               Hashtable counters)
+    public LoaderPluginMeta(Repository repository, long stepId,
+                            ArrayList databases,
+                            Hashtable counters)
             throws KettleException {
         readRep(repository, stepId, databases, counters);
     }
@@ -272,40 +272,49 @@ public class MapValuesPluginMeta extends BaseStepMeta
     @SuppressWarnings({"unchecked", "HardCodedStringLiteral"})
     public void check(ArrayList remarks, StepMeta stepMeta, Row prev,
                       String input[], String output[], Row info) {
-        if (database == null) {
-            addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
-                      "MapValuesPluginMeta.NoConnection");
-        }
-
-        if (prev == null || prev.size() == 0) {
-            addRemark(remarks, CheckResult.TYPE_RESULT_WARNING,
-                      stepMeta, "MapValuesPluginMeta.NoFields");
-        } else {
-            // check mappings
-            String idColumn = mappings.getIdColumn();
-            if (StringUtils.isEmpty(idColumn)) {
+        Thread thread = Thread.currentThread();
+        ClassLoader loader = thread.getContextClassLoader();
+        try {
+            thread.setContextClassLoader(
+                    LoaderPluginMeta.class.getClassLoader());
+            if (database == null) {
                 addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
-                          "MapValuesPluginMeta.NoId");
+                          "LoaderPluginMeta.NoConnection");
+            }
+
+            if (prev == null || prev.size() == 0) {
+                addRemark(remarks, CheckResult.TYPE_RESULT_WARNING,
+                          stepMeta, "LoaderPluginMeta.NoFields");
             } else {
-                if (prev.searchValueIndex(idColumn) == -1) {
+                // check mappings
+                String idColumn = mappings.getIdColumn();
+                if (StringUtils.isEmpty(idColumn)) {
                     addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
-                              "MapValuesPluginMeta.NoField", idColumn);
+                              "LoaderPluginMeta.NoId");
+                } else {
+                    if (prev.searchValueIndex(idColumn) == -1) {
+                        addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
+                                  stepMeta, "LoaderPluginMeta.NoField",
+                                  idColumn);
+                    }
                 }
+                IArchetypeService service = getService();
+                for (Mapping mapping : mappings.getMapping()) {
+                    checkMapping(remarks, mapping, prev, stepMeta, service);
+                }
+                addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
+                          "LoaderPluginMeta.StepConnected", prev.size());
             }
-            IArchetypeService service = getService();
-            for (Mapping mapping : mappings.getMapping()) {
-                checkMapping(remarks, mapping, prev, stepMeta, service);
+            // See if we have input streams leading to this step
+            if (input.length > 0) {
+                addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
+                          "LoaderPlugin.StepReceiveInput");
+            } else {
+                addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
+                          "LoaderPlugin.StepReceiveNoInput");
             }
-            addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
-                      "MapValuesPluginMeta.StepConnected", prev.size());
-        }
-        // See if we have input streams leading to this step
-        if (input.length > 0) {
-            addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
-                      "MapValuesPlugin.StepReceiveInput");
-        } else {
-            addRemark(remarks, CheckResult.TYPE_RESULT_OK, stepMeta,
-                      "MapValuesPlugin.StepReceiveNoInput");
+        } finally {
+            thread.setContextClassLoader(loader);
         }
     }
 
@@ -316,12 +325,12 @@ public class MapValuesPluginMeta extends BaseStepMeta
      * @param meta      The step info
      * @param transMeta The transformation meta-data
      * @param stepname  The name of the step
-     * @return a new {@link MapValuesPluginDialog}
+     * @return a new {@link LoaderPluginDialog}
      */
     public StepDialogInterface getDialog(Shell shell, StepMetaInterface meta,
                                          TransMeta transMeta, String stepname) {
-        return new MapValuesPluginDialog(shell, (MapValuesPluginMeta) meta,
-                                         transMeta, stepname);
+        return new LoaderPluginDialog(shell, (LoaderPluginMeta) meta,
+                                      transMeta, stepname);
     }
 
     /**
@@ -333,13 +342,13 @@ public class MapValuesPluginMeta extends BaseStepMeta
      * @param copyNr    The copy nr to get
      * @param transMeta The transformation info
      * @param trans     The launching transformation
-     * @return a new {@link MapValuesPlugin}
+     * @return a new {@link LoaderPlugin}
      */
     public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepData,
                                  int copyNr, TransMeta transMeta, Trans trans) {
-        MapValuesPluginData data = (MapValuesPluginData) stepData;
+        LoaderPluginData data = (LoaderPluginData) stepData;
         data.setContext(getContext());
-        return new MapValuesPlugin(stepMeta, data, copyNr, transMeta, trans);
+        return new LoaderPlugin(stepMeta, data, copyNr, transMeta, trans);
     }
 
     /**
@@ -348,10 +357,10 @@ public class MapValuesPluginMeta extends BaseStepMeta
      * It basically contains the persisting data that needs to live on, even if
      * a worker thread is terminated.
      *
-     * @return a new {@link MapValuesPluginData}
+     * @return a new {@link LoaderPluginData}
      */
     public StepDataInterface getStepData() {
-        return new MapValuesPluginData();
+        return new LoaderPluginData();
     }
 
     /**
@@ -389,7 +398,7 @@ public class MapValuesPluginMeta extends BaseStepMeta
             }
         } else {
             log.println(LogWriter.LOG_LEVEL_ERROR, getClass().getName(),
-                        Messages.get("MapValuesPluginMeta.NoConnection"));
+                        Messages.get("LoaderPluginMeta.NoConnection"));
         }
 
         return context;
@@ -408,13 +417,13 @@ public class MapValuesPluginMeta extends BaseStepMeta
                               IArchetypeService service) {
         if (row.searchValueIndex(mapping.getSource()) == -1) {
             addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
-                      "MapValuesPluginMeta.NoField",
+                      "LoaderPluginMeta.NoField",
                       mapping.getSource());
         }
         org.openvpms.etl.load.Node node = NodeParser.parse(mapping.getTarget());
         if (node == null) {
             addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
-                      "MapValuesPluginMeta.InvalidMapping",
+                      "LoaderPluginMeta.InvalidMapping",
                       mapping.getSource(), mapping.getTarget());
         } else if (service != null) {
             while (node != null) {
@@ -440,7 +449,7 @@ public class MapValuesPluginMeta extends BaseStepMeta
                 = service.getArchetypeDescriptor(node.getArchetype());
         if (archetype == null) {
             addRemark(remarks, CheckResult.TYPE_RESULT_ERROR, stepMeta,
-                      "MapValuesPluginMeta.InvalidArchetype",
+                      "LoaderPluginMeta.InvalidArchetype",
                       node.getArchetype(), mapping.getTarget());
         } else {
             NodeDescriptor descriptor = archetype.getNodeDescriptor(
@@ -448,7 +457,7 @@ public class MapValuesPluginMeta extends BaseStepMeta
             if (descriptor == null) {
                 addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
                           stepMeta,
-                          "MapValuesPluginMeta.InvalidNode",
+                          "LoaderPluginMeta.InvalidNode",
                           node.getArchetype(), node.getName(),
                           mapping.getTarget());
             } else {
@@ -458,7 +467,7 @@ public class MapValuesPluginMeta extends BaseStepMeta
                     if (node.getIndex() < 0) {
                         addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
                                   stepMeta,
-                                  "MapValuesPluginMeta.ExpectedCollection",
+                                  "LoaderPluginMeta.ExpectedCollection",
                                   node.getArchetype(), node.getName(),
                                   mapping.getTarget());
                     }
@@ -466,7 +475,7 @@ public class MapValuesPluginMeta extends BaseStepMeta
                     if (node.getIndex() >= 0) {
                         addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
                                   stepMeta,
-                                  "MapValuesPluginMeta.NodeNotCollection",
+                                  "LoaderPluginMeta.NodeNotCollection",
                                   node.getArchetype(), node.getName(),
                                   mapping.getTarget());
                     }
@@ -479,7 +488,7 @@ public class MapValuesPluginMeta extends BaseStepMeta
                     if (ReferenceParser.parse(mapping.getValue()) == null) {
                         addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
                                   stepMeta,
-                                  "MapValuesPluginMeta.InvalidReference",
+                                  "LoaderPluginMeta.InvalidReference",
                                   mapping.getValue(), mapping.getTarget());
                     }
                 }
