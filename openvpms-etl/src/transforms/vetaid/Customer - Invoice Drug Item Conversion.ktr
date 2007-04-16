@@ -565,7 +565,7 @@ INVOICEITEMID.setString(&quot;DRUG&quot; + INVOICEITEMID.getString())</jsScript_
 
   <step>
     <name>Credit Drug Items</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>
