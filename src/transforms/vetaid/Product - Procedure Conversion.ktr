@@ -106,25 +106,6 @@
   <hop> <from>Procedures Input</from><to>Select Procedure fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Procedure fields</from><to>Transform Procedure Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Procedure Fields</from><to>Product Procedure Output</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
-    <name>Product Procedure Output</name>
-    <type>OpenVPMSLoaderPlugin</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>DESCRIPT</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>COMPONENT</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TOTALCH</source><target>&lt;product.service>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
-    <GUI>
-      <xloc>554</xloc>
-      <yloc>112</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
     <name>Procedures Input</name>
     <type>XBaseInput</type>
     <description/>
@@ -148,6 +129,25 @@
     <GUI>
       <xloc>91</xloc>
       <yloc>113</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Product Procedure Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>DESCRIPT</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>COMPONENT</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TOTALCH</source><target>&lt;product.service>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>554</xloc>
+      <yloc>112</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
