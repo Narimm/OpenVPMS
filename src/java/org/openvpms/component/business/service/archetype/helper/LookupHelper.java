@@ -31,8 +31,10 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
@@ -328,6 +330,7 @@ public class LookupHelper  {
      *            the archetype short name of the lookup.
      * @return IMObject
      *            the object of null if one does not exist
+     * @throws ArchetypeServiceException if the request cannot complete
      */
     public static Lookup getDefaultLookup(IArchetypeService service, String lookup) {
         ArchetypeQuery query = new ArchetypeQuery(lookup, false, false)
@@ -337,7 +340,34 @@ public class LookupHelper  {
         IPage<IMObject> results = service.get(query);
 
         return (results.getResults().size() == 1) ? (Lookup) results.getResults().get(0) : null;
+    }
 
+    /**
+     * Returns the default lookup code for the specified archetype short name.
+     * It assumes that the archetype short name refers to a {@link Lookup}.
+     * <p>
+     *  This method also assumes that the specified archetype short name has a
+     *  node called 'defaultLookup' defined, which is of type boolean.
+     *
+     * @param service the archetype service
+     * @param lookup the archetype short name of the lookup
+     * @return the default lookup code, or <tt>null</tt> if one does not exist
+     * @throws ArchetypeServiceException if the request cannot complete
+     */
+    public static String getDefaultLookupCode(IArchetypeService service,
+                                              String lookup) {
+        ShortNameConstraint constraint = new ShortNameConstraint("l", lookup);
+        ArchetypeQuery query = new ArchetypeQuery(constraint)
+                .add(new NodeSelectConstraint("l", "code"))
+                .add(new NodeConstraint("defaultLookup", RelationalOp.EQ, true))
+                .setMaxResults(1)
+                .setCountResults(false);
+        List<ObjectSet> sets = service.getObjects(query).getResults();
+        if (!sets.isEmpty()) {
+            ObjectSet set = sets.get(0);
+            return (String) set.get("l.code");
+        }
+        return null;
     }
 
     /**

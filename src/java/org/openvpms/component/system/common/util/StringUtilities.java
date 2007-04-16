@@ -19,10 +19,10 @@
 
 package org.openvpms.component.system.common.util;
 
-import java.util.ArrayList;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.oro.text.perl.Perl5Util;
+
+import java.util.ArrayList;
 
 /**
  * Holds a number of stirng utility methods
@@ -84,6 +84,10 @@ public class StringUtilities {
      *            true if it matches                                  
      */
     public static boolean matches(String str, String expression) {
+        if (!expression.contains("*")) {
+            // use faster equals() when no wildcard specified
+            return str.equals(expression);
+        }
         return str.matches(toRegEx(expression));
     }
 }
