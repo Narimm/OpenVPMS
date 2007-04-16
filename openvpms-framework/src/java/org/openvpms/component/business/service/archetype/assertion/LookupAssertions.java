@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 
@@ -91,21 +90,19 @@ public class LookupAssertions {
             AssertionDescriptor assertion) {
 
         // only process if it is a lookup and there is no defeault value
-        if ((assertion.getName().equals("lookup")) &&
-            (StringUtils.isEmpty(node.getDefaultValue()))) {
+        if (assertion.getName().equals("lookup")
+                && StringUtils.isEmpty(node.getDefaultValue())) {
             String type = (String)assertion.getProperty("type").getValue();
-            if ((!StringUtils.isEmpty(type)) &&
-                (type.equals("lookup")) &&
-                (assertion.getProperty("source") != null)){
+            if (!StringUtils.isEmpty(type) && type.equals("lookup")
+                    && assertion.getProperty("source") != null){
                 String source = (String)assertion.getProperty("source").getValue();
                 if (!StringUtils.isEmpty(source)) {
-                    Lookup defaultLookup = LookupHelper.getDefaultLookup(
+                    String code = LookupHelper.getDefaultLookupCode(
                             ArchetypeServiceHelper.getArchetypeService(), source);
-
-                    // if a default lookup has identified then set it through the
-                    // node descriptor.
-                    if (defaultLookup != null) {
-                        node.setValue((IMObject)target, defaultLookup.getCode());
+                    // if a default lookup has identified then set it through
+                    // the node descriptor.
+                    if (code != null) {
+                        node.setValue((IMObject)target, code);
                     }
                 }
             }

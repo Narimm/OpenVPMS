@@ -28,8 +28,10 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -60,7 +62,7 @@ class RemoteLookup extends AbstractLookupAssertion {
     /**
      * The lookup type.
      */
-    public static final String TYPE = "lookup";
+    public static final String TYPE = "lookup"; // NON-NLS
 
     /**
      * The lookup shortname.
@@ -74,6 +76,7 @@ class RemoteLookup extends AbstractLookupAssertion {
      * @param assertion the assertion descriptor
      * @param service   the archetype service
      */
+    @SuppressWarnings("HardCodedStringLiteral")
     public RemoteLookup(AssertionDescriptor assertion,
                         IArchetypeService service) {
         super(assertion, TYPE, service);
@@ -147,15 +150,21 @@ class RemoteLookup extends AbstractLookupAssertion {
      *                                   lookup type
      */
     @Override
+    @SuppressWarnings("HardCodedStringLiteral")
     public String getName(String code) {
-        ArchetypeQuery query = new ArchetypeQuery(source, false, true)
+        ShortNameConstraint constraint
+                = new ShortNameConstraint("l", source, true);
+        ArchetypeQuery query = new ArchetypeQuery(constraint)
+                .add(new NodeSelectConstraint("l", "name"))
                 .add(new NodeConstraint("code", code))
                 .setFirstResult(0)
                 .setMaxResults(1);
-        List<Lookup> lookups = getLookups(Arrays.asList("name"), query);
-        if (!lookups.isEmpty()) {
-            Lookup lookup = lookups.get(0);
-            return lookup.getName();
+
+        IArchetypeService service = getArchetypeService();
+        List<ObjectSet> sets = service.getObjects(query).getResults();
+        if (!sets.isEmpty()) {
+            ObjectSet set = sets.get(0);
+            return (String) set.get("l.name");
         }
         return null;
     }
