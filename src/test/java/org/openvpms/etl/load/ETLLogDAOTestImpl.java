@@ -18,6 +18,8 @@
 
 package org.openvpms.etl.load;
 
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -84,7 +86,8 @@ public class ETLLogDAOTestImpl implements ETLLogDAO {
      *                  loaders
      * @param rowId     the legacy row identifier
      * @param archetype the archetype short name. May be <tt>null</tt> to
-     *                  indicate all objects with the same legacy identifier
+     *                  indicate all objects with the same legacy identifier.
+     *                  May contain '*' wildcards.
      * @return all logs matching the criteria
      */
     public List<ETLLog> get(String loader, String rowId, String archetype) {
@@ -93,7 +96,8 @@ public class ETLLogDAOTestImpl implements ETLLogDAO {
             if (loader != null && !log.getLoader().equals(loader)) {
                 continue;
             }
-            if (archetype != null && !log.getArchetype().equals(archetype)) {
+            if (archetype != null
+                    && !TypeHelper.matches(log.getArchetype(), archetype)) {
                 continue;
             }
             if (log.getRowId().equals(rowId)) {

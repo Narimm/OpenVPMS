@@ -59,7 +59,8 @@ public interface ETLLogDAO {
      *                  loaders
      * @param rowId     the legacy row identifier
      * @param archetype the archetype short name. May be <tt>null</tt> to
-     *                  indicate all objects with the same legacy identifier
+     *                  indicate all objects with the same legacy identifier.
+     *                  May contain '*' wildcards.
      * @return all logs matching the criteria
      */
     List<ETLLog> get(String loader, String rowId, String archetype);
@@ -68,7 +69,7 @@ public interface ETLLogDAO {
      * Determines if a legacy row has been successfully processed.
      *
      * @param loader the loader name
-     * @param rowId the legacy row identifier
+     * @param rowId  the legacy row identifier
      * @return <tt>true> if the row has been sucessfully processed
      */
     boolean processed(String loader, String rowId);

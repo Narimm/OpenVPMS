@@ -150,7 +150,8 @@ public class ETLLogDAOImpl implements ETLLogDAO {
      *                  loaders
      * @param rowId     the legacy row identifier
      * @param archetype the archetype short name. May be <tt>null</tt> to
-     *                  indicate all objects with the same legacy identifier
+     *                  indicate all objects with the same legacy identifier.
+     *                  May contain '*' wildcards.
      * @return all logs matching the criteria
      */
     @SuppressWarnings({"unchecked", "HardCodedStringLiteral"})
@@ -165,7 +166,12 @@ public class ETLLogDAOImpl implements ETLLogDAO {
             queryString.append(" and loader = :loader");
         }
         if (archetype != null) {
-            queryString.append(" and archetype = :archetype");
+            if (archetype.contains("*")) {
+                archetype = archetype.replace("*", "%");
+                queryString.append(" and archetype like :archetype");
+            } else {
+                queryString.append(" and archetype = :archetype");
+            }
         }
 
         Session session = factory.openSession();
