@@ -135,7 +135,7 @@
 
   <step>
     <name>Customer Output</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>

@@ -23,12 +23,12 @@ import org.springframework.context.ApplicationContext;
 
 
 /**
- * Data for the {@link MapValuesPlugin}.
+ * Data for the {@link LoaderPlugin}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class MapValuesPluginData extends BaseStepData
+public class LoaderPluginData extends BaseStepData
         implements StepDataInterface {
 
     /**
@@ -38,9 +38,9 @@ public class MapValuesPluginData extends BaseStepData
 
 
     /**
-     * Constructs a new <tt>MapValuesPluginData</tt>.
+     * Constructs a new <tt>LoaderPluginData</tt>.
      */
-    public MapValuesPluginData() {
+    public LoaderPluginData() {
     }
 
     /**

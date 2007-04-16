@@ -40,31 +40,31 @@ import java.util.List;
 
 
 /**
- * 'Map values' kettle plugin.
+ * Kettle plugin to load rows from legacy databases to OpenVPMS.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class MapValuesPlugin extends BaseStep implements StepInterface {
+public class LoaderPlugin extends BaseStep implements StepInterface {
 
     /**
      * The step data.
      */
-    private MapValuesPluginData data;
+    private LoaderPluginData data;
 
     /**
      * The meta data.
      */
-    private MapValuesPluginMeta metaData;
+    private LoaderPluginMeta metaData;
 
     /**
      * The loader.
      */
-    private MapValuesPluginLoader loader;
+    private LoaderAdapter loader;
 
 
     /**
-     * Constructs a new <tt>MapValuesPlugin</tt>.
+     * Constructs a new <tt>LoaderPlugin</tt>.
      *
      * @param stepMeta  the StepMeta object to run
      * @param data      the object to store temporary data, database
@@ -74,8 +74,8 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
      * @param trans     The (running) transformation to obtain information
      *                  shared among the steps.
      */
-    public MapValuesPlugin(StepMeta stepMeta, MapValuesPluginData data,
-                           int copyNr, TransMeta transMeta, Trans trans) {
+    public LoaderPlugin(StepMeta stepMeta, LoaderPluginData data,
+                        int copyNr, TransMeta transMeta, Trans trans) {
         super(stepMeta, data, copyNr, transMeta, trans);
         Logger.getRootLogger().setLevel(Level.INFO);
     }
@@ -93,30 +93,26 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
                               StepDataInterface stepData)
             throws KettleException {
         boolean result = false;
-        metaData = (MapValuesPluginMeta) stepMeta;
-        data = (MapValuesPluginData) stepData;
+        metaData = (LoaderPluginMeta) stepMeta;
+        data = (LoaderPluginData) stepData;
 
         Row row = getRow();    // get row, blocks when needed
         if (row != null) {
-            Thread thread = Thread.currentThread();
-            ClassLoader current = thread.getContextClassLoader();
+            ClassLoader prior = setClassLoader();
             try {
-                ClassLoader classLoader
-                        = MapValuesPlugin.class.getClassLoader();
-                thread.setContextClassLoader(classLoader);
                 List<IMObject> loaded = loader.load(row);
                 if (loaded.isEmpty()) {
                     ++linesSkipped;
                 }
             } finally {
-                thread.setContextClassLoader(current);
+                setClassLoader(prior);
             }
             putRow(row);
 
             result = true;
             if ((linesRead % Const.ROWS_UPDATE) == 0) {
                 // log progress
-                logBasic(Messages.get("MapValuesPlugin.Processed", linesRead));
+                logBasic(Messages.get("LoaderPlugin.Processed", linesRead));
             }
         } else {
             // no more input to be expected...
@@ -136,8 +132,8 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
     @Override
     public boolean init(StepMetaInterface stepMeta,
                         StepDataInterface stepData) {
-        this.metaData = (MapValuesPluginMeta) stepMeta;
-        this.data = (MapValuesPluginData) stepData;
+        this.metaData = (LoaderPluginMeta) stepMeta;
+        this.data = (LoaderPluginData) stepData;
         return super.init(stepMeta, stepData);
     }
 
@@ -150,8 +146,17 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
     @Override
     public void dispose(StepMetaInterface stepMeta,
                         StepDataInterface stepData) {
-        metaData = (MapValuesPluginMeta) stepMeta;
-        data = (MapValuesPluginData) stepData;
+        metaData = (LoaderPluginMeta) stepMeta;
+        data = (LoaderPluginData) stepData;
+
+        try {
+            closeLoader();
+        } catch (Throwable exception) {
+            logError(Messages.get("LoaderPlugin.UnexpectedError",
+                                  exception.getMessage()));
+            logError(Const.getStackTracker(exception));
+        }
+
         super.dispose(stepMeta, stepData);
     }
 
@@ -159,24 +164,23 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
      * Run the step.
      */
     public void run() {
-        logBasic(Messages.get("MapValuesPlugin.Start"));
+        logBasic(Messages.get("LoaderPlugin.Start"));
         try {
             getLoader();
             boolean process = true;
             while (process) {
                 process = processRow(metaData, data) && !isStopped();
             }
-            loader.close();
-            loader = null;
+            closeLoader();
         } catch (Throwable exception) {
-            logError(Messages.get("MapValuesPlugin.UnexpectedError",
+            logError(Messages.get("LoaderPlugin.UnexpectedError",
                                   exception.getMessage()));
             logError(Const.getStackTracker(exception));
             setErrors(1);
             stopAll();
         } finally {
             dispose(metaData, data);
-            logBasic(Messages.get("MapValuesPlugin.Finished", linesRead));
+            logBasic(Messages.get("LoaderPlugin.Finished", linesRead));
             markStop();
         }
     }
@@ -187,28 +191,28 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
      * @return a new loader
      * @throws KettleException for any error
      */
-    private MapValuesPluginLoader getLoader() throws KettleException {
+    private LoaderAdapter getLoader() throws KettleException {
         if (loader == null) {
             ApplicationContext context = data.getContext();
             if (context == null) {
                 throw new KettleException(
-                        Messages.get("MapValuesPlugin.NoContext"));
+                        Messages.get("LoaderPlugin.NoContext"));
             }
             ETLLogDAO dao = (ETLLogDAO) context.getBean("ETLLogDAO"); // NON-NLS
             IArchetypeService service
                     = (IArchetypeService) context.getBean(
                     "archetypeService"); // NON-NLS
-            loader = new MapValuesPluginLoader(getStepname(),
-                                               metaData.getMappings(),
-                                               dao, service);
+            loader = new LoaderAdapter(getStepname(),
+                                       metaData.getMappings(),
+                                       dao, service);
             loader.setErrorListener(new ErrorListener() {
                 public void error(String legacyId, Throwable exception) {
-                    logBasic(Messages.get("MapValuesPlugin.FailedToProcessRow",
+                    logBasic(Messages.get("LoaderPlugin.FailedToProcessRow",
                                           legacyId, exception));
                 }
 
                 public void error(Throwable exception) {
-                    logBasic(Messages.get("MapValuesPlugin.FailedToProcess",
+                    logBasic(Messages.get("LoaderPlugin.FailedToProcess",
                                           exception));
                 }
             });
@@ -216,4 +220,39 @@ public class MapValuesPlugin extends BaseStep implements StepInterface {
         return loader;
     }
 
+    /**
+     * Closes the loader.
+     */
+    private void closeLoader() {
+        if (loader != null) {
+            ClassLoader prior = setClassLoader();
+            try {
+                loader.close();
+            } finally {
+                setClassLoader(prior);
+            }
+        }
+    }
+
+    /**
+     * Helper to set the context class loader to this instances' class loader.
+     *
+     * @return the prior context class loader
+     */
+    private ClassLoader setClassLoader() {
+        return setClassLoader(LoaderPlugin.class.getClassLoader());
+    }
+
+    /**
+     * Helper to set the context class loader.
+     *
+     * @param loader the loader to set
+     * @return the prior context class loader
+     */
+    private ClassLoader setClassLoader(ClassLoader loader) {
+        Thread thread = Thread.currentThread();
+        ClassLoader current = thread.getContextClassLoader();
+        thread.setContextClassLoader(loader);
+        return current;
+    }
 }

@@ -174,7 +174,7 @@
 
   <step>
     <name>Patient Visit Output</name>
-    <type>MapValuesPlugin</type>
+    <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>N</distribute>
     <copies>1</copies>

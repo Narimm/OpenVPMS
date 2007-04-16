@@ -55,18 +55,18 @@ import org.openvpms.etl.load.Mappings;
 
 
 /**
- * The 'Map Values' plugin dialog.
+ * The OpenVPMS Loader plugin dialog.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class MapValuesPluginDialog extends BaseStepDialog
+public class LoaderPluginDialog extends BaseStepDialog
         implements StepDialogInterface {
 
     /**
      * The plugin meta data.
      */
-    private MapValuesPluginMeta input;
+    private LoaderPluginMeta input;
 
     /**
      * The tab folder.
@@ -103,15 +103,15 @@ public class MapValuesPluginDialog extends BaseStepDialog
 
 
     /**
-     * Constructs a new <tt>MapValuesPluginDialog</tt>.
+     * Constructs a new <tt>LoaderPluginDialog</tt>.
      *
      * @param parent    the parent shell
      * @param in        the plugin meta data
      * @param transMeta the transformation meta data
      * @param stepName  the step name
      */
-    public MapValuesPluginDialog(Shell parent, MapValuesPluginMeta in,
-                                 TransMeta transMeta, String stepName) {
+    public LoaderPluginDialog(Shell parent, LoaderPluginMeta in,
+                              TransMeta transMeta, String stepName) {
         super(parent, in, transMeta, stepName);
         input = in;
     }
@@ -142,7 +142,7 @@ public class MapValuesPluginDialog extends BaseStepDialog
         formLayout.marginHeight = Const.FORM_MARGIN;
 
         shell.setLayout(formLayout);
-        shell.setText(Messages.get("MapValuesPluginDialog.Shell.Label"));
+        shell.setText(Messages.get("LoaderPluginDialog.Shell.Label"));
 
         int middle = props.getMiddlePct();
         int margin = Const.MARGIN;
@@ -150,7 +150,7 @@ public class MapValuesPluginDialog extends BaseStepDialog
         // Stepname line
         Label stepNameLabel = new Label(shell, SWT.RIGHT);
         stepNameLabel.setText(Messages.get(
-                "MapValuesPluginDialog.Stepname.Label"));
+                "LoaderPluginDialog.Stepname.Label"));
         props.setLook(stepNameLabel);
         fdlStepname = new FormData();
         fdlStepname.left = new FormAttachment(0, 0);
@@ -178,7 +178,7 @@ public class MapValuesPluginDialog extends BaseStepDialog
         // legacy id field line
         Label idLabel = new Label(shell, SWT.RIGHT);
         idLabel.setText(
-                Messages.get("MapValuesPluginDialog.IdField.Label"));
+                Messages.get("LoaderPluginDialog.IdField.Label"));
         props.setLook(idLabel);
         FormData idLabelFormData = new FormData();
         idLabelFormData.left = new FormAttachment(0, 0);
@@ -202,7 +202,7 @@ public class MapValuesPluginDialog extends BaseStepDialog
         // the mapping tab
         CTabItem mapTab = new CTabItem(tabFolder, SWT.NONE);
         mapTab.setText(Messages.get(
-                "MapValuesPluginDialog.MapTab.TabItem"));
+                "LoaderPluginDialog.MapTab.TabItem"));
 
         Composite wSelectComp = new Composite(tabFolder, SWT.NONE);
         props.setLook(wSelectComp);
@@ -214,7 +214,7 @@ public class MapValuesPluginDialog extends BaseStepDialog
 
         Label wlFields = new Label(wSelectComp, SWT.NONE);
         wlFields.setText(Messages.get(
-                "MapValuesPluginDialog.Fields.Label"));
+                "LoaderPluginDialog.Fields.Label"));
         props.setLook(wlFields);
         FormData fdlFields = new FormData();
         fdlFields.left = new FormAttachment(0, 0);
@@ -225,20 +225,20 @@ public class MapValuesPluginDialog extends BaseStepDialog
 
         ColumnInfo[] columns = new ColumnInfo[]{
                 new ColumnInfo(Messages.get(
-                        "MapValuesPluginDialog.ColumnInfo.Fieldname"),
+                        "LoaderPluginDialog.ColumnInfo.Fieldname"),
                                ColumnInfo.COLUMN_TYPE_TEXT, false),
                 new ColumnInfo(Messages.get(
-                        "MapValuesPluginDialog.ColumnInfo.MapTo"),
+                        "LoaderPluginDialog.ColumnInfo.MapTo"),
                                ColumnInfo.COLUMN_TYPE_TEXT, false),
                 new ColumnInfo(Messages.get(
-                        "MapValuesPluginDialog.ColumnInfo.ExcludeIfNull"),
+                        "LoaderPluginDialog.ColumnInfo.ExcludeIfNull"),
                                ColumnInfo.COLUMN_TYPE_CCOMBO,
                                getYesNo(), true),
                 new ColumnInfo(Messages.get(
-                        "MapValuesPluginDialog.ColumnInfo.Value"),
+                        "LoaderPluginDialog.ColumnInfo.Value"),
                                ColumnInfo.COLUMN_TYPE_TEXT, false),
                 new ColumnInfo(Messages.get(
-                        "MapValuesPluginDialog.ColumnInfo.RemoveDefaultObjects"),
+                        "LoaderPluginDialog.ColumnInfo.RemoveDefaultObjects"),
                                ColumnInfo.COLUMN_TYPE_CCOMBO,
                                getYesNo(), true)};
 
@@ -248,7 +248,7 @@ public class MapValuesPluginDialog extends BaseStepDialog
 
         Button getButton = new Button(wSelectComp, SWT.PUSH);
         getButton.setText(
-                Messages.get("MapValuesPluginDialog.GetMap.Button"));
+                Messages.get("LoaderPluginDialog.GetMap.Button"));
         getButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
                 get();
@@ -291,11 +291,11 @@ public class MapValuesPluginDialog extends BaseStepDialog
 
         generateLookups = new Button(shell, SWT.CHECK);
         generateLookups.setText(
-                Messages.get("MapValuesPluginDialog.GenerateLookups"));
+                Messages.get("LoaderPluginDialog.GenerateLookups"));
 
         skipProcessed = new Button(shell, SWT.CHECK);
         skipProcessed.setText(
-                Messages.get("MapValuesPluginDialog.SkipProcessed"));
+                Messages.get("LoaderPluginDialog.SkipProcessed"));
 
         setButtonPositions(new Button[]{ok, cancel, generateLookups,
                                         skipProcessed}, margin, tabFolder);
@@ -451,9 +451,9 @@ public class MapValuesPluginDialog extends BaseStepDialog
             }
         } catch (KettleException exception) {
             new ErrorDialog(shell, Messages.get(
-                    "MapValuesPluginDialog.FailedToGetFields.DialogTitle"),
+                    "LoaderPluginDialog.FailedToGetFields.DialogTitle"),
                             Messages.get(
-                                    "MapValuesPluginDialog.FailedToGetFields.DialogMessage"),
+                                    "LoaderPluginDialog.FailedToGetFields.DialogMessage"),
                             exception);
         }
     }
