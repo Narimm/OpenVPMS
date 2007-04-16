@@ -166,6 +166,13 @@
      </condition>
     </conditions>
    </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PETNUMBER</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
   </conditions>
  </condition>
     </compare>
@@ -259,7 +266,7 @@ var WEIGHTUOM = &quot;KILOGRAMS&quot;
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>VISITITEMID</idColumn><mapping><source>TREATDATE</source><target>&lt;act.patientWeight>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WEIGHT</source><target>&lt;act.patientWeight>weight</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WEIGHTUOM</source><target>&lt;act.patientWeight>units</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETNUMBER</source><target>&lt;act.patientWeight>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITITEMID</source><target>&lt;act.patientWeight>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.patientWeight>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TREATNO</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>true</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITITEMID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>true</excludeNull><value>&lt;act.patientWeight>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>VISITITEMID</idColumn><mapping><source>TREATDATE</source><target>&lt;act.patientWeight>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WEIGHT</source><target>&lt;act.patientWeight>weight</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WEIGHTUOM</source><target>&lt;act.patientWeight>units</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETNUMBER</source><target>&lt;act.patientWeight>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITITEMID</source><target>&lt;act.patientWeight>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.patientWeight>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TREATNO</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>true</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITITEMID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>true</excludeNull><value>&lt;act.patientWeight>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
     <GUI>
       <xloc>590</xloc>
       <yloc>135</yloc>

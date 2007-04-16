@@ -103,7 +103,7 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Merge Join</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  <hop> <from>Modified Java Script Value</from><to>Invoice Item Mapper</to><enabled>Y</enabled> </hop>  <hop> <from>Lab Items Input</from><to>Select Lab Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Lab Fields</from><to>Transform Lab Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Invoices input</from><to>Select Invoice Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Invoice Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Lab Fields</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Merge Join</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  <hop> <from>Modified Java Script Value</from><to>Invoice Lab Mapper</to><enabled>Y</enabled> </hop>  <hop> <from>Lab Items Input</from><to>Select Lab Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Lab Fields</from><to>Transform Lab Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Invoices input</from><to>Select Invoice Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Invoice Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Lab Fields</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Add sequence</name>
@@ -135,7 +135,102 @@
     </step>
 
   <step>
-    <name>Invoice Item Mapper</name>
+    <name>Dummy (do nothing)</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+    <GUI>
+      <xloc>335</xloc>
+      <yloc>114</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter rows</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Merge Join</send_true_to>
+<send_false_to>Dummy (do nothing)</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>CLNUMBER</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PETNUMBER</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>CLNUMBER</leftvalue>
+   <function>IS NOT NULL</function>
+   <rightvalue/>
+   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PETNUMBER</leftvalue>
+   <function>IS NOT NULL</function>
+   <rightvalue/>
+   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>INVOICENO</leftvalue>
+   <function>IS NOT NULL</function>
+   <rightvalue/>
+   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>INVOICENO</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>TOTALCH</leftvalue>
+   <function>&gt;=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>335</xloc>
+      <yloc>215</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Invoice Lab Mapper</name>
     <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -145,10 +240,10 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>INVOICEITEMID</idColumn><mapping><source>PETNUMBER</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRODUCTID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>entity</target><excludeNull>true</excludeNull><value>&lt;product.*>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>QUANTITY</source><target>&lt;act.customerAccountInvoiceItem>quantity</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;act.customerAccountInvoiceItem>fixedPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;act.customerAccountInvoiceItem>unitPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAX</source><target>&lt;act.customerAccountInvoiceItem>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICENO</source><target>&lt;actRelationship.customerAccountInvoiceItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesInvoice>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;actRelationship.customerAccountInvoiceItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>INVOICEITEMID</idColumn><mapping><source>QUANTITY</source><target>&lt;act.customerAccountInvoiceItem>quantity</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;act.customerAccountInvoiceItem>fixedPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;act.customerAccountInvoiceItem>unitPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAX</source><target>&lt;act.customerAccountInvoiceItem>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETNUMBER</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRODUCTID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>entity</target><excludeNull>true</excludeNull><value>&lt;product.service>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICENO</source><target>&lt;actRelationship.customerAccountInvoiceItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesInvoice>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;actRelationship.customerAccountInvoiceItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>910</xloc>
-      <yloc>216</yloc>
+      <xloc>908</xloc>
+      <yloc>217</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -251,9 +346,7 @@
     <script/>
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
-        <jsScript_script>CLNUMBER.setString(&quot;CUST&quot; + CLNUMBER.getString());
-INVOICENO.setString(&quot;INV&quot; + INVOICENO.getString());
-PETNUMBER.setString(&quot;PET&quot; + PETNUMBER.getString());</jsScript_script>
+        <jsScript_script>INVOICEITEMID.setString(&quot;LAB&quot; + INVOICEITEMID.getString())</jsScript_script>
         </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>781</xloc>
@@ -289,17 +382,11 @@ PETNUMBER.setString(&quot;PET&quot; + PETNUMBER.getString());</jsScript_script>
         <rename>STARTDATE</rename>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <meta>        <name>CLNUMBER</name>
+        </field>      <field>        <name>TOTALCH</name>
         <rename/>
-        <type>String</type>
-        <length>20</length>
+        <length>-2</length>
         <precision>-2</precision>
-        </meta>      <meta>        <name>PETNUMBER</name>
-        <rename/>
-        <type>String</type>
-        <length>20</length>
-        <precision>-2</precision>
-        </meta>      </fields>     <cluster_schema/>
+        </field>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>200</xloc>
       <yloc>215</yloc>
@@ -368,19 +455,7 @@ PETNUMBER.setString(&quot;PET&quot; + PETNUMBER.getString());</jsScript_script>
            <field_name/>
            <schema_name/>
            </partitioning>
-    <fields>      <field>        <name>CLNUMBER</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>PETNUMBER</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>INVOICENO</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>STARTDATE</name>
+    <fields>      <field>        <name>INVOICENO</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
@@ -388,15 +463,7 @@ PETNUMBER.setString(&quot;PET&quot; + PETNUMBER.getString());</jsScript_script>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>QUANTITY</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
         </field>      <field>        <name>UNITPRICE</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>FIXEDPRICE</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
@@ -404,46 +471,41 @@ PETNUMBER.setString(&quot;PET&quot; + PETNUMBER.getString());</jsScript_script>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
+        </field>      <field>        <name>FIXEDPRICE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>QUANTITY</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLNUMBER</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>PETNUMBER</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>STARTDATE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
         </field>      <field>        <name>INVOICEITEMID</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <meta>        <name>CLNUMBER</name>
+        </field>      <meta>        <name>INVOICENO</name>
         <rename/>
         <type>-</type>
         <length>6</length>
         <precision>0</precision>
-        </meta>      <meta>        <name>PETNUMBER</name>
-        <rename/>
-        <type>-</type>
-        <length>6</length>
-        <precision>0</precision>
-        </meta>      <meta>        <name>INVOICENO</name>
-        <rename/>
-        <type>-</type>
-        <length>6</length>
-        <precision>0</precision>
-        </meta>      <meta>        <name>STARTDATE</name>
-        <rename/>
-        <type>-</type>
-        <length>-2</length>
-        <precision>-2</precision>
         </meta>      <meta>        <name>PRODUCTID</name>
         <rename/>
         <type>-</type>
-        <length>6</length>
-        <precision>0</precision>
-        </meta>      <meta>        <name>QUANTITY</name>
-        <rename/>
-        <type>-</type>
-        <length>8</length>
-        <precision>2</precision>
+        <length>20</length>
+        <precision>-2</precision>
         </meta>      <meta>        <name>UNITPRICE</name>
-        <rename/>
-        <type>-</type>
-        <length>8</length>
-        <precision>2</precision>
-        </meta>      <meta>        <name>FIXEDPRICE</name>
         <rename/>
         <type>-</type>
         <length>8</length>
@@ -453,10 +515,35 @@ PETNUMBER.setString(&quot;PET&quot; + PETNUMBER.getString());</jsScript_script>
         <type>-</type>
         <length>8</length>
         <precision>2</precision>
-        </meta>      <meta>        <name>INVOICEITEMID</name>
+        </meta>      <meta>        <name>FIXEDPRICE</name>
         <rename/>
         <type>-</type>
-        <length>9</length>
+        <length>16</length>
+        <precision>2</precision>
+        </meta>      <meta>        <name>QUANTITY</name>
+        <rename/>
+        <type>-</type>
+        <length>16</length>
+        <precision>2</precision>
+        </meta>      <meta>        <name>CLNUMBER</name>
+        <rename/>
+        <type>-</type>
+        <length>6</length>
+        <precision>0</precision>
+        </meta>      <meta>        <name>PETNUMBER</name>
+        <rename/>
+        <type>-</type>
+        <length>6</length>
+        <precision>0</precision>
+        </meta>      <meta>        <name>STARTDATE</name>
+        <rename/>
+        <type>-</type>
+        <length>-2</length>
+        <precision>-2</precision>
+        </meta>      <meta>        <name>INVOICEITEMID</name>
+        <rename/>
+        <type>String</type>
+        <length>20</length>
         <precision>0</precision>
         </meta>      </fields>     <cluster_schema/>
     <GUI>
@@ -486,7 +573,9 @@ PRODUCTID.setString(&quot;LAB&quot; + PRODUCTID.getString())
 var FIXEDPRICE = 0.0
 var QUANTITY = 1.0
 if (TAX.getNumber() == null)
-	TAX.setNumber(0.0)</jsScript_script>
+	TAX.setNumber(0.0)
+if (UNITPRICE.getNumber() == null)
+	UNITPRICE.setNumber(0.0)</jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>FIXEDPRICE</name>
         <rename>FIXEDPRICE</rename>
         <type>Number</type>
@@ -501,66 +590,6 @@ if (TAX.getNumber() == null)
     <GUI>
       <xloc>336</xloc>
       <yloc>310</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter rows</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<send_true_to>Merge Join</send_true_to>
-<send_false_to>Dummy (do nothing)</send_false_to>
-    <compare>
-<condition>
- <negated>N</negated>
- <conditions>
-  <condition>
-   <negated>N</negated>
-   <leftvalue>CLNUMBER</leftvalue>
-   <function>&lt;&gt;</function>
-   <rightvalue/>
-   <value><name>constant</name><type>String</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
-  <condition>
-   <negated>N</negated>
-   <operator>AND</operator>
-   <leftvalue>PETNUMBER</leftvalue>
-   <function>&lt;&gt;</function>
-   <rightvalue/>
-   <value><name>constant</name><type>String</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
-  </conditions>
- </condition>
-    </compare>
-     <cluster_schema/>
-    <GUI>
-      <xloc>335</xloc>
-      <yloc>215</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Dummy (do nothing)</name>
-    <type>Dummy</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-     <cluster_schema/>
-    <GUI>
-      <xloc>335</xloc>
-      <yloc>114</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
