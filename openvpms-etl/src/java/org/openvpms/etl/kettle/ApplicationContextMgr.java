@@ -78,7 +78,8 @@ public class ApplicationContextMgr {
                 context.close();
             }
             log.println(LogWriter.LOG_LEVEL_BASIC,
-                        Messages.get("ApplicationContextMgr.BeginInit"));
+                        Messages.get("ApplicationContextMgr.BeginInit", 
+                                     database.getURL()));
             Thread thread = Thread.currentThread();
             ClassLoader loader = thread.getContextClassLoader();
             Class<ApplicationContextMgr> clazz = ApplicationContextMgr.class;

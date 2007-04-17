@@ -180,10 +180,12 @@ class RowMapper {
             bean.addValue(name, handler.getObject(targetValue));
         } else if (lookupHandler != null && descriptor.isLookup()) {
             String targetValue = getStringValue(value, mapping);
-            String code = lookupHandler.getCode(targetValue);
-            bean.setValue(name, code);
-            if (lookupHandler.isGeneratedLookup(descriptor)) {
-                lookups.put(descriptor, new CodeName(code, targetValue));
+            if (targetValue != null) {
+                String code = lookupHandler.getCode(targetValue);
+                bean.setValue(name, code);
+                if (lookupHandler.isGeneratedLookup(descriptor)) {
+                    lookups.put(descriptor, new CodeName(code, targetValue));
+                }
             }
         } else {
             Object targetValue = getValue(value, mapping);
