@@ -143,9 +143,15 @@ public class LoaderAdapter {
         } else if (!value.isNull()) {
             if (value.getType() == Value.VALUE_TYPE_DATE) {
                 result = value.getDate();
-            } else if (value.getType() == Value.VALUE_TYPE_NUMBER ||
-                    value.getType() == Value.VALUE_TYPE_BIGNUMBER ||
-                    value.getType() == Value.VALUE_TYPE_INTEGER) {
+            } else if (value.getType() == Value.VALUE_TYPE_NUMBER) {
+                if (value.getPrecision() == 0) {
+                    result = value.getBigNumber().toBigIntegerExact();
+                } else {
+                    result = value.getBigNumber();
+                }
+            } else if (value.getType() == Value.VALUE_TYPE_INTEGER) {
+                result = value.getInteger();
+            } else if (value.getType() == Value.VALUE_TYPE_BIGNUMBER) {
                 result = value.getBigNumber();
             } else {
                 result = value.toString(false); // no padding
@@ -156,37 +162,23 @@ public class LoaderAdapter {
 
     /**
      * Helper to get a stringified form of the legacy identifier.
-     * In particular, this removes any trailing .0 decimal place for
-     * numeric identifiers.
+     * This ensures that any date identifiers are formatted using
+     * <em>java.sql.Timestamp.toString()</em> to avoid localisation issues.
      *
      * @param id the legacy id
      * @return the stringified form of the legacy identifier
      */
     private String getLegacyId(Value id) {
-        String value = convert(id);
-        if (value != null && id.getType() == Value.VALUE_TYPE_NUMBER
-                && id.getPrecision() == 0 && value.endsWith(".0")) {
-            value = value.substring(0, value.length() - 2);
-        }
-
-        return value;
-    }
-
-    /**
-     * Converts a {@link Value} to a string.
-     * Dates are formatted using JDBC timestamp escape format.
-     *
-     * @param value the value to convert
-     * @return the converted value
-     */
-    private String convert(Value value) {
         String result = null;
-        if (!value.isNull()) {
-            if (value.getType() == Value.VALUE_TYPE_DATE) {
-                Timestamp datetime = new Timestamp(value.getDate().getTime());
+        if (!id.isNull()) {
+            if (id.getType() == Value.VALUE_TYPE_DATE) {
+                Timestamp datetime = new Timestamp(id.getDate().getTime());
                 result = datetime.toString();
             } else {
-                result = value.toString(false); // no paddding
+                Object value = getValue(id);
+                if (value != null) {
+                    result = value.toString();
+                }
             }
         }
         return result;
