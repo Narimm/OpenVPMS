@@ -225,7 +225,7 @@
                 <prop key="lookup">
                     org.openvpms.archetype.function.lookup.LookupFunctions</prop>
                 <prop key="party">
-                    org.openvpms.archetype.function.party.PartyFunctions</prop>
+                    org.openvpms.etl.load.LoaderPartyFunctions</prop>
             </props>
         </constructor-arg>
     </bean>

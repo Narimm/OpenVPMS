@@ -28,6 +28,7 @@ import be.ibridge.kettle.trans.step.StepDataInterface;
 import be.ibridge.kettle.trans.step.StepInterface;
 import be.ibridge.kettle.trans.step.StepMeta;
 import be.ibridge.kettle.trans.step.StepMetaInterface;
+import be.ibridge.kettle.trans.step.StepStatus;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -61,6 +62,11 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
      * The loader.
      */
     private LoaderAdapter loader;
+
+    /**
+     * The count of generated objects.
+     */
+    private int count;
 
 
     /**
@@ -103,6 +109,8 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
                 List<IMObject> loaded = loader.load(row);
                 if (loaded.isEmpty()) {
                     ++linesSkipped;
+                } else {
+                    count += loaded.size();
                 }
             } finally {
                 setClassLoader(prior);
@@ -168,6 +176,7 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
         try {
             getLoader();
             boolean process = true;
+            count = 0;
             while (process) {
                 process = processRow(metaData, data) && !isStopped();
             }
@@ -180,7 +189,16 @@ public class LoaderPlugin extends BaseStep implements StepInterface {
             stopAll();
         } finally {
             dispose(metaData, data);
-            logBasic(Messages.get("LoaderPlugin.Finished", linesRead));
+            StepStatus status = new StepStatus(this);
+            float lapsed = ((float) getRuntime()) / 1000;
+            double speed = 0.0;
+            if (lapsed != 0) {
+                speed = Math.floor(10 * (count / lapsed)) / 10;
+            }
+
+            logBasic(Messages.get("LoaderPlugin.Finished",
+                                  status.getLinesRead(), status.getSeconds(),
+                                  status.getSpeed(), count, speed));
             markStop();
         }
     }

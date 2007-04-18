@@ -107,20 +107,25 @@ public class DefaultObjectHandler implements ObjectHandler {
     /**
      * The batch size.
      */
-    private final int batchSize = 100;
+    private int batchSize = 1000;
 
 
     /**
      * Constructs a new <tt>DefaultObjectHandler</tt>.
      *
      * @param loaderName the loader name
+     * @param mappings   the mappings
      * @param dao        the DAO
      * @param service    the archetype service
      */
-    public DefaultObjectHandler(String loaderName, ETLLogDAO dao,
-                                IArchetypeService service) {
+    public DefaultObjectHandler(String loaderName, Mappings mappings,
+                                ETLLogDAO dao, IArchetypeService service) {
         this.loaderName = loaderName;
         this.dao = dao;
+        batchSize = mappings.getBatchSize();
+        if (batchSize <= 0) {
+            batchSize = 1;
+        }
         this.service = service;
     }
 

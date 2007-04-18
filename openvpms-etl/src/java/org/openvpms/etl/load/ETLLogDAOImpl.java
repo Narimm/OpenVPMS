@@ -205,17 +205,25 @@ public class ETLLogDAOImpl implements ETLLogDAO {
         boolean processed;
         StringBuffer queryString = new StringBuffer();
 
-        queryString.append("select count(l) from ");
+        queryString.append("select errors from ");
         queryString.append(ETLLog.class.getName());
         queryString.append(" as l where l.rowId = :rowId and ");
-        queryString.append("l.loader = :loader and errors is null");
+        queryString.append("l.loader = :loader");
         Session session = factory.openSession();
         try {
             Query query = session.createQuery(queryString.toString());
             query.setParameter("rowId", rowId);
             query.setParameter("loader", loader);
-            long count = (Long) query.list().get(0);
-            processed = (count > 0);
+            int rows = 0;
+            boolean errors = false;
+            for (Object value : query.list()) {
+                ++rows;
+                if (value != null) {
+                    errors = true;
+                    break;
+                }
+            }
+            processed = (rows != 0 && !errors);
         } finally {
             session.clear();
             session.close();

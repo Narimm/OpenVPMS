@@ -77,7 +77,7 @@ public class Loader {
     public Loader(String name, Mappings mappings, ETLLogDAO dao,
                   IArchetypeService service) {
         this(name, mappings, dao, service,
-             new DefaultObjectHandler(name, dao, service));
+             new DefaultObjectHandler(name, mappings, dao, service));
     }
 
     /**
