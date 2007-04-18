@@ -89,6 +89,7 @@ public class LoaderPluginMeta extends BaseStepMeta
     private static final String SKIP_PROCESSED = "skipProcessed"; // NON-NLS
     private static final String REMOVE_DEFAULT_OBJECTS
             = "removeDefaultObjects"; // NON-NLS
+    private static final String BATCH_SIZE = "batchSize"; // NON-NLS
 
 
     /**
@@ -201,6 +202,9 @@ public class LoaderPluginMeta extends BaseStepMeta
         mappings.setSkipProcessed(repository.getStepAttributeBoolean(
                 stepId, SKIP_PROCESSED));
 
+        mappings.setBatchSize((int) repository.getStepAttributeInteger(
+                stepId, BATCH_SIZE));
+
         int count = repository.countNrStepAttributes(stepId, SOURCE);
         for (int i = 0; i < count; ++i) {
             String source = repository.getStepAttributeString(
@@ -241,6 +245,9 @@ public class LoaderPluginMeta extends BaseStepMeta
 
         repository.saveStepAttribute(transformationId, stepId, SKIP_PROCESSED,
                                      mappings.getSkipProcessed());
+
+        repository.saveStepAttribute(transformationId, stepId, BATCH_SIZE,
+                                     mappings.getBatchSize());
 
         for (int i = 0; i < mappings.getMappingCount(); ++i) {
             Mapping mapping = mappings.getMapping(i);

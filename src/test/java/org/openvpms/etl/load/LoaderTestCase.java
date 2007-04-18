@@ -374,15 +374,16 @@ public class LoaderTestCase
 
     private Loader createLoader(String loaderName, Mappings mappings) {
         return new Loader(loaderName, mappings, dao, service,
-                          new TestObjectHandler(loaderName, dao, service));
+                          new TestObjectHandler(loaderName, mappings, dao,
+                                                service));
     }
 
 
     private class TestObjectHandler extends DefaultObjectHandler {
 
-        public TestObjectHandler(String loaderName, ETLLogDAO dao,
-                                 IArchetypeService service) {
-            super(loaderName, dao, service);
+        public TestObjectHandler(String loaderName, Mappings mappings,
+                                 ETLLogDAO dao, IArchetypeService service) {
+            super(loaderName, mappings, dao, service);
         }
 
         /**

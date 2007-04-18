@@ -84,6 +84,11 @@ public class LoaderPluginDialog extends BaseStepDialog
     private Text idName;
 
     /**
+     * Text field containing the batch size.
+     */
+    private Text batchSize;
+
+    /**
      * The database connection combo box.
      */
     private CCombo connection;
@@ -195,6 +200,25 @@ public class LoaderPluginDialog extends BaseStepDialog
         idNameFormData.right = new FormAttachment(100, 0);
         idName.setLayoutData(idNameFormData);
 
+        // batch size line
+        Label batchLabel = new Label(shell, SWT.RIGHT);
+        batchLabel.setText(Messages.get("LoaderPluginDialog.BatchField.Label"));
+        props.setLook(batchLabel);
+        FormData batchLabelFormData = new FormData();
+        batchLabelFormData.left = new FormAttachment(0, 0);
+        batchLabelFormData.right = new FormAttachment(middle, -margin);
+        batchLabelFormData.top = new FormAttachment(idName, margin * 2);
+        batchLabel.setLayoutData(batchLabelFormData);
+
+        batchSize = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+        props.setLook(batchSize);
+        batchSize.addModifyListener(modifyListener);
+        FormData batchSizeFormData = new FormData();
+        batchSizeFormData.left = new FormAttachment(middle, 0);
+        batchSizeFormData.top = new FormAttachment(idName, margin * 2);
+        batchSizeFormData.right = new FormAttachment(100, 0);
+        batchSize.setLayoutData(batchSizeFormData);
+
         // The folders
         tabFolder = new CTabFolder(shell, SWT.BORDER);
         props.setLook(tabFolder, Props.WIDGET_STYLE_TAB);
@@ -278,7 +302,7 @@ public class LoaderPluginDialog extends BaseStepDialog
 
         FormData fdTabFolder = new FormData();
         fdTabFolder.left = new FormAttachment(0, 0);
-        fdTabFolder.top = new FormAttachment(idName, margin);
+        fdTabFolder.top = new FormAttachment(batchSize, margin);
         fdTabFolder.right = new FormAttachment(100, 0);
         fdTabFolder.bottom = new FormAttachment(100, -50);
         tabFolder.setLayoutData(fdTabFolder);
@@ -361,6 +385,7 @@ public class LoaderPluginDialog extends BaseStepDialog
             idName.setText(mappings.getIdColumn());
         }
 
+        batchSize.setText(Integer.toString(mappings.getBatchSize()));
         generateLookups.setSelection(mappings.getGenerateLookups());
 
         skipProcessed.setSelection(mappings.getSkipProcessed());
@@ -405,6 +430,13 @@ public class LoaderPluginDialog extends BaseStepDialog
         Mappings mappings = new Mappings();
         mappings.setConnection(connection.getText());
         mappings.setIdColumn(idName.getText());
+        int value = 1000;
+        try {
+            value = Integer.valueOf(batchSize.getText());
+        } catch (NumberFormatException ignore) {
+            batchSize.setText(Integer.toString(value));
+        }
+        mappings.setBatchSize(value);
         mappings.setGenerateLookups(generateLookups.getSelection());
         mappings.setSkipProcessed(skipProcessed.getSelection());
         int count = mappingTable.nrNonEmpty();
