@@ -166,30 +166,35 @@ class RowMapper {
             node = node.getChild();
             object = getObject(node, parentNode, object, mapping);
         }
-        IMObjectBean bean = new IMObjectBean(object, service);
+        ArchetypeDescriptor archetype
+                = service.getArchetypeDescriptor(node.getArchetype());
+        if (archetype == null) {
+            throw new LoaderException(ArchetypeNotFound, node.getArchetype());
+        }
         String name = node.getName();
-        if (!bean.hasNode(name)) {
+        NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
+        if (descriptor == null) {
             throw new LoaderException(InvalidNode, node.getArchetype(), name);
         }
-        NodeDescriptor descriptor = bean.getDescriptor(name);
         if (descriptor.isObjectReference()) {
             String targetValue = getStringValue(value, mapping);
-            bean.setValue(name, handler.getReference(targetValue));
+            descriptor.setValue(object, handler.getReference(targetValue));
         } else if (descriptor.isCollection()) {
             String targetValue = getStringValue(value, mapping);
-            bean.addValue(name, handler.getObject(targetValue));
+            descriptor.addChildToCollection(object,
+                                            handler.getObject(targetValue));
         } else if (lookupHandler != null && descriptor.isLookup()) {
             String targetValue = getStringValue(value, mapping);
             if (targetValue != null) {
                 String code = lookupHandler.getCode(targetValue);
-                bean.setValue(name, code);
+                descriptor.setValue(object, code);
                 if (lookupHandler.isGeneratedLookup(descriptor)) {
                     lookups.put(descriptor, new CodeName(code, targetValue));
                 }
             }
         } else {
             Object targetValue = getValue(value, mapping);
-            bean.setValue(name, targetValue);
+            descriptor.setValue(object, targetValue);
         }
     }
 
@@ -210,8 +215,9 @@ class RowMapper {
             object = create(node, mapping);
             objects.put(node.getObjectPath(), object);
             int index = (parent != null) ? parentNode.getIndex() : -1;
-            handler.add(rowId, object, index);
-            if (parent != null) {
+            if (parent == null) {
+                handler.add(rowId, object, index);
+            } else {
                 IMObjectBean bean = new IMObjectBean(parent, service);
                 String name = parentNode.getName();
                 if (!bean.hasNode(name)) {
@@ -223,6 +229,7 @@ class RowMapper {
                     bean.addValue(name, object);
                 } else if (descriptor.isObjectReference()) {
                     bean.setValue(name, object.getObjectReference());
+                    handler.add(rowId, object, index);
                 } else {
                     bean.setValue(name, object);
                 }

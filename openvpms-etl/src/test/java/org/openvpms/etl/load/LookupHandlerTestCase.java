@@ -30,11 +30,9 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -222,24 +220,28 @@ public class LookupHandlerTestCase
         }
 
         /**
-         * Returns a list of existing lookup codes for a lookup.
+         * Determines if a lookup exists.
          *
-         * @param descriptor the lookup descriptor
-         * @return the set of existing lookup codes
+         * @param archetype the lookup archetype short name
+         * @param code      the lookup code
+         * @return <tt>false</tt> to always generate lookups
          */
         @Override
-        protected Set<String> getCodes(LookupDescriptor descriptor) {
-            return Collections.emptySet();
+        protected boolean exists(String archetype, String code) {
+            return false;
         }
 
         /**
-         * Determines if a lookup relationship is a duplicate.
+         * Determines if a lookup relationship exists.
          *
-         * @param relationship the relationship
-         * @return <tt>true</tt> if it is a duplicate, otherwise <tt>false</tt>
+         * @param archetype the relationship archetype short name
+         * @param source    the source lookup
+         * @param target    the target lookup
+         * @return <tt>false</tt> to always generate lookup relationships
          */
         @Override
-        protected boolean isDuplicate(LookupRelationship relationship) {
+        protected boolean exists(String archetype, Lookup source,
+                                 Lookup target) {
             return false;
         }
 

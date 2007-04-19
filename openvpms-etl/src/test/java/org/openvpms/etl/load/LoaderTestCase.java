@@ -133,10 +133,8 @@ public class LoaderTestCase
         assertTrue(phone.isA("contact.phoneNumber"));
 
         List<ETLLog> logs = dao.get(loaderName, legacyId, null);
-        assertEquals(3, logs.size());
+        assertEquals(1, logs.size());
         checkLog(logs, loaderName, legacyId, "party.customerperson", -1);
-        checkLog(logs, loaderName, legacyId, "contact.location", 0);
-        checkLog(logs, loaderName, legacyId, "contact.phoneNumber", 1);
     }
 
     /**
