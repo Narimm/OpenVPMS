@@ -22,30 +22,20 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.ShortNameConstraint;
 import static org.openvpms.etl.load.LoaderException.ErrorCode.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -79,6 +69,11 @@ class LookupHandler {
      */
     private ErrorListener listener;
 
+    /**
+     * The lookup cache.
+     */
+    private LookupCache cache;
+
 
     /**
      * Creates a new <tt>LookupHandler</tt>.
@@ -88,6 +83,7 @@ class LookupHandler {
      */
     public LookupHandler(Mappings mappings, IArchetypeService service) {
         this.service = service;
+        cache = new LookupCache(service);
 
         // cache of lookups of type 'targetLookup'
         Map<NodeDescriptor, ArchetypeDescriptor> targets
@@ -195,12 +191,10 @@ class LookupHandler {
      */
     @SuppressWarnings("HardCodedStringLiteral")
     public void commit() {
-        Map<IMObjectReference, IMObject> cache
-                = new HashMap<IMObjectReference, IMObject>();
+        List<IMObject> objects = new ArrayList<IMObject>();
         for (LookupDescriptor descriptor : lookups.values()) {
-            Set<String> codes = getCodes(descriptor);
             for (CodeName pair : descriptor.getLookups()) {
-                if (!codes.contains(pair.getCode())) {
+                if (!exists(descriptor.getArchetype(), pair.getCode())) {
                     Lookup lookup = (Lookup) service.create(
                             descriptor.getArchetype());
                     if (lookup == null) {
@@ -209,15 +203,15 @@ class LookupHandler {
                     }
                     lookup.setCode(pair.getCode());
                     lookup.setName(pair.getName());
-                    cache.put(lookup.getObjectReference(), lookup);
+                    objects.add(lookup);
+                    cache.add(lookup);
                 }
             }
         }
-        save(cache.values());
+        save(objects);
 
         for (LookupRelationshipDescriptor descriptor : relationships.values()) {
-            List<IMObject> relationships = createRelationships(descriptor,
-                                                               cache);
+            List<IMObject> relationships = createRelationships(descriptor);
             if (!relationships.isEmpty()) {
                 save(relationships);
             }
@@ -262,42 +256,28 @@ class LookupHandler {
     }
 
     /**
-     * Returns a list of existing lookup codes for a lookup.
+     * Determines if a lookup exists.
      *
-     * @param descriptor the lookup descriptor
-     * @return the set of existing lookup codes
+     * @param archetype the lookup archetype short name
+     * @param code      the lookup code
+     * @return <tt>true</tt> if it exists, otherwise <tt>false</tt>
      */
-    @SuppressWarnings("HardCodedStringLiteral")
-    protected Set<String> getCodes(LookupDescriptor descriptor) {
-        Set<String> result = new HashSet<String>();
-        ShortNameConstraint constraint
-                = new ShortNameConstraint("l", descriptor.getArchetype());
-        ArchetypeQuery query = new ArchetypeQuery(constraint);
-        query.add(new NodeSelectConstraint("l.code"));
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List<ObjectSet> sets = service.getObjects(query).getResults();
-        for (ObjectSet set : sets) {
-            result.add((String) set.get("l.code"));
-        }
-        return result;
+    protected boolean exists(String archetype, String code) {
+        return cache.exists(archetype, code);
     }
 
     /**
-     * Determines if a lookup relationship is a duplicate.
+     * Determines if a lookup relationship exists.
      *
-     * @param relationship the relationship
-     * @return <tt>true</tt> if it is a duplicate, otherwise <tt>false</tt>
+     * @param archetype the relationship archetype short name
+     * @param source    the source lookup
+     * @param target    the target lookup
+     * @return <tt>true</tt> if it exists, otherwise <tt>false</tt>
      */
-    @SuppressWarnings("HardCodedStringLiteral")
-    protected boolean isDuplicate(LookupRelationship relationship) {
-        String shortName = relationship.getArchetypeId().getShortName();
-        ArchetypeQuery query = new ArchetypeQuery(shortName, true, true);
-        query.add(new ObjectRefNodeConstraint("source",
-                                              relationship.getSource()));
-        query.add(new ObjectRefNodeConstraint("target",
-                                              relationship.getTarget()));
-        List<IMObject> results = service.get(query).getResults();
-        return !results.isEmpty();
+    protected boolean exists(String archetype, Lookup source,
+                             Lookup target) {
+        return cache.exists(archetype, source.getObjectReference(),
+                            target.getObjectReference());
     }
 
     /**
@@ -393,35 +373,32 @@ class LookupHandler {
      * Creates lookup relationships for a lookup relationship descriptor.
      *
      * @param descriptor the lookup relationship descriptor
-     * @param lookups    a cache of lookups
      * @return the lookup relationships
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LoaderException           for any loader error
      */
     private List<IMObject> createRelationships(
-            LookupRelationshipDescriptor descriptor,
-            Map<IMObjectReference, IMObject> lookups) {
+            LookupRelationshipDescriptor descriptor) {
         List<IMObject> result = new ArrayList<IMObject>();
         for (Pair pair : descriptor.getPairs()) {
             String sourceCode = pair.getValue1();
             String targetCode = pair.getValue2();
-            Lookup source = getLookup(descriptor.getSource(), sourceCode,
-                                      lookups);
-            Lookup target = getLookup(descriptor.getTarget(), targetCode,
-                                      lookups);
+            Lookup source = getLookup(descriptor.getSource(), sourceCode);
+            Lookup target = getLookup(descriptor.getTarget(), targetCode);
 
             if (source != null && target != null) {
-                LookupRelationship relationship
-                        = (LookupRelationship) service.create(
-                        descriptor.getArchetype());
-                if (relationship == null) {
-                    throw new LoaderException(ArchetypeNotFound,
-                                              descriptor.getArchetype());
-                }
-                relationship.setSource(source.getObjectReference());
-                relationship.setTarget(target.getObjectReference());
-                if (!isDuplicate(relationship)) {
+                if (!exists(descriptor.getArchetype(), source, target)) {
+                    LookupRelationship relationship
+                            = (LookupRelationship) service.create(
+                            descriptor.getArchetype());
+                    if (relationship == null) {
+                        throw new LoaderException(ArchetypeNotFound,
+                                                  descriptor.getArchetype());
+                    }
+                    relationship.setSource(source.getObjectReference());
+                    relationship.setTarget(target.getObjectReference());
                     result.add(relationship);
+                    cache.add(relationship);
                 }
             } else if (source == null) {
                 throw new LoaderException(LookupNotFound,
@@ -441,22 +418,11 @@ class LookupHandler {
      *
      * @param descriptor the lookup descriptor
      * @param code       the lookup code
-     * @param cache      the lookup cache
      * @return the corresponding lookup or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private Lookup getLookup(LookupDescriptor descriptor, String code,
-                             Map<IMObjectReference, IMObject> cache) {
-        String archetype = descriptor.getArchetype();
-        for (IMObject object : cache.values()) {
-            if (TypeHelper.isA(object, archetype)) {
-                Lookup cached = (Lookup) object;
-                if (cached.getCode().equals(code)) {
-                    return cached;
-                }
-            }
-        }
-        return LookupHelper.getLookup(service, archetype, code);
+    private Lookup getLookup(LookupDescriptor descriptor, String code) {
+        return cache.get(descriptor.getArchetype(), code);
     }
 
 
