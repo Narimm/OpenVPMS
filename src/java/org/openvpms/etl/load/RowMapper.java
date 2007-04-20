@@ -24,8 +24,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import static org.openvpms.etl.load.LoaderException.ErrorCode.*;
 
 import java.util.ArrayList;
@@ -83,6 +81,13 @@ class RowMapper {
             = new HashMap<NodeDescriptor, CodeName>();
 
     /**
+     * Map of archetype short names and their corresponding nodes descriptors,
+     * cached for performance reasons.
+     */
+    private final Map<String, Map<String, NodeDescriptor>> descriptors
+            = new HashMap<String, Map<String, NodeDescriptor>>();
+
+    /**
      * Lookup handler.
      */
     private LookupHandler lookupHandler;
@@ -110,6 +115,26 @@ class RowMapper {
                 throw new LoaderException(InvalidMapping, target);
             }
             nodes.put(target, node);
+
+            // cache node descriptors
+            while (node != null) {
+                String shortName = node.getArchetype();
+                if (!descriptors.containsKey(shortName)) {
+                    ArchetypeDescriptor archetype
+                            = service.getArchetypeDescriptor(shortName);
+                    if (archetype == null) {
+                        throw new LoaderException(ArchetypeNotFound, shortName);
+                    }
+                    Map<String, NodeDescriptor> nodes
+                            = new HashMap<String, NodeDescriptor>();
+                    for (NodeDescriptor descriptor :
+                            archetype.getAllNodeDescriptors()) {
+                        nodes.put(descriptor.getName(), descriptor);
+                    }
+                    descriptors.put(shortName, nodes);
+                }
+                node = node.getChild();
+            }
         }
         this.lookupHandler = lookupHandler;
     }
@@ -161,16 +186,7 @@ class RowMapper {
             node = node.getChild();
             object = getObject(node, parentNode, object, mapping);
         }
-        ArchetypeDescriptor archetype
-                = service.getArchetypeDescriptor(node.getArchetype());
-        if (archetype == null) {
-            throw new LoaderException(ArchetypeNotFound, node.getArchetype());
-        }
-        String name = node.getName();
-        NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
-        if (descriptor == null) {
-            throw new LoaderException(InvalidNode, node.getArchetype(), name);
-        }
+        NodeDescriptor descriptor = getNode(node.getArchetype(), node.getName());
         if (descriptor.isObjectReference()) {
             String targetValue = getStringValue(value, mapping);
             descriptor.setValue(object, handler.getReference(targetValue));
@@ -213,20 +229,16 @@ class RowMapper {
             if (parent == null) {
                 handler.add(rowId, object, index);
             } else {
-                IMObjectBean bean = new IMObjectBean(parent, service);
+                String archetype = parent.getArchetypeId().getShortName();
                 String name = parentNode.getName();
-                if (!bean.hasNode(name)) {
-                    throw new LoaderException(InvalidNode, node.getArchetype(),
-                                              name);
-                }
-                NodeDescriptor descriptor = bean.getDescriptor(name);
+                NodeDescriptor descriptor = getNode(archetype, name);
                 if (descriptor.isCollection()) {
-                    bean.addValue(name, object);
+                    descriptor.addChildToCollection(parent, object);
                 } else if (descriptor.isObjectReference()) {
-                    bean.setValue(name, object.getObjectReference());
+                    descriptor.setValue(parent, object.getObjectReference());
                     handler.add(rowId, object, index);
                 } else {
-                    bean.setValue(name, object);
+                    descriptor.setValue(parent, object);
                 }
             }
         }
@@ -250,10 +262,9 @@ class RowMapper {
             throw new LoaderException(ArchetypeNotFound, node.getArchetype());
         }
         if (mapping.getRemoveDefaultObjects()) {
-            ArchetypeDescriptor descriptor
-                    = DescriptorHelper.getArchetypeDescriptor(result,
-                                                              service);
-            for (NodeDescriptor nodeDesc : descriptor.getAllNodeDescriptors()) {
+            Map<String, NodeDescriptor> nodes
+                    = descriptors.get(node.getArchetype());
+            for (NodeDescriptor nodeDesc : nodes.values()) {
                 if (nodeDesc.isCollection()) {
                     IMObject[] children = nodeDesc.getChildren(result).toArray(
                             new IMObject[0]);
@@ -296,6 +307,18 @@ class RowMapper {
     private String getStringValue(Object object, Mapping mapping) {
         Object result = getValue(object, mapping);
         return (result != null) ? result.toString() : null;
+    }
+
+    /**
+     * Helper to get the named node descriptor from an archetype.
+     *
+     * @param archetype the archetype
+     * @param name      the node name
+     * @return the corresponding node descriptor
+     */
+    private NodeDescriptor getNode(String archetype, String name) {
+        Map<String, NodeDescriptor> nodes = descriptors.get(archetype);
+        return nodes.get(name);
     }
 
 }
