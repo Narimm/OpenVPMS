@@ -26,9 +26,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import static org.openvpms.component.business.service.archetype.helper.LookupHelperException.ErrorCode.*;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -61,6 +61,11 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      */
     private final IArchetypeService service;
 
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookupService;
+
 
     /**
      * Constructs a new <code>AbstractLookupAssertion</code>.
@@ -70,10 +75,12 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * @param service    the archetype service
      */
     public AbstractLookupAssertion(AssertionDescriptor descriptor,
-                                   String type, IArchetypeService service) {
+                                   String type, IArchetypeService service,
+                                   ILookupService lookupService) {
         this.descriptor = descriptor;
         this.type = type;
         this.service = service;
+        this.lookupService = lookupService;
     }
 
     /**
@@ -217,6 +224,15 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
     }
 
     /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     */
+    protected ILookupService getLookupService() {
+        return lookupService;
+    }
+
+    /**
      * Executes a query.
      *
      * @param query the query to execute
@@ -292,11 +308,17 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
     protected Lookup getLookup(IMObject context, String nodePath,
                                String relationshipShortName,
                                String relationshipNode) {
-        String value = getPathValue(context, nodePath);
+        Lookup result = null;
+        String code = getPathValue(context, nodePath);
         String[] shortNames = getArchetypeShortNames(relationshipShortName,
                                                      relationshipNode);
-        return LookupHelper.getLookup(getArchetypeService(), shortNames, value);
-
+        for (String shortName : shortNames) {
+            result = lookupService.getLookup(shortName,  code);
+            if (result != null) {
+                break;
+            }
+        }
+        return result;
     }
 
     /**

@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 
 /**
@@ -40,11 +41,14 @@ public class LookupAssertionFactory {
      *
      * @param descriptor the node descriptor
      * @param service the archetype service
+     * @param lookupService the lookup service
      * @return a new lookup assertion
      * @throws LookupHelperException if the assertion is incorrectly specified
      */
+    @SuppressWarnings("HardCodedStringLiteral")
     public static LookupAssertion create(NodeDescriptor descriptor,
-                                         IArchetypeService service) {
+                                         IArchetypeService service,
+                                         ILookupService lookupService) {
         LookupAssertion result;
         if (descriptor.containsAssertionType("lookup")) {
             AssertionDescriptor assertion
@@ -56,11 +60,11 @@ public class LookupAssertionFactory {
                         new Object[]{assertion.getName()});
             }
             if (RemoteLookup.TYPE.equals(type)) {
-                result = new RemoteLookup(assertion, service);
+                result = new RemoteLookup(assertion, service, lookupService);
             } else if (TargetLookup.TYPE.equals(type)) {
-                result = new TargetLookup(assertion, service);
+                result = new TargetLookup(assertion, service, lookupService);
             } else if (SourceLookup.TYPE.equals(type)) {
-                result = new SourceLookup(assertion, service);
+                result = new SourceLookup(assertion, service, lookupService);
             } else {
                 throw new LookupHelperException(
                         LookupHelperException.ErrorCode.InvalidLookupType,
@@ -69,12 +73,12 @@ public class LookupAssertionFactory {
         } else if (descriptor.containsAssertionType(LocalLookup.TYPE)) {
             AssertionDescriptor assertion
                     = descriptor.getAssertionDescriptor(LocalLookup.TYPE);
-            result = new LocalLookup(assertion, service);
+            result = new LocalLookup(assertion, service, lookupService);
         } else if (descriptor.containsAssertionType(LookupAssertionType.TYPE)) {
             AssertionDescriptor assertion
                     = descriptor.getAssertionDescriptor(
                     LookupAssertionType.TYPE);
-            result = new LookupAssertionType(assertion, service);
+            result = new LookupAssertionType(assertion, service, lookupService);
         } else {
             throw new LookupHelperException(
                     LookupHelperException.ErrorCode.InvalidLookupAssertion,

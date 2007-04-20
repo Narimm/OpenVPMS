@@ -42,6 +42,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class LookupTestCase extends
                             AbstractDependencyInjectionSpringContextTests {
 
@@ -199,10 +200,19 @@ public class LookupTestCase extends
      */
     public void testConstrainedLookupRetrievalFromNodeDescriptor()
             throws Exception {
+        String ctyCode = "AU" + System.currentTimeMillis();
+        String stateCode = "VIC" + System.currentTimeMillis();
+        Lookup cty = createCountryLookup(ctyCode);
+        Lookup state = createStateLookup(stateCode);
+        cty.addLookupRelationship(createLookupRelationship(
+                "lookupRelationship.countryState", cty, state));
+        service.save(state);
+        service.save(cty);
+
         ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(
                 "contact.location");
         Contact contact = (Contact) service.create(descriptor.getType());
-        contact.getDetails().setAttribute("country", "AU");
+        contact.getDetails().setAttribute("country", ctyCode);
         assertTrue(LookupHelper.get(service,
                                     descriptor.getNodeDescriptor("state"),
                                     contact).size() > 0);

@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import static org.openvpms.component.business.service.archetype.helper.LookupHelperException.ErrorCode.InvalidSourceLookupSpec;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -70,10 +71,12 @@ public class SourceLookup extends AbstractLookupAssertion {
      *
      * @param descriptor the assertion descriptor
      * @param service    the archetype service
+     * @param lookupService the lookup service
      */
     public SourceLookup(AssertionDescriptor descriptor,
-                        IArchetypeService service) {
-        super(descriptor, TYPE, service);
+                        IArchetypeService service,
+                        ILookupService lookupService) {
+        super(descriptor, TYPE, service, lookupService);
         relationship = getProperty("relationship");
         value = getProperty("value");
         if (StringUtils.isEmpty(relationship) || StringUtils.isEmpty(value)) {

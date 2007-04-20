@@ -24,14 +24,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.ShortNameConstraint;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -73,13 +70,15 @@ class RemoteLookup extends AbstractLookupAssertion {
     /**
      * Constructs a new <code>BasicLookup</code>.
      *
-     * @param assertion the assertion descriptor
-     * @param service   the archetype service
+     * @param assertion     the assertion descriptor
+     * @param service       the archetype service
+     * @param lookupService the lookup service
      */
     @SuppressWarnings("HardCodedStringLiteral")
     public RemoteLookup(AssertionDescriptor assertion,
-                        IArchetypeService service) {
-        super(assertion, TYPE, service);
+                        IArchetypeService service,
+                        ILookupService lookupService) {
+        super(assertion, TYPE, service, lookupService);
         source = getProperty("source");
         if (StringUtils.isEmpty(source)) {
             throw new LookupHelperException(
@@ -97,7 +96,8 @@ class RemoteLookup extends AbstractLookupAssertion {
      *                                   lookup type
      */
     public List<Lookup> getLookups() {
-        return LookupHelper.getLookups(getArchetypeService(), source, 0, -1);
+        Collection<Lookup> lookups = getLookupService().getLookups(source);
+        return new ArrayList<Lookup>(lookups);
     }
 
     /**
@@ -128,44 +128,14 @@ class RemoteLookup extends AbstractLookupAssertion {
 
     /**
      * Returns the lookup with the specified code.
-     * This implementation throws {@link LookupHelperException}.
      *
      * @return the lookup matching <code>code</code>, or <code>null</code> if
      *         none is found
-     * @throws LookupHelperException if invoekd
+     * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
     public Lookup getLookup(String code) {
-        return LookupHelper.getLookup(getArchetypeService(), source, code);
+        return getLookupService().getLookup(source, code);
     }
 
-    /**
-     * Returns the name of the lookup with the specified code.
-     *
-     * @param code the lookup code
-     * @return the name of the lookup matching <code>code</code>, or
-     *         <code>null</code> if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     * @throws LookupHelperException     if this method is unsupported by the
-     *                                   lookup type
-     */
-    @Override
-    @SuppressWarnings("HardCodedStringLiteral")
-    public String getName(String code) {
-        ShortNameConstraint constraint
-                = new ShortNameConstraint("l", source, true);
-        ArchetypeQuery query = new ArchetypeQuery(constraint)
-                .add(new NodeSelectConstraint("l", "name"))
-                .add(new NodeConstraint("code", code))
-                .setFirstResult(0)
-                .setMaxResults(1);
-
-        IArchetypeService service = getArchetypeService();
-        List<ObjectSet> sets = service.getObjects(query).getResults();
-        if (!sets.isEmpty()) {
-            ObjectSet set = sets.get(0);
-            return (String) set.get("l.name");
-        }
-        return null;
-    }
 }
