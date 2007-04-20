@@ -20,34 +20,28 @@ package org.openvpms.etl.load;
 
 
 /**
- * Provides a singleton instance of a {@link LookupNameCache}.
+ * Loader helper methods.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class LookupNameCacheHelper {
+public class LoaderHelper {
 
     /**
-     * A reference to the lookup cache.
+     * Value token that gets expanded with the column value.
      */
-    private static LookupNameCache cache;
+    private static final String VALUE_TOKEN = "\\$value";    // NON-NLS
 
 
     /**
-     * Registers the singleton cache.
+     * Helper to replace all instances of <tt>$value</tt> in a mapping with
+     * the actual value.
      *
-     * @param cache the cache
+     * @param mapping the mapping
+     * @param value   the value
+     * @return the mapping with <tt>$value</tt> replaced with <tt>value</tt>
      */
-    public LookupNameCacheHelper(LookupNameCache cache) {
-        LookupNameCacheHelper.cache = cache;
-    }
-
-    /**
-     * Returns the singleton cache.
-     *
-     * @return the cache, or <tt>null</tt> if none is registered
-     */
-    public static LookupNameCache getCache() {
-        return cache;
+    public static String replaceValue(String mapping, String value) {
+        return mapping.replaceAll(VALUE_TOKEN, value);
     }
 }

@@ -28,6 +28,8 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import static org.openvpms.etl.load.LoaderException.ErrorCode.*;
 
@@ -83,7 +85,8 @@ class LookupHandler {
      */
     public LookupHandler(Mappings mappings, IArchetypeService service) {
         this.service = service;
-        cache = new LookupCache(service);
+        ILookupService lookupService = LookupServiceHelper.getLookupService();
+        cache = new LookupCache(service, lookupService);
 
         // cache of lookups of type 'targetLookup'
         Map<NodeDescriptor, ArchetypeDescriptor> targets

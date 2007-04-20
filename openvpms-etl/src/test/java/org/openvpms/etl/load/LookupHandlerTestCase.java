@@ -88,8 +88,10 @@ public class LookupHandlerTestCase
         NodeDescriptor speciesDesc = archetype.getNodeDescriptor("species");
         assertNotNull(speciesDesc);
 
-        CodeName breed = new CodeName("KELPIE", "Kelpie");
-        CodeName species = new CodeName("CANINE", "Canine");
+        String breedCode = "KELPIE" + System.currentTimeMillis();
+        String speciesCode = "CANINE" + System.currentTimeMillis();
+        CodeName breed = new CodeName(breedCode, "Kelpie");
+        CodeName species = new CodeName(speciesCode, "Canine");
         Map<NodeDescriptor, CodeName> lookups
                 = new HashMap<NodeDescriptor, CodeName>();
         lookups.put(breedDesc, breed);
@@ -104,8 +106,8 @@ public class LookupHandlerTestCase
         LookupRelationship relationship = getRelationship(
                 objects, "lookupRelationship.speciesBreed");
 
-        assertEquals("CANINE", speciesLookup.getCode());
-        assertEquals("KELPIE", breedLookup.getCode());
+        assertEquals(breedCode, breedLookup.getCode());
+        assertEquals(speciesCode, speciesLookup.getCode());
 
         assertEquals(speciesLookup.getObjectReference(),
                      relationship.getSource());

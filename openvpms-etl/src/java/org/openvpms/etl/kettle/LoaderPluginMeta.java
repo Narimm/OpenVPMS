@@ -45,6 +45,7 @@ import org.openvpms.etl.load.Mapping;
 import org.openvpms.etl.load.Mappings;
 import org.openvpms.etl.load.NodeParser;
 import org.openvpms.etl.load.ReferenceParser;
+import org.openvpms.etl.load.LoaderHelper;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Node;
 
@@ -492,7 +493,11 @@ public class LoaderPluginMeta extends BaseStepMeta
                 }
                 if (checkReference &&
                         !StringUtils.isEmpty(mapping.getValue())) {
-                    if (ReferenceParser.parse(mapping.getValue()) == null) {
+                    // replace any instances of $value with 'dummy' in order
+                    // to check the reference
+                    String ref = LoaderHelper.replaceValue(mapping.getValue(),
+                                                           "dummy");  // NON-NLS
+                    if (ReferenceParser.parse(ref) == null) {
                         addRemark(remarks, CheckResult.TYPE_RESULT_ERROR,
                                   stepMeta,
                                   "LoaderPluginMeta.InvalidReference",
