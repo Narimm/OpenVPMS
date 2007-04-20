@@ -9,8 +9,7 @@
         <node name="code" path="/code" type="java.lang.String" hidden="true"
               minCardinality="1"/>
         <node name="name" type="java.lang.String" path="/name"
-              hidden="true" minCardinality="1" derived="true"
-              derivedValue="/code"/>
+              minCardinality="1" />
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="/code"/>

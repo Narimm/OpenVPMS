@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.datatypes.property.NamedPropert
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +53,7 @@ class LocalLookup extends AbstractLookupAssertion {
     /**
      * The lookup type.
      */
-    public static final String TYPE = "lookup.local";
+    public static final String TYPE = "lookup.local"; // NON-NLS
 
     /**
      * The lookups.
@@ -63,14 +64,16 @@ class LocalLookup extends AbstractLookupAssertion {
     /**
      * Constructs a new <code>LocalLookup</code> assertion.
      *
-     * @param assertion the assertion descriptor
-     * @param service   the archetype service
+     * @param assertion     the assertion descriptor
+     * @param service       the archetype service
+     * @param lookupService the lookup service
      */
     public LocalLookup(AssertionDescriptor assertion,
-                       IArchetypeService service) {
-        super(assertion, TYPE, service);
+                       IArchetypeService service,
+                       ILookupService lookupService) {
+        super(assertion, TYPE, service, lookupService);
         PropertyList list = (PropertyList) assertion.getPropertyMap()
-                .getProperties().get("entries");
+                .getProperties().get("entries"); // NON-NLS
         for (NamedProperty prop : list.getProperties()) {
             AssertionProperty aprop = (AssertionProperty) prop;
             lookups.add(new Lookup(ArchetypeId.LocalLookupId,

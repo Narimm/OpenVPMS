@@ -22,8 +22,6 @@ package org.openvpms.component.business.dao.hibernate.im.lookup;
 //hibernate
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-
-//openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -83,13 +81,13 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
             session.save(country);
             
             // create the relationship
-            LookupRelationship relationship = new LookupRelationship(country, state1);
+            LookupRelationship relationship = createRelationship(country, state1);
             session.save(relationship);
-            relationship = new LookupRelationship(country, state2);
+            relationship = createRelationship(country, state2);
             session.save(relationship);
-            relationship = new LookupRelationship(country, state3);
+            relationship = createRelationship(country, state3);
             session.save(relationship);
-            relationship = new LookupRelationship(country, state4);
+            relationship = createRelationship(country, state4);
             session.save(relationship);
             tx.commit();
 
@@ -107,7 +105,7 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
             closeSession();
         }
     }
-    
+
     /**
      * Test the deletion of a lookup and all its relationships
      */
@@ -123,22 +121,22 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
 
             // execute the test
             tx = session.beginTransaction();
-            Lookup country = new Lookup( 
+            Lookup country = new Lookup(
                     createLookArchetypeId("country"), "Greece", "GRE");
-            Lookup city1 = new Lookup( 
+            Lookup city1 = new Lookup(
                     createLookArchetypeId("city"), "Athens", null);
-            Lookup city2 = new Lookup( 
+            Lookup city2 = new Lookup(
                     createLookArchetypeId("city"), "Hellas", null);
-            Lookup city3 = new Lookup( 
+            Lookup city3 = new Lookup(
                     createLookArchetypeId("city"), "Limnos", null);
             session.save(city1);
             session.save(city2);
             session.save(city3);
-            
+
             // create the relationship
-            country.addLookupRelationship(new LookupRelationship(country, city1));
-            country.addLookupRelationship(new LookupRelationship(country, city2));
-            country.addLookupRelationship(new LookupRelationship(country, city3));
+            country.addLookupRelationship(createRelationship(country, city1));
+            country.addLookupRelationship(createRelationship(country, city2));
+            country.addLookupRelationship(createRelationship(country, city3));
             session.save(country);
             tx.commit();
 
@@ -151,7 +149,7 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
             // now delete the entity and all its relationships
             tx = session.beginTransaction();
             Lookup lookup = (Lookup)session.load(Lookup.class, country.getUid());
-            
+
             // iterate through all the relationships and remove them
             LookupRelationship[] rels = (LookupRelationship[])lookup.getSourceLookupRelationships()
                 .toArray(new LookupRelationship[lookup.getSourceLookupRelationships().size()]);
@@ -160,7 +158,7 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
             }
             session.save(lookup);
             tx.commit();
-            
+
             // ensure that the correct number of rows have been deleted
             lcount1 = HibernateLookupUtil.getTableRowCount(session, "lookup");
             lrcount1 = HibernateLookupUtil.getTableRowCount(session, "lookupRelationship");
@@ -207,4 +205,22 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
     private ArchetypeId createLookArchetypeId(String concept) {
         return new ArchetypeId("openvpms-lookup-lookup." + concept + ".1.0");
     }
+
+    /**
+     * Creates a new lookup relationship.
+     *
+     * @param country the country
+     * @param state the state
+     * @return a new lookup relationship
+     */
+    private LookupRelationship createRelationship(Lookup country,
+                                                  Lookup state) {
+
+        LookupRelationship result = new LookupRelationship(country, state);
+        ArchetypeId type = new ArchetypeId(
+                "openvpms-lookup-lookupRelationship.countryState.1.0");
+        result.setArchetypeId(type);
+        return result;
+    }
+
 }

@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,18 +41,20 @@ class LookupAssertionType extends AbstractLookupAssertion {
     /**
      * The lookup type.
      */
-    public static final String TYPE = "lookup.assertionType";
+    public static final String TYPE = "lookup.assertionType"; // NON-NLS
 
 
     /**
      * Constructs a new <code>LookupAssertionType</code>.
      *
-     * @param descriptor the assertion descriptor
-     * @param service    the archetype service
+     * @param descriptor    the assertion descriptor
+     * @param service       the archetype service
+     * @param lookupService the lookup service
      */
     public LookupAssertionType(AssertionDescriptor descriptor,
-                               IArchetypeService service) {
-        super(descriptor, TYPE, service);
+                               IArchetypeService service,
+                               ILookupService lookupService) {
+        super(descriptor, TYPE, service, lookupService);
     }
 
     /**

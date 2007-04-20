@@ -19,7 +19,6 @@
 
 package org.openvpms.component.business.service.archetype.assertion;
 
-//openvpms-framework
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -27,8 +26,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 /**
  * This class has static methods for local reference data assertions. All
@@ -87,7 +87,7 @@ public class LookupAssertions {
      *            the particular assertion
      */
     public static void setDefaultValue(Object target, NodeDescriptor node,
-            AssertionDescriptor assertion) {
+                                       AssertionDescriptor assertion) {
 
         // only process if it is a lookup and there is no defeault value
         if (assertion.getName().equals("lookup")
@@ -97,12 +97,13 @@ public class LookupAssertions {
                     && assertion.getProperty("source") != null){
                 String source = (String)assertion.getProperty("source").getValue();
                 if (!StringUtils.isEmpty(source)) {
-                    String code = LookupHelper.getDefaultLookupCode(
-                            ArchetypeServiceHelper.getArchetypeService(), source);
+                    ILookupService service
+                            = LookupServiceHelper.getLookupService();
+                    Lookup lookup = service.getDefaultLookup(source);
                     // if a default lookup has identified then set it through
                     // the node descriptor.
-                    if (code != null) {
-                        node.setValue((IMObject)target, code);
+                    if (lookup != null) {
+                        node.setValue((IMObject)target, lookup.getCode());
                     }
                 }
             }

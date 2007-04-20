@@ -27,15 +27,19 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -68,12 +72,14 @@ class TargetLookup extends AbstractLookupAssertion {
     /**
      * Constructs a new <code>TargetLookup</code>.
      *
-     * @param descriptor the assertion descriptor
-     * @param service    the archetype service
+     * @param descriptor    the assertion descriptor
+     * @param service       the archetype service
+     * @param lookupService the lookup service
      */
     public TargetLookup(AssertionDescriptor descriptor,
-                        IArchetypeService service) {
-        super(descriptor, TYPE, service);
+                        IArchetypeService service,
+                        ILookupService lookupService) {
+        super(descriptor, TYPE, service, lookupService);
         relationship = getProperty("relationship");
         value = getProperty("value");
         if (StringUtils.isEmpty(relationship) || StringUtils.isEmpty(value)) {
@@ -164,19 +170,33 @@ class TargetLookup extends AbstractLookupAssertion {
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
+    @SuppressWarnings("HardCodedStringLiteral")
     public String getName(IMObject context, String code) {
-        String result = null;
-        IMObjectReference lookup = getSourceLookupRef(context);
-        if (lookup != null) {
-            ArchetypeQuery query = createQuery(lookup, code);
-            List<String> nodes = Arrays.asList("name");
-            IArchetypeService service = getArchetypeService();
-            List<NodeSet> rows = service.getNodes(query, nodes).getResults();
-            if (!rows.isEmpty()) {
-                result = (String) rows.get(0).get("name");
-            }
+        String srcCode = getPathValue(context, value);
+        ShortNameConstraint source = new ShortNameConstraint(
+                "source", getArchetypeShortNames(relationship, "source"), true,
+                true);
+        ShortNameConstraint target = new ShortNameConstraint(
+                "target", getArchetypeShortNames(relationship, "target"), true,
+                true);
+        ShortNameConstraint relConstraint = new ShortNameConstraint(
+                "relationship", relationship, true, true);
+        ArchetypeQuery query = new ArchetypeQuery(relConstraint);
+        query.add(source);
+        query.add(target);
+        query.add(new IdConstraint("relationship.source", "source"));
+        query.add(new IdConstraint("relationship.target", "target"));
+        query.add(new NodeConstraint("source.code", srcCode));
+        query.add(new NodeConstraint("target.code", code));
+        query.add(new NodeSelectConstraint("target.name"));
+        query.setMaxResults(1);
+        ObjectSetQueryIterator iter = new ObjectSetQueryIterator(
+                getArchetypeService(), query);
+        if (iter.hasNext()) {
+            ObjectSet set = iter.next();
+            return (String) set.get("target.name");
         }
-        return result;
+        return null;
     }
 
     /**
