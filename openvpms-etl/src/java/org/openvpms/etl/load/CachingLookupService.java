@@ -60,7 +60,7 @@ public class CachingLookupService extends AbstractLookupService {
      * Logging messages.
      */
     private static final Messages messages
-            = Messages.getMessages("messages.properties"); // NON-NLS
+            = Messages.getMessages("org.openvpms.etl.load.messages"); // NON-NLS
 
 
     /**
@@ -153,8 +153,8 @@ public class CachingLookupService extends AbstractLookupService {
             for (Lookup lookup : list) {
                 String code = lookup.getCode();
                 if (lookups.containsKey(code)) {
-                    log.warn(messages.getMessage("DuplicateLookup",
-                                                 new Object[]{code, shortName}));
+                    log.warn(messages.getMessage(
+                            "DuplicateLookup", new Object[]{shortName, code}));
                 } else {
                     lookups.put(code, lookup);
                 }
