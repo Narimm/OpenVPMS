@@ -19,72 +19,6 @@
         </property>
     </bean>
 
-    <bean id="linkIdCache"
-          class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-        <property name="cacheManager">
-            <ref local="cacheManager"/>
-        </property>
-        <property name="diskPersistent">
-            <value>true</value>
-        </property>
-        <property name="cacheName">
-            <value>linkIdCache</value>
-        </property>
-        <property name="maxElementsInMemory">
-            <value>40000</value>
-        </property>
-        <property name="overflowToDisk">
-            <value>true</value>
-        </property>
-        <property name="eternal">
-            <value>true</value>
-        </property>
-    </bean>
-
-    <bean id="idCache"
-          class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-        <property name="cacheManager">
-            <ref local="cacheManager"/>
-        </property>
-        <property name="cacheName">
-            <value>idCache</value>
-        </property>
-        <property name="diskPersistent">
-            <value>true</value>
-        </property>
-        <property name="maxElementsInMemory">
-            <value>40000</value>
-        </property>
-        <property name="overflowToDisk">
-            <value>true</value>
-        </property>
-        <property name="eternal">
-            <value>true</value>
-        </property>
-    </bean>
-
-    <bean id="unprocessedElementCache"
-          class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-        <property name="cacheManager">
-            <ref local="cacheManager"/>
-        </property>
-        <property name="cacheName">
-            <value>unprocessedElementCache</value>
-        </property>
-        <property name="diskPersistent">
-            <value>true</value>
-        </property>
-        <property name="maxElementsInMemory">
-            <value>40000</value>
-        </property>
-        <property name="overflowToDisk">
-            <value>true</value>
-        </property>
-        <property name="eternal">
-            <value>true</value>
-        </property>
-    </bean>
-
     <!--  Entity Interceptor Bean for Hibernate -->
     <bean id="entityInterceptor"
           class="org.openvpms.component.system.service.hibernate.EntityInterceptor">
@@ -213,16 +147,16 @@
         </constructor-arg>
     </bean>
 
-    <bean id="lookupNameCache" class="org.openvpms.etl.load.LookupNameCache">
-        <constructor-arg>
-            <ref local="archetypeService"/>
+    <bean id="lookupServiceHelper"
+          class="org.openvpms.component.business.service.lookup.LookupServiceHelper">
+        <constructor-arg index="0">
+            <ref local="lookupService"/>
         </constructor-arg>
     </bean>
 
-    <bean id="lookupNameCacheHelper"
-          class="org.openvpms.etl.load.LookupNameCacheHelper">
-        <constructor-arg index="0">
-            <ref local="lookupNameCache"/>
+    <bean id="lookupService" class="org.openvpms.etl.load.CachingLookupService">
+        <constructor-arg>
+            <ref local="archetypeService"/>
         </constructor-arg>
     </bean>
 
@@ -232,7 +166,7 @@
         <constructor-arg index="0">
             <props>
                 <prop key="openvpms">
-                    org.openvpms.etl.load.LoaderArchetypeServiceFunctions</prop>
+                    org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions</prop>
                 <prop key="date">
                     org.openvpms.component.system.common.jxpath.DateFunctions</prop>
                 <prop key="lookup">

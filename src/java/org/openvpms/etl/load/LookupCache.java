@@ -19,12 +19,15 @@
 package org.openvpms.etl.load;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 
@@ -43,13 +46,6 @@ import java.util.Map;
 class LookupCache {
 
     /**
-     * A map of lookup archetype short names to their corresponding lookup codes
-     * and {@link Lookup} instances.
-     */
-    private Map<String, Map<String, Lookup>> lookupsByArchetype
-            = new HashMap<String, Map<String, Lookup>>();
-
-    /**
      * A map of lookup relationships short names to the corresponding
      * relationship instances.
      */
@@ -61,14 +57,32 @@ class LookupCache {
      */
     private final IArchetypeService service;
 
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookupService;
+
+    /**
+     * The logger.
+     */
+    private final Log log = LogFactory.getLog(LookupCache.class);
+
 
     /**
      * Constructs a new <tt>LookupCache</tt>.
      *
      * @param service the archetype service
      */
-    public LookupCache(IArchetypeService service) {
+    @SuppressWarnings("HardCodedStringLiteral")
+    public LookupCache(IArchetypeService service,
+                       ILookupService lookupService) {
         this.service = service;
+        this.lookupService = lookupService;
+        if (!(lookupService instanceof CachingLookupService)) {
+            log.warn(CachingLookupService.class.getName()
+                    + " is not configured. The lookup cache may "
+                    + "not perform optimally");
+        }
     }
 
     /**
@@ -80,8 +94,7 @@ class LookupCache {
      * @throws ArchetypeServiceException for any error
      */
     public Lookup get(String archetype, String code) {
-        Map<String, Lookup> lookups = getLookups(archetype);
-        return lookups.get(code);
+        return lookupService.getLookup(archetype, code);
     }
 
     /**
@@ -91,9 +104,9 @@ class LookupCache {
      * @throws ArchetypeServiceException for any error
      */
     public void add(Lookup lookup) {
-        String archetype = lookup.getArchetypeId().getShortName();
-        Map<String, Lookup> lookups = getLookups(archetype);
-        lookups.put(lookup.getCode(), lookup);
+        if (lookupService instanceof CachingLookupService) {
+            ((CachingLookupService) lookupService).add(lookup);
+        }
     }
 
     /**
@@ -105,8 +118,7 @@ class LookupCache {
      * @throws ArchetypeServiceException for any error
      */
     public boolean exists(String archetype, String code) {
-        Map<String, Lookup> lookups = getLookups(archetype);
-        return lookups.containsKey(code);
+        return get(archetype, code) != null;
     }
 
     /**
@@ -139,31 +151,6 @@ class LookupCache {
             }
         }
         return false;
-    }
-
-    /**
-     * Returns all instances of the given lookup archetype.
-     *
-     * @param archetype the lookup archetype short name
-     * @return a map of lookups, keyed on code
-     * @throws ArchetypeServiceException for any error
-     */
-    private Map<String, Lookup> getLookups(String archetype) {
-        Map<String, Lookup> lookups = lookupsByArchetype.get(archetype);
-        if (lookups == null) {
-            lookups = new HashMap<String, Lookup>();
-            ArchetypeQuery query = new ArchetypeQuery(archetype, false, true);
-            query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-            IPage<IMObject> results = service.get(query);
-            for (IMObject object : results.getResults()) {
-                Lookup lookup = (Lookup) object;
-                if (lookup.getCode() != null) {
-                    lookups.put(lookup.getCode(), lookup);
-                }
-            }
-            lookupsByArchetype.put(archetype, lookups);
-        }
-        return lookups;
     }
 
     /**

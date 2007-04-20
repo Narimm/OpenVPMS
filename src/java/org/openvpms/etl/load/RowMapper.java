@@ -87,11 +87,6 @@ class RowMapper {
      */
     private LookupHandler lookupHandler;
 
-    /**
-     * Value token that gets expanded with the column value.
-     */
-    private static final String VALUE_TOKEN = "\\$value";    // NON-NLS
-
 
     /**
      * Constructs a new <tt>RowMapper</tt>.
@@ -279,7 +274,7 @@ class RowMapper {
         if (!StringUtils.isEmpty(mapping.getValue())) {
             String value = mapping.getValue();
             if (object != null) {
-                result = value.replaceAll(VALUE_TOKEN, object.toString());
+                result = LoaderHelper.replaceValue(value, object.toString());
             } else {
                 result = value;
             }
