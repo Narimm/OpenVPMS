@@ -156,8 +156,8 @@
     </compare>
      <cluster_schema/>
     <GUI>
-      <xloc>225</xloc>
-      <yloc>286</yloc>
+      <xloc>217</xloc>
+      <yloc>285</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -237,7 +237,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>INVENTNAME</source><target>&lt;product.medication>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRESENT</source><target>&lt;product.medication>dispensingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRESENT</source><target>&lt;product.medication>sellingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.medication>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MARKUP</source><target>&lt;product.medication>prices[0]&lt;productPrice.markup>markup</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SALEPRICE</source><target>&lt;product.medication>prices[1]&lt;productPrice.unitPrice>price</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRESENT</source><target>&lt;product.medication>prices[1]&lt;productPrice.unitPrice>uom</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DISPENSINGFEE</source><target>&lt;product.medication>prices[2]&lt;productPrice.fixedPrice>price</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>INVENTNAME</source><target>&lt;product.medication>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRESENT</source><target>&lt;product.medication>dispensingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRESENT</source><target>&lt;product.medication>sellingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.medication>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MARKUP</source><target>&lt;product.medication>prices[0]&lt;productPrice.markup>markup</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SALEPRICE</source><target>&lt;product.medication>prices[1]&lt;productPrice.unitPrice>price</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRESENT</source><target>&lt;product.medication>prices[1]&lt;productPrice.unitPrice>uom</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DISPENSINGFEE</source><target>&lt;product.medication>prices[2]&lt;productPrice.fixedPrice>price</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>749</xloc>
       <yloc>114</yloc>
@@ -283,7 +283,7 @@
         <norm>fee</norm>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>438</xloc>
+      <xloc>467</xloc>
       <yloc>286</yloc>
       <draw>Y</draw>
       </GUI>
@@ -338,8 +338,8 @@
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>337</xloc>
-      <yloc>285</yloc>
+      <xloc>352</xloc>
+      <yloc>287</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
