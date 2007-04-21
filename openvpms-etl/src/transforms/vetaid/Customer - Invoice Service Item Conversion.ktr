@@ -103,7 +103,7 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Merge Join</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Modified Java Script Value</from><to>Invoice Service Mapper</to><enabled>Y</enabled> </hop>  <hop> <from>Service Items Input</from><to>Select Service Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Service Fields</from><to>Transform Service Items</to><enabled>Y</enabled> </hop>  <hop> <from>Invoices input</from><to>Select Invoice Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Invoice Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Service Items</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Merge Join</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Modified Java Script Value</from><to>Invoice Service Mapper</to><enabled>Y</enabled> </hop>  <hop> <from>Service Items Input</from><to>Select Service Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Invoices input</from><to>Select Invoice Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Invoice Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Service Items</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  <hop> <from>Select Service Fields</from><to>Filter rows 2</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows 2</from><to>Transform Service Items</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows 2</from><to>Dummy (do nothing) 2</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Add sequence</name>
@@ -233,7 +233,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>INVOICEITEMID</idColumn><mapping><source>QUANTITY</source><target>&lt;act.customerAccountInvoiceItem>quantity</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;act.customerAccountInvoiceItem>fixedPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;act.customerAccountInvoiceItem>unitPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAX</source><target>&lt;act.customerAccountInvoiceItem>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETNUMBER</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRODUCTID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>entity</target><excludeNull>true</excludeNull><value>&lt;product.service>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICENO</source><target>&lt;actRelationship.customerAccountInvoiceItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesInvoice>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;actRelationship.customerAccountInvoiceItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>INVOICEITEMID</idColumn><mapping><source>STARTDATE</source><target>&lt;act.customerAccountInvoiceItem>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>QUANTITY</source><target>&lt;act.customerAccountInvoiceItem>quantity</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;act.customerAccountInvoiceItem>fixedPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;act.customerAccountInvoiceItem>unitPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAX</source><target>&lt;act.customerAccountInvoiceItem>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETNUMBER</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRODUCTID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>entity</target><excludeNull>true</excludeNull><value>&lt;product.service>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICENO</source><target>&lt;actRelationship.customerAccountInvoiceItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesInvoice>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;actRelationship.customerAccountInvoiceItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>911</xloc>
       <yloc>214</yloc>
@@ -354,7 +354,7 @@ INVOICEITEMID.setString(&quot;SERV&quot; + INVOICEITEMID.getString())</jsScript_
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>200</xloc>
+      <xloc>189</xloc>
       <yloc>215</yloc>
       <draw>Y</draw>
       </GUI>
@@ -411,72 +411,6 @@ INVOICEITEMID.setString(&quot;SERV&quot; + INVOICEITEMID.getString())</jsScript_
     <GUI>
       <xloc>195</xloc>
       <yloc>313</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Service Items Input</name>
-    <type>XBaseInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <file_dbf>F:\VETAID\INVDETL.DBF</file_dbf>
-    <limit>0</limit>
-    <add_rownr>N</add_rownr>
-    <field_rownr/>
-    <include>N</include>
-    <include_field/>
-    <accept_filenames>N</accept_filenames>
-    <accept_field/>
-    <accept_stepname/>
-     <cluster_schema/>
-    <GUI>
-      <xloc>56</xloc>
-      <yloc>313</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Transform Service Items</name>
-    <type>ScriptValueMod</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <script/>
-    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
-        <jsScript_name>Script 1</jsScript_name>
-        <jsScript_script>&#47;&#47;Script here
-PRODUCTID.setString(&quot;SERV&quot; + PRODUCTID.getString())
-var FIXEDPRICE = 0.0
-var QUANTITY = 1.0
-if (TAX.getNumber() == null)
-	TAX.setNumber(0.0)</jsScript_script>
-        </jsScript>     </jsScripts>    <fields>      <field>        <name>FIXEDPRICE</name>
-        <rename>FIXEDPRICE</rename>
-        <type>Number</type>
-        <length>16</length>
-        <precision>2</precision>
-        </field>      <field>        <name>QUANTITY</name>
-        <rename>QUANTITY</rename>
-        <type>Number</type>
-        <length>16</length>
-        <precision>2</precision>
-        </field>      </fields>     <cluster_schema/>
-    <GUI>
-      <xloc>313</xloc>
-      <yloc>312</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -586,6 +520,149 @@ if (TAX.getNumber() == null)
     <GUI>
       <xloc>678</xloc>
       <yloc>218</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Service Items Input</name>
+    <type>XBaseInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <file_dbf>F:\VETAID\INVDETL.DBF</file_dbf>
+    <limit>0</limit>
+    <add_rownr>N</add_rownr>
+    <field_rownr/>
+    <include>N</include>
+    <include_field/>
+    <accept_filenames>N</accept_filenames>
+    <accept_field/>
+    <accept_stepname/>
+     <cluster_schema/>
+    <GUI>
+      <xloc>56</xloc>
+      <yloc>313</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform Service Items</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+PRODUCTID.setString(&quot;SERV&quot; + PRODUCTID.getString())
+if (PRODUCTID.getString() == &quot;SERV28.0&quot;) {
+	UNITPRICE.setNumber(-UNITPRICE.getNumber())
+}
+var FIXEDPRICE = 0.0
+var QUANTITY = 1.0
+if (TAX.getNumber() == null)
+	TAX.setNumber(0.0)</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>FIXEDPRICE</name>
+        <rename>FIXEDPRICE</rename>
+        <type>Number</type>
+        <length>16</length>
+        <precision>2</precision>
+        </field>      <field>        <name>QUANTITY</name>
+        <rename>QUANTITY</rename>
+        <type>Number</type>
+        <length>16</length>
+        <precision>2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>509</xloc>
+      <yloc>313</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter rows 2</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Transform Service Items</send_true_to>
+<send_false_to>Dummy (do nothing) 2</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>PRODUCTID</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>3.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PRODUCTID</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>22.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PRODUCTID</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>4.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PRODUCTID</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>25.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>312</xloc>
+      <yloc>313</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Dummy (do nothing) 2</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+    <GUI>
+      <xloc>312</xloc>
+      <yloc>409</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

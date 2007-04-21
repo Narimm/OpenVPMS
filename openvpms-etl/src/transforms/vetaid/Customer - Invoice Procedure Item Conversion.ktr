@@ -135,34 +135,6 @@
     </step>
 
   <step>
-    <name>Procedures Input</name>
-    <type>XBaseInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <file_dbf>F:\VETAID\OTHPROCS.DBF</file_dbf>
-    <limit>0</limit>
-    <add_rownr>N</add_rownr>
-    <field_rownr/>
-    <include>N</include>
-    <include_field/>
-    <accept_filenames>N</accept_filenames>
-    <accept_field/>
-    <accept_stepname/>
-     <cluster_schema/>
-    <GUI>
-      <xloc>54</xloc>
-      <yloc>312</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
     <name>Dummy (do nothing)</name>
     <type>Dummy</type>
     <description/>
@@ -268,7 +240,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>INVOICEITEMID</idColumn><mapping><source>QUANTITY</source><target>&lt;act.customerAccountInvoiceItem>quantity</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;act.customerAccountInvoiceItem>unitPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAX</source><target>&lt;act.customerAccountInvoiceItem>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETNUMBER</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRODUCTID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>entity</target><excludeNull>true</excludeNull><value>&lt;product.service>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICENO</source><target>&lt;actRelationship.customerAccountInvoiceItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesInvoice>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;actRelationship.customerAccountInvoiceItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>INVOICEITEMID</idColumn><mapping><source>STARTDATE</source><target>&lt;act.customerAccountInvoiceItem>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>QUANTITY</source><target>&lt;act.customerAccountInvoiceItem>quantity</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;act.customerAccountInvoiceItem>unitPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAX</source><target>&lt;act.customerAccountInvoiceItem>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PETNUMBER</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRODUCTID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>entity</target><excludeNull>true</excludeNull><value>&lt;product.service>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICENO</source><target>&lt;actRelationship.customerAccountInvoiceItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesInvoice>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INVOICEITEMID</source><target>&lt;actRelationship.customerAccountInvoiceItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>920</xloc>
       <yloc>215</yloc>
@@ -357,8 +329,8 @@ INVOICEITEMID.setString(&quot;PROC&quot; + INVOICEITEMID.getString())</jsScript_
     </step>
 
   <step>
-    <name>Select Procedure Items</name>
-    <type>SelectValues</type>
+    <name>Procedures Input</name>
+    <type>XBaseInput</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>
@@ -367,35 +339,19 @@ INVOICEITEMID.setString(&quot;PROC&quot; + INVOICEITEMID.getString())</jsScript_
            <field_name/>
            <schema_name/>
            </partitioning>
-    <fields>      <field>        <name>INVOICENO</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>PROCCODE</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>COMPONENT</name>
-        <rename>QUANTITY</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>AMOUNT</name>
-        <rename>UNITPRICE</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>TAX</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <meta>        <name>PROCCODE</name>
-        <rename>PRODUCTID</rename>
-        <type>String</type>
-        <length>6</length>
-        <precision>0</precision>
-        </meta>      </fields>     <cluster_schema/>
+    <file_dbf>F:\VETAID\OTHPROCS.DBF</file_dbf>
+    <limit>0</limit>
+    <add_rownr>N</add_rownr>
+    <field_rownr/>
+    <include>N</include>
+    <include_field/>
+    <accept_filenames>N</accept_filenames>
+    <accept_field/>
+    <accept_stepname/>
+     <cluster_schema/>
     <GUI>
-      <xloc>195</xloc>
-      <yloc>313</yloc>
+      <xloc>54</xloc>
+      <yloc>312</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -435,6 +391,50 @@ INVOICEITEMID.setString(&quot;PROC&quot; + INVOICEITEMID.getString())</jsScript_
     <GUI>
       <xloc>197</xloc>
       <yloc>215</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select Procedure Items</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>INVOICENO</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>PROCCODE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>COMPONENT</name>
+        <rename>QUANTITY</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>AMOUNT</name>
+        <rename>UNITPRICE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>TAX</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <meta>        <name>PROCCODE</name>
+        <rename>PRODUCTID</rename>
+        <type>String</type>
+        <length>6</length>
+        <precision>0</precision>
+        </meta>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>195</xloc>
+      <yloc>313</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
