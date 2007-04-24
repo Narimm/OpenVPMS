@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Patient - Information Conversion</name>
+    <name>Product  - Group Conversion</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -38,7 +38,7 @@
     <clusterschemas>
       </clusterschemas>
   <modified_user>admin</modified_user>
-  <modified_date>2007&#47;04&#47;09 10:47:10.000</modified_date>
+  <modified_date>2007&#47;04&#47;09 10:47:14.000</modified_date>
     </info>
   <notepads>
     </notepads>
@@ -103,7 +103,7 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Text file input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Patient Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Text file input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Group Name</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Group Name</from><to>Sort rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort rows</from><to>Unique rows</to><enabled>Y</enabled> </hop>  <hop> <from>Unique rows</from><to>Product Group Output</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Dummy (do nothing)</name>
@@ -118,8 +118,8 @@
            </partitioning>
      <cluster_schema/>
     <GUI>
-      <xloc>293</xloc>
-      <yloc>243</yloc>
+      <xloc>322</xloc>
+      <yloc>316</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -135,7 +135,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<send_true_to>Transform Fields</send_true_to>
+<send_true_to>Transform Group Name</send_true_to>
 <send_false_to>Dummy (do nothing)</send_false_to>
     <compare>
 <condition>
@@ -143,14 +143,14 @@
  <conditions>
   <condition>
    <negated>N</negated>
-   <leftvalue>PATIENTID</leftvalue>
+   <leftvalue>GROUP</leftvalue>
    <function>&lt;&gt;</function>
    <rightvalue/>
-   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+   <value><name>constant</name><type>String</type><text>&quot;&quot;</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
   <condition>
    <negated>N</negated>
    <operator>AND</operator>
-   <leftvalue>PATIENTID</leftvalue>
+   <leftvalue>GROUP</leftvalue>
    <function>IS NOT NULL</function>
    <rightvalue/>
    </condition>
@@ -159,14 +159,14 @@
     </compare>
      <cluster_schema/>
     <GUI>
-      <xloc>296</xloc>
-      <yloc>145</yloc>
+      <xloc>325</xloc>
+      <yloc>153</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Patient Output</name>
+    <name>Product Group Output</name>
     <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -176,10 +176,10 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PATIENTID</idColumn><mapping><source>NAME</source><target>&lt;party.patientpet>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SPECIES</source><target>&lt;party.patientpet>species</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>BREED</source><target>&lt;party.patientpet>breed</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>COLOUR</source><target>&lt;party.patientpet>colour</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DOB</source><target>&lt;party.patientpet>dateOfBirth</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SEX</source><target>&lt;party.patientpet>sex</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESEXFLAG</source><target>&lt;party.patientpet>desexed</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DECEASEDFLAG</source><target>&lt;party.patientpet>deceased</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;party.patientpet>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAG</source><target>&lt;party.patientpet>identities[0]&lt;entityIdentity.petTag>petTag</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MICROCHIP</source><target>&lt;party.patientpet>identities[1]&lt;entityIdentity.microchip>microchip</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>GROUP</idColumn><mapping><source>NAME</source><target>&lt;lookup.productGroup>name</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>GROUP</source><target>&lt;lookup.productGroup>code</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>531</xloc>
-      <yloc>145</yloc>
+      <xloc>827</xloc>
+      <yloc>154</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -195,70 +195,43 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <fields>      <field>        <name>PATIENTID</name>
+    <fields>      <field>        <name>GROUP</name>
         <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>CLIENTID</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>ACCOUNTID</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>NAME</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>SPECIES</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>BREED</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>COLOUR</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>SEX</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>DOB</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>NOTES</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>DESEXED</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>INACTIVE</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>DECEASED</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>TAG</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>MICROCHIP</name>
-        <rename/>
-        <length>-2</length>
+        <length>5</length>
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>185</xloc>
-      <yloc>145</yloc>
+      <xloc>201</xloc>
+      <yloc>148</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Sort rows</name>
+    <type>SortRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <directory>${java.io.tmpdir}</directory>
+      <prefix>sort</prefix>
+      <sort_size>10000</sort_size>
+      <compress>N</compress>
+    <fields>
+      <field>
+        <name>GROUP</name>
+        <ascending>Y</ascending>
+        </field>
+      </fields>
+     <cluster_schema/>
+    <GUI>
+      <xloc>547</xloc>
+      <yloc>154</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -299,7 +272,7 @@
     <format>DOS</format>
     <encoding/>
     <file>
-      <name>F:\Netvet\patient.txt</name>
+      <name>F:\Netvet\items.txt</name>
       <filemask/>
       <file_required/>
       <type>CSV</type>
@@ -309,47 +282,32 @@
       </filters>
     <fields>
       <field>
-        <name>PATIENTID</name>
-        <type>Integer</type>
+        <name>ITEMID</name>
+        <type>String</type>
         <format/>
-        <currency>$</currency>
-        <decimal>.</decimal>
-        <group>,</group>
-        <nullif>-</nullif>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>2</length>
-        <precision>0</precision>
+        <length>-1</length>
+        <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>CLIENTID</name>
-        <type>Integer</type>
+        <name>CODE</name>
+        <type>String</type>
         <format/>
-        <currency>$</currency>
-        <decimal>.</decimal>
-        <group>,</group>
-        <nullif>-</nullif>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>2</length>
-        <precision>0</precision>
-        <trim_type>none</trim_type>
-        <repeat>N</repeat>
-        </field>
-      <field>
-        <name>ACCOUNTID</name>
-        <type>Integer</type>
-        <format/>
-        <currency>$</currency>
-        <decimal>.</decimal>
-        <group>,</group>
-        <nullif>-</nullif>
-        <ifnull/>
-        <position>-1</position>
-        <length>2</length>
-        <precision>0</precision>
+        <length>-1</length>
+        <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
@@ -360,176 +318,371 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>-</nullif>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>30</length>
+        <length>-1</length>
         <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>SPECIES</name>
+        <name>PRINTEDNAME</name>
         <type>String</type>
         <format/>
         <currency/>
         <decimal/>
         <group/>
-        <nullif>-</nullif>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>15</length>
+        <length>-1</length>
         <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>BREED</name>
+        <name>TYPE</name>
         <type>String</type>
         <format/>
         <currency/>
         <decimal/>
         <group/>
-        <nullif>-</nullif>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>30</length>
+        <length>-1</length>
         <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>COLOUR</name>
+        <name>PCKDES</name>
         <type>String</type>
         <format/>
         <currency/>
         <decimal/>
         <group/>
-        <nullif>-</nullif>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>30</length>
+        <length>-1</length>
         <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>SEX</name>
+        <name>PCKUNT</name>
         <type>String</type>
         <format/>
         <currency/>
         <decimal/>
         <group/>
-        <nullif>-</nullif>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>10</length>
+        <length>-1</length>
         <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>DOB</name>
+        <name>UNTTYP</name>
         <type>String</type>
         <format/>
         <currency/>
         <decimal/>
         <group/>
-        <nullif>-</nullif>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>10</length>
+        <length>-1</length>
         <precision>-1</precision>
-        <trim_type>both</trim_type>
+        <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>NOTES</name>
+        <name>DISVERB</name>
         <type>String</type>
         <format/>
         <currency/>
         <decimal/>
         <group/>
-        <nullif>-</nullif>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>50</length>
+        <length>-1</length>
         <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>DESEXED</name>
+        <name>PCKCST</name>
         <type>String</type>
         <format/>
         <currency/>
         <decimal/>
         <group/>
-        <nullif>-</nullif>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>5</length>
+        <length>-1</length>
         <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>INACTIVE</name>
+        <name>UNTCST</name>
         <type>String</type>
         <format/>
         <currency/>
         <decimal/>
         <group/>
-        <nullif>-</nullif>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>5</length>
+        <length>-1</length>
         <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>DECEASED</name>
+        <name>AVGCST</name>
         <type>String</type>
         <format/>
         <currency/>
         <decimal/>
         <group/>
-        <nullif>-</nullif>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>5</length>
+        <length>-1</length>
         <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>TAG</name>
-        <type>Integer</type>
+        <name>MARKUP</name>
+        <type>String</type>
         <format/>
-        <currency>$</currency>
-        <decimal>.</decimal>
-        <group>,</group>
-        <nullif>-</nullif>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>30</length>
-        <precision>0</precision>
+        <length>-1</length>
+        <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>MICROCHIP</name>
+        <name>DISFEE</name>
         <type>String</type>
         <format/>
-        <currency>$</currency>
-        <decimal>.</decimal>
-        <group>,</group>
-        <nullif>-</nullif>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
-        <length>30</length>
-        <precision>0</precision>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>PRICE1</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>PRICE2</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>PRICE3</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>PRICE4</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>PRICE5</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>PRICE6</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>MINQTY</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>MAXQTY</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>CURQTY</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>ORDQTY</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>STTQTY</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>DRGSTG</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>GROUP</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <ifnull/>
+        <position>-1</position>
+        <length>-1</length>
+        <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
@@ -550,14 +703,14 @@
     <date_format_locale>en_au</date_format_locale>
      <cluster_schema/>
     <GUI>
-      <xloc>61</xloc>
-      <yloc>146</yloc>
+      <xloc>103</xloc>
+      <yloc>151</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Transform Fields</name>
+    <name>Transform Group Name</name>
     <type>ScriptValueMod</type>
     <description/>
     <distribute>Y</distribute>
@@ -572,52 +725,71 @@
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
 var wordUtils = Packages.org.apache.commons.lang.WordUtils;
-
-&#47;&#47; Transform Name information
-NAME.setString(wordUtils.capitalizeFully(trim(NAME.getString())))
-if (NAME.getString() == &quot;&quot;) {
-	NAME.setString(&quot;No Name&quot;)
+var prefix
+try {
+	prefix = substr(upper(GROUP.getString()),1,3)
 }
-SPECIES.setString(wordUtils.capitalizeFully(trim(SPECIES.getString())))
-if (SPECIES.getString() == &quot;&quot; || SPECIES.getString() == null) {
-	SPECIES.setString(&quot;Other&quot;)
+catch (e) {
+	prefix = &quot;OTH&quot;
 }
-BREED.setString(wordUtils.capitalizeFully(trim(BREED.getString())))
-COLOUR.setString(wordUtils.capitalizeFully(trim(COLOUR.getString())))
+if (prefix  == &quot;ANA&quot;)
+	GROUP.setString(&quot;Anaesthetic&quot;)
+else if (prefix == &quot;DRU&quot;)
+	GROUP.setString(&quot;Drugs&quot;)
+else if (prefix == &quot;HOS&quot;)
+	GROUP.setString(&quot;Hospital&quot;)
+else if (prefix == &quot;LAB&quot;)
+	GROUP.setString(&quot;Laboratory&quot;)
+else if (prefix == &quot;MER&quot;)
+	GROUP.setString(&quot;Merchandise&quot;)
+else if (prefix == &quot;MED&quot;)
+	GROUP.setString(&quot;Medical&quot;)
+else if (prefix == &quot;MIS&quot;)
+	GROUP.setString(&quot;Miscellaneous&quot;)
+else if (prefix == &quot;RAD&quot;)
+	GROUP.setString(&quot;Radiology&quot;)
+else if (prefix == &quot;SUR&quot;)
+	GROUP.setString(&quot;Surgery&quot;)
+else if (prefix == &quot;VAC&quot;)
+	GROUP.setString(&quot;Vaccination&quot;)
+else if (prefix == &quot;VAC&quot;)
+	GROUP.setString(&quot;Other&quot;)
 
-&#47;&#47; Transform Sex
-if (SEX.getString() == &quot;UNKNOWN&quot;)
-	SEX.setString(&quot;UNSPECIFIED&quot;)
-
-var DESEXFLAG = false
-if (DESEXED.getString() == &quot;TRUE&quot;)
-	DESEXFLAG = true
-var DECEASEDFLAG = false
-if (DECEASED.getString() == &quot;TRUE&quot;)
-	DECEASEDFLAG = true
-var ACTIVE = true
-if (INACTIVE.getString() == &quot;TRUE&quot;)
-	ACTIVE = false
+var NAME = wordUtils.capitalizeFully(trim(GROUP.getString()))
+GROUP.setString(replace(upper(GROUP.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
 </jsScript_script>
-        </jsScript>     </jsScripts>    <fields>      <field>        <name>DESEXFLAG</name>
-        <rename>DESEXFLAG</rename>
-        <type>Boolean</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        </field>      <field>        <name>DECEASEDFLAG</name>
-        <rename>DECEASEDFLAG</rename>
-        <type>Boolean</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        </field>      <field>        <name>ACTIVE</name>
-        <rename>ACTIVE</rename>
-        <type>Boolean</type>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>NAME</name>
+        <rename>NAME</rename>
+        <type>String</type>
         <length>-1</length>
         <precision>-1</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>397</xloc>
-      <yloc>146</yloc>
+      <xloc>431</xloc>
+      <yloc>154</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Unique rows</name>
+    <type>Unique</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <count_rows>N</count_rows>
+      <count_field/>
+    <fields>      <field>        <name>GROUP</name>
+        <case_insensitive>Y</case_insensitive>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>663</xloc>
+      <yloc>155</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
