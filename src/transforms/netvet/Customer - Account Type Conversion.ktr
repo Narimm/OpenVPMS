@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Customer - Information Conversion</name>
+    <name>Customer - Account Type Conversion</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -103,10 +103,10 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Text file input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Customer Output</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Text file input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Sort rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort rows</from><to>Unique rows</to><enabled>Y</enabled> </hop>  <hop> <from>Unique rows</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  <hop> <from>Modified Java Script Value</from><to>Account Type Output</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
-    <name>Customer Output</name>
+    <name>Account Type Output</name>
     <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -116,10 +116,43 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>CLNUMBER</idColumn><mapping><source>CLTITLE</source><target>&lt;party.customerperson>title</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLFSTNAME</source><target>&lt;party.customerperson>firstName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLSURNAME</source><target>&lt;party.customerperson>lastName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;party.customerperson>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLPHONENUM</source><target>&lt;party.customerperson>contacts[0]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLPHONEAREA</source><target>&lt;party.customerperson>contacts[0]&lt;contact.phoneNumber>areaCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLPHONENUM</source><target>&lt;party.customerperson>contacts[0]&lt;contact.phoneNumber>purposes[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.contactPurpose>code=HOME</value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>WKPHONENUM</source><target>&lt;party.customerperson>contacts[1]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>WKPHONEAREA</source><target>&lt;party.customerperson>contacts[1]&lt;contact.phoneNumber>areaCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>WKPHONENUM</source><target>&lt;party.customerperson>contacts[1]&lt;contact.phoneNumber>purposes[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.contactPurpose>code=WORK</value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLADDRESS</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>address</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLSUBURB</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>suburb</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLSTATE</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>state</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLPOSTCODE</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>postcode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>RESADDRESS</source><target>&lt;party.customerperson>contacts[4]&lt;contact.location>address</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>RESTOWN</source><target>&lt;party.customerperson>contacts[4]&lt;contact.location>suburb</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;party.customerperson>identities[0]&lt;entityIdentity.code>code</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>ACCTYPE</source><target>&lt;party.customerperson>type[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.customerAccountType>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>ACCTYPE</idColumn><mapping><source>ACCTYPE</source><target>&lt;lookup.customerAccountType>code</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>NAME</source><target>&lt;lookup.customerAccountType>name</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>466</xloc>
-      <yloc>147</yloc>
+      <xloc>701</xloc>
+      <yloc>152</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Modified Java Script Value</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+var wordUtils = Packages.org.apache.commons.lang.WordUtils;
+var ovpmsfuncs = Packages.org.openvpms.etl.ETLHelper
+
+var NAME = wordUtils.capitalizeFully(trim(ACCTYPE.getString()))
+ACCTYPE.setString(replace(ACCTYPE.getString(),&quot; &quot;,&quot;_&quot;))</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>NAME</name>
+        <rename>NAME</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>573</xloc>
+      <yloc>154</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -135,66 +168,43 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <fields>      <field>        <name>CLIENTID</name>
-        <rename>CLNUMBER</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>SURNAME</name>
-        <rename>CLSURNAME</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>FIRSTNAME</name>
-        <rename>CLFSTNAME</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>TITLE</name>
-        <rename>CLTITLE</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>HOMEPHONE</name>
-        <rename>CLPHONE</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>WORKPHONE</name>
-        <rename>WKPHONE</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>ADDRESS1</name>
-        <rename>CLADDRESS1</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>TOWN</name>
-        <rename>CLSUBURB</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>STATE</name>
-        <rename>CLSTATE</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>POSTCODE</name>
-        <rename>CLPOSTCODE</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>CODE</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>RESSTREET</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>RESSUBURB</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>ACCTYPE</name>
+    <fields>      <field>        <name>ACCTYPE</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>212</xloc>
-      <yloc>147</yloc>
+      <xloc>211</xloc>
+      <yloc>148</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Sort rows</name>
+    <type>SortRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <directory>%%java.io.tmpdir%%</directory>
+      <prefix>out</prefix>
+      <sort_size>5000</sort_size>
+      <compress>Y</compress>
+    <fields>
+      <field>
+        <name>ACCTYPE</name>
+        <ascending>Y</ascending>
+        </field>
+      </fields>
+     <cluster_schema/>
+    <GUI>
+      <xloc>350</xloc>
+      <yloc>152</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -478,8 +488,8 @@
     </step>
 
   <step>
-    <name>Transform Fields</name>
-    <type>ScriptValueMod</type>
+    <name>Unique rows</name>
+    <type>Unique</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>
@@ -488,130 +498,14 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <script/>
-    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
-        <jsScript_name>Script 1</jsScript_name>
-        <jsScript_script>&#47;&#47;Script here
-var wordUtils = Packages.org.apache.commons.lang.WordUtils;
-var ovpmsfuncs = Packages.org.openvpms.etl.ETLHelper
-
-&#47;&#47; Transform Name information
-CLFSTNAME.setString(wordUtils.capitalizeFully(trim(CLFSTNAME.getString())))
-CLSURNAME.setString(wordUtils.capitalizeFully(trim(CLSURNAME.getString())))
-if (CLSURNAME.getString() == &quot;&quot;) {
-	CLSURNAME.setString(&quot;No LastName&quot;)
-}
-CLTITLE.setString(trim(CLTITLE.getString()))
-
-&#47;&#47; Transform Address information
-CLADDRESS1.setString(wordUtils.capitalizeFully(trim(CLADDRESS1.getString())))
-CLSUBURB.setString(wordUtils.capitalizeFully(trim(CLSUBURB.getString())))
-CLSTATE.setString(wordUtils.capitalize(trim(CLSTATE.getString())))
-CLPOSTCODE.setString(trim(CLPOSTCODE.getString()))
-var CLADDRESS = CLADDRESS1.getString()
-RESSTREET.setString(wordUtils.capitalizeFully(trim(RESSTREET.getString())))
-RESSUBURB.setString(wordUtils.capitalizeFully(trim(RESSUBURB.getString())))
-var RESADDRESS = null
-var RESTOWN = null
-if (RESSTREET.getString() != CLADDRESS1.getString()) {
-	RESADDRESS = RESSTREET.getString()
-	RESTOWN = RESSUBURB.getString()
-}
-
-&#47;&#47; Transform Phone Information
-CLPHONE.setString(trim(CLPHONE.getString()))
-WKPHONE.setString(trim(WKPHONE.getString()))
-var CLPHONENUM
-var WKPHONENUM
-var CLPHONEAREA
-var WKPHONEAREA
-
-try {
-	if (substr(CLPHONE.getString(),0,1) == &quot;(&quot;) {
-		CLPHONENUM = trim(substr(CLPHONE.getString(),4))
-		if (CLPHONENUM == &quot;&quot;)
-			CLPHONEAREA = &quot;&quot;
-		else
-			CLPHONEAREA = trim(substr(CLPHONE.getString(),1,3))
-	}
-	else {
-		CLPHONENUM = CLPHONE.getString()
-		CLPHONEAREA = &quot;&quot;
-	}
-}
-catch (e) {
-	CLPHONENUM = CLPHONE.getString()
-	CLPHONEAREA = &quot;&quot;
-}
-
-try {
-	if (substr(WKPHONE.getString(),0,1) == &quot;(&quot;) {
-		WKPHONENUM = trim(substr(WKPHONE.getString(),4))
-		if (WKPHONENUM == &quot;&quot;)
-			WKPHONEAREA = &quot;&quot;
-		else
-			WKPHONEAREA = trim(substr(WKPHONE.getString(),1,3))
-	}
-	else {
-		WKPHONENUM = WKPHONE.getString()
-		WKPHONEAREA = &quot;&quot;
-	}
-}
-catch (e) {
-	WKPHONENUM = WKPHONE.getString()
-	WKPHONEAREA = &quot;&quot;
-}
-
-
-&#47;&#47; active flag
-var ACTIVE = true
-
-&#47;&#47;Account Type
-ACCTYPE.setString(replace(upper(ACCTYPE.getString()),&quot; &quot;,&quot;_&quot;))</jsScript_script>
-        </jsScript>     </jsScripts>    <fields>      <field>        <name>CLADDRESS</name>
-        <rename>CLADDRESS</rename>
-        <type>String</type>
-        <length>255</length>
-        <precision>-1</precision>
-        </field>      <field>        <name>CLPHONEAREA</name>
-        <rename>CLPHONEAREA</rename>
-        <type>String</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        </field>      <field>        <name>CLPHONENUM</name>
-        <rename>CLPHONENUM</rename>
-        <type>String</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        </field>      <field>        <name>WKPHONEAREA</name>
-        <rename>WKPHONEAREA</rename>
-        <type>String</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        </field>      <field>        <name>WKPHONENUM</name>
-        <rename>WKPHONENUM</rename>
-        <type>String</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        </field>      <field>        <name>ACTIVE</name>
-        <rename>ACTIVE</rename>
-        <type>Boolean</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        </field>      <field>        <name>RESADDRESS</name>
-        <rename>RESADDRESS</rename>
-        <type>String</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        </field>      <field>        <name>RESTOWN</name>
-        <rename>RESTOWN</rename>
-        <type>String</type>
-        <length>-1</length>
-        <precision>-1</precision>
+      <count_rows>N</count_rows>
+      <count_field/>
+    <fields>      <field>        <name>ACCTYPE</name>
+        <case_insensitive>N</case_insensitive>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>342</xloc>
-      <yloc>148</yloc>
+      <xloc>464</xloc>
+      <yloc>153</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
