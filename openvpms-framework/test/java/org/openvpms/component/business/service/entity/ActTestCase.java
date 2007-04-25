@@ -270,9 +270,9 @@ public class ActTestCase extends
     private Party createPerson(String title, String firstName, String lastName) {
         Party person = (Party)archetypeService.create("person.person");
 
-        person.getDetails().setAttribute("title", title);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("lastName", lastName);
+        person.getDetails().put("title", title);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("lastName", lastName);
 
         return person;
     }

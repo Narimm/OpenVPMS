@@ -58,6 +58,7 @@ import java.util.Properties;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class JXPathTestCase extends BaseTestCase {
 
     /**
@@ -256,9 +257,9 @@ public class JXPathTestCase extends BaseTestCase {
         
         JXPathContext ctx = JXPathHelper.newContext(list);
         // NOTE: Index starts at 1 not 0.
-        assertTrue(ctx.getValue(".[1]/details/attributes/firstName").equals("Jim"));
-        assertTrue(ctx.getValue(".[2]/details/attributes/lastName").equals("Feeney"));
-        assertTrue(ctx.getValue(".[3]/details/attributes/title").equals("MS"));
+        assertTrue(ctx.getValue(".[1]/details/firstName").equals("Jim"));
+        assertTrue(ctx.getValue(".[2]/details/lastName").equals("Feeney"));
+        assertTrue(ctx.getValue(".[3]/details/title").equals("MS"));
     }
     
     /**
@@ -521,9 +522,9 @@ public class JXPathTestCase extends BaseTestCase {
      */
     private Party createPerson(String title, String firstName, String lastName) {
         Party person = (Party)service.create("person.person");
-        person.getDetails().setAttribute("lastName", lastName);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("title", title);
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
         person.setName(title + " " + firstName + " " + lastName);
         
         return person;

@@ -33,7 +33,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
@@ -43,6 +42,9 @@ import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedA
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.system.common.test.BaseTestCase;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
+
+import java.util.Map;
+import java.util.HashMap;
 
 
 /**
@@ -56,26 +58,18 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
     /**
      * A UUID generator.
      */
-    private JUGGenerator generator; 
-    
+    private JUGGenerator generator;
+
     /**
      * A Hibernate session factory.
      */
     private SessionFactory sessionFactory;
-    
+
     /**
      * static to hold all session
      */
     public static final ThreadLocal<Session> session = new ThreadLocal<Session>();
 
-
-    /**
-     * mail line
-     * @param args
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(HibernateInfoModelTestCase.class);
-    }
 
     /**
      * Constructor for HibernateInfoModelTestCase.
@@ -91,7 +85,7 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
-    
+
         generator = new JUGGenerator();
 
         // create the hibernate session factory
@@ -165,17 +159,17 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         if (s != null)
             s.close();
     }
-    
+
     /**
      * Create a simple detail object
      * 
      * @return DynamicAttributeMap
      */
-    protected DynamicAttributeMap createSimpleAttributeMap() {
-        DynamicAttributeMap map = new DynamicAttributeMap();
-        map.setAttribute("dummy", "dummy");
-        map.setAttribute("dummy1", "dummy1");
-        
+    @SuppressWarnings("HardCodedStringLiteral")
+    protected Map<String, String> createSimpleAttributeMap() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("dummy", "dummy");
+        map.put("dummy1", "dummy1");
         return map;
     }
 }

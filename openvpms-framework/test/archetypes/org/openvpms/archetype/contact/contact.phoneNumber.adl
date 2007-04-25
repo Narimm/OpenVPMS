@@ -7,28 +7,24 @@
 			derivedValue="archetypeId/concept" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat('(',/details/attributes/areaCode,') ', /details/attributes/telephoneNumber)" />
-		
-		<node name="details" path="/details" hidden="true"
-			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-			minCardinality="1" maxCardinality="1">
-			<node name="areaCode" path="/details/attributes/areaCode"
-				type="java.lang.String" minCardinality="0" >
-				<assertion name="regularExpression">
-					<property name="expression" value="[0-9]*" />
-					<errorMessage>errorMessage</errorMessage>
-				</assertion>
-			</node>
-			<node name="telephoneNumber" path="/details/attributes/telephoneNumber"
-				type="java.lang.String" minCardinality="0" >
-			</node>
-			<node name="preferred" path="/details/attributes/preferred"
-				type="java.lang.Boolean" defaultValue="false()" />
+			derivedValue="concat('(',/details/areaCode,') ', /details/telephoneNumber)" />
+
+		<node name="areaCode" path="/details/areaCode"
+			  type="java.lang.String" minCardinality="0" >
+		    <assertion name="regularExpression">
+			    <property name="expression" value="[0-9]*" />
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
 		</node>
+		<node name="telephoneNumber" path="/details/telephoneNumber"
+			  type="java.lang.String" minCardinality="0" >
+		</node>
+		<node name="preferred" path="/details/preferred"
+		      type="java.lang.Boolean" defaultValue="false()" />
 		<node name="startDate" path="/activeStartTime"
 			type="java.util.Date" minCardinality="1" hidden="true" defaultValue="java.util.Date.new()"/>
 		<node name="endDate" path="/activeEndTime"
-			type="java.util.Date" minCardinality="0" hidden="true" />			
+			type="java.util.Date" minCardinality="0" hidden="true" />
 		<node name="purposes" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">

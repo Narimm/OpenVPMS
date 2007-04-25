@@ -23,8 +23,8 @@ import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.Converter;
 import org.apache.commons.lang.StringUtils;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.sql.Timestamp;
 
 
 /**
@@ -49,18 +49,12 @@ public final class UtilDateConverter implements Converter {
     private boolean useDefault = true;
 
     /**
-     * THe date formatter.
-     */
-    private SimpleDateFormat formatter;
-
-    /**
      * Create a {@link Converter} that will throw a {@link ConversionException}
      * if a conversion error occurs.
      */
     public UtilDateConverter() {
         this.defaultValue = null;
         this.useDefault = false;
-        this.formatter = new SimpleDateFormat("dd/MM/yyyy");
     }
 
     /**
@@ -91,22 +85,19 @@ public final class UtilDateConverter implements Converter {
                 return (useDefault) ? defaultValue : null;
             } else {
                 try {
-                    // Temporay fix for OBF-125.  Need to use locale instead
-                    if (str.indexOf(':') == -1) {
-                        formatter = new SimpleDateFormat("dd/MM/yyyy");
+                    if (str.contains(":")) {
+                        Timestamp timestamp = Timestamp.valueOf(str);
+                        return new Date(timestamp.getTime());
                     } else {
-                        formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                        return java.sql.Date.valueOf(str);
                     }
-                    return formatter.parse(str);
                 } catch (Exception exception) {
                     if (useDefault) {
                         return (defaultValue);
                     } else {
                         throw new ConversionException(
                                 "Cannot convert " + value
-                                        + " to type java.util.Date. Must use ["
-                                        + formatter.toPattern()
-                                        + "] for this locale.", exception);
+                                        + " to type java.util.Date", exception);
                     }
                 }
             }

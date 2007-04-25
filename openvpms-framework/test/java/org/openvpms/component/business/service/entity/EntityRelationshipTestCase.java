@@ -353,9 +353,9 @@ public class EntityRelationshipTestCase extends
      */
     public Party createPerson(String title, String firstName, String lastName) {
         Party person = (Party)service.create("person.person");
-        person.getDetails().setAttribute("lastName", lastName);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("title", title);
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
 
         return person;
     }
@@ -370,12 +370,12 @@ public class EntityRelationshipTestCase extends
     private Party createAnimal(String name) {
         Party pet = (Party)service.create("animal.pet");
         pet.setName(name);
-        pet.getDetails().setAttribute("breed", "dog");
-        pet.getDetails().setAttribute("colour", "brown");
-        pet.getDetails().setAttribute("sex", "UNSPECIFIED");
-        pet.getDetails().setAttribute("species", "k9");
+        pet.getDetails().put("breed", "dog");
+        pet.getDetails().put("colour", "brown");
+        pet.getDetails().put("sex", "UNSPECIFIED");
+        pet.getDetails().put("species", "k9");
         pet.setDescription("A dog");
-        pet.getDetails().setAttribute("dateOfBirth", new Date());
+        pet.getDetails().put("dateOfBirth", new Date().toString());
 
         return pet;
     }

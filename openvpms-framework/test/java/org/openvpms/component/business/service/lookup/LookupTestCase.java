@@ -154,15 +154,15 @@ public class LookupTestCase extends
         // the case where no default value is specified
         Party person = (Party) service.create("person.footballer");
         assertFalse(StringUtils.isEmpty(
-                (String) person.getDetails().getAttribute("team")));
-        String team = (String) person.getDetails().getAttribute("team");
+                (String) person.getDetails().get("team")));
+        String team = (String) person.getDetails().get("team");
         assertTrue(team.equals("ST_KILDA"));
 
         // the case where a default value is specified
         person = (Party) service.create("person.newfootballer");
         assertFalse(StringUtils.isEmpty(
-                (String) person.getDetails().getAttribute("team")));
-        team = (String) person.getDetails().getAttribute("team");
+                (String) person.getDetails().get("team")));
+        team = (String) person.getDetails().get("team");
         assertTrue(team.equals("RICHMOND"));
     }
 
@@ -212,11 +212,11 @@ public class LookupTestCase extends
         ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(
                 "contact.location");
         Contact contact = (Contact) service.create(descriptor.getType());
-        contact.getDetails().setAttribute("country", ctyCode);
+        contact.getDetails().put("country", ctyCode);
         assertTrue(LookupHelper.get(service,
                                     descriptor.getNodeDescriptor("state"),
                                     contact).size() > 0);
-        contact.getDetails().setAttribute("country", "TAS");
+        contact.getDetails().put("country", "TAS");
         assertTrue(LookupHelper.get(service,
                                     descriptor.getNodeDescriptor("state"),
                                     contact).size() == 0);

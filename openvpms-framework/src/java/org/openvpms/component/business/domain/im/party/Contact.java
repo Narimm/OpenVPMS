@@ -20,12 +20,14 @@
 package org.openvpms.component.business.domain.im.party;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
 
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 
 
 /**
@@ -58,7 +60,7 @@ public class Contact extends IMObject {
     /*
     * Specific details for the contact purpose.
     */
-    private DynamicAttributeMap details;
+    private Map<String, Object> details = new HashMap<String, Object>();
 
     /**
      * A reference to the owning {@link Party}
@@ -122,14 +124,14 @@ public class Contact extends IMObject {
     /**
      * @return Returns the details.
      */
-    public DynamicAttributeMap getDetails() {
-        return details;
+    public Map<String, Object> getDetails() {
+        return new StringMap(details);
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(DynamicAttributeMap details) {
+    public void setDetails(Map<String, Object> details) {
         this.details = details;
     }
 
@@ -190,6 +192,7 @@ public class Contact extends IMObject {
         copy.activeStartTime = (Date)(this.activeStartTime == null ?
                 null : this.activeStartTime.clone());
         copy.classifications = new HashSet<Lookup>(this.classifications);
+        copy.details = (details == null) ? null : new HashMap<String, Object>(details);
         copy.party = this.party;
 
         return copy;

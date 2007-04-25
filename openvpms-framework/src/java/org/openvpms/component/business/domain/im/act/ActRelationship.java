@@ -19,10 +19,13 @@
 
 package org.openvpms.component.business.domain.im.act;
 
-// openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
+
+import java.util.Map;
+import java.util.HashMap;
+
 
 /**
  * A class that represents the directed association between Acts.  
@@ -42,7 +45,7 @@ public class ActRelationship extends IMObject {
      * other like typed relationships.
      */
     private int sequence;
-    
+
     /**
      * Indicates whether the relationship is one of parent-child. This means
      * that the parent is the owner of the relationship and is responsible for
@@ -50,41 +53,41 @@ public class ActRelationship extends IMObject {
      * delete the child
      */
     private boolean parentChildRelationship;
-    
+
     /**
      * Holds dynamic details about the act relationship
      */
-    private DynamicAttributeMap details;
-    
+    private Map<String, Object> details = new HashMap<String, Object>();
+
     /**
      * Reference to the source {@link Act} reference
      */
     private IMObjectReference source;
-    
+
     /**
      * Reference to the target {@link Act} reference
      */
     private IMObjectReference target;
-    
-    
+
+
     /**
      * Default constructor
      */
     public ActRelationship() {
         // do nothing
     }
-    
+
     /**
      * @return Returns the details.
      */
-    public DynamicAttributeMap getDetails() {
-        return details;
+    public Map<String, Object> getDetails() {
+        return new StringMap(details);
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(DynamicAttributeMap details) {
+    public void setDetails(Map<String, Object> details) {
         this.details = details;
     }
 
@@ -150,15 +153,14 @@ public class ActRelationship extends IMObject {
     @Override
     public Object clone() throws CloneNotSupportedException {
         ActRelationship copy = (ActRelationship)super.clone();
-        copy.details = (DynamicAttributeMap)(this.details == null ?
-                null : this.details.clone());
+        copy.details = (details == null) ? null : new HashMap<String, Object>(details);
         copy.parentChildRelationship = this.parentChildRelationship;
         copy.sequence = this.sequence;
-        
+
         // no need to clone the source and target act
         copy.source = this.source;
         copy.target = this.target;
-        
+
         return copy;
     }
 

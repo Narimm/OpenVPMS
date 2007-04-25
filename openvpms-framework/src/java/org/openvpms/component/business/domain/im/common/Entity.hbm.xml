@@ -47,8 +47,12 @@
     <property name="description" access="property" column="description"
       type="string" />
     <property name="active" access="property" column="active" type="boolean" />
-    <property name="details" column="details" access="property" length="5000"
-      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+    <map name="details" access="field" table="entity_details" lazy="false"
+         cascade="all,delete-orphan">
+       <key column="entity_id"/>
+       <map-key column="name" type="string"/>
+       <element column="value" type="string" length="5000"/>
+    </map>
     <set name="classifications" access="property" inverse="false"
       table="entity_classifications" cascade="evict">
       <key column="entity_id" not-null="true" />

@@ -27,12 +27,14 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 import static org.openvpms.component.business.domain.im.lookup.LookupRelationshipException.ErrorCode.FailedToAddLookRelationship;
 import static org.openvpms.component.business.domain.im.lookup.LookupRelationshipException.ErrorCode.FailedToRemoveLookRelationship;
+import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 
 
 /**
@@ -89,7 +91,7 @@ public class Lookup extends IMObject {
     /**
      * Details holds dynamic attributes for a lookup.
      */
-    private DynamicAttributeMap details = new DynamicAttributeMap();
+    private Map<String, Object> details = new HashMap<String, Object>();
 
 
     /**
@@ -176,8 +178,8 @@ public class Lookup extends IMObject {
      *
      * @return the details
      */
-    public DynamicAttributeMap getDetails() {
-        return details;
+    public Map<String, Object> getDetails() {
+        return new StringMap(details);
     }
 
     /**
@@ -185,7 +187,7 @@ public class Lookup extends IMObject {
      *
      * @param details the details to set.
      */
-    public void setDetails(DynamicAttributeMap details) {
+    public void setDetails(Map<String, Object> details) {
         this.details = details;
     }
 
@@ -360,6 +362,7 @@ public class Lookup extends IMObject {
      * @see java.lang.Object#toString()
      */
     @Override
+    @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())
@@ -377,8 +380,8 @@ public class Lookup extends IMObject {
     public Object clone() throws CloneNotSupportedException {
         Lookup copy = (Lookup) super.clone();
         copy.code = this.code;
-        copy.details = (DynamicAttributeMap) (this.details == null ?
-                null : this.details.clone());
+        copy.details = (details == null) ?
+                null : new HashMap<String, Object>(details);
         copy.defaultLookup = this.defaultLookup;
         return copy;
     }

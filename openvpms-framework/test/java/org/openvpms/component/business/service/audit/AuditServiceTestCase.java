@@ -112,7 +112,7 @@ public class AuditServiceTestCase extends
         assertTrue(audit.getByObjectId(person.getArchetypeIdAsString(), 
                 person.getUid()).size() == 1);
         
-        person.getDetails().setAttribute("firstName", "James");
+        person.getDetails().put("firstName", "James");
         archetype.save(person);
         assertTrue(audit.getByObjectId(person.getArchetypeIdAsString(), 
                 person.getUid()).size() == 2);
@@ -127,8 +127,8 @@ public class AuditServiceTestCase extends
         archetype.save(person);
         
         for (int index = 0; index < 5; index++) {
-            person.getDetails().setAttribute("firstName", 
-                    (String)person.getDetails().getAttribute("firstName") + index);
+            person.getDetails().put("firstName",
+                    (String)person.getDetails().get("firstName") + index);
             archetype.save(person);
         }
         assertTrue(audit.getByObjectId(person.getArchetypeIdAsString(), 
@@ -187,9 +187,9 @@ public class AuditServiceTestCase extends
      */
      public Party createPerson(String title, String firstName, String lastName) {
          Party person = (Party)archetype.create("person.person");
-         person.getDetails().setAttribute("lastName", lastName);
-         person.getDetails().setAttribute("firstName", firstName);
-         person.getDetails().setAttribute("title", title);
+         person.getDetails().put("lastName", lastName);
+         person.getDetails().put("firstName", firstName);
+         person.getDetails().put("title", title);
          
          return person;
      }

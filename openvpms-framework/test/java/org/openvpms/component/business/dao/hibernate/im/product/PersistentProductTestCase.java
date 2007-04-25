@@ -22,13 +22,13 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.dao.hibernate.im.party.HibernatePartyUtil;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashMap;
 
 
 /**
@@ -37,6 +37,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class PersistentProductTestCase extends HibernateInfoModelTestCase {
 
     public static void main(String[] args) {
@@ -113,10 +114,10 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             Product product = createProduct("pill");
-            product.setDetails(new DynamicAttributeMap());
-            product.getDetails().setAttribute("supplier", "jima");
-            product.getDetails().setAttribute("code", "1123");
-            product.getDetails().setAttribute("overpriced", true);
+            product.setDetails(new HashMap<String, Object>());
+            product.getDetails().put("supplier", "jima");
+            product.getDetails().put("code", "1123");
+            product.getDetails().put("overpriced", true);
             session.save(product);
             tx.commit();
 
@@ -126,9 +127,9 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
 
             product = (Product)session.load(Product.class, product.getUid());
             assertTrue(product != null);
-            assertTrue(product.getDetails().getAttribute("supplier").equals("jima"));
-            assertTrue(product.getDetails().getAttribute("code").equals("1123"));
-            assertTrue(((Boolean)product.getDetails().getAttribute("overpriced")));
+            assertTrue(product.getDetails().get("supplier").equals("jima"));
+            assertTrue(product.getDetails().get("code").equals("1123"));
+            assertEquals(Boolean.TRUE.toString(), product.getDetails().get("overpriced"));
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();

@@ -19,11 +19,14 @@
 
 package org.openvpms.component.business.domain.im.document;
 
-// openvpms-common
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
+
+import java.util.Map;
+import java.util.HashMap;
+
 
 /**
  * Models any type of resource, which has a mime type, a size and holds the
@@ -43,33 +46,32 @@ public class Document extends IMObject {
      * The mime type
      */
     private String mimeType;
-    
+
     /**
      * The size of the document
      */
     private int docSize;
-    
+
     /**
      * The checksum of the contents
      */
     private long checksum;
-    
+
     /**
      * The contents
      */
     private byte[] contents;
-    
+
     /**
-     * Details holds dynamic attributes for a lookup
+     * Details holds dynamic attributes for a document.
      */
-    private DynamicAttributeMap details = new DynamicAttributeMap();
+    private Map<String, Object> details = new HashMap<String, Object>();
 
     /**
      * default constructor
      */
     public Document() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -77,7 +79,6 @@ public class Document extends IMObject {
      */
     public Document(ArchetypeId archetypeId) {
         super(archetypeId);
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -139,14 +140,14 @@ public class Document extends IMObject {
     /**
      * @return Returns the details.
      */
-    public DynamicAttributeMap getDetails() {
-        return details;
+    public Map<String, Object> getDetails() {
+        return new StringMap(details);
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(DynamicAttributeMap details) {
+    public void setDetails(Map<String, Object> details) {
         this.details = details;
     }
 
@@ -156,18 +157,17 @@ public class Document extends IMObject {
     @Override
     public Object clone() throws CloneNotSupportedException {
         Document copy = (Document)super.clone();
-        
+
         copy.mimeType = this.mimeType;
         copy.docSize = this.docSize;
         copy.checksum = this.checksum;
-        
+
         // copy the contents
         copy.contents = new byte[this.contents.length];
         System.arraycopy(this.contents, 0, copy.contents, 0, copy.contents.length);
-        
+
         // details
-        copy.details = (DynamicAttributeMap)(this.details == null ?
-                null : this.details.clone());
+        copy.details = (details == null) ? null : new HashMap<String, Object>(details);
 
         return copy;
     }
@@ -176,6 +176,7 @@ public class Document extends IMObject {
      * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
      */
     @Override
+    @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
             .appendSuper(null)

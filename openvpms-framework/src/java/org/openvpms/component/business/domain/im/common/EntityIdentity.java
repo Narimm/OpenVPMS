@@ -18,9 +18,12 @@
 
 package org.openvpms.component.business.domain.im.common;
 
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
+
+import java.util.Map;
+import java.util.HashMap;
+
 
 /**
  * A class representing the various internal and external identifiers for a 
@@ -43,17 +46,17 @@ public class EntityIdentity extends IMObject {
      * The system identity
      */
     private String identity;
-    
+
     /**
      * Holds details about the entity identity
      */
-    private DynamicAttributeMap details;
-    
+    private Map<String, Object> details;
+
     /**
      * Reference the Entity that this object references
      */
     private Entity entity;
-    
+
     /**
      * Default constructor
      */
@@ -74,12 +77,12 @@ public class EntityIdentity extends IMObject {
      *             thrown if the preconditions are not met.
      */
     public EntityIdentity(ArchetypeId archetypeId,
-            String identity, DynamicAttributeMap details) {
+                          String identity, Map<String, Object> details) {
         super(archetypeId);
         this.identity = identity;
         this.details = details;
     }
-    
+
     /**
      * @return Returns the identity.
      */
@@ -97,18 +100,18 @@ public class EntityIdentity extends IMObject {
     /**
      * @return Returns the details.
      */
-    public DynamicAttributeMap getDetails() {
-        return details;
+    public Map<String, Object> getDetails() {
+        return new StringMap(details);
     }
 
     /**
      * @param details
      *            The details to set.
      */
-    public void setDetails(DynamicAttributeMap details) {
+    public void setDetails(Map<String, Object> details) {
         this.details = details;
     }
-    
+
     /**
      * @return Returns the entity.
      */
@@ -129,11 +132,10 @@ public class EntityIdentity extends IMObject {
     @Override
     public Object clone() throws CloneNotSupportedException {
         EntityIdentity copy = (EntityIdentity)super.clone();
-        copy.details = (DynamicAttributeMap)(this.details == null ?
-                null : this.details.clone());
+        copy.details = (details == null) ? null : new HashMap<String, Object>(details);
         copy.entity = this.entity;
         copy.identity = this.identity;
-        
+
         return copy;
     }
 }

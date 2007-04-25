@@ -18,21 +18,15 @@
 
 package org.openvpms.component.business.service.archetype.rule;
 
-// java core
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//log4j
-import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
-// openvpms-test-component
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 /**
@@ -41,14 +35,9 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class ArchetypeServiceRuleEngineInvocationTestCase extends
         AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeServiceRuleEngineInvocationTestCase.class);
 
     /**
      * Holds a reference to the entity service
@@ -161,9 +150,9 @@ public class ArchetypeServiceRuleEngineInvocationTestCase extends
      */
     public Party createPerson(String title, String firstName, String lastName) {
         Party person = (Party)archetype.create("person.person");
-        person.getDetails().setAttribute("lastName", lastName);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("title", title);
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
         person.addContact(createPhoneContact());
         
         return person;
@@ -176,9 +165,9 @@ public class ArchetypeServiceRuleEngineInvocationTestCase extends
      */
     private Contact createPhoneContact() {
         Contact contact = (Contact)archetype.create("contact.phoneNumber");
-        contact.getDetails().setAttribute("areaCode", "03");
-        contact.getDetails().setAttribute("telephoneNumber", "1234567");
-        contact.getDetails().setAttribute("preferred", new Boolean(true));
+        contact.getDetails().put("areaCode", "03");
+        contact.getDetails().put("telephoneNumber", "1234567");
+        contact.getDetails().put("preferred", Boolean.TRUE.toString());
         
         return contact;
     }

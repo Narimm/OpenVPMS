@@ -1,7 +1,0 @@
-tomcat.dir=c:/dev/tomcat
-
-hibernate.dialect=org.hibernate.dialect.MySQLDialect
-hibernate.connection.driver_class=com.mysql.jdbc.Driver
-hibernate.connection.url=jdbc:mysql://localhost:3306/openvpms
-hibernate.connection.username=openvpms
-hibernate.connection.password=openvpms

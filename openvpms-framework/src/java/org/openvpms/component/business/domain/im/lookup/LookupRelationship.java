@@ -19,13 +19,14 @@
 
 package org.openvpms.component.business.domain.im.lookup;
 
-// commons-lang
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-// openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
+
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * This class defines a relationship between 2 {@link Lookup} instances, namely
@@ -47,37 +48,37 @@ public class LookupRelationship extends IMObject {
      * Reference to the source {@link Lookup} reference
      */
     private IMObjectReference source;
-    
+
     /**
      * Reference to the target {@link Lookup} reference
      */
     private IMObjectReference target;
 
     /**
-     * Details holds dynamic attributes for a lookup
+     * Details holds dynamic attributes for a lookup relationship.
      */
-    private DynamicAttributeMap details = new DynamicAttributeMap();
+    private Map<String, Object> details = new HashMap<String, Object>();
 
     /**
      * Default constructor
      */
     public LookupRelationship() {
     }
-    
+
     /**
      * Convenient constructor to set up a lookup relationship between a source
      * and target lookup
      * 
      * @param source
      *            the source lookup
-     * @param taget 
+     * @param target
      *            the target lookup
      */
     public LookupRelationship(Lookup source, Lookup target ) {
         this.source = source.getObjectReference();
         this.target = target.getObjectReference();
     }
-    
+
     /**
      * @return Returns the source.
      */
@@ -109,14 +110,14 @@ public class LookupRelationship extends IMObject {
     /**
      * @return Returns the details.
      */
-    public DynamicAttributeMap getDetails() {
-        return details;
+    public Map<String, Object> getDetails() {
+        return new StringMap(details);
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(DynamicAttributeMap details) {
+    public void setDetails(Map<String, Object> details) {
         this.details = details;
     }
 
@@ -128,11 +129,10 @@ public class LookupRelationship extends IMObject {
         LookupRelationship copy = (LookupRelationship)super.clone();
         copy.source = (IMObjectReference)this.source.clone();
         copy.target = (IMObjectReference)this.target.clone();
-        
+
         // details
-        copy.details = (DynamicAttributeMap)(this.details == null ?
-                null : this.details.clone());
-        
+        copy.details = (details == null) ? null : new HashMap<String, Object>(details);
+
         return copy;
     }
 
@@ -140,6 +140,7 @@ public class LookupRelationship extends IMObject {
      * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
      */
     @Override
+    @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
         .appendSuper(null)

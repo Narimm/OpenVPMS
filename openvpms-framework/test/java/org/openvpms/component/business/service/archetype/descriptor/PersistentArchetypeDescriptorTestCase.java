@@ -253,9 +253,9 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
             
             // add a couple of nested nodes
             details.addNodeDescriptor(createNodeDescriptor("address", 
-                    "/details/attributes/address", "java.lang.String", 1, 1));
+                    "/details/address", "java.lang.String", 1, 1));
             details.addNodeDescriptor(createNodeDescriptor("postCode", 
-                    "/details/attributes/postCode", "java.lang.String", 1, 1));
+                    "/details/postCode", "java.lang.String", 1, 1));
             session.save(desc);
             tx.commit();
             int acount1 = HibernateDescriptorUtil.getTableRowCount(
