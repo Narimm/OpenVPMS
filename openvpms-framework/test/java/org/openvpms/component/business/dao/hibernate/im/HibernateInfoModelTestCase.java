@@ -43,8 +43,8 @@ import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.system.common.test.BaseTestCase;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -161,13 +161,13 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
     }
 
     /**
-     * Create a simple detail object
+     * Creates a simple detail object.
      * 
-     * @return DynamicAttributeMap
+     * @return a new map
      */
     @SuppressWarnings("HardCodedStringLiteral")
-    protected Map<String, String> createSimpleAttributeMap() {
-        Map<String, String> map = new HashMap<String, String>();
+    protected Map<String, Object> createSimpleAttributeMap() {
+        Map<String, Object> map = new HashMap<String, Object>();
         map.put("dummy", "dummy");
         map.put("dummy1", "dummy1");
         return map;

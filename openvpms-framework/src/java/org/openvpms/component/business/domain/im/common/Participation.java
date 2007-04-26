@@ -19,13 +19,14 @@
 
 package org.openvpms.component.business.domain.im.common;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.HashMap;
-
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -81,9 +82,9 @@ public class Participation extends IMObject {
     private IMObjectReference act;
 
     /**
-     * Holds details about the participation
+     * Holds details about the participation.
      */
-    private Map<String, Object> details;
+    private Map<String, TypedValue> details;
 
 
     /**
@@ -110,21 +111,21 @@ public class Participation extends IMObject {
         super(archetypeId);
         this.act = act;
         this.entity = entity;
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /**
      * @return Returns the details.
      */
     public Map<String, Object> getDetails() {
-        return new StringMap(details);
+        return new TypedValueMap(details);
     }
 
     /**
      * @param details The details to set.
      */
     public void setDetails(Map<String, Object> details) {
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -237,7 +238,7 @@ public class Participation extends IMObject {
         copy.activeStartTime = (Date)(this.activeStartTime == null ?
                 null : this.activeStartTime.clone());
         copy.details = (this.details == null) ? null
-                : new HashMap<String, Object>(details);
+                : new HashMap<String, TypedValue>(details);
         copy.entity = this.entity;
         copy.mode = this.mode;
         copy.percentage = this.percentage;

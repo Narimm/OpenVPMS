@@ -174,7 +174,7 @@ public class DroolsRuleEngineTestCase extends
         pet.getDetails().put("sex", "UNSPECIFIED");
         pet.getDetails().put("species", "k9");
         pet.setDescription("A dog");
-        pet.getDetails().put("dateOfBirth", new Date().toString());
+        pet.getDetails().put("dateOfBirth", new Date());
 
         return pet;
     }
@@ -188,7 +188,7 @@ public class DroolsRuleEngineTestCase extends
         Contact contact = (Contact)archetype.create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
         contact.getDetails().put("telephoneNumber", "1234567");
-        contact.getDetails().put("preferred", Boolean.TRUE.toString());
+        contact.getDetails().put("preferred", true);
 
         return contact;
     }

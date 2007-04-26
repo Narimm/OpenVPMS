@@ -20,18 +20,19 @@ package org.openvpms.component.business.domain.im.common;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
  * A class representing all named things in the business.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -46,7 +47,7 @@ public class Entity extends IMObject {
      * A placeholder for all entity details, which denotes the dynamic and
      * adaptive details of the entity.
      */
-    private Map<String, Object> details = new HashMap<String, Object>();
+    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
 
     /**
      * The {@link Lookup} classifications this entity. An {@link Entity} can
@@ -102,7 +103,7 @@ public class Entity extends IMObject {
             throw new EntityException(EntityException.ErrorCode.NoNameSpecified);
         }
 
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -309,14 +310,14 @@ public class Entity extends IMObject {
      * @return Returns the details.
      */
     public Map<String, Object> getDetails() {
-        return new StringMap(details);
+        return new TypedValueMap(details);
     }
 
     /**
      * @param details The details to set.
      */
     public void setDetails(Map<String, Object> details) {
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /* (non-Javadoc)
@@ -327,7 +328,7 @@ public class Entity extends IMObject {
         Entity copy = (Entity)super.clone();
         copy.classifications = new HashSet<Lookup>(this.classifications);
         copy.details = (this.details == null) ? null
-                : new HashMap<String, Object>(details);
+                : new HashMap<String, TypedValue>(details);
         copy.identities = new HashSet<EntityIdentity>(this.identities);
         copy.sourceEntityRelationships = new HashSet<EntityRelationship>(this.sourceEntityRelationships);
         copy.targetEntityRelationships = new HashSet<EntityRelationship>(this.targetEntityRelationships);

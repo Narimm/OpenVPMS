@@ -72,7 +72,10 @@
     <map name="details" access="field" table="participation_details" cascade="all,delete-orphan">
       <key column="participation_id"/>
       <map-key column="name" type="string"/>
-      <element column="value" type="string" length="5000"/>
+      <composite-element class="org.openvpms.component.business.domain.im.datatypes.basic.TypedValue">
+        <property name="type"/>
+        <property name="value" length="5000"/>
+      </composite-element>
     </map>
   </class>
 

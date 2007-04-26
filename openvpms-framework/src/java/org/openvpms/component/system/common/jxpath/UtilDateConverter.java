@@ -19,12 +19,12 @@
 
 package org.openvpms.component.system.common.jxpath;
 
+import com.thoughtworks.xstream.converters.basic.DateConverter;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.Converter;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Date;
-import java.sql.Timestamp;
 
 
 /**
@@ -85,12 +85,8 @@ public final class UtilDateConverter implements Converter {
                 return (useDefault) ? defaultValue : null;
             } else {
                 try {
-                    if (str.contains(":")) {
-                        Timestamp timestamp = Timestamp.valueOf(str);
-                        return new Date(timestamp.getTime());
-                    } else {
-                        return java.sql.Date.valueOf(str);
-                    }
+                    DateConverter converter = new DateConverter();
+                    return converter.fromString(str);
                 } catch (Exception exception) {
                     if (useDefault) {
                         return (defaultValue);

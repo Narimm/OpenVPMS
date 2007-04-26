@@ -187,7 +187,7 @@ public abstract class SecurityServiceTests extends
         Contact contact = (Contact)archetype.create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
         contact.getDetails().put("telephoneNumber", "1234567");
-        contact.getDetails().put("preferred", new Boolean(true).toString());
+        contact.getDetails().put("preferred", true);
 
         return contact;
     }

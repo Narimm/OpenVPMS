@@ -19,19 +19,20 @@
 package org.openvpms.component.business.domain.im.common;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
- * A class representing the various internal and external identifiers for a 
- * particular entity including associations to a particular Entity Relationship.  
- * For example a Product Entity could be related to a Supplier entity with a 
- * Entity Relationship type of "Supplies" which has a associated identification 
- * number representing the suppliers product code.  
- * 
+ * A class representing the various internal and external identifiers for a
+ * particular entity including associations to a particular Entity Relationship.
+ * For example a Product Entity could be related to a Supplier entity with a
+ * Entity Relationship type of "Supplies" which has a associated identification
+ * number representing the suppliers product code.
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -48,9 +49,9 @@ public class EntityIdentity extends IMObject {
     private String identity;
 
     /**
-     * Holds details about the entity identity
+     * Holds details about the entity identity.
      */
-    private Map<String, Object> details;
+    private Map<String, TypedValue> details;
 
     /**
      * Reference the Entity that this object references
@@ -80,7 +81,7 @@ public class EntityIdentity extends IMObject {
                           String identity, Map<String, Object> details) {
         super(archetypeId);
         this.identity = identity;
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -101,7 +102,7 @@ public class EntityIdentity extends IMObject {
      * @return Returns the details.
      */
     public Map<String, Object> getDetails() {
-        return new StringMap(details);
+        return new TypedValueMap(details);
     }
 
     /**
@@ -109,7 +110,7 @@ public class EntityIdentity extends IMObject {
      *            The details to set.
      */
     public void setDetails(Map<String, Object> details) {
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -132,7 +133,8 @@ public class EntityIdentity extends IMObject {
     @Override
     public Object clone() throws CloneNotSupportedException {
         EntityIdentity copy = (EntityIdentity)super.clone();
-        copy.details = (details == null) ? null : new HashMap<String, Object>(details);
+        copy.details = (details == null) ? null
+                : new HashMap<String, TypedValue>(details);
         copy.entity = this.entity;
         copy.identity = this.identity;
 

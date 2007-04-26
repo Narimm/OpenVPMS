@@ -18,18 +18,19 @@
 
 package org.openvpms.component.business.domain.im.common;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.HashMap;
-
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
  * Describes the relationship between two entities.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -53,7 +54,7 @@ public class EntityRelationship extends IMObject {
     /**
      * Records details of the relationship between the entities.
      */
-    private Map<String, Object> details = new HashMap<String, Object>();
+    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
 
     /**
      * A relationship may also have an associated entity identity
@@ -108,7 +109,7 @@ public class EntityRelationship extends IMObject {
 
         this.source = source;
         this.target = target;
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /*
@@ -123,7 +124,7 @@ public class EntityRelationship extends IMObject {
                 : this.activeEndTime.clone());
         copy.activeStartTime = (Date) (this.activeStartTime == null ? null
                 : this.activeStartTime.clone());
-        copy.details = (details == null) ? null : new HashMap<String, Object>(details);
+        copy.details = (details == null) ? null : new HashMap<String, TypedValue>(details);
         copy.identity = this.identity;
         copy.reason = this.reason;
         copy.sequence = this.sequence;
@@ -151,7 +152,7 @@ public class EntityRelationship extends IMObject {
      * @return Returns the details.
      */
     public Map<String, Object> getDetails() {
-        return new StringMap(details);
+        return new TypedValueMap(details);
     }
 
     /**
@@ -210,7 +211,7 @@ public class EntityRelationship extends IMObject {
      *            The details to set.
      */
     public void setDetails(Map<String, Object> details) {
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /**

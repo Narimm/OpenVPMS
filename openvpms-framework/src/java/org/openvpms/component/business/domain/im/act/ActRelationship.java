@@ -21,15 +21,16 @@ package org.openvpms.component.business.domain.im.act;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
- * A class that represents the directed association between Acts.  
- * 
+ * A class that represents the directed association between Acts.
+ *
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
@@ -57,7 +58,7 @@ public class ActRelationship extends IMObject {
     /**
      * Holds dynamic details about the act relationship
      */
-    private Map<String, Object> details = new HashMap<String, Object>();
+    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
 
     /**
      * Reference to the source {@link Act} reference
@@ -81,14 +82,14 @@ public class ActRelationship extends IMObject {
      * @return Returns the details.
      */
     public Map<String, Object> getDetails() {
-        return new StringMap(details);
+        return new TypedValueMap(details);
     }
 
     /**
      * @param details The details to set.
      */
     public void setDetails(Map<String, Object> details) {
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -153,7 +154,8 @@ public class ActRelationship extends IMObject {
     @Override
     public Object clone() throws CloneNotSupportedException {
         ActRelationship copy = (ActRelationship)super.clone();
-        copy.details = (details == null) ? null : new HashMap<String, Object>(details);
+        copy.details = (details == null) ? null
+                : new HashMap<String, TypedValue>(details);
         copy.parentChildRelationship = this.parentChildRelationship;
         copy.sequence = this.sequence;
 

@@ -24,19 +24,20 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.EntityException;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
- * A class representing an activity that is being done, has been done, 
- * can be done, or is intended or requested to be done.  An Act instance 
- * is a record of an intentional business action.  
+ * A class representing an activity that is being done, has been done,
+ * can be done, or is intended or requested to be done.  An Act instance
+ * is a record of an intentional business action.
 
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
@@ -79,7 +80,7 @@ public class Act extends IMObject {
      * Describes the specific details of the act, whether it is clinical,
      * financial or other.
      */
-    private Map<String, Object> details = new HashMap<String, Object>();
+    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
 
     /**
      * The {@link Participation}s for this act.
@@ -116,21 +117,21 @@ public class Act extends IMObject {
      */
     public Act(ArchetypeId archetypeId, Map<String, Object> details) {
         super(archetypeId);
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /**
      * @return Returns the details.
      */
     public Map<String, Object> getDetails() {
-        return new StringMap(details);
+        return new TypedValueMap(details);
     }
 
     /**
      * @param details The details to set.
      */
     public void setDetails(Map<String, Object> details) {
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -378,7 +379,7 @@ public class Act extends IMObject {
         copy.activityStartTime = (Date)(this.activityStartTime == null ?
                 null : this.activityStartTime.clone());
         copy.details = (details == null) ? null
-                : new HashMap<String, Object>(details);
+                : new HashMap<String, TypedValue>(details);
         copy.participations = new HashSet<Participation>(this.participations);
         copy.reason = this.reason;
         copy.sourceActRelationships = new HashSet<ActRelationship>(this.sourceActRelationships);

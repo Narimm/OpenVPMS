@@ -730,7 +730,7 @@ public class ArchetypeServicePersistenceTestCase
 
         Calendar date = Calendar.getInstance();
         date.set(1963, 12, 20);
-        pet.getDetails().put("dateOfBirth", new Date().toString());
+        pet.getDetails().put("dateOfBirth", date.getTime());
 
         return pet;
     }

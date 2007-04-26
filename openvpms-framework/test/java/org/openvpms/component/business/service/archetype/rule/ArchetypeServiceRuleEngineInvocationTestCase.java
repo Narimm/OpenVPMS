@@ -18,16 +18,15 @@
 
 package org.openvpms.component.business.service.archetype.rule;
 
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 /**
  * Exercise the IArchetypeService.executeRule method
@@ -167,7 +166,7 @@ public class ArchetypeServiceRuleEngineInvocationTestCase extends
         Contact contact = (Contact)archetype.create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
         contact.getDetails().put("telephoneNumber", "1234567");
-        contact.getDetails().put("preferred", Boolean.TRUE.toString());
+        contact.getDetails().put("preferred", true);
         
         return contact;
     }

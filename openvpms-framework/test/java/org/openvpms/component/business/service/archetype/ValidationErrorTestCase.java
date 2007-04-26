@@ -253,7 +253,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
         Party pet = (Party) service.create("animal.pet");
         pet.setName("bill");
         pet.getDetails().put("sex", "male");
-        pet.getDetails().put("dateOfBirth", new java.sql.Date(System.currentTimeMillis()).toString());
+        pet.getDetails().put("dateOfBirth", new Date());
 
         try {
             service.validateObject(pet);
@@ -303,7 +303,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
         Party pet = (Party) service.create("animal.pet1");
         pet.setName("bill");
         pet.getDetails().put("sex", "male");
-        pet.getDetails().put("dateOfBirth", new Date().toString());
+        pet.getDetails().put("dateOfBirth", new Date());
         service.validateObject(pet);
 
         // this should validate
@@ -346,7 +346,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
         Party pet = (Party) service.create("animal.pet2");
         pet.setName("bill");
         pet.getDetails().put("sex", "male");
-        pet.getDetails().put("dateOfBirth", new Date().toString());
+        pet.getDetails().put("dateOfBirth", new Date());
         try {
             service.validateObject(pet);
             fail("Validation should have failed since min cardinality was violated");
@@ -408,7 +408,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
         Party pet = (Party) service.create("animal.pet3");
         pet.setName("bill");
         pet.getDetails().put("sex", "male");
-        pet.getDetails().put("dateOfBirth", new Date().toString());
+        pet.getDetails().put("dateOfBirth", new Date());
         service.validateObject(pet);
 
         // this should also validate

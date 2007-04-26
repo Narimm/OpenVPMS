@@ -129,7 +129,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             assertTrue(product != null);
             assertTrue(product.getDetails().get("supplier").equals("jima"));
             assertTrue(product.getDetails().get("code").equals("1123"));
-            assertEquals(Boolean.TRUE.toString(), product.getDetails().get("overpriced"));
+            assertEquals(true, product.getDetails().get("overpriced"));
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
