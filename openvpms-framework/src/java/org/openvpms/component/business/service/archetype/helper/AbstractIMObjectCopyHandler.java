@@ -20,7 +20,6 @@ package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 
 /**
@@ -78,8 +77,7 @@ public abstract class AbstractIMObjectCopyHandler
      *         <code>false</code>
      */
     protected boolean isCopyable(NodeDescriptor node, boolean source) {
-        boolean result = !node.getName().equals("uid")
-                && !node.getClazz().equals(DynamicAttributeMap.class);
+        boolean result = !node.getName().equals("uid");  // NON-NLS
         if (result && !source) {
             // Removed readOnly check for temporary OBF-115 fix.
 //            result = (!node.isReadOnly() && !node.isDerived());
