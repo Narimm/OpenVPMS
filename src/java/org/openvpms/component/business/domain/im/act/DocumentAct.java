@@ -21,9 +21,8 @@ package org.openvpms.component.business.domain.im.act;
 
 // commons-lang
 import org.apache.commons.lang.builder.ToStringBuilder;
-
-//openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.document.Document;
 
 /**
  * Document specific-act
@@ -41,22 +40,22 @@ public class DocumentAct extends Act {
      * The version of the document
      */
     private String docVersion;
-    
+
     /**
      * The filename of the document
      */
     private String fileName;
-    
+
     /**
      * The mimetype of the document
      */
     private String mimeType;
-    
+
     /**
      * Indicates whether it has been printed
      */
     private boolean printed;
-    
+
     /**
      * A reference to the actual {@link Document}
      */
@@ -77,7 +76,7 @@ public class DocumentAct extends Act {
     }
 
     /**
-     * @param document The document to set.
+     * @param reference The document reference to set.
      */
     public void setDocReference(IMObjectReference reference) {
         this.docReference = reference;
@@ -145,10 +144,10 @@ public class DocumentAct extends Act {
     @Override
     public Object clone() throws CloneNotSupportedException {
         DocumentAct copy = (DocumentAct)super.clone();
-        
+
         copy.docVersion = this.docVersion;
         copy.docReference = (IMObjectReference)this.docReference.clone();
-        
+
         return copy;
     }
 
@@ -156,6 +155,7 @@ public class DocumentAct extends Act {
      * @see org.openvpms.component.business.domain.im.act.Act#toString()
      */
     @Override
+    @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
             .appendSuper(null)
@@ -164,5 +164,5 @@ public class DocumentAct extends Act {
             .toString();
     }
 
-    
+
 }

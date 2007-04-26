@@ -48,8 +48,15 @@
       type="string" />
     <property name="docSize" access="property" column="doc_size" type="int" />
     <property name="checksum" access="property" column="checksum" type="long" />
-    <property name="details" column="details" length="5000"
-      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+    <map name="details" access="field" table="document_details" lazy="false"
+         cascade="all,delete-orphan">
+      <key column="document_id"/>
+      <map-key column="name" type="string"/>
+      <composite-element class="org.openvpms.component.business.domain.im.datatypes.basic.TypedValue">
+        <property name="type"/>
+        <property name="value" length="5000"/>
+      </composite-element>
+    </map>
     <property name="contents" access="property" type="binary">
       <column name="contents" sql-type="longblob" />
     </property>

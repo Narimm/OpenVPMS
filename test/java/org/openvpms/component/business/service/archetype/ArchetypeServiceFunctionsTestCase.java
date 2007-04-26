@@ -39,6 +39,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class ArchetypeServiceFunctionsTestCase
         extends AbstractDependencyInjectionSpringContextTests {
 

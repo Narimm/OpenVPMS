@@ -40,6 +40,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class ArchetypeServiceFinancialActTestCase extends
                                                   AbstractDependencyInjectionSpringContextTests {
 
@@ -148,7 +149,7 @@ public class ArchetypeServiceFinancialActTestCase extends
         // set the start time node
         ndesc = adesc.getNodeDescriptor("startTime");
         assertTrue(ndesc != null);
-        ndesc.setValue(act, "20/12/1963");
+        ndesc.setValue(act, "1963-12-20 0:0:0 GMT");
         assertTrue(ndesc.getValue(act) instanceof Date);
 
         // save the document
