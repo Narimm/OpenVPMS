@@ -28,6 +28,7 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.workflow.WorkflowSummary;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
@@ -111,6 +112,18 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
     }
 
     /**
+     * Renders the workspace summary.
+     *
+     * @return the component representing the workspace summary, or
+     *         <code>null</code> if there is no summary
+     */
+    @Override
+    public Component getSummary() {
+        Act act = window.getObject();
+        return WorkflowSummary.getSummary(act);
+    }
+
+    /**
      * Returns the latest version of the current schedule context object.
      *
      * @return the latest version of the schedule context object, or
@@ -140,7 +153,6 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      */
     protected void onSaved(IMObject object, boolean isNew) {
         browser.query();
-        // acts.setSelected((Act) object); todo
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -161,7 +173,6 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      */
     protected void onRefresh(IMObject object) {
         browser.query();
-        // acts.setSelected((Act) object); todo
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -175,6 +186,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
                 = (IMObjectReference) act.get("act.objectReference");
         Act object = (Act) IMObjectHelper.getObject(actRef);
         window.setObject(object);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**
@@ -334,20 +346,6 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
     }
 
     /**
-     * Selects the first available act, if any.
-     */
-    private void selectFirst() {
-        List<ObjectSet> objects = browser.getObjects();
-        if (!objects.isEmpty()) {
-            ObjectSet current = objects.get(0);
-            browser.setSelected(current);
-            // window.setObject(current) TODO;
-        } else {
-            window.setObject(null);
-        }
-    }
-
-    /**
      * Creates a new CRUD window for viewing and editing acts.
      *
      * @return a new CRUD window
@@ -377,6 +375,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
         if (query != null) {
             GlobalContext.getInstance().setScheduleDate(query.getDate());
         }
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**
@@ -409,4 +408,20 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
             }
         }
     }
+
+    /**
+     * Selects the first available act, if any.
+     */
+    private void selectFirst() {
+        List<ObjectSet> objects = browser.getObjects();
+        if (!objects.isEmpty()) {
+            ObjectSet current = objects.get(0);
+            browser.setSelected(current);
+            actSelected(current);
+        } else {
+            window.setObject(null);
+            firePropertyChange(SUMMARY_PROPERTY, null, null);
+        }
+    }
+
 }

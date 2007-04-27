@@ -290,7 +290,7 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
      *
      * @return the CRUD window. May be <code>null</code>
      */
-    protected CRUDWindow getCRUDWindow() {
+    protected CRUDWindow<A> getCRUDWindow() {
         return window;
     }
 
