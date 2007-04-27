@@ -33,6 +33,7 @@ import java.util.HashMap;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
+@Deprecated
 public class DynamicAttributeMap implements Serializable, Cloneable {
     /**
      * Generated SUID
@@ -97,22 +98,21 @@ public class DynamicAttributeMap implements Serializable, Cloneable {
      * @see org.openvpms.component.business.domain.im.common.datatypes.basic.IDynamicAttributes#getAttributeNames()
      */
     public String[] getAttributeNames() {
-        return (String[])attributes.keySet().toArray(
-                new String[attributes.size()]);
+        return attributes.keySet().toArray(new String[attributes.size()]);
     }
 
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.datatypes.basic.IDynamicAttributes#getAttributeValues()
      */
     public Serializable[] getAttributeValues() {
-        return (Serializable[])attributes.values().toArray(
-                new Serializable[attributes.size()]);
+        return attributes.values().toArray(new Serializable[attributes.size()]);
     }
 
     /* (non-Javadoc)
      * @see java.lang.Object#clone()
      */
     @Override
+    @SuppressWarnings("deprecation")
     public Object clone() throws CloneNotSupportedException {
         DynamicAttributeMap copy = (DynamicAttributeMap)super.clone();
         
