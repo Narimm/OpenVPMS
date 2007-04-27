@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.workflow.WorkflowSummary;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
@@ -88,6 +89,18 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
                     "Argument 'object' must be an instance of "
                             + Party.class.getName());
         }
+    }
+
+    /**
+     * Renders the workspace summary.
+     *
+     * @return the component representing the workspace summary, or
+     *         <code>null</code> if there is no summary
+     */
+    @Override
+    public Component getSummary() {
+        Act act = getCRUDWindow().getObject();
+        return WorkflowSummary.getSummary(act);
     }
 
     /**
@@ -157,6 +170,7 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
         if (query != null) {
             GlobalContext.getInstance().setWorkListDate(query.getDate());
         }
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**
