@@ -31,7 +31,7 @@ import java.util.Set;
 
 
 /**
- * A map that adapts a underlying map of name->TypedValue pairs to
+ * A map that adapts an underlying map of name->TypedValue pairs to
  * a map of name->Object pairs.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -43,6 +43,14 @@ public class TypedValueMap implements Map<String, Object> {
      * The underlying map.
      */
     private final Map<String, TypedValue> map;
+
+
+    /**
+     * Constructs a new <tt>TypedValueMap</tt>, backed by a <tt>HashMap</tt>.
+     */
+    public TypedValueMap() {
+        this(new HashMap<String, TypedValue>());
+    }
 
     /**
      * Constructs a new <tt>TypedValueMap</tt>.

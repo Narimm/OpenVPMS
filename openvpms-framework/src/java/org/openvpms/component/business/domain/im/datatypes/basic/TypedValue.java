@@ -73,7 +73,6 @@ public class TypedValue {
      */
     public TypedValue(Object object) {
         setObject(object);
-        type = TypedValueConverter.getType(object);
     }
 
     /**
@@ -151,6 +150,7 @@ public class TypedValue {
      */
     public void setObject(Object object) {
         this.object = object;
+        type = TypedValueConverter.getType(object);
         state = State.OBJECT_DIRTY;
     }
 
