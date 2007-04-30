@@ -267,6 +267,7 @@ public class FinancialAct extends Act {
      * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
      */
     @Override
+    @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(null)

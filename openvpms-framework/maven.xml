@@ -84,4 +84,21 @@
         	<arg line="${openvpms.security.loader.cmdline}"/>
     	</ant:java>	
     </goal>
+
+    <goal name="migrate:details" description="Migrate the details column">
+        <attainGoal name="java:compile"/>
+        <attainGoal name="java:jar-resources"/>
+        <attainGoal name="test:test-resources"/>
+        <ant:java
+            classname="org.openvpms.tools.data.migration.DetailsMigrator"
+            failonerror="true"
+            fork="true">
+            <ant:classpath>
+                <ant:path refid="maven.dependency.classpath"/>
+                <ant:pathelement path="${maven.build.dest}"/>
+                <ant:pathelement path="${maven.test.dest}"/>
+            </ant:classpath>
+            <arg line="${openvpms.migration.details.cmdline}"/>
+        </ant:java>
+    </goal>
 </project>

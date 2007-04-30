@@ -23,6 +23,7 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
+import com.thoughtworks.xstream.converters.basic.DateConverter;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 import org.apache.commons.io.FileUtils;
@@ -260,8 +261,7 @@ public class StaxArchetypeDataLoader {
      * 
      * @param file
      *            the file to process
-     * @param boolean
-     *            if this is the first parse for this file            
+     *            if this is the first parse for this file
      * @throws Exception
      *             propagate all exceptions to client
      */
@@ -523,6 +523,8 @@ public class StaxArchetypeDataLoader {
                     try {
                         if (isAttributeIdRef(attValue)) {
                             processIdReference(object, attValue, ndesc, validateOnly);
+                        } else if (ndesc.isDate()) {
+                            ndesc.setValue(object, getDate(attValue));
                         } else {
                             ndesc.setValue(object, attValue);
                         }
@@ -849,7 +851,7 @@ public class StaxArchetypeDataLoader {
 
     /**
      * @param reader
-     * @return
+     * @return the formatted element
      */
     private String formatElement(XMLStreamReader reader) {
         StringBuffer buf = new StringBuffer("<");
@@ -952,10 +954,34 @@ public class StaxArchetypeDataLoader {
      */
     private XMLStreamReader getReader(String file) throws Exception {
         FileInputStream fis = new FileInputStream(file);
-        XMLInputFactory factory = (XMLInputFactory) XMLInputFactory
-                .newInstance();
+        XMLInputFactory factory = XMLInputFactory.newInstance();
 
-        return (XMLStreamReader) factory.createXMLStreamReader(fis);
+        return factory.createXMLStreamReader(fis);
+    }
+
+    /**
+     * Helper to convert a string to a date.
+     *
+     * @param value the value to convert. May be <tt>null</tt>
+     * @return the converted value, or <tt>null</tt>
+     */
+    @SuppressWarnings("HardCodedStringLiteral")
+    private Date getDate(String value) {
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        }
+        String defaultFormat = "yyyy-MM-dd HH:mm:ss.S z";
+        String[] acceptableFormats = new String[]{
+                "yyyy-MM-dd HH:mm:ss.S a",
+                "yyyy-MM-dd HH:mm:ssz", "yyyy-MM-dd HH:mm:ss z",
+                "yyyy-MM-dd HH:mm:ssa",
+                "dd/MM/yyyy HH:mm:ss", "dd/MM/yyyy"};
+        // the yyyy-mm-dd* formats are the DateConverter defaults.
+        // Add dd/MM/yyyy formats for backwards compatibility with existing
+        // data
+        DateConverter converter = new DateConverter(defaultFormat,
+                                                    acceptableFormats);
+        return (Date) converter.fromString(value);
     }
 
     /**

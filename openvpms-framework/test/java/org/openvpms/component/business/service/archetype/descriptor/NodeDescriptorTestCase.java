@@ -42,6 +42,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class NodeDescriptorTestCase extends LoggedTestCase {
 
     /**
@@ -120,15 +121,16 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
     }
 
     /**
-     * Tests the {@link NodeDescriptor#isLookup()} method.
+     * Tests the {@link NodeDescriptor#isHidden()} method.
      */
     public void testIsHidden() {
         ArchetypeDescriptor archetype = getArchetype("person.person");
 
         // hidden node
-        NodeDescriptor details = archetype.getNodeDescriptor("details");
-        assertNotNull(details);
-        assertTrue(details.isHidden());
+        NodeDescriptor relationships
+                = archetype.getNodeDescriptor("sourceRelationships");
+        assertNotNull(relationships);
+        assertTrue(relationships.isHidden());
 
         // non-hidden node
         NodeDescriptor firstName = archetype.getNodeDescriptor("firstName");

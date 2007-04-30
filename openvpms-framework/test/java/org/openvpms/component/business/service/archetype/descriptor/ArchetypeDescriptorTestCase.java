@@ -40,6 +40,7 @@ import java.util.List;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class ArchetypeDescriptorTestCase extends BaseTestCase {
 
     public static void main(String[] args) {
@@ -146,8 +147,8 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
         assertEquals(2, descriptors.getArchetypeDescriptors().size());
         ArchetypeDescriptor descriptor = descriptors.getArchetypeDescriptors().get("person.person");
         assertEquals("person.person", descriptor.getType().getShortName());
-        assertEquals(12, descriptor.getAllNodeDescriptors().size());
-        assertEquals(8, descriptor.getSimpleNodeDescriptors().size());
+        assertEquals(11, descriptor.getAllNodeDescriptors().size());
+        assertEquals(7, descriptor.getSimpleNodeDescriptors().size());
         assertEquals(4, descriptor.getComplexNodeDescriptors().size());
     }
     

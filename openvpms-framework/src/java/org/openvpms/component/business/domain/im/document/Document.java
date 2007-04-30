@@ -22,10 +22,11 @@ package org.openvpms.component.business.domain.im.document;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.basic.StringMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -65,7 +66,7 @@ public class Document extends IMObject {
     /**
      * Details holds dynamic attributes for a document.
      */
-    private Map<String, Object> details = new HashMap<String, Object>();
+    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
 
     /**
      * default constructor
@@ -141,14 +142,14 @@ public class Document extends IMObject {
      * @return Returns the details.
      */
     public Map<String, Object> getDetails() {
-        return new StringMap(details);
+        return new TypedValueMap(details);
     }
 
     /**
      * @param details The details to set.
      */
     public void setDetails(Map<String, Object> details) {
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /* (non-Javadoc)
@@ -167,7 +168,8 @@ public class Document extends IMObject {
         System.arraycopy(this.contents, 0, copy.contents, 0, copy.contents.length);
 
         // details
-        copy.details = (details == null) ? null : new HashMap<String, Object>(details);
+        copy.details = (details == null) ? null
+                : new HashMap<String, TypedValue>(details);
 
         return copy;
     }
