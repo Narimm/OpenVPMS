@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.ContextHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
@@ -31,9 +30,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
- * Participation editor for customer. This updates {@link GlobalContext#setCustomer}
- * when a customer is selected, and invokes {@link GlobalContext#setPatient} with
- * null.
+ * Participation editor for customer. This updates the context with the selected
+ * customer.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-07-03 00:50:52Z $
@@ -78,7 +76,8 @@ public class CustomerParticipationEditor
             @Override
             public void setObject(Party object) {
                 super.setObject(object);
-                ContextHelper.setCustomer(object);
+                ContextHelper.setCustomer(getLayoutContext().getContext(),
+                                          object);
             }
         };
     }

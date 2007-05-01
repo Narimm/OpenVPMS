@@ -34,7 +34,6 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
@@ -44,6 +43,7 @@ import org.openvpms.web.component.im.query.Query;
 
 /**
  * Participation editor for clinicians.
+ * This updates the context with the selected clinician.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-24 01:44:28Z $
@@ -94,7 +94,7 @@ public class ClinicianParticipationEditor
 
             public void setObject(User object) {
                 super.setObject(object);
-                GlobalContext.getInstance().setClinician(object);
+                getLayoutContext().getContext().setClinician(object);
             }
         };
     }
