@@ -68,7 +68,7 @@
               minCardinality="0" maxCardinality="1"
               filter="participation.customerAccountBalance" hidden="true"/>
         <node name="items" path="/sourceActRelationships"
-			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*"
+			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
             filter="actRelationship.customerAccountInvoiceItem">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
