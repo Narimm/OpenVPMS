@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
@@ -30,8 +29,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
- * Participation editor for patients. This updates {@link GlobalContext#setTill}
- * when a till is selected.
+ * Participation editor for patients. This updates the context when a till is
+ * selected.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-18 14:13:02 +1000 (Thu, 18 May 2006) $
@@ -76,7 +75,7 @@ public class TillParticipationEditor
             @Override
             public void setObject(Party object) {
                 super.setObject(object);
-                GlobalContext.getInstance().setTill(object);
+                getLayoutContext().getContext().setTill(object);
             }
         };
     }

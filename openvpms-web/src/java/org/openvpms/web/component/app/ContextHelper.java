@@ -38,15 +38,24 @@ public class ContextHelper {
      */
     private static final String OWNER = "entityRelationship.patientOwner";
 
-
     /**
      * Sets the current global customer. If the current patient doesn't have a
-     * relationship to it, sets it to <code>null</code>.
+     * relationship to it, sets it to <tt>null</code>.
      *
-     * @param customer the customer. May be <code>null</code>
+     * @param customer the customer. May be <tt>null</code>
      */
     public static void setCustomer(Party customer) {
-        GlobalContext context = GlobalContext.getInstance();
+        setCustomer(GlobalContext.getInstance(), customer);
+    }
+
+    /**
+     * Sets the context customer. If the context patient doen't have
+     * relationship to it, sets it to <tt>null</tt>.
+     *
+     * @param context  the context
+     * @param customer the customer
+     */
+    public static void setCustomer(Context context, Party customer) {
         context.setCustomer(customer);
         if (customer != null) {
             Party patient = context.getPatient();
@@ -73,10 +82,20 @@ public class ContextHelper {
      * relationship to the current customer, sets the customer to the
      * patient's owner.
      *
-     * @param patient the patient. May be <code>null</code>
+     * @param patient the patient. May be <tt>null</tt>
      */
     public static void setPatient(Party patient) {
-        GlobalContext context = GlobalContext.getInstance();
+        setPatient(GlobalContext.getInstance(), patient);
+    }
+
+    /**
+     * Sets the context patient. If the patient doesn't have a
+     * relationship to the current customer, sets the customer to the
+     * patient's owner.
+     *
+     * @param patient the patient. May be <tt>null</tt>
+     */
+    public static void setPatient(Context context, Party patient) {
         context.setPatient(patient);
         if (patient != null) {
             Party customer = context.getCustomer();

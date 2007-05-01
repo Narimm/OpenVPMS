@@ -77,7 +77,8 @@ public class PatientParticipationEditor
             @Override
             public void setObject(Party object) {
                 super.setObject(object);
-                ContextHelper.setPatient(object);
+                ContextHelper.setPatient(getLayoutContext().getContext(),
+                                         object);
             }
         };
     }

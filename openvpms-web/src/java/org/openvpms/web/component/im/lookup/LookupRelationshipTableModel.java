@@ -23,7 +23,6 @@ import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -39,9 +38,9 @@ public class LookupRelationshipTableModel
         extends BaseIMObjectTableModel<LookupRelationship> {
 
     /**
-     * Determines if hypelinks should be created for entities.
+     * The layout context.
      */
-    private final boolean _edit;
+    private final LayoutContext layoutContext;
 
 
     /**
@@ -50,7 +49,7 @@ public class LookupRelationshipTableModel
      * @param context layout context
      */
     public LookupRelationshipTableModel(LayoutContext context) {
-        _edit = context.isEdit();
+        layoutContext = context;
     }
 
     /**
@@ -62,7 +61,7 @@ public class LookupRelationshipTableModel
      */
     @Override
     public boolean getEnableSelection() {
-        return _edit;
+        return layoutContext.isEdit();
     }
 
     /**
@@ -97,7 +96,7 @@ public class LookupRelationshipTableModel
      */
     protected Component getEntity(LookupRelationship relationship) {
         IMObjectReference entity;
-        IMObject current = GlobalContext.getInstance().getCurrent();
+        IMObject current = layoutContext.getContext().getCurrent();
         if (current == null) {
             entity = relationship.getTarget();
         } else {
@@ -114,7 +113,8 @@ public class LookupRelationshipTableModel
             }
         }
 
-        boolean hyperlink = !_edit; // disable hyperlinks when editing
+        boolean hyperlink = !layoutContext.isEdit();// disable hyperlinks when
+        // editing
         return new IMObjectReferenceViewer(entity, hyperlink).getComponent();
     }
 
