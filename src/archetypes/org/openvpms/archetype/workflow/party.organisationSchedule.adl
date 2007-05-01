@@ -37,6 +37,7 @@
 			<node name="maxSlots" path="/details/attributes/maximumSlots" type="java.lang.Integer" defaultValue="'100'" minCardinality="1" />
 			<node name="allowDoubleBooking" path="/details/attributes/allowDoubleBooking" type="java.lang.Boolean" defaultValue="false()" />
 		</node>
+		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="locations" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
 			filter="entityRelationship.locationSchedule" >
