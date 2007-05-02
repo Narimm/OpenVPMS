@@ -94,7 +94,7 @@ public abstract class PatientActWorkspace<T extends Act>
      */
     @Override
     public Component getSummary() {
-        return PatientSummary.getSummary(getObject());
+        return new PatientSummary().getSummary(getObject());
     }
 
     /**

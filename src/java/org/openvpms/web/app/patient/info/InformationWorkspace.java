@@ -85,7 +85,7 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
      */
     @Override
     public Component getSummary() {
-        return PatientSummary.getSummary(getObject());
+        return new PatientSummary().getSummary(getObject());
     }
 
     /**

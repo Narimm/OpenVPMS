@@ -114,7 +114,7 @@ public class EntityRelationshipTableModel
                 break;
             case DESCRIPTION_INDEX:
                 IMObject entity = IMObjectHelper.getObject(getEntity(object));
-                result = (entity != null) ? entity.getDescription() : null;
+                result = getDescription(entity);
                 break;
             case DETAIL_INDEX:
                 result = object.getDescription();
@@ -140,6 +140,18 @@ public class EntityRelationshipTableModel
         IMObjectReference entity = getEntity(relationship);
         boolean hyperlink = !getEnableSelection();
         return new IMObjectReferenceViewer(entity, hyperlink).getComponent();
+    }
+
+    /**
+     * Returns the description of an entity.
+     *
+     * @param entity the entity. May be <tt>null</tt>
+     * @return the entity description
+     */
+    protected Object getDescription(IMObject entity) {
+        Object result;
+        result = (entity != null) ? entity.getDescription() : null;
+        return result;
     }
 
     /**

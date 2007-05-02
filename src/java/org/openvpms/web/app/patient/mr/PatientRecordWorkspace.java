@@ -123,7 +123,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      */
     @Override
     public Component getSummary() {
-        return PatientSummary.getSummary(getObject());
+        return new PatientSummary().getSummary(getObject());
     }
 
     /**

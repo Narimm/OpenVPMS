@@ -52,7 +52,7 @@ public class WorkflowSummary {
             Component customerSummary = (customer != null) ?
                     CustomerSummary.getSummary(customer) : null;
             Component patientSummary = (patient != null) ?
-                    PatientSummary.getSummary(patient) : null;
+                    new PatientSummary().getSummary(patient) : null;
             if (customerSummary != null || patientSummary != null) {
                 Column column = ColumnFactory.create();
                 if (customerSummary != null) {

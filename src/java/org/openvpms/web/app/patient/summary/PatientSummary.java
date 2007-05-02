@@ -19,6 +19,7 @@
 package org.openvpms.web.app.patient.summary;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
@@ -62,14 +63,34 @@ import java.util.Date;
 public class PatientSummary {
 
     /**
+     * The patient rules.
+     */
+    private final PatientRules rules;
+
+
+    /**
+     * Creates a new <tt>PatientSummary</tt>.
+     */
+    public PatientSummary() {
+        rules = new PatientRules();
+    }
+
+    /**
      * Returns summary information for a patient.
      *
      * @param patient the patient. May be <code>null</code>
      * @return a summary component, or <code>null</code> if there is no summary
      */
-    public static Component getSummary(final Party patient) {
+    public Component getSummary(final Party patient) {
         Component result = null;
         if (patient != null) {
+            result = ColumnFactory.create();
+            if (rules.isDeceased(patient)) {
+                Label deceased = LabelFactory.create("patient.deceased",
+                                                     "Patient.Deceased");
+                result.add(RowFactory.create("Patient.Deceased.Inset",
+                                             deceased));
+            }
             Label alertTitle = LabelFactory.create("patient.alerts");
             int alerts = getTotalResults(getAlerts(patient));
             Component alertCount;
@@ -106,9 +127,10 @@ public class PatientSummary {
             Label weightTitle = LabelFactory.create("patient.weight");
             Label weight = LabelFactory.create();
             weight.setText(getPatientWeight(patient));
-            result = GridFactory.create(2, alertTitle, alertCount,
-                                        reminderTitle, reminderCount,
-                                        ageTitle, age, weightTitle, weight);
+            Grid grid = GridFactory.create(2, alertTitle, alertCount,
+                                           reminderTitle, reminderCount,
+                                           ageTitle, age, weightTitle, weight);
+            result.add(grid);
         }
         return result;
     }
@@ -118,7 +140,7 @@ public class PatientSummary {
      *
      * @param patient the patient
      */
-    private static void onShowAlerts(Party patient) {
+    private void onShowAlerts(Party patient) {
         PagedIMObjectTable<Act> table = new PagedIMObjectTable<Act>(
                 new AlertTableModel(), getAlerts(patient));
         new ViewerDialog(Messages.get("patient.summary.alerts"),
@@ -130,7 +152,7 @@ public class PatientSummary {
      *
      * @param patient the patient
      */
-    private static void onShowReminders(Party patient) {
+    private void onShowReminders(Party patient) {
         PagedIMObjectTable<Act> table = new PagedIMObjectTable<Act>(
                 new ReminderTableModel(), getReminders(patient));
         table.getTable().setDefaultRenderer(Object.class,
@@ -145,7 +167,7 @@ public class PatientSummary {
      * @param set the result set
      * @return the total no. of results in the set
      */
-    private static int getTotalResults(ResultSet<Act> set) {
+    private int getTotalResults(ResultSet<Act> set) {
         IPage<Act> page = set.getPage(0);
         return (page != null) ? page.getTotalResults() : 0;
     }
@@ -156,7 +178,7 @@ public class PatientSummary {
      * @param patient the patient
      * @return the set of outstanding alerts for the patient
      */
-    private static ActResultSet<Act> getAlerts(Party patient) {
+    private ActResultSet<Act> getAlerts(Party patient) {
         String[] shortNames = {"act.patientAlert"};
         String[] statuses = {ActStatus.IN_PROGRESS};
         BaseArchetypeConstraint archetypes = new ShortNameConstraint(
@@ -175,14 +197,14 @@ public class PatientSummary {
     }
 
     /**
-     * Returns the Age for a patient.
+     * Returns the age for a patient.
      * todo localise
      *
      * @param patient the patient
      * @return a string representing the patient age
      */
-    private static String getPatientAge(Party patient) {
-        return new PatientRules().getPatientAge(patient);
+    private String getPatientAge(Party patient) {
+        return rules.getPatientAge(patient);
     }
 
     /**
@@ -191,8 +213,7 @@ public class PatientSummary {
      * @param patient the patient
      * @return a string representing the patient weight
      */
-    private static String getPatientWeight(Party patient) {
-        PatientRules rules = new PatientRules();
+    private String getPatientWeight(Party patient) {
         String weight = rules.getPatientWeight(patient);
         return (weight != null) ? weight : Messages.get("patient.noweight");
     }
@@ -203,7 +224,7 @@ public class PatientSummary {
      * @param patient the patient
      * @return the set of outstanding reminders for the patient
      */
-    private static ResultSet<Act> getReminders(Party patient) {
+    private ResultSet<Act> getReminders(Party patient) {
         String[] shortNames = {"act.patientReminder"};
         String[] statuses = {ActStatus.IN_PROGRESS};
         BaseArchetypeConstraint archetypes = new ShortNameConstraint(
