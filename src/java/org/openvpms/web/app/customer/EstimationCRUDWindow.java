@@ -27,7 +27,6 @@ import static org.openvpms.archetype.rules.act.EstimationActStatus.INVOICED;
 import static org.openvpms.archetype.rules.act.FinancialActStatus.*;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -180,7 +179,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
         IMObject object = getObject();
         try {
             IMObjectCopier copier = new IMObjectCopier(new ActCopyHandler());
-            FinancialAct act = (FinancialAct) copier.copy(object);
+            Act act = (Act) copier.copy(object);
             act.setStatus(IN_PROGRESS);
             act.setActivityStartTime(new Date());
             setPrintStatus(act, false);
