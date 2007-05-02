@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.patient;
 
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -26,6 +27,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 
 
 /**
@@ -36,8 +39,14 @@ import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
  */
 public class PatientTableModel extends BaseIMObjectTableModel<Party> {
 
+    /**
+     * The patient rules.
+     */
     private final PatientRules rules;
 
+    /**
+     * Determines if the owner should be displayed.
+     */
     private boolean showOwner;
 
     /**
@@ -47,7 +56,7 @@ public class PatientTableModel extends BaseIMObjectTableModel<Party> {
 
 
     /**
-     * Constructs a new <code>PatientTableModel</code>.
+     * Constructs a new <tt>PatientTableModel</tt>.
      *
      * @param showOwner if <code>true</code> display the owner
      */
@@ -110,10 +119,19 @@ public class PatientTableModel extends BaseIMObjectTableModel<Party> {
     protected Object getValue(Party object, TableColumn column, int row) {
         if (column.getModelIndex() == OWNER_INDEX) {
             Party owner = rules.getOwner(object);
-            IMObjectReference ref = (owner != null) ? owner.getObjectReference() : null;
+            IMObjectReference ref = (owner != null)
+                    ? owner.getObjectReference() : null;
             IMObjectReferenceViewer viewer
                     = new IMObjectReferenceViewer(ref, false);
             return viewer.getComponent();
+        } else if (column.getModelIndex() == DESCRIPTION_INDEX
+                && rules.isDeceased(object)) {
+            String description = object.getDescription();
+            Label label = LabelFactory.create();
+            label.setText(description);
+            Label deceased = LabelFactory.create("patient.deceased",
+                                                 "Patient.Deceased");
+            return RowFactory.create("CellSpacing", label, deceased);
         } else {
             return super.getValue(object, column, row);
         }

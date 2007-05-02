@@ -314,6 +314,17 @@
         </properties>
     </style>
 
+    <style name="Patient.Deceased" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="foreground" value="#ff0000"/>
+        </properties>
+    </style>
+    <style name="Patient.Deceased.Inset" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="insets" value="5px 5px"/>
+        </properties>
+    </style>
+
     <style name="MedicalRecordSummary.act.patientClinicalEvent"
            type="nextapp.echo2.app.Component">
         <properties>
