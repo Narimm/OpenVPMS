@@ -147,6 +147,9 @@ public class DetailsMigrator {
             insert.executeBatch();
             connection.commit();
         }
+        set.close();
+        insert.close();
+        select.close();
         Date end = new Date();
         double elapsed = (end.getTime() - start.getTime()) / 1000;
         System.out.printf("Processed %d rows, generating %d rows in %.2fs\n",
