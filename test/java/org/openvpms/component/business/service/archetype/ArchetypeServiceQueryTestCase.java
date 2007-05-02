@@ -50,6 +50,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class ArchetypeServiceQueryTestCase extends
                                            AbstractDependencyInjectionSpringContextTests {
     /**
@@ -197,8 +198,8 @@ public class ArchetypeServiceQueryTestCase extends
     public void testGetNodeSet() {
         // set up a party with a single contact and contact purpose
         Contact contact = (Contact) service.create("contact.phoneNumber");
-        contact.getDetails().setAttribute("areaCode", "03");
-        contact.getDetails().setAttribute("telephoneNumber", "0123456789");
+        contact.getDetails().put("areaCode", "03");
+        contact.getDetails().put("telephoneNumber", "0123456789");
         Lookup purpose = (Lookup) service.create("lookup.contactPurpose");
         purpose.setCode("Home");
         service.save(purpose);
@@ -206,9 +207,9 @@ public class ArchetypeServiceQueryTestCase extends
         contact.addClassification(purpose);
 
         Party person = (Party) service.create("person.person");
-        person.getDetails().setAttribute("lastName", "Anderson");
-        person.getDetails().setAttribute("firstName", "Tim");
-        person.getDetails().setAttribute("title", "MR");
+        person.getDetails().put("lastName", "Anderson");
+        person.getDetails().put("firstName", "Tim");
+        person.getDetails().put("title", "MR");
         person.addContact(contact);
         service.save(person);
 
@@ -239,9 +240,9 @@ public class ArchetypeServiceQueryTestCase extends
                 = (Collection<Contact>) nodes.get("contacts");
         assertEquals(1, contacts.size());
         contact = contacts.toArray(new Contact[0])[0];
-        assertEquals("03", contact.getDetails().getAttribute("areaCode"));
+        assertEquals("03", contact.getDetails().get("areaCode"));
         assertEquals("0123456789",
-                     contact.getDetails().getAttribute("telephoneNumber"));
+                     contact.getDetails().get("telephoneNumber"));
         assertEquals(1, contact.getClassificationsAsArray().length);
         purpose = contact.getClassificationsAsArray()[0];
         assertEquals("Home", purpose.getName());
@@ -254,8 +255,8 @@ public class ArchetypeServiceQueryTestCase extends
     public void testGetPartialObject() {
         // set up a party with a single contact and contact purpose
         Contact contact = (Contact) service.create("contact.phoneNumber");
-        contact.getDetails().setAttribute("areaCode", "03");
-        contact.getDetails().setAttribute("telephoneNumber", "0123456789");
+        contact.getDetails().put("areaCode", "03");
+        contact.getDetails().put("telephoneNumber", "0123456789");
         Lookup purpose = (Lookup) service.create("lookup.contactPurpose");
         purpose.setCode("HOME");
         service.save(purpose);
@@ -263,15 +264,16 @@ public class ArchetypeServiceQueryTestCase extends
         contact.addClassification(purpose);
 
         Party person = (Party) service.create("person.person");
-        person.getDetails().setAttribute("lastName", "Anderson");
-        person.getDetails().setAttribute("firstName", "Tim");
-        person.getDetails().setAttribute("title", "MR");
+        person.getDetails().put("lastName", "Anderson");
+        person.getDetails().put("firstName", "Tim");
+        person.getDetails().put("title", "MR");
         person.addContact(contact);
         service.save(person);
 
         // query the firstName, lastName and contacts nodes of the person
         ArchetypeQuery query = new ArchetypeQuery(person.getObjectReference());
-        List<String> names = Arrays.asList("details", "contacts");
+        List<String> names = Arrays.asList("firstName", "lastName", "title",
+                                           "contacts");
         IPage<IMObject> page = service.get(query, names);
         assertNotNull(page);
 
@@ -286,18 +288,18 @@ public class ArchetypeServiceQueryTestCase extends
         // is a collection, it is treated as a simple node by hibernate as it
         // maps to a single column. We specify it to load anyway
         assertEquals(person.getObjectReference(), person2.getObjectReference());
-        assertEquals(3, person2.getDetails().getAttributes().size());
-        assertEquals("Tim", person.getDetails().getAttribute("firstName"));
-        assertEquals("Anderson", person.getDetails().getAttribute("lastName"));
-        assertEquals("MR", person2.getDetails().getAttribute("title"));
+        assertEquals(3, person2.getDetails().size());
+        assertEquals("Tim", person.getDetails().get("firstName"));
+        assertEquals("Anderson", person.getDetails().get("lastName"));
+        assertEquals("MR", person2.getDetails().get("title"));
 
         // verify the values of the contact node. If the classification hasn't
         // been loaded, a LazyInitializationException will be raised by
         // hibernate
         Contact contact2 = contacts.toArray(new Contact[0])[0];
-        assertEquals("03", contact2.getDetails().getAttribute("areaCode"));
+        assertEquals("03", contact2.getDetails().get("areaCode"));
         assertEquals("0123456789",
-                     contact2.getDetails().getAttribute("telephoneNumber"));
+                     contact2.getDetails().get("telephoneNumber"));
         assertEquals(1, contact2.getClassificationsAsArray().length);
         Lookup purpose2 = contact2.getClassificationsAsArray()[0];
         assertEquals("HOME", purpose2.getCode());
@@ -309,9 +311,9 @@ public class ArchetypeServiceQueryTestCase extends
      */
     public void testOBF155() {
         Party person = (Party) service.create("person.person");
-        person.getDetails().setAttribute("lastName", "Anderson");
-        person.getDetails().setAttribute("firstName", "Tim");
-        person.getDetails().setAttribute("title", "MR");
+        person.getDetails().put("lastName", "Anderson");
+        person.getDetails().put("firstName", "Tim");
+        person.getDetails().put("title", "MR");
         service.save(person);
 
         ArchetypeQuery query = new ArchetypeQuery(person.getObjectReference());

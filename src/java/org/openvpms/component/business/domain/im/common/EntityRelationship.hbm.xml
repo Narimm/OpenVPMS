@@ -70,8 +70,15 @@
     </component>
     <many-to-one name="identity" access="property" column="identity_id"
       cascade="none" />
-    <property name="details" column="details" length="5000"
-      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+    <map name="details" access="field" table="entity_relationship_details"
+         lazy="false" cascade="all,delete-orphan">
+      <key column="entity_relationship_id"/>
+      <map-key column="name" type="string"/>
+      <composite-element class="org.openvpms.component.business.domain.im.datatypes.basic.TypedValue">
+        <property name="type"/>
+        <property name="value" length="5000"/>
+      </composite-element>
+    </map>
   </class>
 
   <query name="entityRelationship.getRowCount">

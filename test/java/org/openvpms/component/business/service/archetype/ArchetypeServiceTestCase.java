@@ -44,6 +44,7 @@ import java.util.Properties;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class ArchetypeServiceTestCase extends BaseTestCase {
 
     /**
@@ -108,15 +109,15 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testDefaultValuesForLookups() throws Exception {
         Contact contact = (Contact) service.create("contact.location");
-        assertEquals("AU", contact.getDetails().getAttribute("country"));
-        assertEquals("VIC", contact.getDetails().getAttribute("state"));
-        assertTrue(StringUtils.isEmpty((String) contact.getDetails()
-                .getAttribute("suburb")));
-        assertTrue(StringUtils.isEmpty((String) contact.getDetails()
-                .getAttribute("postCode")));
+        assertEquals("AU", contact.getDetails().get("country"));
+        assertEquals("VIC", contact.getDetails().get("state"));
+        assertTrue(StringUtils.isEmpty(
+                (String) contact.getDetails().get("suburb")));
+        assertTrue(StringUtils.isEmpty(
+                (String) contact.getDetails().get("postCode")));
 
         Party person = createPerson("person.person", "MR", "Jim", "Alateras");
-        assertEquals("MR", person.getDetails().getAttribute("title"));
+        assertEquals("MR", person.getDetails().get("title"));
     }
 
     /**
@@ -299,9 +300,9 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         } else {
             person = (Party) service.create(shortName);
         }
-        person.getDetails().setAttribute("lastName", lastName);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("title", title);
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
 
         return person;
     }

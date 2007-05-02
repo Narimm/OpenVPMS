@@ -20,16 +20,19 @@ package org.openvpms.component.business.domain.im.common;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 
 /**
  * A class representing all named things in the business.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -44,41 +47,41 @@ public class Entity extends IMObject {
      * A placeholder for all entity details, which denotes the dynamic and
      * adaptive details of the entity.
      */
-    private DynamicAttributeMap details;
-    
+    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
+
     /**
      * The {@link Lookup} classifications this entity. An {@link Entity} can
      * have to zero, one or more {@link Lookup} clasification.
      */
     private Set<Lookup> classifications = new HashSet<Lookup>();
-    
+
     /**
      * Return the set of {@link EntityIdentity} instance for this entity
      */
-    private Set<EntityIdentity> identities = 
+    private Set<EntityIdentity> identities =
         new HashSet<EntityIdentity>();
-    
+
     /**
      * Return a set of source {@link EntityRelationship}s that this entity
      * participates in.
      */
-    private Set<EntityRelationship> sourceEntityRelationships = 
+    private Set<EntityRelationship> sourceEntityRelationships =
         new HashSet<EntityRelationship>();
-    
+
     /**
      * Return a set of target {@link EntityRelationship}s that this entity
      * participates in.
      */
-    private Set<EntityRelationship> targetEntityRelationships = 
+    private Set<EntityRelationship> targetEntityRelationships =
         new HashSet<EntityRelationship>();
-    
+
     /**
      * Default constructor
      */
     public Entity() {
         // do nothing
     }
-    
+
     /**
      * Constructs an instance of a base entity.
      * 
@@ -91,16 +94,16 @@ public class Entity extends IMObject {
      * @param details
      *            dynamic details of the act.
      */
-    public Entity(ArchetypeId archetypeId, String name, 
-        String description,  DynamicAttributeMap details) {
+    public Entity(ArchetypeId archetypeId, String name,
+                  String description,  Map<String, Object> details) {
         super(archetypeId, name, description);
 
         // check that a name was specified
         if (StringUtils.isEmpty(name)) {
             throw new EntityException(EntityException.ErrorCode.NoNameSpecified);
         }
-        
-        this.details = details;
+
+        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -119,13 +122,13 @@ public class Entity extends IMObject {
      * 
      * @param identity
      *          the identity to remove
-     * @return boolean          
+     * @return boolean
      */
     public boolean removeIdentity(EntityIdentity identity) {
         identity.setEntity(null);
         return(identities.remove(identity));
     }
-    
+
     /**
      * Return the {@link EntityIdentity} as an array
      * 
@@ -152,13 +155,13 @@ public class Entity extends IMObject {
     /**
      * Add a source {@link EntityRelationship} to this entity
      * 
-     * @param entityRel 
+     * @param entityRel
      *            the entity relationship to add
      */
     private void addSourceEntityRelationship(EntityRelationship entityRel) {
         this.sourceEntityRelationships.add(entityRel);
     }
-    
+
     /**
      * Remove the source {@link EntityRelationship} from this entity
      * 
@@ -168,7 +171,7 @@ public class Entity extends IMObject {
     private void removeSourceEntityRelationship(EntityRelationship entityRel) {
         this.sourceEntityRelationships.remove(entityRel);
     }
-    
+
 
     /**
      * @return Returns the targetEntityRelationships.
@@ -176,24 +179,24 @@ public class Entity extends IMObject {
     protected Set<EntityRelationship> getTargetEntityRelationships() {
         return targetEntityRelationships;
     }
-    
+
     /**
      * @param entityRelationships The targetEntityRelationships to set.
      */
     protected void setTargetEntityRelationships(Set<EntityRelationship> entityRelationships) {
         this.targetEntityRelationships = entityRelationships;
     }
-    
+
     /**
      * Add a tarrget {@link EntityRelationship} to this entity
      * 
-     * @param entityRel 
+     * @param entityRel
      *            the entity relationship to add
      */
     private void addTargetEntityRelationship(EntityRelationship entityRel) {
         this.targetEntityRelationships.add(entityRel);
     }
-    
+
     /**
      * Remove the tarrget {@link EntityRelationship} from this entity
      * 
@@ -203,9 +206,9 @@ public class Entity extends IMObject {
     private void removeTargetEntityRelationship(EntityRelationship entityRel) {
         this.targetEntityRelationships.remove(entityRel);
     }
-    
-    
-    
+
+
+
     /**
      * Add a relationship to this entity. It will determine whether it is a 
      * source or target relationship before adding it.
@@ -260,7 +263,7 @@ public class Entity extends IMObject {
                     new Object[] { entityRel.getSource(), entityRel.getTarget()});
         }
     }
-    
+
     /**
      * Return all the entity relationships. Do not use the returned set to 
      * add and remove entity relationships. Instead use {@link #addEntityRelationship(EntityRelationship)}
@@ -269,10 +272,10 @@ public class Entity extends IMObject {
      * @return Set<EntityRelationship>
      */
     public Set<EntityRelationship> getEntityRelationships() {
-        Set<EntityRelationship> relationships = 
+        Set<EntityRelationship> relationships =
             new HashSet<EntityRelationship>(sourceEntityRelationships);
         relationships.addAll(targetEntityRelationships);
-        
+
         return relationships;
     }
 
@@ -284,7 +287,7 @@ public class Entity extends IMObject {
     public void addClassification(Lookup classification) {
         classifications.add(classification);
     }
-    
+
     /**
      * Removes a classification from this entity.
      * 
@@ -293,7 +296,7 @@ public class Entity extends IMObject {
     public void removeClassification(Lookup classification) {
         classifications.remove(classification);
     }
-    
+
     /**
      * Returns the classifications for this entity.
      * 
@@ -302,19 +305,19 @@ public class Entity extends IMObject {
     public Set<Lookup> getClassifications() {
         return classifications;
     }
-    
+
     /**
      * @return Returns the details.
      */
-    public DynamicAttributeMap getDetails() {
-        return details;
+    public Map<String, Object> getDetails() {
+        return new TypedValueMap(details);
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(DynamicAttributeMap details) {
-        this.details = details;
+    public void setDetails(Map<String, Object> details) {
+        this.details = TypedValueMap.create(details);
     }
 
     /* (non-Javadoc)
@@ -324,8 +327,8 @@ public class Entity extends IMObject {
     public Object clone() throws CloneNotSupportedException {
         Entity copy = (Entity)super.clone();
         copy.classifications = new HashSet<Lookup>(this.classifications);
-        copy.details = (DynamicAttributeMap)(this.details == null ?
-                null : this.details.clone());
+        copy.details = (this.details == null) ? null
+                : new HashMap<String, TypedValue>(details);
         copy.identities = new HashSet<EntityIdentity>(this.identities);
         copy.sourceEntityRelationships = new HashSet<EntityRelationship>(this.sourceEntityRelationships);
         copy.targetEntityRelationships = new HashSet<EntityRelationship>(this.targetEntityRelationships);

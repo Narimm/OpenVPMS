@@ -35,6 +35,7 @@ import java.util.Random;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class PersonContactTestCase extends
                                    AbstractDependencyInjectionSpringContextTests {
 
@@ -195,11 +196,11 @@ public class PersonContactTestCase extends
     private Contact createLocationContact() {
         Contact contact = (Contact)service.create("contact.location");
 
-        contact.getDetails().setAttribute("address", "5 Kalulu Rd");
-        contact.getDetails().setAttribute("suburb", "Belgrave");
-        contact.getDetails().setAttribute("postcode", "3160");
-        contact.getDetails().setAttribute("state", "VIC");
-        contact.getDetails().setAttribute("country", "AU");
+        contact.getDetails().put("address", "5 Kalulu Rd");
+        contact.getDetails().put("suburb", "Belgrave");
+        contact.getDetails().put("postcode", "3160");
+        contact.getDetails().put("state", "VIC");
+        contact.getDetails().put("country", "AU");
         return contact;
     }
 
@@ -218,9 +219,9 @@ public class PersonContactTestCase extends
      */
     private Party createPerson(String shortName, String title, String firstName, String lastName) {
         Party person = (Party)service.create(shortName);
-        person.getDetails().setAttribute("lastName", lastName);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("title", title);
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
 
         return person;
     }

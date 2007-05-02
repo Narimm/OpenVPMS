@@ -1,53 +1,53 @@
 <archetypes>
-	<archetype name="openvpms-party-contact.location.1.0" latest="true" primary="false"
-		type="org.openvpms.component.business.domain.im.party.Contact">
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
-		<node name="details" path="/details" hidden="true"
-			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-			minCardinality="1" maxCardinality="1">
-			<node name="address" path="/details/attributes/address"
-				type="java.lang.String" minCardinality="1" />
-			<node name="suburb" path="/details/attributes/suburb"
-				type="java.lang.String">
-				<assertion name="lookup">
-					<property name="type" value="targetLookup" />
-					<property name="relationship" value="lookupRelationship.stateSuburb" />
-					<property name="value"
-						value="/details/attributes/state" />
-					<errorMessage>An error message</errorMessage>
-				</assertion>
-			</node>
-			<node name="postcode" path="/details/attributes/postCode"
-				type="java.lang.String">
-				<assertion name="lookup">
-					<property name="type" value="targetLookup" />
-					<property name="relationship" value="lookupRelationship.suburbPostcode" />
-					<property name="value"
-						value="/details/attributes/suburb" />
-					<errorMessage>An error message</errorMessage>
-				</assertion>
-			</node>
-			<node name="state" path="/details/attributes/state"
-                  type="java.lang.String" defaultValue="'VIC'"
-				minCardinality="1">
-				<assertion name="lookup">
-					<property name="type" value="targetLookup" />
-					<property name="relationship" value="lookupRelationship.countryState" />
-					<property name="value"
-						value="/details/attributes/country" />
-					<property name="unspecified" value="other" />
-					<errorMessage>An error message</errorMessage>
-				</assertion>
-			</node>
-			<node name="country" path="/details/attributes/country"
-                  type="java.lang.String" defaultValue="'AU'"
-				minCardinality="1">
-				<assertion name="lookup">
-					<property name="type" value="lookup" />
-					<property name="source" value="lookup.country" />
-					<errorMessage>An error message</errorMessage>
-				</assertion>
-			</node>
-		</node>
-	</archetype>
+    <archetype name="openvpms-party-contact.location.1.0" latest="true"
+               primary="false"
+               type="org.openvpms.component.business.domain.im.party.Contact">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long"/>
+        <node name="address" path="/details/address"
+              type="java.lang.String" minCardinality="1"/>
+        <node name="suburb" path="/details/suburb"
+              type="java.lang.String">
+            <assertion name="lookup">
+                <property name="type" value="targetLookup"/>
+                <property name="relationship"
+                          value="lookupRelationship.stateSuburb"/>
+                <property name="value"
+                          value="/details/state"/>
+                <errorMessage>An error message</errorMessage>
+            </assertion>
+        </node>
+        <node name="postcode" path="/details/postCode"
+              type="java.lang.String">
+            <assertion name="lookup">
+                <property name="type" value="targetLookup"/>
+                <property name="relationship"
+                          value="lookupRelationship.suburbPostcode"/>
+                <property name="value"
+                          value="/details/suburb"/>
+                <errorMessage>An error message</errorMessage>
+            </assertion>
+        </node>
+        <node name="state" path="/details/state"
+              type="java.lang.String" defaultValue="'VIC'"
+              minCardinality="1">
+            <assertion name="lookup">
+                <property name="type" value="targetLookup"/>
+                <property name="relationship"
+                          value="lookupRelationship.countryState"/>
+                <property name="value"
+                          value="/details/country"/>
+                <property name="unspecified" value="other"/>
+                <errorMessage>An error message</errorMessage>
+            </assertion>
+        </node>
+        <node name="country" path="/details/country"
+              type="java.lang.String" defaultValue="'AU'"
+              minCardinality="1">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.country"/>
+                <errorMessage>An error message</errorMessage>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>

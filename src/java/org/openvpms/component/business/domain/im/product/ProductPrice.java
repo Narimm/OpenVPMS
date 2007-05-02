@@ -22,20 +22,23 @@ package org.openvpms.component.business.domain.im.product;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 
 /**
  * Represents the price of a {@link Product}
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ProductPrice extends IMObject {
 
@@ -79,7 +82,7 @@ public class ProductPrice extends IMObject {
      * A placeholder for all entity details, which denotes the dynamic and
      * adaptive details of the entity.
      */
-    private DynamicAttributeMap details;
+    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
 
 
     /**
@@ -162,20 +165,20 @@ public class ProductPrice extends IMObject {
     /**
      * @return Returns the details.
      */
-    public DynamicAttributeMap getDetails() {
-        return details;
+    public Map<String, Object> getDetails() {
+        return new TypedValueMap(details);
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(DynamicAttributeMap details) {
-        this.details = details;
+    public void setDetails(Map<String, Object> details) {
+        this.details = TypedValueMap.create(details);
     }
 
     /**
      * Convenience method that return all the classifications as an array.
-     * 
+     *
      * @return the classifications
      */
     public Lookup[] getClassificationsAsArray() {
@@ -184,7 +187,7 @@ public class ProductPrice extends IMObject {
 
     /**
      * Returns the classifications for this price.
-     * 
+     *
      * @return the clasifications
      */
     public Set<Lookup> getClassifications() {
@@ -202,7 +205,7 @@ public class ProductPrice extends IMObject {
 
     /**
      * Add a classification.
-     * 
+     *
      * @param classification the classification to add
      */
     public void addClassification(Lookup classification) {
@@ -211,7 +214,7 @@ public class ProductPrice extends IMObject {
 
     /**
      * Removes a classification.
-     * 
+     *
      * @param classification the classification to remove
      */
     public void removeClassification(Lookup classification) {
@@ -233,15 +236,16 @@ public class ProductPrice extends IMObject {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        ProductPrice copy = (ProductPrice)super.clone();
+        ProductPrice copy = (ProductPrice) super.clone();
         copy.fixed = this.fixed;
-        copy.fromDate = (Date)(this.fromDate == null ?
+        copy.fromDate = (Date) (this.fromDate == null ?
                 null : this.fromDate.clone());
         copy.price = this.price;
         copy.classifications = new HashSet<Lookup>(this.classifications);
         copy.product = this.product;
-        copy.thruDate  = (Date)(this.thruDate == null ?
+        copy.thruDate = (Date) (this.thruDate == null ?
                 null : this.thruDate.clone());
+        copy.details = (details == null) ? null : new HashMap<String, TypedValue>(details);
 
         return copy;
     }

@@ -19,9 +19,7 @@
 package org.openvpms.component.business.service.entity;
 
 
-//openvpms-framework
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.ServiceBaseTestCase;
@@ -39,8 +37,8 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityRelationshipTestCase extends
-    ServiceBaseTestCase {
+@SuppressWarnings("HardCodedStringLiteral")
+public class EntityRelationshipTestCase extends ServiceBaseTestCase {
 
     /**
      * Holds a reference to the archetype service
@@ -353,9 +351,9 @@ public class EntityRelationshipTestCase extends
      */
     public Party createPerson(String title, String firstName, String lastName) {
         Party person = (Party)service.create("person.person");
-        person.getDetails().setAttribute("lastName", lastName);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("title", title);
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
 
         return person;
     }
@@ -370,12 +368,12 @@ public class EntityRelationshipTestCase extends
     private Party createAnimal(String name) {
         Party pet = (Party)service.create("animal.pet");
         pet.setName(name);
-        pet.getDetails().setAttribute("breed", "dog");
-        pet.getDetails().setAttribute("colour", "brown");
-        pet.getDetails().setAttribute("sex", "UNSPECIFIED");
-        pet.getDetails().setAttribute("species", "k9");
+        pet.getDetails().put("breed", "dog");
+        pet.getDetails().put("colour", "brown");
+        pet.getDetails().put("sex", "UNSPECIFIED");
+        pet.getDetails().put("species", "k9");
         pet.setDescription("A dog");
-        pet.getDetails().setAttribute("dateOfBirth", new Date());
+        pet.getDetails().put("dateOfBirth", new Date());
 
         return pet;
     }
@@ -417,23 +415,6 @@ public class EntityRelationshipTestCase extends
      */
     private EntityRelationship createEntityRelationship(Entity source, Entity target) {
         return createEntityRelationship(source, target, "entityRelationship.animalCarer");
-    }
-
-    /**
-     * Create an entity identity with the specified identity
-     *
-     * @param identity
-     *            the identity to assign
-     * @return EntityIdentity
-     */
-    @SuppressWarnings("unused")
-    private EntityIdentity createEntityIdentity(String identity) {
-        EntityIdentity eidentity = (EntityIdentity) service
-                .create("entityIdentity.personAlias");
-        assertTrue(eidentity != null);
-
-        eidentity.setIdentity(identity);
-        return eidentity;
     }
 
     /*

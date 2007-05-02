@@ -46,6 +46,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class ArchetypeServiceActTestCase extends
                                          AbstractDependencyInjectionSpringContextTests {
     /**
@@ -313,9 +314,9 @@ public class ArchetypeServiceActTestCase extends
     private Party createPerson(String title, String firstName,
                                String lastName) {
         Party person = (Party) service.create("person.person");
-        person.getDetails().setAttribute("lastName", lastName);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("title", title);
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
 
         return person;
     }

@@ -31,6 +31,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class ArchetypeServicePartyTestCase extends
         AbstractDependencyInjectionSpringContextTests {
 
@@ -121,9 +122,9 @@ public class ArchetypeServicePartyTestCase extends
      */
     public Party createPerson(String title, String firstName, String lastName) {
         Party person = (Party)service.create("person.person");
-        person.getDetails().setAttribute("lastName", lastName);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("title", title);
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
 
         return person;
     }
@@ -137,11 +138,11 @@ public class ArchetypeServicePartyTestCase extends
     private Contact createContact(Lookup classification) {
         Contact contact = (Contact)service.create("contact.location");
 
-        contact.getDetails().setAttribute("address", "kalulu rd");
-        contact.getDetails().setAttribute("suburb", "Belgrave");
-        contact.getDetails().setAttribute("postcode", "3160");
-        contact.getDetails().setAttribute("state", "VIC");
-        contact.getDetails().setAttribute("country", "AU");
+        contact.getDetails().put("address", "kalulu rd");
+        contact.getDetails().put("suburb", "Belgrave");
+        contact.getDetails().put("postcode", "3160");
+        contact.getDetails().put("state", "VIC");
+        contact.getDetails().put("country", "AU");
         contact.addClassification(classification);
 
         return contact;

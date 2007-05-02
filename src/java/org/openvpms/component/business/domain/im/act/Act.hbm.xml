@@ -55,8 +55,15 @@
     <property name="reason" column="reason" type="string" />
     <property name="status" column="status" type="string"
     	index="act_status_idx" />
-    <property name="details" column="details" length="5000"
-      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+    <map name="details" access="field" table="act_details" lazy="false"
+         cascade="all,delete-orphan">
+      <key column="act_id"/>
+      <map-key column="name" type="string"/>
+      <composite-element class="org.openvpms.component.business.domain.im.datatypes.basic.TypedValue">
+          <property name="type"/>
+          <property name="value" length="5000"/>
+       </composite-element>
+    </map>
     <set name="sourceActRelationships" access="property"
          cascade="all,delete-orphan" inverse="true">
       <key column="source_linkId" not-null="true" property-ref="linkId" />

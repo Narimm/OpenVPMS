@@ -39,6 +39,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class DroolsRuleEngineTestCase extends
         AbstractDependencyInjectionSpringContextTests {
     /**
@@ -150,9 +151,9 @@ public class DroolsRuleEngineTestCase extends
      */
     public Party createPerson(String title, String firstName, String lastName) {
         Party person = (Party)archetype.create("person.person");
-        person.getDetails().setAttribute("lastName", lastName);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("title", title);
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
         person.addContact(createPhoneContact());
 
         return person;
@@ -168,12 +169,12 @@ public class DroolsRuleEngineTestCase extends
     private Party createAnimal(String name) {
         Party pet = (Party)archetype.create("animal.pet");
         pet.setName(name);
-        pet.getDetails().setAttribute("breed", "dog");
-        pet.getDetails().setAttribute("colour", "brown");
-        pet.getDetails().setAttribute("sex", "UNSPECIFIED");
-        pet.getDetails().setAttribute("species", "k9");
+        pet.getDetails().put("breed", "dog");
+        pet.getDetails().put("colour", "brown");
+        pet.getDetails().put("sex", "UNSPECIFIED");
+        pet.getDetails().put("species", "k9");
         pet.setDescription("A dog");
-        pet.getDetails().setAttribute("dateOfBirth", new Date());
+        pet.getDetails().put("dateOfBirth", new Date());
 
         return pet;
     }
@@ -185,9 +186,9 @@ public class DroolsRuleEngineTestCase extends
      */
     private Contact createPhoneContact() {
         Contact contact = (Contact)archetype.create("contact.phoneNumber");
-        contact.getDetails().setAttribute("areaCode", "03");
-        contact.getDetails().setAttribute("telephoneNumber", "1234567");
-        contact.getDetails().setAttribute("preferred", true);
+        contact.getDetails().put("areaCode", "03");
+        contact.getDetails().put("telephoneNumber", "1234567");
+        contact.getDetails().put("preferred", true);
 
         return contact;
     }

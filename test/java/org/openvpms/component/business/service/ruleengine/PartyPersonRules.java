@@ -52,8 +52,8 @@ public class PartyPersonRules {
             logger.debug("Executing PartyPersonRules.onSaveMessage");
         }        
         
-        System.out.println("We are about to do a save on " + person.getDetails().getAttribute("firstName") 
-                + " " + person.getDetails().getAttribute("lastName")
+        System.out.println("We are about to do a save on " + person.getDetails().get("firstName") 
+                + " " + person.getDetails().get("lastName")
                 + " using service " + service.getClass().getName());
     }
      

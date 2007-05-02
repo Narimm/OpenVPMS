@@ -38,7 +38,7 @@ import java.util.List;
  * Tests the {@link TypedValue} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
 public class TypedValueTestCase extends TestCase {

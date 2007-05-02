@@ -9,11 +9,7 @@
 			minCardinality="1" />
 		<node name="description" path="/description" type="java.lang.String"
 			minCardinality="1" />
-		<node name="details" path="/details" hidden="true"
-			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-			minCardinality="0" maxCardinality="1">
-			<node name="alias" path="/details/attributes/alias" type="java.lang.String" />
-		</node>
+        <node name="alias" path="/details/alias" type="java.lang.String" />
         <node name="target" path="/targetLookupRelationships"
                type="java.util.HashSet" baseName="targetLookupRelationship"
                minCardinality="0" maxCardinality="0"/>

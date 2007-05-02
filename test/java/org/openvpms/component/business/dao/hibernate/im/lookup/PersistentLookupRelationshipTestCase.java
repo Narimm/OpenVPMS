@@ -122,13 +122,13 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
             // execute the test
             tx = session.beginTransaction();
             Lookup country = new Lookup(
-                    createLookArchetypeId("country"), "Greece", "GRE");
+                    createLookArchetypeId("xcountry"), "Greece", "GRE");
             Lookup city1 = new Lookup(
-                    createLookArchetypeId("city"), "Athens", null);
+                    createLookArchetypeId("xcity"), "Athens", null);
             Lookup city2 = new Lookup(
-                    createLookArchetypeId("city"), "Hellas", null);
+                    createLookArchetypeId("xcity"), "Hellas", null);
             Lookup city3 = new Lookup(
-                    createLookArchetypeId("city"), "Limnos", null);
+                    createLookArchetypeId("xcity"), "Limnos", null);
             session.save(city1);
             session.save(city2);
             session.save(city3);
