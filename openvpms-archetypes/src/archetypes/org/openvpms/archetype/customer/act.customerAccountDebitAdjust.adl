@@ -16,34 +16,32 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-act.customerAccountDebitAdjust.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Debit Adjustment" >
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="'Customer Debit Adjustment'" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="' '" />
-		<node name="startTime" displayName="Date" path="/activityStartTime"
-			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
-		<node name="amount" path="/total" 
-                    type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
-                    defaultValue="'0.0'"/>
-		<node name="tax" path="/taxAmount" 
-                    type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
-                    defaultValue="'0.0'" readOnly="true" />
+    <archetype name="openvpms-common-act.customerAccountDebitAdjust.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Debit Adjustment">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name"
+              hidden="true" minCardinality="1" derived="true"
+              derivedValue="'Customer Debit Adjustment'"/>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="' '"/>
+        <node name="startTime" displayName="Date" path="/activityStartTime"
+              type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
+        <node name="amount" path="/total"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'"/>
+        <node name="tax" path="/taxAmount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" readOnly="true"/>
         <node name="allocatedAmount" path="/allocatedAmount"
-                    type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
-                    defaultValue="'0.0'" hidden="true"/>
-		<node name="status" path="/status" type="java.lang.String"	minCardinality="1" derived="true" derivedValue="'POSTED'" />
-		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" minCardinality="1" maxCardinality="1">
-			<node name="notes" displayName="Notes" path="/details/attributes/notes" type="java.lang.String" minCardinality="0" maxLength="300" />
-			<node name="reference" displayName="Reference" path="/details/attributes/reference" type="java.lang.String" minCardinality="0" maxLength="20" />
-		</node>
-		<node name="credit" path="/credit" type="java.lang.Boolean"
-			defaultValue="false()" readOnly="true" />
-		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" hidden="true"/>
+        <node name="status" path="/status" type="java.lang.String" minCardinality="1" derived="true" derivedValue="'POSTED'"/>
+        <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="reference" displayName="Reference" path="/details/reference" type="java.lang.String" minCardinality="0" maxLength="20"/>
+        <node name="credit" path="/credit" type="java.lang.Boolean"
+              defaultValue="false()" readOnly="true"/>
+        <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="customer" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.customer" hidden="true"/>
@@ -54,17 +52,17 @@
               minCardinality="0" maxCardinality="1"
               filter="participation.customerAccountBalance" hidden="true"/>
         <node name="allocation" path="/sourceActRelationships"
-			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
-            filter="actRelationship.customerAccountAllocation" hidden="true">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="actRelationship.customerAccountAllocation" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-	</archetype>
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.customerAccountAllocation" hidden="true">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="actRelationship.customerAccountAllocation"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>

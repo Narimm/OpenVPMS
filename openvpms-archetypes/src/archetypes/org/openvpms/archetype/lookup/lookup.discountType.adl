@@ -16,9 +16,9 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-lookup-lookup.discountType.1.0"
-		latest="true"
-		type="org.openvpms.component.business.domain.im.lookup.Lookup" displayName="Discount Type" >
+    <archetype name="openvpms-lookup-lookup.discountType.1.0"
+               latest="true"
+               type="org.openvpms.component.business.domain.im.lookup.Lookup" displayName="Discount Type">
         <node name="code" path="/code" type="java.lang.String" hidden="true"
               minCardinality="1">
             <assertion name="regularExpression">
@@ -26,24 +26,20 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" path="/name" type="java.lang.String"
-			minCardinality="1" />
-		<node name="description" type="java.lang.String" path="/description" minCardinality="0" />
-		<node name="details" path="/details" hidden="true"
-			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-			minCardinality="1" maxCardinality="1">
-			<node name="type" displayName="Discount Type" path="/details/attributes/type" type="java.lang.String" minCardinality="0" defaultValue="'PERCENTAGE'" >
-				<assertion name="lookup.local">
-					<propertyList name="entries">
-						<property name="FIXED" value="Fixed" />
-						<property name="PERCENTAGE" value="Percentage" />
-					</propertyList>
-					<errorMessage>errorMessage</errorMessage>
-				</assertion>
-			</node>
-			<node name="rate" displayName="Percentage %" path="/details/attributes/rate" type="java.math.BigDecimal" minCardinality="1" />
-			<node name="discountFixed" displayName="Include Fixed Amount" path="/details/attributes/discountFixed" type="java.lang.Boolean" defaultValue="true()" />
-		</node>		
-	</archetype>
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" path="/name" type="java.lang.String"
+              minCardinality="1"/>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
+        <node name="type" displayName="Discount Type" path="/details/type" type="java.lang.String" minCardinality="0" defaultValue="'PERCENTAGE'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="FIXED" value="Fixed"/>
+                    <property name="PERCENTAGE" value="Percentage"/>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="rate" displayName="Percentage %" path="/details/rate" type="java.math.BigDecimal" minCardinality="1"/>
+        <node name="discountFixed" displayName="Include Fixed Amount" path="/details/discountFixed" type="java.lang.Boolean" defaultValue="true()"/>
+    </archetype>
 </archetypes>

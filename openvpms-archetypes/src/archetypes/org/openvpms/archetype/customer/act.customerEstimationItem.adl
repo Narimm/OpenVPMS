@@ -17,14 +17,14 @@
 -->
 <archetypes>
     <archetype name="openvpms-common-act.customerEstimationItem.1.0" latest="true" primary="false"
-        type="org.openvpms.component.business.domain.im.act.Act" displayName="Estimation Item" >
-        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Estimation Item">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
-            hidden="true" minCardinality="1" derived="true"
-            derivedValue="' '" />
+              hidden="true" minCardinality="1" derived="true"
+              derivedValue="' '"/>
         <node name="description" type="java.lang.String"
-            path="/description" hidden="true" derived="true"
-            derivedValue="' '" />
+              path="/description" hidden="true" derived="true"
+              derivedValue="' '"/>
         <node name="patient" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.patient"/>
@@ -34,19 +34,15 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="details" path="/details" hidden="true"
-            type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-            minCardinality="1" maxCardinality="1">
-            <node name="lowQty" path="/details/attributes/lowQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1" />
-            <node name="highQty" path="/details/attributes/highQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
-            <node name="fixedPrice" path="/details/attributes/fixedPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
-            <node name="lowUnitPrice" path="/details/attributes/lowUnitPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
-            <node name="highUnitPrice" path="/details/attributes/highUnitPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
-            <node name="discount" path="/details/attributes/discount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0"/>
-            <node name="lowTotal" path="/details/attributes/lowTotal" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
-                derived="true" derivedValue="/details/attributes/fixedPrice - /details/attributes/discount + /details/attributes/lowQty * /details/attributes/lowUnitPrice" minCardinality="1"/>
-            <node name="highTotal" path="/details/attributes/highTotal" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
-                derived="true" derivedValue="/details/attributes/fixedPrice - /details/attributes/discount + /details/attributes/highQty * /details/attributes/highUnitPrice" minCardinality="1"/>
-        </node>
+        <node name="lowQty" path="/details/lowQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
+        <node name="highQty" path="/details/highQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
+        <node name="fixedPrice" path="/details/fixedPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
+        <node name="lowUnitPrice" path="/details/lowUnitPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
+        <node name="highUnitPrice" path="/details/highUnitPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
+        <node name="discount" path="/details/discount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0"/>
+        <node name="lowTotal" path="/details/lowTotal" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+              derived="true" derivedValue="/details/fixedPrice - /details/discount + /details/lowQty * /details/lowUnitPrice" minCardinality="1"/>
+        <node name="highTotal" path="/details/highTotal" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+              derived="true" derivedValue="/details/fixedPrice - /details/discount + /details/highQty * /details/highUnitPrice" minCardinality="1"/>
     </archetype>
 </archetypes>

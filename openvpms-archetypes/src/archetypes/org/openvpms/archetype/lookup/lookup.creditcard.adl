@@ -30,19 +30,15 @@
         </node>
         <node name="name" type="java.lang.String" path="/name"
               minCardinality="1"/>
-        <node name="details" path="/details" hidden="true"
-              type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-              minCardinality="1" maxCardinality="1">
-            <node name="floorLimit" path="/details/attributes/floorLimit"
-                  type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-                  minCardinality="1"/>
-            <node name="authorisation" path="/details/attributes/authorisation"
-                  type="java.lang.String" minCardinality="0" maxLength="300"/>
-            <node name="separateList" displayName="Separate Deposit List"
-                  path="/details/attributes/separateList"
-                  type="java.lang.Boolean" minCardinality="0"
-                  defaultValue="true()"/>
-        </node>
+        <node name="floorLimit" path="/details/floorLimit"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+              minCardinality="1"/>
+        <node name="authorisation" path="/details/authorisation"
+              type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="separateList" displayName="Separate Deposit List"
+              path="/details/separateList"
+              type="java.lang.Boolean" minCardinality="0"
+              defaultValue="true()"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/name,' ',lookup:isDefault(/defaultLookup))"/>

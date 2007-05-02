@@ -17,16 +17,16 @@
 -->
 <archetypes>
     <archetype name="openvpms-common-act.customerAccountCreditItem.1.0" latest="true" primary="false"
-        type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Customer Credit Item" >
-        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+               type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Customer Credit Item">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
-            hidden="true" minCardinality="1" derived="true"
-            derivedValue="' '" />
+              hidden="true" minCardinality="1" derived="true"
+              derivedValue="' '"/>
         <node name="description" type="java.lang.String"
-            path="/description" hidden="true" derived="true"
-            derivedValue="' '" />
-		<node displayName="Date" name="startTime" path="/activityStartTime"
-			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
+              path="/description" hidden="true" derived="true"
+              derivedValue="' '"/>
+        <node displayName="Date" name="startTime" path="/activityStartTime"
+              type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
         <node name="patient" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.patient"/>
@@ -38,21 +38,17 @@
               filter="participation.author" hidden="true"/>
         <node name="clinician" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
-              filter="participation.clinician" />
+              filter="participation.clinician"/>
         <node name="quantity" path="/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
         <node name="fixedPrice" path="/fixedAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
         <node name="unitPrice" path="/unitAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
-        <node name="details" path="/details" hidden="true"
-            type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-            minCardinality="1" maxCardinality="1">
-            <node name="discount" path="/details/attributes/discount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0"/>
-        </node>
-		<node name="tax" path="/taxAmount" 
-                    type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
-                    defaultValue="'0.0'" readOnly="true" />
-        <node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
-            derived="true" derivedValue="/fixedAmount -/details/attributes/discount + /quantity * /unitAmount"/>
-		<node name="credit" path="/credit" type="java.lang.Boolean"
-			defaultValue="true()" readOnly="true" hidden="true" />
+        <node name="discount" path="/details/discount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0"/>
+        <node name="tax" path="/taxAmount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" readOnly="true"/>
+        <node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+              derived="true" derivedValue="/fixedAmount -/details/discount + /quantity * /unitAmount"/>
+        <node name="credit" path="/credit" type="java.lang.Boolean"
+              defaultValue="true()" readOnly="true" hidden="true"/>
     </archetype>
 </archetypes>

@@ -24,14 +24,10 @@
 			derivedValue="'Email Address'" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(/details/attributes/emailAddress,' ',party:getContactPurposes())" />
-		<node name="details" path="/details" hidden="true"
-			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-			minCardinality="1" maxCardinality="1">
-			<node name="emailAddress" path="/details/attributes/emailAddress"
-				type="java.lang.String" minCardinality="1">
-			</node>
-		</node>
+			derivedValue="concat(/details/emailAddress,' ',party:getContactPurposes())" />
+		<node name="emailAddress" path="/details/emailAddress"
+		      type="java.lang.String" minCardinality="1">
+	    </node>
 		<node name="startDate" path="/activeStartTime"
 			type="java.util.Date" hidden="true" minCardinality="1" defaultValue="java.util.Date.new()"/>
 		<node name="endDate" path="/activeEndTime"

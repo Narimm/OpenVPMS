@@ -16,34 +16,31 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-act.patientWeight.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.act.Act" displayName="Weight" >
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-			derivedValue="'Weight'" />
-		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-			derivedValue="concat(/details/attributes/weight, ' ', openvpms:lookup(.,'units'))" />
-		<node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
-		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
-			filter="participation.patient" hidden="true" />
-		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
-			filter="participation.author" hidden="true" />
-		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" 
-			minCardinality="1" maxCardinality="1">
-			<node name="weight" path="/details/attributes/weight" type="java.math.BigDecimal" defaultValue="0.0"/>
-			<node name="units" path="/details/attributes/units" type="java.lang.String"
-				minCardinality="1" maxLength="30" defaultValue="'KILOGRAMS'">
-				<assertion name="lookup.local">
-					<propertyList name="entries">
-						<property name="KILOGRAMS" value="Kilograms" />
-						<property name="GRAMS" value="Grams" />
-						<property name="POUNDS" value="Pounds" />
-					</propertyList>
-					<errorMessage>errorMessage</errorMessage>
-				</assertion>
-			</node>
-		</node>
+    <archetype name="openvpms-common-act.patientWeight.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Weight">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
+              derivedValue="'Weight'"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
+              derivedValue="concat(/details/weight, ' ', openvpms:lookup(.,'units'))"/>
+        <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
+        <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.patient" hidden="true"/>
+        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.author" hidden="true"/>
+        <node name="weight" path="/details/weight" type="java.math.BigDecimal" defaultValue="0.0"/>
+        <node name="units" path="/details/units" type="java.lang.String"
+              minCardinality="1" maxLength="30" defaultValue="'KILOGRAMS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="KILOGRAMS" value="Kilograms"/>
+                    <property name="GRAMS" value="Grams"/>
+                    <property name="POUNDS" value="Pounds"/>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
-			filter="participation.clinician" />
-	</archetype>
+              filter="participation.clinician"/>
+    </archetype>
 </archetypes>

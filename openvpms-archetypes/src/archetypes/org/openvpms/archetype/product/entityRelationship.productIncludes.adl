@@ -16,55 +16,51 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-entityRelationship.productIncludes.1.0"
-		latest="true"
-		type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Product Includes" >
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('Product Includes', '')" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="concat('Qty Included - ', /details/attributes/includeQty)" />
-		<node name="activeStartTime" path="/activeStartTime"
-			type="java.util.Date" minCardinality="1"
-			hidden="true" defaultValue="java.util.Date.new()" />
-		<node name="details" path="/details" hidden="true"
-			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-			minCardinality="1" maxCardinality="1">
-			<node name="includeQty" displayName="Quantity" path="/details/attributes/includeQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1" />
-		</node>		
-		<node name="source" displayName="Template" path="/source"
-			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="product.template" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-		<node name="target" displayName="Product" path="/target"
-			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="product.medication" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="product.merchandise" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="product.service" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-	</archetype>
+    <archetype name="openvpms-common-entityRelationship.productIncludes.1.0"
+               latest="true"
+               type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Product Includes">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name"
+              hidden="true" minCardinality="1" derived="true"
+              derivedValue="concat('Product Includes', '')"/>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="concat('Qty Included - ', /details/includeQty)"/>
+        <node name="activeStartTime" path="/activeStartTime"
+              type="java.util.Date" minCardinality="1"
+              hidden="true" defaultValue="java.util.Date.new()"/>
+        <node name="includeQty" displayName="Quantity" path="/details/includeQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
+        <node name="source" displayName="Template" path="/source"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="product.template"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="target" displayName="Product" path="/target"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="product.medication"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="product.merchandise"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="product.service"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>
