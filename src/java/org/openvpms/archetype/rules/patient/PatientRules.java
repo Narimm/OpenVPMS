@@ -176,6 +176,18 @@ public class PatientRules {
     }
 
     /**
+     * Determines if a patient is deceased.
+     *
+     * @param patient the patient
+     * @return <tt>true</tt> if the patient is deceased
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public boolean isDeceased(Party patient) {
+        EntityBean bean = new EntityBean(patient, service);
+        return bean.getBoolean("deceased");
+    }
+
+    /**
      * Marks a patient as being desexed.
      *
      * @param patient the patient
@@ -187,6 +199,18 @@ public class PatientRules {
             bean.setValue("desexed", true);
             bean.save();
         }
+    }
+
+    /**
+     * Determines if a patient is desexed.
+     *
+     * @param patient the patient
+     * @return <tt>true</tt> if the patient is desexed
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public boolean isDesexed(Party patient) {
+        EntityBean bean = new EntityBean(patient, service);
+        return bean.getBoolean("desexed");
     }
 
     /**

@@ -122,6 +122,28 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PatientRules#setDeceased(Party)} and
+     * {@link PatientRules#isDeceased(Party)} methods.
+     */
+    public void testDeceased() {
+        Party patient = TestHelper.createPatient(false);
+        assertFalse(rules.isDeceased(patient));
+        rules.setDeceased(patient);
+        assertTrue(rules.isDeceased(patient));
+    }
+
+    /**
+     * Tests the {@link PatientRules#setDesexed(Party)} and
+     * {@link PatientRules#isDesexed(Party)} methods.
+     */
+    public void testDesexed() {
+        Party patient = TestHelper.createPatient(false);
+        assertFalse(rules.isDesexed(patient));
+        rules.setDesexed(patient);
+        assertTrue(rules.isDesexed(patient));
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
