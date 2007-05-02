@@ -954,10 +954,9 @@ public class StaxArchetypeDataLoader {
      */
     private XMLStreamReader getReader(String file) throws Exception {
         FileInputStream fis = new FileInputStream(file);
-        XMLInputFactory factory = (XMLInputFactory) XMLInputFactory
-                .newInstance();
+        XMLInputFactory factory = XMLInputFactory.newInstance();
 
-        return (XMLStreamReader) factory.createXMLStreamReader(fis);
+        return factory.createXMLStreamReader(fis);
     }
 
     /**

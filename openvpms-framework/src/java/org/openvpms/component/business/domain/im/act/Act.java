@@ -19,22 +19,25 @@
 
 package org.openvpms.component.business.domain.im.act;
 
-// java core
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.EntityException;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+
 /**
- * A class representing an activity that is being done, has been done, 
- * can be done, or is intended or requested to be done.  An Act instance 
- * is a record of an intentional business action.  
+ * A class representing an activity that is being done, has been done,
+ * can be done, or is intended or requested to be done.  An Act instance
+ * is a record of an intentional business action.
 
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
@@ -50,47 +53,47 @@ public class Act extends IMObject {
      * Represents the title of the act.
      */
     private String title;
-    
+
     /**
      * The start time of this act
      */
     private Date activityStartTime;
-    
+
     /**
      * The end time of this activity
      */
     private Date activityEndTime;
-    
+
     /**
      * Text representing the reason for the Act. Often this is beter 
      * represented by a realtionship to another Act of type "has reason".
      */
     private String reason;
-    
+
     /**
      * A String representing the status or state of the Act. (i.e  Normal, 
      * Aborted, Completed, Suspended, Cancelled etc
      */
     private String status;
-    
+
     /**
      * Describes the specific details of the act, whether it is clinical,
      * financial or other.
      */
-    private DynamicAttributeMap details;
-    
+    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
+
     /**
      * The {@link Participation}s for this act.
      */
     private Set<Participation> participations =
         new HashSet<Participation>();
-    
+
     /**
      * Holds all the {@link ActRelationship}s that this act is a source off.
      */
     private Set<ActRelationship> sourceActRelationships =
         new HashSet<ActRelationship>();
-    
+
     /**
      * Holds all the {@link ActRelationship}s that this act is a target off.
      */
@@ -103,7 +106,7 @@ public class Act extends IMObject {
     public Act() {
         // do nothing
     }
-    
+
     /**
      * Constructs an instance of an act.
      * 
@@ -112,23 +115,23 @@ public class Act extends IMObject {
      * @param details
      *            dynamic details of the act.
      */
-    public Act(ArchetypeId archetypeId, DynamicAttributeMap details) {
+    public Act(ArchetypeId archetypeId, Map<String, Object> details) {
         super(archetypeId);
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
 
     /**
      * @return Returns the details.
      */
-    public DynamicAttributeMap getDetails() {
-        return details;
+    public Map<String, Object> getDetails() {
+        return new TypedValueMap(details);
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(DynamicAttributeMap details) {
-        this.details = details;
+    public void setDetails(Map<String, Object> details) {
+        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -219,7 +222,7 @@ public class Act extends IMObject {
     /**
      * Add a source {@link ActRelationship}.
      * 
-     * @param source 
+     * @param source
      */
     public void addSourceActRelationship(ActRelationship source) {
         this.sourceActRelationships.add(source);
@@ -250,11 +253,11 @@ public class Act extends IMObject {
             Set<ActRelationship> targetActRelationships) {
         this.targetActRelationships = targetActRelationships;
     }
-    
+
     /**
      * Add a target {@link ActRelationship}.
      * 
-     * @param target 
+     * @param target
      *            add a new target.
      */
     public void addTargetActRelationship(ActRelationship target) {
@@ -315,7 +318,7 @@ public class Act extends IMObject {
                     new Object[] { actRel.getSource(), actRel.getTarget()});
         }
     }
-    
+
     /**
      * Return all the act relationships. Do not use the returned set to 
      * add and remove act relationships. Instead use {@link #addActRelationship(ActRelationship)}
@@ -324,10 +327,10 @@ public class Act extends IMObject {
      * @return Set<ActRelationship>
      */
     public Set<ActRelationship> getActRelationships() {
-        Set<ActRelationship> relationships = 
+        Set<ActRelationship> relationships =
             new HashSet<ActRelationship>(sourceActRelationships);
         relationships.addAll(targetActRelationships);
-        
+
         return relationships;
     }
     /**
@@ -345,11 +348,11 @@ public class Act extends IMObject {
     public void setParticipations(Set<Participation> participations) {
         this.participations = participations;
     }
-    
+
     /**
      * Add a {@link Participation}.
      * 
-     * @param participation 
+     * @param participation
      */
     public void addParticipation(Participation participation) {
         this.participations.add(participation);
@@ -370,20 +373,20 @@ public class Act extends IMObject {
     @Override
     public Object clone() throws CloneNotSupportedException {
         Act copy = (Act)super.clone();
-        
+
         copy.activityEndTime = (Date)(this.activityEndTime == null ?
                 null : this.activityEndTime.clone());
         copy.activityStartTime = (Date)(this.activityStartTime == null ?
                 null : this.activityStartTime.clone());
-        copy.details = (DynamicAttributeMap)(this.details == null ?
-                null : this.details.clone());
+        copy.details = (details == null) ? null
+                : new HashMap<String, TypedValue>(details);
         copy.participations = new HashSet<Participation>(this.participations);
         copy.reason = this.reason;
         copy.sourceActRelationships = new HashSet<ActRelationship>(this.sourceActRelationships);
         copy.status = this.status;
         copy.targetActRelationships = new HashSet<ActRelationship>(this.targetActRelationships);
         copy.title = this.title;
-        
+
         return copy;
     }
 
@@ -391,6 +394,7 @@ public class Act extends IMObject {
      * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
      */
     @Override
+    @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
             .appendSuper(null)

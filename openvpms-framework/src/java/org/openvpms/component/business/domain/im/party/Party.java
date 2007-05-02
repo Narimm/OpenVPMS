@@ -21,10 +21,10 @@ package org.openvpms.component.business.domain.im.party;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map;
 
 
 /**
@@ -64,7 +64,7 @@ public class Party extends Entity {
      */
     public Party(ArchetypeId archetypeId, String name,
                  String description, Set<Contact> contacts,
-                 DynamicAttributeMap details) {
+                 Map<String, Object> details) {
         super(archetypeId, name, description, details);
         this.contacts = (contacts == null) ? new HashSet<Contact>() : contacts;
     }

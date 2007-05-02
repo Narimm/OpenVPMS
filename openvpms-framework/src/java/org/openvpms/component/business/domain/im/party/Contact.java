@@ -20,11 +20,14 @@
 package org.openvpms.component.business.domain.im.party;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -58,7 +61,7 @@ public class Contact extends IMObject {
     /*
     * Specific details for the contact purpose.
     */
-    private DynamicAttributeMap details;
+    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
 
     /**
      * A reference to the owning {@link Party}
@@ -122,15 +125,15 @@ public class Contact extends IMObject {
     /**
      * @return Returns the details.
      */
-    public DynamicAttributeMap getDetails() {
-        return details;
+    public Map<String, Object> getDetails() {
+        return new TypedValueMap(details);
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(DynamicAttributeMap details) {
-        this.details = details;
+    public void setDetails(Map<String, Object> details) {
+        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -190,6 +193,7 @@ public class Contact extends IMObject {
         copy.activeStartTime = (Date)(this.activeStartTime == null ?
                 null : this.activeStartTime.clone());
         copy.classifications = new HashSet<Lookup>(this.classifications);
+        copy.details = (details == null) ? null : new HashMap<String, TypedValue>(details);
         copy.party = this.party;
 
         return copy;

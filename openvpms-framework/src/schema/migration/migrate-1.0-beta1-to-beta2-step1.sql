@@ -196,7 +196,7 @@ create table product_price_details (
     type varchar(255),
     value varchar(5000),
     name varchar(255) not null,
-    primary key (product_price_id, name))
+    primary key (product_price_id, name));
 
 alter table product_price_details
     add index FKF9A9C1FCBCF3BC5D (product_price_id),

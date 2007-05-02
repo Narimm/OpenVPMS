@@ -865,7 +865,7 @@ public class NodeDescriptor extends Descriptor {
             }
         }
 
-        return value;
+        return transform(value);
     }
 
     /**
@@ -1459,8 +1459,7 @@ public class NodeDescriptor extends Descriptor {
      * @return Object
      *         the transformed object
      */
-    private Object transform(Object value)
-            throws Exception {
+    private Object transform(Object value) {
         if ((value == null) ||
                 (this.isCollection()) ||
                 (value.getClass() == getClazz())) {

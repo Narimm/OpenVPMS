@@ -51,8 +51,9 @@ import java.util.StringTokenizer;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeServicePersistenceTestCase extends
-                                                 AbstractDependencyInjectionSpringContextTests {
+@SuppressWarnings("HardCodedStringLiteral")
+public class ArchetypeServicePersistenceTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
     /**
      * Define a logger for this class
      */
@@ -97,9 +98,9 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(entity instanceof Party);
 
         Party person = (Party) entity;
-        person.getDetails().setAttribute("lastName", "Alateras");
-        person.getDetails().setAttribute("firstName", "Jim");
-        person.getDetails().setAttribute("title", "MR");
+        person.getDetails().put("lastName", "Alateras");
+        person.getDetails().put("firstName", "Jim");
+        person.getDetails().put("title", "MR");
 
         try {
             service.save(person);
@@ -117,9 +118,9 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(entity instanceof Party);
 
         Party person = (Party) entity;
-        person.getDetails().setAttribute("lastName", "Alateras");
-        person.getDetails().setAttribute("firstName", "Jim");
-        person.getDetails().setAttribute("title", "MR");
+        person.getDetails().put("lastName", "Alateras");
+        person.getDetails().put("firstName", "Jim");
+        person.getDetails().put("title", "MR");
 
         Contact contact = createConact();
 
@@ -135,7 +136,7 @@ public class ArchetypeServicePersistenceTestCase extends
                                                        person.getArchetypeId(),
                                                        person.getUid());
         assertTrue(person.getContacts().size() == 1);
-        person.getDetails().setAttribute("firstName", "Grace");
+        person.getDetails().put("firstName", "Grace");
         service.save(person);
     }
 
@@ -565,9 +566,9 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(party != null);
         assertTrue(party.getDetails() != null);
 
-        party.getDetails().setAttribute("title", "MR");
-        party.getDetails().setAttribute("firstName", "Jim");
-        party.getDetails().setAttribute("lastName", "Alateras");
+        party.getDetails().put("title", "MR");
+        party.getDetails().put("firstName", "Jim");
+        party.getDetails().put("lastName", "Alateras");
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
                 party.getArchetypeId());
         for (NodeDescriptor ndesc : adesc.getAllNodeDescriptors()) {
@@ -583,7 +584,7 @@ public class ArchetypeServicePersistenceTestCase extends
                                                       party.getUid());
         assertTrue(party != null);
         assertTrue(party.getDetails() != null);
-        assertTrue(party.getDetails().getAttribute("title").equals("MR"));
+        assertTrue(party.getDetails().get("title").equals("MR"));
     }
 
     /**
@@ -650,17 +651,16 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(entity instanceof Party);
 
         Party person = (Party) entity;
-        person.getDetails().setAttribute("lastName", "Alateras");
-        person.getDetails().setAttribute("firstName", "Jim");
-        person.getDetails().setAttribute("title", "MR");
+        person.getDetails().put("lastName", "Alateras");
+        person.getDetails().put("firstName", "Jim");
+        person.getDetails().put("title", "MR");
         service.save(person);
 
         IMObjectReference ref = person.getObjectReference();
         person = (Party) ArchetypeQueryHelper.getByObjectReference(service,
                                                                    ref);
         assertTrue(person.getLinkId().equals(ref.getLinkId()));
-        assertTrue(person.getDetails().getAttribute("lastName").equals(
-                "Alateras"));
+        assertTrue(person.getDetails().get("lastName").equals("Alateras"));
     }
 
 
@@ -722,15 +722,15 @@ public class ArchetypeServicePersistenceTestCase extends
 
         Party pet = (Party) entity;
         pet.setName(name);
-        pet.getDetails().setAttribute("breed", "dog");
-        pet.getDetails().setAttribute("colour", "brown");
-        pet.getDetails().setAttribute("sex", "UNSPECIFIED");
-        pet.getDetails().setAttribute("species", "k9");
+        pet.getDetails().put("breed", "dog");
+        pet.getDetails().put("colour", "brown");
+        pet.getDetails().put("sex", "UNSPECIFIED");
+        pet.getDetails().put("species", "k9");
         pet.setDescription("A dog");
 
         Calendar date = Calendar.getInstance();
         date.set(1963, 12, 20);
-        pet.getDetails().setAttribute("dateOfBirth", new Date());
+        pet.getDetails().put("dateOfBirth", date.getTime());
 
         return pet;
     }
@@ -743,11 +743,11 @@ public class ArchetypeServicePersistenceTestCase extends
     private Contact createConact() {
         Contact contact = (Contact) service.create("contact.location");
 
-        contact.getDetails().setAttribute("address", "kalulu rd");
-        contact.getDetails().setAttribute("suburb", "Belgrave");
-        contact.getDetails().setAttribute("postcode", "3160");
-        contact.getDetails().setAttribute("state", "Victoria");
-        contact.getDetails().setAttribute("country", "Australia");
+        contact.getDetails().put("address", "kalulu rd");
+        contact.getDetails().put("suburb", "Belgrave");
+        contact.getDetails().put("postcode", "3160");
+        contact.getDetails().put("state", "Victoria");
+        contact.getDetails().put("country", "Australia");
 
         return contact;
     }
@@ -762,9 +762,9 @@ public class ArchetypeServicePersistenceTestCase extends
      */
     public Party createPerson(String title, String firstName, String lastName) {
         Party person = (Party) service.create("person.person");
-        person.getDetails().setAttribute("lastName", lastName);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("title", title);
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
 
         return person;
     }

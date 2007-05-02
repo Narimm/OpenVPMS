@@ -150,9 +150,9 @@ public class ArchetypeServiceFilteredTestCase extends
     public Party createPersonFilter(String title, String firstName,
                                     String lastName) {
         Party person = (Party) service.create("person.filter");
-        person.getDetails().setAttribute("lastName", lastName);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("title", title);
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
 
         return person;
     }

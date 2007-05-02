@@ -69,8 +69,14 @@
       <property name="linkId" access="field" type="string" length="100" 
       	column="act_linkId" index="participation_act_linkId_idx" />
     </component>
-    <property name="details" column="details" length="5000"
-      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+    <map name="details" access="field" table="participation_details" cascade="all,delete-orphan">
+      <key column="participation_id"/>
+      <map-key column="name" type="string"/>
+      <composite-element class="org.openvpms.component.business.domain.im.datatypes.basic.TypedValue">
+        <property name="type"/>
+        <property name="value" length="5000"/>
+      </composite-element>
+    </map>
   </class>
 
   <query name="participation.getRowCount">

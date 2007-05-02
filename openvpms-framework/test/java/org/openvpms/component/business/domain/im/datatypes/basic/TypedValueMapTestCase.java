@@ -34,7 +34,7 @@ import java.util.Set;
  * Tests the {@link TypedValueMap} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
 public class TypedValueMapTestCase extends TestCase {

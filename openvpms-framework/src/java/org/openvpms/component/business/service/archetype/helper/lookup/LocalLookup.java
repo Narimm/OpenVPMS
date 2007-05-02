@@ -35,7 +35,7 @@ import java.util.List;
  * Local lookup assertion. The lookups are defined inline in the assertion.
  * E.g:
  * <pre>
- *   <node name="sex" path="/details/attributes/sex" type="java.lang.String">
+ *   <node name="sex" path="/details/sex" type="java.lang.String">
  *     <assertion name="lookup.local">
  *       <propertyList name="entries">
  *         <property name="MALE" value="male"/>

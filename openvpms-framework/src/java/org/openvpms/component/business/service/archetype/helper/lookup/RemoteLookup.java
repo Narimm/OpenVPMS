@@ -42,7 +42,7 @@ import java.util.List;
  * specifying the lookup shortname.
  * E.g:
  * <pre>
- *   <node name="country" path="/details/attributes/country"
+ *   <node name="country" path="/details/country"
  *         type="java.lang.String">
  *     <assertion name="lookup">
  * 	     <property name="type" value="lookup" />

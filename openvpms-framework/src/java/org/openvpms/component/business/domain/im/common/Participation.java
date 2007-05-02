@@ -19,22 +19,19 @@
 
 package org.openvpms.component.business.domain.im.common;
 
-// java core
-import java.util.Date;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * A class representing an {@link Entity}'s participantion in an {@link Act}.
  * 
- * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version  $LastChangedDate$
- */
-/**
- *
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
@@ -50,7 +47,7 @@ public class Participation extends IMObject {
      * relation to other participations of the same act.
      */
     private int sequence;
-    
+
     /**
      * Indicates the mode that the {@link Entity} is participating in the
      * {@link Act}
@@ -58,38 +55,38 @@ public class Participation extends IMObject {
      * TODO Look at incorporating with the terminology service
      */
     private String mode;
-    
+
     /**
      * The time that this participation was activitated
      */
     private Date activeStartTime;
-    
+
     /**
      * The time that this participation was inactivated
      */
     private Date activeEndTime;
-    
+
     /**
      * The percentage of participation in the specified {@link Act}.
      */
     private int percentage;
-    
+
     /**
      * Reference to the associated entity
      */
     private IMObjectReference entity;
-    
+
     /**
      * Reference to the associated act
      */
     private IMObjectReference act;
-    
-    /**
-     * Holds details about the participation
-     */
-    private DynamicAttributeMap details;
 
-    
+    /**
+     * Holds details about the participation.
+     */
+    private Map<String, TypedValue> details;
+
+
     /**
      * Default constructor
      */
@@ -110,25 +107,25 @@ public class Participation extends IMObject {
      *            holds dynamic details about the participation.
      */
     public Participation(ArchetypeId archetypeId, IMObjectReference entity,
-            IMObjectReference act, DynamicAttributeMap details) {
+                         IMObjectReference act, Map<String, Object> details) {
         super(archetypeId);
         this.act = act;
         this.entity = entity;
-        this.details = details;
+        this.details = TypedValueMap.create(details);
     }
-    
+
     /**
      * @return Returns the details.
      */
-    public DynamicAttributeMap getDetails() {
-        return details;
+    public Map<String, Object> getDetails() {
+        return new TypedValueMap(details);
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(DynamicAttributeMap details) {
-        this.details = details;
+    public void setDetails(Map<String, Object> details) {
+        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -239,9 +236,9 @@ public class Participation extends IMObject {
         copy.activeEndTime = (Date)(this.activeEndTime == null ?
                 null : this.activeEndTime.clone());
         copy.activeStartTime = (Date)(this.activeStartTime == null ?
-                null : this.activeEndTime.clone());
-        copy.details = (DynamicAttributeMap)(this.details == null ?
-                null : this.details.clone());
+                null : this.activeStartTime.clone());
+        copy.details = (this.details == null) ? null
+                : new HashMap<String, TypedValue>(details);
         copy.entity = this.entity;
         copy.mode = this.mode;
         copy.percentage = this.percentage;

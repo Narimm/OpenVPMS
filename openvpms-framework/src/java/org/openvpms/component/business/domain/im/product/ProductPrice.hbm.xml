@@ -49,8 +49,15 @@
     <property name="fixed" access="property" column="is_fixed" type="boolean" />
     <property name="price" access="property" column="price" type="big_decimal" />
     <property name="active" access="property" column="active" type="boolean" />
-    <property name="details" column="details" length="5000"
-      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+    <map name="details" access="field" table="product_price_details"
+         lazy="false" cascade="all,delete-orphan">
+      <key column="product_price_id"/>
+      <map-key column="name" type="string"/>
+      <composite-element class="org.openvpms.component.business.domain.im.datatypes.basic.TypedValue">
+        <property name="type"/>
+        <property name="value" length="5000"/>
+      </composite-element>
+    </map>
     <many-to-one name="product" column="product_id" />
     <set name="classifications" access="property" inverse="false"
          table="product_price_classifications" cascade="none">

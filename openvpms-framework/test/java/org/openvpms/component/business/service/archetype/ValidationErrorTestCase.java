@@ -36,6 +36,8 @@ import java.util.Hashtable;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+
+@SuppressWarnings("HardCodedStringLiteral")
 public class ValidationErrorTestCase extends BaseTestCase {
     /**
      * cache the archetype service
@@ -91,7 +93,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
             ValidationException ve = (ValidationException)exception;
-            assertTrue("The size should be " + ve.getErrors().size(), ve.getErrors().size() == 2);
+            assertEquals(1, ve.getErrors().size());
         }
     }
 
@@ -122,7 +124,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
             assertTrue(((ValidationException) exception).getErrors().size() == 1);
         }
 
-        person.getDetails().setAttribute("lastName", "Alateras");
+        person.getDetails().put("lastName", "Alateras");
         service.validateObject(person);
     }
 
@@ -160,9 +162,9 @@ public class ValidationErrorTestCase extends BaseTestCase {
     throws Exception {
         Party person = (Party)service.create("person.jima");
 
-        person.getDetails().setAttribute("title", "MR");
-        person.getDetails().setAttribute("firstName", "Jim");
-        person.getDetails().setAttribute("lastName", "Alateras");
+        person.getDetails().put("title", "MR");
+        person.getDetails().put("firstName", "Jim");
+        person.getDetails().put("lastName", "Alateras");
         person.addClassification(createLookup("lookup.staff", "CLASS1"));
         assertTrue(person.getClassifications().size() == 1);
         service.validateObject(person);
@@ -220,13 +222,13 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
         assertTrue(service.getArchetypeDescriptor("contact.phoneNumber") != null);
         Contact contact = (Contact) service.create("contact.phoneNumber");
-        contact.getDetails().setAttribute("areaCode", "03");
-        contact.getDetails().setAttribute("telephoneNumber", "976767666");
+        contact.getDetails().put("areaCode", "03");
+        contact.getDetails().put("telephoneNumber", "976767666");
         service.validateObject(contact);
 
         // test for a failure
         try {
-            contact.getDetails().setAttribute("areaCode", "ABCD");
+            contact.getDetails().put("areaCode", "ABCD");
             service.validateObject(contact);
             fail("Validation should have failed");
         } catch (Exception exception) {
@@ -250,8 +252,8 @@ public class ValidationErrorTestCase extends BaseTestCase {
         assertTrue(service.getArchetypeDescriptor("animal.pet") != null);
         Party pet = (Party) service.create("animal.pet");
         pet.setName("bill");
-        pet.getDetails().setAttribute("sex", "male");
-        pet.getDetails().setAttribute("dateOfBirth", new Date());
+        pet.getDetails().put("sex", "male");
+        pet.getDetails().put("dateOfBirth", new Date());
 
         try {
             service.validateObject(pet);
@@ -300,8 +302,8 @@ public class ValidationErrorTestCase extends BaseTestCase {
         assertTrue(service.getArchetypeDescriptor("animal.pet1") != null);
         Party pet = (Party) service.create("animal.pet1");
         pet.setName("bill");
-        pet.getDetails().setAttribute("sex", "male");
-        pet.getDetails().setAttribute("dateOfBirth", new Date());
+        pet.getDetails().put("sex", "male");
+        pet.getDetails().put("dateOfBirth", new Date());
         service.validateObject(pet);
 
         // this should validate
@@ -343,8 +345,8 @@ public class ValidationErrorTestCase extends BaseTestCase {
         assertTrue(service.getArchetypeDescriptor("animal.pet") != null);
         Party pet = (Party) service.create("animal.pet2");
         pet.setName("bill");
-        pet.getDetails().setAttribute("sex", "male");
-        pet.getDetails().setAttribute("dateOfBirth", new Date());
+        pet.getDetails().put("sex", "male");
+        pet.getDetails().put("dateOfBirth", new Date());
         try {
             service.validateObject(pet);
             fail("Validation should have failed since min cardinality was violated");
@@ -405,8 +407,8 @@ public class ValidationErrorTestCase extends BaseTestCase {
         assertTrue(service.getArchetypeDescriptor("animal.pet3") != null);
         Party pet = (Party) service.create("animal.pet3");
         pet.setName("bill");
-        pet.getDetails().setAttribute("sex", "male");
-        pet.getDetails().setAttribute("dateOfBirth", new Date());
+        pet.getDetails().put("sex", "male");
+        pet.getDetails().put("dateOfBirth", new Date());
         service.validateObject(pet);
 
         // this should also validate
@@ -485,9 +487,9 @@ public class ValidationErrorTestCase extends BaseTestCase {
      */
     public Party createPerson(String title, String firstName, String lastName) {
         Party person = (Party)service.create("person.person");
-        person.getDetails().setAttribute("lastName", lastName);
-        person.getDetails().setAttribute("firstName", firstName);
-        person.getDetails().setAttribute("title", title);
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
 
         return person;
     }

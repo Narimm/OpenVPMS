@@ -22,7 +22,7 @@
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Reminder'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-			derivedValue="concat('Due Date : ', date:formatDate(/activityEndTime), ' Reminders Sent : ', /details/attributes/reminderCount)" />
+			derivedValue="concat('Due Date : ', date:formatDate(/activityEndTime), ' Reminders Sent : ', /details/reminderCount)" />
 		<node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="reminderType" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.reminderType" />
@@ -37,13 +37,10 @@
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
-		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" 
-			minCardinality="1" maxCardinality="1">
-			<node name="reminderCount" displayName="Reminders Sent" path="/details/attributes/reminderCount" type="java.lang.Integer" readOnly="true" defaultValue="0"/>
-			<node displayName="Last Sent" name="lastSent" path="/details/attributes/lastSent" type="java.util.Date" minCardinality="0" />
-			<node displayName="Completed" name="completedDate" path="/details/attributes/completedDate" type="java.util.Date" minCardinality="0" />
-		</node>
-		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
+		<node name="reminderCount" displayName="Reminders Sent" path="/details/reminderCount" type="java.lang.Integer" readOnly="true" defaultValue="0"/>
+		<node displayName="Last Sent" name="lastSent" path="/details/lastSent" type="java.util.Date" minCardinality="0" />
+		<node displayName="Completed" name="completedDate" path="/details/completedDate" type="java.util.Date" minCardinality="0" />
+		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
 			filter="participation.patient" hidden="true" />
 		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
 			filter="participation.author" hidden="true" />
