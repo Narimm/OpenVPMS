@@ -119,8 +119,12 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      */
     @Override
     public Component getSummary() {
-        Act act = window.getObject();
-        return WorkflowSummary.getSummary(act);
+    	if (window != null) {
+	        Act act = window.getObject();
+	        return WorkflowSummary.getSummary(act);
+    	}
+    	else
+    		return null;
     }
 
     /**
