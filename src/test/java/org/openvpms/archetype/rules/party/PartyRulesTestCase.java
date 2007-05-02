@@ -51,7 +51,8 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     public void testGetFullName() {
         Party customer = (Party) create("party.customerperson");
         IMObjectBean bean = new IMObjectBean(customer);
-        bean.setValue("title", "MR");
+        Lookup mr = TestHelper.getClassification("lookup.personTitle", "MR");
+        bean.setValue("title", mr.getCode());
         bean.setValue("firstName", "Foo");
         bean.setValue("lastName", "Bar");
         assertEquals("Mr Foo Bar", rules.getFullName(customer));

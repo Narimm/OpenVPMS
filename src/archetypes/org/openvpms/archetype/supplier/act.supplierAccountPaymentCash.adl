@@ -16,24 +16,20 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-act.supplierAccountPaymentCash.1.0" latest="true" primary="false"
-		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Cash" >
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="'Cash Payment'" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="concat(' Amount : ', /total,' Tendered : ',/details/attributes/tendered)" />
-		<node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
-		<node name="credit" path="/credit" type="java.lang.Boolean"
-			defaultValue="true()" readOnly="true" hidden="true" />
-		<node name="details" path="/details" hidden="true"
-			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-			minCardinality="1" maxCardinality="1">
-			<node name="tendered" path="/details/attributes/tendered" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
-			<node name="change" path="/details/attributes/change" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
-				derived="true" derivedValue="/details/attributes/tendered - /total"/>
-		</node>
-	</archetype>
+    <archetype name="openvpms-common-act.supplierAccountPaymentCash.1.0" latest="true" primary="false"
+               type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Cash">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name"
+              hidden="true" minCardinality="1" derived="true"
+              derivedValue="'Cash Payment'"/>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="concat(' Amount : ', /total,' Tendered : ',/details/tendered)"/>
+        <node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
+        <node name="credit" path="/credit" type="java.lang.Boolean"
+              defaultValue="true()" readOnly="true" hidden="true"/>
+        <node name="tendered" path="/details/tendered" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
+        <node name="change" path="/details/change" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+              derived="true" derivedValue="/details/tendered - /total"/>
+    </archetype>
 </archetypes>

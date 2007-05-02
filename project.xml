@@ -340,7 +340,7 @@
     <dependency>
       <groupId>xstream</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.1.2</version>
+      <version>1.2.1</version>
       <url>http://xstream.codehaus.org/</url>
     </dependency>
     <dependency>

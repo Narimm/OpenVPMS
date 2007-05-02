@@ -16,59 +16,55 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-entityRelationship.productStockLocation.1.0"
-		latest="true"
-		type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Product Stock Location" >
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('Product Stock Location', '')" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="concat('Product Stock Location', '(', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')" />
-		<node name="activeStartTime" path="/activeStartTime"
-			type="java.util.Date" minCardinality="1"
-			hidden="true" defaultValue="java.util.Date.new()" />
-		<node name="details" path="/details" hidden="true"
-			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-			minCardinality="1" maxCardinality="1">
-			<node name="minimumQty" displayName="Minimum Qty" path="/details/attributes/minimumQty" type="java.lang.Integer" minCardinality="0" />
-			<node name="reorderQty" displayName="Reorder Qty" path="/details/attributes/reorderQty" type="java.lang.Integer" minCardinality="0" />
-			<node name="qtyUom" displayName="Units of Measure" path="/details/attributes/qtyUom" type="java.lang.String" minCardinality="0" >
-				<assertion name="lookup">
-					<property name="type" value="lookup" />
-					<property name="source" value="lookup.uom" />
-					<errorMessage>An error message</errorMessage>
-				</assertion>
-			</node>
-		</node>		
-		<node name="source" displayName="Product" path="/source"
-			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="product.medication" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="product.merchandise" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-		<node name="target" displayName="Stock Location" path="/target"
-			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="party.organisationStockLocation" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-	</archetype>
+    <archetype name="openvpms-common-entityRelationship.productStockLocation.1.0"
+               latest="true"
+               type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Product Stock Location">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name"
+              hidden="true" minCardinality="1" derived="true"
+              derivedValue="concat('Product Stock Location', '')"/>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="concat('Product Stock Location', '(', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')"/>
+        <node name="activeStartTime" path="/activeStartTime"
+              type="java.util.Date" minCardinality="1"
+              hidden="true" defaultValue="java.util.Date.new()"/>
+        <node name="minimumQty" displayName="Minimum Qty" path="/details/minimumQty" type="java.lang.Integer" minCardinality="0"/>
+        <node name="reorderQty" displayName="Reorder Qty" path="/details/reorderQty" type="java.lang.Integer" minCardinality="0"/>
+        <node name="qtyUom" displayName="Units of Measure" path="/details/qtyUom" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.uom"/>
+                <errorMessage>An error message</errorMessage>
+            </assertion>
+        </node>
+        <node name="source" displayName="Product" path="/source"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="product.medication"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="product.merchandise"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="target" displayName="Stock Location" path="/target"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="party.organisationStockLocation"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>

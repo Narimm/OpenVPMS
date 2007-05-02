@@ -17,27 +17,23 @@
 -->
 <archetypes>
     <archetype name="openvpms-common-act.supplierOrderItem.1.0" latest="true" primary="false"
-        type="org.openvpms.component.business.domain.im.act.Act" displayName="Order Item" >
-        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Order Item">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
-            hidden="true" minCardinality="1" derived="true"
-            derivedValue="' '" />
+              hidden="true" minCardinality="1" derived="true"
+              derivedValue="' '"/>
         <node name="description" type="java.lang.String"
-            path="/description" hidden="true" derived="true"
-            derivedValue="concat(' Description of the Order Product', ' ')" />
+              path="/description" hidden="true" derived="true"
+              derivedValue="concat(' Description of the Order Product', ' ')"/>
         <node name="product" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.product"/>
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="details" path="/details" hidden="true"
-            type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-            minCardinality="1" maxCardinality="1">
-            <node name="qty" path="/details/attributes/qty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
-            <node name="unitCost" path="/details/attributes/unitCost" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
-            <node name="total" path="/details/attributes/lowTotal" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
-                derived="true" derivedValue="/details/attributes/qty * /details/attributes/unitCost" minCardinality="1"/>
-        </node>
+        <node name="qty" path="/details/qty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
+        <node name="unitCost" path="/details/unitCost" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
+        <node name="total" path="/details/lowTotal" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+              derived="true" derivedValue="/details/qty * /details/unitCost" minCardinality="1"/>
     </archetype>
 </archetypes>

@@ -16,23 +16,20 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-act.patientClinicalNote.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.act.Act" displayName="Note" >
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-			derivedValue="'Note'" />
-		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-			derivedValue="substring(/details/attributes/note,0,254)" maxLength="255"/>
-		<node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
-		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
-			filter="participation.patient" hidden="true" />
-		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
-			filter="participation.author" hidden="true" />
-		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" 
-			minCardinality="1" maxCardinality="1">
-			<node name="note" path="/details/attributes/note" type="java.lang.String" maxLength="2000" />
-		</node>
+    <archetype name="openvpms-common-act.patientClinicalNote.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Note">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
+              derivedValue="'Note'"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
+              derivedValue="substring(/details/note,0,254)" maxLength="255"/>
+        <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
+        <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.patient" hidden="true"/>
+        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.author" hidden="true"/>
+        <node name="note" path="/details/note" type="java.lang.String" maxLength="2000"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
-			filter="participation.clinician" />
-	</archetype>
+              filter="participation.clinician"/>
+    </archetype>
 </archetypes>

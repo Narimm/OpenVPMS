@@ -16,31 +16,30 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-lookup-lookup.supplierAccountType.1.0"
-		latest="true"
-		type="org.openvpms.component.business.domain.im.lookup.Lookup" displayName="Supplier Account Type" >        
-        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+    <archetype name="openvpms-lookup-lookup.supplierAccountType.1.0"
+               latest="true"
+               type="org.openvpms.component.business.domain.im.lookup.Lookup" displayName="Supplier Account Type">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="code" path="/code" type="java.lang.String" hidden="true"
               minCardinality="1">
             <assertion name="regularExpression">
                 <property name="expression" value="[A-Z0-9_]*"/>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
-        </node>        		<node name="name" path="/name" type="java.lang.String" minCardinality="1" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" minCardinality="0" />
-		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" minCardinality="1" maxCardinality="1">
-			<node name="paymentTerms" path="/details/attributes/paymentTerms" type="java.lang.Integer" minCardinality="0" />
-			<node name="paymentUom" displayName="Payment Terms Units" path="/details/attributes/paymentUom" type="java.lang.String" minCardinality="0" defaultValue="'DAYS'" >
-				<assertion name="lookup.local">
-					<propertyList name="entries">
-						<property name="DAYS" value="days" />
-						<property name="WEEKS" value="weeks" />
-						<property name="MONTHS" value="months" />
-					</propertyList>
-					<errorMessage>errorMessage</errorMessage>
-				</assertion>
-			</node>
-		</node>
-	</archetype>
+        </node>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1"/>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" minCardinality="0"/>
+        <node name="paymentTerms" path="/details/paymentTerms" type="java.lang.Integer" minCardinality="0"/>
+        <node name="paymentUom" displayName="Payment Terms Units" path="/details/paymentUom" type="java.lang.String" minCardinality="0" defaultValue="'DAYS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>

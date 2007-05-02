@@ -34,23 +34,19 @@
               minCardinality="1" maxLength="30"
               defaultValue="'Enter a title ...'"/>
         <node name="endTime" displayName="Expiry Date" path="/activityEndTime"
-              type="java.util.Date" minCardinality="0" />
-        <node name="details" path="/details" hidden="true"
-              type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-              minCardinality="1" maxCardinality="1">
-			<node name="notes" displayName="Notes" path="/details/attributes/notes" type="java.lang.String" minCardinality="0" maxLength="300" />
-            <node name="lowTotal" path="/details/attributes/lowTotal"
-                  type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-                  defaultValue="'0.0'" minCardinality="1" readOnly="true"/>
-            <node name="highTotal" path="/details/attributes/highTotal"
-                  type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-                  defaultValue="'0.0'" minCardinality="1" readOnly="true"/>
-            <node name="printed" path="/details/attributes/printed"
-                  type="java.lang.Boolean" defaultValue="false()"
-                  minCardinality="1"/>
-        </node>
+              type="java.util.Date" minCardinality="0"/>
+        <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="lowTotal" path="/details/lowTotal"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+              defaultValue="'0.0'" minCardinality="1" readOnly="true"/>
+        <node name="highTotal" path="/details/highTotal"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+              defaultValue="'0.0'" minCardinality="1" readOnly="true"/>
+        <node name="printed" path="/details/printed"
+              type="java.lang.Boolean" defaultValue="false()"
+              minCardinality="1"/>
         <node name="status" path="/status" type="java.lang.String"
-              minCardinality="1" defaultValue="'COMPLETED'" >
+              minCardinality="1" defaultValue="'COMPLETED'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="IN_PROGRESS" value="In Progress"/>

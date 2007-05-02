@@ -24,18 +24,16 @@
         <node name="taxType" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.taxRate" hidden="true"/>
-		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" minCardinality="1" maxCardinality="1">
-			<node name="rateType" displayName="Rate Type" path="/details/attributes/rateType" type="java.lang.String" minCardinality="0" defaultValue="'PERCENTAGE'" >
-				<assertion name="lookup.local">
-					<propertyList name="entries">
-						<property name="FIXED" value="Fixed" />
-						<property name="PERCENTAGE" value="Percentage" />
-					</propertyList>
-					<errorMessage>errorMessage</errorMessage>
-				</assertion>
-			</node>
-			<node name="rateAmount" displayName="Rate Amount" path="/details/attributes/rateAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
-			<node name="minimumAmount" displayName="Minimum Amount" path="/details/attributes/minimumAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
+	    <node name="rateType" displayName="Rate Type" path="/details/rateType" type="java.lang.String" minCardinality="0" defaultValue="'PERCENTAGE'" >
+		    <assertion name="lookup.local">
+			    <propertyList name="entries">
+				    <property name="FIXED" value="Fixed" />
+					<property name="PERCENTAGE" value="Percentage" />
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
 		</node>
+		<node name="rateAmount" displayName="Rate Amount" path="/details/rateAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
+		<node name="minimumAmount" displayName="Minimum Amount" path="/details/minimumAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
 	</archetype>
 </archetypes>

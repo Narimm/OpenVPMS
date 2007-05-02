@@ -16,47 +16,43 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-entityRelationship.locationSchedule.1.0"
-		latest="true"
-		type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Location Schedule" >
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('Location Schedule', '')" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="concat('Location Schedule', '(', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')" />
-		<node name="activeStartTime" path="/activeStartTime"
-			type="java.util.Date" minCardinality="1"
-			hidden="true" defaultValue="java.util.Date.new()" />
-		<node name="details" path="/details" hidden="true"
-			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-			minCardinality="1" maxCardinality="1">
-			<node name="default" path="/details/attributes/default" type="java.lang.Boolean" defaultValue="false()" />
-		</node>		
-		<node name="source" displayName="Location" path="/source"
-			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="party.organisationLocation" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-		<node name="target" displayName="Schedule" path="/target"
-			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="party.organisationSchedule" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-	</archetype>
+    <archetype name="openvpms-common-entityRelationship.locationSchedule.1.0"
+               latest="true"
+               type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Location Schedule">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name"
+              hidden="true" minCardinality="1" derived="true"
+              derivedValue="concat('Location Schedule', '')"/>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="concat('Location Schedule', '(', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')"/>
+        <node name="activeStartTime" path="/activeStartTime"
+              type="java.util.Date" minCardinality="1"
+              hidden="true" defaultValue="java.util.Date.new()"/>
+        <node name="default" path="/details/default" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="source" displayName="Location" path="/source"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="party.organisationLocation"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="target" displayName="Schedule" path="/target"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="party.organisationSchedule"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>
