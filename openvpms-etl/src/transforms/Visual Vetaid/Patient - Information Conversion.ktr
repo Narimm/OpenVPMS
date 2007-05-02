@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Patient - Relationships Conversion</name>
+    <name>Patient - Information Conversion</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -121,15 +121,11 @@
     <data_tablespace/>
     <index_tablespace/>
     <attributes>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
       <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
     </attributes>
   </connection>
   <order>
-  <hop> <from>Patient Input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Patient Relationship Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Select Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Patient Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Table input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Dummy (do nothing)</name>
@@ -144,8 +140,8 @@
            </partitioning>
      <cluster_schema/>
     <GUI>
-      <xloc>258</xloc>
-      <yloc>234</yloc>
+      <xloc>293</xloc>
+      <yloc>243</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -169,14 +165,14 @@
  <conditions>
   <condition>
    <negated>N</negated>
-   <leftvalue>PETNUMBER</leftvalue>
-   <function>IS NOT NULL</function>
+   <leftvalue>ID</leftvalue>
+   <function>&lt;&gt;</function>
    <rightvalue/>
-   </condition>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
   <condition>
    <negated>N</negated>
    <operator>AND</operator>
-   <leftvalue>CLNUMBER</leftvalue>
+   <leftvalue>ID</leftvalue>
    <function>IS NOT NULL</function>
    <rightvalue/>
    </condition>
@@ -185,42 +181,14 @@
     </compare>
      <cluster_schema/>
     <GUI>
-      <xloc>255</xloc>
+      <xloc>296</xloc>
       <yloc>145</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Patient Input</name>
-    <type>XBaseInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <file_dbf>F:\VETAID\animal.dbf</file_dbf>
-    <limit>0</limit>
-    <add_rownr>N</add_rownr>
-    <field_rownr/>
-    <include>N</include>
-    <include_field/>
-    <accept_filenames>N</accept_filenames>
-    <accept_field/>
-    <accept_stepname/>
-     <cluster_schema/>
-    <GUI>
-      <xloc>66</xloc>
-      <yloc>144</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Patient Relationship Output</name>
+    <name>Patient Output</name>
     <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -230,10 +198,10 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PETNUMBER</idColumn><mapping><source>PETNUMBER</source><target>&lt;entityRelationship.patientOwner>target</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLNUMBER</source><target>&lt;entityRelationship.patientOwner>source</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>ID</idColumn><mapping><source>NAME</source><target>&lt;party.patientpet>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SPECIES</source><target>&lt;party.patientpet>species</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>BREED</source><target>&lt;party.patientpet>breed</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>COLOUR</source><target>&lt;party.patientpet>colour</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DOB</source><target>&lt;party.patientpet>dateOfBirth</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SEX</source><target>&lt;party.patientpet>sex</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESEXED</source><target>&lt;party.patientpet>desexed</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;party.patientpet>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>468</xloc>
-      <yloc>144</yloc>
+      <xloc>570</xloc>
+      <yloc>143</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -249,22 +217,75 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <fields>      <field>        <name>PETNUMBER</name>
-        <rename/>
+    <fields>      <field>        <name>Patient Number</name>
+        <rename>ID</rename>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>LOCATION</name>
-        <rename/>
+        </field>      <field>        <name>Patient Name</name>
+        <rename>NAME</rename>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>CLNUMBER</name>
-        <rename/>
+        </field>      <field>        <name>Patient Species</name>
+        <rename>SPECIES</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Patient Breed</name>
+        <rename>BREED</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Patient Colour</name>
+        <rename>COLOUR</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Patient Sex</name>
+        <rename>SEX</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Patient Weight</name>
+        <rename>WEIGHT</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Patient Date of Birth</name>
+        <rename>DOB</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Patient Desexed</name>
+        <rename>DESEXED</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Deactivated Patient</name>
+        <rename>DEACTIVATED</rename>
         <length>-2</length>
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>169</xloc>
-      <yloc>143</yloc>
+      <xloc>185</xloc>
+      <yloc>145</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Table input</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <connection>Visual Vetaid</connection>
+    <sql>select * from patient</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+     <cluster_schema/>
+    <GUI>
+      <xloc>67</xloc>
+      <yloc>145</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -286,11 +307,23 @@
         <jsScript_script>&#47;&#47;Script here
 var wordUtils = Packages.org.apache.commons.lang.WordUtils;
 
+&#47;&#47; Transform Sex
+SEX.setString(upper(SEX.getString()))
+if (SEX.getString() != &quot;MALE&quot; &amp;&amp; SEX.getString() != &quot;FEMALE&quot;)
+	SEX.setString(&quot;UNSPECIFIED&quot;)
+
+var ACTIVE = !DEACTIVATED.getBool()
+
 </jsScript_script>
-        </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>ACTIVE</name>
+        <rename>ACTIVE</rename>
+        <type>Boolean</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>343</xloc>
-      <yloc>146</yloc>
+      <xloc>433</xloc>
+      <yloc>143</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
