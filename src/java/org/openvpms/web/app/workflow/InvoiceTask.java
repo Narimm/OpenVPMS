@@ -75,7 +75,7 @@ public class InvoiceTask extends CreateIMObjectTask {
     public void start(final TaskContext context) {
         Act invoice = getInvoice(context, FinancialActStatus.IN_PROGRESS);
         if (invoice == null) {
-            getInvoice(context, FinancialActStatus.COMPLETED);
+            invoice = getInvoice(context, FinancialActStatus.COMPLETED);
         }
         if (invoice == null) {
             super.start(context);

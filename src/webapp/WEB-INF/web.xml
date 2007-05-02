@@ -5,6 +5,12 @@
 <web-app>
     <display-name>OpenVPMS</display-name>
     <description>OpenVPMS</description>
+    <!-- Needed by spring if you want to deploy app more than once as different name. Change value
+      -  to something unique -->
+     <context-param>
+       <param-name>webAppRootKey</param-name>
+       <param-value>openvpms</param-value>
+     </context-param>
 
     <!-- Acegi/Spring config -->
     <context-param>
