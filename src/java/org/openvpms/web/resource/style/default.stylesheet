@@ -324,6 +324,22 @@
             <property name="insets" value="5px 5px"/>
         </properties>
     </style>
+    <style name="Patient.Name" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="foreground" value="#0000ff"/>
+            <property name="font">
+                <font size="10pt" bold="true"/>
+            </property>
+        </properties>
+    </style>
+    <style name="Customer.Name" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="foreground" value="#0000ff"/>
+            <property name="font">
+                <font size="10pt" bold="true"/>
+            </property>
+        </properties>
+    </style>
 
     <style name="MedicalRecordSummary.act.patientClinicalEvent"
            type="nextapp.echo2.app.Component">
