@@ -187,7 +187,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
             assertTrue(exception instanceof ValidationException);
             ValidationException ve = (ValidationException) exception;
             assertTrue(ve.getErrors().size() == 1);
-            assertTrue(ve.getErrors().get(0).getNodeName().equals(
+            assertTrue(ve.getErrors().get(0).getNode().equals(
                     "classifications"));
             person.removeClassification(classification);
         }
@@ -202,7 +202,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
             assertTrue(exception instanceof ValidationException);
             ValidationException ve = (ValidationException) exception;
             assertTrue(ve.getErrors().size() == 1);
-            assertTrue(ve.getErrors().get(0).getNodeName().equals(
+            assertTrue(ve.getErrors().get(0).getNode().equals(
                     "classifications"));
         }
     }

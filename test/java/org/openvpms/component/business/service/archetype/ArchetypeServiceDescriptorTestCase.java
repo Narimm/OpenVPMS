@@ -18,9 +18,7 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// spring-context
 import org.apache.log4j.Logger;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -318,8 +316,8 @@ public class ArchetypeServiceDescriptorTestCase extends
      */
     private void dumpValidationException(ValidationException exception) {
         for (ValidationError error : exception.getErrors()) {
-            logger.error("Error in node:" + error.getNodeName() + 
-                    " msg:" + error.getErrorMessage());
+            logger.error("Error in node:" + error.getNode() +
+                    " msg:" + error.getMessage());
         }
         
     }
@@ -360,18 +358,6 @@ public class ArchetypeServiceDescriptorTestCase extends
         return desc;
     }
     
-    /**
-     * Do a bulk delete of the archetypes but ensure that the cascade works
-     */
-    @SuppressWarnings("unused")
-    private void deleteAllArchetypeDescriptors() 
-    throws Exception {
-        Session session = currentSession();
-        Query query = session.createQuery("delete from " +
-                ArchetypeDescriptor.class.getName());
-        query.executeUpdate();
-        
-    }
     /**
      * @return Returns the sessionFactory.
      */

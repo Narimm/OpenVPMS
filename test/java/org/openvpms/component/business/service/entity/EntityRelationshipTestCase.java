@@ -93,7 +93,7 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
             service.validateObject(person.getEntityRelationships().iterator().next());
         } catch (ValidationException exception) {
             for (ValidationError error : exception.getErrors()) {
-                logger.error("Node:" + error.getNodeName() + " Error:" + error.getErrorMessage());
+                logger.error("Node:" + error.getNode() + " Error:" + error.getMessage());
             }
         }
     }
@@ -126,7 +126,7 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
 
         } catch (ValidationException exception) {
             for (ValidationError error : exception.getErrors()) {
-                logger.error("Node:" + error.getNodeName() + " Error:" + error.getErrorMessage());
+                logger.error("Node:" + error.getNode() + " Error:" + error.getMessage());
             }
         }
     }
@@ -324,9 +324,7 @@ public class EntityRelationshipTestCase extends ServiceBaseTestCase {
         } catch (ValidationException exception) {
             for (ValidationError error : exception.getErrors()) {
                 logger.error("[Validation Error] Node:"
-                        + error.getNodeName()
-                        + " Message:" + error.getErrorMessage());
-
+                        + error.getNode() + " Message:" + error.getMessage());
             }
 
             throw exception;

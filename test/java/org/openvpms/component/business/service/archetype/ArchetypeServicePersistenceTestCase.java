@@ -828,8 +828,8 @@ public class ArchetypeServicePersistenceTestCase
      */
     private void dump(ValidationException exception) {
         for (ValidationError error : exception.getErrors()) {
-            logger.error("node: " + error.getNodeName()
-                    + " message: " + error.getErrorMessage());
+            logger.error("node: " + error.getNode()
+                    + " message: " + error.getMessage());
         }
     }
 }
