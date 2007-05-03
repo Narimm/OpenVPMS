@@ -55,6 +55,10 @@
 						<property name="shortName"
 							value="act.customerAccountRefundEFT" />
 					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="act.customerAccountRefundCheque" />
+					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
