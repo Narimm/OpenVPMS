@@ -18,18 +18,22 @@
 
 package org.openvpms.web.app.customer;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.GridLayoutData;
+
 import org.openvpms.archetype.rules.balance.CustomerBalanceRules;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
-
-import java.math.BigDecimal;
-import java.util.Date;
+import org.openvpms.web.component.util.RowFactory;
 
 
 /**
@@ -49,6 +53,12 @@ public class CustomerSummary {
     public static Component getSummary(Party customer) {
         Component result = null;
         if (customer != null) {
+            result = ColumnFactory.create();
+            Label customerName = LabelFactory.create();
+            customerName.setText(customer.getName());
+            customerName.setStyleName("Customer.Name");
+            result.add(RowFactory.create("Patient.Deceased.Inset", customerName));
+            
             CustomerBalanceRules rules = new CustomerBalanceRules();
             Label balanceTitle = create("customer.account.balance");
             BigDecimal balance = rules.getBalance(customer);
@@ -70,11 +80,12 @@ public class CustomerSummary {
             BigDecimal unbilled = rules.getUnbilledAmount(customer);
             Label unbilledValue = create(unbilled);
 
-            result = GridFactory.create(2, balanceTitle, balanceValue,
+            Grid grid = GridFactory.create(2, balanceTitle, balanceValue,
                                         overdueTitle, overdueValue,
                                         currentTitle, currentValue,
                                         creditTitle, creditValue,
                                         unbilledTitle, unbilledValue);
+            result.add(grid);
         }
         return result;
     }
