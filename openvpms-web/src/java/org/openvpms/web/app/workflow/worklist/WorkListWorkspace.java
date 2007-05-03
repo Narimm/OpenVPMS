@@ -174,6 +174,17 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
     }
 
     /**
+     * Invoked when an act is selected.
+     *
+     * @param act the act
+     */
+    @Override
+    protected void actSelected(Act act) {
+        super.actSelected(act);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
      * Creates a new table model to display acts.
      *
      * @return a new table model.
