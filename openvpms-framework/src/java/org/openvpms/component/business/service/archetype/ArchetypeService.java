@@ -246,10 +246,11 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.common.IMObject)
      */
     public void validateObject(IMObject object) {
+        ArchetypeId id = object.getArchetypeId();
         if (logger.isDebugEnabled()) {
             logger.debug(
                     "ArchetypeService.validateObject: Validating object of type "
-                            + object.getArchetypeId().getShortName()
+                            + id.getShortName()
                             + " with uid " + object.getUid()
                             + " and version " + object.getVersion());
         }
@@ -257,22 +258,21 @@ public class ArchetypeService implements IArchetypeService {
         List<ValidationError> errors = new ArrayList<ValidationError>();
 
         // check that we can retrieve a valid archetype for this object
-        ArchetypeDescriptor descriptor = getArchetypeDescriptor(object
-                .getArchetypeId());
+        ArchetypeDescriptor descriptor = getArchetypeDescriptor(id);
         if (descriptor == null) {
-            errors.add(new ValidationError(null, new StringBuffer(
-                    "No archetype definition for ").append(
-                    object.getArchetypeId()).toString()));
+            errors.add(new ValidationError(
+                    id.getShortName(), null,
+                    "No archetype definition for " + id));
             logger.error(new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
-                    object.getArchetypeId().toString()));
+                    id.toString()));
         } else {
             // if there are nodes attached to the archetype then validate the
             // associated assertions
             if (descriptor.getNodeDescriptors().size() > 0) {
                 JXPathContext context = JXPathHelper.newContext(object);
-                validateObject(context, descriptor.getNodeDescriptors(),
-                               errors);
+                validateObject(context, descriptor,
+                               descriptor.getNodeDescriptors(), errors);
             }
         }
 
@@ -283,7 +283,7 @@ public class ArchetypeService implements IArchetypeService {
             throw new ValidationException(
                     errors,
                     ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype,
-                    new Object[]{object.getArchetypeId()});
+                    new Object[]{id});
 
         }
     }
@@ -560,7 +560,7 @@ public class ArchetypeService implements IArchetypeService {
      *                                   be validated
      */
     public void save(Collection<IMObject> entities) {
-        save(entities,  true);
+        save(entities, true);
     }
 
     /* (non-Javadoc)
@@ -662,13 +662,17 @@ public class ArchetypeService implements IArchetypeService {
      * hierarchical, which means that this method is re-entrant.
      *
      * @param context holds the object to be validated
-     * @param nodes   assertions are managed by the nodes object
+     * @param descriptor the archetype descriptor
+     * @param nodes the node to validate
      * @param errors  the errors are collected in this object
      */
-    private void validateObject(JXPathContext context, Map nodes,
+    private void validateObject(JXPathContext context,
+                                ArchetypeDescriptor descriptor,
+                                Map<String, NodeDescriptor> nodes,
                                 List<ValidationError> errors) {
-        for (Object o : nodes.values()) {
-            NodeDescriptor node = (NodeDescriptor) o;
+        String shortName = descriptor.getType().getShortName();
+
+        for (NodeDescriptor node : nodes.values()) {
             Object value = null;
             try {
                 value = node.getValue(context);
@@ -686,7 +690,7 @@ public class ArchetypeService implements IArchetypeService {
                     context.getPointer(node.getPath()).setValue(value);
                 } catch (Exception exception) {
                     value = null;
-                    errors.add(new ValidationError(node.getName(),
+                    errors.add(new ValidationError(shortName, node.getName(),
                                                    "Cannot derive value"));
                     logger.error("Failed to derive value for " +
                             node.getName(), exception);
@@ -700,7 +704,7 @@ public class ArchetypeService implements IArchetypeService {
                     ((value == null) ||
                             ((value instanceof String) && (StringUtils.isEmpty(
                                     (String) value))))) {
-                errors.add(new ValidationError(node.getName(),
+                errors.add(new ValidationError(shortName, node.getName(),
                                                "value is required"));
 
                 if (logger.isDebugEnabled()) {
@@ -716,7 +720,7 @@ public class ArchetypeService implements IArchetypeService {
                 if ((minCardinality > 0) &&
                         (collection == null || collection.size() < minCardinality))
                 {
-                    errors.add(new ValidationError(node.getName(),
+                    errors.add(new ValidationError(shortName, node.getName(),
                                                    " must supply at least " + minCardinality + " "
                                                            + node.getBaseName()));
 
@@ -727,7 +731,7 @@ public class ArchetypeService implements IArchetypeService {
                         (maxCardinality != NodeDescriptor.UNBOUNDED) &&
                         (collection != null && collection.size() > maxCardinality))
                 {
-                    errors.add(new ValidationError(node.getName(),
+                    errors.add(new ValidationError(shortName, node.getName(),
                                                    " cannot supply more than " + maxCardinality + " "
                                                            + node.getBaseName()));
                 }
@@ -736,8 +740,7 @@ public class ArchetypeService implements IArchetypeService {
                 // children. This is the recursive validation
                 if (node.isParentChild()) {
                     for (Object obj : collection) {
-                        if ((obj == null) ||
-                                (!(obj instanceof IMObject))) {
+                        if (obj == null || !(obj instanceof IMObject)) {
                             continue;
                         }
 
@@ -749,7 +752,7 @@ public class ArchetypeService implements IArchetypeService {
                         IMObject imobj = (IMObject) obj;
                         if (imobj.getArchetypeId() == null) {
                             errors.add(
-                                    new ValidationError(null, new StringBuffer(
+                                    new ValidationError(null, null, new StringBuffer(
                                             "No archetype Id was set for object of type ")
                                             .append(imobj.getClass().getName()).toString()));
                             continue;
@@ -759,7 +762,7 @@ public class ArchetypeService implements IArchetypeService {
                                 imobj.getArchetypeId());
                         if (adesc == null) {
                             errors.add(
-                                    new ValidationError(null, new StringBuffer(
+                                    new ValidationError(null, null, new StringBuffer(
                                             "No archetype definition for ").append(
                                             imobj.getArchetypeId()).toString()));
                             logger.error(new ArchetypeServiceException(
@@ -775,7 +778,7 @@ public class ArchetypeService implements IArchetypeService {
                             JXPathContext childContext = JXPathHelper.newContext(
                                     imobj);
                             childContext.setLenient(true);
-                            validateObject(childContext,
+                            validateObject(childContext, adesc,
                                            adesc.getNodeDescriptors(), errors);
                         }
                     }
@@ -798,7 +801,7 @@ public class ArchetypeService implements IArchetypeService {
 
                     try {
                         if (!assertionType.validate(value, node, assertion)) {
-                            errors.add(new ValidationError(node.getName(),
+                            errors.add(new ValidationError(shortName, node.getName(),
                                                            assertion.getErrorMessage()));
                             if (logger.isDebugEnabled()) {
                                 logger.debug("Assertion failed for Node: "
@@ -810,7 +813,7 @@ public class ArchetypeService implements IArchetypeService {
                         // log the error
                         logger.error("Error in validateObject for node "
                                 + node.getName(), exception);
-                        errors.add(new ValidationError(node.getName(),
+                        errors.add(new ValidationError(shortName, node.getName(),
                                                        assertion.getErrorMessage()));
                     }
                 }
@@ -818,7 +821,8 @@ public class ArchetypeService implements IArchetypeService {
 
             // if this node has other nodes then re-enter this method
             if (node.getNodeDescriptors().size() > 0) {
-                validateObject(context, node.getNodeDescriptors(), errors);
+                validateObject(context, descriptor, node.getNodeDescriptors(),
+                               errors);
             }
         }
     }

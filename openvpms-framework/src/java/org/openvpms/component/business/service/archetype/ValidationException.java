@@ -20,13 +20,11 @@
 package org.openvpms.component.business.service.archetype;
 
 // commons-resources
+import org.apache.commons.resources.Messages;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.resources.Messages;
-
-// openvpms-common
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
  * This exception is raised when we are validating objects 
@@ -89,7 +87,7 @@ public class ValidationException extends OpenVPMSException {
      *            the list of validation errors
      * @param errorCode
      *            the error code
-     * @param parama
+     * @param params
      *            the parameters used to render the message associated with the
      *            error code
      */
@@ -164,9 +162,9 @@ public class ValidationException extends OpenVPMSException {
            .append("\n");
         for (ValidationError error : errors) {
             buf.append("\tnode:")
-                .append(error.getNodeName())
+                .append(error.getNode())
                 .append(" msg:")
-                .append(error.getErrorMessage())
+                .append(error.getMessage())
                 .append("\n");
         }
 
