@@ -19,71 +19,112 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// java core
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 import java.io.Serializable;
 
-// commons-lang
-import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * A validation error is generated when a node doesn't comply with its
  * archetype description.
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ValidationError implements Serializable {
 
     /**
-     * Default SUID
+     * Serialisation identifier.
      */
     private static final long serialVersionUID = 1L;
-    
-    /**
-     * The name of the node that this error pertains too
-     */
-    private String nodeName;
-    
-    /**
-     * The actual error message
-     */
-    private String errorMessage;
 
     /**
-     * @param message
-     * @param name
+     * The short name of the archetype that the error refers to.
      */
-    public ValidationError( String nodeName, String errorMessage) {
-        this.errorMessage = errorMessage;
-        this.nodeName = nodeName;
+    private String archetype;
+
+    /**
+     * The name of the node that the error refers to.
+     */
+    private String node;
+
+    /**
+     * The error message.
+     */
+    private String message;
+
+
+    /**
+     * Constructs a new <tt>ValidationError</tt>.
+     */
+    protected ValidationError() {
     }
 
     /**
-     * @return Returns the errorMessage.
+     * Constructs a new <tt>ValidationError</tt>.
+     *
+     * @param archetype the archetype short name
+     * @param node      the node name
+     * @param message   the error message
      */
-    public String getErrorMessage() {
-        return errorMessage;
+    public ValidationError(String archetype, String node, String message) {
+        this.archetype = archetype;
+        this.message = message;
+        this.node = node;
     }
 
     /**
-     * @param errorMessage The errorMessage to set.
+     * Returns the archetype short name.
+     *
+     * @return the archetype short name
      */
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
+    public String getArchetype() {
+        return archetype;
     }
 
     /**
-     * @return Returns the nodeName.
+     * Sets the archetype short name.
+     *
+     * @param archetype the archetype short name
      */
-    public String getNodeName() {
-        return nodeName;
+    public void setArchetype(String archetype) {
+        this.archetype = archetype;
     }
 
     /**
-     * @param nodeName The nodeName to set.
+     * Returns the node name.
+     *
+     * @return the node name
      */
-    public void setNodeName(String nodeName) {
-        this.nodeName = nodeName;
+    public String getNode() {
+        return node;
+    }
+
+    /**
+     * Sets the node name.
+     *
+     * @param node the node name
+     */
+    public void setNode(String node) {
+        this.node = node;
+    }
+
+    /**
+     * Returns the error message.
+     *
+     * @return the error message
+     */
+    public String getMessage() {
+        return message;
+    }
+
+    /**
+     * Sets the error message.
+     *
+     * @param message the error message
+     */
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     /* (non-Javadoc)
@@ -92,9 +133,10 @@ public class ValidationError implements Serializable {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .append("node", nodeName)
-            .append("error", errorMessage)
-            .toString();
+                .append("archetype", archetype)
+                .append("node", node)
+                .append("message", message)
+                .toString();
     }
 
 }
