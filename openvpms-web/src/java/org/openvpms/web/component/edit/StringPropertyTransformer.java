@@ -69,11 +69,11 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         if ((result == null && minLength > 0)
                 || (result != null && result.length() < minLength)) {
             String msg = Messages.get("node.error.minLength", minLength);
-            throw ValidationHelper.createException(desc, msg);
+            throw ValidationHelper.createException(getParent(), desc, msg);
         }
         if (result != null && result.length() > maxLength) {
             String msg = Messages.get("node.error.maxLength", maxLength);
-            throw ValidationHelper.createException(desc, msg);
+            throw ValidationHelper.createException(getParent(), desc, msg);
         }
 
         return result;

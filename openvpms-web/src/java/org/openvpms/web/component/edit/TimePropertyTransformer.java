@@ -210,7 +210,8 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
         String message = Messages.get("node.error.invalidtime",
                                       node.getDisplayName());
         ArchetypeId id = getParent().getArchetypeId();
-        return ValidationHelper.createException(node, message, exception, id);
+        return ValidationHelper.createException(getParent(), node, message,
+                                                exception, id);
     }
 
 }

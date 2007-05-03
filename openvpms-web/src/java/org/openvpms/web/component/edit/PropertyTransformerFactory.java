@@ -50,9 +50,9 @@ public class PropertyTransformerFactory {
         } else if (descriptor.isString()) {
             result = new StringPropertyTransformer(parent, descriptor);
         } else if (descriptor.isMoney()) {
-            result = new MoneyPropertyTransformer(descriptor);
+            result = new MoneyPropertyTransformer(parent, descriptor);
         } else if (descriptor.isNumeric()) {
-            result = new NumericPropertyTransformer(descriptor);
+            result = new NumericPropertyTransformer(parent, descriptor);
         } else {
             result = DEFAULT;
         }

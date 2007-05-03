@@ -21,8 +21,15 @@ package org.openvpms.web.component.im.util;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.archetype.ValidationError;
+import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.List;
 
 
 /**
@@ -110,6 +117,29 @@ public class ErrorHelper {
     }
 
     /**
+     * Helper to format a validation error.
+     *
+     * @param error the validation error
+     * @return the formatted validation error message
+     */
+    public static String getError(ValidationError error) {
+        String archetypeName = null;
+        String nodeName = null;
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(error.getArchetype());
+        if (archetype != null) {
+            archetypeName = archetype.getDisplayName();
+            NodeDescriptor descriptor
+                    = archetype.getNodeDescriptor(error.getNode());
+            if (descriptor != null) {
+                nodeName = descriptor.getDisplayName();
+            }
+        }
+        String key = error.getClass().getName() + ".formatted";
+        return Messages.get(key, archetypeName, nodeName, error.getMessage());
+    }
+
+    /**
      * Returns the preferred exception message from an exception heirarchy.
      *
      * @param exception the exception
@@ -138,9 +168,29 @@ public class ErrorHelper {
             result = Messages.get(exception.getClass().getName(), true);
         }
         if (result == null) {
-            result = exception.getLocalizedMessage();
+            if (exception instanceof ValidationException) {
+                result = getError((ValidationException) exception);
+            } else {
+                result = exception.getLocalizedMessage();
+            }
         }
         return result;
+    }
+
+    /**
+     * Helper to extract the first error from a validation exception.
+     *
+     * @param exception the exception
+     * @return the first error from the exception, or the localised message
+     *         if there is no error
+     */
+    private static String getError(ValidationException exception) {
+        List<ValidationError> errors = exception.getErrors();
+        if (!errors.isEmpty()) {
+            ValidationError error = errors.get(0);
+            return getError(error);
+        }
+        return exception.getLocalizedMessage();
     }
 
     /**

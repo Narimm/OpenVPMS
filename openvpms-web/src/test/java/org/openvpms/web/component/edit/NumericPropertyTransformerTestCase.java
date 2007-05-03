@@ -18,9 +18,11 @@
 
 package org.openvpms.web.component.edit;
 
-import junit.framework.Assert;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.test.AbstractAppTest;
@@ -38,27 +40,27 @@ public class NumericPropertyTransformerTestCase
         extends AbstractAppTest {
 
     /**
-     * Integer node.
-     */
-    private NodeDescriptor _intNode;
-
-    /**
-     * BigDecimal node.
-     */
-    private NodeDescriptor _decNode;
-
-
-    /**
      * Tests {@link NumericPropertyTransformer#apply} for an integer node.
      */
     public void testIntegerApply() {
         final Integer one = 1;
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        String shortName = "party.organisationSchedule";
+
+
+        NodeDescriptor intNode = getDescriptor(shortName, "slotSize");
+        assertEquals(Integer.class, intNode.getClazz());
+
+        IMObject parent = service.create(shortName);
+
         NumericPropertyTransformer handler = new NumericPropertyTransformer(
-                _intNode);
+                parent, intNode);
 
         // test string conversions
         try {
             handler.apply("abc");
+            fail("expected conversion from 'abc' to fail");
         } catch (ValidationException exception) {
             assertFalse(exception.getErrors().isEmpty());
         }
@@ -68,8 +70,9 @@ public class NumericPropertyTransformerTestCase
 
         try {
             handler.apply("1.0");
+            fail("expected conversion from '1.0' to fail");
         } catch (ValidationException exception) {
-            // see comments in testIntegerIsValid
+            // not supported by Integer.parseInt()
             assertFalse(exception.getErrors().isEmpty());
         }
 
@@ -85,8 +88,17 @@ public class NumericPropertyTransformerTestCase
     public void testDecimalApply() {
         final BigDecimal one = new BigDecimal("1.0");
         final BigDecimal half = new BigDecimal("0.5");
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        String shortName = "act.patientWeight";
+
+        NodeDescriptor decNode = getDescriptor(shortName, "weight");
+        assertEquals(BigDecimal.class, decNode.getClazz());
+
+        IMObject parent = service.create(shortName);
+
         NumericPropertyTransformer handler = new NumericPropertyTransformer(
-                _decNode);
+                parent, decNode);
 
         // test string conversions
         try {
@@ -123,12 +135,6 @@ public class NumericPropertyTransformerTestCase
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        // get the node descriptors
-        _intNode = getDescriptor("party.organisationSchedule", "slotSize");
-        Assert.assertEquals(Integer.class, _intNode.getClazz());
-
-        _decNode = getDescriptor("act.patientWeight", "weight");
-        Assert.assertEquals(BigDecimal.class, _decNode.getClazz());
     }
 
     /**

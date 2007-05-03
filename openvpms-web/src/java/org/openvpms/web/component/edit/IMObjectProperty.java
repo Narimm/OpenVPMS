@@ -420,6 +420,7 @@ public class IMObjectProperty implements Property, CollectionProperty {
      */
     private void addError(String message) {
         ValidationError error = new ValidationError(
+                _object.getArchetypeId().getShortName(),
                 _descriptor.getDisplayName(), message);
         if (_errors == null) {
             _errors = new ArrayList<ValidationError>();

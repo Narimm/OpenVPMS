@@ -20,6 +20,7 @@ package org.openvpms.web.component.edit;
 
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 import org.openvpms.web.component.im.edit.ValidationHelper;
@@ -34,12 +35,7 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class NumericPropertyTransformer implements PropertyTransformer {
-
-    /**
-     * The node descriptor.
-     */
-    private final NodeDescriptor descriptor;
+public class NumericPropertyTransformer extends AbstractPropertyTransformer {
 
     /**
      * The type converter.
@@ -49,12 +45,14 @@ public class NumericPropertyTransformer implements PropertyTransformer {
 
 
     /**
-     * Constructs a new <code>NumericPropertyTransformer</code>.
+     * Constructs a new <tt>NumericPropertyTransformer</tt>.
      *
+     * @param parent     the parent object
      * @param descriptor the node descriptor
      */
-    public NumericPropertyTransformer(NodeDescriptor descriptor) {
-        this.descriptor = descriptor;
+    public NumericPropertyTransformer(IMObject parent,
+                                      NodeDescriptor descriptor) {
+        super(parent, descriptor);
     }
 
     /**
@@ -79,6 +77,7 @@ public class NumericPropertyTransformer implements PropertyTransformer {
      */
     public Object apply(Object object) throws ValidationException {
         Object result;
+        NodeDescriptor descriptor = getDescriptor();
         try {
             Class type = descriptor.getClazz();
             result = CONVERTER.convert(object, type);
@@ -88,8 +87,8 @@ public class NumericPropertyTransformer implements PropertyTransformer {
         } catch (Throwable exception) {
             String message = Messages.get("node.error.invalidnumeric",
                                           descriptor.getDisplayName());
-            throw ValidationHelper.createException(descriptor, message,
-                                                   exception);
+            throw ValidationHelper.createException(getParent(), descriptor,
+                                                   message, exception);
         }
 
         return result;
