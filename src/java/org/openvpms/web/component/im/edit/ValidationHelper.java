@@ -28,9 +28,7 @@ import org.openvpms.component.business.service.archetype.ValidationException;
 import static org.openvpms.component.business.service.archetype.ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
@@ -51,7 +49,7 @@ public class ValidationHelper {
     /**
      * The logger.
      */
-    private static final Log _log = LogFactory.getLog(ValidationHelper.class);
+    private static final Log log = LogFactory.getLog(ValidationHelper.class);
 
 
     /**
@@ -92,10 +90,11 @@ public class ValidationHelper {
         try {
             service.validateObject(object);
         } catch (ValidationException exception) {
-            _log.debug(exception, exception);
+            log.debug(exception, exception);
             errors = exception.getErrors();
             if (errors.isEmpty()) {
-                errors.add(new ValidationError(null, exception.getMessage()));
+                errors.add(new ValidationError(null, null,
+                                               exception.getMessage()));
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
@@ -116,27 +115,7 @@ public class ValidationHelper {
                     = validator.getErrors(modifiable);
             if (!errors.isEmpty()) {
                 ValidationError error = errors.get(0);
-                String node = error.getNodeName();
-                IMObject parent = null;
-                NodeDescriptor descriptor = null;
-                if (modifiable instanceof IMObjectEditor) {
-                    parent = ((IMObjectEditor) modifiable).getObject();
-                } else if (modifiable instanceof IMObjectCollectionEditor) {
-                    parent = ((IMObjectCollectionEditor) modifiable).getObject();
-                } else if (modifiable instanceof Property) {
-                    descriptor = ((Property) modifiable).getDescriptor();
-                }
-                if (parent != null) {
-                    String title = DescriptorHelper.getDisplayName(parent,
-                                                                   node);
-                    ErrorDialog.show(title, error.getErrorMessage());
-                } else if (descriptor != null) {
-                    ErrorDialog.show(descriptor.getDisplayName(),
-                                     error.getErrorMessage());
-
-                } else {
-                    ErrorDialog.show(error.getErrorMessage());
-                }
+                ErrorHelper.show(ErrorHelper.getError(error));
             }
         }
     }
@@ -144,26 +123,31 @@ public class ValidationHelper {
     /**
      * Helper to create a validation error for a node.
      *
+     * @param object     the parent object
      * @param descriptor the node descriptor
      * @param message    the message
      * @return a new exception
      */
     public static ValidationException createException(
-            NodeDescriptor descriptor, String message) {
-        return createException(descriptor, message, null);
+            IMObject object, NodeDescriptor descriptor, String message) {
+        return createException(object, descriptor, message, null);
     }
 
     /**
      * Helper to create a validation error for a node.
      *
+     * @param object     the parent object
      * @param descriptor the node descriptor
      * @param message    the message
      * @param cause      the cause. May be <code>null</code>
      * @return a new exception
      */
     public static ValidationException createException(
-            NodeDescriptor descriptor, String message, Throwable cause) {
-        ValidationError error = new ValidationError(descriptor.getName(),
+            IMObject object, NodeDescriptor descriptor, String message,
+            Throwable cause) {
+        String archetype = DescriptorHelper.getDisplayName(object);
+        ValidationError error = new ValidationError(archetype,
+                                                    descriptor.getName(),
                                                     message);
         List<ValidationError> errors = Arrays.asList(error);
         return new ValidationException(errors,
@@ -174,6 +158,7 @@ public class ValidationHelper {
     /**
      * Helper to create a validation error for a node.
      *
+     * @param object     the parent object
      * @param descriptor the node descriptor
      * @param message    the message
      * @param cause      the cause. May be <code>null</code>
@@ -181,9 +166,11 @@ public class ValidationHelper {
      * @return a new exception
      */
     public static ValidationException createException(
-            NodeDescriptor descriptor, String message, Throwable cause,
-            Object ... params) {
-        ValidationError error = new ValidationError(descriptor.getName(),
+            IMObject object, NodeDescriptor descriptor, String message,
+            Throwable cause, Object ... params) {
+        String archetype = DescriptorHelper.getDisplayName(object);
+        ValidationError error = new ValidationError(archetype,
+                                                    descriptor.getName(),
                                                     message);
         List<ValidationError> errors = Arrays.asList(error);
         return new ValidationException(errors,

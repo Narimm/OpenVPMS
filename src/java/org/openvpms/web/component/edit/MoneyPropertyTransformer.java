@@ -20,6 +20,7 @@ package org.openvpms.web.component.edit;
 
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.web.component.im.edit.ValidationHelper;
@@ -36,21 +37,18 @@ import java.math.BigInteger;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-30 04:38:04Z $
  */
-public class MoneyPropertyTransformer implements PropertyTransformer {
-
-    /**
-     * The node descriptor.
-     */
-    private final NodeDescriptor descriptor;
+public class MoneyPropertyTransformer extends AbstractPropertyTransformer {
 
 
     /**
-     * Constructs a new <code>NumericPropertyTransformer</code>.
+     * Constructs a new <tt>MoneyPropertyTransformer</tt>.
      *
+     * @param parent     the parent object
      * @param descriptor the node descriptor
      */
-    public MoneyPropertyTransformer(NodeDescriptor descriptor) {
-        this.descriptor = descriptor;
+    public MoneyPropertyTransformer(IMObject parent,
+                                    NodeDescriptor descriptor) {
+        super(parent, descriptor);
     }
 
     /**
@@ -94,8 +92,9 @@ public class MoneyPropertyTransformer implements PropertyTransformer {
      */
     private ValidationException getException(Throwable cause) {
         String message = Messages.get("node.error.invalidnumeric",
-                                      descriptor.getDisplayName());
-        return ValidationHelper.createException(descriptor, message, cause);
+                                      getDescriptor().getDisplayName());
+        return ValidationHelper.createException(getParent(), getDescriptor(),
+                                                message, cause);
     }
 
 }

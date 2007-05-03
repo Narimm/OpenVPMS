@@ -107,6 +107,7 @@ public class UserEditor extends AbstractIMObjectEditor {
                 valid = true;
             } else {
                 ValidationError error = new ValidationError(
+                        getObject().getArchetypeId().getShortName(),
                         property.getDescriptor().getName(),
                         Messages.get("admin.user.password.mismatch"));
                 validator.add(property, Arrays.asList(error));
