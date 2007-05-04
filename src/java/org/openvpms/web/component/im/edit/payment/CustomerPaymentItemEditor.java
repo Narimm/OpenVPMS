@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 import java.math.BigDecimal;
@@ -60,7 +61,7 @@ public class CustomerPaymentItemEditor extends AbstractIMObjectEditor {
                                                  "act.customerAccountPayment*");
                 CustomerBalanceRules rules = new CustomerBalanceRules();
                 BigDecimal balance = rules.getBalance(
-                        customer, parent.getTotal(), payment);
+                        customer, getRunningTotal(parent), payment);
                 Property amount = getProperty("amount");
                 amount.setValue(balance);
             }
@@ -89,6 +90,20 @@ public class CustomerPaymentItemEditor extends AbstractIMObjectEditor {
                                                    context);
         }
         return result;
+    }
+
+    /**
+     * Returns the running total of the parent act.
+     * This is the current total of the parent act minus any committed
+     * acts which are already included in the balance.
+     *
+     * @param parent the parent act
+     * @return the running total
+     */
+    private BigDecimal getRunningTotal(FinancialAct parent) {
+        BigDecimal total = parent.getTotal();
+        BigDecimal committed = ActHelper.sum(parent, "amount");
+        return total.subtract(committed);
     }
 
 }
