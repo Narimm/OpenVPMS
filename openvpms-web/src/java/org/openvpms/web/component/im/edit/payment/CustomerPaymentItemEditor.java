@@ -20,13 +20,13 @@ package org.openvpms.web.component.im.edit.payment;
 
 import org.openvpms.archetype.rules.balance.CustomerBalanceRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 import java.math.BigDecimal;
@@ -48,7 +48,7 @@ public class CustomerPaymentItemEditor extends AbstractIMObjectEditor {
      * @param parent  the parent act
      * @param context the layout context
      */
-    public CustomerPaymentItemEditor(Act act, Act parent,
+    public CustomerPaymentItemEditor(FinancialAct act, FinancialAct parent,
                                      LayoutContext context) {
         super(act, parent, context);
         if (act.isNew()) {
@@ -59,10 +59,9 @@ public class CustomerPaymentItemEditor extends AbstractIMObjectEditor {
                                              "act.customerAccountPayment*");
             Party customer = context.getContext().getCustomer();
             if (customer != null) {
-                BigDecimal diff = ActHelper.sum(parent, "amount");
                 CustomerBalanceRules rules = new CustomerBalanceRules();
                 BigDecimal current = rules.getBalance(customer);
-                BigDecimal balance = current.subtract(diff);
+                BigDecimal balance = current.subtract(parent.getTotal());
                 if (balance.signum() == -1) {
                     balance = (payment) ? BigDecimal.ZERO : balance.negate();
                 } else if (balance.signum() == 1 && !payment) {
@@ -91,7 +90,8 @@ public class CustomerPaymentItemEditor extends AbstractIMObjectEditor {
                 && !TypeHelper.isA(object, "act.customerAccountPayment",
                                    "act.customerAccountRefund")
                 && parent instanceof Act) {
-            result = new CustomerPaymentItemEditor((Act) object, (Act) parent,
+            result = new CustomerPaymentItemEditor((FinancialAct) object,
+                                                   (FinancialAct) parent,
                                                    context);
         }
         return result;
