@@ -20,6 +20,8 @@ package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.Cancellable;
+import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Saveable;
 
@@ -32,7 +34,8 @@ import java.beans.PropertyChangeListener;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface IMObjectEditor extends Editor, Saveable {
+public interface IMObjectEditor extends Editor, Saveable, Deletable,
+                                        Cancellable {
 
     /**
      * Property name for event indicating that the component has changed.
@@ -88,7 +91,7 @@ public interface IMObjectEditor extends Editor, Saveable {
 
     /**
      * Cancel any edits. Once complete, query methods may be invoked, but the
-     * behaviour of other methods is undefined..
+     * behaviour of other methods is undefined.
      */
     void cancel();
 

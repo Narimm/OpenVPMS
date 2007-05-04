@@ -37,23 +37,23 @@ public class Editors implements Modifiable {
     /**
      * Caches the modified status.
      */
-    private boolean _modified;
+    private boolean modified;
 
     /**
      * The event listeners.
      */
-    private ModifiableListeners _listeners = new ModifiableListeners();
+    private ModifiableListeners listeners = new ModifiableListeners();
 
 
     /**
      * The set of editors.
      */
-    private final Set<Modifiable> _editors = new HashSet<Modifiable>();
+    private final Set<Modifiable> editors = new HashSet<Modifiable>();
 
     /**
-     * The set of editors associated with properyies, keyed on property name.
+     * The set of editors associated with properties, keyed on property name.
      */
-    private final Map<String, Editor> _propertyEditors
+    private final Map<String, Editor> propertyEditors
             = new HashMap<String, Editor>();
 
 
@@ -85,7 +85,7 @@ public class Editors implements Modifiable {
      */
     public void add(Editor editor, Property property) {
         addEditor(editor);
-        _propertyEditors.put(property.getDescriptor().getName(), editor);
+        propertyEditors.put(property.getDescriptor().getName(), editor);
     }
 
     /**
@@ -96,7 +96,7 @@ public class Editors implements Modifiable {
      *         <code>null</code> if none exists
      */
     public Editor getEditor(String name) {
-        return _propertyEditors.get(name);
+        return propertyEditors.get(name);
     }
 
     /**
@@ -106,10 +106,40 @@ public class Editors implements Modifiable {
      */
     public List<Saveable> getModifiedSaveable() {
         List<Saveable> result = new ArrayList<Saveable>();
-        for (Modifiable modifiable : _editors) {
+        for (Modifiable modifiable : editors) {
             if ((modifiable instanceof Saveable)
                     && modifiable.isModified()) {
                 result.add((Saveable) modifiable);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all {@link Cancellable} editers.
+     *
+     * @return a list of all Cancellable editors.
+     */
+    public List<Cancellable> getCancellable() {
+        List<Cancellable> result = new ArrayList<Cancellable>();
+        for (Modifiable modifiable : editors) {
+            if (modifiable instanceof Cancellable) {
+                result.add((Cancellable) modifiable);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all {@link Deletable} editers.
+     *
+     * @return a list of all Deletable editors.
+     */
+    public List<Deletable> getDeletable() {
+        List<Deletable> result = new ArrayList<Deletable>();
+        for (Modifiable modifiable : editors) {
+            if (modifiable instanceof Deletable) {
+                result.add((Deletable) modifiable);
             }
         }
         return result;
@@ -121,23 +151,23 @@ public class Editors implements Modifiable {
      * @return <code>true</code> if the object has been modified
      */
     public boolean isModified() {
-        if (!_modified) {
-            for (Modifiable modifiable : _editors) {
+        if (!modified) {
+            for (Modifiable modifiable : editors) {
                 if (modifiable.isModified()) {
-                    _modified = true;
-                    return _modified;
+                    modified = true;
+                    return modified;
                 }
             }
         }
-        return _modified;
+        return modified;
     }
 
     /**
      * Clears the modified status of the object.
      */
     public void clearModified() {
-        _modified = false;
-        for (Modifiable modifiable : _editors) {
+        modified = false;
+        for (Modifiable modifiable : editors) {
             modifiable.clearModified();
         }
     }
@@ -148,7 +178,7 @@ public class Editors implements Modifiable {
      * @param listener the listener to add
      */
     public void addModifiableListener(ModifiableListener listener) {
-        _listeners.addListener(listener);
+        listeners.addListener(listener);
     }
 
     /**
@@ -157,7 +187,7 @@ public class Editors implements Modifiable {
      * @param listener the listener to remove
      */
     public void removeModifiableListener(ModifiableListener listener) {
-        _listeners.removeListener(listener);
+        listeners.removeListener(listener);
     }
 
     /**
@@ -178,7 +208,7 @@ public class Editors implements Modifiable {
      */
     public boolean validate(Validator validator) {
         boolean valid = true;
-        for (Modifiable modifiable : _editors) {
+        for (Modifiable modifiable : editors) {
             if (!validator.validate(modifiable)) {
                 valid = false;
             }
@@ -193,7 +223,7 @@ public class Editors implements Modifiable {
      *         <code>false</code>
      */
     public boolean isEmpty() {
-        return _editors.isEmpty();
+        return editors.isEmpty();
     }
 
     /**
@@ -203,7 +233,7 @@ public class Editors implements Modifiable {
      * @param modified the changed instance
      */
     protected void notifyListeners(Modifiable modified) {
-        _listeners.notifyListeners(modified);
+        listeners.notifyListeners(modified);
     }
 
     /**
@@ -212,7 +242,7 @@ public class Editors implements Modifiable {
      * @param editor the editor to add
      */
     private void addEditor(Editor editor) {
-        _editors.add(editor);
+        editors.add(editor);
         editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 notifyListeners(modifiable);
