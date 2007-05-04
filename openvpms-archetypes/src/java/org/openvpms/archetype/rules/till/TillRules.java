@@ -18,10 +18,22 @@
 
 package org.openvpms.archetype.rules.till;
 
-import org.openvpms.archetype.rules.act.ActCalculator;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.BalanceNotFound;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.CantAddActToTill;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.ClearedTill;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.InvalidTillArchetype;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.InvalidTransferTill;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.MissingRelationship;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.MissingTill;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.TillNotFound;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.UnclearedTillExists;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.deposit.DepositHelper;
-import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.*;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -43,9 +55,6 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
-
-import java.math.BigDecimal;
-import java.util.Date;
 
 
 /**
@@ -412,6 +421,16 @@ public class TillRules {
         ActBean bean = new ActBean(act, service);
         bean.setStatus(TillBalanceStatus.UNCLEARED);
         bean.setParticipant(TillRules.TILL_PARTICIPATION, till);
+        
+        // Get the Till and extract last cash float amount to set balance cash float.  
+        Entity theTill = bean.getParticipant(TILL_PARTICIPATION);
+        BigDecimal tillCashFloat;
+        if (theTill != null) {
+	        IMObjectBean tillBean = new IMObjectBean(theTill, service);
+	        tillCashFloat = tillBean.getBigDecimal("tillFloat", BigDecimal.ZERO);
+	        bean.setValue("cashFloat", tillCashFloat);
+        }
+        
         return act;
     }
 
