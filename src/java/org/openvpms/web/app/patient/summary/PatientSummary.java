@@ -85,9 +85,8 @@ public class PatientSummary {
         Component result = null;
         if (patient != null) {
             result = ColumnFactory.create();
-            Label patientName = LabelFactory.create();
+            Label patientName = LabelFactory.create(null,"Patient.Name");
             patientName.setText(patient.getName());
-            patientName.setStyleName("Patient.Name");
             result.add(RowFactory.create("Patient.Deceased.Inset", patientName));            	
             if (rules.isDeceased(patient)) {
                 Label deceased = LabelFactory.create("patient.deceased",
