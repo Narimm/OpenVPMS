@@ -54,9 +54,8 @@ public class CustomerSummary {
         Component result = null;
         if (customer != null) {
             result = ColumnFactory.create();
-            Label customerName = LabelFactory.create();
+            Label customerName = LabelFactory.create(null,"Customer.Name");
             customerName.setText(customer.getName());
-            customerName.setStyleName("Customer.Name");
             result.add(RowFactory.create("Patient.Deceased.Inset", customerName));
             
             CustomerBalanceRules rules = new CustomerBalanceRules();
