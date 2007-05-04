@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
@@ -72,6 +73,10 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
      */
     private boolean docModified = false;
 
+    /**
+     * Manages old document references to avoid orphaned documents.
+     */
+    private final DocReferenceMgr refMgr;
 
     /**
      * Construct a new <code>DocumentParticipationEditor</code>.
@@ -96,6 +101,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
             }
         });
         selector.setObject(act);
+        refMgr = new DocReferenceMgr(act.getDocReference());
     }
 
     /**
@@ -115,6 +121,39 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     public void clearModified() {
         super.clearModified();
         docModified = false;
+    }
+
+    /**
+     * Cancel any edits. Once complete, query methods may be invoked, but the
+     * behaviour of other methods is undefined.
+     */
+    @Override
+    public void cancel() {
+        super.cancel();
+        try {
+            refMgr.rollback();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Delete the current object.
+     *
+     * @return <code>true</code> if the object was deleted successfully
+     */
+    @Override
+    public boolean delete() {
+        boolean result = false;
+        if (super.delete()) {
+            try {
+                refMgr.delete();
+                result = true;
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        }
+        return result;
     }
 
     /**
@@ -141,6 +180,9 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
                 act.setDescription(description);
             }
             saved = SaveHelper.save(act);
+            if (saved) {
+                refMgr.commit();
+            }
         }
         return saved;
     }
@@ -207,7 +249,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
                     } else {
                         act.setDescription(getParent().getName());
                     }
-                    act.setDocReference(doc.getObjectReference());
+                    replaceDocReference(doc);
                     selector.setObject(act);
                     docModified = true;
                 } catch (Exception exception) {
@@ -235,4 +277,17 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
         act.setDescription(description);
         selector.setObject(act);
     }
+
+    /**
+     * Replaces the existing document reference with that of a new document.
+     * The existing document is queued for deletion.
+     *
+     * @param document the new document
+     */
+    private void replaceDocReference(Document document) {
+        IMObjectReference ref = document.getObjectReference();
+        act.setDocReference(ref);
+        refMgr.add(ref);
+    }
+
 }

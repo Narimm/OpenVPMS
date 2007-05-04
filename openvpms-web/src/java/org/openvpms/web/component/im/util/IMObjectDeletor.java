@@ -33,7 +33,10 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -144,10 +147,11 @@ public final class IMObjectDeletor {
             public void windowPaneClosing(WindowPaneEvent e) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
                     try {
-                        IArchetypeService service
-                                = ArchetypeServiceHelper.getArchetypeService();
-                        service.remove(object);
-                        listener.deleted(object);
+                        IMObjectEditor editor = IMObjectEditorFactory.create(
+                                object, new DefaultLayoutContext(true));
+                        if (editor.delete()) {
+                            listener.deleted(object);
+                        }
                     } catch (OpenVPMSException exception) {
                         String title = Messages.get(
                                 "imobject.delete.failed.title");

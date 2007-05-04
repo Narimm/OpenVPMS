@@ -33,9 +33,13 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
+import org.openvpms.web.component.edit.Cancellable;
+import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -53,7 +57,8 @@ import java.io.InputStream;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocumentEditor extends AbstractPropertyEditor {
+public class DocumentEditor extends AbstractPropertyEditor
+        implements Saveable, Cancellable, Deletable {
 
     /**
      * The document type label.
@@ -69,6 +74,16 @@ public class DocumentEditor extends AbstractPropertyEditor {
      * The focus group.
      */
     private final FocusGroup focusGroup;
+
+    /**
+     * Manages old document references to avoid orphaned documents.
+     */
+    private final DocReferenceMgr refMgr;
+
+    /**
+     * Indicates if the object has been saved.
+     */
+    private boolean saved = false;
 
 
     /**
@@ -88,6 +103,9 @@ public class DocumentEditor extends AbstractPropertyEditor {
         focusGroup = new FocusGroup("DocumentEditor");
         focusGroup.add(upload);
         component = RowFactory.create("CellSpacing", upload, docType);
+
+        IMObjectReference original = (IMObjectReference) property.getValue();
+        refMgr = new DocReferenceMgr(original);
     }
 
     /**
@@ -108,6 +126,62 @@ public class DocumentEditor extends AbstractPropertyEditor {
     public FocusGroup getFocusGroup() {
         return focusGroup;
     }
+
+    /**
+     * Save any edits.
+     *
+     * @return <code>true</code> if the save was successful
+     */
+    public boolean save() {
+        boolean result;
+        try {
+            refMgr.commit();
+            saved = true;
+            result = true;
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+            result = false;
+        }
+        return result;
+    }
+
+    /**
+     * Determines if any edits have been saved.
+     *
+     * @return <code>true</code> if edits have been saved.
+     */
+    public boolean isSaved() {
+        return saved;
+    }
+
+    /**
+     * Cancel any edits.
+     */
+    public void cancel() {
+        try {
+            refMgr.rollback();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Perform deletion.
+     *
+     * @return <tt>true</tt> if deletion was successful
+     */
+    public boolean delete() {
+        boolean result;
+        try {
+            refMgr.delete();
+            result = true;
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+            result = false;
+        }
+        return result;
+    }
+
 
     /**
      * Invoked when the upload button is pressed.
@@ -148,13 +222,24 @@ public class DocumentEditor extends AbstractPropertyEditor {
             DocumentHandler handler = handlers.get(fileName, contentType);
             Document doc = handler.create(fileName, stream, contentType, size);
             service.save(doc);
-            IMObjectReference ref = doc.getObjectReference();
-            getProperty().setValue(ref);
+            replaceDocReference(doc);
             String displayName = DescriptorHelper.getDisplayName(doc);
             docType.setText(displayName);
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Replaces the existing document reference with that of a new document.
+     * The existing document is queued for deletion.
+     *
+     * @param document the new document
+     */
+    private void replaceDocReference(Document document) {
+        IMObjectReference ref = document.getObjectReference();
+        getProperty().setValue(ref);
+        refMgr.add(ref);
     }
 
 }
