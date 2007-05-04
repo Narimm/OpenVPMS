@@ -176,7 +176,7 @@ public class ButtonSet implements KeyStrokeHandler {
         if (keyStrokeListener != null) {
             // add the button before the keystroke listener to avoid
             // cell spacing issues
-            container.add(button, container.getComponentCount() - 1);
+            container.add(button, container.indexOf(keyStrokeListener));
         } else {
             container.add(button);
         }
@@ -344,6 +344,10 @@ public class ButtonSet implements KeyStrokeHandler {
                     onKeyStroke(event);
                 }
             });
+            container.add(keyStrokeListener);
+        } else if (container.indexOf(keyStrokeListener) == -1) {
+            // someone has done a removeAll() or similar on the container.
+            // Need to re-register the listener
             container.add(keyStrokeListener);
         }
         return keyStrokeListener;
