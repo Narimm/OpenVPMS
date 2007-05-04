@@ -306,14 +306,14 @@ public class ArchetypeQueryHelper {
      * This is a static method that will return a list of candidate children
      * given an reference to the archetype service, the node descriptor for
      * the node in question and the context object.
-     * <p/>
-     * TODO Deprecate this function and go about doing it another way
      *
      * @param service the archetype service
      * @param ndesc   the node descriptor
      * @param context the context object
      * @return List<IMObject>
+     * @deprecated use get(service, ndesc.getArchetypeRange(), true, 0, ArchetypeQuery.ALL_RESULTS)
      */
+    @Deprecated
     public static List<IMObject> getCandidateChildren(IArchetypeService service,
                                                       NodeDescriptor ndesc,
                                                       IMObject context) {

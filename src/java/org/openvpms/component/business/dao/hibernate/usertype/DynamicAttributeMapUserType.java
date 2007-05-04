@@ -20,24 +20,17 @@
 package org.openvpms.component.business.dao.hibernate.usertype;
 
 // java core
-import java.io.Serializable;
+import com.thoughtworks.xstream.XStream;
+import org.apache.log4j.Logger;
+import org.hibernate.HibernateException;
+import org.hibernate.usertype.UserType;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
-// java sql
+import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-
-// hibernate
-import org.apache.log4j.Logger;
-import org.hibernate.HibernateException;
-import org.hibernate.usertype.UserType;
-
-//codehaus xstream
-import com.thoughtworks.xstream.XStream;
-
-// openvpms-framework
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * This user type will stream an {@link ItemStructure} into an 
@@ -45,7 +38,10 @@ import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttribut
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
+ * @deprecated will be removed post 1.0
+
  */
+@Deprecated
 public class DynamicAttributeMapUserType implements UserType, Serializable {
     /**
      * Define a logger for this class

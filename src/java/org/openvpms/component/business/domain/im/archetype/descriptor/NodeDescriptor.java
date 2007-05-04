@@ -509,8 +509,10 @@ public class NodeDescriptor extends Descriptor {
      *
      * @param context the context object
      * @return List a list of candiate children, which can also be an empty list
+     * @deprecated unused, no replacement. Will be removed post 1.0
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     public List<IMObject> getCandidateChildren(IMObject context) {
         List<IMObject> result = null;
         AssertionDescriptor descriptor = assertionDescriptors
