@@ -174,6 +174,40 @@ public abstract class AbstractCustomerBalanceTest extends ArchetypeServiceTest {
     }
 
     /**
+     * Helper to create an <em>act.customerAccountPayment</em> containing an
+     * <em>act.customerAccountPaymentCash</em>.
+     */
+    protected FinancialAct createPaymentCash(Money amount) {
+        FinancialAct payment = createPayment(amount);
+        FinancialAct cash = (FinancialAct) create(
+                "act.customerAccountPaymentCash");
+        ActBean cashBean = new ActBean(cash);
+        cashBean.setValue("amount", amount);
+        cashBean.setValue("tendered", amount);
+        cashBean.save();
+        ActBean bean = new ActBean(payment);
+        bean.addRelationship("actRelationship.customerAccountPaymentItem",
+                             cash);
+        return payment;
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountPayment</em> containing an
+     * <em>act.customerAccountPaymentCheque</em>.
+     */
+    protected FinancialAct createPaymentCheque(Money amount) {
+        FinancialAct payment = createPayment(amount);
+        FinancialAct cheque = (FinancialAct) create(
+                "act.customerAccountPaymentCheque");
+        cheque.setTotal(amount);
+        save(cheque);
+        ActBean bean = new ActBean(payment);
+        bean.addRelationship("actRelationship.customerAccountPaymentItem",
+                             cheque);
+        return payment;
+    }
+
+    /**
      * Helper to create an <em>act.customerAccountRefund</em>.
      *
      * @param amount the act total
@@ -260,6 +294,7 @@ public abstract class AbstractCustomerBalanceTest extends ArchetypeServiceTest {
         ActBean itemBean = new ActBean(item);
         itemBean.addParticipation("participation.patient", getPatient());
         itemBean.addParticipation("participation.product", getProduct());
+        itemBean.save();
         bean.addRelationship(relationshipShortName, item);
         return act;
     }
