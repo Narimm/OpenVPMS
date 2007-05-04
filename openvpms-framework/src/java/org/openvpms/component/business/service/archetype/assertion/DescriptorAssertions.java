@@ -29,7 +29,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
  * 
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
+ * @deprecated will be removed post 1.0
  */
+@Deprecated
 public class DescriptorAssertions {
     
     /**

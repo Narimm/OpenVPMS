@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 /**
- *
  * Test the persistence side of the archetype service.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -506,8 +505,9 @@ public class ArchetypeServicePersistenceTestCase
                 person.getArchetypeId());
         NodeDescriptor ndesc = adesc.getNodeDescriptor("classifications");
         List<IMObject> children =
-                ArchetypeQueryHelper.getCandidateChildren(service, ndesc,
-                                                          person);
+                ArchetypeQueryHelper.get(
+                        service, ndesc.getArchetypeRange(),
+                        true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
         assertTrue(children.size() > 0);
         for (IMObject child : children) {
             boolean matchFound = false;
@@ -635,8 +635,8 @@ public class ArchetypeServicePersistenceTestCase
         service.save(object);
 
         object = (Lookup) ArchetypeQueryHelper.getByUid(service,
-                                               object.getArchetypeId(),
-                                               object.getUid());
+                                                        object.getArchetypeId(),
+                                                        object.getUid());
         assertTrue(object != null);
         assertTrue(ndesc.getValue(object) != null);
         assertTrue(ndesc.getValue(object).equals("jimmya"));

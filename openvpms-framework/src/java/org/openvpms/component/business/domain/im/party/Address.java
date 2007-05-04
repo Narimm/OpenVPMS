@@ -31,7 +31,9 @@ import java.util.Set;
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
+ * @deprecated will be removed post 1.0
  */
+@Deprecated
 class Address extends IMObject {
 
     /**
