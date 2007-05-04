@@ -257,6 +257,39 @@ public class CustomerBalanceRules {
     }
 
     /**
+     * Calculates a new balance for a customer from the current outstanding
+     * balance and a running total.
+     * If the new balance is:
+     * <ul>
+     * <li>&lt; 0 returns 0.00 for payments, or -balance for refunds</li>
+     * <li>&gt; 0 returns 0.00 for refunds</li>
+     * </ul>
+     *
+     * @param customer the customer
+     * @param total    the running total
+     * @param payment  if <tt>true</tt> indicates the total is for a payment,
+     *                 if <tt>false</tt> indicates it is for a refund
+     * @return the new balance
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getBalance(Party customer, BigDecimal total,
+                                 boolean payment) {
+        BigDecimal balance = getBalance(customer);
+        BigDecimal result;
+        if (payment) {
+            result = balance.subtract(total);
+        } else {
+            result = balance.add(total);
+        }
+        if (result.signum() == -1) {
+            result = (payment) ? BigDecimal.ZERO : result.negate();
+        } else if (result.signum() == 1 && !payment) {
+            result = BigDecimal.ZERO;
+        }
+        return result;
+    }
+
+    /**
      * Calculates the overdue balance for a customer.
      * This is the sum of unallocated amounts in associated debits that have a
      * date less than the specified date less the overdue days.
