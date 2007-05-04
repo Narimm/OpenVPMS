@@ -228,7 +228,7 @@ public class CustomerBalanceRulesTestCase extends AbstractCustomerBalanceTest {
         save(invoice);
 
         // check the balance
-        checkEquals(hundred, rules.getBalance(getCustomer()));
+        checkEquals(hundred, rules.getBalance(customer));
 
         // make sure the invoice has an account balance participation
         ActBean bean = new ActBean(invoice);
@@ -246,7 +246,7 @@ public class CustomerBalanceRulesTestCase extends AbstractCustomerBalanceTest {
         save(payment1);
 
         // check the balance
-        checkEquals(forty, rules.getBalance(getCustomer()));
+        checkEquals(forty, rules.getBalance(customer));
 
         // reload and verify the acts have changed
         invoice = (FinancialAct) get(invoice);
@@ -265,7 +265,7 @@ public class CustomerBalanceRulesTestCase extends AbstractCustomerBalanceTest {
         save(payment2);
 
         // check the balance
-        checkEquals(BigDecimal.ZERO, rules.getBalance(getCustomer()));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         // reload and verify the acts have changed
         invoice = (FinancialAct) get(invoice);
@@ -278,6 +278,45 @@ public class CustomerBalanceRulesTestCase extends AbstractCustomerBalanceTest {
         checkEquals(forty, payment2.getTotal());
         checkEquals(forty, payment2.getAllocatedAmount());
         checkAllocation(payment2, invoice);
+    }
+
+    /**
+     * Tests the {@link CustomerBalanceRules#getBalance(Party, BigDecimal,
+     * boolean)} method.
+     */
+    public void testGetRunningBalance() {
+        Party customer = getCustomer();
+        Money hundred = new Money(100);
+        Money sixty = new Money(60);
+        Money forty = new Money(40);
+        Money ten = new Money(10);
+        Money five = new Money(5);
+        FinancialAct invoice = createChargesInvoice(hundred);
+        save(invoice);
+
+        // check the balance for a payment
+        checkEquals(hundred, rules.getBalance(customer, BigDecimal.ZERO, true));
+
+        // check the balance for a refund
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer, BigDecimal.ZERO,
+                                                      false));
+
+        // simulate payment of 60. Running balance should be 40
+        checkEquals(forty, rules.getBalance(customer, sixty, true));
+
+        // overpay by 10
+        FinancialAct payment1 = createPayment(new Money("110.0"));
+        save(payment1);
+
+        // check the balance for a payment
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer, BigDecimal.ZERO,
+                                                      true));
+
+        // check the balance for a refund
+        checkEquals(ten, rules.getBalance(customer, BigDecimal.ZERO, false));
+
+        // check the balance after refunding 5
+        checkEquals(five, rules.getBalance(customer, five, false));
     }
 
     /**
@@ -512,7 +551,7 @@ public class CustomerBalanceRulesTestCase extends AbstractCustomerBalanceTest {
         invoice = (FinancialAct) get(invoice);
         checkEquals(sixty, invoice.getAllocatedAmount());
 
-        payment  = (FinancialAct) get(payment);
+        payment = (FinancialAct) get(payment);
         checkEquals(sixty, payment.getAllocatedAmount());
 
         checkEquals(amount, rules.getBalance(getCustomer()));
