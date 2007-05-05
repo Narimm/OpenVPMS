@@ -32,7 +32,7 @@
                     defaultValue="'0.0'" readOnly="true"/>
         <node name="cashFloat" path="/details/cashFloat" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
 		<node name="credit" path="/credit" type="java.lang.Boolean"
-			defaultValue="true()" readOnly="true" hidden="true" />
+			defaultValue="false()" readOnly="true" hidden="true" />
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />
 		<node name="status" path="/status" type="java.lang.String" defaultValue="'UNCLEARED'"
 			minCardinality="1">
