@@ -36,6 +36,7 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -303,6 +304,29 @@ public class ArchetypeQueryHelper {
     }
 
     /**
+     * Returns a list of candidates for a node. This applies to
+     * collection nodes that aren't a parent/child relationship
+     * (i.e {@link NodeDescriptor#isParentChild()} returns <tt>false</tt>).
+     *
+     * @param service    the archetype service
+     * @param descriptor the node descriptor
+     * @return a list of candidates, or an empty list if the node doesn't have
+     *         a parent/child relationship
+     */
+    public static List<IMObject> getCandidates(IArchetypeService service,
+                                               NodeDescriptor descriptor) {
+        if (!descriptor.isParentChild()) {
+            String[] shortNames = descriptor.getArchetypeRange();
+            if (shortNames.length > 0) {
+                IPage<IMObject> page = get(service, shortNames, true, 0,
+                                           ArchetypeQuery.ALL_RESULTS);
+                return page.getResults();
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    /**
      * This is a static method that will return a list of candidate children
      * given an reference to the archetype service, the node descriptor for
      * the node in question and the context object.
@@ -311,7 +335,7 @@ public class ArchetypeQueryHelper {
      * @param ndesc   the node descriptor
      * @param context the context object
      * @return List<IMObject>
-     * @deprecated use get(service, ndesc.getArchetypeRange(), true, 0, ArchetypeQuery.ALL_RESULTS)
+     * @deprecated replaced by {@link #getCandidates(IArchetypeService, NodeDescriptor)}.
      */
     @Deprecated
     public static List<IMObject> getCandidateChildren(IArchetypeService service,

@@ -478,8 +478,7 @@ public class ArchetypeServicePersistenceTestCase
      * Test that we can retrieve all the object for a particular
      * classification.
      */
-    public void testGetCandidateChildren()
-            throws Exception {
+    public void testGetCandidates() throws Exception {
         Lookup cf = (Lookup) service.create("lookup.staff");
         cf.setCode("VET");
         cf.setDescription("vet");
@@ -504,15 +503,14 @@ public class ArchetypeServicePersistenceTestCase
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
                 person.getArchetypeId());
         NodeDescriptor ndesc = adesc.getNodeDescriptor("classifications");
-        List<IMObject> children =
-                ArchetypeQueryHelper.get(
-                        service, ndesc.getArchetypeRange(),
-                        true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
-        assertTrue(children.size() > 0);
-        for (IMObject child : children) {
+        List<IMObject> candidates =
+                ArchetypeQueryHelper.getCandidates(service, ndesc);
+        assertTrue(candidates.size() > 0);
+        for (IMObject candidate : candidates) {
             boolean matchFound = false;
             for (String shortName : ndesc.getArchetypeRange()) {
-                if (child.getArchetypeId().getShortName().equals(shortName)) {
+                if (candidate.getArchetypeId().getShortName().equals(
+                        shortName)) {
                     matchFound = true;
                     break;
                 }
@@ -520,7 +518,7 @@ public class ArchetypeServicePersistenceTestCase
 
             // if a match cannot be found then signal an error
             if (!matchFound) {
-                fail(child.getArchetypeId() + " does not match " +
+                fail(candidate.getArchetypeId() + " does not match " +
                         ndesc.getArchetypeRange().toString());
 
             }
