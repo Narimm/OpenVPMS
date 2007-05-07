@@ -117,6 +117,7 @@ public abstract class ArchetypeServiceTest extends
         IMObjectBean contactBean = new IMObjectBean(contact);
         contactBean.setValue("address", "1234 Foo St");
         contactBean.setValue("suburb", "Melbourne");
+        contactBean.setValue("state", "VIC");
         contactBean.setValue("postcode", "3001");
         contactBean.setValue("preferred", "true");
         bean.addValue("contacts", contactBean.getObject());
