@@ -26,6 +26,8 @@ import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.list.ListModel;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -52,7 +54,6 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.text.Format;
 import java.util.List;
@@ -267,10 +268,10 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                 _editors.add(editor);
             }
         } else {
-            List<IMObject> identifiers;
-            identifiers = ArchetypeQueryHelper.getCandidateChildren(
-                    ServiceHelper.getArchetypeService(),
-                    descriptor, object);
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            List<IMObject> identifiers
+                    = ArchetypeQueryHelper.getCandidates(service, descriptor);
             Palette palette = new BoundPalette(identifiers, property);
             palette.setCellRenderer(new IMObjectListCellRenderer());
             editor = createPropertyEditor(property, palette);
