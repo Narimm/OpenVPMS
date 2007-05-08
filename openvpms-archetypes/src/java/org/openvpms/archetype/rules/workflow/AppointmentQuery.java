@@ -140,19 +140,25 @@ public class AppointmentQuery {
     private Date to;
 
     /**
-     * The clinician. May be <code>null</code>
+     * The clinician. May be <tt>null</tt>
      */
     private User clinician;
 
     /**
-     * Constructs a new <code>AppointmentQuery</code>.
+     * The statuses to query.
+     */
+    private WorkflowStatus.StatusRange range = WorkflowStatus.StatusRange.ALL;
+
+
+    /**
+     * Constructs a new <tt>AppointmentQuery</tt>.
      */
     public AppointmentQuery() {
         this(ArchetypeServiceHelper.getArchetypeService());
     }
 
     /**
-     * Constructs a new <code>AppointmentQuery</code>.
+     * Constructs a new <tt>AppointmentQuery</tt>.
      *
      * @param service the archetype service
      */
@@ -172,7 +178,8 @@ public class AppointmentQuery {
     /**
      * Sets the clinician.
      *
-     * @param clinician the clinician. May be <code>null</code>
+     * @param clinician the clinician. May be <tt>null</tt> to indicate all
+     *                  clinicians
      */
     public void setClinician(User clinician) {
         this.clinician = clinician;
@@ -187,6 +194,15 @@ public class AppointmentQuery {
     public void setDateRange(Date from, Date to) {
         this.from = from;
         this.to = to;
+    }
+
+    /**
+     * Sets the act status range.
+     *
+     * @param range the status range
+     */
+    public void setStatusRange(WorkflowStatus.StatusRange range) {
+        this.range = range;
     }
 
     /**
@@ -259,10 +275,28 @@ public class AppointmentQuery {
                                                  "entity.name");
         NamedQuery query;
         if (clinician != null) {
-            query = new NamedQuery("act.customerAppointment-clinician", names);
+            if (range == WorkflowStatus.StatusRange.INCOMPLETE) {
+                query = new NamedQuery(
+                        "act.customerAppointment-clinician-incomplete", names);
+            } else if (range == WorkflowStatus.StatusRange.COMPLETE) {
+                query = new NamedQuery(
+                        "act.customerAppointment-clinician-complete", names);
+            } else {
+                query = new NamedQuery(
+                        "act.customerAppointment-clinician", names);
+            }
             query.setParameter("clinicianId", clinician.getLinkId());
         } else {
-            query = new NamedQuery("act.customerAppointment", names);
+            if (range == WorkflowStatus.StatusRange.INCOMPLETE) {
+                query = new NamedQuery(
+                        "act.customerAppointment-incomplete", names);
+            } else if (range == WorkflowStatus.StatusRange.COMPLETE) {
+                query = new NamedQuery(
+                        "act.customerAppointment-complete", names);
+            } else {
+                query = new NamedQuery(
+                        "act.customerAppointment", names);
+            }
         }
 
         query.setParameter("scheduleId", schedule.getLinkId());

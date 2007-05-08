@@ -91,6 +91,33 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link AppointmentQuery#query()} method, when a schedule,
+     * date range and status range is specified.
+     */
+    public void testStatusQuery() {
+        Party schedule = AppointmentTestHelper.createSchedule();
+        Date from = new Date();
+        Party customer = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient();
+        createAppointment(schedule, customer, patient,
+                          AppointmentStatus.PENDING);
+        createAppointment(schedule, customer, patient,
+                          AppointmentStatus.CHECKED_IN);
+        createAppointment(schedule, customer, patient,
+                          AppointmentStatus.IN_PROGRESS);
+        createAppointment(schedule, customer, patient,
+                          AppointmentStatus.CANCELLED);
+        createAppointment(schedule, customer, patient,
+                          AppointmentStatus.COMPLETED);
+        Date to = new Date();
+
+        AppointmentQuery query = new AppointmentQuery();
+        query.setSchedule(schedule);
+        query.setDateRange(from, to);
+        checkQuery(query, 3, 2);
+    }
+
+    /**
      * Tests the {@link AppointmentQuery#query()} method, when a
      * schedule, date range and clinician have been specified.
      */
@@ -119,6 +146,35 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
         assertNotNull(page);
         List<ObjectSet> results = page.getResults();
         assertEquals(count / 2, results.size());
+    }
+
+    /**
+     * Tests the {@link AppointmentQuery#query()} method, when a schedule,
+     * date range and status range is specified.
+     */
+    public void testClinicianStatusQuery() {
+        Party schedule = AppointmentTestHelper.createSchedule();
+        Date from = new Date();
+        Party customer = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient();
+        User clinician = TestHelper.createClinician();
+        createAppointment(schedule, customer, patient, clinician,
+                          AppointmentStatus.PENDING);
+        createAppointment(schedule, customer, patient,
+                          AppointmentStatus.CHECKED_IN);
+        createAppointment(schedule, customer, patient, clinician,
+                          AppointmentStatus.IN_PROGRESS);
+        createAppointment(schedule, customer, patient,
+                          AppointmentStatus.CANCELLED);
+        createAppointment(schedule, customer, patient, clinician,
+                          AppointmentStatus.COMPLETED);
+        Date to = new Date();
+
+        AppointmentQuery query = new AppointmentQuery();
+        query.setSchedule(schedule);
+        query.setDateRange(from, to);
+        query.setClinician(clinician);
+        checkQuery(query, 2, 1);
     }
 
     /**
@@ -155,6 +211,40 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Checks an appointment query for different status ranges.
+     *
+     * @param query              the query
+     * @param expectedIncomplete the expected no. of acts returned for an
+     *                           incomplete status range
+     * @param expectedComplete   the expected no. of acts returned for a
+     *                           complete status range
+     */
+    private void checkQuery(AppointmentQuery query,
+                            int expectedIncomplete, int expectedComplete) {
+
+        // expect 3 acts to be returned for the INCOMPLETE status range
+        query.setStatusRange(WorkflowStatus.StatusRange.INCOMPLETE);
+        IPage<ObjectSet> page = query.query();
+        assertNotNull(page);
+        List<ObjectSet> results = page.getResults();
+        assertEquals(expectedIncomplete, results.size());
+
+        // expect 2 acts to be returned for the COMPLETE status range
+        query.setStatusRange(WorkflowStatus.StatusRange.COMPLETE);
+        page = query.query();
+        assertNotNull(page);
+        results = page.getResults();
+        assertEquals(expectedComplete, results.size());
+
+        // expect 5 acts to be returned for the ALL status range
+        query.setStatusRange(WorkflowStatus.StatusRange.ALL);
+        page = query.query();
+        assertNotNull(page);
+        results = page.getResults();
+        assertEquals(expectedIncomplete + expectedComplete, results.size());
+    }
+
+    /**
      * Helper to remove any seconds from a time, as the database may not
      * store them.
      *
@@ -164,4 +254,38 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
     private Date getTimestamp(Date timestamp) {
         return DateUtils.truncate(timestamp, Calendar.SECOND);
     }
+
+    /**
+     * Helper to create and save a new appointment.
+     *
+     * @param schedule the appointment schedule
+     * @param customer the customer
+     * @param patient  the patient
+     * @param status   the appointment status
+     */
+    private void createAppointment(Party schedule, Party customer,
+                                   Party patient, String status) {
+        createAppointment(schedule, customer, patient, null, status);
+    }
+
+    /**
+     * Helper to create and save a new appointment for a clinician.
+     *
+     * @param schedule  the appointment schedule
+     * @param customer  the customer
+     * @param patient   the patient
+     * @param clinician the clinician. May be <tt>null</tt>
+     * @param status    the appointment status
+     */
+    private void createAppointment(Party schedule, Party customer,
+                                   Party patient, User clinician,
+                                   String status) {
+        Date startTime = new Date();
+        Date endTime = new Date();
+        Act appointment = AppointmentTestHelper.createAppointment(
+                startTime, endTime, schedule, customer, patient, clinician);
+        appointment.setStatus(status);
+        save(appointment);
+    }
+
 }

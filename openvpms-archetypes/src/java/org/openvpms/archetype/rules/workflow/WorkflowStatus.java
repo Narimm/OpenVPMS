@@ -35,4 +35,12 @@ public class WorkflowStatus extends ActStatus {
      */
     public static final String PENDING = "PENDING";
 
+    /**
+     * Represents a range of statuses for query purposes.
+     */
+    public enum StatusRange {
+        ALL,                  // all acts 
+        INCOMPLETE,           // incomplete acts
+        COMPLETE              // complete acts
+    }
 }
