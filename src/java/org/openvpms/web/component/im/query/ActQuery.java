@@ -18,6 +18,10 @@
 
 package org.openvpms.web.component.im.query;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -30,8 +34,12 @@ import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.list.LookupListCellRenderer;
+import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.util.CollectionHelper;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -81,6 +89,11 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      * Status to exclude. May be <tt>null</tt>
      */
     private final String excludeStatus;
+
+    /**
+     * The status dropdown.
+     */
+    private SelectField statusSelector;
 
 
     /**
@@ -226,6 +239,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
         } else {
             statuses = new String[]{status};
         }
+        updateStatusSelector(status);
     }
 
     /**
@@ -407,6 +421,72 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      */
     protected boolean excludeStatuses() {
         return excludeStatus != null;
+    }
+
+    /**
+     * Invoked when a status is selected.
+     */
+    protected void onStatusChanged() {
+        String value = (String) statusSelector.getSelectedItem();
+        setStatus(value);
+    }
+
+    /**
+     * Adds a status selector to the container, if status lookups have been
+     * specified.
+     *
+     * @param container the container
+     */
+    protected void addStatusSelector(Component container) {
+        List<Lookup> lookups = getStatusLookups();
+        if (lookups != null) {
+            LookupListModel model = new LookupListModel(lookups, true);
+            statusSelector = SelectFieldFactory.create(model);
+            statusSelector.setCellRenderer(new LookupListCellRenderer());
+            statusSelector.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    onStatusChanged();
+                }
+            });
+            String[] statuses = getStatuses();
+            String defaultStatus = null;
+            if (statuses.length != 0 && !excludeStatuses()) {
+                defaultStatus = statuses[0];
+            } else {
+                for (Lookup lookup : lookups) {
+                    if (lookup.isDefaultLookup()) {
+                        defaultStatus = lookup.getCode();
+                        break;
+                    }
+                }
+            }
+            if (defaultStatus != null) {
+                updateStatusSelector(defaultStatus);
+                setStatus(defaultStatus);
+            }
+        }
+
+        if (statusSelector != null) {
+            container.add(LabelFactory.create("actquery.status"));
+            container.add(statusSelector);
+            getFocusGroup().add(statusSelector);
+        }
+    }
+
+    /**
+     * Sets the selected status in the status selector, if it exists.
+     *
+     * @param status the status to selecte
+     */
+    private void updateStatusSelector(String status) {
+        if (statusSelector != null) {
+            LookupListModel model
+                    = (LookupListModel) statusSelector.getModel();
+            int index = model.indexOf(status);
+            if (index != -1) {
+                statusSelector.setSelectedIndex(index);
+            }
+        }
     }
 
     /**

@@ -19,11 +19,8 @@
 package org.openvpms.web.app.patient.document;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.patient.PatientActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
@@ -77,11 +74,8 @@ public class PatientDocumentWorkspace extends PatientActWorkspace<Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery(Party patient) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(
-                "act.patientDocumentLetter");
-        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
+        List<Lookup> lookups = FastLookupHelper.getLookups(
+                "act.patientDocumentLetter", "status");
         return new DefaultActQuery<Act>(patient, "patient",
                                         "participation.patient", SHORT_NAMES,
                                         lookups, null);

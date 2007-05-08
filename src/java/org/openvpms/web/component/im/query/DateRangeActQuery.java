@@ -19,19 +19,11 @@
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.im.list.LookupListCellRenderer;
-import org.openvpms.web.component.im.list.LookupListModel;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
 
 import java.util.Date;
 import java.util.List;
@@ -49,11 +41,6 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * Determines if acts should be filtered on type.
      */
     private final boolean selectType;
-
-    /**
-     * The status dropdown.
-     */
-    private SelectField statusSelector;
 
     /**
      * The date range.
@@ -168,16 +155,6 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
         QueryFactory.initialise(this);
     }
 
-    /**
-     * Sets the status to query on.
-     *
-     * @param status the status to query on
-     */
-    @Override
-    public void setStatus(String status) {
-        super.setStatus(status);
-        updateStatusSelector(status);
-    }
 
     /**
      * Lays out the component in a container, and sets focus on the instance
@@ -191,42 +168,9 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
             addShortNameSelector(container);
         }
 
-        List<Lookup> lookups = getStatusLookups();
-        if (lookups != null) {
-            LookupListModel model = new LookupListModel(lookups, true);
-            statusSelector = SelectFieldFactory.create(model);
-            statusSelector.setCellRenderer(new LookupListCellRenderer());
-            statusSelector.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    onStatusChanged();
-                }
-            });
-            String[] statuses = getStatuses();
-            String defaultStatus = null;
-            if (statuses.length != 0 && !excludeStatuses()) {
-                defaultStatus = statuses[0];
-            } else {
-                for (Lookup lookup : lookups) {
-                    if (lookup.isDefaultLookup()) {
-                        defaultStatus = lookup.getCode();
-                        break;
-                    }
-                }
-            }
-            if (defaultStatus != null) {
-                updateStatusSelector(defaultStatus);
-                setStatus(defaultStatus);
-            }
-        }
+        addStatusSelector(container);
 
-        FocusGroup focus = getFocusGroup();
-        if (statusSelector != null) {
-            container.add(LabelFactory.create("actquery.status"));
-            container.add(statusSelector);
-            focus.add(statusSelector);
-        }
-
-        dateRange = new ActDateRange(focus);
+        dateRange = new ActDateRange(getFocusGroup());
         container.add(dateRange.getComponent());
     }
 
@@ -284,27 +228,4 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
     }
 
 
-    /**
-     * Invoked when a status is selected.
-     */
-    private void onStatusChanged() {
-        String value = (String) statusSelector.getSelectedItem();
-        super.setStatus(value);
-    }
-
-    /**
-     * Sets the selected status in the status selector, if it exists.
-     *
-     * @param status the status to selecte
-     */
-    private void updateStatusSelector(String status) {
-        if (statusSelector != null) {
-            LookupListModel model
-                    = (LookupListModel) statusSelector.getModel();
-            int index = model.indexOf(status);
-            if (index != -1) {
-                statusSelector.setSelectedIndex(index);
-            }
-        }
-    }
 }
