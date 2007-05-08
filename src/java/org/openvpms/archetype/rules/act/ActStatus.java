@@ -41,4 +41,9 @@ public class ActStatus {
      * Posted act status.
      */
     public static final String POSTED = "POSTED";
+
+    /**
+     * Cancelled act status.
+     */
+    public static final String CANCELLED = "CANCELLED";
 }

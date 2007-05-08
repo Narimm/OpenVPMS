@@ -32,9 +32,4 @@ public class FinancialActStatus extends ActStatus {
      */
     public static final String ON_HOLD = "ON_HOLD";
 
-    /**
-     * Cancelled act status.
-     */
-    public static final String CANCELLED = "CANCELLED";
-
 }

@@ -55,6 +55,74 @@ order by act.activityStartTime, act.linkId
       ]]>
     </query>
 
+    <query name="act.customerAppointment-incomplete">
+        <![CDATA[
+select p.act,
+      act.activityStartTime,
+      act.activityEndTime,
+      act.status,
+      act.reason,
+      act.description,
+      p.entity,
+      e.name
+from  org.openvpms.component.business.domain.im.act.Act as act,
+      org.openvpms.component.business.domain.im.common.Participation as p,
+      org.openvpms.component.business.domain.im.common.Entity as e
+where p.act.linkId = act.linkId
+      and p.entity.linkId = e.linkId
+      and act.archetypeId.entityName = 'act'
+      and act.archetypeId.concept = 'customerAppointment'
+      and act.activityStartTime between :from and :to
+      and act.linkId in (
+            select distinct act.linkId
+            from org.openvpms.component.business.domain.im.act.Act as act,
+           org.openvpms.component.business.domain.im.common.Participation as p
+      where act.archetypeId.entityName = 'act'
+            and act.archetypeId.concept = 'customerAppointment'
+            and p.archetypeId.entityName = 'participation'
+            and p.archetypeId.concept = 'schedule'
+            and act.linkId = p.act.linkId
+            and p.entity.linkId = :scheduleId
+            and act.activityStartTime between :from and :to
+            and not (act.status = 'COMPLETED' or act.status='CANCELLED'))
+order by act.activityStartTime, act.linkId
+      ]]>
+    </query>
+
+    <query name="act.customerAppointment-complete">
+        <![CDATA[
+select p.act,
+      act.activityStartTime,
+      act.activityEndTime,
+      act.status,
+      act.reason,
+      act.description,
+      p.entity,
+      e.name
+from  org.openvpms.component.business.domain.im.act.Act as act,
+      org.openvpms.component.business.domain.im.common.Participation as p,
+      org.openvpms.component.business.domain.im.common.Entity as e
+where p.act.linkId = act.linkId
+      and p.entity.linkId = e.linkId
+      and act.archetypeId.entityName = 'act'
+      and act.archetypeId.concept = 'customerAppointment'
+      and act.activityStartTime between :from and :to
+      and act.linkId in (
+            select distinct act.linkId
+            from org.openvpms.component.business.domain.im.act.Act as act,
+           org.openvpms.component.business.domain.im.common.Participation as p
+      where act.archetypeId.entityName = 'act'
+            and act.archetypeId.concept = 'customerAppointment'
+            and p.archetypeId.entityName = 'participation'
+            and p.archetypeId.concept = 'schedule'
+            and act.linkId = p.act.linkId
+            and p.entity.linkId = :scheduleId
+            and act.activityStartTime between :from and :to
+            and (act.status = 'COMPLETED' or act.status='CANCELLED'))
+order by act.activityStartTime, act.linkId
+      ]]>
+    </query>
+
     <query name="act.customerAppointment-clinician">
         <![CDATA[
 select p.act,
@@ -89,6 +157,84 @@ where p.act.linkId = act.linkId
             and act.linkId = pclinician.act.linkId
             and pclinician.entity.linkId = :clinicianId
             and act.activityStartTime between :from and :to)
+order by act.activityStartTime, act.linkId
+      ]]>
+    </query>
+
+    <query name="act.customerAppointment-clinician-incomplete">
+        <![CDATA[
+select p.act,
+      act.activityStartTime,
+      act.activityEndTime,
+      act.status,
+      act.reason,
+      act.description,
+      p.entity,
+      e.name
+from  org.openvpms.component.business.domain.im.act.Act as act,
+      org.openvpms.component.business.domain.im.common.Participation as p,
+      org.openvpms.component.business.domain.im.common.Entity as e
+where p.act.linkId = act.linkId
+      and p.entity.linkId = e.linkId
+      and act.archetypeId.entityName = 'act'
+      and act.archetypeId.concept = 'customerAppointment'
+      and act.activityStartTime between :from and :to
+      and act.linkId in (
+            select distinct act.linkId
+            from org.openvpms.component.business.domain.im.act.Act as act,
+           org.openvpms.component.business.domain.im.common.Participation as pschedule,
+           org.openvpms.component.business.domain.im.common.Participation as pclinician
+      where act.archetypeId.entityName = 'act'
+            and act.archetypeId.concept = 'customerAppointment'
+            and pschedule.archetypeId.entityName = 'participation'
+            and pschedule.archetypeId.concept = 'schedule'
+            and act.linkId = pschedule.act.linkId
+            and pschedule.entity.linkId = :scheduleId
+            and pclinician.archetypeId.entityName = 'participation'
+            and pclinician.archetypeId.concept = 'clinician'
+            and act.linkId = pclinician.act.linkId
+            and pclinician.entity.linkId = :clinicianId
+            and act.activityStartTime between :from and :to
+            and not (act.status = 'COMPLETED' or act.status='CANCELLED'))
+order by act.activityStartTime, act.linkId
+      ]]>
+    </query>
+
+    <query name="act.customerAppointment-clinician-complete">
+        <![CDATA[
+select p.act,
+      act.activityStartTime,
+      act.activityEndTime,
+      act.status,
+      act.reason,
+      act.description,
+      p.entity,
+      e.name
+from  org.openvpms.component.business.domain.im.act.Act as act,
+      org.openvpms.component.business.domain.im.common.Participation as p,
+      org.openvpms.component.business.domain.im.common.Entity as e
+where p.act.linkId = act.linkId
+      and p.entity.linkId = e.linkId
+      and act.archetypeId.entityName = 'act'
+      and act.archetypeId.concept = 'customerAppointment'
+      and act.activityStartTime between :from and :to
+      and act.linkId in (
+            select distinct act.linkId
+            from org.openvpms.component.business.domain.im.act.Act as act,
+           org.openvpms.component.business.domain.im.common.Participation as pschedule,
+           org.openvpms.component.business.domain.im.common.Participation as pclinician
+      where act.archetypeId.entityName = 'act'
+            and act.archetypeId.concept = 'customerAppointment'
+            and pschedule.archetypeId.entityName = 'participation'
+            and pschedule.archetypeId.concept = 'schedule'
+            and act.linkId = pschedule.act.linkId
+            and pschedule.entity.linkId = :scheduleId
+            and pclinician.archetypeId.entityName = 'participation'
+            and pclinician.archetypeId.concept = 'clinician'
+            and act.linkId = pclinician.act.linkId
+            and pclinician.entity.linkId = :clinicianId
+            and act.activityStartTime between :from and :to
+            and (act.status = 'COMPLETED' or act.status='CANCELLED'))
 order by act.activityStartTime, act.linkId
       ]]>
     </query>
