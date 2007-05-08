@@ -20,11 +20,8 @@ package org.openvpms.web.app.customer;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
@@ -69,11 +66,8 @@ public class InvoiceWorkspace extends CustomerFinancialActWorkspace {
      * @return a new query
      */
     protected ActQuery<FinancialAct> createQuery(Party customer) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(
-                "act.customerAccountChargesInvoice");
-        NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = FastLookupHelper.getLookups(descriptor);
+        List<Lookup> lookups = FastLookupHelper.getLookups(
+                "act.customerAccountChargesInvoice", "status");
         return new DefaultActQuery<FinancialAct>(customer, "customer",
                                                  "participation.customer",
                                                  "act",

@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
+import org.openvpms.archetype.rules.workflow.TaskStatus;
+import static org.openvpms.archetype.rules.workflow.WorkflowStatus.StatusRange;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -63,6 +65,22 @@ public class TaskQuery extends WorkflowQuery<Act> {
             return createResultSet(sort);
         }
         return null;
+    }
+
+    /**
+     * Returns the act statuses to query.
+     *
+     * @return the act statuses to query
+     */
+    @Override
+    protected String[] getStatuses() {
+        StatusRange range = getStatusRange();
+        if (range == StatusRange.COMPLETE) {
+            return TaskStatus.COMPLETE;
+        } else if (range == StatusRange.INCOMPLETE) {
+            return TaskStatus.INCOMPLETE;
+        }
+        return new String[0];
     }
 
     /**

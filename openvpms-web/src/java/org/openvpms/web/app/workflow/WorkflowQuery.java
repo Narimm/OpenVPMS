@@ -22,16 +22,18 @@ import echopointng.DateChooser;
 import echopointng.DateField;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.time.DateUtils;
+import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.select.IMObjectSelector;
@@ -41,6 +43,7 @@ import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeEvent;
@@ -59,6 +62,16 @@ import java.util.GregorianCalendar;
 public abstract class WorkflowQuery<T> extends ActQuery<T> {
 
     /**
+     * The status range selector.
+     */
+    private SelectField statusRange;
+
+    /**
+     * The status range listener.
+     */
+    private final ActionListener statusRangeListener;
+
+    /**
      * The date.
      */
     private DateField date;
@@ -74,6 +87,21 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
     protected static final IMObjectReference INVALID_CLINICIAN
             = new IMObjectReference();
 
+    /**
+     * All acts.
+     */
+    private static final String ALL = "ALL";
+
+    /**
+     * Incomplete acts.
+     */
+    private static final String INCOMPLETE = "INCOMPLETE";
+
+    /**
+     * Complete acts.
+     */
+    private static final String COMPLETE = "COMPLETE";
+
 
     /**
      * Constructs a new <code>WorkflowQuery</code>.
@@ -88,6 +116,11 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
                          String participation, String[] shortNames,
                          String[] statuses) {
         super(entity, participant, participation, shortNames, statuses);
+        statusRangeListener = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onStatusRangeChanged();
+            }
+        };
         clinician = new IMObjectSelector<User>(Messages.get("label.clinician"),
                                                new String[]{"security.user"});
         clinician.setListener(new IMObjectSelectorListener<User>() {
@@ -112,6 +145,22 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
     }
 
     /**
+     * Returns the selected status range.
+     *
+     * @return the selected status range
+     */
+    protected WorkflowStatus.StatusRange getStatusRange() {
+        String selected = (String) statusRange.getSelectedItem();
+        WorkflowStatus.StatusRange range = WorkflowStatus.StatusRange.ALL;
+        if (INCOMPLETE.equals(selected)) {
+            range = WorkflowStatus.StatusRange.INCOMPLETE;
+        } else if (COMPLETE.equals(selected)) {
+            range = WorkflowStatus.StatusRange.COMPLETE;
+        }
+        return range;
+    }
+
+    /**
      * Lays out the component in a container, and sets focus on the instance
      * name.
      *
@@ -119,6 +168,12 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
      */
     @Override
     protected void doLayout(Component container) {
+        statusRange = SelectFieldFactory.create(
+                new Object[]{ALL, INCOMPLETE, COMPLETE});
+        statusRange.setCellRenderer(new StatusRangeListCellRenderer());
+        statusRange.setSelectedItem(INCOMPLETE);
+        statusRange.addActionListener(statusRangeListener);
+
         Button prevWeek = ButtonFactory.create(
                 null, "date.previousWeek", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -157,14 +212,17 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
                     }
                 });
 
-        Label label = LabelFactory.create("clinician");
         Row row = RowFactory.create("CellSpacing", prevWeek, prevDay, date,
                                     currentDay, nextDay, nextWeek);
+
+        container.add(LabelFactory.create("actquery.status"));
+        container.add(statusRange);
         container.add(row);
-        container.add(label);
+        container.add(LabelFactory.create("clinician"));
         container.add(clinician.getComponent());
 
         FocusGroup focus = getFocusGroup();
+        focus.add(statusRange);
         focus.add(prevWeek);
         focus.add(prevDay);
         focus.add(date);
@@ -251,9 +309,82 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
     }
 
     /**
-     * Invoked when the date is updated.
+     * Invoked when a status range is selected.
      */
-    private void onDateChanged() {
+    protected void onStatusRangeChanged() {
         onQuery();
+    }
+
+    /**
+     * Invoked when the date is updated.
+     * Updates the status range selector to:
+     * <ul>
+     * <li>select INCOMPLETE appointments for the current date; or</li>
+     * <li>ALL appointments for any other date</li>
+     * </ul>
+     */
+    protected void onDateChanged() {
+        Date date = getDate();
+        Date today = DateFormatter.getDayMonthYear(new Date());
+        statusRange.removeActionListener(statusRangeListener);
+        if (date.equals(today)) {
+            statusRange.setSelectedItem(INCOMPLETE);
+        } else {
+            statusRange.setSelectedItem(ALL);
+        }
+        statusRange.addActionListener(statusRangeListener);
+        onQuery();
+    }
+
+    /**
+     * Cell renderer for the status range combo.
+     */
+    private static class StatusRangeListCellRenderer
+            extends AbstractListCellRenderer<String> {
+
+
+        /**
+         * Constructs a new <tt>StatusRangeListCellRenderer</tt>.
+         */
+        public StatusRangeListCellRenderer() {
+            super(String.class);
+        }
+
+        /**
+         * Renders an object.
+         *
+         * @param list   the list component
+         * @param object the object to render. May be <tt>null</tt>
+         * @param index  the object index
+         * @return the rendered object
+         */
+        protected Object getComponent(Component list, String object,
+                                      int index) {
+            return Messages.get("workflow.scheduling.statusrange." + object);
+        }
+
+        /**
+         * Determines if an object represents 'All'.
+         *
+         * @param list   the list component
+         * @param object the object. May be <tt>null</tt>
+         * @param index  the object index
+         * @return <code>true</code> if the object represents 'All'.
+         */
+        protected boolean isAll(Component list, String object, int index) {
+            return ALL.equals(object);
+        }
+
+        /**
+         * Determines if an object represents 'None'.
+         *
+         * @param list   the list component
+         * @param object the object. May be <tt>null</tt>
+         * @param index  the object index
+         * @return <code>true</code> if the object represents 'None'.
+         */
+        protected boolean isNone(Component list, String object, int index) {
+            return false;
+        }
     }
 }

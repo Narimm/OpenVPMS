@@ -8,12 +8,9 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
@@ -86,11 +83,8 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
      * @param container the container
      */
     protected void addReportTypeSelector(Component container) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(
-                "entity.documentTemplate");
-        NodeDescriptor types = archetype.getNodeDescriptor("reportType");
-        List<Lookup> lookups = FastLookupHelper.getLookups(types);
+        List<Lookup> lookups = FastLookupHelper.getLookups(
+                "entity.documentTemplate", "reportType");
         LookupListModel model = new LookupListModel(lookups, true);
         _typeSelector = SelectFieldFactory.create(model);
         _typeSelector.setCellRenderer(new LookupListCellRenderer());

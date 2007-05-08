@@ -20,12 +20,9 @@ package org.openvpms.web.app.workflow.messaging;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
@@ -121,10 +118,7 @@ public class MessageQuery extends DateRangeActQuery<Act> {
 
     private static List<Lookup> getLookups() {
         String shortName = "act.userMessage";
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(shortName);
-        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        return FastLookupHelper.getLookups(statuses);
+        return FastLookupHelper.getLookups(shortName, "status");
     }
 
 }

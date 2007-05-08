@@ -21,12 +21,9 @@ package org.openvpms.web.app.financial.deposit;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.deposit.DepositStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -100,13 +97,11 @@ public class DepositWorkspace extends ActWorkspace<Party, FinancialAct> {
      * @return a new query
      */
     protected ActQuery<FinancialAct> createQuery(Party till) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor("act.bankDeposit");
-        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
+        List<Lookup> lookups = FastLookupHelper.getLookups("act.bankDeposit",
+                                                           "status");
         ActQuery<FinancialAct> query = new DefaultActQuery<FinancialAct>(
                 till, "depositAccount", "participation.deposit", "act",
-                "bankDeposit", lookups, null);
+                "bankDeposit", lookups);
         query.setStatus(DepositStatus.UNDEPOSITED);
         return query;
     }

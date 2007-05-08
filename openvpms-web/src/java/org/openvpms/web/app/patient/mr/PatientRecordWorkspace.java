@@ -22,12 +22,9 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -313,11 +310,8 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      */
     private Query<Act> createReminderAlertQuery() {
         String[] shortNames = {"act.patientReminder", "act.patientAlert"};
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(
-                "act.patientReminder");
-        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
+        List<Lookup> lookups = FastLookupHelper.getLookups(
+                "act.patientReminder", "status");
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
                 getObject(), "patient", "participation.patient", shortNames,
                 lookups, null);
@@ -331,11 +325,8 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      * @return a new query
      */
     private Query<Act> createDocumentQuery() {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(
-                "act.patientDocumentLetter");
-        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
+        List<Lookup> lookups = FastLookupHelper.getLookups(
+                "act.patientDocumentLetter", "status");
         return new DefaultActQuery<Act>(getObject(), "patient",
                                         "participation.patient",
                                         DOCUMENT_SHORT_NAMES, lookups, null);
@@ -347,11 +338,8 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      * @return a new query
      */
     private Query<Act> createInvestigationQuery() {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(
-                "act.patientInvestigationRadiology");
-        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
+        List<Lookup> lookups = FastLookupHelper.getLookups(
+                "act.patientInvestigationRadiology", "status");
         return new DefaultActQuery<Act>(getObject(), "patient",
                                         "participation.patient",
                                         INVESTIGATION_SHORT_NAMES, lookups,

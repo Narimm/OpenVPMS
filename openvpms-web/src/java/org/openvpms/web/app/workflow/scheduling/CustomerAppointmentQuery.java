@@ -40,13 +40,20 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 public class CustomerAppointmentQuery extends WorkflowQuery<ObjectSet> {
 
     /**
-     * Construct a new <code>CustomerAppointmentQuery</code>.
+     * The appointment archetype short name.
+     */
+    private static final String CUSTOMER_APPOINTMENT
+            = "act.customerAppointment";
+
+
+    /**
+     * Constructs a new <tt>CustomerAppointmentQuery</tt>.
      *
      * @param schedule the schedule
      */
     public CustomerAppointmentQuery(Party schedule) {
         super(schedule, "schedule", "participation.schedule",
-              new String[]{"act.customerAppointment"}, new String[0]);
+              new String[]{CUSTOMER_APPOINTMENT}, new String[0]);
     }
 
     /**
@@ -128,8 +135,10 @@ public class CustomerAppointmentQuery extends WorkflowQuery<ObjectSet> {
             query.setSchedule(schedule);
             query.setClinician(clinician);
             query.setDateRange(getFrom(), getTo());
+            query.setStatusRange(getStatusRange());
             return query.query();
         }
 
     }
+
 }

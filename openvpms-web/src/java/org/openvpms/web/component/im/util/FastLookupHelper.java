@@ -18,18 +18,21 @@
 
 package org.openvpms.web.component.im.util;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +86,28 @@ public class FastLookupHelper {
     public static List<Lookup> getLookups(NodeDescriptor descriptor) {
         return LookupHelper.get(ArchetypeServiceHelper.getArchetypeService(),
                                 descriptor, NODES);
+    }
+
+    /**
+     * Returns a list of lookups for the specified archetype short name and node
+     * name.
+     *
+     * @param shortName the archetype short name
+     * @param node      the node name
+     * @return the list of lookups associated with the node
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws LookupHelperException     if the lookup is incorrectly specified
+     */
+    public static List<Lookup> getLookups(String shortName, String node) {
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(shortName);
+        if (archetype != null) {
+            NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
+            if (descriptor != null) {
+                return getLookups(descriptor);
+            }
+        }
+        return Collections.emptyList();
     }
 
     /**

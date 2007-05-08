@@ -19,11 +19,8 @@
 package org.openvpms.web.app.supplier.document;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.supplier.SupplierActWorkspace;
 import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
@@ -75,11 +72,8 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace<Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery(Party supplier) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(
-                "act.supplierDocumentLetter");
-        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
+        List<Lookup> lookups = FastLookupHelper.getLookups(
+                "act.supplierDocumentLetter", "status");
         return new DefaultActQuery<Act>(supplier, "supplier",
                                         "participation.supplier",
                                         SHORT_NAMES, lookups, null);
