@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.workflow;
 
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -118,6 +119,11 @@ public class AppointmentQuery {
      * The clinician name.
      */
     public static final String CLINICIAN_NAME = "clinician.name";
+
+    /**
+     * The arrival time.
+     */
+    public static final String ARRIVAL_TIME = "arrivalTime";
 
     /**
      * The archetype service.
@@ -254,6 +260,13 @@ public class AppointmentQuery {
                 current.add(CLINICIAN_REFERENCE, entityRef);
                 current.add(CLINICIAN_NAME, entityName);
             }
+            String key = (String) set.get("act.details_Keys");
+            TypedValue value = (TypedValue) set.get("act.details_Values");
+            if (key != null && value != null) {
+                if (current.get(key) == null) {
+                    current.add(key, value.getObject());
+                }
+            }
         }
         if (current != null) {
             result.add(current);
@@ -269,6 +282,8 @@ public class AppointmentQuery {
     private IArchetypeQuery createQuery() {
         Collection<String> names = Arrays.asList("act.objectReference",
                                                  "act.startTime", "act.endTime",
+                                                 "act.details_Keys",
+                                                 "act.details_Values",
                                                  "act.status", "act.reason",
                                                  "act.description",
                                                  "entity.objectReference",

@@ -27,6 +27,7 @@
 select p.act,
       act.activityStartTime,
       act.activityEndTime,
+      indices(details), elements(details),
       act.status,
       act.reason,
       act.description,
@@ -35,6 +36,7 @@ select p.act,
 from  org.openvpms.component.business.domain.im.act.Act as act,
       org.openvpms.component.business.domain.im.common.Participation as p,
       org.openvpms.component.business.domain.im.common.Entity as e
+left outer join act.details as details
 where p.act.linkId = act.linkId
       and p.entity.linkId = e.linkId
       and act.archetypeId.entityName = 'act'
@@ -60,6 +62,7 @@ order by act.activityStartTime, act.linkId
 select p.act,
       act.activityStartTime,
       act.activityEndTime,
+      indices(details), elements(details),
       act.status,
       act.reason,
       act.description,
@@ -68,6 +71,7 @@ select p.act,
 from  org.openvpms.component.business.domain.im.act.Act as act,
       org.openvpms.component.business.domain.im.common.Participation as p,
       org.openvpms.component.business.domain.im.common.Entity as e
+left outer join act.details as details
 where p.act.linkId = act.linkId
       and p.entity.linkId = e.linkId
       and act.archetypeId.entityName = 'act'
@@ -94,6 +98,7 @@ order by act.activityStartTime, act.linkId
 select p.act,
       act.activityStartTime,
       act.activityEndTime,
+      indices(details), elements(details),
       act.status,
       act.reason,
       act.description,
@@ -102,6 +107,7 @@ select p.act,
 from  org.openvpms.component.business.domain.im.act.Act as act,
       org.openvpms.component.business.domain.im.common.Participation as p,
       org.openvpms.component.business.domain.im.common.Entity as e
+left outer join act.details as details
 where p.act.linkId = act.linkId
       and p.entity.linkId = e.linkId
       and act.archetypeId.entityName = 'act'
@@ -128,6 +134,7 @@ order by act.activityStartTime, act.linkId
 select p.act,
       act.activityStartTime,
       act.activityEndTime,
+      indices(details), elements(details),
       act.status,
       act.reason,
       act.description,
@@ -136,6 +143,7 @@ select p.act,
 from  org.openvpms.component.business.domain.im.act.Act as act,
       org.openvpms.component.business.domain.im.common.Participation as p,
       org.openvpms.component.business.domain.im.common.Entity as e
+left outer join act.details as details
 where p.act.linkId = act.linkId
       and p.entity.linkId = e.linkId
       and act.archetypeId.entityName = 'act'
@@ -166,6 +174,7 @@ order by act.activityStartTime, act.linkId
 select p.act,
       act.activityStartTime,
       act.activityEndTime,
+      indices(details), elements(details),
       act.status,
       act.reason,
       act.description,
@@ -174,6 +183,7 @@ select p.act,
 from  org.openvpms.component.business.domain.im.act.Act as act,
       org.openvpms.component.business.domain.im.common.Participation as p,
       org.openvpms.component.business.domain.im.common.Entity as e
+left outer join act.details as details
 where p.act.linkId = act.linkId
       and p.entity.linkId = e.linkId
       and act.archetypeId.entityName = 'act'
@@ -205,6 +215,7 @@ order by act.activityStartTime, act.linkId
 select p.act,
       act.activityStartTime,
       act.activityEndTime,
+      indices(details), elements(details),
       act.status,
       act.reason,
       act.description,
@@ -213,6 +224,7 @@ select p.act,
 from  org.openvpms.component.business.domain.im.act.Act as act,
       org.openvpms.component.business.domain.im.common.Participation as p,
       org.openvpms.component.business.domain.im.common.Entity as e
+left outer join act.details as details
 where p.act.linkId = act.linkId
       and p.entity.linkId = e.linkId
       and act.archetypeId.entityName = 'act'

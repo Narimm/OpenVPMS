@@ -24,6 +24,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
 
@@ -50,16 +51,21 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
         Date from = new Date();
         Date[] startTimes = new Date[count];
         Date[] endTimes = new Date[count];
+        Date[] arrivalTimes = new Date[count];
         Party[] customers = new Party[count];
         Party[] patients = new Party[count];
         for (int i = 0; i < count; ++i) {
             Date startTime = new Date();
+            Date arrivalTime = new Date();
             Date endTime = new Date();
             Party customer = TestHelper.createCustomer();
             Party patient = TestHelper.createPatient();
             Act appointment = AppointmentTestHelper.createAppointment(
                     startTime, endTime, schedule, customer, patient);
+            ActBean bean = new ActBean(appointment);
+            bean.setValue("arrivalTime", arrivalTime);
             startTimes[i] = getTimestamp(startTime);
+            arrivalTimes[i] = arrivalTime;
             endTimes[i] = getTimestamp(endTime);
             customers[i] = customer;
             patients[i] = patient;
@@ -87,6 +93,8 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
                          set.get(AppointmentQuery.PATIENT_REFERENCE));
             assertEquals(patients[i].getName(),
                          set.get(AppointmentQuery.PATIENT_NAME));
+            assertEquals(arrivalTimes[i],
+                         set.get(AppointmentQuery.ARRIVAL_TIME));
         }
     }
 
