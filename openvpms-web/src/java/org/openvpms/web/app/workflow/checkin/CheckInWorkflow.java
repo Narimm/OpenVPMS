@@ -50,6 +50,9 @@ public class CheckInWorkflow extends WorkflowImpl {
      * The initial context.
      */
     private TaskContext initial;
+    private static final String WORK_LIST_SHORTNAME = "party.organisationWorkList";
+    private static final String CUSTOMER_TASK_SHORTNAME = "act.customerTask";
+    private static final String CLINICAL_EVENT = "act.patientClinicalEvent";
 
 
     /**
@@ -113,10 +116,6 @@ public class CheckInWorkflow extends WorkflowImpl {
         initial.setWorkListDate(new Date());
         initial.setScheduleDate(global.getScheduleDate());
 
-        String workList = "party.organisationWorkList";
-        String task = "act.customerTask";
-        String event = "act.patientClinicalEvent";
-
         if (patient == null) {
             // select/create a patient
             String pet = "party.patientpet";
@@ -125,14 +124,8 @@ public class CheckInWorkflow extends WorkflowImpl {
             addTask(new UpdateIMObjectTask(pet, new TaskProperties(), true));
         }
 
-        // select a worklist
-        addTask(new SelectIMObjectTask<Party>(workList, initial));
-
-        // create and edit an act.customerTask
-        TaskProperties taskProps = new TaskProperties();
-        taskProps.add("description", taskDescription);
-        addTask(new CreateIMObjectTask(task, taskProps));
-        addTask(new EditCustomerTask(task));
+        // optionally select a worklist and edit a customer task
+        addTask(new CustomerTaskWorkflow(taskDescription));
 
         // optionally select and print an act.patientDocumentForm
         addTask(new PrintDocumentFormTask());
@@ -140,7 +133,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         // create a new act.patientClinicalEvent
         TaskProperties eventProps = new TaskProperties();
         eventProps.add("reason", "Appointment");
-        addTask(new EditIMObjectTask(event, eventProps, false));
+        addTask(new EditIMObjectTask(CLINICAL_EVENT, eventProps, false));
 
         // prompt for a patient weight.
         addTask(new PatientWeightTask());
@@ -151,6 +144,31 @@ public class CheckInWorkflow extends WorkflowImpl {
             appProps.add("status", AppointmentStatus.CHECKED_IN);
             addTask(new UpdateAppointmentTask(appointment, appProps));
         }
+    }
+
+    private class CustomerTaskWorkflow extends WorkflowImpl {
+
+        /**
+         * Constructs a new <code>CustomerTaskWorkflow</code>.
+         */
+        public CustomerTaskWorkflow(String taskDescription) {
+            // select a worklist
+            SelectIMObjectTask<Party> selectWorkList
+                    = new SelectIMObjectTask<Party>(WORK_LIST_SHORTNAME,
+                                                    initial);
+            selectWorkList.setRequired(false);
+            addTask(selectWorkList);
+
+            setRequired(false);
+            setBreakOnSkip(true);
+
+            // create and edit an act.customerTask
+            TaskProperties taskProps = new TaskProperties();
+            taskProps.add("description", taskDescription);
+            addTask(new CreateIMObjectTask(CUSTOMER_TASK_SHORTNAME, taskProps));
+            addTask(new EditCustomerTask(CUSTOMER_TASK_SHORTNAME));
+        }
+
     }
 
     private class UpdateAppointmentTask extends UpdateIMObjectTask {
@@ -178,9 +196,15 @@ public class CheckInWorkflow extends WorkflowImpl {
                                 TaskContext context) {
             super.populate(object, properties, context);
             ActBean bean = new ActBean((Act) object);
+            bean.setValue("arrivalTime", new Date());
             if (bean.getParticipantRef("participation.patient") == null) {
                 bean.addParticipation("participation.patient",
                                       context.getPatient());
+            }
+            Act act = (Act) context.getObject("act.customerTask");
+            if (act != null) {
+                bean.addRelationship("actRelationship.customerAppointmentTask",
+                                     act);
             }
         }
     }

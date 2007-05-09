@@ -127,6 +127,29 @@ public class FastLookupHelper {
     }
 
     /**
+     * Returns a list of lookups for the specified archetype short name and node
+     * name.
+     *
+     * @param shortName the archetype short name
+     * @param node      the node name
+     * @return a map of lookup codes to lookup names
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws LookupHelperException     if the lookup is incorrectly specified
+     */
+    public static Map<String, String> getLookupNames(String shortName,
+                                                     String node) {
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(shortName);
+        if (archetype != null) {
+            NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
+            if (descriptor != null) {
+                return getLookupNames(descriptor);
+            }
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
      * Returns a map of lookup codes to lookup names for the specified
      * {@link NodeDescriptor}.
      *

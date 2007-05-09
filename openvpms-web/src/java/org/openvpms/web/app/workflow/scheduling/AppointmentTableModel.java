@@ -23,6 +23,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.archetype.rules.workflow.AppointmentQuery;
+import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -34,6 +35,7 @@ import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
 import java.util.Map;
@@ -175,7 +177,7 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
                 break;
             case STATUS_INDEX:
                 if (value instanceof String) {
-                    result = getStatus((String) value);
+                    result = getStatus(set, (String) value);
                 }
                 break;
             case REASON_INDEX:
@@ -218,22 +220,30 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
     /**
      * Returns a status name given its code.
      *
+     * @param set  the object set
      * @param code the status code
      * @return the status name
      */
-    private String getStatus(String code) {
-        if (statuses == null) {
-            ArchetypeDescriptor archetype
-                    = DescriptorHelper.getArchetypeDescriptor(
-                    "act.customerAppointment");
-            if (archetype != null) {
-                NodeDescriptor node = archetype.getNodeDescriptor("status");
-                if (node != null) {
-                    statuses = FastLookupHelper.getLookupNames(node);
-                }
+    private String getStatus(ObjectSet set, String code) {
+        String status = null;
+
+        if (AppointmentStatus.CHECKED_IN.equals(code)) {
+            Date arrival = (Date) set.get(AppointmentQuery.ARRIVAL_TIME);
+            if (arrival != null) {
+                String diff = DateFormatter.formatTimeDiff(arrival, new Date());
+                status = Messages.get("appointmenttablemodel.waiting", diff);
             }
         }
-        return (statuses != null) ? statuses.get(code) : null;
+        if (status == null) {
+            if (statuses == null) {
+                statuses = FastLookupHelper.getLookupNames(
+                        "act.customerAppointment", "status");
+            }
+            if (statuses != null) {
+                status = statuses.get(code);
+            }
+        }
+        return status;
     }
 
     /**
@@ -244,15 +254,8 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
      */
     private String getReason(String code) {
         if (reasons == null) {
-            ArchetypeDescriptor archetype
-                    = DescriptorHelper.getArchetypeDescriptor(
-                    "act.customerAppointment");
-            if (archetype != null) {
-                NodeDescriptor node = archetype.getNodeDescriptor("reason");
-                if (node != null) {
-                    reasons = FastLookupHelper.getLookupNames(node);
-                }
-            }
+            reasons = FastLookupHelper.getLookupNames("act.customerAppointment",
+                                                      "reason");
         }
         return (reasons != null) ? reasons.get(code) : null;
     }
