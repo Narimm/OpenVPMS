@@ -20,7 +20,6 @@ package org.openvpms.web.app.workflow.worklist;
 
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.web.component.edit.IMObjectProperty;
@@ -30,7 +29,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.component.util.DateFormatter;
 
 import java.util.Date;
 
@@ -112,16 +111,7 @@ public class TaskTableModel extends AbstractActTableModel {
                 if (end == null) {
                     end = new Date();
                 }
-                long diff = end.getTime() - start.getTime();
-                long hours = 0;
-                long mins = 0;
-                if (diff > 0) {
-                    hours = diff / DateUtils.MILLIS_IN_HOUR;
-                    mins = (diff % DateUtils.MILLIS_IN_HOUR)
-                            / DateUtils.MILLIS_IN_MINUTE;
-                }
-                result = Messages.get("tasktablemodel.time.format", hours,
-                                      mins);
+                result = DateFormatter.formatTimeDiff(start, end);
             }
         } else {
             result = super.getValue(act, column, row);

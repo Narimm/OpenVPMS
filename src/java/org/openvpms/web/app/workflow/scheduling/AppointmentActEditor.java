@@ -20,6 +20,7 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
+import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -84,6 +85,12 @@ public class AppointmentActEditor extends AbstractActEditor {
             Date scheduleDate = context.getContext().getScheduleDate();
             setStartTime(getDefaultStartTime(scheduleDate));
         }
+
+        getProperty("status").addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onStatusChanged();
+            }
+        });
     }
 
     /**
@@ -157,6 +164,17 @@ public class AppointmentActEditor extends AbstractActEditor {
             calculateEndTime();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Invoked when the status changes. Sets the arrivalTime to now if
+     * the status is CHECKED_IN.
+     */
+    private void onStatusChanged() {
+        String status = (String) getProperty("status").getValue();
+        if (AppointmentStatus.CHECKED_IN.equals(status)) {
+            getProperty("arrivalTime").setValue(new Date());
         }
     }
 

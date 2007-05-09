@@ -77,6 +77,13 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
     private DateField date;
 
     /**
+     * The last date processed by {@link #onDateChanged()}.
+     * todo - this is a workaround for a bug/feature of the EPNG date field
+     * which seems to generate 2 events for the one update to the text field.
+     */
+    private Date lastDate;
+
+    /**
      * The clinician selector.
      */
     private IMObjectSelector<User> clinician;
@@ -325,15 +332,26 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
      */
     protected void onDateChanged() {
         Date date = getDate();
-        Date today = DateFormatter.getDayMonthYear(new Date());
-        statusRange.removeActionListener(statusRangeListener);
-        if (date.equals(today)) {
-            statusRange.setSelectedItem(INCOMPLETE);
-        } else {
-            statusRange.setSelectedItem(ALL);
+        if (!date.equals(lastDate)) {
+            Date today = DateFormatter.getDayMonthYear(new Date());
+            statusRange.removeActionListener(statusRangeListener);
+            if (date.equals(today)) {
+                statusRange.setSelectedItem(INCOMPLETE);
+            } else {
+                statusRange.setSelectedItem(ALL);
+            }
+            statusRange.addActionListener(statusRangeListener);
+            onQuery();
         }
-        statusRange.addActionListener(statusRangeListener);
-        onQuery();
+    }
+
+    /**
+     * Notify listnerss to perform a query.
+     */
+    @Override
+    protected void onQuery() {
+        lastDate = getDate();
+        super.onQuery();
     }
 
     /**

@@ -190,6 +190,34 @@ public class DateFormatter {
         return format.format(WIDE_DATE).length();
     }
 
+    /**
+     * Formats a time difference in hours and minutes.
+     *
+     * @param from the start time
+     * @param to   the end time
+     * @return the difference between the time, in hours and minutes
+     */
+    public static String formatTimeDiff(Date from, Date to) {
+        long diff = to.getTime() - from.getTime();
+        if (diff < 0) {
+            diff = 0;
+        }
+        return formatTime(diff);
+    }
+
+    /**
+     * Format a time in hours and minutes.
+     *
+     * @param time the time in milliseconds
+     * @return the time in hours and minutes
+     */
+    public static String formatTime(long time) {
+        long hours = time / DateUtils.MILLIS_IN_HOUR;
+        long mins = (time % DateUtils.MILLIS_IN_HOUR)
+                / DateUtils.MILLIS_IN_MINUTE;
+        return Messages.get("time.format.abs", hours, mins);
+    }
+
 
     static {
         String dateEdit = Messages.get("date.format.edit", true);
