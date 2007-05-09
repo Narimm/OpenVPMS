@@ -25,8 +25,12 @@ import org.hibernate.HibernateException;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -43,6 +47,13 @@ public class ReflectingObjectLoader implements ObjectLoader {
      */
     private static final Log log
             = LogFactory.getLog(ReflectingObjectLoader.class);
+
+    /**
+     * Cache of collection methods, keyed on their class.
+     */
+    private Map<Class, Method[]> collectionMethods
+            = new HashMap<Class, Method[]>();
+
 
     /**
      * Loads an object.
@@ -64,24 +75,45 @@ public class ReflectingObjectLoader implements ObjectLoader {
     protected void load(Object object, Set<Object> loaded) {
         Hibernate.initialize(object);
         loaded.add(object);
-        Method[] methods = object.getClass().getMethods();
+        Method[] methods = getCollectionMethods(object);
         for (Method method : methods) {
-            if (isCollectionGetter(method)) {
-                Collection collection = null;
-                try {
-                    collection = (Collection) method.invoke(object);
-                } catch (Exception exception) {
-                    log.warn(exception, exception);
-                }
-                if (collection != null) {
-                    for (Object elt : collection) {
-                        if (!loaded.contains(elt)) {
-                            load(elt, loaded);
-                        }
+            Collection collection = null;
+            try {
+                collection = (Collection) method.invoke(object);
+            } catch (Exception exception) {
+                log.warn(exception, exception);
+            }
+            if (collection != null) {
+                for (Object elt : collection) {
+                    if (!loaded.contains(elt)) {
+                        load(elt, loaded);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Returns the collection methods for an object.
+     *
+     * @param object the object
+     * @return the collection methods
+     */
+    private synchronized Method[] getCollectionMethods(Object object) {
+        Class clazz = object.getClass();
+        Method[] result = collectionMethods.get(clazz);
+        if (result == null) {
+            List<Method> list = new ArrayList<Method>();
+            Method[] methods = clazz.getMethods();
+            for (Method method : methods) {
+                if (isCollectionGetter(method)) {
+                    list.add(method);
+                }
+            }
+            result = list.toArray(new Method[list.size()]);
+            collectionMethods.put(clazz, result);
+        }
+        return result;
     }
 
     /**
