@@ -21,14 +21,15 @@
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Appointment'" />
-		<node name="customer" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
+		<node name="customer" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
 			filter="participation.customer" />
-		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
+		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
 			filter="participation.patient" />
-		<node name="appointmentType" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
+		<node name="appointmentType" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
 			filter="participation.appointmentType" />
 		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" />
 		<node name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="1" />
+        <node name="arrivalTime" path="/details/arrivalTime" type="java.util.Date" hidden="true" minCardinality="0" maxCardinality="1"/>
 		<node name="reason" path="/reason" type="java.lang.String" minCardinality="0" >
 			<assertion name="lookup">
 				<property name="type" value="lookup" />
@@ -51,9 +52,21 @@
 				<errorMessage>Invalid Appointment Status</errorMessage>
 			</assertion>
 		</node>
-		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
+		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
 			filter="participation.author" hidden="true" />
 		<node name="schedule" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
 			filter="participation.schedule" hidden="true" />
-	</archetype>
+        <node name="tasks" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" hidden="true" minCardinality="0" maxCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="actRelationship.customerAppointmentTask"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>
