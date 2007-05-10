@@ -55,14 +55,35 @@ import java.util.List;
 public class AppointmentRules {
 
     /**
+     * The archetype service.
+     */
+    private IArchetypeService service;
+
+    /**
+     * Creates a new <tt>AppointmentRules</tt>.
+     */
+    public AppointmentRules() {
+        this(ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Creates a new <tt>AppointmentRules</tt>.
+     *
+     * @param service the archetype service
+     */
+    public AppointmentRules(IArchetypeService service) {
+        this.service = service;
+    }
+
+    /**
      * Returns the schedule slot size in minutes.
      *
      * @param schedule the schedule
      * @return the schedule slot size in minutes
      * @throws OpenVPMSException for any error
      */
-    public static int getSlotSize(Party schedule) {
-        EntityBean bean = new EntityBean(schedule);
+    public int getSlotSize(Party schedule) {
+        EntityBean bean = new EntityBean(schedule, service);
         return getSlotSize(bean);
     }
 
@@ -76,9 +97,9 @@ public class AppointmentRules {
      * @return the appointment end time
      * @throws OpenVPMSException for any error
      */
-    public static Date calculateEndTime(Date startTime, Party schedule,
-                                        Entity appointmentType) {
-        EntityBean schedBean = new EntityBean(schedule);
+    public Date calculateEndTime(Date startTime, Party schedule,
+                                 Entity appointmentType) {
+        EntityBean schedBean = new EntityBean(schedule, service);
         int noSlots = getSlots(schedBean, appointmentType);
         int minutes = getSlotSize(schedBean) * noSlots;
         int millis = minutes * DateUtils.MILLIS_IN_MINUTE;
@@ -92,9 +113,9 @@ public class AppointmentRules {
      * @return a list of acts that overlap with the appointment
      * @throws OpenVPMSException for any error
      */
-    public static boolean hasOverlappingAppointments(Act appointment) {
+    public boolean hasOverlappingAppointments(Act appointment) {
         long uid = appointment.getUid();
-        ActBean bean = new ActBean(appointment);
+        ActBean bean = new ActBean(appointment, service);
         IMObjectReference schedule
                 = bean.getParticipantRef("participation.schedule");
         Date startTime = appointment.getActivityStartTime();
@@ -108,6 +129,40 @@ public class AppointmentRules {
     }
 
     /**
+     * Updates any <em>act.customerTask</em> associated with an
+     * <em>act.customerAppointment</em> to ensure that it has the same status
+     * (where applicable).
+     *
+     * @param act the appointment
+     * @throws OpenVPMSException for any error
+     */
+    public void updateTask(Act act) {
+        ActBean bean = new ActBean(act, service);
+        List<Act> tasks = bean.getActsForNode("tasks");
+        if (!tasks.isEmpty()) {
+            Act task = tasks.get(0);
+            updateStatus(act, task);
+        }
+    }
+
+    /**
+     * Updates any <em>act.customerAppointment</em> associated with an
+     * <em>act.customerTask</em> to ensure that it has the same status
+     * (where applicable).
+     *
+     * @param act
+     * @throws OpenVPMSException for any error
+     */
+    public void updateAppointment(Act act) {
+        ActBean bean = new ActBean(act, service);
+        List<Act> appointments = bean.getActsForNode("appointments");
+        if (!appointments.isEmpty()) {
+            Act appointment = appointments.get(0);
+            updateStatus(act, appointment);
+        }
+    }
+
+    /**
      * Determines if there are acts that overlap with an appointment.
      *
      * @param uid       the appointment id
@@ -117,12 +172,12 @@ public class AppointmentRules {
      * @return a list of acts that overlap with the appointment
      * @throws OpenVPMSException for any error
      */
-    private static boolean hasOverlappingAppointments(long uid, Date startTime,
-                                                      Date endTime,
-                                                      IMObjectReference schedule) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        ShortNameConstraint shortName = new ShortNameConstraint("act", "act.customerAppointment", true);
+    private boolean hasOverlappingAppointments(long uid, Date startTime,
+                                               Date endTime,
+                                               IMObjectReference schedule) {
+        ShortNameConstraint shortName
+                = new ShortNameConstraint("act", "act.customerAppointment",
+                                          true);
         ArchetypeQuery query = new ArchetypeQuery(shortName);
         query.setFirstResult(0);
         query.setMaxResults(1);
@@ -163,7 +218,7 @@ public class AppointmentRules {
      * @param time the time
      * @return a new constraint
      */
-    private static IConstraint createOverlapConstraint(Date time) {
+    private IConstraint createOverlapConstraint(Date time) {
         AndConstraint and = new AndConstraint();
         and.add(new NodeConstraint("startTime", RelationalOp.LT, time));
         and.add(new NodeConstraint("endTime", RelationalOp.GT, time));
@@ -177,7 +232,7 @@ public class AppointmentRules {
      * @return the schedule slot size in minutes
      * @throws OpenVPMSException for any error
      */
-    private static int getSlotSize(EntityBean schedule) {
+    private int getSlotSize(EntityBean schedule) {
         int slotSize = schedule.getInt("slotSize");
         String slotUnits = schedule.getString("slotUnits");
         int result;
@@ -197,15 +252,38 @@ public class AppointmentRules {
      * @return the no. of slots, or <code>0</code> if unknown
      * @throws OpenVPMSException for any error
      */
-    private static int getSlots(EntityBean schedule, Entity appointmentType) {
+    private int getSlots(EntityBean schedule, Entity appointmentType) {
         int noSlots = 0;
         EntityRelationship relationship
                 = schedule.getRelationship(appointmentType);
         if (relationship != null) {
-            IMObjectBean bean = new IMObjectBean(relationship);
+            IMObjectBean bean = new IMObjectBean(relationship, service);
             noSlots = bean.getInt("noSlots");
         }
         return noSlots;
+    }
+
+    /**
+     * Updates the status of a linked act to that of the supplied act,
+     * where the statuses are common.
+     *
+     * @param act    the act
+     * @param linked the act to update
+     */
+    private void updateStatus(Act act, Act linked) {
+        String status = act.getStatus();
+        if (WorkflowStatus.PENDING.equals(status)
+                || WorkflowStatus.IN_PROGRESS.equals(status)
+                || WorkflowStatus.COMPLETED.equals(status)
+                || WorkflowStatus.CANCELLED.equals(status)) {
+            if (!status.equals(linked.getStatus())) {
+                linked.setStatus(status);
+                if (WorkflowStatus.COMPLETED.equals(status)) {
+                    linked.setActivityEndTime(act.getActivityEndTime());
+                }
+                service.save(linked);
+            }
+        }
     }
 
 }
