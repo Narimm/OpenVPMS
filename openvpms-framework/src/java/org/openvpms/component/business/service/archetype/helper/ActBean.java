@@ -206,21 +206,17 @@ public class ActBean extends IMObjectBean {
      * @param name the node name
      * @return a list of the child acts
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if the node does't exist
+     * @throws IMObjectBeanException     if the node doesn't exist
      */
     public List<Act> getActsForNode(String name) {
         List<IMObject> relationships = getValues(name);
         List<Act> result = new ArrayList<Act>();
+        IMObjectReference ref = getObject().getObjectReference();
         for (IMObject object : relationships) {
-            ActRelationship r = (ActRelationship) object;
-            IMObjectReference target = r.getTarget();
-            if (target != null) {
-                IArchetypeService service = getArchetypeService();
-                Act child = (Act) ArchetypeQueryHelper.getByObjectReference(
-                        service, target);
-                if (child != null) {
-                    result.add(child);
-                }
+            ActRelationship relationship = (ActRelationship) object;
+            Act child = getSourceOrTarget(relationship, ref);
+            if (child != null) {
+                result.add(child);
             }
         }
         return result;
@@ -346,6 +342,34 @@ public class ActBean extends IMObjectBean {
             p.setEntity(entity);
         }
         return p;
+    }
+
+    /**
+     * Returns the source or target of a relationship that is not the same
+     * as the supplied reference.
+     *
+     * @param relationship the relationship
+     * @param ref          the reference
+     * @return the source or target, or <tt>null</tt>
+     */
+    private Act getSourceOrTarget(ActRelationship relationship,
+                                  IMObjectReference ref) {
+        IMObjectReference target = relationship.getTarget();
+        IMObjectReference child = null;
+        if (target != null && !target.equals(ref)) {
+            child = target;
+        } else {
+            IMObjectReference source = relationship.getSource();
+            if (source != null && !source.equals(ref)) {
+                child = source;
+            }
+        }
+        if (child != null) {
+            IArchetypeService service = getArchetypeService();
+            return (Act) ArchetypeQueryHelper.getByObjectReference(
+                    service, child);
+        }
+        return null;
     }
 
 }
