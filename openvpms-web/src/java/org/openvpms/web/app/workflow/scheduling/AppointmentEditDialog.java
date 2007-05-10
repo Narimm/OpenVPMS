@@ -109,7 +109,8 @@ public class AppointmentEditDialog extends EditDialog {
         if (editor.isValid()) {
             Act act = (Act) object;
             ActBean appointment = new ActBean(act);
-            overlap = AppointmentRules.hasOverlappingAppointments(act);
+            AppointmentRules rules = new AppointmentRules();
+            overlap = rules.hasOverlappingAppointments(act);
             if (overlap) {
                 if (!allowDoubleBooking(appointment)) {
                     String title = Messages.get(
