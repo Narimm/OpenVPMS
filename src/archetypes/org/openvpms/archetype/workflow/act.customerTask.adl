@@ -48,5 +48,17 @@
 			filter="participation.author" hidden="true" />
 		<node name="worklist" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
 			filter="participation.worklist" hidden="true" />
+        <node name="appointments" path="/targetActRelationships"
+              type="java.util.HashSet" baseName="TargetActRelationship" hidden="true" minCardinality="0" maxCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="actRelationship.customerAppointmentTask"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
 	</archetype>
 </archetypes>

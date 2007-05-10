@@ -19,9 +19,11 @@
 package org.openvpms.archetype.rules.workflow;
 
 import org.openvpms.archetype.test.ArchetypeServiceTest;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 
@@ -40,6 +42,12 @@ import java.util.List;
 public class AppointmentRulesTestCase extends ArchetypeServiceTest {
 
     /**
+     * The appointment rules.
+     */
+    private AppointmentRules rules;
+
+
+    /**
      * Tests the behaviour of {@link AppointmentRules#calculateEndTime} when
      * the schedule units are in minutes .
      */
@@ -48,8 +56,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         save(appointmentType);
         Party schedule = createSchedule(15, "MINUTES", 2, appointmentType);
         Date start = createTime(9, 0);
-        Date end = AppointmentRules.calculateEndTime(start, schedule,
-                                                     appointmentType);
+        Date end = rules.calculateEndTime(start, schedule, appointmentType);
         Date expected = createTime(9, 30);
         assertEquals(expected, end);
     }
@@ -63,8 +70,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         save(appointmentType);
         Party schedule = createSchedule(1, "HOURS", 3, appointmentType);
         Date start = createTime(9, 0);
-        Date end = AppointmentRules.calculateEndTime(start, schedule,
-                                                     appointmentType);
+        Date end = rules.calculateEndTime(start, schedule, appointmentType);
         Date expected = createTime(12, 0);
         assertEquals(expected, end);
     }
@@ -84,31 +90,31 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         save(schedule2);
 
         Act appointment = createAppointment(start, end, schedule1);
-        assertFalse(AppointmentRules.hasOverlappingAppointments(appointment));
+        assertFalse(rules.hasOverlappingAppointments(appointment));
         save(appointment);
-        assertFalse(AppointmentRules.hasOverlappingAppointments(appointment));
+        assertFalse(rules.hasOverlappingAppointments(appointment));
 
         Act exactOverlap = createAppointment(start, end, schedule1);
-        assertTrue(AppointmentRules.hasOverlappingAppointments(exactOverlap));
+        assertTrue(rules.hasOverlappingAppointments(exactOverlap));
 
         Act overlap = createAppointment(createTime(9, 5), createTime(9, 10),
                                         schedule1);
-        assertTrue(AppointmentRules.hasOverlappingAppointments(overlap));
+        assertTrue(rules.hasOverlappingAppointments(overlap));
 
         Act after = createAppointment(createTime(9, 15), createTime(9, 30),
                                       schedule1);
-        assertFalse(AppointmentRules.hasOverlappingAppointments(after));
+        assertFalse(rules.hasOverlappingAppointments(after));
 
         Act before = createAppointment(createTime(8, 45), createTime(9, 0),
                                        schedule1);
-        assertFalse(AppointmentRules.hasOverlappingAppointments(before));
+        assertFalse(rules.hasOverlappingAppointments(before));
 
         // now verify there are no overlaps for the same time but different
         // schedule
         Act appointment2 = createAppointment(start, end, schedule2);
-        assertFalse(AppointmentRules.hasOverlappingAppointments(appointment2));
+        assertFalse(rules.hasOverlappingAppointments(appointment2));
         save(appointment2);
-        assertFalse(AppointmentRules.hasOverlappingAppointments(appointment2));
+        assertFalse(rules.hasOverlappingAppointments(appointment2));
     }
 
     /**
@@ -127,7 +133,75 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         empty.setActivityStartTime(null);
         empty.setActivityEndTime(null);
 
-        assertFalse(AppointmentRules.hasOverlappingAppointments(empty));
+        assertFalse(rules.hasOverlappingAppointments(empty));
+    }
+
+    /**
+     * Verifies that the status of a task associated with an appointment
+     * is updated when the appointment is saved.
+     * <p/>
+     * Note that this requires the
+     * <em>archetypeService.save.act.customerAppointment.afer</em> rule.
+     */
+    public void testUpdateTaskStatus() {
+        Date start = createTime(9, 0);
+        Date end = createTime(9, 15);
+        Entity appointmentType = createAppointmentType();
+        Party schedule = createSchedule(15, "MINUTES", 2, appointmentType);
+        Act appointment = createAppointment(start, end, schedule);
+
+        Act task = createTask();
+        save(task);
+
+        ActBean bean = new ActBean(appointment);
+        bean.addRelationship("actRelationship.customerAppointmentTask", task);
+        save(appointment);
+
+        checkStatus(appointment, WorkflowStatus.PENDING, task,
+                    WorkflowStatus.PENDING);
+        checkStatus(appointment, AppointmentStatus.CHECKED_IN, task,
+                    WorkflowStatus.PENDING);
+        checkStatus(appointment, WorkflowStatus.IN_PROGRESS, task,
+                    WorkflowStatus.IN_PROGRESS);
+        checkStatus(appointment, WorkflowStatus.COMPLETED, task,
+                    WorkflowStatus.COMPLETED);
+        checkStatus(appointment, WorkflowStatus.CANCELLED, task,
+                    WorkflowStatus.CANCELLED);
+    }
+
+    /**
+     * Verifies that the status of an appointment associated with an task
+     * is updated when the task is saved.
+     * <p/>
+     * Note that this requires the
+     * <em>archetypeService.save.act.customerTask.afer</em> rule.
+     */
+    public void testUpdateAppointmentStatus() {
+        Date start = createTime(9, 0);
+        Date end = createTime(9, 15);
+        Entity appointmentType = createAppointmentType();
+        Party schedule = createSchedule(15, "MINUTES", 2, appointmentType);
+        Act appointment = createAppointment(start, end, schedule);
+
+        Act task = createTask();
+        save(task);
+
+        ActBean bean = new ActBean(appointment);
+        bean.addRelationship("actRelationship.customerAppointmentTask", task);
+        save(appointment);
+
+        task = (Act) get(task); // need to reload as relationship has been added
+
+        checkStatus(task, WorkflowStatus.PENDING, appointment,
+                    WorkflowStatus.PENDING);
+        checkStatus(task, WorkflowStatus.IN_PROGRESS, appointment,
+                    WorkflowStatus.IN_PROGRESS);
+        checkStatus(task, TaskStatus.BILLED, appointment,
+                    WorkflowStatus.IN_PROGRESS);
+        checkStatus(task, WorkflowStatus.COMPLETED, appointment,
+                    WorkflowStatus.COMPLETED);
+        checkStatus(task, WorkflowStatus.CANCELLED, appointment,
+                    WorkflowStatus.CANCELLED);
     }
 
     /**
@@ -139,6 +213,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     protected void onSetUp() throws Exception {
         super.onSetUp();
         removeActs();
+        rules = new AppointmentRules();
     }
 
     /**
@@ -153,6 +228,27 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
                                     Party schedule) {
         return AppointmentTestHelper.createAppointment(startTime, endTime,
                                                        schedule);
+    }
+
+    /**
+     * Helper to create a new <em>act.customerTask</em>.
+     *
+     * @return a new act
+     */
+    protected Act createTask() {
+        Entity taskType = createTaskType();
+        Party customer = TestHelper.createCustomer();
+        Entity workList = createWorkList();
+        Act act = createAct("act.customerTask");
+        ActBean bean = new ActBean(act);
+        bean.setStatus(WorkflowStatus.PENDING);
+        bean.setValue("startTime", new Date());
+        bean.setValue("endTime", new Date());
+        bean.addParticipation("participation.taskType", taskType);
+        bean.addParticipation("participation.customer", customer);
+        bean.addParticipation("participation.worklist", workList);
+        bean.save();
+        return act;
     }
 
     /**
@@ -172,6 +268,30 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      */
     protected Entity createAppointmentType() {
         return AppointmentTestHelper.createAppointmentType();
+    }
+
+    /**
+     * Helper to create a new <em>entity.taskType</em>.
+     *
+     * @return a new task type
+     */
+    protected Entity createTaskType() {
+        Entity taskType = (Entity) create("entity.taskType");
+        taskType.setName("XTaskType");
+        save(taskType);
+        return taskType;
+    }
+
+    /**
+     * Helper to create a new <em>party.organisationWorkList</em>.
+     *
+     * @return a new work list
+     */
+    protected Party createWorkList() {
+        Party workList = (Party) create("party.organisationWorkList");
+        workList.setName("XWorkList");
+        save(workList);
+        return workList;
     }
 
     /**
@@ -199,6 +319,32 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     private Date createTime(int hour, int minutes) {
         Calendar calendar = new GregorianCalendar(2006, 8, 22, hour, minutes);
         return calendar.getTime();
+    }
+
+    /**
+     * Checks the status of a linked act (an <em>act.customerAppointment</em>
+     * or <em>act.customerTask</em> when its linker is saved.
+     *
+     * @param source         the source act
+     * @param status         the status to set
+     * @param linked         the linked act
+     * @param expectedStatus the expected linked act status
+     */
+    private void checkStatus(Act source, String status, Act linked,
+                             String expectedStatus) {
+        source.setStatus(status);
+        save(source);
+
+        // reload the linked act to get any new status
+        linked = (Act) get(linked);
+        assertNotNull(linked);
+        assertEquals(expectedStatus, linked.getStatus());
+
+        // for completed acts, expect the endTimes to be the same
+        if (WorkflowStatus.COMPLETED.equals(expectedStatus)) {
+            assertEquals(source.getActivityEndTime(),
+                         linked.getActivityEndTime());
+        }
     }
 
     /**
