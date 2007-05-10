@@ -190,7 +190,8 @@ public class AppointmentActEditor extends AbstractActEditor {
         int slotSize = 0;
         Party schedule = (Party) getParticipant("schedule");
         if (schedule != null) {
-            slotSize = AppointmentRules.getSlotSize(schedule);
+            AppointmentRules rules = new AppointmentRules();
+            slotSize = rules.getSlotSize(schedule);
         }
 
         Calendar calendar = new GregorianCalendar();
@@ -221,8 +222,8 @@ public class AppointmentActEditor extends AbstractActEditor {
                 = getAppointmentTypeEditor();
         Entity appointmentType = editor.getEntity();
         if (start != null && schedule != null && appointmentType != null) {
-            Date end = AppointmentRules.calculateEndTime(start, schedule,
-                                                         appointmentType);
+            AppointmentRules rules = new AppointmentRules();
+            Date end = rules.calculateEndTime(start, schedule, appointmentType);
             setEndTime(end);
         }
     }
