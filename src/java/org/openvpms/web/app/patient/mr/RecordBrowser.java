@@ -60,19 +60,9 @@ public class RecordBrowser implements Browser<Act> {
     private Browser<Act> summary;
 
     /**
-     * The visits browser.
-     */
-    private TableBrowser<Act> visits;
-
-    /**
      * The problems browser.
      */
     private TableBrowser<Act> problems;
-
-    /**
-     * The medication browser.
-     */
-    private TableBrowser<Act> medication;
 
     /**
      * The reminders/alerts browser.
@@ -83,11 +73,6 @@ public class RecordBrowser implements Browser<Act> {
      * The documents browser.
      */
     private TableBrowser<Act> document;
-
-    /**
-     * The investigations browser.
-     */
-    private TableBrowser<Act> investigation;
 
     /**
      * The event listener.
@@ -109,8 +94,7 @@ public class RecordBrowser implements Browser<Act> {
      * The browser view.
      */
     public enum View {
-        SUMMARY, VISITS, PROBLEMS, MEDICATION, REMINDER_ALERT, DOCUMENTS,
-        INVESTIGATIONS
+        SUMMARY, PROBLEMS, REMINDER_ALERT, DOCUMENTS
     }
 
 
@@ -119,20 +103,16 @@ public class RecordBrowser implements Browser<Act> {
      * the specified queries.
      *
      * @param summary       query for summary
-     * @param visits        query for visits
      * @param problems      query for problems
-     * @param medication    query for medication
      * @param reminderAlert query for reminders/alerts
+     * @param document      query for documents
      * @param sort          the sort criteria. May be <code>null</code>
      */
-    public RecordBrowser(Query<Act> summary, Query<Act> visits,
-                         Query<Act> problems, Query<Act> medication,
+    public RecordBrowser(PatientSummaryQuery summary, Query<Act> problems,
                          Query<Act> reminderAlert, Query<Act> document,
-                         Query<Act> investigation, SortConstraint[] sort) {
+                         SortConstraint[] sort) {
         this.summary = new SummaryTableBrowser(summary);
-        this.visits = IMObjectTableBrowserFactory.create(visits, sort);
         this.problems = IMObjectTableBrowserFactory.create(problems, sort);
-        this.medication = IMObjectTableBrowserFactory.create(medication, sort);
 
         // todo - should be able to register ReminderActTableModel in
         // IMObjectTableFactory.properties for act.patientReminder and
@@ -145,11 +125,6 @@ public class RecordBrowser implements Browser<Act> {
                 = new ActAmountTableModel<Act>(true, false);
         this.document = new DefaultIMObjectTableBrowser<Act>(document, sort,
                                                              docModel);
-        IMObjectTableModel<Act> invModel
-                = new ActAmountTableModel<Act>(true, false);
-        this.investigation = new DefaultIMObjectTableBrowser<Act>(investigation,
-                                                                  sort,
-                                                                  invModel);
     }
 
     /**
@@ -161,12 +136,9 @@ public class RecordBrowser implements Browser<Act> {
         if (tab == null) {
             DefaultTabModel model = new DefaultTabModel();
             addTab("button.summary", model, summary);
-            addTab("button.visit", model, visits);
             addTab("button.problem", model, problems);
-            addTab("button.medication", model, medication);
             addTab("button.reminder", model, reminderAlert);
             addTab("button.document", model, document);
-            addTab("button.investigation", model, investigation);
             tab = TabbedPaneFactory.create(model);
             tab.setSelectedIndex(selected);
 
@@ -219,12 +191,9 @@ public class RecordBrowser implements Browser<Act> {
      */
     public void addQueryListener(QueryBrowserListener<Act> listener) {
         summary.addQueryListener(listener);
-        visits.addQueryListener(listener);
         problems.addQueryListener(listener);
-        medication.addQueryListener(listener);
         reminderAlert.addQueryListener(listener);
         document.addQueryListener(listener);
-        investigation.addQueryListener(listener);
     }
 
     /**
@@ -232,12 +201,9 @@ public class RecordBrowser implements Browser<Act> {
      */
     public void query() {
         query(summary);
-        query(visits);
         query(problems);
-        query(medication);
         query(reminderAlert);
         query(document);
-        query(investigation);
     }
 
     /**
@@ -249,17 +215,8 @@ public class RecordBrowser implements Browser<Act> {
     public Browser<Act> getBrowser(View view) {
         Browser<Act> result;
         switch (view) {
-            case SUMMARY:
-                result = summary;
-                break;
-            case VISITS:
-                result = visits;
-                break;
             case PROBLEMS:
                 result = problems;
-                break;
-            case MEDICATION:
-                result = medication;
                 break;
             case REMINDER_ALERT:
                 result = reminderAlert;
@@ -268,7 +225,7 @@ public class RecordBrowser implements Browser<Act> {
                 result = document;
                 break;
             default:
-                result = investigation;
+                result = summary;
         }
         return result;
     }
@@ -281,26 +238,17 @@ public class RecordBrowser implements Browser<Act> {
     public View getView() {
         View result;
         switch (selected) {
-            case 0:
-                result = View.SUMMARY;
-                break;
             case 1:
-                result = View.VISITS;
-                break;
-            case 2:
                 result = View.PROBLEMS;
                 break;
-            case 3:
-                result = View.MEDICATION;
-                break;
-            case 4:
+            case 2:
                 result = View.REMINDER_ALERT;
                 break;
-            case 5:
+            case 3:
                 result = View.DOCUMENTS;
                 break;
             default:
-                result = View.INVESTIGATIONS;
+                result = View.SUMMARY;
         }
         return result;
     }

@@ -17,10 +17,9 @@
  */
 package org.openvpms.web.app.admin.lookup;
 
-import nextapp.echo2.app.table.TableColumn;
-
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
+
 
 /**
  * Table model for <em>lookup.*</em> objects. Displays the archetype name.
@@ -30,20 +29,11 @@ import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
  */
 public class LookupTableModel extends BaseIMObjectTableModel<Lookup> {
 
-	public LookupTableModel() {
-		setTableColumnModel(createTableColumnModel(true));
-	}
     /**
-     * Returns the value found at the given coordinate within the table.
-     *
-     * @param lookup the object
-     * @param column  the column
-     * @param row     the row
-     * @return the value at the given coordinate
+     * Creates a new <tt>LookupTableModel</tt>.
      */
-    @Override
-    protected Object getValue(Lookup lookup, TableColumn column, int row) {
-        return super.getValue(lookup, column, row);
+    public LookupTableModel() {
+        setTableColumnModel(createTableColumnModel(true));
     }
- 
+
 }

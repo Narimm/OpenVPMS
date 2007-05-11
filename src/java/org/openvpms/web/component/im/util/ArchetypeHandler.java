@@ -35,34 +35,60 @@ import java.util.Map;
 public class ArchetypeHandler<T> {
 
     /**
+     * The short name that this handler applies to. May contain wildcards.
+     */
+    private String shortName;
+
+    /**
      * The implementation class.
      */
-    private final Class<T> _type;
+    private Class<T> type;
 
     /**
      * Configuration properties.
      */
-    private final Map<String, String> _properties;
+    private Map<String, Object> properties;
 
 
     /**
-     * Creates a new <code>ArchetypeHandler</code>.
+     * Creates a new <tt>ArchetypeHandler</tt>.
      *
      * @param type the handler implementation class
      */
-    public ArchetypeHandler(Class<T> type) {
-        this(type, null);
+    public ArchetypeHandler(String shortName, Class<T> type) {
+        this(shortName, type, null);
     }
 
     /**
-     * Creates a new <code>ArchetypeHandler</code>.
+     * Creates a new <tt>ArchetypeHandler</tt>.
      *
+     * @param shortName  the archetype short name. May contain wildcards
      * @param type       the handler implementation class
-     * @param properties configuration properties. May be <code>null</code>
+     * @param properties configuration properties. May be <tt>null</tt>
      */
-    public ArchetypeHandler(Class<T> type, Map<String, String> properties) {
-        _type = type;
-        _properties = properties;
+    public ArchetypeHandler(String shortName, Class<T> type,
+                            Map<String, Object> properties) {
+        this.shortName = shortName;
+        this.type = type;
+        this.properties = properties;
+    }
+
+    /**
+     * Returns the archetype short name.
+     *
+     * @return the archetype short name. May contain wildcards
+     */
+    public String getShortName() {
+        return shortName;
+    }
+
+    /**
+     * Sets the archetype short name.
+     *
+     * @param shortName the archetype short name. May contain wildcards
+     */
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
     }
 
     /**
@@ -71,7 +97,34 @@ public class ArchetypeHandler<T> {
      * @return the implementation class
      */
     public Class<T> getType() {
-        return _type;
+        return type;
+    }
+
+    /**
+     * Sets the handler implementation class.
+     *
+     * @param type the implementation class
+     */
+    public void setType(Class<T> type) {
+        this.type = type;
+    }
+
+    /**
+     * Returns the configuration properties.
+     *
+     * @return the configuration properties. May be <tt>null</tt>
+     */
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    /**
+     * Sets the configuration properties.
+     *
+     * @param properties the configuration properties. May be <tt>null</tt>
+     */
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
     }
 
     /**
@@ -81,20 +134,20 @@ public class ArchetypeHandler<T> {
      */
     @Override
     public int hashCode() {
-        return _type.hashCode();
+        return type.hashCode();
     }
 
     /**
      * Indicates whether some other object is "equal to" this one.
      *
      * @param obj the reference object with which to compare.
-     * @return <code>true</code> if this object is the same as the obj
-     *         argument; <code>false</code> otherwise.
+     * @return <tt>true</tt> if this object is the same as the obj
+     *         argument; <tt>false</tt> otherwise.
      */
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ArchetypeHandler) {
-            return ((ArchetypeHandler) obj)._type.equals(_type);
+            return ((ArchetypeHandler) obj).type.equals(type);
         }
         return false;
     }
@@ -130,7 +183,7 @@ public class ArchetypeHandler<T> {
                                           IllegalAccessException,
                                           InvocationTargetException,
                                           InstantiationException {
-        T handler = (T) ConstructorUtils.invokeConstructor(_type, args);
+        T handler = (T) ConstructorUtils.invokeConstructor(type, args);
         return initialise(handler);
     }
 
@@ -148,7 +201,7 @@ public class ArchetypeHandler<T> {
     public T create(Object[] args, Class[] types)
             throws IllegalAccessException, NoSuchMethodException,
                    InvocationTargetException, InstantiationException {
-        T handler = (T) ConstructorUtils.invokeConstructor(_type, args, types);
+        T handler = (T) ConstructorUtils.invokeConstructor(type, args, types);
         return initialise(handler);
     }
 
@@ -164,18 +217,10 @@ public class ArchetypeHandler<T> {
      */
     public T initialise(T handler) throws IllegalAccessException,
                                           InvocationTargetException {
-        if (_properties != null && _properties.size() != 0) {
-            BeanUtils.populate(handler, _properties);
+        if (properties != null && properties.size() != 0) {
+            BeanUtils.populate(handler, properties);
         }
         return handler;
     }
 
-    /**
-     * Returns the configuration properties.
-     *
-     * @return the configuration properties. May be <code>null</code>
-     */
-    public Map<String, String> getProperties() {
-        return _properties;
-    }
 }

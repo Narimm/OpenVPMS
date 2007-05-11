@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -33,10 +34,11 @@ import org.openvpms.web.component.button.ButtonSet;
 public class SummaryCRUDWindow extends AbstractCRUDWindow<Act> {
 
     /**
-     * Create a new <code>SummaryCRUDWindow</code>.
+     * Creates a new <tt>SummaryCRUDWindow</tt>.
      */
     public SummaryCRUDWindow() {
-        super(null, new ShortNameList("act.patientClinicalEvent"));
+        super(Messages.get("patient.record.createtype"),
+              new ShortNameList("act.patientClinicalEvent"));
     }
 
     /**
@@ -46,15 +48,28 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
+        buttons.add(getEditButton());
+        buttons.add(getCreateButton());
+        buttons.add(getDeleteButton());
+        buttons.add(getPrintButton());
     }
 
     /**
      * Enables/disables the buttons that require an object to be selected.
      *
-     * @param buttons
+     * @param buttons the button set
      * @param enable  determines if buttons should be enabled
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
+        buttons.removeAll();
+        if (enable) {
+            buttons.add(getEditButton());
+            buttons.add(getCreateButton());
+            buttons.add(getDeleteButton());
+            buttons.add(getPrintButton());
+        } else {
+            buttons.add(getCreateButton());
+        }
     }
 }

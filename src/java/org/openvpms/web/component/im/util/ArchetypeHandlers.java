@@ -18,14 +18,21 @@
 
 package org.openvpms.web.component.im.util;
 
+import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.util.ConfigReader;
+import org.openvpms.web.component.util.PropertiesReader;
 
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,17 +46,28 @@ import java.util.Set;
  */
 public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
 
+    /**
+     * The type that each handler must implement/extend.
+     */
+    private final Class<T> type;
 
     /**
      * The logger.
      */
-    private static final Log _log
+    private static final Log log
             = LogFactory.getLog(ArchetypeHandlers.class);
 
     /**
      * Map of short names to their corresponding handlers.
      */
-    private Map<String, ArchetypeHandler<T>> _handlers
+    private Map<String, ArchetypeHandler<T>> handlers
+            = new HashMap<String, ArchetypeHandler<T>>();
+
+    /**
+     * Map of handlers not associated with any short name. These
+     * can only be returned by class name.
+     */
+    private Map<String, ArchetypeHandler<T>> anonymousHandlers
             = new HashMap<String, ArchetypeHandler<T>>();
 
 
@@ -60,8 +78,15 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
      * @param type class the each handler must implement/extend
      */
     public ArchetypeHandlers(String name, Class<T> type) {
-        Parser parser = new Parser(type);
-        parser.parse(name);
+        this.type = type;
+        if (name.endsWith(".properties")) {
+            readProperties(name);
+        } else if (name.endsWith(".xml")) {
+            readXML(name);
+        } else {
+            readProperties(name + ".properties");
+            readXML(name + ".xml");
+        }
     }
 
     /**
@@ -85,7 +110,7 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
      */
     public ArchetypeHandler<T> getHandler(String[] shortNames) {
         ArchetypeHandler<T> result = null;
-        Set<String> wildcards = _handlers.keySet();
+        Set<String> wildcards = handlers.keySet();
 
         // generate a map of matching wildcards, keyed on short name
         Map<String, String> matches = new HashMap<String, String>();
@@ -108,7 +133,7 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
             // found a match for each short name. Make sure the implementation
             // class is the same, with the same configuration
             for (String match : matches.values()) {
-                ArchetypeHandler<T> handler = _handlers.get(match);
+                ArchetypeHandler<T> handler = handlers.get(match);
                 if (result == null) {
                     result = handler;
                 } else if (!result.getType().equals(handler.getType())) {
@@ -122,6 +147,15 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns an anonymous handler.
+     *
+     * @param type the implementation class type
+     */
+    public ArchetypeHandler<T> getHandler(Class<T> type) {
+        return anonymousHandlers.get(type.getName());
     }
 
     /**
@@ -149,51 +183,198 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
         return result;
     }
 
-    class Parser extends ArchetypePropertiesParser {
-
-        /**
-         * Constructs a new <code>Parser</code>.
-         *
-         * @param type the type all handler classes must implement
-         */
-        public Parser(Class<T> type) {
-            super(type);
+    /**
+     * Registers a handler for a particular short name.
+     *
+     * @param shortName  the archetype short name. May be <tt>null</tt>
+     * @param type       the implementation class
+     * @param properties the configuration properties. May be <tt>null</tt>
+     * @param path       the resource path
+     */
+    private void addHandler(String shortName, Class<T> type,
+                            Map<String, Object> properties, String path) {
+        if (!StringUtils.isEmpty(shortName)) {
+            String[] matches = DescriptorHelper.getShortNames(shortName, false);
+            if (matches.length == 0) {
+                log.warn("No archetypes found matching short name=" + shortName
+                        + ", loaded from path=" + path);
+            } else {
+                if (handlers.get(shortName) != null) {
+                    log.warn("Duplicate sbort name=" + shortName
+                            + " from " + path + ": ignoring");
+                } else {
+                    ArchetypeHandler<T> handler
+                            = new ArchetypeHandler<T>(shortName, type,
+                                                      properties);
+                    handlers.put(shortName, handler);
+                }
+            }
+        } else {
+            // got an anonymous handler
+            String name = type.getName();
+            if (anonymousHandlers.get(name) != null) {
+                log.warn("Duplicate anonymous handler=" + name
+                        + " from " + path + ": ignoring");
+            } else {
+                ArchetypeHandler<T> handler
+                        = new ArchetypeHandler<T>(null, type, properties);
+                anonymousHandlers.put(name, handler);
+            }
         }
+    }
+
+    /**
+     * Loads all XML resources with the specified name.
+     *
+     * @param name the resource name
+     */
+    private void readXML(String name) {
+        XMLConfigReader reader = new XMLConfigReader();
+        reader.read(name);
+    }
+
+    /**
+     * Loads all property resources with the specified name.
+     *
+     * @param name the resource name
+     */
+    private void readProperties(String name) {
+        Reader parser = new Reader();
+        parser.read(name);
+    }
+
+    /**
+     * Reads handlers from a .properties file.
+     */
+    private class Reader extends PropertiesReader {
 
         /**
          * Parse a property file entry.
          *
          * @param key   the property key
          * @param value the property value
+         * @param path  the path the property came from
          */
         @SuppressWarnings("unchecked")
-        protected void parse(String key, String value) {
-            String[] matches = DescriptorHelper.getShortNames(key, false);
-            if (matches.length == 0) {
-                _log.warn("No archetypes found matching short name=" + key
-                        + ", loaded from path=" + getPath());
+        protected void parse(String key, String value, String path) {
+            String[] properties = value.split(",");
+            if (properties.length == 0) {
+                log.warn("Invalid properties for short name=" + key
+                        + ", loaded from path=" + path);
             } else {
-                if (_handlers.get(key) != null) {
-                    _log.warn("Duplicate sbort name=" + key
-                            + " from " + getPath() + ": ignoring");
-                } else {
-                    String[] properties = value.split(",");
-                    if (properties.length == 0) {
-                        _log.warn("Invalid properties for short name=" + key
-                                + ", loaded from path=" + getPath());
-                    }
-                    Class<T> clazz = (Class<T>) getClass(properties[0]);
-                    Map<String, String> config = new HashMap<String, String>();
+                Class<T> clazz = (Class<T>) getClass(properties[0], type,
+                                                     path);
+                if (clazz != null) {
+
+                    Map<String, Object> config = new HashMap<String, Object>();
                     for (int i = 1; i < properties.length; ++i) {
                         String[] pair = properties[i].split("=");
                         config.put(pair[0], pair[1]);
                     }
-                    if (clazz != null) {
-                        _handlers.put(key,
-                                      new ArchetypeHandler<T>(clazz, config));
-                    }
+                    addHandler(key, clazz, config, path);
                 }
             }
+        }
+    }
+
+    /**
+     * Reads handlers from XML using <tt>XStream</tt>.
+     */
+    private class XMLConfigReader extends ConfigReader {
+
+        private XStream stream;
+
+        public XMLConfigReader() {
+            stream = new XStream();
+            stream.alias("handler", Handler.class);
+            stream.alias("handlers", Handlers.class);
+            stream.addImplicitCollection(Handlers.class, "handlers");
+        }
+
+        /**
+         * Reads the configuration at the specified path.
+         *
+         * @param path the path to read
+         */
+        @SuppressWarnings("unchecked")
+        protected void read(URL path) {
+            try {
+                Handlers handlers = (Handlers) stream.fromXML(
+                        path.openStream());
+                for (Handler handler : handlers) {
+                    Class<T> clazz = (Class<T>) getClass(handler.getType(),
+                                                         type, path.toString());
+                    if (clazz != null) {
+                        addHandler(handler.getShortName(), clazz,
+                                   handler.getProperties(), path.toString());
+                    }
+                }
+            } catch (Throwable exception) {
+                log.error(exception, exception);
+            }
+        }
+    }
+
+    /**
+     * Helper to deserialize handlers from XML.
+     */
+    public static class Handlers implements Iterable<Handler> {
+
+        /**
+         * The handlers.
+         */
+        private List<Handler> handlers = new ArrayList<Handler>();
+
+        /**
+         * Adds a handler.
+         *
+         * @param handler the handler to add
+         */
+        public void add(Handler handler) {
+            handlers.add(handler);
+        }
+
+        /**
+         * Returns an iterator over a set of elements of type T.
+         *
+         * @return an Iterator.
+         */
+        public Iterator<Handler> iterator() {
+            return handlers.iterator();
+        }
+    }
+
+    /**
+     * Helper to deserialize a handler from XML.
+     */
+    public static class Handler {
+
+        private String shortName;
+        private String type;
+        private Map<String, Object> properties;
+
+        public String getShortName() {
+            return shortName;
+        }
+
+        public void setShortName(String shortName) {
+            this.shortName = shortName;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public Map<String, Object> getProperties() {
+            return properties;
+        }
+
+        public void setProperties(Map<String, Object> properties) {
+            this.properties = properties;
         }
     }
 

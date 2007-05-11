@@ -17,34 +17,24 @@
  */
 package org.openvpms.web.app.admin.organisation;
 
-import nextapp.echo2.app.table.TableColumn;
-
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 
+
 /**
- * Table model for <em>party.organisation*</em> objects. Displays the archetype name.
+ * Table model for <em>party.organisation*</em> objects. Displays the archetype
+ * name.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public class OrganisationTableModel extends BaseIMObjectTableModel<Party> {
 
-	public OrganisationTableModel() {
-		setTableColumnModel(createTableColumnModel(true));
-	}
     /**
-     * Returns the value found at the given coordinate within the table.
-     *
-     * @param lookup the object
-     * @param column  the column
-     * @param row     the row
-     * @return the value at the given coordinate
+     * Creates a new <tt>OrganisationModel</tt>.
      */
-    @Override
-    protected Object getValue(Party party, TableColumn column, int row) {
-        return super.getValue(party, column, row);
+    public OrganisationTableModel() {
+        setTableColumnModel(createTableColumnModel(true));
     }
- 
+
 }

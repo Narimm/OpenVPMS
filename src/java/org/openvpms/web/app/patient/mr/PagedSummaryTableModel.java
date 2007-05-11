@@ -22,6 +22,8 @@ import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Transformer;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -44,12 +46,30 @@ import java.util.Set;
 public class PagedSummaryTableModel extends PagedIMObjectTableModel<Act> {
 
     /**
+     * The archetype short names or the child acts to display.
+     */
+    private String[] shortNames;
+
+
+    /**
      * Construct a new <code>PagedSummaryTableModel</code>.
      *
-     * @param model the underlying table model.
+     * @param model      the underlying table model
+     * @param shortNames the archetype short names of the child acts to display
      */
-    public PagedSummaryTableModel(IMObjectTableModel<Act> model) {
+    public PagedSummaryTableModel(IMObjectTableModel<Act> model,
+                                  String[] shortNames) {
         super(model);
+        this.shortNames = shortNames;
+    }
+
+    /**
+     * Sets the archetype short names of the child acts to display.
+     *
+     * @param shortNames the archetype short names of the child acts to display
+     */
+    public void setShortNames(String[] shortNames) {
+        this.shortNames = shortNames;
     }
 
     /**
@@ -63,12 +83,18 @@ public class PagedSummaryTableModel extends PagedIMObjectTableModel<Act> {
         for (Act act : objects) {
             acts.add(act);
             List<Act> items = new ArrayList<Act>();
-            Set<ActRelationship> relationships = act.getSourceActRelationships();
+            Set<ActRelationship> relationships
+                    = act.getSourceActRelationships();
             for (ActRelationship relationship : relationships) {
-                Act item = (Act) IMObjectHelper.getObject(
-                        relationship.getTarget());
-                if (item != null) {
-                    items.add(item);
+                for (String shortName : shortNames) {
+                    IMObjectReference target = relationship.getTarget();
+                    if (TypeHelper.isA(target, shortName)) {
+                        Act item = (Act) IMObjectHelper.getObject(
+                                target);
+                        if (item != null) {
+                            items.add(item);
+                        }
+                    }
                 }
             }
             sortItems(items);

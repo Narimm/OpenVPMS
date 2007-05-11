@@ -170,23 +170,24 @@ public class MacroEvaluator {
 
     }
 
-    private static class Parser extends PropertiesParser {
+    private static class Reader extends PropertiesReader {
 
         /**
          * Parse a property file entry.
          *
          * @param key   the property key
          * @param value the property value
+         * @param path  the path the property came from
          */
-        protected void parse(String key, String value) {
+        protected void parse(String key, String value, String path) {
             macros.put(key, value);
         }
     }
 
     static {
         macros = new HashMap<String, String>();
-        Parser parser = new Parser();
-        parser.parse("Macros.properties");
+        Reader parser = new Reader();
+        parser.read("Macros.properties");
     }
 
 }

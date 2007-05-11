@@ -99,8 +99,12 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
      */
     @Override
     public Component getSummary() {
-        Act act = getCRUDWindow().getObject();
-        return WorkflowSummary.getSummary(act);
+        CRUDWindow<Act> window = getCRUDWindow();
+        if (window != null) {
+            Act act = window.getObject();
+            return WorkflowSummary.getSummary(act);
+        }
+        return null;
     }
 
     /**

@@ -17,10 +17,9 @@
  */
 package org.openvpms.web.app.admin.type;
 
-import nextapp.echo2.app.table.TableColumn;
-
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
+
 
 /**
  * Table model for <em>entity.*Type</em> objects. Displays the archetype name.
@@ -30,20 +29,11 @@ import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
  */
 public class TypeTableModel extends BaseIMObjectTableModel<Entity> {
 
-	public TypeTableModel() {
-		setTableColumnModel(createTableColumnModel(true));
-	}
     /**
-     * Returns the value found at the given coordinate within the table.
-     *
-     * @param type the object
-     * @param column  the column
-     * @param row     the row
-     * @return the value at the given coordinate
+     * Creates a new <tt>TypeTableModel</tt>.
      */
-    @Override
-    protected Object getValue(Entity type, TableColumn column, int row) {
-        return super.getValue(type, column, row);
+    public TypeTableModel() {
+        setTableColumnModel(createTableColumnModel(true));
     }
- 
+
 }

@@ -20,8 +20,8 @@ package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
-import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
@@ -37,13 +37,33 @@ import org.openvpms.web.component.im.table.PagedIMTable;
 public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
 
     /**
+     * The table model that wraps the underlying model, to filter acts.
+     */
+    private PagedSummaryTableModel pagedModel;
+
+
+    /**
      * Construct a new <code>Browser</code> that queries IMObjects using the
      * specified query.
      *
      * @param query the query
      */
-    public SummaryTableBrowser(Query<Act> query) {
-        super(query, null, new SummaryTableModel());
+    public SummaryTableBrowser(PatientSummaryQuery query) {
+        super(query, null, createTableModel());
+    }
+
+    /**
+     * Query using the specified criteria, and populate the table with matches.
+     */
+    @Override
+    public void query() {
+        if (pagedModel != null) {
+            // ensure the table model has the selected child act short names
+            // prior to performing the query
+            PatientSummaryQuery query = (PatientSummaryQuery) getQuery();
+            pagedModel.setShortNames(query.getActItemShortNames());
+        }
+        super.query();
     }
 
     /**
@@ -54,13 +74,20 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
      */
     @Override
     protected PagedIMTable<Act> createTable(IMTableModel<Act> model) {
-        PagedIMObjectTable<Act> result = new PagedIMObjectTable<Act>(
-                new PagedSummaryTableModel((IMObjectTableModel<Act>) model));
+        PatientSummaryQuery query = (PatientSummaryQuery) getQuery();
+        pagedModel = new PagedSummaryTableModel((IMObjectTableModel<Act>) model,
+                                                query.getActItemShortNames());
+        PagedIMObjectTable<Act> result
+                = new PagedIMObjectTable<Act>(pagedModel);
         IMTable<Act> table = result.getTable();
         table.setDefaultRenderer(Object.class, new SummaryTableCellRenderer());
         table.setHeaderVisible(false);
         table.setStyleName("plain");
         table.setSelectionEnabled(false);
         return result;
+    }
+
+    private static IMObjectTableModel<Act> createTableModel() {
+        return IMObjectTableModelFactory.create(SummaryTableModel.class, null);
     }
 }

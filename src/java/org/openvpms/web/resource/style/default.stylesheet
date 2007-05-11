@@ -253,6 +253,14 @@
         </properties>
     </style>
 
+    <style name="PatientRecordWorkspace.SummaryLayout"
+           type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="32px"/>
+        </properties>
+    </style>
+
     <style name="PatientSummary.ReminderDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>
