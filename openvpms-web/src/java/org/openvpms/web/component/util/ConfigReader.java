@@ -11,7 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
@@ -25,73 +25,34 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 
-
 /**
- * Property file parser.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class PropertiesParser {
-
-    /**
-     * The path of the property file being parsed.
-     */
-    private URL path;
+public abstract class ConfigReader {
 
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(PropertiesParser.class);
+    private static final Log log = LogFactory.getLog(ConfigReader.class);
 
 
     /**
-     * Parse all property files from the classpath matching the specified
-     * name.
+     * Reads all configuration resources with the specified name.
+     * If there are multiple resources with the same name, they will be merged.
      *
-     * @param name the property file name
+     * @param name the configuration name
      */
-    public void parse(String name) {
+    public void read(String name) {
         Set<URL> paths = getPaths(name);
-
         for (URL path : paths) {
-            try {
-                Properties properties = new Properties();
-                properties.load(path.openStream());
-                this.path = path;
-                Enumeration keys = properties.propertyNames();
-                while (keys.hasMoreElements()) {
-                    String key = (String) keys.nextElement();
-                    String value = properties.getProperty(key).trim();
-                    // trim required as Properties doesn't seem to remove
-                    // trailing whitespace
-                    parse(key, value);
-                }
-            } catch (IOException exception) {
-                log.error(exception, exception);
-            }
+            read(path);
         }
     }
-
-    /**
-     * Returns the path of the property file being parsed.
-     *
-     * @return the property file URL
-     */
-    protected URL getPath() {
-        return path;
-    }
-
-    /**
-     * Parse a property file entry.
-     *
-     * @param key   the property key
-     * @param value the property value
-     */
-    protected abstract void parse(String key, String value);
 
     /**
      * Returns all resources with the given name.
@@ -116,6 +77,45 @@ public abstract class PropertiesParser {
     }
 
     /**
+     * Reads the configuration at the specified path.
+     *
+     * @param path the path to read
+     */
+    protected abstract void read(URL path);
+
+    /**
+     * Helper to load a class, verifying that it is an instance of the specified
+     * type.
+     *
+     * @param name the class name
+     * @param type the expected type
+     * @param path the path, for error reporting purposes
+     * @return the class, or <code>null</code> if it can't be found
+     */
+    protected Class getClass(String name, Class type, String path) {
+        for (ClassLoader loader : getClassLoaders()) {
+            if (loader != null) {
+                try {
+                    Class clazz = loader.loadClass(name);
+                    if (type.isAssignableFrom(clazz)) {
+                        return clazz;
+                    } else {
+                        log.error("Failed to load class: " + name
+                                + ", specified in " + path
+                                + ": does not extend" + type.getName());
+                        return null;
+
+                    }
+                } catch (ClassNotFoundException ignore) {
+                    // no-op
+                }
+            }
+        }
+        log.error("Failed to load class: " + name + ", specified in " + path);
+        return null;
+    }
+
+    /**
      * Returns a list of classloaders to locate for resources with. The list
      * will contain the context class loader and this class' loader, or this
      * class' loader if the context class loader is null or the same.
@@ -124,7 +124,7 @@ public abstract class PropertiesParser {
      */
     protected ClassLoader[] getClassLoaders() {
         ClassLoader context = Thread.currentThread().getContextClassLoader();
-        ClassLoader clazz = PropertiesParser.class.getClassLoader();
+        ClassLoader clazz = PropertiesReader.class.getClassLoader();
         if (context != null && context != clazz) {
             return new ClassLoader[]{context, clazz};
         }

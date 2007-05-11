@@ -35,9 +35,14 @@ import org.openvpms.web.test.AbstractAppTest;
 public class ArchetypeHandlersTestCase extends AbstractAppTest {
 
     /**
-     * The handlers.
+     * The handlers, configured from the properties file.
      */
-    private ArchetypeHandlers _handlers;
+    private ArchetypeHandlers propertiesHandlers;
+
+    /**
+     * The handlers, configured from the XML file.
+     */
+    private ArchetypeHandlers xmlHandlers;
 
     /**
      * Test properties.
@@ -46,6 +51,11 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
             = "org/openvpms/web/component/im/util/"
             + "ArchetypeHandlersTestCase.properties";
 
+    /**
+     * Test xml.
+     */
+    private static final String XML = "org/openvpms/web/component/im/util/"
+            + "ArchetypeHandlersTestCase.xml";
 
     /**
      * Verifies that {@link AutoQuery} can be created for a <em>lookup.*</em>
@@ -54,8 +64,72 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
      * @throws Exception for any error
      */
     public void testCreateAutoQuery() throws Exception {
+        checkCreateAutoQuery(propertiesHandlers);
+        checkCreateAutoQuery(xmlHandlers);
+    }
+
+    /**
+     * Verifies that {@link PatientQuery} can be created for a
+     * <em>patient.*</em>short name, and that maxRows is configured for 25.
+     *
+     * @throws Exception for any error
+     */
+    public void testCreatePatientQuery() throws Exception {
+        checkCreatePatientQuery(propertiesHandlers);
+        checkCreatePatientQuery(xmlHandlers);
+    }
+
+    /**
+     * Verifies that no handler is returned if there is no match for the
+     * specified archetypes.
+     */
+    public void testNoMatch() {
+        checkNoMatch(propertiesHandlers);
+        checkNoMatch(xmlHandlers);
+    }
+
+    /**
+     * Verifies that no handler is returned if a handler doesn't support
+     * the entire range of archetypes.
+     */
+    public void testNoCompleteMatch() {
+        checkNoCompleteMatch(propertiesHandlers);
+        checkNoCompleteMatch(xmlHandlers);
+    }
+
+    /**
+     * Verifies that the correct handler is returned if multiple handlers
+     * are registered with the same implementation type.
+     */
+    public void testSameHandlerImplementationType() {
+        checkSameHandlerImplementationType(propertiesHandlers);
+        checkSameHandlerImplementationType(xmlHandlers);
+    }
+
+    /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        propertiesHandlers = new ArchetypeHandlers<Query>(PROPERTIES,
+                                                          Query.class);
+        xmlHandlers = new ArchetypeHandlers<Query>(XML, Query.class);
+    }
+
+    /**
+     * Verifies that {@link AutoQuery} can be created for a <em>lookup.*</em>
+     * short name.
+     *
+     * @param handlers
+     * @throws Exception
+     */
+    private void checkCreateAutoQuery(ArchetypeHandlers handlers)
+            throws Exception {
         String[] shortNames = DescriptorHelper.getShortNames("lookup.*");
-        ArchetypeHandler lookup = _handlers.getHandler("lookup.*");
+        ArchetypeHandler lookup = handlers.getHandler("lookup.*");
         assertNotNull(lookup);
         assertEquals(lookup.getType(), AutoQuery.class);
         Query query = (Query) lookup.create(new Object[]{shortNames});
@@ -65,10 +139,14 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
     /**
      * Verifies that {@link PatientQuery} can be created for a
      * <em>patient.*</em>short name, and that maxRows is configured for 25.
+     *
+     * @param handlers the handlers
+     * @throws Exception for any error
      */
-    public void testCreatePatientQuery() throws Exception {
+    private void checkCreatePatientQuery(ArchetypeHandlers handlers)
+            throws Exception {
         String[] shortNames = DescriptorHelper.getShortNames("party.patient*");
-        ArchetypeHandler patient = _handlers.getHandler("party.patient*");
+        ArchetypeHandler patient = handlers.getHandler("party.patient*");
         assertNotNull(patient);
         assertEquals(patient.getType(), PatientQuery.class);
         Query query = (Query) patient.create(
@@ -80,12 +158,14 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
     /**
      * Verifies that no handler is returned if there is no match for the
      * specified archetypes.
+     *
+     * @param handlers the handlers
      */
-    public void testNoMatch() {
-        ArchetypeHandler handler1 = _handlers.getHandler("act.*");
+    private void checkNoMatch(ArchetypeHandlers handlers) {
+        ArchetypeHandler handler1 = handlers.getHandler("act.*");
         assertNull(handler1);
 
-        ArchetypeHandler handler2 = _handlers.getHandler(
+        ArchetypeHandler handler2 = handlers.getHandler(
                 new String[]{"act.*", "actRelationship.*"});
         assertNull(handler2);
     }
@@ -93,12 +173,14 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
     /**
      * Verifies that no handler is returned if a handler doesn't support
      * the entire range of archetypes.
+     *
+     * @param handlers the handlers
      */
-    public void testNoCompleteMatch() {
-        ArchetypeHandler handler1 = _handlers.getHandler("*.*");
+    private void checkNoCompleteMatch(ArchetypeHandlers handlers) {
+        ArchetypeHandler handler1 = handlers.getHandler("*.*");
         assertNull(handler1);
 
-        ArchetypeHandler handler2 = _handlers.getHandler(
+        ArchetypeHandler handler2 = handlers.getHandler(
                 new String[]{"party.patient*", "lookup.*"});
         assertNull(handler2);
     }
@@ -106,18 +188,20 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
     /**
      * Verifies that the correct handler is returned if multiple handlers
      * are registered with the same implementation type.
+     *
+     * @param handlers the handlers
      */
-    public void testSameHandlerImplementationType() {
-
+    private void checkSameHandlerImplementationType(
+            ArchetypeHandlers handlers) {
         // make sure the AutoQuery class is returned for lookup.*,
         // security.*
-        ArchetypeHandler handler = _handlers.getHandler(
+        ArchetypeHandler handler = handlers.getHandler(
                 new String[]{"lookup.*", "security.*"});
         assertNotNull(handler);
         assertEquals(handler.getType(), AutoQuery.class);
 
         // make sure the AutoQuery class is returned for party.organisation*
-        ArchetypeHandler org = _handlers.getHandler(
+        ArchetypeHandler org = handlers.getHandler(
                 new String[]{"party.organisation*"});
         assertNotNull(org);
         assertEquals(org.getType(), AutoQuery.class);
@@ -125,20 +209,10 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
         // make sure no handleris returned for lookup.*, security.*,
         // party.organisation* as the party.organisation* line has a different
         // configuration
-        handler = _handlers.getHandler(
+        handler = handlers.getHandler(
                 new String[]{"lookup.*", "security.*",
                              "party.organisation*"});
         assertNull(handler);
     }
 
-    /**
-     * Sets up the test case.
-     *
-     * @throws Exception for any error
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        _handlers = new ArchetypeHandlers<Query>(PROPERTIES, Query.class);
-    }
 }

@@ -49,6 +49,7 @@ public class SummaryTableCellRenderer extends AbstractTableCellRenderer {
      * @param row    the row
      * @return a style name for the given column and row.
      */
+    @SuppressWarnings("unchecked")
     protected String getStyle(Table table, Object value, int column, int row) {
         String style = DEFAULT_STYLE;
         if (table instanceof IMObjectTable) {

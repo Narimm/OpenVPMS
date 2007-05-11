@@ -190,8 +190,10 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
         Component result;
         CRUDWindow window = getCRUDWindow();
         if (window instanceof SummaryCRUDWindow) {
-            // todo SummaryCRUDWindow is a bit of a hack as it is never rendered
-            result = getBrowser().getComponent();
+            result = SplitPaneFactory.create(
+                    SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
+                    "PatientRecordWorkspace.SummaryLayout",
+                    window.getComponent(), getBrowser().getComponent());
         } else {
             result = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
                                              "PatientRecordWorkspace.Layout",
@@ -217,7 +219,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery(Party party) {
-        return createQuery(party, new String[]{CLINICAL_EVENT});
+        return new PatientSummaryQuery(party);
     }
 
     /**
@@ -229,13 +231,10 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
     @Override
     protected Browser<Act> createBrowser(ActQuery<Act> query) {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
-        Party patient = getObject();
-        RecordBrowser browser = new RecordBrowser(query, createQuery(patient),
+        RecordBrowser browser = new RecordBrowser((PatientSummaryQuery) query,
                                                   createProblemsQuery(),
-                                                  createMedicationQuery(),
                                                   createReminderAlertQuery(),
                                                   createDocumentQuery(),
-                                                  createInvestigationQuery(),
                                                   sort);
         browser.setListener(new RecordBrowserListener() {
             public void onViewChanged() {
@@ -254,24 +253,18 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
         RecordBrowser.View view = browser.getView();
         if (view == RecordBrowser.View.SUMMARY) {
             window = new SummaryCRUDWindow();
-        } else if (view == RecordBrowser.View.VISITS) {
-            window = new VisitRecordCRUDWindow();
         } else if (view == RecordBrowser.View.PROBLEMS) {
-            Browser<Act> visit = browser.getBrowser(RecordBrowser.View.VISITS);
+            Browser<Act> summary = browser.getBrowser(
+                    RecordBrowser.View.SUMMARY);
             ProblemRecordCRUDWindow problems = new ProblemRecordCRUDWindow();
-            Act selected = visit.getSelected();
+            Act selected = summary.getSelected();
             if (TypeHelper.isA(selected, CLINICAL_EVENT)) {
                 problems.setEvent(selected);
             }
             window = problems;
-        } else if (view == RecordBrowser.View.MEDICATION) {
-            window = new MedicationRecordCRUDWindow();
         } else if (view == RecordBrowser.View.DOCUMENTS) {
             String type = Messages.get("patient.document.createtype");
             window = new DocumentCRUDWindow(type, DOCUMENT_SHORT_NAMES);
-        } else if (view == RecordBrowser.View.INVESTIGATIONS) {
-            String type = Messages.get("patient.investigation.createtype");
-            window = new DocumentCRUDWindow(type, INVESTIGATION_SHORT_NAMES);
         } else {
             window = new ReminderCRUDWindow();
         }
@@ -290,17 +283,10 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      */
     private DefaultActQuery<Act> createProblemsQuery() {
         String[] shortNames = {CLINICAL_PROBLEM};
-        return createQuery(getObject(), shortNames);
-    }
-
-    /**
-     * Creates a new query, for the medication view.
-     *
-     * @return a new query
-     */
-    private Query<Act> createMedicationQuery() {
-        String[] shortNames = {"act.patientMedication"};
-        return createQuery(getObject(), shortNames);
+        String[] statuses = {};
+        return new DefaultActQuery<Act>(getObject(), "patient",
+                                        "participation.patient", shortNames,
+                                        statuses);
     }
 
     /**
@@ -331,34 +317,4 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
                                         "participation.patient",
                                         DOCUMENT_SHORT_NAMES, lookups, null);
     }
-
-    /**
-     * Creates a new query, for the investigations view.
-     *
-     * @return a new query
-     */
-    private Query<Act> createInvestigationQuery() {
-        List<Lookup> lookups = FastLookupHelper.getLookups(
-                "act.patientInvestigationRadiology", "status");
-        return new DefaultActQuery<Act>(getObject(), "patient",
-                                        "participation.patient",
-                                        INVESTIGATION_SHORT_NAMES, lookups,
-                                        null);
-    }
-
-    /**
-     * Creates a new query.
-     *
-     * @param patient    the patient to query acts for
-     * @param shortNames the act short names
-     * @return a new query
-     */
-    private DefaultActQuery<Act> createQuery(Party patient,
-                                             String[] shortNames) {
-        String[] statuses = {};
-        return new DefaultActQuery<Act>(patient, "patient",
-                                        "participation.patient", shortNames,
-                                        statuses);
-    }
-
 }

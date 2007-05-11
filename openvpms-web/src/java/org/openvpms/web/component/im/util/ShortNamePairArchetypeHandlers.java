@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.util.PropertiesReader;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -74,8 +75,8 @@ public class ShortNamePairArchetypeHandlers<T>
      * @param name the resource name
      */
     public void load(String name) {
-        Parser parser = new Parser(type);
-        parser.parse(name);
+        Reader parser = new Reader();
+        parser.read(name);
     }
 
     /**
@@ -186,35 +187,27 @@ public class ShortNamePairArchetypeHandlers<T>
     /**
      * Property file parser.
      */
-    private class Parser extends ArchetypePropertiesParser {
-
-        /**
-         * Constructs a new <code>Parser</code>.
-         *
-         * @param type the type all handler classes must implement
-         */
-        public Parser(Class type) {
-            super(type);
-        }
+    private class Reader extends PropertiesReader {
 
         /**
          * Parse a property file entry.
          *
          * @param key   the property key
          * @param value the property value
+         * @param path  the path the property came from
          */
         @SuppressWarnings("unchecked")
-        protected void parse(String key, String value) {
-            Class<T> clazz = (Class<T>) getClass(value);
+        protected void parse(String key, String value, String path) {
+            Class<T> clazz = (Class<T>) getClass(value, type, path);
             if (clazz != null) {
                 String[] pair = key.split(",");
                 if (pair.length == 0 || pair.length > 2) {
                     log.error("Invalid short name pair=" + key
-                            + ", loaded from path=" + getPath());
+                            + ", loaded from path=" + path);
                 } else if (pair.length == 1) {
-                    addHandler(pair[0], clazz);
+                    addHandler(pair[0], clazz, path);
                 } else {
-                    addHandler(pair[0], pair[1], clazz);
+                    addHandler(pair[0], pair[1], clazz, path);
                 }
             }
         }
@@ -224,17 +217,19 @@ public class ShortNamePairArchetypeHandlers<T>
          *
          * @param shortName the primary short name
          * @param type      the handler type
+         * @param path      the path the handler came from
          */
-        private void addHandler(String shortName, Class<T> type) {
-            String[] matches = getShortNames(shortName);
+        private void addHandler(String shortName, Class<T> type, String path) {
+            String[] matches = getShortNames(shortName, path);
             if (matches.length != 0) {
                 Handlers<T> handlers = getHandlers(shortName);
                 if (handlers.getHandler() != null) {
                     log.warn("Duplicate sbort name=" + shortName
-                            + " from " + getPath() + ": ignoring");
+                            + " from " + path + ": ignoring");
 
                 } else {
-                    ArchetypeHandler<T> handler = new ArchetypeHandler<T>(type);
+                    ArchetypeHandler<T> handler
+                            = new ArchetypeHandler<T>(shortName, type);
                     handlers.setHandler(handler);
                 }
             }
@@ -246,19 +241,22 @@ public class ShortNamePairArchetypeHandlers<T>
          * @param primary   the primary short name
          * @param secondary the secondary short name
          * @param type      the handler type
+         * @param path      the path the handler came from
          */
         private void addHandler(String primary, String secondary,
-                                Class<T> type) {
-            String[] primaryMatches = getShortNames(primary);
-            String[] secondaryMatches = getShortNames(secondary);
+                                Class<T> type, String path) {
+            String[] primaryMatches = getShortNames(primary, path);
+            String[] secondaryMatches = getShortNames(secondary, path);
             if (primaryMatches.length != 0 && secondaryMatches.length != 0) {
                 Handlers<T> handlers = getHandlers(primary);
                 if (handlers.get(secondary) != null) {
                     log.warn("Duplicate sbort name=" + secondary
                             + " for primary short name=" + primary
-                            + " from " + getPath() + ": ignoring");
+                            + " from " + path + ": ignoring");
                 } else {
-                    handlers.add(secondary, new ArchetypeHandler<T>(type));
+                    ArchetypeHandler<T> handler
+                            = new ArchetypeHandler<T>(secondary, type);
+                    handlers.add(secondary, handler);
                 }
             }
         }
@@ -267,13 +265,14 @@ public class ShortNamePairArchetypeHandlers<T>
          * Returns the archetype short names matching a short name.
          *
          * @param shortName the short name
+         * @param path      the path the handler came from
          * @return a list of short names matching <code>shprtName</code>
          */
-        private String[] getShortNames(String shortName) {
+        private String[] getShortNames(String shortName, String path) {
             String[] matches = DescriptorHelper.getShortNames(shortName, false);
             if (matches.length == 0) {
                 log.warn("No archetypes found matching short name="
-                        + shortName + ", loaded from path=" + getPath());
+                        + shortName + ", loaded from path=" + path);
             }
             return matches;
         }

@@ -25,27 +25,27 @@ package org.openvpms.web.app.patient.mr;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface PatientRecordTypes {
+public class PatientRecordTypes {
 
     /**
      * Clinical event act short name.
      */
-    String CLINICAL_EVENT = "act.patientClinicalEvent";
+    public static final String CLINICAL_EVENT = "act.patientClinicalEvent";
 
     /**
      * Clinical problem act short name.
      */
-    String CLINICAL_PROBLEM = "act.patientClinicalProblem";
+    public static String CLINICAL_PROBLEM = "act.patientClinicalProblem";
 
     /**
      * Clinical event item act relationship short name,
      */
-    String RELATIONSHIP_CLINICAL_EVENT_ITEM
+    public static String RELATIONSHIP_CLINICAL_EVENT_ITEM
             = "actRelationship.patientClinicalEventItem";
 
     /**
      * Clinical problem item act relationship short name,
      */
-    String RELATIONSHIP_CLINICAL_PROBLEM_ITEM
+    public static String RELATIONSHIP_CLINICAL_PROBLEM_ITEM
             = "actRelationship.patientClinicalProblemItem";
 }
