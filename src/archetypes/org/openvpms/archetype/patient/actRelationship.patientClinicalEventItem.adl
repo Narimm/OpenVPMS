@@ -53,7 +53,10 @@
 					<propertyMap name="archetype">
 						<property name="shortName" value="act.patientMedication" />
 					</propertyMap>
-				</propertyList>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.patientInvestigation*"/>
+                    </propertyMap>
+                </propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
