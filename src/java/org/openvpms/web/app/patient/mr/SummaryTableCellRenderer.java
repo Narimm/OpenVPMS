@@ -20,7 +20,7 @@ package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Table;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.table.IMObjectTable;
+import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.table.AbstractTableCellRenderer;
 
 
@@ -52,8 +52,8 @@ public class SummaryTableCellRenderer extends AbstractTableCellRenderer {
     @SuppressWarnings("unchecked")
     protected String getStyle(Table table, Object value, int column, int row) {
         String style = DEFAULT_STYLE;
-        if (table instanceof IMObjectTable) {
-            style = getStyle((IMObjectTable) table, row);
+        if (table instanceof IMTable) {
+            style = getStyle((IMTable) table, row);
         }
         return style;
     }
@@ -65,7 +65,7 @@ public class SummaryTableCellRenderer extends AbstractTableCellRenderer {
      * @param row   the row
      * @return the style name for the specified row
      */
-    private String getStyle(IMObjectTable<IMObject> table, int row) {
+    private String getStyle(IMTable<IMObject> table, int row) {
         IMObject object = table.getObjects().get(row);
         return DEFAULT_STYLE + "." + object.getArchetypeId().getShortName();
     }

@@ -84,7 +84,7 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
     @Override
     protected void doLayout(Component container) {
         final ShortNameListModel model
-                = new ShortNameListModel(allShortNames, true);
+                = new ShortNameListModel(allShortNames, true, false);
         final SelectField shortNameSelector = SelectFieldFactory.create(
                 model);
         shortNameSelector.addActionListener(new ActionListener() {
