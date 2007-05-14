@@ -63,16 +63,40 @@ import java.util.Map;
  */
 public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
 
+    /**
+     * A map of jxpath expressions, keyed on archetype short name,
+     * used to format the text column.
+     */
     private Map<String, String> expressions = new HashMap<String, String>();
 
+    /**
+     * The event column model index.
+     */
     private static final int EVENT_INDEX = 0;
-    private static final int DATE_INDEX = 1;
-    private static final int TYPE_INDEX = 2;
-    private static final int TEXT_INDEX = 3;
-    private static final Log log = LogFactory.getLog(SummaryTableModel.class);
 
     /**
-     * Construct a new <code>SummaryTableModel</code>.
+     * The date column model index.
+     */
+    private static final int DATE_INDEX = 1;
+
+    /**
+     * The archettype column model index.
+     */
+    private static final int TYPE_INDEX = 2;
+
+    /**
+     * The text column model index.
+     */
+    private static final int TEXT_INDEX = 3;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(SummaryTableModel.class);
+
+
+    /**
+     * Creates a new <tt>SummaryTableModel</tt>.
      */
     public SummaryTableModel() {
         TableColumnModel model = new DefaultTableColumnModel();
@@ -83,10 +107,22 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         setTableColumnModel(model);
     }
 
+    /**
+     * A map of jxpath expressions, keyed on archetype short name,
+     * used to format the text column.
+     *
+     * @param expressions the expressions
+     */
     public void setExpressions(Map<String, String> expressions) {
         this.expressions = expressions;
     }
 
+    /**
+     * Returns a map of jxpath expressions, keyed on archetype short name,
+     * used to format the text column.
+     *
+     * @return the expressions
+     */
     public Map<String, String> getExpressions() {
         return expressions;
     }
@@ -205,6 +241,14 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         return result;
     }
 
+    /**
+     * Returns a component to represent the act date. If the date is the same
+     * as a prior date for the same parent act, an empty label is returned.
+     *
+     * @param act the act
+     * @param row the act row
+     * @return a component to represent the date
+     */
     private Component getDate(Act act, int row) {
         Label date = null;
         boolean showDate = true;
@@ -213,6 +257,8 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
             if (!TypeHelper.isA(prev, PatientRecordTypes.CLINICAL_EVENT)
                     && ObjectUtils.equals(act.getActivityStartTime(),
                                           prev.getActivityStartTime())) {
+                // act belongs to the same parent act as the prior row,
+                // and has the same date, so don't display it again
                 showDate = false;
             }
         }
@@ -227,6 +273,14 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         return date;
     }
 
+    /**
+     * Returns a component to represent act text.
+     * If a jxpath expression is registered, this will be evaluated, otherwise
+     * the act description will be used.
+     *
+     * @param act the act
+     * @return a component
+     */
     private Component getText(Act act) {
         Label result = null;
         String text = null;

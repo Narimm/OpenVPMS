@@ -37,7 +37,7 @@ import org.openvpms.web.component.im.query.ParticipantConstraint;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 
@@ -163,14 +163,18 @@ public class ActHelper {
      * @param relationshipTypes the relationship types
      */
     public static String[] getTargetShortNames(String ... relationshipTypes) {
-        Set<String> matches = new HashSet<String>();
+        Set<String> matches = new LinkedHashSet<String>();
         for (String relationshipType : relationshipTypes) {
             ArchetypeDescriptor relationship
                     = DescriptorHelper.getArchetypeDescriptor(relationshipType);
             NodeDescriptor target = relationship.getNodeDescriptor("target");
             if (target != null) {
                 for (String shortName : target.getArchetypeRange()) {
-                    matches.add(shortName);
+                    // expand wildcards
+                    for (String expanded
+                            : DescriptorHelper.getShortNames(shortName)) {
+                        matches.add(expanded);
+                    }
                 }
             }
         }

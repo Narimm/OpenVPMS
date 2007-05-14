@@ -61,21 +61,14 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
     /**
      * Patient Document shortnames supported by the workspace.
      */
-    private static final String[] DOCUMENT_SHORT_NAMES = {"act.patientDocumentForm",
-                                                          "act.patientDocumentLetter",
-                                                          "act.patientDocumentAttachment",
-                                                          "act.patientDocumentImage"};
+    private static final String[] DOCUMENT_SHORT_NAMES = {
+            "act.patientDocumentForm",
+            "act.patientDocumentLetter",
+            "act.patientDocumentAttachment",
+            "act.patientDocumentImage"};
 
     /**
-     * Patient Investigation shortnames supported by the workspace.
-     */
-    private static final String[] INVESTIGATION_SHORT_NAMES = {"act.patientInvestigationRadiology",
-                                                               "act.patientInvestigationBiochemistry",
-                                                               "act.patientInvestigationHaematology",
-                                                               "act.patientInvestigationCytology"};
-
-    /**
-     * Construct a new <code>PatientRecordWorkspace</code>.
+     * Constructs a new <tt>PatientRecordWorkspace</tt>.
      */
     public PatientRecordWorkspace() {
         super("patient", "record", "party", "party", "patient*");
@@ -84,7 +77,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(Party object) {

@@ -131,6 +131,15 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
     }
 
     /**
+     * Returns the underlying table.
+     *
+     * @return the table
+     */
+    protected PagedIMTable<T> getTable() {
+        return table;
+    }
+
+    /**
      * Returns the underlying table model.
      *
      * @return the table model
@@ -144,7 +153,7 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
      * listeners.
      */
     private void onSelect() {
-        T selected = table.getTable().getSelected();
+        T selected = getSelected();
         if (selected != null) {
             notifySelected(selected);
         }
