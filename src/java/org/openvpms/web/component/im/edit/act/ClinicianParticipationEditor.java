@@ -109,8 +109,8 @@ public class ClinicianParticipationEditor
         IConstraint hasClinicianClassification = new ArchetypeNodeConstraint(
                 ArchetypeProperty.ConceptName, RelationalOp.EQ, "userType");
 
-        IConstraint isClinician = new NodeConstraint("name", RelationalOp.EQ,
-                                                     "Clinician");
+        IConstraint isClinician = new NodeConstraint("code", RelationalOp.EQ,
+                                                     "CLINICIAN");
         CollectionNodeConstraint constraint
                 = new CollectionNodeConstraint("classifications", true);
         constraint.add(hasClinicianClassification);
