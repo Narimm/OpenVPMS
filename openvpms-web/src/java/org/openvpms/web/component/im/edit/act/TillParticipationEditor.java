@@ -39,11 +39,11 @@ public class TillParticipationEditor
         extends AbstractParticipationEditor<Party> {
 
     /**
-     * Construct a new <code>PatientParticipationEditor</code>.
+     * Construct a new <tt>TillParticipationEditor</tt>.
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be <code>null</code>
+     * @param context       the layout context. May be <tt>null</tt>
      */
     public TillParticipationEditor(Participation participation,
                                    Act parent,
@@ -55,7 +55,7 @@ public class TillParticipationEditor
                             + participation.getArchetypeId().getShortName());
         }
         if (participation.isNew() && participation.getEntity() == null) {
-            Party till = context.getContext().getTill();
+            Party till = getLayoutContext().getContext().getTill();
             getEditor().setObject(till);
         }
     }

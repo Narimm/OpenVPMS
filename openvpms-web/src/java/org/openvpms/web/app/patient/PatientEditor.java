@@ -37,17 +37,17 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 public class PatientEditor extends AbstractIMObjectEditor {
 
     /**
-     * Construct a new <code>PatientEditor</code>.
+     * Constructs a new <tt>PatientEditor</tt>.
      *
      * @param patient the object to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>.
+     * @param parent  the parent object. May be <tt>null</tt>
+     * @param context the layout context. May be <tt>null</tt>.
      */
     public PatientEditor(Party patient, IMObject parent,
                          LayoutContext context) {
         super(patient, parent, context);
         if (patient.isNew() && !(parent instanceof EntityRelationship)) {
-            Party customer = context.getContext().getCustomer();
+            Party customer = getLayoutContext().getContext().getCustomer();
             if (customer != null) {
                 PatientRules rules = new PatientRules();
                 if (!rules.isOwner(customer, patient)) {

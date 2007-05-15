@@ -254,7 +254,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * @param object the object to edit
      */
     protected void onCreated(IMObject object) {
-        Context context = new LocalContext();
+        Context context = new LocalContext(this.context);
         context.setCurrent(object);
         LayoutContext layoutContext = new DefaultLayoutContext(true);
         layoutContext.setContext(context);

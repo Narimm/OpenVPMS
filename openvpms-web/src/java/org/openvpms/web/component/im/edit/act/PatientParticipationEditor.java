@@ -57,7 +57,7 @@ public class PatientParticipationEditor
                             + participation.getArchetypeId().getShortName());
         }
         if (participation.getEntity() == null && parent.isNew()) {
-            Party patient = context.getContext().getPatient();
+            Party patient = getLayoutContext().getContext().getPatient();
             getEditor().setObject(patient);
         }
     }

@@ -52,11 +52,11 @@ public class ClinicianParticipationEditor
         extends AbstractParticipationEditor<User> {
 
     /**
-     * Construct a new <code>PatientParticipationEditor</code>.
+     * Constructs a new <tt>PatientParticipationEditor</tt>.
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be <code>null</code>
+     * @param context       the layout context. May be <tt>null</tt>
      */
     public ClinicianParticipationEditor(Participation participation,
                                         Act parent,
@@ -68,7 +68,7 @@ public class ClinicianParticipationEditor
                             + participation.getArchetypeId().getShortName());
         }
         if (participation.getEntity() == null && parent.isNew()) {
-            User clinician = context.getContext().getClinician();
+            User clinician = getLayoutContext().getContext().getClinician();
             getEditor().setObject(clinician);
         }
     }

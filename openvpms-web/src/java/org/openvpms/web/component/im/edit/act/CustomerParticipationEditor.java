@@ -40,15 +40,14 @@ public class CustomerParticipationEditor
         extends AbstractParticipationEditor<Party> {
 
     /**
-     * Construct a new <code>CustomerParticipationEditor</code>.
+     * Constructs a new <tt>CustomerParticipationEditor</tt>.
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be <code>null</code>
+     * @param context       the layout context. May be <tt>null</tt>
      */
     public CustomerParticipationEditor(Participation participation,
-                                       Act parent,
-                                       LayoutContext context) {
+                                       Act parent, LayoutContext context) {
         super(participation, parent, context);
         if (!TypeHelper.isA(participation, "participation.customer")) {
             throw new IllegalArgumentException(
@@ -56,7 +55,7 @@ public class CustomerParticipationEditor
                             + participation.getArchetypeId().getShortName());
         }
         if (participation.getEntity() == null && parent.isNew()) {
-            Party customer = context.getContext().getCustomer();
+            Party customer = getLayoutContext().getContext().getCustomer();
             getEditor().setObject(customer);
         }
     }

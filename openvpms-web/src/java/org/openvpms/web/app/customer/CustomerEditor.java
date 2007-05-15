@@ -33,16 +33,16 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 public class CustomerEditor extends AbstractIMObjectEditor {
 
     /**
-     * Construct a new <code>CustomerEditor</code>.
+     * Constructs a new <tt>CustomerEditor</tt>.
      *
      * @param customer the object to edit
-     * @param parent   the parent object. May be <code>null</code>
-     * @param context  the layout context. May be <code>null</code>.
+     * @param parent   the parent object. May be <tt>null</tt>
+     * @param context  the layout context. May be <tt>null</tt>.
      */
     public CustomerEditor(Party customer, IMObject parent,
                           LayoutContext context) {
         super(customer, parent, context);
 
-        context.getContext().setCustomer(customer);
+        getLayoutContext().getContext().setCustomer(customer);
     }
 }
