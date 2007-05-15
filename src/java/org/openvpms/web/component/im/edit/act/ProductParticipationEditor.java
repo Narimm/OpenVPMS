@@ -39,21 +39,22 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ProductParticipationEditor extends AbstractParticipationEditor {
+public class ProductParticipationEditor
+        extends AbstractParticipationEditor<Product> {
 
     /**
-     * The patient, used to constrain searches to a particular species. Nay be
-     * <code>null</code>.
+     * The patient, used to constrain searches to a particular species. May be
+     * <tt>null</tt>.
      */
-    private Property _patient;
+    private Property patient;
 
 
     /**
-     * Construct a new <code>PatientParticipationEditor</code>.
+     * Constructs a new <tt>ProductParticipationEditor</tt>.
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be <code>null</code>
+     * @param context       the layout context. May be <tt>null</tt>
      */
     public ProductParticipationEditor(Participation participation,
                                       Act parent, LayoutContext context) {
@@ -69,10 +70,10 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
      * Sets the patient, used to constrain product searches to a set of
      * species.
      *
-     * @param patient the patient. May be <code>null</code>
+     * @param patient the patient. May be <tt>null</tt>
      */
     public void setPatient(Property patient) {
-        _patient = patient;
+        this.patient = patient;
     }
 
     /**
@@ -101,8 +102,8 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
      * @return a new query
      */
     protected Query<Product> getQuery(Query<Product> query) {
-        if (query instanceof ProductQuery && _patient != null) {
-            IMObjectReference ref = (IMObjectReference) _patient.getValue();
+        if (query instanceof ProductQuery && patient != null) {
+            IMObjectReference ref = (IMObjectReference) patient.getValue();
             if (ref != null) {
                 IMObject patient = IMObjectHelper.getObject(ref);
                 if (patient != null) {
