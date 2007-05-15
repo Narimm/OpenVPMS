@@ -164,6 +164,34 @@ public class TestHelper extends Assert {
     }
 
     /**
+     * Creates and saves a new user.
+     *
+     * @return a new user
+     */
+    public static User createUser() {
+        return createUser("zuser", true);
+    }
+
+    /**
+     * Creates a new user.
+     *
+     * @param username the login name
+     * @param save     if <code>true</code> make the user persistent
+     * @return a new user
+     */
+    public static User createUser(String username, boolean save) {
+        User user = (User) create("security.user");
+        EntityBean bean = new EntityBean(user);
+        bean.setValue("name", username);
+        bean.setValue("username", username);
+        bean.setValue("password", username);
+        if (save) {
+            bean.save();
+        }
+        return user;
+    }
+
+    /**
      * Creates and saves a new clinician.
      *
      * @return a new clinician
@@ -179,13 +207,11 @@ public class TestHelper extends Assert {
      * @return a new user
      */
     public static User createClinician(boolean save) {
-        User user = (User) create("security.user");
-        EntityBean bean = new EntityBean(user);
-        bean.setValue("name", "zvet" + System.currentTimeMillis());
-        bean.setValue("username", "zvet");
-        bean.setValue("password", "zvet");
+        User user = createUser("zvet", false);
+        user.addClassification(
+                getClassification("lookup.userType", "CLINICIAN"));
         if (save) {
-            bean.save();
+            save(user);
         }
         return user;
     }
