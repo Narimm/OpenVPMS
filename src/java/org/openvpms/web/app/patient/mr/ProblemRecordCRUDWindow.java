@@ -43,25 +43,10 @@ import java.util.List;
 public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
 
     /**
-     * The current act.patientClinicalEvent.
-     */
-    private Act _event;
-
-
-    /**
-     * Create a new <code>ProblemRecordCRUDWindow</code>.
+     * Constructs a new <tt>ProblemRecordCRUDWindow</tt>.
      */
     public ProblemRecordCRUDWindow() {
         super(new ShortNameList(CLINICAL_PROBLEM));
-    }
-
-    /**
-     * Sets the current patient clinical event.
-     *
-     * @param event the current event
-     */
-    public void setEvent(Act event) {
-        _event = event;
     }
 
     /**
@@ -78,7 +63,7 @@ public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
             buttons.add(getCreateButton());
             buttons.add(getDeleteButton());
             buttons.add(getPrintButton());
-        } else if (_event != null) {
+        } else if (getEvent() != null) {
             buttons.add(getCreateButton());
         }
     }
@@ -91,7 +76,7 @@ public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
      */
     @Override
     protected void onSaved(Act act, boolean isNew) {
-        Act event = IMObjectHelper.reload(_event);
+        Act event = IMObjectHelper.reload(getEvent());
         if (event != null) {
             try {
                 boolean save = false;

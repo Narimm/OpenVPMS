@@ -33,7 +33,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -45,7 +44,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.doc.DocumentActDownloader;
+import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -157,15 +156,20 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     private Component formatEvent(Act act) {
         ActBean bean = new ActBean(act);
+        String started = null;
         String completed = null;
         String clinician = null;
         String reason = getValue(bean, "reason");
         String status = ArchetypeServiceFunctions.lookup(act, "status");
 
-        Date date = bean.getDate("endTime");
-        if (date != null) {
-            completed = getValue(DateFormatter.formatDate(date, false),
-                                 bean, "completedTime");
+        Date startTime = bean.getDate("startTime");
+        if (startTime != null) {
+            started = DateFormatter.formatDate(startTime, false);
+        }
+
+        Date endTime = bean.getDate("endTime");
+        if (endTime != null) {
+            completed = DateFormatter.formatDate(endTime, false);
         }
 
         IMObjectReference clinicianRef
@@ -178,13 +182,12 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         clinician = getValue(clinician, bean, "clinician");
 
         String text;
-        if (completed == null
-                || ActStatus.IN_PROGRESS.equals(bean.getStatus())) {
-            text = Messages.get("patient.record.summary.incomplete",
-                                reason, clinician, status);
+        if (completed == null || ObjectUtils.equals(started, completed)) {
+            text = Messages.get("patient.record.summary.singleDate",
+                                started, reason, clinician, status);
         } else {
-            text = Messages.get("patient.record.summary.complete",
-                                reason, clinician, completed);
+            text = Messages.get("patient.record.summary.dateRange",
+                                started, completed, reason, clinician, status);
         }
         Label summary = LabelFactory.create(null, "PatientSummary");
         summary.setText(text);
@@ -270,7 +273,9 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      * @return a new component
      */
     private Component getInvestigationDetail(DocumentAct act) {
-        return new DocumentActDownloader(act).getComponent();
+        DocumentViewer viewer
+                = new DocumentViewer(act.getDocReference(), act, true);
+        return viewer.getComponent();
     }
 
     /**
@@ -282,7 +287,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      * @return a new component
      */
     private Component getDetail(Act act) {
-        Label result = null;
+        Label result;
         String text = null;
         String shortName = act.getArchetypeId().getShortName();
         String expr = expressions.get(shortName);
@@ -305,6 +310,8 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
             label.setIntepretNewlines(true);
             label.setLineWrap(true);
             result = label;
+        } else {
+            result = new Label();
         }
         return result;
     }

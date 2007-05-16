@@ -19,8 +19,6 @@
 package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -66,25 +64,6 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
             pagedModel.setShortNames(query.getActItemShortNames());
         }
         super.query();
-    }
-
-    /**
-     * Returns the selected object.
-     *
-     * @return the selected object, or <tt>null</tt> if none has been selected.
-     */
-    @Override
-    public Act getSelected() {
-        Act act = super.getSelected();
-        boolean found = false;
-        if (act != null) {
-            int index = getObjects().indexOf(act);
-            while (!(found = TypeHelper.isA(act, CLINICAL_EVENT))
-                    && index > 0) {
-                act = getObjects().get(--index);
-            }
-        }
-        return (found) ? act : null;
     }
 
     /**

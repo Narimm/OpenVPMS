@@ -238,23 +238,38 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
     }
 
     /**
+     * Invoked when an act is selected.
+     *
+     * @param act the act
+     */
+    @Override
+    protected void actSelected(Act act) {
+        super.actSelected(act);
+        CRUDWindow<Act> window = getCRUDWindow();
+        if (window instanceof PatientRecordCRUDWindow) {
+            Act event = getEvent(act);
+            ((PatientRecordCRUDWindow) window).setEvent(event);
+        }
+    }
+
+    /**
      * Changes the CRUD window depending on the current browser view.
      */
     private void changeCRUDWindow() {
         RecordBrowser browser = (RecordBrowser) getBrowser();
         CRUDWindow<Act> window;
         RecordBrowser.View view = browser.getView();
-        if (view == RecordBrowser.View.SUMMARY) {
-            window = new SummaryCRUDWindow();
-        } else if (view == RecordBrowser.View.PROBLEMS) {
-            Browser<Act> summary = browser.getBrowser(
-                    RecordBrowser.View.SUMMARY);
-            ProblemRecordCRUDWindow problems = new ProblemRecordCRUDWindow();
-            Act selected = summary.getSelected();
-            if (TypeHelper.isA(selected, CLINICAL_EVENT)) {
-                problems.setEvent(selected);
+        if (view == RecordBrowser.View.SUMMARY
+                || view == RecordBrowser.View.PROBLEMS) {
+            PatientRecordCRUDWindow w;
+            if (view == RecordBrowser.View.SUMMARY) {
+                w = new SummaryCRUDWindow();
+            } else {
+                w = new ProblemRecordCRUDWindow();
             }
-            window = problems;
+            Act event = getEvent(null);
+            w.setEvent(event);
+            window = w;
         } else if (view == RecordBrowser.View.DOCUMENTS) {
             String type = Messages.get("patient.document.createtype");
             window = new DocumentCRUDWindow(type, DOCUMENT_SHORT_NAMES);
@@ -310,4 +325,31 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
                                         "participation.patient",
                                         DOCUMENT_SHORT_NAMES, lookups, null);
     }
+
+    /**
+     * Returns the event associated with the current selected act.
+     *
+     * @param act the current selected act. May be <tt>null</tt>
+     * @return the event associated with the current selected act, or
+     *         <tt>null</tt> if none is found
+     */
+    private Act getEvent(Act act) {
+        RecordBrowser browser = ((RecordBrowser) getBrowser());
+        Browser<Act> summary = browser.getBrowser(
+                RecordBrowser.View.SUMMARY);
+        if (act == null) {
+            act = summary.getSelected();
+        }
+        boolean found = false;
+        if (act != null) {
+            List<Act> acts = summary.getObjects();
+            int index = acts.indexOf(act);
+            while (!(found = TypeHelper.isA(act, CLINICAL_EVENT))
+                    && index > 0) {
+                act = acts.get(--index);
+            }
+        }
+        return (found) ? act : null;
+    }
+
 }
