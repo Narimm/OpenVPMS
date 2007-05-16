@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.im.table;
 
-import echopointng.TableEx;
+import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.table.TableModel;
@@ -33,7 +33,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMTable<T> extends TableEx {
+public class IMTable<T> extends Table {
 
     /**
      * The table model.

@@ -19,10 +19,12 @@
 package org.openvpms.web.app.patient.mr;
 
 import echopointng.LabelEx;
-import echopointng.layout.TableLayoutDataEx;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -33,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -42,6 +45,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.doc.DocumentActDownloader;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -57,6 +61,11 @@ import java.util.Map;
 
 /**
  * Patient medical history summary table model.
+ * NOTE: this should ideally rendered using using TableLayoutDataEx row
+ * spanning but for a bug in TableEx that prevents events on buttons
+ * when row selection is enabled in Firefox.
+ * See http://forum.nextapp.com/forum/index.php?showtopic=4114 for details
+ * TODO.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -70,26 +79,6 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
     private Map<String, String> expressions = new HashMap<String, String>();
 
     /**
-     * The event column model index.
-     */
-    private static final int EVENT_INDEX = 0;
-
-    /**
-     * The date column model index.
-     */
-    private static final int DATE_INDEX = 1;
-
-    /**
-     * The archettype column model index.
-     */
-    private static final int TYPE_INDEX = 2;
-
-    /**
-     * The text column model index.
-     */
-    private static final int TEXT_INDEX = 3;
-
-    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(SummaryTableModel.class);
@@ -100,10 +89,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     public SummaryTableModel() {
         TableColumnModel model = new DefaultTableColumnModel();
-        model.addColumn(new TableColumn(EVENT_INDEX));
-        model.addColumn(new TableColumn(DATE_INDEX));
-        model.addColumn(new TableColumn(TYPE_INDEX));
-        model.addColumn(new TableColumn(TEXT_INDEX));
+        model.addColumn(new TableColumn(0));
         setTableColumnModel(model);
     }
 
@@ -139,9 +125,9 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         Object result = null;
         try {
             if (TypeHelper.isA(act, PatientRecordTypes.CLINICAL_EVENT)) {
-                result = formatEvent(act, column);
+                result = formatEvent(act);
             } else {
-                result = formatItem(act, column, row);
+                result = formatItem(act, row);
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
@@ -165,49 +151,44 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
     /**
      * Returns a component for an <em>act.patientClinicalEvent</em>.
      *
-     * @param act    the event
-     * @param column the column
+     * @param act the event
      * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
-    private Component formatEvent(Act act, TableColumn column) {
-        if (column.getModelIndex() == EVENT_INDEX) {
-            ActBean bean = new ActBean(act);
-            String completed = null;
-            String clinician = null;
-            String reason = getValue(bean, "reason");
-            String status = ArchetypeServiceFunctions.lookup(act, "status");
+    private Component formatEvent(Act act) {
+        ActBean bean = new ActBean(act);
+        String completed = null;
+        String clinician = null;
+        String reason = getValue(bean, "reason");
+        String status = ArchetypeServiceFunctions.lookup(act, "status");
 
-            Date date = bean.getDate("endTime");
-            if (date != null) {
-                completed = getValue(DateFormatter.formatDate(date, false),
-                                     bean, "completedTime");
-            }
-
-            IMObjectReference clinicianRef
-                    = bean.getParticipantRef("participation.clinician");
-
-            NodeSet name = IMObjectHelper.getNodes(clinicianRef, "name");
-            if (name != null) {
-                clinician = (String) name.get("name");
-            }
-            clinician = getValue(clinician, bean, "clinician");
-
-            String text;
-            if (completed == null
-                    || ActStatus.IN_PROGRESS.equals(bean.getStatus())) {
-                text = Messages.get("patient.record.summary.incomplete",
-                                    reason, clinician, status);
-            } else {
-                text = Messages.get("patient.record.summary.complete",
-                                    reason, clinician, completed);
-            }
-            Label summary = LabelFactory.create(null, "PatientSummary");
-            summary.setText(text);
-            summary.setLayoutData(new TableLayoutDataEx(4, 1));
-            return summary;
+        Date date = bean.getDate("endTime");
+        if (date != null) {
+            completed = getValue(DateFormatter.formatDate(date, false),
+                                 bean, "completedTime");
         }
-        return null;
+
+        IMObjectReference clinicianRef
+                = bean.getParticipantRef("participation.clinician");
+
+        NodeSet name = IMObjectHelper.getNodes(clinicianRef, "name");
+        if (name != null) {
+            clinician = (String) name.get("name");
+        }
+        clinician = getValue(clinician, bean, "clinician");
+
+        String text;
+        if (completed == null
+                || ActStatus.IN_PROGRESS.equals(bean.getStatus())) {
+            text = Messages.get("patient.record.summary.incomplete",
+                                reason, clinician, status);
+        } else {
+            text = Messages.get("patient.record.summary.complete",
+                                reason, clinician, completed);
+        }
+        Label summary = LabelFactory.create(null, "PatientSummary");
+        summary.setText(text);
+        return summary;
     }
 
     /**
@@ -217,28 +198,24 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
-    private Component formatItem(Act act, TableColumn column, int row) {
-        Component result = null;
-        switch (column.getModelIndex()) {
-            case EVENT_INDEX:
-                result = RowFactory.create("Inset", new Label(""));
-                break;
-            case DATE_INDEX:
-                result = getDate(act, row);
-                break;
-            case TYPE_INDEX:
-                Label type = new Label(DescriptorHelper.getDisplayName(act));
-                TableLayoutDataEx layout2 = new TableLayoutDataEx();
-                layout2.setAlignment(
-                        new Alignment(Alignment.DEFAULT, Alignment.TOP));
-                type.setLayoutData(layout2);
-                result = type;
-                break;
-            case TEXT_INDEX:
-                result = getText(act);
-                break;
+    private Component formatItem(Act act, int row) {
+        Component date = getDate(act, row);
+        Component type = getType(act);
+        Component detail;
+
+        RowLayoutData layout = new RowLayoutData();
+        layout.setAlignment(new Alignment(Alignment.DEFAULT, Alignment.TOP));
+
+        date.setLayoutData(layout);
+        type.setLayoutData(layout);
+
+        if (TypeHelper.isA(act, "act.patientInvestigation*")) {
+            detail = getInvestigationDetail((DocumentAct) act);
+        } else {
+            detail = getDetail(act);
         }
-        return result;
+        Row padding = RowFactory.create("Inset", new Label(""));
+        return RowFactory.create("CellSpacing", padding, date, type, detail);
     }
 
     /**
@@ -250,7 +227,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      * @return a component to represent the date
      */
     private Component getDate(Act act, int row) {
-        Label date = null;
+        LabelEx date;
         boolean showDate = true;
         if (row > 0) {
             Act prev = getObject(row - 1);
@@ -263,25 +240,48 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
             }
         }
         if (showDate) {
-            date = new Label(DateFormatter.formatDate(
+            date = new LabelEx(DateFormatter.formatDate(
                     act.getActivityStartTime(), false));
-            TableLayoutDataEx layout = new TableLayoutDataEx();
-            layout.setAlignment(
-                    new Alignment(Alignment.DEFAULT, Alignment.TOP));
-            date.setLayoutData(layout);
+        } else {
+            date = new LabelEx("");
         }
+        date.setWidth(new Extent(150));
+        // hack to work around lack of cell spanning facility in Table. todo
         return date;
     }
 
     /**
-     * Returns a component to represent act text.
+     * Returns a component for the act type.
+     *
+     * @param act the act
+     * @return a component representing the act type
+     */
+    private LabelEx getType(Act act) {
+        LabelEx type = new LabelEx(DescriptorHelper.getDisplayName(act));
+        type.setWidth(new Extent(150));
+        // hack to work around lack of cell spanning facility in Table. todo
+        return type;
+    }
+
+    /**
+     * Returns a component for the detail of an act.patientInvestigation*.
+     *
+     * @param act the act
+     * @return a new component
+     */
+    private Component getInvestigationDetail(DocumentAct act) {
+        return new DocumentActDownloader(act).getComponent();
+    }
+
+    /**
+     * Returns a component to represent the act detail.
      * If a jxpath expression is registered, this will be evaluated, otherwise
      * the act description will be used.
      *
      * @param act the act
-     * @return a component
+     * @return a new component
      */
-    private Component getText(Act act) {
+    private Component getDetail(Act act) {
         Label result = null;
         String text = null;
         String shortName = act.getArchetypeId().getShortName();
