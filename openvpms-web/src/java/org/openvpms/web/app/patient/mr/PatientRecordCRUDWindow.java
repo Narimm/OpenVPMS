@@ -38,18 +38,41 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow<Act> {
     /**
      * Clinical event item short names.
      */
-    private final String[] _clinicalEventItems;
+    private final String[] clinicalEventItems;
+
+    /**
+     * The current act.patientClinicalEvent.
+     */
+    private Act event;
 
 
     /**
-     * Create a new <code>PatientRecordCRUDWindow</code>.
+     * Creates a new <tt>PatientRecordCRUDWindow</tt>.
      *
      * @param shortNames the short names of archetypes that this may create
      */
     public PatientRecordCRUDWindow(ShortNames shortNames) {
         super(Messages.get("patient.record.createtype"), shortNames);
-        _clinicalEventItems = ActHelper.getTargetShortNames(
+        clinicalEventItems = ActHelper.getTargetShortNames(
                 RELATIONSHIP_CLINICAL_EVENT_ITEM);
+    }
+
+    /**
+     * Sets the current patient clinical event.
+     *
+     * @param event the current event
+     */
+    public void setEvent(Act event) {
+        this.event = event;
+    }
+
+    /**
+     * Returns the current patient clinical event.
+     *
+     * @return the current event. May be <tt>null</tt>
+     */
+    public Act getEvent() {
+        return event;
     }
 
     /**
@@ -104,7 +127,7 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow<Act> {
      * @return the short names
      */
     protected String[] getClinicalEventItemShortNames() {
-        return _clinicalEventItems;
+        return clinicalEventItems;
     }
 
 }

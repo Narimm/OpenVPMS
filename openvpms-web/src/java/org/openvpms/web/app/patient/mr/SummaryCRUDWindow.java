@@ -19,9 +19,10 @@
 package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -31,45 +32,31 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SummaryCRUDWindow extends AbstractCRUDWindow<Act> {
+public class SummaryCRUDWindow extends PatientRecordCRUDWindow {
 
     /**
      * Creates a new <tt>SummaryCRUDWindow</tt>.
      */
     public SummaryCRUDWindow() {
-        super(Messages.get("patient.record.createtype"),
-              new ShortNameList("act.patientClinicalEvent"));
+        super(new ShortNameList("act.patientClinicalEvent"));
     }
 
     /**
-     * Lays out the buttons.
-     *
-     * @param buttons the button row
+     * Invoked when the edit button is pressed. This edits the current
+     * <em>act.patientClinicalEvent</em>.
      */
     @Override
-    protected void layoutButtons(ButtonSet buttons) {
-        buttons.add(getEditButton());
-        buttons.add(getCreateButton());
-        buttons.add(getDeleteButton());
-        buttons.add(getPrintButton());
-    }
-
-    /**
-     * Enables/disables the buttons that require an object to be selected.
-     *
-     * @param buttons the button set
-     * @param enable  determines if buttons should be enabled
-     */
-    @Override
-    protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.removeAll();
-        if (enable) {
-            buttons.add(getEditButton());
-            buttons.add(getCreateButton());
-            buttons.add(getDeleteButton());
-            buttons.add(getPrintButton());
-        } else {
-            buttons.add(getCreateButton());
+    protected void onEdit() {
+        Act event = getEvent();
+        if (event != null) {
+            // make sure the latest instance is being used.
+            Act current = IMObjectHelper.reload(event);
+            if (current == null) {
+                ErrorDialog.show(Messages.get("imobject.noexist"),
+                                 DescriptorHelper.getDisplayName(event));
+            } else {
+                edit(current);
+            }
         }
     }
 }

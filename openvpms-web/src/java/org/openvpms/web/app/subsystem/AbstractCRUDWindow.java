@@ -404,6 +404,31 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
     }
 
     /**
+     * Edits an object.
+     *
+     * @param object the object to edit
+     */
+    protected void edit(T object) {
+        try {
+            final boolean isNew = object.isNew();
+
+            LayoutContext context = createLayoutContext();
+            final IMObjectEditor editor = createEditor(object, context);
+            EditDialog dialog = createEditDialog(editor);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent event) {
+                    onEditCompleted(editor, isNew);
+                }
+            });
+
+            GlobalContext.getInstance().setCurrent(object);
+            dialog.show();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
      * Invoked when the delete button is pressed.
      */
     @SuppressWarnings("unchecked")
@@ -537,31 +562,6 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      */
     protected LayoutContext createLayoutContext() {
         return new DefaultLayoutContext(true);
-    }
-
-    /**
-     * Edit an object.
-     *
-     * @param object the object to edit
-     */
-    private void edit(T object) {
-        try {
-            final boolean isNew = object.isNew();
-
-            LayoutContext context = createLayoutContext();
-            final IMObjectEditor editor = createEditor(object, context);
-            EditDialog dialog = createEditDialog(editor);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    onEditCompleted(editor, isNew);
-                }
-            });
-
-            GlobalContext.getInstance().setCurrent(object);
-            dialog.show();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
     }
 
 }
