@@ -18,7 +18,11 @@
 
 package org.openvpms.web.app.patient.summary;
 
+import java.sql.Timestamp;
+import java.util.Date;
+
 import nextapp.echo2.app.Table;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -28,11 +32,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.im.table.IMObjectTable;
+import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.table.AbstractTableCellRenderer;
-
-import java.sql.Timestamp;
-import java.util.Date;
 
 
 /**
@@ -82,8 +83,8 @@ public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
     @SuppressWarnings("unchecked")
     protected String getStyle(Table table, Object value, int column, int row) {
         String style = DEFAULT_STYLE;
-        if (table instanceof IMObjectTable) {
-            style = getStyle((IMObjectTable<IMObject>) table, row);
+        if (table instanceof IMTable) {
+            style = getStyle((IMTable<IMObject>) table, row);
         }
         return style;
     }
@@ -95,7 +96,7 @@ public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
      * @param row   the row
      * @return the style name for the specified row
      */
-    private String getStyle(IMObjectTable<IMObject> table, int row) {
+    private String getStyle(IMTable<IMObject> table, int row) {
         String style = DEFAULT_STYLE;
         try {
             IMObject object = table.getObjects().get(row);
