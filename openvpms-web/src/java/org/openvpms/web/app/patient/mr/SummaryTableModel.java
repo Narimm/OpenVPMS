@@ -273,9 +273,10 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      * @return a new component
      */
     private Component getInvestigationDetail(DocumentAct act) {
-        DocumentViewer viewer
-                = new DocumentViewer(act.getDocReference(), act, true);
-        return viewer.getComponent();
+        Component component = getDetail(act);
+        DocumentViewer viewer = new DocumentViewer(act, true);
+        return RowFactory.create("CellSpacing", component,
+                                 viewer.getComponent());
     }
 
     /**
@@ -290,7 +291,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         Label result;
         String text = null;
         String shortName = act.getArchetypeId().getShortName();
-        String expr = expressions.get(shortName);
+        String expr = getExpression(shortName);
         if (!StringUtils.isEmpty(expr)) {
             try {
                 JXPathContext context = JXPathHelper.newContext(act);
@@ -312,6 +313,26 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
             result = label;
         } else {
             result = new Label();
+        }
+        return result;
+    }
+
+    /**
+     * Helper to return the jxpath expression for an archetype short name.
+     *
+     * @param shortName the archetype short name
+     * @return an expression, or <tt>null</tt> if none is found
+     */
+    private String getExpression(String shortName) {
+        String result = expressions.get(shortName);
+        if (result == null) {
+            // try a wildcard match
+            for (Map.Entry<String, String> entry : expressions.entrySet()) {
+                if (TypeHelper.matches(shortName, entry.getKey())) {
+                    result = entry.getValue();
+                    break;
+                }
+            }
         }
         return result;
     }

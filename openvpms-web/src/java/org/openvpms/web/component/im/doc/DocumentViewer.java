@@ -39,32 +39,42 @@ public class DocumentViewer {
     /**
      * The reference to view.
      */
-    private final IMObjectReference _reference;
+    private final IMObjectReference reference;
 
     /**
-     * The parent object. May be <code>null</code>
+     * The parent object. May be <tt>null</code>
      */
-    private final IMObject _parent;
+    private final IMObject parent;
 
     /**
      * Determines if a hyperlink should be created, to enable downloads of
      * the document.
      */
-    private final boolean _link;
+    private final boolean link;
 
 
     /**
-     * Construct a new <code>DocumentViewer</code>.
+     * Constructs a new <tt>DocumentViewer</tt>.
+     *
+     * @param act  the document act
+     * @param link if <tt>true</tt> enable an hyperlink to the object
+     */
+    public DocumentViewer(DocumentAct act, boolean link) {
+        this(act.getDocReference(), act, link);
+    }
+
+    /**
+     * Constructs a new <tt>DocumentViewer</tt>.
      *
      * @param reference the reference to view
-     * @param parent    the parent. May be <code>null</code>
-     * @param link      if <code>true</code> enable an hyperlink to the object
+     * @param parent    the parent. May be <tt>null</tt>
+     * @param link      if <tt>true</tt> enable an hyperlink to the object
      */
     public DocumentViewer(IMObjectReference reference, IMObject parent,
                           boolean link) {
-        _reference = reference;
-        _parent = parent;
-        _link = link;
+        this.reference = reference;
+        this.parent = parent;
+        this.link = link;
     }
 
     /**
@@ -74,31 +84,31 @@ public class DocumentViewer {
      */
     public Component getComponent() {
         Component result;
-        if (_reference != null) {
-            if (_link) {
+        if (reference != null) {
+            if (link) {
                 Downloader downloader;
-                if (_parent instanceof DocumentAct) {
-                    DocumentAct act = (DocumentAct) _parent;
+                if (parent instanceof DocumentAct) {
+                    DocumentAct act = (DocumentAct) parent;
                     downloader = new DocumentActDownloader(act);
                 } else {
-                    downloader = new DocumentRefDownloader(_reference);
+                    downloader = new DocumentRefDownloader(reference);
                 }
                 result = downloader.getComponent();
             } else {
                 Label label = LabelFactory.create();
-                if (_parent instanceof DocumentAct) {
-                    DocumentAct act = (DocumentAct) _parent;
+                if (parent instanceof DocumentAct) {
+                    DocumentAct act = (DocumentAct) parent;
                     label.setText(act.getFileName());
                 } else {
                     String text = DescriptorHelper.getDisplayName(
-                            _reference.getArchetypeId().getShortName());
+                            reference.getArchetypeId().getShortName());
                     label.setText(text);
                 }
                 result = label;
             }
         } else {
             Label label = LabelFactory.create();
-            label.setText(Messages.get("imobject.none"));
+            label.setText(Messages.get("document.none"));
             result = label;
         }
         return result;
