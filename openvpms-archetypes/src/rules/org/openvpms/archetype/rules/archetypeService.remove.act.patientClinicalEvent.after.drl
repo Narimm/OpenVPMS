@@ -30,7 +30,9 @@
         	<java:class>org.openvpms.component.business.domain.im.act.Act</java:class>
         </parameter>
         <java:consequence>
-            org.openvpms.archetype.rules.patient.MedicalRecordRules.deleteChildRecords(service, act);
+            import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+            MedicalRecordRules rules = new MedicalRecordRules(service);
+            rules.deleteChildRecords(act);
         </java:consequence>
     </rule>
 
