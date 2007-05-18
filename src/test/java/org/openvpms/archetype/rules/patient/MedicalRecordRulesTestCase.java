@@ -21,18 +21,21 @@ package org.openvpms.archetype.rules.patient;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 
 /**
- * Tests the {@link MedicalRecordRules} class when invoked by the
- * <em>archetypeService.remove.act.patientClinicalEvent.after.drl</em> '
- * rule. In order for these tests to be successful, the archetype service
- * must be configured to trigger the above rule.
+ * Tests the {@link MedicalRecordRules} class.
+ * Note: this requires the archetype service to be configured to trigger the
+ * <em>archetypeService.remove.act.patientClinicalEvent.after.drl</em> rule.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -42,12 +45,17 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     /**
      * The patient.
      */
-    private Party _patient;
+    private Party patient;
 
     /**
      * The clinician.
      */
-    private User _clinician;
+    private User clinician;
+
+    /**
+     * The rules.
+     */
+    private MedicalRecordRules rules;
 
 
     /**
@@ -57,10 +65,12 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     public void testDeleteClinicalEvent() {
         Act event = createEvent();
         Act problem = createProblem();
-        addActRelationship(event, problem,
-                           "actRelationship.patientClinicalEventItem");
-        save(event);
         save(problem);
+
+        ActBean bean = new ActBean(event);
+        bean.addRelationship("actRelationship.patientClinicalEventItem",
+                             problem);
+        save(event);
 
         // make sure each of the objects can be retrieved
         assertNotNull(get(event.getObjectReference()));
@@ -81,12 +91,15 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Act event = createEvent();
         Act problem = createProblem();
         Act note = createNote();
-        addActRelationship(event, problem,
-                           "actRelationship.patientClinicalEventItem");
-        addActRelationship(event, note,
-                           "actRelationship.patientClinicalEventItem");
-        addActRelationship(problem, note,
-                           "actRelationship.patientClinicalProblemItem");
+        ActBean eventBean = new ActBean(event);
+        eventBean.addRelationship("actRelationship.patientClinicalEventItem",
+                                  problem);
+        eventBean.addRelationship("actRelationship.patientClinicalEventItem",
+                                  note);
+        ActBean problemBean = new ActBean(problem);
+        problemBean.addRelationship(
+                "actRelationship.patientClinicalProblemItem",
+                note);
         save(event);
         save(problem);
         save(note);
@@ -104,6 +117,70 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link MedicalRecordRules#getEvent} method.
+     */
+    public void testGetEvent() {
+        Date jan1 = getDate("2007-1-1");
+        Date jan2 = getDate("2007-1-2");
+        Date jan3 = getDate("2007-1-3 10:43:55");
+
+        checkEvent(jan2, null);
+
+        Act event1 = createEvent(jan2);
+        save(event1);
+
+        checkEvent(jan2, event1);
+        checkEvent(jan1, null);
+        checkEvent(jan3, event1);
+
+        event1.setActivityEndTime(jan2);
+        save(event1);
+        checkEvent(jan1, null);
+        checkEvent(jan3, null);
+
+        Act event2 = createEvent(jan3);
+        save(event2);
+        checkEvent(jan3, event2);
+        checkEvent(getDate("2007-1-3"), event2);
+        // note that the time component is zero, but still picks up event2,
+        // despite the event being created after 00:00:00. This is required
+        // as the time component of startTime is not supplied consistently -
+        // In some cases, it is present, in others it is 00:00:00.
+
+        checkEvent(jan2, event1);
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#addToEvents} method.
+     */
+    public void testAddToEvents() {
+        Date date = getDate("2007-04-05");
+        Party patient2 = TestHelper.createPatient();
+        Act med1 = createMedication(patient);
+        Act med2 = createMedication(patient);
+        Act med3 = createMedication(patient2);
+        Act med4 = createMedication(patient2);
+
+        save(med1);
+        save(med2);
+        save(med3);
+        save(med4);
+
+        List<Act> acts = Arrays.asList(med1, med2, med3, med4);
+
+        Act event1 = createEvent(date);
+        save(event1);
+        rules.addToEvents(acts, date);
+
+        event1 = (Act) get(event1);
+        checkContains(event1, med1, med2);
+
+        Act event2 = rules.getEvent(patient2, date);
+        assertNotNull(event2);
+        checkContains(event2, med3, med4);
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -111,8 +188,9 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        _clinician = TestHelper.createClinician(false);
-        _patient = createPatient();
+        clinician = TestHelper.createClinician();
+        patient = TestHelper.createPatient();
+        rules = new MedicalRecordRules();
     }
 
     /**
@@ -122,8 +200,21 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      */
     protected Act createEvent() {
         Act act = createAct("act.patientClinicalEvent");
-        addParticipation(act, _patient, "participation.patient");
-        addParticipation(act, _clinician, "participation.clinician");
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+        bean.addParticipation("participation.clinician", clinician);
+        return act;
+    }
+
+    /**
+     * Helper to create an <em>act.patientClinicalEvent</em>.
+     *
+     * @param startTime the start time
+     * @return a new act
+     */
+    protected Act createEvent(Date startTime) {
+        Act act = createEvent();
+        act.setActivityStartTime(startTime);
         return act;
     }
 
@@ -134,8 +225,9 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      */
     protected Act createProblem() {
         Act act = createAct("act.patientClinicalProblem");
-        addParticipation(act, _patient, "participation.patient");
-        addParticipation(act, _clinician, "participation.clinician");
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+        bean.addParticipation("participation.clinician", clinician);
         return act;
     }
 
@@ -146,7 +238,23 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      */
     protected Act createNote() {
         Act act = createAct("act.patientClinicalNote");
-        addParticipation(act, _patient, "participation.patient");
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+        return act;
+    }
+
+    /**
+     * Helper to create an <em>act.patientMedication</em>.
+     *
+     * @param patient the patient
+     * @return a new act
+     */
+    protected Act createMedication(Party patient) {
+        Act act = createAct("act.patientMedication");
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+        Product product = TestHelper.createProduct();
+        bean.addParticipation("participation.product", product);
         return act;
     }
 
@@ -163,47 +271,54 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to add a relationship between two acts.
+     * Verifies that the correct event is returned for a particular date.
      *
-     * @param source    the source act
-     * @param target    the target act
-     * @param shortName the act relationship short name
+     * @param date     the date
+     * @param expected the expected event. May be <tt>null</tt>
      */
-    protected void addActRelationship(Act source, Act target,
-                                      String shortName) {
-        ActRelationship relationship = (ActRelationship) create(shortName);
-        assertNotNull(relationship);
-        relationship.setSource(source.getObjectReference());
-        relationship.setTarget(target.getObjectReference());
-        source.addActRelationship(relationship);
-        target.addActRelationship(relationship);
+    private void checkEvent(Date date, Act expected) {
+        Act event = rules.getEvent(patient, date);
+        if (expected == null) {
+            assertNull(event);
+        } else {
+            assertEquals(expected, event);
+        }
     }
 
     /**
-     * Adds a participation.
+     * Verifies that an event contains a set of acts.
      *
-     * @param act           the act to add to
-     * @param entity        the participation entity             `
-     * @param participation the participation short name
+     * @param event the event
+     * @param acts  the expected acts
      */
-    protected void addParticipation(Act act, Entity entity,
-                                    String participation) {
-        Participation p = (Participation) create(participation);
-        assertNotNull(p);
-        p.setAct(act.getObjectReference());
-        p.setEntity(entity.getObjectReference());
-        act.addParticipation(p);
+    private void checkContains(Act event, Act ... acts) {
+        ActBean bean = new ActBean(event);
+        List<Act> items = bean.getActsForNode("items");
+        assertEquals(acts.length, items.size());
+        for (Act act : acts) {
+            boolean found = false;
+            for (Act item : items) {
+                if (item.equals(act)) {
+                    found = true;
+                    break;
+                }
+            }
+            assertTrue(found);
+        }
     }
 
     /**
-     * Creates a new patient.
+     * Returns a date for a date string.
      *
-     * @return a new patient
+     * @param date the stringified date
+     * @return the date
      */
-    protected Party createPatient() {
-        Party patient = (Party) create("party.patientpet");
-        assertNotNull(patient);
-        return patient;
+    private Date getDate(String date) {
+        if (date.contains(":")) {
+            return Timestamp.valueOf(date);
+        } else {
+            return java.sql.Date.valueOf(date);
+        }
     }
 
 }

@@ -151,6 +151,9 @@
         <value>
           /org/openvpms/component/business/domain/im/security/ArchetypeAwareGrantedAuthority.hbm.xml
         </value>
+        <value>
+          /org/openvpms/archetype/rules/patient/UnlinkedMedicalRecords.hbm.xml
+        </value>
       </list>
     </property>
   </bean>
