@@ -18,31 +18,19 @@
 
 package org.openvpms.web.component.im.edit.invoice;
 
-import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.OrConstraint;
-import org.openvpms.component.system.common.query.QueryIterator;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.util.ErrorHelper;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -85,7 +73,7 @@ public class CustomerInvoiceEditor extends InvoiceEditor {
 
     /**
      * Links medication acts associated with the invoice to the current
-     * IN_PROGRESS or COMPLETED visit for the associated patient.
+     * visit for the associated patient.
      *
      * @return <code>true</code> if medication was processed successfully
      */
@@ -93,138 +81,29 @@ public class CustomerInvoiceEditor extends InvoiceEditor {
         boolean saved = false;
         try {
             ActRelationshipCollectionEditor editor = getEditor();
-            MedicationProcessor processor
-                    = new MedicationProcessor(editor.getActs());
-            processor.process();
+            List<Act> medications = new ArrayList<Act>();
+            for (Act act : editor.getActs()) {
+                if (TypeHelper.isA(act, "act.customerAccountInvoiceItem")) {
+                    ActBean bean = new ActBean(act);
+                    for (Act medication :
+                            bean.getActs("act.patientMedication")) {
+                        medications.add(medication);
+                    }
+                }
+            }
+            Date startTime = ((Act) getObject()).getActivityStartTime();
+            if (startTime == null) {
+                startTime = new Date();
+            }
+            if (!medications.isEmpty()) {
+                MedicalRecordRules rules = new MedicalRecordRules();
+                rules.addToEvents(medications, startTime);
+            }
             saved = true;
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
         return saved;
-    }
-
-    /**
-     * Helper to link medication acts associated with the invoice to
-     * the current IN_PROGRESS or COMPLETED <em>act.patientClinicalEvent</em>
-     * for the associated patient.
-     */
-    private static class MedicationProcessor {
-
-        /**
-         * The invoice act items.
-         */
-        private final List<Act> acts;
-
-        /**
-         * The set of retrieved <em>act.patientClinicalEvent</em>s.
-         */
-        private final Map<Party, Act> events = new HashMap<Party, Act>();
-
-        /**
-         * The set of modified <em>act.patientClinicalEvent</em>s.
-         */
-        private final Set<Act> processedEvents = new HashSet<Act>();
-
-
-        /**
-         * Constructs a new <code>MedicationProcessor</code>.
-         *
-         * @param acts the invoice act items
-         */
-        public MedicationProcessor(List<Act> acts) {
-            this.acts = acts;
-        }
-
-        /**
-         * Processes the act items.
-         *
-         * @throws OpenVPMSException for any error.
-         */
-        public void process() {
-            for (Act act : acts) {
-                if (TypeHelper.isA(act, "act.customerAccountInvoiceItem")) {
-                    processInvoice(act);
-                }
-            }
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            for (Act event : processedEvents) {
-                service.save(event);
-            }
-        }
-
-        /**
-         * Processes an invoice item.
-         *
-         * @param act an <em>act.customerAccountInvoiceItem</em>.
-         */
-        private void processInvoice(Act act) {
-            ActBean bean = new ActBean(act);
-            for (Act medication : bean.getActs("act.patientMedication")) {
-                processMedication(medication);
-            }
-        }
-
-        /**
-         * Processes a medication act.
-         *
-         * @param medication an <em>act.patientMedication</em>.
-         */
-        private void processMedication(Act medication) {
-            ActBean medBean = new ActBean(medication);
-            Party patient = (Party) medBean.getParticipant(
-                    "participation.patient");
-            if (patient != null) {
-                Act event = getClinicalEventItem(patient);
-                if (event != null) {
-                    ActBean eventBean = new ActBean(event);
-                    if (eventBean.getRelationship(medication) == null) {
-                        eventBean.addRelationship(
-                                "actRelationship.patientClinicalEventItem",
-                                medication);
-                        processedEvents.add(event);
-                    }
-                }
-            }
-        }
-
-        /**
-         * Returns the most recent <em>act.patientClinicalEvent</em> for a
-         * patient.
-         *
-         * @param patient the patient
-         * @return the most recent event or <code>null</code> if none is found
-         */
-        private Act getClinicalEventItem(Party patient) {
-            Act event = events.get(patient);
-            if (event == null) {
-                ArchetypeQuery query = new ArchetypeQuery(
-                        "act.patientClinicalEvent", false, true);
-                query.setFirstResult(0);
-                query.setMaxResults(1);
-
-                ParticipantConstraint participant
-                        = new ParticipantConstraint("patient",
-                                                    "participation.patient",
-                                                    patient);
-                query.add(participant);
-                OrConstraint or = new OrConstraint();
-                or.add(new NodeConstraint("status", ActStatus.IN_PROGRESS));
-                or.add(new NodeConstraint("status", ActStatus.COMPLETED));
-                query.add(or);
-                query.add(new NodeSortConstraint("startTime", false));
-
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
-                QueryIterator<Act> iterator = new IMObjectQueryIterator<Act>(
-                        service, query);
-                if (iterator.hasNext()) {
-                    event = iterator.next();
-                    events.put(patient, event);
-                }
-            }
-            return event;
-        }
     }
 
 }
