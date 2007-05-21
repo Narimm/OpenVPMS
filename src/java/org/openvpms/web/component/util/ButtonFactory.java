@@ -51,8 +51,8 @@ public final class ButtonFactory extends ComponentFactory {
     /**
      * Create a new button with a localised text message, and default style.
      * The button will be parsed for shortcuts.
-     * If non-null, the key is also used to as the button identifier
-     * ({@link Button#getId}).
+     * If non-null, the key is also used as the button identifier and action
+     * command ({@link Button#getId} and {@link Button#getActionCommand()}).
      *
      * @param key the resource bundle key. May be <code>null</code>.
      * @return a new button
@@ -62,6 +62,7 @@ public final class ButtonFactory extends ComponentFactory {
         if (key != null) {
             button = new ShortcutButton(getString(TYPE, key, false));
             button.setId(key);
+            button.setActionCommand(key);
         } else {
             button = new ShortcutButton();
         }

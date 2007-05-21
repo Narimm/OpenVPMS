@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
 
@@ -41,12 +42,12 @@ public class IMObjectCollectionViewerFactory {
     /**
      * Viewer implementations.
      */
-    private static ArchetypeHandlers<IMObjectCollectionViewer> _viewers;
+    private static ArchetypeHandlers<IMObjectCollectionViewer> viewers;
 
     /**
      * The logger.
      */
-    private static final Log _log
+    private static final Log log
             = LogFactory.getLog(IMObjectCollectionViewerFactory.class);
 
 
@@ -61,10 +62,12 @@ public class IMObjectCollectionViewerFactory {
      *
      * @param collection the collection to view
      * @param object     the parent of the collection
+     * @param context    the layout context. May  be <tt>null</tt>
      * @return a viewer for the collection
      */
     public static IMObjectCollectionViewer create(CollectionProperty collection,
-                                                  IMObject object) {
+                                                  IMObject object,
+                                                  LayoutContext context) {
         IMObjectCollectionViewer result = null;
 
         NodeDescriptor descriptor = collection.getDescriptor();
@@ -72,21 +75,23 @@ public class IMObjectCollectionViewerFactory {
         ArchetypeHandler handler = getViewers().getHandler(shortNames);
         if (handler != null) {
             Class type = handler.getType();
-            Constructor ctor = getConstructor(type, collection, object);
+            Constructor ctor = getConstructor(type, collection, object,
+                                              context);
             if (ctor != null) {
                 try {
                     result = (IMObjectCollectionViewer) ctor.newInstance(
-                            collection, object);
+                            collection, object, context);
                 } catch (Throwable throwable) {
-                    _log.error(throwable, throwable);
+                    log.error(throwable, throwable);
                 }
             } else {
-                _log.error("No valid constructor found for class: "
+                log.error("No valid constructor found for class: "
                         + type.getName());
             }
         }
         if (result == null) {
-            result = new DefaultIMObjectCollectionViewer(collection, object);
+            result = new DefaultIMObjectCollectionViewer(collection, object,
+                                                         context);
         }
         return result;
     }
@@ -98,12 +103,12 @@ public class IMObjectCollectionViewerFactory {
      */
     private static synchronized ArchetypeHandlers<IMObjectCollectionViewer>
             getViewers() {
-        if (_viewers == null) {
-            _viewers = new ArchetypeHandlers<IMObjectCollectionViewer>(
+        if (viewers == null) {
+            viewers = new ArchetypeHandlers<IMObjectCollectionViewer>(
                     "IMObjectCollectionViewerFactory.properties",
                     IMObjectCollectionViewer.class);
         }
-        return _viewers;
+        return viewers;
     }
 
     /**
@@ -112,23 +117,30 @@ public class IMObjectCollectionViewerFactory {
      * @param type       the Viewer type
      * @param collection the collection property
      * @param object     the parent of the collection
+     * @param context    the layout context. May be <tt>null</tt>
      * @return a constructor to construct the viewer, or <code>null</code> if
      *         none can be found
      */
     private static Constructor getConstructor(Class type,
                                               CollectionProperty collection,
-                                              IMObject object) {
+                                              IMObject object,
+                                              LayoutContext context) {
         Constructor[] ctors = type.getConstructors();
 
         for (Constructor ctor : ctors) {
             // check parameters
             Class[] ctorTypes = ctor.getParameterTypes();
-            if (ctorTypes.length == 2) {
+            if (ctorTypes.length == 3) {
                 Class ctorCollection = ctorTypes[0];
                 Class ctorObj = ctorTypes[1];
+                Class ctorCtx = ctorTypes[2];
 
                 if (ctorCollection.isAssignableFrom(collection.getClass())
-                        && ctorObj.isAssignableFrom(object.getClass())) {
+                        && ctorObj.isAssignableFrom(object.getClass())
+                        && ((context != null && ctorCtx.isAssignableFrom(
+                        context.getClass()))
+                        || (context == null
+                        && LayoutContext.class.isAssignableFrom(ctorCtx)))) {
                     return ctor;
                 }
             }

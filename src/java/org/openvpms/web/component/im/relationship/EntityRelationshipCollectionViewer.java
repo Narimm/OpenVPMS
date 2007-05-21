@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.AbstractIMObjectCollectionViewer;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -47,18 +48,20 @@ public class EntityRelationshipCollectionViewer
     /**
      * Determines if inactive relationships should be displayed.
      */
-    private CheckBox _hideInactive;
+    private CheckBox hideInactive;
 
 
     /**
-     * Construct a new <code>EntityRelationshipCollectionViewer</code>.
+     * Constructs a new <tt>EntityRelationshipCollectionViewer</tt>.
      *
      * @param property the collection to view
      * @param parent   the parent object
+     * @param context  the layout context. May be <tt>null</tt>
      */
     public EntityRelationshipCollectionViewer(CollectionProperty property,
-                                              Entity parent) {
-        super(property, parent);
+                                              Entity parent,
+                                              LayoutContext context) {
+        super(property, parent, context);
     }
 
     /**
@@ -69,15 +72,15 @@ public class EntityRelationshipCollectionViewer
         NodeDescriptor descriptor = getProperty().getDescriptor();
         String name = descriptor.getDisplayName();
         String label = Messages.get("relationship.hide.inactive", name);
-        _hideInactive = CheckBoxFactory.create(null, true);
-        _hideInactive.setText(label);
-        _hideInactive.addActionListener(new ActionListener() {
+        hideInactive = CheckBoxFactory.create(null, true);
+        hideInactive.setText(label);
+        hideInactive.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onHideInactiveChanged();
             }
         });
         Component component = super.doLayout();
-        component.add(_hideInactive, 0);
+        component.add(hideInactive, 0);
         return component;
     }
 
@@ -114,7 +117,7 @@ public class EntityRelationshipCollectionViewer
      * @return <code>true</code> if inactive objects should be hidden
      */
     protected boolean hideInactive() {
-        return _hideInactive.isSelected();
+        return hideInactive.isSelected();
     }
 
     /**

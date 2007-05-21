@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.view;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
@@ -36,9 +37,11 @@ public class DefaultIMObjectCollectionViewer
      *
      * @param property the collection to view
      * @param parent   the parent object
+     * @param context  the layout context. May be <tt>null</tt>
      */
     public DefaultIMObjectCollectionViewer(CollectionProperty property,
-                                           IMObject parent) {
-        super(property, parent);
+                                           IMObject parent,
+                                           LayoutContext context) {
+        super(property, parent, context);
     }
 }

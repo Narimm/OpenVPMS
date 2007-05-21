@@ -18,13 +18,10 @@
 
 package org.openvpms.web.component.button;
 
-import echopointng.KeyStrokeListener;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.ButtonFactory;
 
@@ -45,14 +42,9 @@ public class ButtonSet implements KeyStrokeHandler {
     private final Component container;
 
     /**
-     * The focus group. May be <code>null</code>
+     * The focus group. May be <tt>null</tt>
      */
     private final FocusGroup focusGroup;
-
-    /**
-     * The keystroke listener. May be <code>null</code>.
-     */
-    private KeyStrokeListener keyStrokeListener;
 
     /**
      * The button style.
@@ -60,18 +52,18 @@ public class ButtonSet implements KeyStrokeHandler {
     private final String style;
 
     /**
+     * The shortcut buttons.
+     */
+    private ShortcutButtons buttons;
+
+    /**
      * The default button style.
      */
     private static final String BUTTON_STYLE = "default";
 
-    /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(ButtonSet.class);
-
 
     /**
-     * Constructs a new <code>ButtonSet</code>.
+     * Constructs a new <tt>ButtonSet</tt>.
      *
      * @param container the button container
      */
@@ -80,21 +72,21 @@ public class ButtonSet implements KeyStrokeHandler {
     }
 
     /**
-     * Constructs a new <code>ButtonSet</code>.
+     * Constructs a new <tt>ButtonSet</tt>.
      *
      * @param container the button container
-     * @param focus     the focus group. May be <code>null</code>
+     * @param focus     the focus group. May be <tt>null</tt>
      */
     public ButtonSet(Component container, FocusGroup focus) {
         this(container, focus, BUTTON_STYLE);
     }
 
     /**
-     * Construct a new <code>ButtonSet</code>.
+     * Construct a new <tt>ButtonSet</tt>.
      *
      * @param container the button container
-     * @param focus     the focus group. May be <code>null</code>
-     * @param style     the button style. May be <code>null</code>
+     * @param focus     the focus group. May be <tt>null</tt>
+     * @param style     the button style. May be <tt>null</tt>
      */
     public ButtonSet(Component container, FocusGroup focus, String style) {
         this.container = container;
@@ -104,6 +96,7 @@ public class ButtonSet implements KeyStrokeHandler {
         } else {
             this.focusGroup = null;
         }
+        buttons = new ShortcutButtons(container);
         this.style = (style != null) ? style : BUTTON_STYLE;
     }
 
@@ -122,7 +115,7 @@ public class ButtonSet implements KeyStrokeHandler {
      * triggered.
      *
      * @param id the button id, used to identify the button and as a resource
-     *           bundle key. May be <code>null</code>
+     *           bundle key. May be <tt>null</tt>
      * @return a new button
      */
     public Button add(String id) {
@@ -134,9 +127,9 @@ public class ButtonSet implements KeyStrokeHandler {
      * button, and is returned by {@link ActionEvent#getActionCommand} when
      * triggered.
      *
-     * @param id              the button id, used to identify the button and as a resource
-     *                        bundle key. May be <code>null</code>
-     * @param disableShortcut if <code>true</code> disable any keyboard shortcut
+     * @param id              the button id, used to identify the button and as
+     *                        a resource bundle key. May be <tt>null</tt>
+     * @param disableShortcut if <tt>true</tt> disable any keyboard shortcut
      * @return a new button
      */
     public Button add(String id, boolean disableShortcut) {
@@ -159,24 +152,24 @@ public class ButtonSet implements KeyStrokeHandler {
     /**
      * Adds a button.
      * Note that for {@link ShortcutButton} instances, the
-     * {@link ShortcutButton#getId} must return non-null in order for keystroke
-     * events to be triggered on the appropriate button.
+     * {@link ShortcutButton#getActionCommand()} must return non-null in order
+     * for keystroke events to be triggered on the appropriate button.
      *
      * @param button the button to add
      * @return the button
      */
     public Button add(Button button) {
         if (button instanceof ShortcutButton) {
-            ShortcutButton shortcut = (ShortcutButton) button;
-            addKeyStrokeListener(shortcut);
+            buttons.add((ShortcutButton) button);
         }
         if (focusGroup != null) {
             focusGroup.add(button);
         }
-        if (keyStrokeListener != null) {
+        Component listener = buttons.getKeyStrokeListener();
+        if (listener != null) {
             // add the button before the keystroke listener to avoid
             // cell spacing issues
-            container.add(button, container.indexOf(keyStrokeListener));
+            container.add(button, container.indexOf(listener));
         } else {
             container.add(button);
         }
@@ -187,7 +180,7 @@ public class ButtonSet implements KeyStrokeHandler {
      * Adds a button, and registers an event listener.
      *
      * @param id       the button id, used to identify the button and as a resource
-     *                 bundle key. May be <code>null</code>
+     *                 bundle key. May be <tt>null</tt>
      * @param listener the listener to add
      * @return a new button
      */
@@ -199,9 +192,9 @@ public class ButtonSet implements KeyStrokeHandler {
      * Adds a button, and registers an event listener.
      *
      * @param id              the button id, used to identify the button and as a resource
-     *                        bundle key. May be <code>null</code>
+     *                        bundle key. May be <tt>null</tt>
      * @param listener        the listener to add
-     * @param disableShortcut if <code>true</code> disable any keyboard shortcut
+     * @param disableShortcut if <tt>true</tt> disable any keyboard shortcut
      * @return a new button
      */
     public Button add(String id, ActionListener listener,
@@ -222,7 +215,7 @@ public class ButtonSet implements KeyStrokeHandler {
             container.remove(button);
         }
         if (button instanceof ShortcutButton) {
-            removeKeystrokeListener((ShortcutButton) button);
+            buttons.remove((ShortcutButton) button);
         }
     }
 
@@ -233,7 +226,7 @@ public class ButtonSet implements KeyStrokeHandler {
     public void removeAll() {
         for (Component component : container.getComponents()) {
             if (component instanceof Button) {
-                container.remove(component);
+                remove((Button) component);
             }
         }
     }
@@ -242,8 +235,8 @@ public class ButtonSet implements KeyStrokeHandler {
      * Determines if the set contains a button.
      *
      * @param button the button
-     * @return <code>true</code> if the set contains the button, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the set contains the button, otherwise
+     *         <tt>false</tt>
      */
     public boolean contains(Button button) {
         return (container.indexOf(button) != -1);
@@ -253,7 +246,7 @@ public class ButtonSet implements KeyStrokeHandler {
      * Returns a button given its identifier.
      *
      * @param id the button identifier
-     * @return the button with the corresponding id, or <code>null</code> if
+     * @return the button with the corresponding id, or <tt>null</tt> if
      *         none is found
      */
     public Button getButton(String id) {
@@ -275,82 +268,7 @@ public class ButtonSet implements KeyStrokeHandler {
      * on the parent component when a child contains listeners.
      */
     public void reregisterKeyStrokeListeners() {
-        for (Component component : container.getComponents()) {
-            if (component instanceof ShortcutButton) {
-                ShortcutButton button = (ShortcutButton) component;
-                removeKeystrokeListener(button);
-                addKeyStrokeListener(button);
-            }
-        }
-    }
-
-    /**
-     * Adds a keystroke listener for a button.
-     *
-     * @param button the shortcut button to add the listener for
-     */
-    private void addKeyStrokeListener(ShortcutButton button) {
-        int code = button.getKeyCode();
-        if (code != -1) {
-            getListener().addKeyCombination(code, button.getId());
-        }
-    }
-
-    /**
-     * Removes a keystroke listener.
-     *
-     * @param button the shortcut button to remove the listener for
-     */
-    private void removeKeystrokeListener(ShortcutButton button) {
-        int code = button.getKeyCode();
-        if (code != -1) {
-            if (keyStrokeListener != null) {
-                keyStrokeListener.removeKeyCombination(code);
-            }
-        }
-    }
-
-    /**
-     * Invoked when a keystroke is pressed.
-     *
-     * @param event the action event
-     */
-    private void onKeyStroke(ActionEvent event) {
-        String command = event.getActionCommand();
-        if (command != null) {
-            Button button = (Button) container.getComponent(command);
-            if (button != null) {
-                button.fireActionPerformed(event);
-            } else {
-                log.warn("Keystroke received but not handled, actionCommand="
-                        + command);
-            }
-        } else {
-            log.warn("Keystroke received but not handled");
-        }
-    }
-
-    /**
-     * Returns the keystroke listener, creating it if it doesn't exist.
-     *
-     * @return the keystroke listener
-     */
-    private KeyStrokeListener getListener() {
-        if (keyStrokeListener == null) {
-            keyStrokeListener = new KeyStrokeListener();
-            keyStrokeListener.setCancelMode(true);
-            keyStrokeListener.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onKeyStroke(event);
-                }
-            });
-            container.add(keyStrokeListener);
-        } else if (container.indexOf(keyStrokeListener) == -1) {
-            // someone has done a removeAll() or similar on the container.
-            // Need to re-register the listener
-            container.add(keyStrokeListener);
-        }
-        return keyStrokeListener;
+        buttons.reregisterKeyStrokeListeners();
     }
 
 }

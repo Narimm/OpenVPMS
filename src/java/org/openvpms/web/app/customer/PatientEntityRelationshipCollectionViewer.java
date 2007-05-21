@@ -21,6 +21,7 @@ package org.openvpms.web.app.customer;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionViewer;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
 
@@ -45,11 +46,11 @@ public class PatientEntityRelationshipCollectionViewer
      *
      * @param property the collection to view
      * @param parent   the parent object
+     * @param context  the layout context. May be <tt>null</tt>
      */
     public PatientEntityRelationshipCollectionViewer(
-            CollectionProperty property,
-            Party parent) {
-        super(property, parent);
+            CollectionProperty property, Party parent, LayoutContext context) {
+        super(property, parent, context);
     }
 
     /**

@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectCollectionViewer;
 
@@ -36,14 +37,16 @@ public class ActRelationshipCollectionViewer
 
 
     /**
-     * Construct a new <code>ActRelationshipCollectionViewer</code>.
+     * Constructs a new <tt>ActRelationshipCollectionViewer</tt>.
      *
      * @param property the collection to view
      * @param parent   the parent object
+     * @param context  the layout context. May be <tt>null</tt>
      */
     public ActRelationshipCollectionViewer(CollectionProperty property,
-                                           IMObject parent) {
-        super(property, parent);
+                                           IMObject parent,
+                                           LayoutContext context) {
+        super(property, parent, context);
     }
 
     /**
