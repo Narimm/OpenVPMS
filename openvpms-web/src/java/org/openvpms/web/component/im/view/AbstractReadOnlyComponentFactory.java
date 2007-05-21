@@ -222,7 +222,8 @@ public abstract class AbstractReadOnlyComponentFactory
         }
         if (result == null) {
             IMObjectCollectionViewer viewer
-                    = IMObjectCollectionViewerFactory.create(property, parent);
+                    = IMObjectCollectionViewerFactory.create(
+                    property, parent, getLayoutContext());
             result = viewer.getComponent();
         }
         return result;

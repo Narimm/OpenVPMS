@@ -181,6 +181,8 @@ public abstract class AbstractIMObjectEditor
             context = new DefaultLayoutContext(true);
         } else {
             context = new DefaultLayoutContext(layoutContext);
+            // don't increase the layout depth.
+            context.setLayoutDepth(layoutContext.getLayoutDepth());
         }
         IMObjectLayoutStrategyFactory strategyFactory
                 = context.getLayoutStrategyFactory();

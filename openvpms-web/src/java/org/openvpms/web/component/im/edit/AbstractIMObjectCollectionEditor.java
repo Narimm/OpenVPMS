@@ -26,6 +26,7 @@ import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.ModifiableListeners;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.Validator;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -300,7 +301,10 @@ public abstract class AbstractIMObjectCollectionEditor
     protected IMObjectEditor getEditor(IMObject object) {
         IMObjectEditor editor = _collection.getEditor(object);
         if (editor == null) {
-            editor = createEditor(object, getContext());
+            LayoutContext context = new DefaultLayoutContext(getContext());
+            // increase the layout depth for collection items
+
+            editor = createEditor(object, context);
             editor.addModifiableListener(_broadcaster);
             _collection.setEditor(object, editor);
         }

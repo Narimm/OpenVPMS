@@ -90,7 +90,7 @@ public class FinancialActCRUDWindow
         protected ComponentState createItems(Property property, IMObject parent,
                                              LayoutContext context) {
             Viewer viewer = new Viewer((CollectionProperty) property,
-                                       parent);
+                                       parent, context);
             return new ComponentState(viewer.getComponent(), property);
         }
     }
@@ -106,9 +106,11 @@ public class FinancialActCRUDWindow
          *
          * @param property the collection to view
          * @param parent   the parent object
+         * @param context  the layout context. May be <tt>null</tt>
          */
-        public Viewer(CollectionProperty property, IMObject parent) {
-            super(property, parent);
+        public Viewer(CollectionProperty property, IMObject parent,
+                      LayoutContext context) {
+            super(property, parent, context);
         }
 
         /**

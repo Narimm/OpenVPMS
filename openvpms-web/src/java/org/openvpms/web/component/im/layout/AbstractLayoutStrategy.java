@@ -31,6 +31,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.button.ShortcutButton;
+import org.openvpms.web.component.button.ShortcutButtons;
+import org.openvpms.web.component.button.ShortcutHelper;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -176,7 +179,15 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                    PropertySet properties, Component container,
                                    LayoutContext context) {
         if (!descriptors.isEmpty()) {
-            TabPaneModel model = new TabPaneModel();
+            TabPaneModel model;
+            boolean shortcuts = false;
+            if (context.getLayoutDepth() == 0 && descriptors.size() > 1) {
+                model = new TabPaneModel(container);
+                shortcuts = true;
+            } else {
+                model = new TabPaneModel();
+            }
+            int shortcut = 1;
             for (NodeDescriptor nodeDesc : descriptors) {
                 Property property = properties.get(nodeDesc);
                 ComponentState child = createComponent(property, object,
@@ -184,7 +195,14 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                 Component inset = ColumnFactory.create("Inset",
                                                        child.getComponent());
                 setFocusTraversal(child);
-                model.addTab(nodeDesc.getDisplayName(), inset);
+                String text;
+                if (shortcuts && shortcut <= 10) {
+                    text = getShortcut(nodeDesc.getDisplayName(), shortcut);
+                    ++shortcut;
+                } else {
+                    text = nodeDesc.getDisplayName();
+                }
+                model.addTab(text, inset);
             }
             TabbedPane pane = TabbedPaneFactory.create(model);
 
@@ -421,7 +439,34 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         }
     }
 
+    /**
+     * Returns a shortcut for a tab.
+     * Shortcuts no.s must be from 1..10, and will be displayed as '1..9, 0'.
+     *
+     * @param name
+     * @param shortcut the shortcut no.
+     * @return the shortcut text
+     */
+    private String getShortcut(String name, int shortcut) {
+        if (shortcut == 10) {
+            shortcut = 0;
+        }
+        return "&" + shortcut + " " + name;
+    }
+
     private static class TabPaneModel extends DefaultTabModel {
+
+        private final ShortcutButtons buttons;
+
+        private TabPaneModel() {
+            this(null);
+        }
+
+        private TabPaneModel(Component container) {
+            buttons = (container != null) ? new ShortcutButtons(
+                    container) : null;
+        }
+
         /**
          * This method is called to create a Tab component with the specified text
          * and icon. The default behaviour creates ButtonEx instances. Subclasses
@@ -437,8 +482,15 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         @Override
         protected Component createTabComponent(String tabTitle,
                                                ImageReference tabIcon) {
-            Component result = super.createTabComponent(tabTitle, tabIcon);
+            ShortcutButton result = new ShortcutButton();
+            result.setActionCommand(ShortcutHelper.getShortcut(tabTitle));
+            result.setText(tabTitle);
+            result.setIcon(tabIcon);
+            result.setStyle(DEFAULT_TOP_ALIGNED_STYLE);
             result.setFocusTraversalParticipant(false);
+            if (buttons != null) {
+                buttons.add(result);
+            }
             return result;
         }
     }

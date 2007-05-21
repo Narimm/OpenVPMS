@@ -57,32 +57,32 @@ public class AbstractIMObjectCollectionViewer
     /**
      * The object that owns the collection to view.
      */
-    private final IMObject _object;
+    private final IMObject object;
 
     /**
      * Collection to browse.
      */
-    private PagedIMObjectTable<IMObject> _table;
+    private PagedIMObjectTable<IMObject> table;
 
     /**
      * The collection property.
      */
-    private final CollectionProperty _property;
+    private final CollectionProperty property;
 
     /**
      * The component.
      */
-    private Component _component;
+    private Component component;
 
     /**
      * The layout context.
      */
-    private final LayoutContext _context;
+    private final LayoutContext context;
 
     /**
      * Box to display child objects in.
      */
-    private GroupBox _box;
+    private GroupBox box;
 
     /**
      * No. of rows to display.
@@ -91,24 +91,30 @@ public class AbstractIMObjectCollectionViewer
 
 
     /**
-     * Construct a new <code>AbstractIMObjectCollectionViewer</code>.
+     * Constructs a new <tt>AbstractIMObjectCollectionViewer</tt>.
      *
      * @param property the collection to view
      * @param parent   the parent object
+     * @param layout   the layout context. May be <tt>null</tt>
      */
     public AbstractIMObjectCollectionViewer(CollectionProperty property,
-                                            IMObject parent) {
-        _context = new DefaultLayoutContext();
-        _context.setComponentFactory(new TableComponentFactory(_context));
+                                            IMObject parent,
+                                            LayoutContext layout) {
+        if (layout == null) {
+            context = new DefaultLayoutContext();
+        } else {
+            context = new DefaultLayoutContext(layout);
+        }
+        context.setComponentFactory(new TableComponentFactory(context));
 
         // filter out the uid (aka "id") field
         NodeFilter idFilter = new NamedNodeFilter("uid");
         NodeFilter filter = FilterHelper.chain(
-                idFilter, _context.getDefaultNodeFilter());
-        _context.setNodeFilter(filter);
+                idFilter, this.context.getDefaultNodeFilter());
+        context.setNodeFilter(filter);
 
-        _object = parent;
-        _property = property;
+        object = parent;
+        this.property = property;
     }
 
     /**
@@ -117,7 +123,7 @@ public class AbstractIMObjectCollectionViewer
      * @return the collection property
      */
     public CollectionProperty getProperty() {
-        return _property;
+        return property;
     }
 
     /**
@@ -126,7 +132,7 @@ public class AbstractIMObjectCollectionViewer
      * @return the parent object
      */
     public IMObject getObject() {
-        return _object;
+        return object;
     }
 
     /**
@@ -135,10 +141,10 @@ public class AbstractIMObjectCollectionViewer
      * @return the view component
      */
     public Component getComponent() {
-        if (_component == null) {
-            _component = doLayout();
+        if (component == null) {
+            component = doLayout();
         }
-        return _component;
+        return component;
     }
 
     /**
@@ -156,14 +162,14 @@ public class AbstractIMObjectCollectionViewer
      * @return the layout context
      */
     protected LayoutContext getLayoutContext() {
-        return _context;
+        return context;
     }
 
     /**
      * Browses the selected object.
      */
     protected void onBrowse() {
-        IMObject object = _table.getTable().getSelected();
+        IMObject object = table.getTable().getSelected();
         if (object != null) {
             browse(object);
         }
@@ -175,19 +181,19 @@ public class AbstractIMObjectCollectionViewer
      * @param object the object to browse.
      */
     protected void browse(IMObject object) {
-        if (_box == null) {
-            _box = GroupBoxFactory.create();
-            _box.setInsets(new Insets(0));
+        if (box == null) {
+            box = GroupBoxFactory.create();
+            box.setInsets(new Insets(0));
         } else {
-            _box.removeAll();
+            box.removeAll();
             // workaround for a bug in EPNG
-            _component.remove(_box);
+            component.remove(box);
         }
-        _component.add(_box);
+        component.add(box);
         IMObjectViewer viewer = new IMObjectViewer(object, getObject(),
-                                                   _context);
-        _box.setTitle(viewer.getTitle());
-        _box.add(viewer.getComponent());
+                                                   context);
+        box.setTitle(viewer.getTitle());
+        box.add(viewer.getComponent());
     }
 
     /**
@@ -196,7 +202,7 @@ public class AbstractIMObjectCollectionViewer
      * @return the objects to display
      */
     protected List<IMObject> getObjects() {
-        Collection values = _property.getValues();
+        Collection values = property.getValues();
         List<IMObject> objects = new ArrayList<IMObject>();
         for (Object value : values) {
             objects.add((IMObject) value);
@@ -210,10 +216,10 @@ public class AbstractIMObjectCollectionViewer
      * @return the table
      */
     protected PagedIMObjectTable<IMObject> getTable() {
-        if (_table == null) {
-            _table = createTable();
+        if (table == null) {
+            table = createTable();
         }
-        return _table;
+        return table;
     }
 
     /**
@@ -238,8 +244,8 @@ public class AbstractIMObjectCollectionViewer
      * @return a new table model
      */
     protected IMObjectTableModel<IMObject> createTableModel() {
-        NodeDescriptor descriptor = _property.getDescriptor();
-        return IMObjectTableModelFactory.create(descriptor, _context);
+        NodeDescriptor descriptor = property.getDescriptor();
+        return IMObjectTableModelFactory.create(descriptor, context);
     }
 
     /**
@@ -249,7 +255,7 @@ public class AbstractIMObjectCollectionViewer
         List<IMObject> objects = getObjects();
         ResultSet<IMObject> set
                 = new IMObjectListResultSet<IMObject>(objects, ROWS);
-        _table.setResultSet(set);
+        table.setResultSet(set);
     }
 
 }
