@@ -205,7 +205,8 @@ class ReminderGenerator {
         if (email == null) {
             throw new ReminderProcessorException(
                     ReminderProcessorException.ErrorCode.InvalidConfiguration,
-                    "Practice has no email contact for reminders");
+                    "Practice " + practice.getName()
+                            + " has no email contact for reminders");
         }
         IMObjectBean bean = new IMObjectBean(email);
         String address = bean.getString("emailAddress");
@@ -213,7 +214,8 @@ class ReminderGenerator {
         if (StringUtils.isEmpty(address)) {
             throw new ReminderProcessorException(
                     ReminderProcessorException.ErrorCode.InvalidConfiguration,
-                    "Practice email contact address is empty");
+                    "Practice " + practice.getName()
+                            + " email contact address is empty");
         }
 
         ReminderCancelProcessor canceller = new ReminderCancelProcessor();
