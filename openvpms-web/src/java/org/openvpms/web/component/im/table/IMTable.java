@@ -18,11 +18,11 @@
 
 package org.openvpms.web.component.im.table;
 
-import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.table.TableModel;
 import org.openvpms.web.component.table.EvenOddTableCellRenderer;
+import org.openvpms.web.component.table.KeyTable;
 
 import java.util.List;
 
@@ -33,7 +33,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMTable<T> extends Table {
+public class IMTable<T> extends KeyTable {
 
     /**
      * The table model.

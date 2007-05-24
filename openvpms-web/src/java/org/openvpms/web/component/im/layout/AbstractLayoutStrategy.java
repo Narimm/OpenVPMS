@@ -19,21 +19,16 @@
 package org.openvpms.web.component.im.layout;
 
 import echopointng.TabbedPane;
-import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.button.ShortcutButton;
-import org.openvpms.web.component.button.ShortcutButtons;
-import org.openvpms.web.component.button.ShortcutHelper;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -45,13 +40,11 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.KeyStrokeHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -206,14 +199,6 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             }
             TabbedPane pane = TabbedPaneFactory.create(model);
 
-            // register a listener to re-register keystroke listeners when
-            // the pane changes as Firefox seems to lose the registration.
-            pane.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    KeyStrokeHelper.reregisterKeyStrokeListeners();
-                }
-
-            });
             pane.setSelectedIndex(0);
             container.add(pane);
         }
@@ -452,47 +437,6 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             shortcut = 0;
         }
         return "&" + shortcut + " " + name;
-    }
-
-    private static class TabPaneModel extends DefaultTabModel {
-
-        private final ShortcutButtons buttons;
-
-        private TabPaneModel() {
-            this(null);
-        }
-
-        private TabPaneModel(Component container) {
-            buttons = (container != null) ? new ShortcutButtons(
-                    container) : null;
-        }
-
-        /**
-         * This method is called to create a Tab component with the specified text
-         * and icon. The default behaviour creates ButtonEx instances. Subclasses
-         * can overrride this method to modify what components are returned.
-         *
-         * @param tabTitle -
-         *                 the title of the tab
-         * @param tabIcon  -
-         *                 the icon for the tab
-         * @return a component that will be used as the Tab. This will most likely
-         *         be a Button.
-         */
-        @Override
-        protected Component createTabComponent(String tabTitle,
-                                               ImageReference tabIcon) {
-            ShortcutButton result = new ShortcutButton();
-            result.setActionCommand(ShortcutHelper.getShortcut(tabTitle));
-            result.setText(tabTitle);
-            result.setIcon(tabIcon);
-            result.setStyle(DEFAULT_TOP_ALIGNED_STYLE);
-            result.setFocusTraversalParticipant(false);
-            if (buttons != null) {
-                buttons.add(result);
-            }
-            return result;
-        }
     }
 
 }

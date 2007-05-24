@@ -21,7 +21,9 @@ package org.openvpms.web.component.util;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Window;
+import nextapp.echo2.app.WindowPane;
 import org.openvpms.web.component.button.KeyStrokeHandler;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.system.SpringApplicationInstance;
 import org.springframework.context.ApplicationContext;
 
@@ -48,6 +50,11 @@ public class KeyStrokeHelper {
     public static void reregisterKeyStrokeListeners() {
         Window root = ApplicationInstance.getActive().getDefaultWindow();
         reregisterKeyStrokeListeners(root);
+
+        // force the focus back onto the first available component,
+        // otherwise Firefox doesn't forward key events to the app
+        Component focusable = FocusHelper.getFocusable(root);
+        ApplicationInstance.getActive().setFocusedComponent(focusable);
     }
 
     /**
@@ -62,7 +69,9 @@ public class KeyStrokeHelper {
             ((KeyStrokeHandler) component).reregisterKeyStrokeListeners();
         }
         for (Component child : component.getComponents()) {
-            reregisterKeyStrokeListeners(child);
+            if (!(child instanceof WindowPane)) {
+                reregisterKeyStrokeListeners(child);
+            }
         }
     }
 

@@ -36,7 +36,7 @@ public final class TabbedPaneFactory extends ComponentFactory {
      * @return a new tabbed pane
      */
     public static TabbedPane create() {
-        TabbedPane tab = new TabbedPane();
+        TabPane tab = new TabPane();
         return init(tab);
     }
 
@@ -47,7 +47,7 @@ public final class TabbedPaneFactory extends ComponentFactory {
      * @return a new tabbed pane
      */
     public static TabbedPane create(TabModel model) {
-        TabbedPane tab = new TabbedPane(model);
+        TabPane tab = new TabPane(model);
         return init(tab);
     }
 

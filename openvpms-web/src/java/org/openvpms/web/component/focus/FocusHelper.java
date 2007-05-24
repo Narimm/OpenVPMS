@@ -26,6 +26,7 @@ import nextapp.echo2.app.button.AbstractButton;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.table.KeyTable;
 
 import java.util.List;
 
@@ -112,7 +113,8 @@ public class FocusHelper {
      */
     public static Component getFocusable(Component component) {
         Component result = null;
-        if (isFocusable(component) && component.isEnabled()) {
+        if (isFocusable(component) && component.isEnabled()
+                && component.isFocusTraversalParticipant()) {
             if (component instanceof DateField) {
                 result = ((DateField) component).getTextField();
             } else {
@@ -141,7 +143,8 @@ public class FocusHelper {
                 || component instanceof CheckBox
                 || component instanceof SelectField
                 || component instanceof DateField
-                || component instanceof AbstractButton);
+                || component instanceof AbstractButton
+                || component instanceof KeyTable);
     }
 
 }
