@@ -844,6 +844,7 @@
                     <include>**/*.png</include>
                     <include>**/*.stylesheet</include>
                     <include>**/*.properties</include>
+                    <include>**/*.js</include>
                 </includes>
             </resource>
             <resource>

@@ -46,37 +46,37 @@ public class TableNavigator extends Row {
     /**
      * The underlying table.
      */
-    private Table _table;
+    private Table table;
 
     /**
      * The 'first' button.
      */
-    private Button _first;
+    private Button first;
 
     /**
      * The 'previous' button.
      */
-    private Button _previous;
+    private Button previous;
 
     /**
      * The 'next' button.
      */
-    private Button _next;
+    private Button next;
 
     /**
      * The 'last' button.
      */
-    private Button _last;
+    private Button last;
 
     /**
      * The page selector combobox.
      */
-    private SelectField _pageSelector;
+    private SelectField pageSelector;
 
     /**
      * The page count.
      */
-    private Label _pageCount;
+    private Label pageCount;
 
 
     /**
@@ -85,8 +85,8 @@ public class TableNavigator extends Row {
      * @param table the table to navigate
      */
     public TableNavigator(Table table) {
-        _table = table;
-        _table.getModel().addTableModelListener(new TableModelListener() {
+        this.table = table;
+        this.table.getModel().addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent event) {
                 refresh();
             }
@@ -102,84 +102,27 @@ public class TableNavigator extends Row {
      */
     @Override
     public void setFocusTraversalIndex(int newValue) {
-        _first.setFocusTraversalIndex(newValue);
-        _previous.setFocusTraversalIndex(newValue);
-        _pageSelector.setFocusTraversalIndex(newValue);
-        _next.setFocusTraversalIndex(newValue);
-        _last.setFocusTraversalIndex(newValue);
+        first.setFocusTraversalIndex(newValue);
+        previous.setFocusTraversalIndex(newValue);
+        pageSelector.setFocusTraversalIndex(newValue);
+        next.setFocusTraversalIndex(newValue);
+        last.setFocusTraversalIndex(newValue);
     }
 
-    protected void doLayout() {
-        setCellSpacing(new Extent(10));
-
-        Label page = LabelFactory.create("navigation.page");
-
-        _first = ButtonFactory.create(
-                null, "navigation.first", new ActionListener() {
-            public void actionPerformed(
-                    ActionEvent event) {
-                doFirst();
-            }
-        });
-        _previous = ButtonFactory.create(
-                null, "navigation.previous", new ActionListener() {
-            public void actionPerformed(
-                    ActionEvent event) {
-                doPrevious();
-            }
-        });
-
-        _pageSelector = new SelectField();
-        _pageSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                int selected = _pageSelector.getSelectedIndex();
-                PageableTableModel model = getModel();
-                model.setPage(selected);
-            }
-        });
-
-        _pageCount = LabelFactory.create();
-
-        _next = ButtonFactory.create(
-                null, "navigation.next", new ActionListener() {
-            public void actionPerformed(
-                    ActionEvent event) {
-                doNext();
-            }
-        });
-
-        _last = ButtonFactory.create(
-                null, "navigation.last", new ActionListener() {
-            public void actionPerformed(
-                    ActionEvent event) {
-                doLast();
-            }
-        });
-
-        add(page);
-        add(_first);
-        add(_previous);
-        add(_pageSelector);
-        add(_next);
-        add(_last);
-        add(_pageCount);
-
-        refresh();
-    }
-
-    protected void doFirst() {
+    /**
+     * Displays the first page.
+     */
+    public void first() {
         int page = getModel().getPage();
         if (page != 0) {
             setCurrentPage(0);
         }
     }
 
-    protected void setCurrentPage(int page) {
-        getModel().setPage(page);
-        _pageSelector.setSelectedIndex(page);
-    }
-
-    protected void doPrevious() {
+    /**
+     * Displays the previous page.
+     */
+    public void previous() {
         PageableTableModel model = getModel();
         int page = model.getPage();
         if (page > 0) {
@@ -187,7 +130,10 @@ public class TableNavigator extends Row {
         }
     }
 
-    protected void doNext() {
+    /**
+     * Displays the next page.
+     */
+    public void next() {
         PageableTableModel model = getModel();
         int page = model.getPage();
         if (page < getLastPage()) {
@@ -195,7 +141,10 @@ public class TableNavigator extends Row {
         }
     }
 
-    protected void doLast() {
+    /**
+     * Displays the last page.
+     */
+    public void last() {
         PageableTableModel model = getModel();
         int lastPage = getLastPage();
         int page = model.getPage();
@@ -204,26 +153,90 @@ public class TableNavigator extends Row {
         }
     }
 
+    protected void doLayout() {
+        setCellSpacing(new Extent(10));
+
+        Label page = LabelFactory.create("navigation.page");
+
+        first = ButtonFactory.create(
+                null, "navigation.first", new ActionListener() {
+            public void actionPerformed(
+                    ActionEvent event) {
+                first();
+            }
+        });
+        previous = ButtonFactory.create(
+                null, "navigation.previous", new ActionListener() {
+            public void actionPerformed(
+                    ActionEvent event) {
+                previous();
+            }
+        });
+
+        pageSelector = new SelectField();
+        pageSelector.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                int selected = pageSelector.getSelectedIndex();
+                PageableTableModel model = getModel();
+                model.setPage(selected);
+            }
+        });
+
+        pageCount = LabelFactory.create();
+
+        next = ButtonFactory.create(
+                null, "navigation.next", new ActionListener() {
+            public void actionPerformed(
+                    ActionEvent event) {
+                next();
+            }
+        });
+
+        last = ButtonFactory.create(
+                null, "navigation.last", new ActionListener() {
+            public void actionPerformed(
+                    ActionEvent event) {
+                last();
+            }
+        });
+
+        add(page);
+        add(first);
+        add(previous);
+        add(pageSelector);
+        add(next);
+        add(last);
+        add(pageCount);
+
+        refresh();
+    }
+
+
+    protected void setCurrentPage(int page) {
+        getModel().setPage(page);
+        pageSelector.setSelectedIndex(page);
+    }
+
     protected void refresh() {
         PageableTableModel model = getModel();
 
         int pages = model.getPages();
-        if (pages != _pageSelector.getModel().size()) {
+        if (pages != pageSelector.getModel().size()) {
             String total = Messages.get("label.navigation.page.total", pages);
-            _pageCount.setText(total);
+            pageCount.setText(total);
 
             String[] pageNos = new String[pages];
             for (int i = 0; i < pageNos.length; ++i) {
                 pageNos[i] = "" + (i + 1);
             }
-            _pageSelector.setModel(new DefaultListModel(pageNos));
+            pageSelector.setModel(new DefaultListModel(pageNos));
         }
         int selected = model.getPage();
-        _pageSelector.setSelectedIndex(selected);
+        pageSelector.setSelectedIndex(selected);
     }
 
     protected PageableTableModel getModel() {
-        return (PageableTableModel) _table.getModel();
+        return (PageableTableModel) table.getModel();
     }
 
     /**
