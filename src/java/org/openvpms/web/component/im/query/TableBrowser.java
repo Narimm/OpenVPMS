@@ -18,10 +18,12 @@
 
 package org.openvpms.web.component.im.query;
 
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 
@@ -118,6 +120,11 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
             set = new EmptyResultSet<T>(getQuery().getMaxResults());
         }
         table.setResultSet(set);
+        IMTable<T> imTable = table.getTable();
+        if (!imTable.getObjects().isEmpty()
+                && imTable.isFocusTraversalParticipant()) {
+            ApplicationInstance.getActive().setFocusedComponent(imTable);
+        }
     }
 
     /**
