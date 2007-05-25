@@ -20,6 +20,7 @@ package org.openvpms.web.app.patient.mr;
 
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.DefaultTabModel;
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -33,6 +34,7 @@ import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -48,6 +50,11 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class RecordBrowser implements Browser<Act> {
+
+    /**
+     * The container.
+     */
+    private Column container;
 
     /**
      * The tabbed pane.
@@ -133,12 +140,13 @@ public class RecordBrowser implements Browser<Act> {
      * @return the query component
      */
     public Component getComponent() {
-        if (tab == null) {
-            DefaultTabModel model = new DefaultTabModel();
-            addTab("button.summary", model, summary);
-            addTab("button.problem", model, problems);
-            addTab("button.reminder", model, reminderAlert);
-            addTab("button.document", model, document);
+        if (container == null) {
+            container = ColumnFactory.create();
+            TabPaneModel model = new TabPaneModel(container);
+            addTab(1, "button.summary", model, summary);
+            addTab(2, "button.problem", model, problems);
+            addTab(3, "button.reminder", model, reminderAlert);
+            addTab(4, "button.document", model, document);
             tab = TabbedPaneFactory.create(model);
             tab.setSelectedIndex(selected);
 
@@ -151,9 +159,10 @@ public class RecordBrowser implements Browser<Act> {
                     }
                 }
             });
+            container.add(tab);
             focusGroup.add(tab);
         }
-        return tab;
+        return container;
     }
 
     /**
@@ -294,13 +303,16 @@ public class RecordBrowser implements Browser<Act> {
     /**
      * Helper to add a browser to the tab pane.
      *
-     * @param button  the button key
-     * @param model   the tab model
-     * @param browser the browser to add
+     * @param shortcut the tab button shortcut no.
+     * @param button   the button key
+     * @param model    the tab model
+     * @param browser  the browser to add
      */
-    private void addTab(String button, DefaultTabModel model, Browser browser) {
+    private void addTab(int shortcut, String button, DefaultTabModel model,
+                        Browser browser) {
+        String text = "&" + shortcut + " " + Messages.get(button);
         Component component = browser.getComponent();
         component = ColumnFactory.create("Inset", component);
-        model.addTab(Messages.get(button), component);
+        model.addTab(text, component);
     }
 }

@@ -26,20 +26,34 @@ import org.openvpms.web.component.button.ShortcutButton;
 import org.openvpms.web.component.button.ShortcutButtons;
 import org.openvpms.web.component.button.ShortcutHelper;
 
+
 /**
- * Add description here.
+ * A <tt>TabModel</tt> that supports shortcut keys on its buttons.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class TabPaneModel extends DefaultTabModel implements KeyStrokeHandler {
 
+    /**
+     * The shortcut buttons. May be <tt>null</tt>
+     */
     private final ShortcutButtons buttons;
 
+    /**
+     * Constructs a new <tt>TabPaneModel</tt> that doesn't provide shortcut
+     * support.
+     */
     public TabPaneModel() {
         this(null);
     }
 
+    /**
+     * Constructs a new <tt>TabPaneModel</tt> that supports shortcut support
+     * if a container is specified.
+     *
+     * @param container the container. May be <tt>null</tt>
+     */
     public TabPaneModel(Component container) {
         buttons = (container != null) ? new ShortcutButtons(
                 container) : null;

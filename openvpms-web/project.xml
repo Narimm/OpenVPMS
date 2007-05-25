@@ -641,7 +641,7 @@
             <version>2.1.0.rc1</version>
             <url>http://www.nextapp.com/platform/echo2/echo/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -650,7 +650,7 @@
             <version>2.1.0.rc1</version>
             <url>http://www.nextapp.com/platform/echo2/echo/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -659,7 +659,7 @@
             <version>2.1.0.rc1</version>
             <url>http://www.nextapp.com/platform/echo2/echo/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <!--dependency>
@@ -686,7 +686,7 @@
             <version>20060626</version>
             <url>http://www.nextapp.com/platform/echo2/echo/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -695,7 +695,7 @@
             <version>20060626</version>
             <url>http://www.nextapp.com/platform/echo2/echo/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -704,7 +704,7 @@
             <version>2.1.0rc5</version>
             <url>http://echopoint.sf.net</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <!--dependency>
