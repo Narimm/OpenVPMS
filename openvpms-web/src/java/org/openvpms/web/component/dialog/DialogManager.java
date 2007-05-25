@@ -44,7 +44,11 @@ public class DialogManager {
      * @param dialog the dialog to show
      */
     public static void show(PopupWindow dialog) {
-        int lastIndex = -1;
+        int lastIndex = 1000;
+        // hack to workaround tabindexes being set on components on the root
+        // window. Ideally, would have major components implement an interface
+        // that returns a FocusGroup, to accurately determine tabindexes
+
         Window root = ApplicationInstance.getActive().getDefaultWindow();
         int zIndex = 0;
         for (Component component : root.getContent().getComponents()) {
