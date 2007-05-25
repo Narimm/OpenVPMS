@@ -331,7 +331,7 @@ KeyTable.prototype.processEnter = function(echoEvent) {
 }
 
 KeyTable.prototype.processTab = function(echoEvent) {
-    if (this.lastSelectedIndex == -1) {
+    if (this.lastSelectedIndex == -1 && this.rowCount != 0) {
         this.lastSelectedIndex = 0;
         this.setSelected(this.lastSelectedIndex, true)
         // Update ClientMessage.
@@ -350,8 +350,10 @@ KeyTable.prototype.processSelection = function(echoEvent) {
 
     var index = this.lastSelectedIndex;
 
-    if (this.lastSelectedIndex == -1) {
-        index = 0;
+    if (index == -1) {
+        if (this.rowCount > 0) {
+            index = 0;
+        }
     } else if (echoEvent.keyCode == 38) {
         if (index > 0) {
             index--;
@@ -371,16 +373,18 @@ KeyTable.prototype.processSelection = function(echoEvent) {
         this.lastRolloverIndex = -1;
     }
 
-    var trElement = this.getRowElement(index);
+    if (index != -1) {
+        var trElement = this.getRowElement(index);
 
-    var distance = trElement.offsetTop + trElement.offsetHeight + 20;
-    if (distance > (this.table.offsetHeight + this.table.scrollTop)) {
-        var scrollTop = distance - this.table.offsetHeight;
-    } else if (trElement.offsetTop < this.table.scrollTop) {
-        var scrollTop = trElement.offsetTop - 5;
-    }
-    if (scrollTop) {
-        this.table.scrollTop = scrollTop;
+        var distance = trElement.offsetTop + trElement.offsetHeight + 20;
+        if (distance > (this.table.offsetHeight + this.table.scrollTop)) {
+            var scrollTop = distance - this.table.offsetHeight;
+        } else if (trElement.offsetTop < this.table.scrollTop) {
+            var scrollTop = trElement.offsetTop - 5;
+        }
+        if (scrollTop) {
+            this.table.scrollTop = scrollTop;
+        }
     }
 
     EchoDomUtil.preventEventDefault(echoEvent);
@@ -469,10 +473,12 @@ KeyTable.prototype.processFocus = function(echoEvent) {
     this.selectionStyle = this.selectionFocusStyle;
 
     if (this.lastSelectedIndex == -1) {
-        this.lastSelectedIndex = 0;
-        this.setSelected(this.lastSelectedIndex, true)
-        // Update ClientMessage.
-        this.updateClientMessage();
+        if (this.rowCount > 0) {
+            this.lastSelectedIndex = 0;
+            this.setSelected(this.lastSelectedIndex, true)
+            // Update ClientMessage.
+            this.updateClientMessage();
+        }
     } else {
         for (var i = 0; i < this.rowCount; ++i) {
             if (this.isSelected(i)) {
