@@ -58,6 +58,7 @@ KeyTable = function(elementId) {
     this.selectionState = null;
     this.headerVisible = false;
     this.lastSelectedIndex = -1;
+    this.lastRolloverIndex = -1;
 };
 
 /**
@@ -103,6 +104,10 @@ KeyTable.prototype.dispose = function() {
                 EchoDomUtil.removeEventListener(document, "keydown", KeyTable.processKeyDown, false);
             }
         }
+    }
+
+    if (this == globalActiveKeyTable) {
+        globalActiveKeyTable = null;
     }
 
     EchoDomPropertyStore.dispose(this.getElement());
@@ -361,12 +366,51 @@ KeyTable.prototype.processSelection = function(echoEvent) {
         this.setSelected(index, true);
         this.lastSelectedIndex = index;
     }
+    if (this.lastRolloverIndex != -1) {
+        this.drawRowStyle(this.lastRolloverIndex);
+        this.lastRolloverIndex = -1;
+    }
+
+    var trElement = this.getRowElement(index);
+
+    var distance = trElement.offsetTop + trElement.offsetHeight + 20;
+    if (distance > (this.table.offsetHeight + this.table.scrollTop)) {
+        var scrollTop = distance - this.table.offsetHeight;
+    } else if (trElement.offsetTop < this.table.scrollTop) {
+        var scrollTop = trElement.offsetTop - 5;
+    }
+    if (scrollTop) {
+        this.table.scrollTop = scrollTop;
+    }
 
     EchoDomUtil.preventEventDefault(echoEvent);
 
     // Update ClientMessage.
     this.updateClientMessage();
 };
+
+KeyTable.prototype.processPage = function(echoEvent) {
+    if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
+        return;
+    }
+
+    EchoDomUtil.preventEventDefault(echoEvent);
+
+    // Notify server if required.
+    if (this.serverPageNotify) {
+        if (echoEvent.keyCode == 33) {
+            EchoClientMessage.setActionValue(this.elementId, "page", "previous");
+        } else if (echoEvent.keyCode == 34) {
+            EchoClientMessage.setActionValue(this.elementId, "page", "next");
+        } else if (echoEvent.keyCode == 35) {
+            EchoClientMessage.setActionValue(this.elementId, "page", "last");
+        } else {
+            EchoClientMessage.setActionValue(this.elementId, "page", "first");
+        }
+        EchoServerTransaction.connect();
+    }
+};
+
 
 /**
  * Processes a row mouse over event.
@@ -391,6 +435,7 @@ KeyTable.prototype.processRolloverEnter = function(echoEvent) {
             EchoCssUtil.applyTemporaryStyle(trElement.cells[i], this.rolloverStyle);
         }
     }
+    this.lastRolloverIndex = rowIndex;
 };
 
 /**
@@ -412,10 +457,11 @@ KeyTable.prototype.processRolloverExit = function(echoEvent) {
     }
 
     this.drawRowStyle(rowIndex);
+    this.lastRolloverIndex = -1;
 };
 
 KeyTable.prototype.processFocus = function(echoEvent) {
-    if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
+    if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement(), true)) {
         return;
     }
 
@@ -463,13 +509,13 @@ KeyTable.prototype.processKeyDown = function(echoEvent) {
         EchoDomUtil.preventEventDefault(echoEvent);
         return;
     }
-    if (echoEvent.keyCode == 13) {  // ENTER
+    if (echoEvent.keyCode == 13) {  // enter
         this.processEnter(echoEvent);
-    } else if (echoEvent.keyCode == 38 || echoEvent.keyCode == 40) { // UP/DOWN ARROW
+    } else if (echoEvent.keyCode == 38 || echoEvent.keyCode == 40) { // up/down arrow
         this.processSelection(echoEvent);
-    } /*else if (echoEvent.keyCode == 9) {  // TAB
-        this.processTab();
-    }*/
+    } else if (echoEvent.keyCode >= 33 && echoEvent.keyCode <= 36) { // page up/down, end, home
+        this.processPage(echoEvent);
+    }
 }
 
 /**
@@ -592,6 +638,7 @@ KeyTable.MessageProcessor.processInit = function(initMessageElement) {
             table.multipleSelect = item.getAttribute("selection-mode") == "multiple";
             table.serverNotify = item.getAttribute("server-notify") == "true";
         }
+        table.serverPageNotify = item.getAttribute("server-page-notify") == "true";
 
         table.init();
 

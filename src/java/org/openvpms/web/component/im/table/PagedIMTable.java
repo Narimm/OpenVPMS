@@ -18,8 +18,11 @@
 
 package org.openvpms.web.component.im.table;
 
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Column;
+import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.table.PageListener;
 import org.openvpms.web.component.table.SortableTableHeaderRenderer;
 import org.openvpms.web.component.table.TableNavigator;
 
@@ -58,7 +61,11 @@ public class PagedIMTable<T> extends Column {
         table = new IMTable<T>(paged);
         table.setDefaultHeaderRenderer(new SortableTableHeaderRenderer());
         add(table);
-
+        table.addPageListener(new PageListener() {
+            public void actionPerformed(ActionEvent event) {
+                doPage(event);
+            }
+        });
     }
 
     /**
@@ -72,8 +79,7 @@ public class PagedIMTable<T> extends Column {
         if (set.hasNext() && set.getPages() > 1) {
             if (navigator == null) {
                 navigator = new TableNavigator(table);
-                navigator.setFocusTraversalIndex(
-                        table.getFocusTraversalIndex());
+                navigator.setFocusTraversalParticipant(false);
             }
             if (indexOf(navigator) == -1) {
                 add(navigator, 0);
@@ -106,6 +112,24 @@ public class PagedIMTable<T> extends Column {
             navigator.setFocusTraversalIndex(newValue);
         }
         table.setFocusTraversalIndex(newValue);
+    }
+
+    private void doPage(ActionEvent event) {
+        if (navigator != null) {
+            String key = event.getActionCommand();
+            if (PageListener.PAGE_PREVIOUS.equals(key)) {
+                navigator.previous();
+            } else if (PageListener.PAGE_NEXT.equals(key)) {
+                navigator.next();
+            } else if (PageListener.PAGE_FIRST.equals(key)) {
+                navigator.first();
+            } else if (PageListener.PAGE_LAST.equals(key)) {
+                navigator.last();
+            }
+
+            // refocus on the table
+            ApplicationInstance.getActive().setFocusedComponent(table);
+        }
     }
 
     /**

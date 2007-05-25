@@ -29,6 +29,7 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.list.DefaultListModel;
+import nextapp.echo2.app.list.DefaultListSelectionModel;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -107,6 +108,22 @@ public class TableNavigator extends Row {
         pageSelector.setFocusTraversalIndex(newValue);
         next.setFocusTraversalIndex(newValue);
         last.setFocusTraversalIndex(newValue);
+    }
+
+    /**
+     * Sets whether the component participates in the focus traversal order
+     * (tab order).
+     *
+     * @param newValue true if the component participates in the focus
+     *                 traversal order
+     */
+    @Override
+    public void setFocusTraversalParticipant(boolean newValue) {
+        first.setFocusTraversalParticipant(newValue);
+        previous.setFocusTraversalParticipant(newValue);
+        pageSelector.setFocusTraversalParticipant(newValue);
+        next.setFocusTraversalParticipant(newValue);
+        last.setFocusTraversalParticipant(newValue);
     }
 
     /**
@@ -214,6 +231,7 @@ public class TableNavigator extends Row {
 
     protected void setCurrentPage(int page) {
         getModel().setPage(page);
+        table.setSelectionModel(new DefaultListSelectionModel());
         pageSelector.setSelectedIndex(page);
     }
 
