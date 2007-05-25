@@ -31,11 +31,13 @@ import nextapp.echo2.app.Table;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.list.ListSelectionModel;
 import nextapp.echo2.app.table.TableColumnModel;
+import nextapp.echo2.app.update.ClientUpdateManager;
 import nextapp.echo2.app.update.ServerComponentUpdate;
 import nextapp.echo2.webcontainer.ActionProcessor;
 import nextapp.echo2.webcontainer.ComponentSynchronizePeer;
 import nextapp.echo2.webcontainer.ContainerInstance;
 import nextapp.echo2.webcontainer.DomUpdateSupport;
+import nextapp.echo2.webcontainer.FocusSupport;
 import nextapp.echo2.webcontainer.PartialUpdateManager;
 import nextapp.echo2.webcontainer.PropertyUpdateProcessor;
 import nextapp.echo2.webcontainer.RenderContext;
@@ -54,6 +56,7 @@ import nextapp.echo2.webrender.Service;
 import nextapp.echo2.webrender.WebRenderServlet;
 import nextapp.echo2.webrender.output.CssStyle;
 import nextapp.echo2.webrender.servermessage.DomUpdate;
+import nextapp.echo2.webrender.servermessage.WindowUpdate;
 import nextapp.echo2.webrender.service.JavaScriptService;
 import nextapp.echo2.webrender.util.DomUtil;
 import org.apache.commons.io.IOUtils;
@@ -66,14 +69,15 @@ import org.w3c.dom.NodeList;
 import java.io.IOException;
 import java.io.InputStream;
 
+
 /**
- * Add description here.
+ * Render peer for the {@link KeyTable}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
-                                     ImageRenderSupport,
+                                     ImageRenderSupport, FocusSupport,
                                      PropertyUpdateProcessor {
 
     /**
@@ -152,7 +156,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
      * @param child the child component
      * @return the layout data
      * @throws RuntimeException if the the provided
-     *                                    <code>LayoutData</code> is not a <code>TableLayoutData</code>
+     *                          <code>LayoutData</code> is not a <code>TableLayoutData</code>
      */
     private TableLayoutData getLayoutData(Component child) {
         LayoutData layoutData = (LayoutData) child.getRenderProperty(
@@ -173,8 +177,28 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
      */
     public void processAction(ContainerInstance ci, Component component,
                               Element actionElement) {
-        ci.getUpdateManager().getClientUpdateManager().setComponentAction(
-                component, Table.INPUT_ACTION, null);
+        String name = actionElement.getAttribute(ActionProcessor.ACTION_NAME);
+        String value = actionElement.getAttribute(ActionProcessor.ACTION_VALUE);
+        ClientUpdateManager mgr
+                = ci.getUpdateManager().getClientUpdateManager();
+        if (KeyTable.PAGE_ACTION.equals(name)) {
+            mgr.setComponentAction(component, KeyTable.PAGE_ACTION, value);
+        } else {
+            mgr.setComponentAction(component, Table.INPUT_ACTION, null);
+        }
+    }
+
+    /**
+     * Renders a directive to set the client input focus to the specified
+     * component.
+     *
+     * @param rc        the relevant <code>RenderContext</code>
+     * @param component the <code>Component</code> to be focused.
+     */
+    public void renderSetFocus(RenderContext rc, Component component) {
+        WindowUpdate.renderSetFocus(rc.getServerMessage(),
+                                    ContainerInstance.getElementId(
+                                            component) + "_focus");
     }
 
     /**
@@ -292,7 +316,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
                            Node parentNode, Component component) {
         ServerMessage serverMessage = rc.getServerMessage();
         serverMessage.addLibrary(TABLE_SERVICE.getId());
-        Table table = (Table) component;
+        KeyTable table = (KeyTable) component;
 
         renderInitDirective(rc, table);
 
@@ -439,7 +463,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
      * @param rc    the relevant <code>RenderContext</code>
      * @param table the table
      */
-    private void renderInitDirective(RenderContext rc, Table table) {
+    private void renderInitDirective(RenderContext rc, KeyTable table) {
         String elementId = ContainerInstance.getElementId(table);
         ServerMessage serverMessage = rc.getServerMessage();
         Document document = serverMessage.getDocument();
@@ -524,6 +548,10 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
 
         if (table.hasActionListeners()) {
             itemElement.setAttribute("server-notify", "true");
+        }
+
+        if (table.hasPageListeners()) {
+            itemElement.setAttribute("server-page-notify", "true");
         }
 
         if (rolloverEnabled) {

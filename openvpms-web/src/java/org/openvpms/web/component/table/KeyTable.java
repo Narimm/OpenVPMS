@@ -19,22 +19,33 @@
 package org.openvpms.web.component.table;
 
 import nextapp.echo2.app.Color;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Font;
 import nextapp.echo2.app.Table;
+import nextapp.echo2.app.event.ActionEvent;
+
+import java.util.EventListener;
+
 
 /**
- * Add description here.
+ * Table implementation that supports keyboard navigation.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class KeyTable extends Table {
 
-    public static final String PROPERTY_SELECTION_BLUR_FOREGROUND = "selectionBlurForeground";
+    public static final String PROPERTY_SELECTION_BLUR_FOREGROUND
+            = "selectionBlurForeground";
 
-    public static final String PROPERTY_SELECTION_BLUR_BACKGROUND = "selectionBlurBackground";
+    public static final String PROPERTY_SELECTION_BLUR_BACKGROUND
+            = "selectionBlurBackground";
 
-    public static final String PROPERTY_SELECTION_BLUR_FONT = "selectionBlurFont";
+    public static final String PROPERTY_SELECTION_BLUR_FONT
+            = "selectionBlurFont";
+
+    protected static final String PAGE_ACTION = "page";
+
 
     /**
      * Returns the row selection blur foreground color.
@@ -89,5 +100,64 @@ public class KeyTable extends Table {
     public void setSelectionBlurFont(Font newValue) {
         setProperty(PROPERTY_SELECTION_BLUR_FONT, newValue);
     }
+
+    /**
+     * Adds a page listener.
+     *
+     * @param listener the listener to add
+     */
+    public void addPageListener(PageListener listener) {
+        getEventListenerList().addListener(PageListener.class, listener);
+    }
+
+    /**
+     * Removes a page listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removePageListener(PageListener listener) {
+        getEventListenerList().removeListener(PageListener.class, listener);
+    }
+
+    /**
+     * Determines if any page listeners are registered.
+     *
+     * @return <tt>true</tt> if listeners are registered
+     */
+    public boolean hasPageListeners() {
+        return getEventListenerList().getListenerCount(PageListener.class) != 0;
+    }
+
+    /**
+     * @see Component#processInput(String, Object)
+     */
+    @Override
+    public void processInput(String inputName, Object inputValue) {
+        super.processInput(inputName, inputValue);
+        if (PAGE_ACTION.equals(inputName) && inputValue instanceof String) {
+            firePageEvent((String) inputValue);
+        }
+    }
+
+    /**
+     * Fires an page event to all listeners.
+     *
+     * @param page the page command
+     */
+    private void firePageEvent(String page) {
+        if (!hasEventListenerList()) {
+            return;
+        }
+        EventListener[] listeners = getEventListenerList().getListeners(
+                PageListener.class);
+        ActionEvent event = null;
+        for (EventListener listener : listeners) {
+            if (event == null) {
+                event = new ActionEvent(this, page);
+            }
+            ((PageListener) listener).actionPerformed(event);
+        }
+    }
+
 
 }

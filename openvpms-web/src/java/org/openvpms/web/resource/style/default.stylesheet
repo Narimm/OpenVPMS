@@ -1598,6 +1598,20 @@
     <!--  Table defaults                                                     -->
     <!-- =================================================================== -->
 
+    <style name="default" type="org.openvpms.web.component.table.KeyTable">
+        <properties>
+            <property name="border">
+                <border size="2px" style="groove" color="#cfdfff"/>
+            </property>
+            <property name="rolloverBackground" value="#85c1ff"/>
+            <property name="rolloverEnabled" value="true"/>
+            <property name="selectionBackground" value="#85c1ff"/>
+            <property name="selectionEnabled" value="true"/>
+            <property name="selectionBlurBackground" value="#f2f3b3"/>
+            <property name="width" value="100%"/>
+        </properties>
+    </style>
+
     <style name="default" type="nextapp.echo2.app.Table">
         <properties>
             <property name="border">
