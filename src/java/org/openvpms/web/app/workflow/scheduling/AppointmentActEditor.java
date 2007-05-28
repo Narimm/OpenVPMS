@@ -176,6 +176,10 @@ public class AppointmentActEditor extends AbstractActEditor {
                 onAppointmentTypeChanged();
             }
         });
+
+        if (getEndTime() == null) {
+            calculateEndTime();
+        }
     }
 
     /**
