@@ -190,6 +190,10 @@ KeyTable.prototype.init = function() {
             this.selectionFocusStyle = this.selectionStyle;
             if (!this.selectionBlurStyle) {
                 this.selectionBlurStyle = this.selectionStyle;
+            } else {
+                // default selection style is the blur style, until the
+                // table receives focus
+                this.selectionStyle = this.selectionBlurStyle;
             }
 
             var element = this.getElement();
@@ -318,9 +322,6 @@ KeyTable.prototype.processClick = function(echoEvent) {
 KeyTable.prototype.processEnter = function(echoEvent) {
     if (this.lastSelectedIndex != -1) {
         EchoDomUtil.preventEventDefault(echoEvent);
-
-        // Update ClientMessage.
-        this.updateClientMessage();
 
         // Notify server if required.
         if (this.serverNotify) {
@@ -491,7 +492,7 @@ KeyTable.prototype.processFocus = function(echoEvent) {
 }
 
 KeyTable.prototype.processBlur = function(echoEvent) {
-    if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
+    if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement(), true)) {
         return;
     }
 
