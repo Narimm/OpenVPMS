@@ -303,7 +303,7 @@ public class AppointmentActEditor extends AbstractActEditor {
     private void updateDates() {
         Date now = DateFormatter.getDayMonthYear(new Date());
         Date selected = DateFormatter.getDayMonthYear(
-                date.getDisplayedDate().getTime());
+                date.getSelectedDate().getTime());
         if (selected.compareTo(now) < 0) {
             // don't permit backdating of appointments
             selected = now;
