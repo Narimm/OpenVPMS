@@ -18,10 +18,13 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
+import echopointng.DateChooser;
+import echopointng.DateField;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -33,19 +36,26 @@ import org.openvpms.web.component.edit.IMObjectProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.edit.TimePropertyTransformer;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.edit.act.CustomerParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationCollectionEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.util.DateFieldFactory;
+import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.TimeFieldFactory;
+import org.openvpms.web.resource.util.Messages;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -61,7 +71,29 @@ import java.util.List;
 public class AppointmentActEditor extends AbstractActEditor {
 
     /**
-     * Construct a new <code>AppointmentActEditor</code>.
+     * The date component.
+     */
+    private DateField date;
+
+    /**
+     * Listener for date changes.
+     */
+    private PropertyChangeListener dateListener;
+
+    /**
+     * The startTime transformer. Used to set the date component of the start
+     * time.
+     */
+    private TimePropertyTransformer startTimeXform;
+
+    /**
+     * The endTime transfomer. Used to set the date component of the end time.
+     */
+    private TimePropertyTransformer endTimeXform;
+
+
+    /**
+     * Constructs a new <tt>AppointmentActEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <code>null</code>
@@ -81,16 +113,38 @@ public class AppointmentActEditor extends AbstractActEditor {
                 setParticipant("appointmentType", appointmentType);
             }
         }
-        if (getStartTime() == null) {
+
+        Date startTime = getStartTime();
+        if (startTime == null) {
             Date scheduleDate = context.getContext().getScheduleDate();
-            setStartTime(getDefaultStartTime(scheduleDate));
+            startTime = getDefaultStartTime(scheduleDate);
+            setStartTime(startTime);
         }
+
+        date = DateFieldFactory.create();
+        dateListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                String name = event.getPropertyName();
+                if ("selectedDate".equals(name)) {
+                    updateDates();
+                }
+            }
+        };
+        setDate(startTime);
+
+        startTimeXform = new TimePropertyTransformer(act, getDescriptor(
+                "startTime"));
+        startTimeXform.setDate(startTime);
+        endTimeXform = new TimePropertyTransformer(act,
+                                                   getDescriptor("endTime"));
+        endTimeXform.setDate(startTime);
 
         getProperty("status").addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onStatusChanged();
             }
         });
+        addStartEndTimeListeners();
     }
 
     /**
@@ -229,6 +283,44 @@ public class AppointmentActEditor extends AbstractActEditor {
     }
 
     /**
+     * Sets the appointment date.
+     *
+     * @param selected the appointment date
+     */
+    private void setDate(Date selected) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(selected);
+        DateChooser chooser = date.getDateChooser();
+        chooser.removePropertyChangeListener(dateListener);
+        chooser.setSelectedDate(calendar);
+        chooser.addPropertyChangeListener(dateListener);
+    }
+
+    /**
+     * Synchronizes the date portion of the <em>startTime</em> and
+     * <em>endTime</em> nodes with the {@link #date} field.
+     */
+    private void updateDates() {
+        Date now = DateFormatter.getDayMonthYear(new Date());
+        Date selected = DateFormatter.getDayMonthYear(
+                date.getDisplayedDate().getTime());
+        if (selected.compareTo(now) < 0) {
+            // don't permit backdating of appointments
+            selected = now;
+            setDate(selected);
+        }
+        startTimeXform.setDate(selected);
+        endTimeXform.setDate(selected);
+        removeStartEndTimeListeners();
+        Property startTime = getProperty("startTime");
+        startTime.setValue(startTime.getValue());
+
+        Property endTime = getProperty("endTime");
+        endTime.setValue(endTime.getValue());
+        addStartEndTimeListeners();
+    }
+
+    /**
      * Returns the customer editor.
      *
      * @return the customer editor
@@ -286,6 +378,36 @@ public class AppointmentActEditor extends AbstractActEditor {
     private class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
+         * Creates a set of components to be rendered from the supplied descriptors.
+         *
+         * @param object      the parent object
+         * @param descriptors the property descriptors
+         * @param properties  the properties
+         * @param context     the layout context
+         * @return the components
+         */
+        @Override
+        protected ComponentSet createComponentSet(IMObject object,
+                                                  List<NodeDescriptor> descriptors,
+                                                  PropertySet properties,
+                                                  LayoutContext context) {
+            ComponentSet result = new ComponentSet();
+            for (NodeDescriptor descriptor : descriptors) {
+                Property property = properties.get(descriptor);
+                String name = property.getDescriptor().getName();
+                if (name.equals("startTime")) {
+                    // insert the date component prior to the start time
+                    ComponentState dateComp = new ComponentState(date);
+                    result.add(dateComp, Messages.get("appointment.date"));
+                }
+                ComponentState component = createComponent(property, object,
+                                                           context);
+                result.add(component, descriptor.getDisplayName());
+            }
+            return result;
+        }
+
+        /**
          * Creates a component for a property. This maintains a cache of created
          * components, in order for the focus to be set on an appropriate
          * component.
@@ -301,17 +423,14 @@ public class AppointmentActEditor extends AbstractActEditor {
                                                  LayoutContext context) {
             ComponentState result;
             String name = property.getDescriptor().getName();
-            if (name.equals("startTime") || name.equals("endTime")) {
-                Date date = (Date) property.getValue();
-                if (date == null) {
-                    date = context.getContext().getScheduleDate();
-                }
-                IMObjectProperty timeProperty = (IMObjectProperty) property;
-                TimePropertyTransformer transformer
-                        = new TimePropertyTransformer(parent,
-                                                      property.getDescriptor());
-                transformer.setDate(date);
-                timeProperty.setTransformer(transformer);
+            if (name.equals("startTime")) {
+                IMObjectProperty startTime = (IMObjectProperty) property;
+                startTime.setTransformer(startTimeXform);
+                result = new ComponentState(TimeFieldFactory.create(property),
+                                            property);
+            } else if (name.equals("endTime")) {
+                IMObjectProperty endTime = (IMObjectProperty) property;
+                endTime.setTransformer(endTimeXform);
                 result = new ComponentState(TimeFieldFactory.create(property),
                                             property);
             } else {
