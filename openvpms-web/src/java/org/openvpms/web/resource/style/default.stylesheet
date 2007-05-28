@@ -1643,7 +1643,8 @@
         </properties>
     </style>
 
-    <style name="plain" type="nextapp.echo2.app.Table" base-name="default">
+    <style name="plain" type="org.openvpms.web.component.table.KeyTable"
+           base-name="default">
         <properties>
             <property name="border">
                 <border style="none"/>
@@ -1652,7 +1653,7 @@
     </style>
 
     <style name="plain-1024x768" base-name="plain"
-           type="nextapp.echo2.app.Table">
+           type="org.openvpms.web.component.table.KeyTable">
         <properties>
             <property name="font">
                 <font size="7pt"/>

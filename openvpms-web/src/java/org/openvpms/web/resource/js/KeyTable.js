@@ -263,6 +263,14 @@ KeyTable.prototype.setActive = function(active) {
  *        <code>EchoEventProcessor</code>
  */
 KeyTable.prototype.processClick = function(echoEvent) {
+    if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
+        return;
+    }
+
+    if (!this.selectionEnabled) {
+        return;
+    }
+
     try {
         // need to move the focus off the current focused field.
         EchoEventProcessor.removeHandler(this.tableFocus, "focus");
@@ -271,13 +279,8 @@ KeyTable.prototype.processClick = function(echoEvent) {
     } catch (ex) {
     }
 
-    if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
-        return;
-    }
-
-    if (!this.selectionEnabled) {
-        return;
-    }
+    this.setActive(true);
+    this.selectionStyle = this.selectionFocusStyle;
 
     var trElement = echoEvent.registeredTarget;
     var rowIndex = this.getRowIndex(trElement);
@@ -306,8 +309,6 @@ KeyTable.prototype.processClick = function(echoEvent) {
         this.lastSelectedIndex = rowIndex;
         this.setSelected(rowIndex, !this.isSelected(rowIndex));
     }
-
-    this.setActive(true);
 
     // Update ClientMessage.
     this.updateClientMessage();
