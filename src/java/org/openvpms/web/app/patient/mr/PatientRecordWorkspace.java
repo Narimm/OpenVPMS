@@ -269,7 +269,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
             }
             Act event = getEvent(null);
             w.setEvent(event);
-            window = w;
+            window = (CRUDWindow<Act>) w;
         } else if (view == RecordBrowser.View.DOCUMENTS) {
             String type = Messages.get("patient.document.createtype");
             window = new DocumentCRUDWindow(type, DOCUMENT_SHORT_NAMES);

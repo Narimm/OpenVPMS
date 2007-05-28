@@ -26,10 +26,13 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM;
+import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
@@ -40,13 +43,46 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
+public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
+        implements PatientRecordCRUDWindow {
+
+    /**
+     * Clinical event item short names.
+     */
+    private final String[] clinicalEventItems;
+
+    /**
+     * The current act.patientClinicalEvent.
+     */
+    private Act event;
+
 
     /**
      * Constructs a new <tt>ProblemRecordCRUDWindow</tt>.
      */
     public ProblemRecordCRUDWindow() {
-        super(new ShortNameList(CLINICAL_PROBLEM));
+        super(Messages.get("patient.record.createtype"),
+              new ShortNameList(CLINICAL_PROBLEM));
+        clinicalEventItems = ActHelper.getTargetShortNames(
+                RELATIONSHIP_CLINICAL_EVENT_ITEM);
+    }
+
+    /**
+     * Sets the current patient clinical event.
+     *
+     * @param event the current event
+     */
+    public void setEvent(Act event) {
+        this.event = event;
+    }
+
+    /**
+     * Returns the current patient clinical event.
+     *
+     * @return the current event. May be <tt>null</tt>
+     */
+    public Act getEvent() {
+        return event;
     }
 
     /**
@@ -149,4 +185,39 @@ public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
         return false;
     }
 
+    /**
+     * Determines if an act can be edited.
+     *
+     * @param act the act
+     * @return <code>true</code> if the act can be edited, otherwise
+     *         <code>false</code>
+     */
+    @Override
+    protected boolean canEdit(Act act) {
+        // @todo fix when statuses are sorted out
+        return true;
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        buttons.add(getEditButton());
+        buttons.add(getCreateButton());
+        buttons.add(getDeleteButton());
+        buttons.add(getPrintButton());
+    }
+
+    /**
+     * Helper to return the short names of acts that may be added to
+     * <em>actRelationship.patientClinicalEventItem</em>.
+     *
+     * @return the short names
+     */
+    protected String[] getClinicalEventItemShortNames() {
+        return clinicalEventItems;
+    }
 }
