@@ -33,7 +33,6 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.TimeZone;
 
 
 /**
@@ -88,7 +87,11 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
                     result = parse(value);
                 }
             } else if (object instanceof Date) {
-                result = object;
+                if (date != null) {
+                    result = addDate((Date) object);
+                } else {
+                    result = object;
+                }
             } else if (object == null) {
                 result = null;
             } else {
@@ -114,7 +117,6 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
     private Date parse(String value) throws ValidationException {
         Date result;
         DateFormat format = DateFormatter.getTimeFormat(true);
-        format.setTimeZone(TimeZone.getTimeZone("GMT"));
         try {
             result = format.parse(value);
         } catch (ParseException exception) {
@@ -190,8 +192,7 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
     private Date addDate(Date time) {
         GregorianCalendar dateCal = new GregorianCalendar();
         dateCal.setTime(date);
-        GregorianCalendar timeCal = new GregorianCalendar(
-                TimeZone.getTimeZone("GMT"));
+        GregorianCalendar timeCal = new GregorianCalendar();
         timeCal.setTime(time);
 
         dateCal.add(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
