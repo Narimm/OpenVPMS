@@ -19,12 +19,13 @@
 package org.openvpms.web.component.edit;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.util.MacroEvaluator;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.web.component.im.edit.ValidationHelper;
-import org.openvpms.web.component.util.MacroEvaluator;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -36,7 +37,13 @@ import org.openvpms.web.resource.util.Messages;
 public class StringPropertyTransformer extends AbstractPropertyTransformer {
 
     /**
-     * Construct a new <code>StringTransformer</code>.
+     * The macro evaluator.
+     */
+    private final MacroEvaluator macros;
+
+
+    /**
+     * Constructs a new <tt>StringTransformer</tt>.
      *
      * @param parent     the parent object
      * @param descriptor the node descriptor.
@@ -44,6 +51,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
     public StringPropertyTransformer(IMObject parent,
                                      NodeDescriptor descriptor) {
         super(parent, descriptor);
+        macros = new MacroEvaluator(ServiceHelper.getMacroCache());
     }
 
     /**
@@ -58,7 +66,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         String result = null;
         if (object instanceof String) {
             String str = (String) object;
-            result = MacroEvaluator.evaluate(str, getParent());
+            result = macros.evaluate(str, getParent());
         } else if (object != null) {
             result = object.toString();
         }

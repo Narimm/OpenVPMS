@@ -163,6 +163,9 @@
         </constructor-arg>
     </bean>
 
+    <!-- The macro cache -->
+    <bean id="macroCache" class="org.openvpms.archetype.util.MacroCache"/>
+
     <!-- The app -->
     <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp"
           singleton="false"/>

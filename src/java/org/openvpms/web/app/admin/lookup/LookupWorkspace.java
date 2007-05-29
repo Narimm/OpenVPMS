@@ -20,7 +20,11 @@ package org.openvpms.web.app.admin.lookup;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -55,4 +59,41 @@ public class LookupWorkspace extends CRUDWorkspace<Lookup> {
         }
     }
 
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(Lookup object, boolean isNew) {
+        super.onSaved(object, isNew);
+        if (TypeHelper.isA(object, "lookup.macro")) {
+            refreshMacros();
+        }
+    }
+
+    /**
+     * Invoked when the object has been deleted.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onDeleted(Lookup object) {
+        super.onDeleted(object);
+        if (TypeHelper.isA(object, "lookup.macro")) {
+            refreshMacros();
+        }
+    }
+
+    /**
+     * Helper to refresh the macro cache if a macro is saved or deleted.
+     */
+    private void refreshMacros() {
+        try {
+            ServiceHelper.getMacroCache().refresh();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
 }
