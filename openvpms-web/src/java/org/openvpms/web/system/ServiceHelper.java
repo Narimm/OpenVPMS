@@ -20,6 +20,7 @@ package org.openvpms.web.system;
 
 import nextapp.echo2.app.ApplicationInstance;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.util.MacroCache;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.context.ApplicationContext;
@@ -59,6 +60,15 @@ public final class ServiceHelper {
      */
     public static JavaMailSender getMailSender() {
         return (JavaMailSender) getContext().getBean("mailSender");
+    }
+
+    /**
+     * Helper to get the macro cache.
+     *
+     * @return the macro cache
+     */
+    public static MacroCache getMacroCache() {
+        return (MacroCache) getContext().getBean("macroCache");
     }
 
     /**

@@ -21,8 +21,13 @@ package org.openvpms.web.component.edit;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.test.TestHelper;
 
@@ -96,6 +101,42 @@ public class StringPropertyTransformerTestCase
         NodeDescriptor result = type.getNodeDescriptor(node);
         assertNotNull(result);
         return result;
+    }
+
+    /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        createMacro("macro1", "'macro 1 text'");
+        createMacro("macro2", "concat('one', 'two', 'three')");
+        createMacro("displayName", "openvpms:get(., 'displayName')");
+        createMacro("exceptionMacro", "openvpms:get(., 'invalidnode')");
+        createMacro("nested", "concat('nested test: ', $macro1)");
+        createMacro("numbertest", "concat('input number: ', $number)");
+
+        // load the new macros
+        ServiceHelper.getMacroCache().refresh();
+    }
+
+    /**
+     * Helper to create and save a macro.
+     *
+     * @param code       the macro code
+     * @param expression the macro expression
+     */
+    private void createMacro(String code, String expression) {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        Lookup macro = (Lookup) service.create("lookup.macro");
+        IMObjectBean bean = new IMObjectBean(macro);
+        bean.setValue("code", code);
+        bean.setValue("name", code);
+        bean.setValue("expression", expression);
+        bean.save();
     }
 
 }
