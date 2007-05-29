@@ -67,6 +67,7 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
                 buttons.add(checkOut);
             }
         }
+        buttons.add(getOverTheCounterButton());
     }
 
     /**

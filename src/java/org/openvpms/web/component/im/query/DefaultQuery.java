@@ -32,7 +32,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 public class DefaultQuery<T extends IMObject> extends AbstractIMObjectQuery<T> {
 
     /**
-     * Construct a new <code>DefaultQuery</code> that queries IMObjects with the
+     * Constructs a new <tt>DefaultQuery</tt> that queries IMObjects with the
      * specified short names.
      *
      * @param shortNames the short names
@@ -42,19 +42,5 @@ public class DefaultQuery<T extends IMObject> extends AbstractIMObjectQuery<T> {
     public DefaultQuery(String[] shortNames) {
         super(shortNames);
     }
-
-    /**
-     * Construct a new <code>DefaultQuery</code> that queries IMObjects with the
-     * specified criteria.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public DefaultQuery(String refModelName, String entityName,
-                        String conceptName) {
-        super(refModelName, entityName, conceptName);
-    }
-
 
 }

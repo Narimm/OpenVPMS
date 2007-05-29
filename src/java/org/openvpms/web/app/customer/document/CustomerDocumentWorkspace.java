@@ -47,11 +47,12 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
                                                  "act.customerDocumentLetter",
                                                  "act.customerDocumentAttachment"};
 
+
     /**
-     * Construct a new <code>CustomerDocumentWorkspace</code>.
+     * Constructs a new <tt>CustomerDocumentWorkspace</tt>.
      */
     public CustomerDocumentWorkspace() {
-        super("customer", "document", "party", "party", "customer*");
+        super("customer", "document");
     }
 
     /**

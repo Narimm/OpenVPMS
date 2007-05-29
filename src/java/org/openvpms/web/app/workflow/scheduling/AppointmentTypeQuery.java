@@ -56,7 +56,7 @@ public class AppointmentTypeQuery extends AbstractIMObjectQuery<Entity> {
      * @param schedule the schedule. May be <code>null</code>
      */
     public AppointmentTypeQuery(Party schedule) {
-        super("common", "entity", "appointmentType");
+        super(new String[]{"entity.appointmentType"});
         _schedule = schedule;
     }
 

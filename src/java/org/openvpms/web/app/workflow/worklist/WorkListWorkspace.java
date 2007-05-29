@@ -50,17 +50,17 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
 
 
     /**
-     * Construct a new <code>WorkListWorkspace</code>.
+     * Construct a new <tt>WorkListWorkspace</tt>.
      */
     public WorkListWorkspace() {
-        super("workflow", "worklist", "party", "party",
-              "organisationWorkList");
+        super("workflow", "worklist",
+              new ShortNameList("party.organisationWorkList"));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(Party object) {
@@ -79,7 +79,7 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
      * This is analagous to  {@link #setObject} but performs a safe cast
      * to the required type.
      *
-     * @param object the current object. May be <code>null</code>
+     * @param object the current object. May be <tt>null</tt>
      */
     public void setIMObject(IMObject object) {
         if (object == null || object instanceof Party) {
@@ -109,7 +109,7 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
 
     /**
      * Determines if the workspace should be refreshed.
-     * This implementation always returns <code>true</code>.
+     * This implementation always returns <tt>true</tt>.
      *
      * @return <code>true</code>
      */

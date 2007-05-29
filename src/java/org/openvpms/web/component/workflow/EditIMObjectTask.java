@@ -190,7 +190,7 @@ public class EditIMObjectTask extends AbstractTask {
             if (create) {
                 CreateIMObjectTask creator
                         = new CreateIMObjectTask(shortName, createProperties);
-                creator.setTaskListener(new TaskListener() {
+                creator.addTaskListener(new TaskListener() {
                     public void taskEvent(TaskEvent event) {
                         switch (event.getType()) {
                             case SKIPPED:

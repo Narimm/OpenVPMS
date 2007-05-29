@@ -40,15 +40,28 @@ public class DefaultActQuery<T extends Act> extends DateRangeActQuery<T> {
      * @param entity        the entity to search for
      * @param participant   the partcipant node name
      * @param participation the entity participation short name
-     * @param entityName    the act entity name
-     * @param conceptName   the act concept name
+     * @param acts          the act short names
      * @param statusLookups the act status lookups
      */
     public DefaultActQuery(Entity entity, String participant,
-                           String participation,
-                           String entityName, String conceptName,
+                           String participation, String[] acts,
                            List<Lookup> statusLookups) {
-        this(entity, participant, participation, entityName, conceptName,
+        this(entity, participant, participation, acts, statusLookups, null);
+    }
+
+    /**
+     * Constructs a new <tt>DefaultActQuery</tt>.
+     *
+     * @param entity        the entity to search for
+     * @param participant   the partcipant node name
+     * @param participation the entity participation short name
+     * @param act           the act short name
+     * @param statusLookups the act status lookups
+     */
+    public DefaultActQuery(Entity entity, String participant,
+                           String participation, String act,
+                           List<Lookup> statusLookups) {
+        this(entity, participant, participation, new String[]{act},
              statusLookups, null);
     }
 
@@ -58,17 +71,17 @@ public class DefaultActQuery<T extends Act> extends DateRangeActQuery<T> {
      * @param entity        the entity to search for
      * @param participant   the partcipant node name
      * @param participation the entity participation short name
-     * @param entityName    the act entity name
-     * @param conceptName   the act concept name
+     * @param act           the act short name
      * @param statusLookups the act status lookups
      * @param excludeStatus to exclude. May be <tt>null</tt>
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
      */
     public DefaultActQuery(Entity entity, String participant,
-                           String participation, String entityName,
-                           String conceptName, List<Lookup> statusLookups,
-                           String excludeStatus) {
-        super(entity, participant, participation, entityName, conceptName,
-              statusLookups, excludeStatus);
+                           String participation, String act,
+                           List<Lookup> statusLookups, String excludeStatus) {
+        this(entity, participant, participation, new String[]{act},
+             statusLookups, excludeStatus);
     }
 
     /**
@@ -77,16 +90,16 @@ public class DefaultActQuery<T extends Act> extends DateRangeActQuery<T> {
      * @param entity        the entity to search for
      * @param participant   the partcipant node name
      * @param participation the entity participation short name
-     * @param shortNames    the act short names
+     * @param acts          the act short names
      * @param statusLookups the act status lookups
      * @param excludeStatus to exclude. May be <tt>null</tt>
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
     public DefaultActQuery(Entity entity, String participant,
-                           String participation, String[] shortNames,
+                           String participation, String[] acts,
                            List<Lookup> statusLookups, String excludeStatus) {
-        super(entity, participant, participation, shortNames, statusLookups,
+        super(entity, participant, participation, acts, statusLookups,
               excludeStatus);
     }
 
@@ -97,15 +110,12 @@ public class DefaultActQuery<T extends Act> extends DateRangeActQuery<T> {
      * @param entity        the entity to search for
      * @param participant   the partcipant node name
      * @param participation the entity participation short name
-     * @param entityName    the act entity name
-     * @param conceptName   the act concept name
+     * @param acts          the act short names
      * @param status        the act status
      */
     public DefaultActQuery(Entity entity, String participant,
-                           String participation, String entityName,
-                           String conceptName, String status) {
-        super(entity, participant, participation, entityName, conceptName,
-              status);
+                           String participation, String[] acts, String status) {
+        this(entity, participant, participation, acts, new String[]{status});
     }
 
     /**
@@ -114,14 +124,14 @@ public class DefaultActQuery<T extends Act> extends DateRangeActQuery<T> {
      * @param entity        the entity to search for
      * @param participant   the partcipant node name
      * @param participation the entity participation short name
-     * @param shortNames    the act short names
+     * @param acts          the act short names
      * @param statuses      the act statuses to search on. May be
      *                      <tt>empty</tt>
      */
     public DefaultActQuery(Entity entity, String participant,
-                           String participation, String[] shortNames,
+                           String participation, String[] acts,
                            String[] statuses) {
-        super(entity, participant, participation, shortNames, statuses);
+        super(entity, participant, participation, acts, statuses);
     }
 
 }

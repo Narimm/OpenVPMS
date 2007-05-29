@@ -25,6 +25,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.subsystem.ActWorkspace;
+import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
@@ -41,24 +43,31 @@ public abstract class SupplierActWorkspace<T extends Act>
         extends ActWorkspace<Party, T> {
 
     /**
-     * Construct a new <code>SupplierActWorkspace</code>.
+     * Constructs a new <tt>SupplierActWorkspace</tt>.
      *
-     * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param subsystemId the subsystem localisation identifier
+     * @param workspaceId the workspace localisation identfifier
+     */
+    public SupplierActWorkspace(String subsystemId, String workspaceId) {
+        this(subsystemId, workspaceId, new ShortNameList("party.supplier*"));
+    }
+
+    /**
+     * Constructs a new <tt>SupplierActWorkspace</tt>.
+     *
+     * @param subsystemId the subsystem localisation identifier
+     * @param workspaceId the workspace localisation identfifier
+     * @param shortNames  the archetype short names that this operates on
      */
     public SupplierActWorkspace(String subsystemId, String workspaceId,
-                                String refModelName, String entityName,
-                                String conceptName) {
-        super(subsystemId, workspaceId, refModelName, entityName, conceptName);
+                                ShortNames shortNames) {
+        super(subsystemId, workspaceId, shortNames);
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(Party object) {

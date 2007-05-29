@@ -20,6 +20,7 @@ package org.openvpms.web.app.admin;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.app.subsystem.ShortNameList;
 
 
 /**
@@ -31,10 +32,11 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
 public class ArchetypeWorkspace extends CRUDWorkspace<IMObject> {
 
     /**
-     * Construct a new <code>ArchetypeWorkspace</code>.
+     * Constructs a new <tt>ArchetypeWorkspace</tt>.
      */
     public ArchetypeWorkspace() {
-        super("admin", "archetype", "system", "descriptor", null);
+        super("admin", "archetype",
+              new ShortNameList("system", "descriptor", null));
     }
 
     /**
@@ -42,7 +44,7 @@ public class ArchetypeWorkspace extends CRUDWorkspace<IMObject> {
      * This is analagous to  {@link #setObject} but performs a safe cast
      * to the required type.
      *
-     * @param object the current object, May be <code>null</code>
+     * @param object the current object. May be <tt>null</tt>
      */
     public void setIMObject(IMObject object) {
         setObject(object);

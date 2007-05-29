@@ -34,6 +34,7 @@ import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLE
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
@@ -71,7 +72,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      * Constructs a new <tt>PatientRecordWorkspace</tt>.
      */
     public PatientRecordWorkspace() {
-        super("patient", "record", "party", "party", "patient*");
+        super("patient", "record", new ShortNameList("party.patient*"));
     }
 
     /**
@@ -143,19 +144,13 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
     /**
      * Create a new query.
      *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
     @Override
-    protected Query<Party> createQuery(String refModelName,
-                                       String entityName,
-                                       String conceptName) {
-        Query<Party> query = super.createQuery(refModelName, entityName,
-                                               conceptName);
+    protected Query<Party> createQuery() {
+        Query<Party> query = super.createQuery();
         if (query instanceof PatientQuery) {
             ((PatientQuery) query).setShowAllPatients(true);
         }

@@ -57,7 +57,7 @@ public class Tasks extends AbstractTask {
      * @param context the task context
      */
     public void start(TaskContext context) {
-        workflow.setTaskListener(new TaskListener() {
+        workflow.addTaskListener(new TaskListener() {
             public void taskEvent(TaskEvent event) {
                 switch (event.getType()) {
                     case SKIPPED:

@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.PatientActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
@@ -54,7 +55,7 @@ public class PatientDocumentWorkspace extends PatientActWorkspace<Act> {
      * Construct a new <code>PatientDocumentWorkspace</code>.
      */
     public PatientDocumentWorkspace() {
-        super("patient", "document", "party", "party", "patient*");
+        super("patient", "document", new ShortNameList("party.patient*"));
     }
 
     /**

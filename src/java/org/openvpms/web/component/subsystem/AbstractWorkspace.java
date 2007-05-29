@@ -184,7 +184,8 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * Returns the latest version of the current context object.
      *
      * @return the latest version of the context object, or {@link #getObject()}
-     *         if they are the same
+     *         if they are the same, or <tt>null</tt> if the context object is
+     *         not supported by the workspace
      */
     protected T getLatest() {
         return getLatest(getObject());
@@ -195,11 +196,16 @@ public abstract class AbstractWorkspace<T extends IMObject>
      *
      * @param context the current context object
      * @return the latest version of the context object, or {@link #getObject()}
-     *         if they are the same
+     *         if they are the same, or <tt>null</tt> if the context object is
+     *         not supported by the workspace
      */
     protected T getLatest(T context) {
         context = IMObjectHelper.reload(context);
         if (!IMObjectHelper.isSame(getObject(), context)) {
+            if (context != null && !canHandle(
+                    context.getArchetypeId().getShortName())) {
+                return null;
+            }
             return context;
         }
         return getObject();

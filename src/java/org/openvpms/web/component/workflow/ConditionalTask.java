@@ -84,18 +84,18 @@ public class ConditionalTask extends AbstractTask {
     public void start(TaskContext context) {
         this.context = context;
 
-        condition.setTaskListener(new TaskListener() {
+        condition.addTaskListener(new TaskListener() {
             public void taskEvent(TaskEvent event) {
                 onConditionEvent(event);
             }
         });
-        task.setTaskListener(new TaskListener() {
+        task.addTaskListener(new TaskListener() {
             public void taskEvent(TaskEvent event) {
                 onTaskEvent(event);
             }
         });
         if (elseTask != null) {
-            elseTask.setTaskListener(new TaskListener() {
+            elseTask.addTaskListener(new TaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onTaskEvent(event);
                 }

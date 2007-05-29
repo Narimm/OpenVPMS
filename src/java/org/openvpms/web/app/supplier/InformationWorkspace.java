@@ -21,6 +21,7 @@ package org.openvpms.web.app.supplier;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 
 
@@ -33,16 +34,17 @@ import org.openvpms.web.component.app.GlobalContext;
 public class InformationWorkspace extends CRUDWorkspace<Party> {
 
     /**
-     * Construct a new <code>InformationWorkspace</code>.
+     * Construct a new <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
-        super("supplier", "info", "party", "party", "supplier*");
+        super("supplier", "info",
+              new ShortNameList("party", "party", "supplier*"));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(Party object) {
@@ -55,7 +57,7 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
      * This is analagous to  {@link #setObject} but performs a safe cast
      * to the required type.
      *
-     * @param object the current object. May be <code>null</code>
+     * @param object the current object. May be <tt>null</tt>
      */
     public void setIMObject(IMObject object) {
         if (object == null || object instanceof Party) {

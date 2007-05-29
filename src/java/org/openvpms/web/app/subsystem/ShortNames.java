@@ -39,4 +39,12 @@ public interface ShortNames {
      * @return the archetype short names
      */
     String[] getShortNames();
+
+    /**
+     * Returns <tt>true</tt> if the collection contains a short name.
+     *
+     * @param shortName the short name
+     * @return <tt>true</tt> if this contains <tt>shortName</tt>
+     */
+    boolean contains(String shortName);
 }

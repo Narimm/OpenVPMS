@@ -112,30 +112,6 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      *
      * @param entity        the entity to search for. May be <tt>null</tt>
      * @param participant   the partcipant node name. May be <tt>null</tt>
-     * @param participation the entity participation short name. May be
-     *                      <tt>null</tt>
-     * @param entityName    the act entity name
-     * @param conceptName   the act concept name
-     * @param statusLookups the act status lookups
-     * @param excludeStatus to exclude. May be <tt>null</tt>
-     */
-    public ActQuery(Entity entity, String participant, String participation,
-                    String entityName, String conceptName,
-                    List<Lookup> statusLookups, String excludeStatus) {
-        super(null, entityName, conceptName);
-        setEntity(entity);
-        this.participant = participant;
-        this.participation = participation;
-        this.excludeStatus = excludeStatus;
-        this.statusLookups = getStatusLookups(statusLookups, excludeStatus);
-        statuses = new String[0];
-    }
-
-    /**
-     * Constructs a new <tt>ActQuery</tt>.
-     *
-     * @param entity        the entity to search for. May be <tt>null</tt>
-     * @param participant   the partcipant node name. May be <tt>null</tt>
      * @param participation the entity participation short name. May be <tt>null</tt>
      * @param shortNames    the act short names
      * @param statusLookups the act status lookups
@@ -151,29 +127,6 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
         this.excludeStatus = excludeStatus;
         this.statusLookups = getStatusLookups(statusLookups, excludeStatus);
         statuses = new String[0];
-    }
-
-    /**
-     * Constructs a new <tt>ActQuery</tt> to query acts for a
-     * specific status.
-     *
-     * @param entity        the entity to search for. May be <tt>null</tt>
-     * @param participant   the partcipant node name. May be <tt>null</tt>
-     * @param participation the entity participation short name. May be
-     *                      <tt>null</tt>
-     * @param entityName    the act entity name
-     * @param conceptName   the act concept name
-     * @param status        the act status
-     */
-    public ActQuery(Entity entity, String participant, String participation,
-                    String entityName, String conceptName, String status) {
-        super(null, entityName, conceptName);
-        setEntity(entity);
-        this.participant = participant;
-        this.participation = participation;
-        statuses = new String[]{status};
-        statusLookups = null;
-        excludeStatus = null;
     }
 
     /**

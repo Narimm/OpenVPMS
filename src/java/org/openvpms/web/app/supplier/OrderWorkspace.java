@@ -39,12 +39,11 @@ import java.util.List;
 public class OrderWorkspace extends SupplierActWorkspace<Act> {
 
     /**
-     * Construct a new <code>EstimationWorkspace</code>.
+     * Constructs a new <tt>OrderWorkspace</tt>.
      */
     public OrderWorkspace() {
-        super("supplier", "order", "party", "party", "supplier*");
+        super("supplier", "order");
     }
-
 
     /**
      * Creates a new CRUD window for viewing and editing acts.
@@ -67,7 +66,7 @@ public class OrderWorkspace extends SupplierActWorkspace<Act> {
                                                            "status");
         return new DefaultActQuery<Act>(customer, "supplier",
                                         "participation.supplier",
-                                        "act", "supplierOrder", lookups);
+                                        "act.supplierOrder", lookups);
     }
 
 }

@@ -70,20 +70,6 @@ public abstract class AbstractEntityQuery<T extends Entity>
     }
 
     /**
-     * Construct a new <code>AbstractEntityQuery</code> that queries Entity
-     * instances with the specified criteria.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public AbstractEntityQuery(String refModelName, String entityName,
-                               String conceptName) {
-        super(refModelName, entityName, conceptName);
-        QueryFactory.initialise(this);
-    }
-
-    /**
      * Performs the query.
      *
      * @param sort the sort constraint. May be <code>null</code>

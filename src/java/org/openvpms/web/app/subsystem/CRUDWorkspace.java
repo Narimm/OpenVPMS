@@ -47,18 +47,15 @@ public abstract class CRUDWorkspace<T extends IMObject>
 
 
     /**
-     * Constructs a new <code>CRUDWorkspace</code>.
+     * Constructs a new <tt>CRUDWorkspace</tt>.
      *
-     * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param subsystemId the subsystem localisation identifier
+     * @param workspaceId the workspace localisation identfifier
+     * @param shortNames  the archetype short names that this operates on
      */
     public CRUDWorkspace(String subsystemId, String workspaceId,
-                         String refModelName, String entityName,
-                         String conceptName) {
-        super(subsystemId, workspaceId, refModelName, entityName, conceptName);
+                         ShortNames shortNames) {
+        super(subsystemId, workspaceId, shortNames);
     }
 
     /**
@@ -102,9 +99,7 @@ public abstract class CRUDWorkspace<T extends IMObject>
     @Override
     protected void onSelect() {
         try {
-            final Browser<T> browser = createBrowser(getRefModelName(),
-                                                     getEntityName(),
-                                                     getConceptName());
+            final Browser<T> browser = createBrowser();
 
             String title = Messages.get("imobject.select.title", getType());
             final BrowserDialog<T> popup = new BrowserDialog<T>(
@@ -177,10 +172,7 @@ public abstract class CRUDWorkspace<T extends IMObject>
      * @return a new CRUD window
      */
     protected CRUDWindow<T> createCRUDWindow() {
-        ShortNames shortNames = new ShortNameList(getRefModelName(),
-                                                  getEntityName(),
-                                                  getConceptName());
-        return new DefaultCRUDWindow<T>(getType(), shortNames);
+        return new DefaultCRUDWindow<T>(getType(), getShortNames());
     }
 
 }

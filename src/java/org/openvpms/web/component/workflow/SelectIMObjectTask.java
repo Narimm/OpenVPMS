@@ -123,7 +123,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 if (dialog.createNew()) {
-                    createTask.setTaskListener(getTaskListener());
+                    createTask.addTaskListener(getTaskListeners());
                     createTask.start(context);
                 } else {
                     T selected = dialog.getSelected();

@@ -50,13 +50,13 @@ public class TaskTypeQuery extends AbstractIMObjectQuery<Entity> {
 
 
     /**
-     * Construct a new <code>TaskTypeQuery</code> that queries IMObjects with
+     * Constructs a new <tt>TaskTypeQuery</tt> that queries IMObjects with
      * the specified criteria.
      *
-     * @param workList the schedule. May be <code>null</code>
+     * @param workList the schedule. May be <tt>null</tt>
      */
     public TaskTypeQuery(Party workList) {
-        super("common", "entity", "taskType");
+        super(new String[]{"entity.taskType"});
         _workList = workList;
     }
 

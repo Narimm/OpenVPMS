@@ -19,6 +19,7 @@
 package org.openvpms.web.app.customer;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.web.app.subsystem.ShortNames;
 
 
 /**
@@ -30,21 +31,28 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 public abstract class CustomerFinancialActWorkspace
         extends CustomerActWorkspace<FinancialAct> {
 
+    /**
+     * Constructs a new <tt>CustomerFinancialActWorkspace</tt>.
+     *
+     * @param subsystemId the subsystem localisation identifier
+     * @param workspaceId the workspace localisation identfifier
+     */
+    public CustomerFinancialActWorkspace(String subsystemId,
+                                         String workspaceId) {
+        super(subsystemId, workspaceId);
+    }
 
     /**
-     * Constructs a new <code>CustomerFinancialActWorkspace</code>.
+     * Constructs a new <tt>CustomerFinancialActWorkspace</tt>.
      *
-     * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param subsystemId the subsystem localisation identifier
+     * @param workspaceId the workspace localisation identfifier
+     * @param shortNames  the archetype short names that this operates on
      */
     public CustomerFinancialActWorkspace(String subsystemId,
                                          String workspaceId,
-                                         String refModelName, String entityName,
-                                         String conceptName) {
-        super(subsystemId, workspaceId, refModelName, entityName, conceptName);
+                                         ShortNames shortNames) {
+        super(subsystemId, workspaceId, shortNames);
     }
 
 }

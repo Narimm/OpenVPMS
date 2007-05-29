@@ -31,7 +31,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 public class AutoQuery extends AbstractIMObjectQuery {
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects with the
+     * Constructs a new <tt>AutoQuery</tt> that queries IMObjects with the
      * specified short names.
      *
      * @param shortNames the short names
@@ -43,23 +43,10 @@ public class AutoQuery extends AbstractIMObjectQuery {
     }
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects with the
-     * specified criteria.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public AutoQuery(String refModelName, String entityName,
-                     String conceptName) {
-        super(refModelName, entityName, conceptName);
-    }
-
-    /**
      * Determines if the query should be run automatically.
      *
-     * @return <code>true</code> if the query should be run automaticaly;
-     *         otherwie <code>false</code>
+     * @return <tt>true</tt> if the query should be run automatically;
+     *         otherwise <tt>false</tt>
      */
     @Override
     public boolean isAuto() {

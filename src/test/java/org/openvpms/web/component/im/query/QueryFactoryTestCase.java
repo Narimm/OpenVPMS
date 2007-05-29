@@ -18,15 +18,10 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
 import org.openvpms.web.test.AbstractAppTest;
-
-import java.util.List;
 
 
 /**
@@ -106,16 +101,5 @@ public class QueryFactoryTestCase extends AbstractAppTest {
         Query query = QueryFactory.create(shortNames, context);
         assertNotNull("Failed to create Query", query);
         assertEquals(type, query.getClass());
-
-        // now try via the archetype long name  method
-        List<ArchetypeDescriptor> archetypes
-                = DescriptorHelper.getArchetypeDescriptors(shortNames);
-        for (ArchetypeDescriptor archetype : archetypes) {
-            ArchetypeId id = archetype.getType();
-            query = QueryFactory.create(id.getRmName(), id.getEntityName(),
-                                        id.getConcept(), context);
-            assertNotNull("Failed to create Query", query);
-            assertEquals(type, query.getClass());
-        }
     }
 }

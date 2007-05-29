@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 
 
@@ -37,13 +38,14 @@ public class OrganisationWorkspace extends CRUDWorkspace<Party> {
      * Constructs a new <code>OrganisationWorkspace</code>.
      */
     public OrganisationWorkspace() {
-        super("admin", "organisation", "party", "party", "organisation*");
+        super("admin", "organisation",
+              new ShortNameList("party", "party", "organisation*"));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(Party object) {
@@ -66,7 +68,7 @@ public class OrganisationWorkspace extends CRUDWorkspace<Party> {
      * This is analagous to  {@link #setObject} but performs a safe cast
      * to the required type.
      *
-     * @param object the current object. May be <code>null</code>
+     * @param object the current object. May be <tt>null</tt>
      */
     public void setIMObject(IMObject object) {
         if (object == null || object instanceof Party) {

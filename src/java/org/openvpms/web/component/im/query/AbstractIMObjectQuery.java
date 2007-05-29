@@ -34,7 +34,7 @@ public abstract class AbstractIMObjectQuery<T extends IMObject>
         extends AbstractQuery<T> {
 
     /**
-     * Construct a new <code>AbstractIMObjectQuery</code> that queries IMObjects
+     * Constructs a new <tt>AbstractIMObjectQuery</tt> that queries IMObjects
      * with the specified short names.
      *
      * @param shortNames the short names
@@ -43,19 +43,6 @@ public abstract class AbstractIMObjectQuery<T extends IMObject>
      */
     public AbstractIMObjectQuery(String[] shortNames) {
         super(shortNames);
-    }
-
-    /**
-     * Construct a new <code>AbstractQuery</code> that queries IMObjects with
-     * the specified criteria.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public AbstractIMObjectQuery(String refModelName, String entityName,
-                                 String conceptName) {
-        super(refModelName, entityName, conceptName);
     }
 
     /**

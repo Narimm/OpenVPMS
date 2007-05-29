@@ -124,7 +124,8 @@ public final class IMObjectCreator {
                               final IMObjectCreatorListener listener) {
         shortNames = DescriptorHelper.getShortNames(shortNames);
         if (shortNames.length == 0) {
-            ErrorHelper.show("imobject.create.noshortnames", type);
+            String title = Messages.get("imobject.create.noshortnames");
+            ErrorHelper.show(title, type);
             listener.cancelled();
         } else if (shortNames.length > 1) {
             final ShortNameListModel model

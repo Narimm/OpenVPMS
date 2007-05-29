@@ -74,17 +74,17 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
 
 
     /**
-     * Construct a new <code>SchedulingWorkspace</code>.
+     * Construct a new <tt>SchedulingWorkspace</tt>.
      */
     public SchedulingWorkspace() {
-        super("workflow", "scheduling", "party", "party",
-              "organisationSchedule");
+        super("workflow", "scheduling",
+              new ShortNameList("party.organisationSchedule"));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(Party object) {
@@ -99,7 +99,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * This is analagous to  {@link #setObject} but performs a safe cast
      * to the required type.
      *
-     * @param object the current object. May be <code>null</code>
+     * @param object the current object. May be <tt>null</tt>
      */
     public void setIMObject(IMObject object) {
         if (object == null || object instanceof Party) {

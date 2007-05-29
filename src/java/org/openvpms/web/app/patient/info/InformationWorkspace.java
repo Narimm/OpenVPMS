@@ -26,7 +26,6 @@ import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.PatientQuery;
@@ -42,16 +41,16 @@ import org.openvpms.web.component.im.query.Query;
 public class InformationWorkspace extends CRUDWorkspace<Party> {
 
     /**
-     * Construct a new <code>InformationWorkspace</code>.
+     * Constructs a new <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
-        super("patient", "info", "party", "party", "patient*");
+        super("patient", "info", new ShortNameList("party.patient*"));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(Party object) {
@@ -65,7 +64,7 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
      * This is analagous to  {@link #setObject} but performs a safe cast
      * to the required type.
      *
-     * @param object the current object. May be <code>null</code>
+     * @param object the current object. May be <tt>null</tt>
      */
     public void setIMObject(IMObject object) {
         if (object == null || object instanceof Party) {
@@ -120,28 +119,19 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
      */
     @Override
     protected CRUDWindow<Party> createCRUDWindow() {
-        ShortNames shortNames = new ShortNameList(getRefModelName(),
-                                                  getEntityName(),
-                                                  getConceptName());
-        return new InformationCRUDWindow(getType(), shortNames);
+        return new InformationCRUDWindow(getType(), getShortNames());
     }
 
     /**
      * Create a new query.
      *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
     @Override
-    protected Query<Party> createQuery(String refModelName,
-                                       String entityName,
-                                       String conceptName) {
-        Query<Party> query = super.createQuery(refModelName, entityName,
-                                               conceptName);
+    protected Query<Party> createQuery() {
+        Query<Party> query = super.createQuery();
         if (query instanceof PatientQuery) {
             ((PatientQuery) query).setShowAllPatients(true);
         }

@@ -108,6 +108,7 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
                 buttons.add(checkOut);
             }
         }
+        buttons.add(getOverTheCounterButton());
     }
 
     /**
@@ -141,7 +142,7 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
         // workflow
         if (act != null && AppointmentStatus.PENDING.equals(act.getStatus())) {
             CheckInWorkflow workflow = new CheckInWorkflow(act);
-            workflow.setTaskListener(new TaskListener() {
+            workflow.addTaskListener(new TaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());
                 }

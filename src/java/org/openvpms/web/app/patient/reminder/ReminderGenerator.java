@@ -269,7 +269,7 @@ class ReminderGenerator {
                 });
             }
         });
-        workflow.setTaskListener(new TaskListener() {
+        workflow.addTaskListener(new TaskListener() {
             public void taskEvent(TaskEvent event) {
                 notifyCompletionListener();
             }

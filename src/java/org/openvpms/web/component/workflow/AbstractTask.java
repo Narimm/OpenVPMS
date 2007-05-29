@@ -38,10 +38,9 @@ import java.util.Collection;
 public abstract class AbstractTask implements Task {
 
     /**
-     * The task listener to notify on completion or failure of the task. May
-     * be <code>null</code>.
+     * The task listeners to notify on completion or failure of the task.
      */
-    private TaskListener listener;
+    private TaskListeners listeners = new TaskListeners();
 
     /**
      * Determines if this task is required.
@@ -59,17 +58,26 @@ public abstract class AbstractTask implements Task {
      *
      * @param listener the listener
      */
-    public void setTaskListener(TaskListener listener) {
-        this.listener = listener;
+    public void addTaskListener(TaskListener listener) {
+        listeners.addListener(listener);
     }
 
     /**
-     * Returns the task listener.
+     * Removes a listener.
      *
-     * @return the task listener. May be <code>null</code>
+     * @param listener the listener to remove
      */
-    public TaskListener getTaskListener() {
-        return listener;
+    public void removeTaskListener(TaskListener listener) {
+        listeners.removeListener(listener);
+    }
+
+    /**
+     * Returns the task listeners.
+     *
+     * @return the task listeners
+     */
+    public TaskListeners getTaskListeners() {
+        return listeners;
     }
 
     /**
@@ -201,8 +209,8 @@ public abstract class AbstractTask implements Task {
                     "Listener has already been notified");
         }
         finished = true;
-        if (listener != null) {
-            listener.taskEvent(new TaskEvent(type, this));
+        if (listeners != null) {
+            listeners.taskEvent(new TaskEvent(type, this));
         }
     }
 

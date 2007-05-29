@@ -126,7 +126,7 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
             Task task = taskIterator.next();
 
             try {
-                task.setTaskListener(taskListener);
+                task.addTaskListener(taskListener);
                 task.start(initial);
             } catch (Throwable throwable) {
                 cancel = true;
