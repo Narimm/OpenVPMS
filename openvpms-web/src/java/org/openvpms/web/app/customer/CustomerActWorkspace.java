@@ -25,6 +25,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.subsystem.ActWorkspace;
+import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -42,24 +44,31 @@ public abstract class CustomerActWorkspace<T extends Act>
         extends ActWorkspace<Party, T> {
 
     /**
-     * Construct a new <code>CustomerActWorkspace</code>.
+     * Constructs a new <tt>CustomerActWorkspace</tt>.
      *
-     * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param subsystemId the subsystem localisation identifier
+     * @param workspaceId the workspace localisation identfifier
+     */
+    public CustomerActWorkspace(String subsystemId, String workspaceId) {
+        this(subsystemId, workspaceId, new ShortNameList("party.customer*"));
+    }
+
+    /**
+     * Constructs a new <tt>CustomerActWorkspace</tt>.
+     *
+     * @param subsystemId the subsystem localisation identifier
+     * @param workspaceId the workspace localisation identfifier
+     * @param shortNames  the archetype short names that this operates on
      */
     public CustomerActWorkspace(String subsystemId, String workspaceId,
-                                String refModelName, String entityName,
-                                String conceptName) {
-        super(subsystemId, workspaceId, refModelName, entityName, conceptName);
+                                ShortNames shortNames) {
+        super(subsystemId, workspaceId, shortNames);
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(Party object) {
@@ -75,7 +84,7 @@ public abstract class CustomerActWorkspace<T extends Act>
      * This is analagous to  {@link #setObject} but performs a safe cast
      * to the required type.
      *
-     * @param object the current object. May be <code>null</code>
+     * @param object the current object. May be <tt>null</tt>
      */
     public void setIMObject(IMObject object) {
         if (object == null || object instanceof Party) {
@@ -91,7 +100,7 @@ public abstract class CustomerActWorkspace<T extends Act>
      * Renders the workspace summary.
      *
      * @return the component representing the workspace summary, or
-     *         <code>null</code> if there is no summary
+     *         <tt>null</tt> if there is no summary
      */
     @Override
     public Component getSummary() {

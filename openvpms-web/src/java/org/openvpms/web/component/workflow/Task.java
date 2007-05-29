@@ -32,9 +32,16 @@ public interface Task {
     /**
      * Registers a listener to be notified of task events.
      *
-     * @param listener the listener
+     * @param listener the listener to add
      */
-    void setTaskListener(TaskListener listener);
+    void addTaskListener(TaskListener listener);
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    void removeTaskListener(TaskListener listener);
 
     /**
      * Starts the task.

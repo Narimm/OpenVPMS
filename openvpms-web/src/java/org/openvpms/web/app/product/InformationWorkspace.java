@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 
 
@@ -34,16 +35,16 @@ import org.openvpms.web.component.app.GlobalContext;
 public class InformationWorkspace extends CRUDWorkspace<Product> {
 
     /**
-     * Construct a new <code>InformationWorkspace</code>.
+     * Construct a new <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
-        super("product", "info", "product", "product", "*");
+        super("product", "info", new ShortNameList("product", "product", "*"));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(Product object) {
@@ -56,7 +57,7 @@ public class InformationWorkspace extends CRUDWorkspace<Product> {
      * This is analagous to  {@link #setObject} but performs a safe cast
      * to the required type.
      *
-     * @param object the current object. May be <code>null</code>
+     * @param object the current object. May be <tt>null</tt>
      */
     public void setIMObject(IMObject object) {
         if (object == null || object instanceof Product) {

@@ -42,10 +42,10 @@ import java.util.List;
 public class InvoiceWorkspace extends CustomerFinancialActWorkspace {
 
     /**
-     * Construct a new <code>InvoiceWorkspace</code>.
+     * Constructs a new <tt>InvoiceWorkspace</tt>.
      */
     public InvoiceWorkspace() {
-        super("customer", "invoice", "party", "party", "customer*");
+        super("customer", "invoice");
     }
 
     /**
@@ -70,8 +70,7 @@ public class InvoiceWorkspace extends CustomerFinancialActWorkspace {
                 "act.customerAccountChargesInvoice", "status");
         return new DefaultActQuery<FinancialAct>(customer, "customer",
                                                  "participation.customer",
-                                                 "act",
-                                                 "customerAccountCharges*",
+                                                 "act.customerAccountCharges*",
                                                  lookups,
                                                  FinancialActStatus.POSTED);
     }

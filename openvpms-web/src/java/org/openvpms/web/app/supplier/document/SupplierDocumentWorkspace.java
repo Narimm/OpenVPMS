@@ -49,10 +49,10 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace<Act> {
                                                  "act.supplierDocumentAttachment"};
 
     /**
-     * Construct a new <code>SupplierDocumentWorkspace</code>.
+     * Constructs a new <tt>SupplierDocumentWorkspace</tt>.
      */
     public SupplierDocumentWorkspace() {
-        super("supplier", "document", "party", "party", "supplier*");
+        super("supplier", "document");
     }
 
     /**

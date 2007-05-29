@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerFinancialActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -38,11 +39,16 @@ import org.openvpms.web.resource.util.Messages;
  */
 public class AccountWorkspace extends CustomerFinancialActWorkspace {
 
+    private static final String[] CUSTOMER_SHORT_NAMES = {
+            "party.customer*", "party.organisationOTC"
+    };
+
+
     /**
-     * Construct a new <code>AccountWorkspace</code>.
+     * Constructs a new <tt>AccountWorkspace</tt>.
      */
     public AccountWorkspace() {
-        super("customer", "account", "party", "party", "customer*");
+        super("customer", "account", new ShortNameList(CUSTOMER_SHORT_NAMES));
     }
 
     /**

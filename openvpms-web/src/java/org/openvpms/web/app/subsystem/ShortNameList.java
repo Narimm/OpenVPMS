@@ -38,10 +38,11 @@ public class ShortNameList implements ShortNames {
     /**
      * The archetype short names.
      */
-    private final String[] _shortNames;
+    private final String[] shortNames;
+
 
     /**
-     * Creates a new <code>ShortNameList</code>.
+     * Creates a new <tt>ShortNameList</tt>.
      *
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
@@ -49,17 +50,17 @@ public class ShortNameList implements ShortNames {
      */
     public ShortNameList(String refModelName, String entityName,
                          String conceptName) {
-        _shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
-                                                     conceptName);
+        shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
+                                                    conceptName);
     }
 
     /**
-     * Creates a new <code>ShortNameList</code>.
+     * Creates a new <tt>ShortNameList</tt>.
      *
      * @param shortNames the short names
      */
     public ShortNameList(String[] shortNames) {
-        _shortNames = shortNames;
+        this.shortNames = shortNames;
     }
 
     /**
@@ -68,7 +69,7 @@ public class ShortNameList implements ShortNames {
      * @param shortName the short name
      */
     public ShortNameList(String shortName) {
-        _shortNames = new String[]{shortName};
+        shortNames = new String[]{shortName};
     }
 
     /**
@@ -77,7 +78,22 @@ public class ShortNameList implements ShortNames {
      * @return the archetype short names
      */
     public String[] getShortNames() {
-        return _shortNames;
+        return shortNames;
+    }
+
+    /**
+     * Returns <tt>true</tt> if the collection contains a short name.
+     *
+     * @param shortName the short name
+     * @return <tt>true</tt> if this contains <tt>shortName</tt>
+     */
+    public boolean contains(String shortName) {
+        for (String s : shortNames) {
+            if (s.equals(shortName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

@@ -27,11 +27,11 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -44,9 +44,6 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.system.ServiceHelper;
-
-import java.util.List;
 
 
 /**
@@ -59,21 +56,9 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
         extends AbstractWorkspace<T> {
 
     /**
-     * The archetype reference model name, used to query objects.
+     * The archetype short names that this may process.
      */
-    private final String refModelName;
-
-    /**
-     * The archetype entity name, used to query objects. May be
-     * <code>null</code>.
-     */
-    private final String entityName;
-
-    /**
-     * The archetype concept name, used to query objects. May be
-     * <code>null</code>.
-     */
-    private final String conceptName;
+    private final ShortNames shortNames;
 
     /**
      * The current object. May be <code>null</code>.
@@ -97,21 +82,16 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
 
 
     /**
-     * Construct a new <code>AbstractViewWorkspace</code>.
+     * Constructs a new <tt>AbstractViewWorkspace</tt>.
      *
-     * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param subsystemId the subsystem localisation identifier
+     * @param workspaceId the workspace localisation identfifier
+     * @param shortNames  the archetype short names that this operates on
      */
     public AbstractViewWorkspace(String subsystemId, String workspaceId,
-                                 String refModelName, String entityName,
-                                 String conceptName) {
+                                 ShortNames shortNames) {
         super(subsystemId, workspaceId);
-        this.refModelName = refModelName;
-        this.entityName = entityName;
-        this.conceptName = conceptName;
+        this.shortNames = shortNames;
         selector = new Selector<T>();
 
         String id = getSubsystemId() + "." + getWorkspaceId();
@@ -133,10 +113,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      */
     public boolean canHandle(String shortName) {
         boolean result = false;
-        IArchetypeService service = ServiceHelper.getArchetypeService();
         try {
-            List<String> shortNames = service.getArchetypeShortNames(
-                    refModelName, entityName, conceptName, true);
             result = shortNames.contains(shortName);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
@@ -212,28 +189,12 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     protected abstract void doLayout(Component container);
 
     /**
-     * Returns the archetype reference model name.
+     * Returns the archetype short names that this operates on.
      *
-     * @return the archetype reference model name
+     * @return the archetype short names
      */
-    protected String getRefModelName() {
-        return refModelName;
-    }
-
-    /**
-     * Returns the archetype entity name.
-     *
-     * @return the archetype entity name
-     */
-    protected String getEntityName() {
-        return entityName;
-    }
-
-    /**
-     * Returns the archetype concept name.
-     */
-    protected String getConceptName() {
-        return conceptName;
+    protected ShortNames getShortNames() {
+        return shortNames;
     }
 
     /**
@@ -257,18 +218,12 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     /**
      * Create a new browser.
      *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
      * @return a new browser
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    protected Browser<T> createBrowser(String refModelName,
-                                       String entityName,
-                                       String conceptName) {
-        Query<T> query = createQuery(refModelName, entityName,
-                                     conceptName);
+    protected Browser<T> createBrowser() {
+        Query<T> query = createQuery();
         SortConstraint[] sort = {new NodeSortConstraint("name", true)};
         return IMObjectTableBrowserFactory.create(query, sort);
     }
@@ -276,17 +231,12 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     /**
      * Create a new query.
      *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    protected Query<T> createQuery(String refModelName,
-                                   String entityName,
-                                   String conceptName) {
-        return QueryFactory.create(refModelName, entityName, conceptName,
+    protected Query<T> createQuery() {
+        return QueryFactory.create(shortNames.getShortNames(),
                                    GlobalContext.getInstance());
     }
 
@@ -297,7 +247,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     protected void onSelect() {
         try {
             final Browser<T> browser = createBrowser(
-                    refModelName, entityName, conceptName);
+            );
 
             String title = Messages.get("imobject.select.title", type);
             final BrowserDialog<T> popup = new BrowserDialog<T>(

@@ -27,12 +27,14 @@ import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.checkout.CheckOutWorkflow;
 import org.openvpms.web.app.workflow.consult.ConsultWorkflow;
+import org.openvpms.web.app.workflow.otc.OverTheCounterWorkflow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
+import org.openvpms.web.component.workflow.Workflow;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -55,6 +57,11 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
     private Button checkOut;
 
     /**
+     * The over-the-counter button.
+     */
+    private Button overTheCounter;
+
+    /**
      * Consult button identifier.
      */
     private static final String CONSULT_ID = "consult";
@@ -63,6 +70,11 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
      * Check-out button identifier.
      */
     private static final String CHECKOUT_ID = "checkout";
+
+    /**
+     * Over-the-counter button identifier.
+     */
+    private static final String OVER_THE_COUNTER_ID = "OTC";
 
 
     /**
@@ -147,6 +159,24 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
     }
 
     /**
+     * Returns the 'over-the-counter' button.
+     *
+     * @return the 'over-the-counter' button
+     */
+    protected Button getOverTheCounterButton() {
+        if (overTheCounter == null) {
+            overTheCounter = ButtonFactory.create(
+                    OVER_THE_COUNTER_ID,
+                    new ActionListener() {
+                        public void actionPerformed(ActionEvent event) {
+                            onOverTheCounter();
+                        }
+                    });
+        }
+        return overTheCounter;
+    }
+
+    /**
      * Determines if a consulation or checkout can be performed on an act.
      *
      * @param act the act
@@ -163,7 +193,7 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
         // beginning workflow
         if (act != null && canCheckoutOrConsult(act)) {
             ConsultWorkflow workflow = new ConsultWorkflow(act);
-            workflow.setTaskListener(new TaskListener() {
+            workflow.addTaskListener(new TaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());
                 }
@@ -183,7 +213,7 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
         // to beginning workflow
         if (act != null && canCheckoutOrConsult(act)) {
             CheckOutWorkflow workflow = new CheckOutWorkflow(act);
-            workflow.setTaskListener(new TaskListener() {
+            workflow.addTaskListener(new TaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());
                 }
@@ -192,6 +222,14 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
         } else {
             onRefresh(getObject());
         }
+    }
+
+    /**
+     * Invoked when the 'over-the-counter' button is pressed.
+     */
+    private void onOverTheCounter() {
+        Workflow workflow = new OverTheCounterWorkflow();
+        workflow.start();
     }
 
 }

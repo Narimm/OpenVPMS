@@ -74,48 +74,6 @@ public final class QueryFactory {
      * least one constructor accepting the following arguments, invoked in the
      * order:
      * <ul>
-     * <li>(String refModelName, String entityName, String conceptName,
-     * Context context)</li>
-     * <li>(String refModelName, String entityName, String conceptName)</li>
-     * <li>(String[] shortNames, Context context)</li>
-     * <li>(String[] shortNames)</li>
-     * <li>default constructor</li>
-     * </ul>
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     * @param context      the current context
-     * @return a new query
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
-     */
-    public static <T extends IMObject> Query<T> create(String refModelName,
-                                                       String entityName,
-                                                       String conceptName,
-                                                       Context context) {
-        Query<T> result = null;
-        String[] shortNames = DescriptorHelper.getShortNames(
-                refModelName, entityName, conceptName);
-        ArchetypeHandler<Query> handler = getQueries().getHandler(shortNames);
-        if (handler != null) {
-            result = create(handler, refModelName, entityName, conceptName,
-                            context);
-            if (result == null) {
-                result = create(handler, shortNames, context);
-            }
-        }
-        if (result == null) {
-            result = new DefaultQuery<T>(refModelName, entityName, conceptName);
-        }
-        return result;
-    }
-
-    /**
-     * Construct a new {@link Query}. Query implementations must provide at
-     * least one constructor accepting the following arguments, invoked in the
-     * order:
-     * <ul>
      * <li>(String[] shortNames, Context context)</li>
      * <li>(String[] shortNames)</li>
      * <li>default constructor</li>
@@ -158,50 +116,6 @@ public final class QueryFactory {
             return new DefaultQuery<T>(shortNames);
         }
         return create(handler, shortNames, context);
-    }
-
-    /**
-     * Attempts to create a new query, using one of the following constructors:
-     * <ul>
-     * <li>(String refModelName, String entityName, String conceptName,
-     * Context context)</li>
-     * <li>(String refModelName, String entityName, String conceptName)</li>
-     * </ul>
-     *
-     * @param handler      the {@link Query} implementation
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     * @param context      the current context
-     * @return a new query, or <code>null</code> if no appropriate constructor
-     *         can be found or construction fails
-     */
-    @SuppressWarnings("unchecked")
-    private static <T extends IMObject> Query<T> create(
-            ArchetypeHandler<Query> handler,
-            String refModelName, String entityName,
-            String conceptName, Context context) {
-        Query<T> result = null;
-        try {
-            try {
-                Object[] args = {refModelName, entityName, conceptName,
-                                 context};
-                Class[] types = {String.class, String.class, String.class,
-                                 Context.class};
-                result = (Query<T>) handler.create(args, types);
-            } catch (NoSuchMethodException exception) {
-                try {
-                    Object[] args = {refModelName, entityName, conceptName};
-                    Class[] types = {String.class, String.class, String.class};
-                    result = (Query<T>) handler.create(args, types);
-                } catch (NoSuchMethodException nested) {
-                    // ignore
-                }
-            }
-        } catch (Throwable exception) {
-            log.error(exception, exception);
-        }
-        return result;
     }
 
     /**

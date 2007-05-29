@@ -21,6 +21,7 @@ package org.openvpms.web.app.admin;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.app.subsystem.ShortNameList;
 
 
 /**
@@ -32,10 +33,10 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
 public class RoleWorkspace extends CRUDWorkspace<SecurityRole> {
 
     /**
-     * Constructs a new <code>RoleWorkspace</code>.
+     * Constructs a new <tt>RoleWorkspace</tt>.
      */
     public RoleWorkspace() {
-        super("admin", "role", "system", "security", "role");
+        super("admin", "role", new ShortNameList("system", "security", "role"));
     }
 
     /**
@@ -43,7 +44,7 @@ public class RoleWorkspace extends CRUDWorkspace<SecurityRole> {
      * This is analagous to  {@link #setObject} but performs a safe cast
      * to the required type.
      *
-     * @param object the current object. May be <code>null</code>
+     * @param object the current object. May be <tt>null</tt>
      */
     public void setIMObject(IMObject object) {
         if (object == null || object instanceof SecurityRole) {

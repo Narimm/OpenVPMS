@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -45,16 +46,17 @@ import java.util.List;
 public class DepositWorkspace extends ActWorkspace<Party, FinancialAct> {
 
     /**
-     * Construct a new <code>DepositWorkspace</code>.
+     * Construct a new <tt>DepositWorkspace</tt>.
      */
     public DepositWorkspace() {
-        super("financial", "deposit", "party", "party", "organisationDeposit");
+        super("financial", "deposit",
+              new ShortNameList("party.organisationDeposit"));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(Party object) {
@@ -68,7 +70,7 @@ public class DepositWorkspace extends ActWorkspace<Party, FinancialAct> {
      * This is analagous to  {@link #setObject} but performs a safe cast
      * to the required type.
      *
-     * @param object the current object. May be <code>null</code>
+     * @param object the current object. May be <tt>null</tt>
      */
     public void setIMObject(IMObject object) {
         if (object == null || object instanceof Party) {
@@ -100,8 +102,8 @@ public class DepositWorkspace extends ActWorkspace<Party, FinancialAct> {
         List<Lookup> lookups = FastLookupHelper.getLookups("act.bankDeposit",
                                                            "status");
         ActQuery<FinancialAct> query = new DefaultActQuery<FinancialAct>(
-                till, "depositAccount", "participation.deposit", "act",
-                "bankDeposit", lookups);
+                till, "depositAccount", "participation.deposit",
+                "act.bankDeposit", lookups);
         query.setStatus(DepositStatus.UNDEPOSITED);
         return query;
     }

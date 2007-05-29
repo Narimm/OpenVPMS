@@ -39,10 +39,10 @@ import java.util.List;
 public class EstimationWorkspace extends CustomerActWorkspace<Act> {
 
     /**
-     * Construct a new <code>EstimationWorkspace</code>.
+     * Constructs a new <tt>EstimationWorkspace</tt>.
      */
     public EstimationWorkspace() {
-        super("customer", "estimation", "party", "party", "customer*");
+        super("customer", "estimation");
     }
 
 
@@ -68,7 +68,7 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
                 "act.customerEstimation", "status");
         return new DefaultActQuery<Act>(customer, "customer",
                                         "participation.customer",
-                                        "act", "customerEstimation",
+                                        new String[]{"act.customerEstimation"},
                                         lookups);
     }
 }

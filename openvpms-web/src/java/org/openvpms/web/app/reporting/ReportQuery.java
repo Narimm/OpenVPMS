@@ -56,14 +56,15 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
      */
     private static final String TYPE_ID = "type";
 
+
     /**
-     * Construct a new <code>ReportQuery</code> that queries IMObjects
+     * Constructs a new <tt>ReportQuery</tt> that queries IMObjects
      * with the specified criteria.
      *
-     * @param user the user. May be <code>null</code>
+     * @param user the user. May be <tt>null</tt>
      */
     public ReportQuery(Entity user) {
-        super("common", "entity", "documentTemplate");
+        super(new String[]{"entity.documentTemplate"});
         _user = user;
     }
 

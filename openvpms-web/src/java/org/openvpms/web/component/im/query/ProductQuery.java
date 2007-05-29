@@ -61,19 +61,6 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
     }
 
     /**
-     * Construct a new <code>DefaultQuery</code> that queries IMObjects with the
-     * specified criteria.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public ProductQuery(String refModelName, String entityName,
-                        String conceptName) {
-        super(refModelName, entityName, conceptName);
-    }
-
-    /**
      * Sets the species to constrain the query to.
      *
      * @param species the species classification

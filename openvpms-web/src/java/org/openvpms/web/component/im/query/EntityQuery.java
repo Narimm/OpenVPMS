@@ -43,17 +43,4 @@ public class EntityQuery extends AbstractEntityQuery<Entity> {
         super(shortNames);
     }
 
-    /**
-     * Construct a new <code>EntityQuery</code> that queries entities
-     * with the specified criteria.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public EntityQuery(String refModelName, String entityName,
-                       String conceptName) {
-        super(refModelName, entityName, conceptName);
-    }
-
 }

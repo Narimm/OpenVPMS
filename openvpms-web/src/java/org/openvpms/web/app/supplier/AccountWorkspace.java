@@ -38,10 +38,10 @@ import org.openvpms.web.resource.util.Messages;
 public class AccountWorkspace extends SupplierFinancialActWorkspace {
 
     /**
-     * Construct a new <code>AccountWorkspace</code>.
+     * Constructs a new <tt>AccountWorkspace</tt>.
      */
     public AccountWorkspace() {
-        super("supplier", "account", "party", "party", "supplier*");
+        super("supplier", "account");
     }
 
     /**

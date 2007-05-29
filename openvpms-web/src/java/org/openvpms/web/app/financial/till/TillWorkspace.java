@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
@@ -46,16 +47,16 @@ import java.util.List;
 public class TillWorkspace extends ActWorkspace<Party, FinancialAct> {
 
     /**
-     * Construct a new <code>TillWorkspace</code>.
+     * Constructs a new <tt>TillWorkspace</tt>.
      */
     public TillWorkspace() {
-        super("financial", "till", "party", "party", "organisationTill");
+        super("financial", "till", new ShortNameList("party.organisationTill"));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(Party object) {
@@ -103,8 +104,7 @@ public class TillWorkspace extends ActWorkspace<Party, FinancialAct> {
         List<Lookup> lookups = FastLookupHelper.getLookups("act.tillBalance",
                                                            "status");
         ActQuery<FinancialAct> query = new DefaultActQuery<FinancialAct>(
-                till, "till", "participation.till", "act", "tillBalance",
-                lookups);
+                till, "till", "participation.till", "act.tillBalance", lookups);
         query.setStatus(TillBalanceStatus.UNCLEARED);
         return query;
     }

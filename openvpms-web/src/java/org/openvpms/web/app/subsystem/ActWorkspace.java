@@ -68,18 +68,15 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
 
 
     /**
-     * Construct a new <code>ActWorkspace</code>.
+     * Constructs a new <tt>ActWorkspace</tt>.
      *
-     * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param subsystemId the subsystem localisation identifier
+     * @param workspaceId the workspace localisation identfifier
+     * @param shortNames  the archetype short names that this operates on
      */
     public ActWorkspace(String subsystemId, String workspaceId,
-                        String refModelName, String entityName,
-                        String conceptName) {
-        super(subsystemId, workspaceId, refModelName, entityName, conceptName);
+                        ShortNames shortNames) {
+        super(subsystemId, workspaceId, shortNames);
     }
 
     /**

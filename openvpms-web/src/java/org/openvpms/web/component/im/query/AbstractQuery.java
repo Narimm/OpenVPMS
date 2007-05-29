@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -70,16 +69,6 @@ public abstract class AbstractQuery<T> implements Query<T> {
      * Archetype reference model name. May be <code>null</code>
      */
     private final String refModelName;
-
-    /**
-     * Archetype entity name. May be <code>null</code>
-     */
-    private final String entityName;
-
-    /**
-     * Archetype concept name. May be <code>null</code>
-     */
-    private final String conceptName;
 
     /**
      * Additional constraints to associate with the query. May be
@@ -174,27 +163,6 @@ public abstract class AbstractQuery<T> implements Query<T> {
         this.shortNames = DescriptorHelper.getShortNames(shortNames);
         archetypes = new ShortNameConstraint(shortNames, true, true);
         refModelName = null;
-        entityName = null;
-        conceptName = null;
-    }
-
-    /**
-     * Construct a new <code>AbstractQuery</code> that queries objects with
-     * the specified criteria.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public AbstractQuery(String refModelName, String entityName,
-                         String conceptName) {
-        shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
-                                                    conceptName);
-        archetypes = new LongNameConstraint(
-                refModelName, entityName, conceptName, true, true);
-        this.refModelName = refModelName;
-        this.entityName = entityName;
-        this.conceptName = conceptName;
     }
 
     /**
@@ -382,24 +350,6 @@ public abstract class AbstractQuery<T> implements Query<T> {
      */
     public String getRefModelName() {
         return refModelName;
-    }
-
-    /**
-     * Returns the archetype entity name.
-     *
-     * @return the archetype entity name. May be <code>null</code>
-     */
-    public String getEntityName() {
-        return entityName;
-    }
-
-    /**
-     * Returns the archetype concept name.
-     *
-     * @return the archetype concept name. May be <code>null</code>
-     */
-    public String getConceptName() {
-        return conceptName;
     }
 
     /**

@@ -45,10 +45,10 @@ public class PaymentWorkspace extends SupplierFinancialActWorkspace {
 
 
     /**
-     * Construct a new <code>InvoiceWorkspace</code>.
+     * Constructs a new <tt>InvoiceWorkspace</tt>.
      */
     public PaymentWorkspace() {
-        super("supplier", "payment", "party", "party", "supplier*");
+        super("supplier", "payment");
     }
 
     /**

@@ -113,8 +113,7 @@ public class EntityRelationshipTableModel
                 result = getEntityViewer(object);
                 break;
             case DESCRIPTION_INDEX:
-                IMObject entity = IMObjectHelper.getObject(getEntity(object));
-                result = getDescription(entity);
+                result = getDescription(object);
                 break;
             case DETAIL_INDEX:
                 result = object.getDescription();
@@ -140,6 +139,24 @@ public class EntityRelationshipTableModel
         IMObjectReference entity = getEntity(relationship);
         boolean hyperlink = !getEnableSelection();
         return new IMObjectReferenceViewer(entity, hyperlink).getComponent();
+    }
+
+    /**
+     * Returns the description for the "non-current" entity in a relationship.
+     * This returns the "non-current" or target side of the relationship.
+     * "Non-current" refers the object that is NOT currently being
+     * viewed/edited. If the source and target entities don't refer to the
+     * current object being viewed/edited, then the target entity of the
+     * relationship is used.
+     *
+     * @param relationship the relationship
+     * @return a description of the "non-current" entity of the relationship
+     */
+    protected Object getDescription(EntityRelationship relationship) {
+        Object result;
+        IMObject entity = IMObjectHelper.getObject(getEntity(relationship));
+        result = getDescription(entity);
+        return result;
     }
 
     /**
@@ -182,24 +199,8 @@ public class EntityRelationshipTableModel
      *         <code>null</code>
      */
     private IMObjectReference getEntity(EntityRelationship relationship) {
-        IMObjectReference entity;
-        IMObject current = layoutContext.getContext().getCurrent();
-        if (current == null) {
-            entity = relationship.getTarget();
-        } else {
-            IMObjectReference ref = current.getObjectReference();
-
-            if (relationship.getSource() != null
-                    && ref.equals(relationship.getSource())) {
-                entity = relationship.getTarget();
-            } else if (relationship.getTarget() != null
-                    && ref.equals(relationship.getTarget())) {
-                entity = relationship.getSource();
-            } else {
-                entity = relationship.getTarget();
-            }
-        }
-        return entity;
+        return EntityRelationshipLayoutStrategy.getEntity(relationship,
+                                                          layoutContext);
     }
 
 }

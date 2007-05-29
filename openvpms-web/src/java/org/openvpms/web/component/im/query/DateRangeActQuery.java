@@ -63,45 +63,6 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param entity        the entity to search for
      * @param participant   the partcipant node name
      * @param participation the entity participation short name
-     * @param entityName    the act entity name
-     * @param conceptName   the act concept name
-     * @param statusLookups the act status lookups
-     */
-    public DateRangeActQuery(Entity entity, String participant,
-                             String participation,
-                             String entityName, String conceptName,
-                             List<Lookup> statusLookups) {
-        this(entity, participant, participation, entityName, conceptName,
-             statusLookups, null);
-    }
-
-    /**
-     * Constructs a new <tt>DateRangeActQuery</tt>.
-     *
-     * @param entity        the entity to search for
-     * @param participant   the partcipant node name
-     * @param participation the entity participation short name
-     * @param entityName    the act entity name
-     * @param conceptName   the act concept name
-     * @param statusLookups the act status lookups
-     * @param excludeStatus to exclude. May be <tt>null</tt>
-     */
-    public DateRangeActQuery(Entity entity, String participant,
-                             String participation, String entityName,
-                             String conceptName, List<Lookup> statusLookups,
-                             String excludeStatus) {
-        super(entity, participant, participation, entityName, conceptName,
-              statusLookups, excludeStatus);
-        selectType = false;
-        QueryFactory.initialise(this);
-    }
-
-    /**
-     * Constructs a new <tt>DateRangeActQuery</tt>.
-     *
-     * @param entity        the entity to search for
-     * @param participant   the partcipant node name
-     * @param participation the entity participation short name
      * @param shortNames    the act short names
      * @param statusLookups the act status lookups
      * @param excludeStatus to exclude. May be <tt>null</tt>
@@ -113,26 +74,6 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
                              List<Lookup> statusLookups, String excludeStatus) {
         super(entity, participant, participation, shortNames, statusLookups,
               excludeStatus);
-        selectType = true;
-        QueryFactory.initialise(this);
-    }
-
-    /**
-     * Constructs a new <tt>DateRangeActQuery</tt> to query acts for a specific
-     * status.
-     *
-     * @param entity        the entity to search for
-     * @param participant   the partcipant node name
-     * @param participation the entity participation short name
-     * @param entityName    the act entity name
-     * @param conceptName   the act concept name
-     * @param status        the act status
-     */
-    public DateRangeActQuery(Entity entity, String participant,
-                             String participation, String entityName,
-                             String conceptName, String status) {
-        super(entity, participant, participation, entityName, conceptName,
-              status);
         selectType = true;
         QueryFactory.initialise(this);
     }
@@ -154,7 +95,6 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
         selectType = true;
         QueryFactory.initialise(this);
     }
-
 
     /**
      * Lays out the component in a container, and sets focus on the instance

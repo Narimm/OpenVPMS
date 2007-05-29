@@ -77,22 +77,6 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
 
     /**
      * Construct a new <code>PatientQuery</code> that queries IMObjects with the
-     * specified criteria, and using the current customer, if set.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     * @param context      the context
-     */
-    public PatientQuery(String refModelName, String entityName,
-                        String conceptName,
-                        Context context) {
-        super(refModelName, entityName, conceptName);
-        customer = context.getCustomer();
-    }
-
-    /**
-     * Construct a new <code>PatientQuery</code> that queries IMObjects with the
      * specified short names, and using the current customer, if set.
      *
      * @param shortNames the patient archetype short names
