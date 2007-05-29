@@ -31,6 +31,10 @@
 						<property name="shortName"
 							value="party.customer*" />
 					</propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                            value="party.organisationOTC" />
+                    </propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>

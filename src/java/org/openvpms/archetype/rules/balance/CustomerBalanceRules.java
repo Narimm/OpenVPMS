@@ -373,16 +373,17 @@ public class CustomerBalanceRules {
      */
     public Date getOverdueDate(Party customer, Date date) {
         IMObjectBean bean = new IMObjectBean(customer, service);
-        List<Lookup> types = bean.getValues("type", Lookup.class);
-        Date overdue;
-        if (!types.isEmpty()) {
-            IMObjectBean type = new IMObjectBean(types.get(0), service);
-            date = DateUtils.truncate(date, Calendar.DATE); // strip any time
-            int days = type.getInt("paymentTerms");
-            String units = type.getString("paymentUom");
-            overdue = DateRules.getDate(date, -days, units);
-        } else {
-            overdue = date;
+        Date overdue = date;
+        if (bean.hasNode("type")) {
+            List<Lookup> types = bean.getValues("type", Lookup.class);
+            if (!types.isEmpty()) {
+                IMObjectBean type = new IMObjectBean(types.get(0), service);
+                date = DateUtils.truncate(date,
+                                          Calendar.DATE); // strip any time
+                int days = type.getInt("paymentTerms");
+                String units = type.getString("paymentUom");
+                overdue = DateRules.getDate(date, -days, units);
+            }
         }
         return overdue;
     }

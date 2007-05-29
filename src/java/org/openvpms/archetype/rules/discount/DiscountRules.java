@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -188,14 +189,15 @@ public class DiscountRules {
      */
     private static Set<IMObject> getPartyDiscounts(Party party,
                                                    IArchetypeService service) {
+        Set<IMObject> result = Collections.emptySet();
         if (party != null) {
             IMObjectBean bean = new IMObjectBean(party, service);
-            List<IMObject> discounts = bean.getValues("discounts");
-            return new HashSet<IMObject>(discounts);
-        } else {
-            return new HashSet<IMObject>();
+            if (bean.hasNode("discounts")) {
+                List<IMObject> discounts = bean.getValues("discounts");
+                result = new HashSet<IMObject>(discounts);
+            }
         }
-
+        return result;
     }
 
     /**
