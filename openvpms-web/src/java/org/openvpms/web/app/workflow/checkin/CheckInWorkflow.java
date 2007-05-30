@@ -166,7 +166,8 @@ public class CheckInWorkflow extends WorkflowImpl {
             TaskProperties taskProps = new TaskProperties();
             taskProps.add("description", taskDescription);
             addTask(new CreateIMObjectTask(CUSTOMER_TASK_SHORTNAME, taskProps));
-            addTask(new EditCustomerTask(CUSTOMER_TASK_SHORTNAME));
+            addTask(new EditIMObjectTask(CUSTOMER_TASK_SHORTNAME, false,
+                                         false));
         }
 
     }
