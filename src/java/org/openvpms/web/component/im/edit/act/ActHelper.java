@@ -171,8 +171,9 @@ public class ActHelper {
             if (target != null) {
                 for (String shortName : target.getArchetypeRange()) {
                     // expand wildcards
-                    for (String expanded
-                            : DescriptorHelper.getShortNames(shortName)) {
+                    String[] shortNames
+                            = DescriptorHelper.getShortNames(shortName, false);
+                    for (String expanded : shortNames) {
                         matches.add(expanded);
                     }
                 }

@@ -43,7 +43,7 @@ public interface ShortNames {
     /**
      * Returns <tt>true</tt> if the collection contains a short name.
      *
-     * @param shortName the short name
+     * @param shortName the short name. May contain wildcards
      * @return <tt>true</tt> if this contains <tt>shortName</tt>
      */
     boolean contains(String shortName);
