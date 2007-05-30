@@ -96,6 +96,16 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
 
         Object text2 = macros.evaluate("99numbertest", dummy);
         assertEquals("input number: 99", text2);
+
+        Object text3 = macros.evaluate("0.5numbertest", dummy);
+        assertEquals("input number: 0.5", text3);
+
+        Object text4 = macros.evaluate("1/2numbertest", dummy);
+        assertEquals("input number: 1/2", text4);
+
+        // not a valid no. but pass through anyway unchanged
+        Object text5 = macros.evaluate("1/2.0/3numbertest", dummy);
+        assertEquals("input number: 1/2.0/3", text5);
     }
 
     /**

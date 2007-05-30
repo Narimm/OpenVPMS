@@ -92,8 +92,7 @@ public class MacroEvaluator {
             // If token starts with numbers strip numbers and create number
             // variable. If any left pass token to test for macro.
             int index = 0;
-            while (index < token.length()
-                    && Character.isDigit(token.charAt(index))) {
+            while (index < token.length() && isNumeric(token.charAt(index))) {
                 ++index;
             }
             if (index != 0) {
@@ -121,6 +120,17 @@ public class MacroEvaluator {
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Determines if a character is numeric. This supports no.s in decimal
+     * and fraction format.
+     *
+     * @param ch the character
+     * @return <tt>true</tt> if <tt>ch</tt> is one of '0'..'9','.' or '/'
+     */
+    private boolean isNumeric(char ch) {
+        return Character.isDigit(ch) || ch == '.' || ch == '/';
     }
 
     /**
