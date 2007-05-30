@@ -49,9 +49,14 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
      */
     private Lookup taxType;
 
+    /**
+     * The tax rules.
+     */
+    private TaxRules rules;
+
 
     /**
-     * Tests the {@link TaxRules#calculateTax(FinancialAct, Party, IArchetypeService)}
+     * Tests the {@link TaxRules#calculateTax(FinancialAct, Party)}
      * method when the customer and product don't have any associated taxes.
      */
     public void testCalculateTaxForNoTaxes() {
@@ -61,7 +66,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link TaxRules#calculateTax(FinancialAct, Party, IArchetypeService)}
+     * Tests the {@link TaxRules#calculateTax(FinancialAct, Party)}
      * method where the product has an associated tax.
      */
     public void testCalculateTaxForProductTax() {
@@ -74,7 +79,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link TaxRules#calculateTax(FinancialAct, Party, IArchetypeService)}
+     * Tests the {@link TaxRules#calculateTax(FinancialAct, Party)}
      * method where the product type has an associated tax.
      */
     public void testCalculateTaxForProductTypeTax() {
@@ -85,7 +90,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link TaxRules#calculateTax(FinancialAct, Party, IArchetypeService)}
+     * Tests the {@link TaxRules#calculateTax(FinancialAct, Party)}
      * method where the product has a 10% tax, but the customer has a tax
      * exemption.
      */
@@ -106,11 +111,12 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
     protected void onSetUp() throws Exception {
         super.onSetUp();
         taxType = createTaxType();
+        rules = new TaxRules();
     }
 
     /**
      * Verifies that tax is calculated correctly by
-     * {@link TaxRules#calculateTax(FinancialAct, Party, IArchetypeService)},
+     * {@link TaxRules#calculateTax(FinancialAct, Party)},
      * for an act with a total value of <code>1.00</code>.
      *
      * @param customer    the customer
@@ -130,8 +136,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         FinancialAct act = (FinancialAct) bean.getAct();
         service.deriveValue(act, "total");
 
-        TaxRules.calculateTax(act, customer,
-                              ArchetypeServiceHelper.getArchetypeService());
+        rules.calculateTax(act, customer);
 
         BigDecimal tax = bean.getBigDecimal("tax");
         BigDecimal total = bean.getBigDecimal("total");
