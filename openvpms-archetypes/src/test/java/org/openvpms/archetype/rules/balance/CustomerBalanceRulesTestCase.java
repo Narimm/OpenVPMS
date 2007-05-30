@@ -320,41 +320,6 @@ public class CustomerBalanceRulesTestCase extends AbstractCustomerBalanceTest {
     }
 
     /**
-     * Tests the {@link CustomerBalanceRules#getBalance(Party)} for acts
-     * with a zero total. These should not have a
-     * <em>participation.customerAccountBalance</em> participation
-     * or <em>actRelationship.customerAccountAllocation<em> relationship.
-     */
-    public void testAddZeroTotalToBalance() {
-        Money zero = new Money(0);
-        FinancialAct invoice = createChargesInvoice(zero);
-        save(invoice);
-        invoice = (FinancialAct) get(invoice);
-        ActBean invoiceBean = new ActBean(invoice);
-        assertNull(invoiceBean.getParticipant(
-                "participation.customerAccountBalance"));
-
-        FinancialAct payment = createPayment(zero);
-        save(payment);
-
-        invoice = (FinancialAct) get(invoice);
-        invoiceBean = new ActBean(invoice);
-
-        assertTrue(invoiceBean.getRelationships(
-                "actRelationship.customerAccountAllocation").isEmpty());
-
-        payment = (FinancialAct) get(payment);
-        ActBean payBean = new ActBean(payment);
-        assertNull(payBean.getParticipant(
-                "participation.customerAccountBalance"));
-        assertTrue(payBean.getRelationships(
-                "actRelationship.customerAccountAllocation").isEmpty());
-
-        // check the balance
-        checkEquals(zero, rules.getBalance(getCustomer()));
-    }
-
-    /**
      * Tests the {@link CustomerBalanceRules#getOverdueBalance} method.
      */
     public void testGetOverdueBalance() {
