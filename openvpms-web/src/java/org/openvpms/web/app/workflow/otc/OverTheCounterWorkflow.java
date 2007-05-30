@@ -83,6 +83,7 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
             Party otc = (Party) bean.getTargetEntity(LOCATION_OTC);
             initial.setCustomer(otc);
         }
+        initial.setTill(global.getTill());
 
         EditIMObjectTask sale = new EditIMObjectTask(CHARGES_COUNTER, true);
         sale.setDeleteOnCancelOrSkip(true);

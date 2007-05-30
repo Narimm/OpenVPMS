@@ -22,8 +22,6 @@ import org.openvpms.archetype.rules.tax.TaxRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
@@ -77,9 +75,9 @@ public class AdjustmentActEditor extends ActEditor {
      */
     private void recalculateTax() {
         FinancialAct act = (FinancialAct) getObject();
-        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         BigDecimal previousTax = act.getTaxAmount();
-        BigDecimal tax = TaxRules.calculateTax(act, service);
+        TaxRules rules = new TaxRules();
+        BigDecimal tax = rules.calculateTax(act);
         if (tax.compareTo(previousTax) != 0) {
             Property property = getProperty("tax");
             property.refresh();

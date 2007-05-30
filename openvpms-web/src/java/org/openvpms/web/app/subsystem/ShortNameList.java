@@ -25,6 +25,7 @@
 package org.openvpms.web.app.subsystem;
 
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 
 /**
@@ -36,9 +37,14 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 public class ShortNameList implements ShortNames {
 
     /**
-     * The archetype short names.
+     * The archetype short names. May contain wildcards.
      */
     private final String[] shortNames;
+
+    /**
+     * The short names with wildcards expanded.
+     */
+    private String[] expanded;
 
 
     /**
@@ -52,6 +58,7 @@ public class ShortNameList implements ShortNames {
                          String conceptName) {
         shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
                                                     conceptName);
+        expanded = shortNames;
     }
 
     /**
@@ -84,12 +91,15 @@ public class ShortNameList implements ShortNames {
     /**
      * Returns <tt>true</tt> if the collection contains a short name.
      *
-     * @param shortName the short name
+     * @param shortName the short name. May contain wildcards
      * @return <tt>true</tt> if this contains <tt>shortName</tt>
      */
     public boolean contains(String shortName) {
-        for (String s : shortNames) {
-            if (s.equals(shortName)) {
+        if (expanded == null) {
+            expanded = DescriptorHelper.getShortNames(shortNames);
+        }
+        for (String s : expanded) {
+            if (TypeHelper.matches(s, shortName)) {
                 return true;
             }
         }

@@ -32,7 +32,6 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -295,10 +294,9 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
         Party customer = (Party) IMObjectHelper.getObject(getCustomer());
         if (customer != null && getProduct() != null) {
             FinancialAct act = (FinancialAct) getObject();
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
             BigDecimal previousTax = act.getTaxAmount();
-            BigDecimal tax = TaxRules.calculateTax(act, customer, service);
+            TaxRules rules = new TaxRules();
+            BigDecimal tax = rules.calculateTax(act, customer);
             if (tax.compareTo(previousTax) != 0) {
                 Property property = getProperty("tax");
                 property.refresh();
