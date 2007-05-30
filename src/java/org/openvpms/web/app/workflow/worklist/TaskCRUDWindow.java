@@ -19,11 +19,17 @@
 package org.openvpms.web.app.workflow.worklist;
 
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.workflow.TaskEvent;
+import org.openvpms.web.component.workflow.TaskListener;
 
 
 /**
@@ -35,7 +41,18 @@ import org.openvpms.web.component.button.ButtonSet;
 public class TaskCRUDWindow extends WorkflowCRUDWindow {
 
     /**
-     * Constructs a new <code>TaskCRUDWindow</code>.
+     * The transfer button.
+     */
+    private Button transfer;
+
+    /**
+     * Transfer button identifier.
+     */
+    private static final String TRANSFER_ID = "transfer";
+
+
+    /**
+     * Constructs a new <tt>TaskCRUDWindow</tt>.
      *
      * @param type       display name for the types of objects that this may
      *                   create
@@ -58,13 +75,16 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
         super.enableButtons(buttons, enable);
         Button consult = getConsultButton();
         Button checkOut = getCheckOutButton();
+        Button transfer = getTransferButton();
         buttons.remove(consult);
         buttons.remove(checkOut);
+        buttons.remove(transfer);
         if (enable) {
             Act act = getObject();
             if (canCheckoutOrConsult(act)) {
                 buttons.add(consult);
                 buttons.add(checkOut);
+                buttons.add(transfer);
             }
         }
         buttons.add(getOverTheCounterButton());
@@ -81,6 +101,39 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
         return (TaskStatus.PENDING.equals(status)
                 || TaskStatus.IN_PROGRESS.equals(status)
                 || TaskStatus.BILLED.equals(status));
+    }
+
+    /**
+     * Returns the 'transfer' button.
+     *
+     * @return the 'transfer' button
+     */
+    private Button getTransferButton() {
+        if (transfer == null) {
+            transfer = ButtonFactory.create(TRANSFER_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onTransfer();
+                }
+            });
+        }
+        return transfer;
+    }
+
+    /**
+     * Transfers the selected task to a different worklist.
+     */
+    private void onTransfer() {
+        final Act act = IMObjectHelper.reload(getObject());
+        // make sure the act is still available
+        if (act != null) {
+            TransferWorkflow transfer = new TransferWorkflow(act);
+            transfer.addTaskListener(new TaskListener() {
+                public void taskEvent(TaskEvent event) {
+                    onRefresh(act);
+                }
+            });
+            transfer.start();
+        }
     }
 
 }

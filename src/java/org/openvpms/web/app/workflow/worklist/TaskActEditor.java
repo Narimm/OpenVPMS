@@ -84,6 +84,17 @@ public class TaskActEditor extends AbstractActEditor {
     }
 
     /**
+     * Sets the work list.
+     *
+     * @param workList the work list
+     */
+    public void setWorkList(Party workList) {
+        setParticipant("worklist", workList);
+        TaskTypeParticipationEditor editor = getTaskTypeEditor();
+        editor.setWorkList(workList);
+    }
+
+    /**
      * Save any edits.
      *
      * @return <code>true</code> if the save was successful

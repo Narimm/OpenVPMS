@@ -77,6 +77,12 @@ public class EditIMObjectTask extends AbstractTask {
      */
     private final boolean interactive;
 
+    /**
+     * Determines if the UI should be displayed if a the object is invalid.
+     * This only applies when {@link #interactive} is <tt>false</tt>.
+     */
+    private boolean showEditorOnError = true;
+
 
     /**
      * Constructs a new <code>EditIMObjectTask</code> to edit an object
@@ -157,11 +163,23 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Determines if editing may be skipped.
      * Note that the object may have changed prior to editing being skipped.
+     * Defaults to <tt>false</tt>.
      *
-     * @param skip if <code>true</code> editing may be skipped.
+     * @param skip if <tt>true</tt> editing may be skipped.
      */
     public void setSkip(boolean skip) {
         this.skip = skip;
+    }
+
+    /**
+     * Determines if the editor should be displayed if the object is invalid.
+     * This only applies when non-interactive editing was specified at
+     * construction. Defaults to <tt>true</tt>.
+     *
+     * @param show if <tt>true</tt> display the editor if the object is invalid
+     */
+    public void setShowEditorOnError(boolean show) {
+        showEditorOnError = show;
     }
 
     /**
@@ -170,8 +188,9 @@ public class EditIMObjectTask extends AbstractTask {
      * Note that no checking is performed to see if the object participates
      * in entity relationships before being deleted. To do this,
      * use {@link IMObjectDeletor} instead.
+     * Defaults to <tt>false</tt>
      *
-     * @param delete if <code>true</code> delete the object on cancel or skip
+     * @param delete if <tt>true</tt> delete the object on cancel or skip
      */
     public void setDeleteOnCancelOrSkip(boolean delete) {
         deleteOnCancelOrSkip = delete;
@@ -246,7 +265,8 @@ public class EditIMObjectTask extends AbstractTask {
             } else {
                 editor.getComponent();
                 GlobalContext.getInstance().setCurrent(null);
-                if (editor.isValid()) {
+                edit(editor, context);
+                if (editor.isValid() || !showEditorOnError) {
                     if (editor.save()) {
                         notifyCompleted();
                     } else {
@@ -269,20 +289,13 @@ public class EditIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Invoked when the editor is closed.
+     * Edits an object in the background.
+     * This implementation is a no-op.
      *
-     * @param editor the editor
+     * @param editor  the editor
+     * @param context the task context
      */
-    protected void onEditCompleted(IMObjectEditor editor) {
-        GlobalContext.getInstance().setCurrent(null);
-        if (editor.isDeleted() || editor.isCancelled()) {
-            if (editor.isCancelled() && deleteOnCancelOrSkip) {
-                delete(editor.getObject());
-            }
-            notifyCancelled();
-        } else {
-            notifyCompleted();
-        }
+    protected void edit(IMObjectEditor editor, TaskContext context) {
     }
 
     /**
@@ -290,7 +303,7 @@ public class EditIMObjectTask extends AbstractTask {
      *
      * @param editor the editor
      */
-    private void show(final IMObjectEditor editor) {
+    protected void show(final IMObjectEditor editor) {
         final EditDialog dialog = new EditDialog(editor, true, skip);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
@@ -306,6 +319,23 @@ public class EditIMObjectTask extends AbstractTask {
 
         });
         dialog.show();
+    }
+
+    /**
+     * Invoked when the editor is closed.
+     *
+     * @param editor the editor
+     */
+    protected void onEditCompleted(IMObjectEditor editor) {
+        GlobalContext.getInstance().setCurrent(null);
+        if (editor.isDeleted() || editor.isCancelled()) {
+            if (editor.isCancelled() && deleteOnCancelOrSkip) {
+                delete(editor.getObject());
+            }
+            notifyCancelled();
+        } else {
+            notifyCompleted();
+        }
     }
 
     /**
