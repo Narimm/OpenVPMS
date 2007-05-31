@@ -33,7 +33,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -171,7 +171,7 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
                 Date date = (Date) value;
                 Label label = LabelFactory.create();
                 if (date != null) {
-                    label.setText(DateFormatter.formatTime(date, false));
+                    label.setText(DateHelper.formatTime(date, false));
                 }
                 result = label;
                 break;
@@ -230,7 +230,7 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
         if (AppointmentStatus.CHECKED_IN.equals(code)) {
             Date arrival = (Date) set.get(AppointmentQuery.ARRIVAL_TIME);
             if (arrival != null) {
-                String diff = DateFormatter.formatTimeDiff(arrival, new Date());
+                String diff = DateHelper.formatTimeDiff(arrival, new Date());
                 status = Messages.get("appointmenttablemodel.waiting", diff);
             }
         }

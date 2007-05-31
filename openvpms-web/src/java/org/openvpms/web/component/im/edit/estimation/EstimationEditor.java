@@ -25,7 +25,7 @@ import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -81,9 +81,10 @@ public class EstimationEditor extends ActEditor {
     protected void onStartTimeChanged() {
         Date start = getStartTime();
         if (start != null) {
-            Date today = DateFormatter.getDayMonthYear(new Date());
-            if (start.compareTo(today) < 0) {
-                setStartTime(today);
+            Date now = new Date();
+            if (DateHelper.compareDates(start, now) < 0) {
+                // ensure start date isn't before the current date
+                setStartTime(now);
             } else {
                 Date end = getEndTime();
                 if (end != null && end.compareTo(start) < 0) {

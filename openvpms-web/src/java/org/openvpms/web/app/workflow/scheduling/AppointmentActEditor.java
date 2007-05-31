@@ -50,7 +50,7 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.util.DateFieldFactory;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.TimeFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -305,8 +305,8 @@ public class AppointmentActEditor extends AbstractActEditor {
      * <em>endTime</em> nodes with the {@link #date} field.
      */
     private void updateDates() {
-        Date now = DateFormatter.getDayMonthYear(new Date());
-        Date selected = DateFormatter.getDayMonthYear(
+        Date now = DateHelper.getDayMonthYear(new Date());
+        Date selected = DateHelper.getDayMonthYear(
                 date.getSelectedDate().getTime());
         if (selected.compareTo(now) < 0) {
             // don't permit backdating of appointments

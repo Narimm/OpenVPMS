@@ -21,7 +21,7 @@ package org.openvpms.web.component.bound;
 import nextapp.echo2.app.Extent;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.TimePropertyTransformer;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 
 import java.text.DateFormat;
 
@@ -40,9 +40,9 @@ public class BoundTimeField extends BoundFormattedField {
      * @param property the property to bind
      */
     public BoundTimeField(Property property) {
-        super(property, DateFormatter.getTimeFormat(true));
+        super(property, DateHelper.getTimeFormat(true));
         DateFormat format = (DateFormat) getFormat();
-        int columns = DateFormatter.getLength(format);
+        int columns = DateHelper.getLength(format);
         setWidth(new Extent(columns, Extent.EX));
     }
 

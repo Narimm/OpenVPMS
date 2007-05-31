@@ -45,8 +45,8 @@ public class DateFieldImpl extends DateField {
      * Constructs a new <code>DateFieldImpl</code>.
      */
     public DateFieldImpl() {
-        DateFormat edit = DateFormatter.getDateFormat(true);
-        DateFormat view = DateFormatter.getDateFormat(false);
+        DateFormat edit = DateHelper.getDateFormat(true);
+        DateFormat view = DateHelper.getDateFormat(false);
         DateFormat format = new DelegatingDateFormat(edit, view);
         setDateFormat(format);
         setPopUpAlwaysOnTop(true);

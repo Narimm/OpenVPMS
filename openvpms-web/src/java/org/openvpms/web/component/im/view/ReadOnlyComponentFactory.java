@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.TextComponentFactory;
 
@@ -94,8 +94,8 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      * @return a component to display the datge
      */
     protected Component getDate(Property property) {
-        DateFormat format = DateFormatter.getDateFormat(false);
-        int maxColumns = DateFormatter.getLength(format);
+        DateFormat format = DateHelper.getDateFormat(false);
+        int maxColumns = DateHelper.getLength(format);
         return TextComponentFactory.create(property, maxColumns, format);
     }
 

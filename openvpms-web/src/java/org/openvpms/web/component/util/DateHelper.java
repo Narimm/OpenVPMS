@@ -32,12 +32,12 @@ import java.util.Locale;
 
 
 /**
- * Helper to format dates.
+ * Date helper methods.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DateFormatter {
+public class DateHelper {
 
     /**
      * Date edit pattern.
@@ -63,6 +63,43 @@ public class DateFormatter {
      * Date/time to generate a maximum width (in en locales).
      */
     private static final Date WIDE_DATE;
+
+
+    /**
+     * Compares the date portion of two date/times. Any time component is
+     * ignored.
+     *
+     * @param d1 the first date/time
+     * @param d2 the second date/time
+     * @return the <tt>0</tt> if <tt>d1</tt> is equal to this <tt>d2</tt>;
+     *         a value less than <tt>0</tt> if <tt>d1</tt>  is before the
+     *         <tt>d2</tt>; and a value greater than <code>0</code> if
+     *         <tt>d1</tt> is after <tt>d2</tt>.
+     */
+    public static int compareDates(Date d1, Date d2) {
+        d1 = getDayMonthYear(d1);
+        d2 = getDayMonthYear(d2);
+        return d1.compareTo(d2);
+    }
+
+    /**
+     * Returns the current date/time if the date falls on the
+     * current date, otherwise returns the date unchanged.
+     *
+     * @param date the date
+     * @return the current date/time if <tt>date</tt> falls on the current date.
+     *         If not, returns <tt>date</tt> unchanged.
+     */
+    public static Date getDatetimeIfToday(Date date) {
+        Calendar now = Calendar.getInstance();
+        Calendar d = Calendar.getInstance();
+        d.setTime(date);
+        if (now.get(Calendar.DAY_OF_YEAR) == d.get(Calendar.DAY_OF_YEAR)
+                && now.get(Calendar.YEAR) == d.get(Calendar.YEAR)) {
+            return now.getTime();
+        }
+        return date;
+    }
 
     /**
      * Format a date.

@@ -36,7 +36,7 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 
 import java.util.Date;
 
@@ -55,7 +55,7 @@ class TaskQueryHelper {
      * @param date the date
      */
     public static IConstraint createDateRangeConstraint(Date date) {
-        Date from = DateFormatter.getDayMonthYear(date);
+        Date from = DateHelper.getDayMonthYear(date);
         long end = from.getTime() + DateUtils.MILLIS_IN_DAY
                 - DateUtils.MILLIS_IN_SECOND;
         Date to = new Date(end);

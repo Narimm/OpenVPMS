@@ -18,16 +18,12 @@
 
 package org.openvpms.web.component.bound;
 
-import echopointng.DateChooser;
-import echopointng.DateField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.util.DateFieldImpl;
+import org.openvpms.web.component.util.DateHelper;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Calendar;
 import java.util.Date;
 
 
@@ -43,6 +39,11 @@ public class BoundDateField extends DateFieldImpl {
      * The bound property.
      */
     private final DateBinder binder;
+
+    /**
+     * If <tt>true</tt>, include the current time if the date is today.
+     */
+    private boolean includeTimeForToday = true;
 
 
     /**
@@ -64,13 +65,34 @@ public class BoundDateField extends DateFieldImpl {
     }
 
     /**
+     * Includes the current time if the selected date is today.
+     * For all other days, the time is set to <tt>0:0:0</tt>.
+     * Defaults to <tt>true</tt>.
+     *
+     * @param include if <tt>true</tt>, include the current time if the date is
+     *                today; otherwise set it to <tt>0:0:0</tt>
+     */
+    public void setIncludeTimeForToday(boolean include) {
+        includeTimeForToday = include;
+    }
+
+    /**
      * Creates a new {@link DateBinder}.
      *
      * @param property the property to bind
      * @return a new binder
      */
     protected DateBinder createBinder(Property property) {
-        return new DateBinder(this, property);
+        return new DateBinder(this, property) {
+            @Override
+            protected Object getFieldValue() {
+                Date date = getField().getSelectedDate().getTime();
+                if (includeTimeForToday) {
+                    return DateHelper.getDatetimeIfToday(date);
+                }
+                return date;
+            }
+        };
     }
 
     /**
@@ -82,56 +104,4 @@ public class BoundDateField extends DateFieldImpl {
         return binder;
     }
 
-    /**
-     * Binds a date field to a property.
-     */
-    protected static class DateBinder extends Binder {
-
-        /**
-         * The date field.
-         */
-        private final DateField field;
-
-        /**
-         * Date change listener.
-         */
-        private final PropertyChangeListener listener;
-
-
-        /**
-         * Constructs a new <code>DateBinder</code>.
-         *
-         * @param field    the field to bind
-         * @param property the property to bind to
-         */
-        public DateBinder(DateField field, Property property) {
-            super(property);
-            this.field = field;
-            listener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent event) {
-                    String name = event.getPropertyName();
-                    if ("selectedDate".equals(name)) {
-                        setProperty();
-                    }
-                }
-            };
-        }
-
-        protected Object getFieldValue() {
-            return field.getDateChooser().getSelectedDate().getTime();
-        }
-
-        protected void setFieldValue(Object value) {
-            DateChooser chooser = field.getDateChooser();
-            chooser.removePropertyChangeListener(listener);
-            Date date = (Date) value;
-            Calendar calendar = null;
-            if (date != null) {
-                calendar = Calendar.getInstance();
-                calendar.setTime(date);
-            }
-            chooser.setSelectedDate(calendar);
-            chooser.addPropertyChangeListener(listener);
-        }
-    }
 }
