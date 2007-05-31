@@ -20,6 +20,8 @@ package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,6 +73,37 @@ public class Statistics {
             Integer count = stats.get(type);
             if (count != null) {
                 result += count;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all reminder types for which there are statistics.
+     *
+     * @return the reminder types
+     */
+    public Collection<Entity> getReminderTypes() {
+        return statistics.keySet();
+    }
+
+    /**
+     * Returns the count for a reminder type and set of action.
+     *
+     * @param reminderType the reminder type
+     * @param actions      the actions
+     * @return the count
+     */
+    public int getCount(Entity reminderType,
+                        EnumSet<ReminderEvent.Action> actions) {
+        int result = 0;
+        Map<ReminderEvent.Action, Integer> stats = statistics.get(reminderType);
+        if (stats != null) {
+            for (ReminderEvent.Action action : actions) {
+                Integer value = stats.get(action);
+                if (value != null) {
+                    result += value;
+                }
             }
         }
         return result;

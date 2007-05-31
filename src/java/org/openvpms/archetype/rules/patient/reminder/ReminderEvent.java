@@ -22,11 +22,13 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 
+
 /**
- * Add description here.
+ * Reminder event.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @see ReminderProcessorListener
  */
 public class ReminderEvent {
 
@@ -34,20 +36,52 @@ public class ReminderEvent {
         SKIP, CANCEL, EMAIL, PHONE, PRINT
     }
 
+    /**
+     * The reminder action.
+     */
     private final Action action;
 
+    /**
+     * The reminder.
+     */
     private final Act reminder;
 
+    /**
+     * The reminder type.
+     */
     private final Entity reminderType;
 
+    /**
+     * The contact. May be <tt>null</tt>.
+     */
     private final Contact contact;
 
+    /**
+     * The document template. May be <tt>null</tt>.
+     */
     private final Entity documentTemplate;
 
+
+    /**
+     * Constructs a new <tt>ReminderEvent</tt>.
+     *
+     * @param action       the reminder action
+     * @param reminder     the reminder
+     * @param reminderType the reminder type
+     */
     public ReminderEvent(Action action, Act reminder, Entity reminderType) {
         this(action, reminder, reminderType, null, null);
     }
 
+    /**
+     * Constructs a new <tt>ReminderEvent</tt>.
+     *
+     * @param action           the reminder action
+     * @param reminder         the reminder
+     * @param reminderType     the reminder type
+     * @param contact          the reminder contact. May be <tt>null</tt>
+     * @param documentTemplate the document template. May be <tt>null</tt>
+     */
     public ReminderEvent(Action action, Act reminder, Entity reminderType,
                          Contact contact, Entity documentTemplate) {
         this.action = action;
@@ -57,22 +91,47 @@ public class ReminderEvent {
         this.documentTemplate = documentTemplate;
     }
 
+    /**
+     * Returns the reminder action.
+     *
+     * @return the action
+     */
     public Action getAction() {
         return action;
     }
 
+    /**
+     * Returns the reminder.
+     *
+     * @return the reminder
+     */
     public Act getReminder() {
         return reminder;
     }
 
+    /**
+     * Returns the reminder type.
+     *
+     * @return the reminder type
+     */
     public Entity getReminderType() {
         return reminderType;
     }
 
+    /**
+     * Returns the contact.
+     *
+     * @return the contact. May be <tt>null</tt>
+     */
     public Contact getContact() {
         return contact;
     }
 
+    /**
+     * Returns the document template.
+     *
+     * @return the document template. May be <tt>null</tt>
+     */
     public Entity getDocumentTemplate() {
         return documentTemplate;
     }
