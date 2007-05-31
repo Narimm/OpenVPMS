@@ -32,6 +32,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderStatisticsListener;
 import org.openvpms.archetype.rules.patient.reminder.Statistics;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -40,6 +41,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.PrintIMObjectsTask;
@@ -56,6 +58,7 @@ import org.openvpms.web.system.ServiceHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -286,23 +289,56 @@ class ReminderGenerator {
     private static class SummaryDialog extends PopupDialog {
 
         /**
-         * Construct a new <code>SummaryDialog</code>.
+         * Constructs a new <tt>SummaryDialog</tt>.
          *
          * @param stats the statistics to display
          */
         public SummaryDialog(Statistics stats) {
             super(Messages.get("patient.reminder.summary.title"), OK);
             setModal(true);
-            Grid grid = new Grid(2);
-            for (ReminderEvent.Action action : ReminderEvent.Action.values()) {
-                Label label = LabelFactory.create();
-                label.setText(action.toString());
-                Label value = LabelFactory.create();
-                value.setText(Integer.toString(stats.getCount(action)));
-                grid.add(label);
-                grid.add(value);
+            EnumSet<ReminderEvent.Action> actions = EnumSet.range(
+                    ReminderEvent.Action.EMAIL, ReminderEvent.Action.PRINT);
+
+            Grid grid = GridFactory.create(2);
+            add(grid, ReminderEvent.Action.CANCEL, stats);
+            for (ReminderEvent.Action action : actions) {
+                add(grid, action, stats);
+            }
+            for (Entity reminderType : stats.getReminderTypes()) {
+                String text = reminderType.getName();
+                add(grid, text, stats.getCount(reminderType, actions));
             }
             getLayout().add(ColumnFactory.create("Inset", grid));
+        }
+
+        /**
+         * Adds a summary line item to a grid.
+         *
+         * @param grid   the grid
+         * @param action the reminder action
+         * @param stats  the reminder statistics
+         */
+        private void add(Grid grid, ReminderEvent.Action action,
+                         Statistics stats) {
+            String text = Messages.get("patient.reminder.summary."
+                    + action.name());
+            add(grid, text, stats.getCount(action));
+        }
+
+        /**
+         * Adds a summary line item to a grid.
+         *
+         * @param grid  the grid
+         * @param text  the item text
+         * @param count the statistics count
+         */
+        private void add(Grid grid, String text, int count) {
+            Label label = LabelFactory.create();
+            label.setText(text);
+            Label value = LabelFactory.create();
+            value.setText(Integer.toString(count));
+            grid.add(label);
+            grid.add(value);
         }
     }
 }
