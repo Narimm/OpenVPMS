@@ -29,7 +29,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 
 import java.util.Date;
 
@@ -111,7 +111,7 @@ public class TaskTableModel extends AbstractActTableModel {
                 if (end == null) {
                     end = new Date();
                 }
-                result = DateFormatter.formatTimeDiff(start, end);
+                result = DateHelper.formatTimeDiff(start, end);
             }
         } else {
             result = super.getValue(act, column, row);

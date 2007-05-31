@@ -38,7 +38,7 @@ import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -128,7 +128,7 @@ public class PatientReminderTableModel extends AbstractActTableModel {
             Date due = rules.getNextDueDate(act);
             if (due != null) {
                 Label label = LabelFactory.create();
-                label.setText(DateFormatter.formatDate(due, false));
+                label.setText(DateHelper.formatDate(due, false));
                 result = label;
             }
         } else if (index == customerIndex) {

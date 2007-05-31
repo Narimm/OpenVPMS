@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.web.component.im.edit.ValidationHelper;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.text.DateFormat;
@@ -65,7 +65,7 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
      * @param date the date
      */
     public void setDate(Date date) {
-        this.date = DateFormatter.getDayMonthYear(date);
+        this.date = DateHelper.getDayMonthYear(date);
     }
 
     /**
@@ -116,7 +116,7 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
      */
     private Date parse(String value) throws ValidationException {
         Date result;
-        DateFormat format = DateFormatter.getTimeFormat(true);
+        DateFormat format = DateHelper.getTimeFormat(true);
         try {
             result = format.parse(value);
         } catch (ParseException exception) {

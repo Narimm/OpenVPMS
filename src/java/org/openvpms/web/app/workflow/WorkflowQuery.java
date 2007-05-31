@@ -40,7 +40,7 @@ import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.select.IMObjectSelectorListener;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.DateFieldFactory;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
@@ -148,7 +148,7 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
      */
     public Date getDate() {
         Date datetime = date.getDateChooser().getSelectedDate().getTime();
-        return DateFormatter.getDayMonthYear(datetime);
+        return DateHelper.getDayMonthYear(datetime);
     }
 
     /**
@@ -333,7 +333,7 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
     protected void onDateChanged() {
         Date date = getDate();
         if (!date.equals(lastDate)) {
-            Date today = DateFormatter.getDayMonthYear(new Date());
+            Date today = DateHelper.getDayMonthYear(new Date());
             statusRange.removeActionListener(statusRangeListener);
             if (date.equals(today)) {
                 statusRange.setSelectedItem(INCOMPLETE);

@@ -30,7 +30,7 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.resource.util.Messages;
@@ -199,7 +199,7 @@ public class CustomerBalanceSummaryTableModel
     private Component getDate(Date date) {
         Label label = LabelFactory.create();
         if (date != null) {
-            label.setText(DateFormatter.formatDate(date, false));
+            label.setText(DateHelper.formatDate(date, false));
         }
         return label;
     }

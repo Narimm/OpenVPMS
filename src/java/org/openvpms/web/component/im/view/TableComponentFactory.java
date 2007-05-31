@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.layout.TableLayoutStrategyFactory;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 
@@ -137,7 +137,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      */
     protected String getDateValue(Property property) {
         Date value = (Date) property.getValue();
-        return (value != null) ? DateFormatter.formatDate(value, false) : null;
+        return (value != null) ? DateHelper.formatDate(value, false) : null;
     }
 
 }

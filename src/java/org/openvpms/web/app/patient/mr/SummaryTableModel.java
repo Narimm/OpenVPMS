@@ -48,7 +48,7 @@ import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -164,12 +164,12 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
 
         Date startTime = bean.getDate("startTime");
         if (startTime != null) {
-            started = DateFormatter.formatDate(startTime, false);
+            started = DateHelper.formatDate(startTime, false);
         }
 
         Date endTime = bean.getDate("endTime");
         if (endTime != null) {
-            completed = DateFormatter.formatDate(endTime, false);
+            completed = DateHelper.formatDate(endTime, false);
         }
 
         IMObjectReference clinicianRef
@@ -243,7 +243,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
             }
         }
         if (showDate) {
-            date = new LabelEx(DateFormatter.formatDate(
+            date = new LabelEx(DateHelper.formatDate(
                     act.getActivityStartTime(), false));
         } else {
             date = new LabelEx("");
