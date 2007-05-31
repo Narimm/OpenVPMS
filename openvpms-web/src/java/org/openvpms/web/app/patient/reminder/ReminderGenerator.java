@@ -301,12 +301,14 @@ class ReminderGenerator {
 
             Grid grid = GridFactory.create(2);
             add(grid, ReminderEvent.Action.CANCEL, stats);
-            for (ReminderEvent.Action action : actions) {
-                add(grid, action, stats);
-            }
+
             for (Entity reminderType : stats.getReminderTypes()) {
                 String text = reminderType.getName();
                 add(grid, text, stats.getCount(reminderType, actions));
+            }
+
+            for (ReminderEvent.Action action : actions) {
+                add(grid, action, stats);
             }
             getLayout().add(ColumnFactory.create("Inset", grid));
         }
