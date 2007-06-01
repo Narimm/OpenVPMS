@@ -30,7 +30,7 @@ public class LoaderHelper {
     /**
      * Value token that gets expanded with the column value.
      */
-    private static final String VALUE_TOKEN = "\\$value";    // NON-NLS
+    private static final String VALUE_TOKEN = "$value";    // NON-NLS
 
 
     /**
@@ -42,6 +42,6 @@ public class LoaderHelper {
      * @return the mapping with <tt>$value</tt> replaced with <tt>value</tt>
      */
     public static String replaceValue(String mapping, String value) {
-        return mapping.replaceAll(VALUE_TOKEN, value);
+        return mapping.replace(VALUE_TOKEN, value);
     }
 }
