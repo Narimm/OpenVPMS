@@ -21,6 +21,7 @@ package org.openvpms.web.app.workflow.otc;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
@@ -32,6 +33,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.PrintIMObjectTask;
+import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
@@ -73,16 +75,24 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
 
     /**
      * Constructs a new <tt>OverTheCounterWorkflow</tt>.
+     *
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws OTCException              for any OTC error
      */
     public OverTheCounterWorkflow() {
-        GlobalContext global = GlobalContext.getInstance();
+        final GlobalContext global = GlobalContext.getInstance();
         initial = new DefaultTaskContext(false);
         Party location = global.getLocation();
-        if (location != null) {
-            EntityBean bean = new EntityBean(location);
-            Party otc = (Party) bean.getTargetEntity(LOCATION_OTC);
-            initial.setCustomer(otc);
+        if (location == null) {
+            throw new OTCException(OTCException.ErrorCode.NoLocation);
         }
+        EntityBean bean = new EntityBean(location);
+        Party otc = (Party) bean.getTargetEntity(LOCATION_OTC);
+        if (otc == null) {
+            throw new OTCException(OTCException.ErrorCode.NoOTC,
+                                   location.getName());
+        }
+        initial.setCustomer(otc);
         initial.setTill(global.getTill());
 
         EditIMObjectTask sale = new EditIMObjectTask(CHARGES_COUNTER, true);
@@ -121,6 +131,14 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
                                                              true);
         addTask(printSale);
         addTask(saveSale);
+
+        // add a task to update the global context at the end of the workflow
+        addTask(new SynchronousTask() {
+            public void execute(TaskContext context) {
+                global.setTill(context.getTill());
+                global.setClinician(context.getClinician());
+            }
+        });
 
         setBreakOnSkip(true);
     }

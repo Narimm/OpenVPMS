@@ -1,26 +1,25 @@
 /*
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
- */
+*  Version: 1.0
+*
+*  The contents of this file are subject to the OpenVPMS License Version
+*  1.0 (the 'License'); you may not use this file except in compliance with
+*  the License. You may obtain a copy of the License at
+*  http://www.openvpms.org/license/
+*
+*  Software distributed under the License is distributed on an 'AS IS' basis,
+*  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+*  for the specific language governing rights and limitations under the
+*  License.
+*
+*  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+*
+*  $Id$
+*/
 
 package org.openvpms.web.app.workflow;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
@@ -32,6 +31,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ProtectedListener;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.component.workflow.Workflow;
@@ -133,8 +133,8 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
      */
     protected Button getConsultButton() {
         if (consult == null) {
-            consult = ButtonFactory.create(CONSULT_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+            consult = ButtonFactory.create(CONSULT_ID, new ProtectedListener() {
+                protected void onAction(ActionEvent event) {
                     onConsult();
                 }
             });
@@ -149,8 +149,9 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
      */
     protected Button getCheckOutButton() {
         if (checkOut == null) {
-            checkOut = ButtonFactory.create(CHECKOUT_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+            checkOut = ButtonFactory.create(
+                    CHECKOUT_ID, new ProtectedListener() {
+                protected void onAction(ActionEvent event) {
                     onCheckOut();
                 }
             });
@@ -166,12 +167,11 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
     protected Button getOverTheCounterButton() {
         if (overTheCounter == null) {
             overTheCounter = ButtonFactory.create(
-                    OVER_THE_COUNTER_ID,
-                    new ActionListener() {
-                        public void actionPerformed(ActionEvent event) {
-                            onOverTheCounter();
-                        }
-                    });
+                    OVER_THE_COUNTER_ID, new ProtectedListener() {
+                protected void onAction(ActionEvent event) {
+                    onOverTheCounter();
+                }
+            });
         }
         return overTheCounter;
     }

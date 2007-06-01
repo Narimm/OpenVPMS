@@ -20,7 +20,6 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ShortNames;
@@ -31,6 +30,7 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ProtectedListener;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
 
@@ -76,8 +76,8 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         if (checkIn == null) {
-            checkIn = ButtonFactory.create(CHECKIN_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
+            checkIn = ButtonFactory.create(CHECKIN_ID, new ProtectedListener() {
+                protected void onAction(ActionEvent event) {
                     onCheckIn();
                 }
             });

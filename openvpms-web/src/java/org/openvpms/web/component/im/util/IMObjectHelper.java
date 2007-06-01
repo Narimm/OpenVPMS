@@ -79,7 +79,8 @@ public class IMObjectHelper {
      * tries to retrieve it from the archetype service.
      *
      * @param reference the object reference. May be <code>null</code>
-     * @param context   the context to use
+     * @param context   the context to use. If <tt>null</tt> accesses the
+     *                  archetype service
      * @return the object corresponding to <code>reference</code> or
      *         <code>null</code> if none exists
      */
@@ -87,7 +88,9 @@ public class IMObjectHelper {
                                      Context context) {
         IMObject result = null;
         if (reference != null) {
-            result = context.getObject(reference);
+            if (context != null) {
+                result = context.getObject(reference);
+            }
             if (result == null) {
                 try {
                     IArchetypeService service

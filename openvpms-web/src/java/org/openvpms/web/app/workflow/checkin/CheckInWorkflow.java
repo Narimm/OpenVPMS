@@ -29,6 +29,7 @@ import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
+import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
@@ -50,8 +51,21 @@ public class CheckInWorkflow extends WorkflowImpl {
      * The initial context.
      */
     private TaskContext initial;
-    private static final String WORK_LIST_SHORTNAME = "party.organisationWorkList";
+
+    /**
+     * Work list archetype short name.
+     */
+    private static final String WORK_LIST_SHORTNAME
+            = "party.organisationWorkList";
+
+    /**
+     * Task act archetype short name.
+     */
     private static final String CUSTOMER_TASK_SHORTNAME = "act.customerTask";
+
+    /**
+     * Clinical event act archetype short name.
+     */
     private static final String CLINICAL_EVENT = "act.patientClinicalEvent";
 
 
@@ -107,10 +121,14 @@ public class CheckInWorkflow extends WorkflowImpl {
      */
     private void initialise(Act appointment, Party customer, Party patient,
                             User clinician, String taskDescription) {
-        GlobalContext global = GlobalContext.getInstance();
+        final GlobalContext global = GlobalContext.getInstance();
         initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);
         initial.setPatient(patient);
+
+        if (clinician == null) {
+            clinician = global.getClinician();
+        }
         initial.setClinician(clinician);
         initial.setUser(global.getUser());
         initial.setWorkListDate(new Date());
@@ -144,6 +162,13 @@ public class CheckInWorkflow extends WorkflowImpl {
             appProps.add("status", AppointmentStatus.CHECKED_IN);
             addTask(new UpdateAppointmentTask(appointment, appProps));
         }
+
+        // add a task to update the global context at the end of the workflow
+        addTask(new SynchronousTask() {
+            public void execute(TaskContext context) {
+                global.setClinician(context.getClinician());
+            }
+        });
     }
 
     private class CustomerTaskWorkflow extends WorkflowImpl {

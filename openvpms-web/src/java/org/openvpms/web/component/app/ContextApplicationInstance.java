@@ -22,16 +22,14 @@ import nextapp.echo2.app.ApplicationInstance;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.openvpms.archetype.rules.user.UserRules;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import static org.openvpms.web.component.im.relationship.RelationshipHelper.getDefaultTarget;
 import org.openvpms.web.system.SpringApplicationInstance;
 
 import java.util.List;
@@ -137,9 +135,6 @@ public abstract class ContextApplicationInstance
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void initLocation() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-
         // Get the current Practice
         Party practice = context.getPractice();
 
@@ -151,16 +146,14 @@ public abstract class ContextApplicationInstance
             return;
         }
 
-        // Now get the default location for the user or the first location if no default. 
-        IMObjectBean bean = new IMObjectBean(user, service);
-        List<IMObject> relationships = bean.getValues("locations");
-        Party location = (Party) getDefaultRelationship(relationships, service);
+        // Now get the default location for the user or the first location if
+        // no default.
+        Party location = (Party) getDefaultTarget(user, "locations");
 
-        // If no locations defined for user find default location for Practice or the first location if no default.
+        // If no locations defined for user find default location for Practice
+        // or the first location if no default.
         if (location == null) {
-            bean = new IMObjectBean(practice, service);
-            relationships = bean.getValues("locations");
-            location = (Party) getDefaultRelationship(relationships, service);
+            location = (Party) getDefaultTarget(practice, "locations");
         }
 
         // If no location then return
@@ -170,61 +163,17 @@ public abstract class ContextApplicationInstance
         context.setLocation(location);
 
         // Now get the default Deposit object.
-        bean = new IMObjectBean(location, service);
-        relationships = bean.getValues("depositAccounts");
-        context.setTill((Party) getDefaultRelationship(relationships, service));
+        context.setDeposit((Party) getDefaultTarget(location,
+                                                    "depositAccounts"));
 
         // Now get the default Till object.
-        bean = new IMObjectBean(location, service);
-        relationships = bean.getValues("tills");
-        context.setTill((Party) getDefaultRelationship(relationships, service));
+        context.setTill((Party) getDefaultTarget(location, "tills"));
 
         // Now get the default Schedule object.
-        bean = new IMObjectBean(location, service);
-        relationships = bean.getValues("schedules");
-        context.setSchedule(
-                (Party) getDefaultRelationship(relationships, service));
+        context.setSchedule((Party) getDefaultTarget(location, "schedules"));
 
         // Now get the default WorkList object.
-        bean = new IMObjectBean(location, service);
-        relationships = bean.getValues("workLists");
-        context.setWorkList(
-                (Party) getDefaultRelationship(relationships, service));
+        context.setWorkList((Party) getDefaultTarget(location, "workLists"));
     }
 
-    /**
-     * Returns the target object from the default entityRelationship from the supplied
-     * relationship list.  If no default it returns the target object for the first relationship found.
-     *
-     * @param relationships a list of relationship objects
-     * @param service       the archetype service
-     * @return the default or the first target object or null if neither
-     */
-
-    private IMObject getDefaultRelationship(List<IMObject> relationships,
-                                            IArchetypeService service) {
-        IMObject firstRelationship = null;
-        IMObject defaultRelationship = null;
-        for (IMObject object : relationships) {
-            EntityRelationship relationship = (EntityRelationship) object;
-            IMObjectBean relationshipBean = new IMObjectBean(relationship,
-                                                             service);
-            IMObjectReference locationRef = relationship.getTarget();
-            if (locationRef != null) {
-                defaultRelationship = ArchetypeQueryHelper.getByObjectReference(
-                        service, locationRef);
-                if (firstRelationship == null)
-                    firstRelationship = defaultRelationship;
-            }
-            if (relationshipBean.hasNode(
-                    "default") && relationshipBean.getBoolean("default", false))
-            {
-                break;
-            }
-        }
-        if (defaultRelationship == null) {
-            return firstRelationship;
-        } else
-            return defaultRelationship;
-    }
 }
