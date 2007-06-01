@@ -37,11 +37,12 @@ public class GlobalContext extends AbstractContext {
     /**
      * Returns the context associated with the current thread.
      *
-     * @return the context associated with the current thread, or
-     *         <code>null</code>
+     * @return the context associated with the current thread, or <tt>null</tt>
      */
     public static GlobalContext getInstance() {
-        return ContextApplicationInstance.getInstance().getContext();
+        ContextApplicationInstance instance
+                = ContextApplicationInstance.getInstance();
+        return (instance != null) ? instance.getContext() : null;
     }
 
 }

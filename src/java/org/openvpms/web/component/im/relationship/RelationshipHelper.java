@@ -23,7 +23,9 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBeanException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
@@ -97,6 +99,54 @@ public class RelationshipHelper {
                 if (filter.include(relationship)) {
                     result.add(relationship);
                 }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the target from the default entity relationship from the
+     * specified relationship node.
+     *
+     * @param entity the parent entity
+     * @param node   the relationship node
+     * @return the default target, or the the first non-null target if the
+     *         default target is <tt>null</tt>, or <tt>null</tt> if none is
+     *         found
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if the node does't exist or an element
+     *                                   is of the wrong type
+     */
+    public static IMObject getDefaultTarget(Entity entity, String node) {
+        IMObjectBean bean = new IMObjectBean(entity);
+        return getDefaultTarget(bean.getValues(node, EntityRelationship.class));
+    }
+
+    /**
+     * Returns the target from the default entity relationship from the supplied
+     * relationship list.
+     *
+     * @param relationships a list of relationship objects
+     * @return the default target, or the the first non-null target if the
+     *         default target is <tt>null</tt>, or <tt>null</tt> if none is
+     *         found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public static IMObject getDefaultTarget(
+            List<EntityRelationship> relationships) {
+        IMObject result = null;
+        for (EntityRelationship relationship : relationships) {
+            if (result == null) {
+                result = IMObjectHelper.getObject(relationship.getTarget());
+            } else {
+                IMObjectBean bean = new IMObjectBean(relationship);
+                if (bean.hasNode("default") && bean.getBoolean("default")) {
+                    result = IMObjectHelper.getObject(relationship.getTarget());
+                    if (result != null) {
+                        break;
+                    }
+                }
+
             }
         }
         return result;

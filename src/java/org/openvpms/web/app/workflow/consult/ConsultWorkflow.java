@@ -26,11 +26,13 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.workflow.InvoiceTask;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.NodeConditionTask;
+import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
@@ -103,6 +105,14 @@ public class ConsultWorkflow extends WorkflowImpl {
                                                                  true);
             addTask(new ConditionalTask(invoiceCompleted, billTask));
         }
+
+        // add a task to update the global context at the end of the workflow
+        addTask(new SynchronousTask() {
+            public void execute(TaskContext context) {
+                Context global = GlobalContext.getInstance();
+                global.setClinician(context.getClinician());
+            }
+        });
     }
 
     /**
