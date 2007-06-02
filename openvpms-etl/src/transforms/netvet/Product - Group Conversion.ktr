@@ -43,50 +43,6 @@
   <notepads>
     </notepads>
   <connection>
-    <name>archetypes</name>
-    <server/>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>conversion</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>conversion</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
     <name>openvpms</name>
     <server>localhost</server>
     <type>MYSQL</type>
@@ -99,7 +55,33 @@
     <data_tablespace/>
     <index_tablespace/>
     <attributes>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
       <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>Visual Vetaid</name>
+    <server/>
+    <type>MSACCESS</type>
+    <access>ODBC</access>
+    <database>Visual Vetaid</database>
+    <port>-1</port>
+    <username/>
+    <password>Encrypted </password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
+      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>-1</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
     </attributes>
   </connection>
   <order>
@@ -272,7 +254,7 @@
     <format>DOS</format>
     <encoding/>
     <file>
-      <name>F:\Netvet\items.txt</name>
+      <name>${NETVET_DATA}\items.txt</name>
       <filemask/>
       <file_required/>
       <type>CSV</type>
@@ -725,38 +707,9 @@
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
 var wordUtils = Packages.org.apache.commons.lang.WordUtils;
-var prefix
-try {
-	prefix = substr(upper(GROUP.getString()),1,3)
-}
-catch (e) {
-	prefix = &quot;OTH&quot;
-}
-if (prefix  == &quot;ANA&quot;)
-	GROUP.setString(&quot;Anaesthetic&quot;)
-else if (prefix == &quot;DRU&quot;)
-	GROUP.setString(&quot;Drugs&quot;)
-else if (prefix == &quot;HOS&quot;)
-	GROUP.setString(&quot;Hospital&quot;)
-else if (prefix == &quot;LAB&quot;)
-	GROUP.setString(&quot;Laboratory&quot;)
-else if (prefix == &quot;MER&quot;)
-	GROUP.setString(&quot;Merchandise&quot;)
-else if (prefix == &quot;MED&quot;)
-	GROUP.setString(&quot;Medical&quot;)
-else if (prefix == &quot;MIS&quot;)
-	GROUP.setString(&quot;Miscellaneous&quot;)
-else if (prefix == &quot;RAD&quot;)
-	GROUP.setString(&quot;Radiology&quot;)
-else if (prefix == &quot;SUR&quot;)
-	GROUP.setString(&quot;Surgery&quot;)
-else if (prefix == &quot;VAC&quot;)
-	GROUP.setString(&quot;Vaccination&quot;)
-else if (prefix == &quot;VAC&quot;)
-	GROUP.setString(&quot;Other&quot;)
-
-var NAME = wordUtils.capitalizeFully(trim(GROUP.getString()))
+var NAME = GROUP.getString()
 GROUP.setString(replace(upper(GROUP.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
+
 </jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>NAME</name>
         <rename>NAME</rename>

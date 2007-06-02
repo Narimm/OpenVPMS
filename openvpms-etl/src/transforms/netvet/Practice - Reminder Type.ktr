@@ -38,7 +38,7 @@
     <clusterschemas>
       </clusterschemas>
   <modified_user>-</modified_user>
-  <modified_date>2007&#47;04&#47;20 14:09:23.197</modified_date>
+  <modified_date>2007&#47;05&#47;29 10:46:03.315</modified_date>
     </info>
   <notepads>
     </notepads>
@@ -63,68 +63,10 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Transform Till Fields</from><to>OpenVPMS Till Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select Till Fields</from><to>Transform Till Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Text file input</from><to>Select Till Fields</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from> Reminder Input</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Sort rows</from><to>Unique rows</to><enabled>Y</enabled> </hop>  <hop> <from>Unique rows</from><to>Reminder Type</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Transform Values</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Values</from><to>Sort rows</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
-    <name>OpenVPMS Till Output</name>
-    <type>OpenVPMSLoaderPlugin</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<mappings><connection>OpenVPMS</connection><idColumn>CODE</idColumn><mapping><source>NAME</source><target>&lt;party.organisationTill>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CSHFLT</source><target>&lt;party.organisationTill>tillFloat</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>LSTBAL</source><target>&lt;party.organisationTill>lastBalance</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>LBDATE</source><target>&lt;party.organisationTill>lastCleared</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;entityRelationship.locationTill>target</target><excludeNull>true</excludeNull><value>&lt;party.organisationTill>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;entityRelationship.locationTill>source</target><excludeNull>true</excludeNull><value>&lt;party.organisationLocation>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
-    <GUI>
-      <xloc>649</xloc>
-      <yloc>251</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Select Till Fields</name>
-    <type>SelectValues</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <fields>      <field>        <name>CODE</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>NAME</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>CSHFLT</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>LSTBAL</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>LBDATE</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      </fields>     <cluster_schema/>
-    <GUI>
-      <xloc>269</xloc>
-      <yloc>252</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Text file input</name>
+    <name> Reminder Input</name>
     <type>TextFileInput</type>
     <description/>
     <distribute>Y</distribute>
@@ -159,7 +101,7 @@
     <format>DOS</format>
     <encoding/>
     <file>
-      <name>${NETVET_DATA}\cashbox.txt</name>
+      <name>${NETVET_DATA}\reminder.txt</name>
       <filemask/>
       <file_required/>
       <type>CSV</type>
@@ -169,76 +111,61 @@
       </filters>
     <fields>
       <field>
-        <name>CODE</name>
+        <name>PATIENTID</name>
+        <type>Integer</type>
+        <format/>
+        <currency>$</currency>
+        <decimal>.</decimal>
+        <group>,</group>
+        <nullif>-</nullif>
+        <ifnull/>
+        <position>-1</position>
+        <length>6</length>
+        <precision>0</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>REMINDER</name>
         <type>String</type>
         <format/>
         <currency/>
         <decimal/>
         <group/>
-        <nullif/>
+        <nullif>-</nullif>
         <ifnull/>
         <position>-1</position>
-        <length>-1</length>
+        <length>15</length>
         <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
         </field>
       <field>
-        <name>NAME</name>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <nullif/>
-        <ifnull/>
-        <position>-1</position>
-        <length>-1</length>
-        <precision>-1</precision>
-        <trim_type>none</trim_type>
-        <repeat>N</repeat>
-        </field>
-      <field>
-        <name>CSHFLT</name>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <nullif/>
-        <ifnull/>
-        <position>-1</position>
-        <length>-1</length>
-        <precision>-1</precision>
-        <trim_type>none</trim_type>
-        <repeat>N</repeat>
-        </field>
-      <field>
-        <name>LSTBAL</name>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <nullif/>
-        <ifnull/>
-        <position>-1</position>
-        <length>-1</length>
-        <precision>-1</precision>
-        <trim_type>none</trim_type>
-        <repeat>N</repeat>
-        </field>
-      <field>
-        <name>LBDATE</name>
+        <name>DATE</name>
         <type>Date</type>
         <format>dd&#47;MM&#47;yyyy</format>
-        <currency/>
-        <decimal/>
-        <group/>
-        <nullif>          </nullif>
+        <currency>$</currency>
+        <decimal>.</decimal>
+        <group>,</group>
+        <nullif>-</nullif>
         <ifnull/>
         <position>-1</position>
-        <length>-1</length>
+        <length>10</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>DUE</name>
+        <type>Date</type>
+        <format>dd&#47;MM&#47;yyyy</format>
+        <currency>$</currency>
+        <decimal>.</decimal>
+        <group>,</group>
+        <nullif>-</nullif>
+        <ifnull/>
+        <position>-1</position>
+        <length>10</length>
         <precision>-1</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
@@ -260,14 +187,85 @@
     <date_format_locale>en_au</date_format_locale>
      <cluster_schema/>
     <GUI>
-      <xloc>122</xloc>
-      <yloc>252</yloc>
+      <xloc>150</xloc>
+      <yloc>129</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Transform Till Fields</name>
+    <name>Reminder Type</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>REMINDER</idColumn><mapping><source>REMINDER</source><target>&lt;entity.reminderType>name</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REMINDER</source><target>&lt;entity.reminderType>defaultInterval</target><excludeNull>false</excludeNull><value>1</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>778</xloc>
+      <yloc>132</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select values</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>REMINDER</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>290</xloc>
+      <yloc>130</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Sort rows</name>
+    <type>SortRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <directory>%%java.io.tmpdir%%</directory>
+      <prefix>out</prefix>
+      <sort_size>5000</sort_size>
+      <compress>Y</compress>
+    <fields>
+      <field>
+        <name>REMINDER</name>
+        <ascending>Y</ascending>
+        </field>
+      </fields>
+     <cluster_schema/>
+    <GUI>
+      <xloc>537</xloc>
+      <yloc>129</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform Values</name>
     <type>ScriptValueMod</type>
     <description/>
     <distribute>Y</distribute>
@@ -281,16 +279,34 @@
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
-var CLINIC = 1</jsScript_script>
-        </jsScript>     </jsScripts>    <fields>      <field>        <name>CLINIC</name>
-        <rename>CLINIC</rename>
-        <type>Number</type>
-        <length>16</length>
-        <precision>2</precision>
+REMINDER.setString(substr(REMINDER.getString(),0,2))</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>424</xloc>
+      <yloc>131</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Unique rows</name>
+    <type>Unique</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <count_rows>N</count_rows>
+      <count_field/>
+    <fields>      <field>        <name>REMINDER</name>
+        <case_insensitive>N</case_insensitive>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>456</xloc>
-      <yloc>252</yloc>
+      <xloc>666</xloc>
+      <yloc>131</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
