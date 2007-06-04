@@ -42,50 +42,8 @@
     </info>
   <notepads>
     </notepads>
-  <connection>
-    <name>openvpms</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>Visual Vetaid</name>
-    <server/>
-    <type>MSACCESS</type>
-    <access>ODBC</access>
-    <database>Visual Vetaid</database>
-    <port>-1</port>
-    <username/>
-    <password>Encrypted </password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>-1</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
-  <hop> <from>Filter Notes</from><to>Notes Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Notes</from><to>Filter Medications</to><enabled>Y</enabled> </hop>  <hop> <from>History Input</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Medications</from><to>Filter Problems</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Problems</from><to>Problem Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Problems</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Filter Notes</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Medications</from><to>Medication Output</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Filter Notes</from><to>Notes Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Notes</from><to>Filter Medications</to><enabled>Y</enabled> </hop>  <hop> <from>History Input</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Medications</from><to>Filter Problems</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Problems</from><to>Problem Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Problems</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Filter Notes</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Medications</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Medication Output</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Add sequence</name>
@@ -146,7 +104,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<send_true_to>Medication Output</send_true_to>
+<send_true_to>Transform Fields</send_true_to>
 <send_false_to>Filter Problems</send_false_to>
     <compare>
 <condition>
@@ -217,7 +175,7 @@
      <cluster_schema/>
     <GUI>
       <xloc>328</xloc>
-      <yloc>497</yloc>
+      <yloc>380</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -421,10 +379,10 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>HISTORYID</idColumn><mapping><source>DATE</source><target>&lt;act.patientMedication>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DUEDATE</source><target>&lt;act.patientMedication>endTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientMedication>label</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VALUE</source><target>&lt;act.patientMedication>quantity</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;act.patientMedication>product[0]&lt;participation.product>entity</target><excludeNull>true</excludeNull><value>&lt;product.medication>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;act.patientMedication>product[0]&lt;participation.product>act</target><excludeNull>true</excludeNull><value>&lt;act.patientMedication>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientMedication>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;act.patientMedication>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientMedication>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>false</excludeNull><value>&lt;act.patientMedication>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>HISTORYID</idColumn><mapping><source>DATE</source><target>&lt;act.patientMedication>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DUEDATE</source><target>&lt;act.patientMedication>endTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientMedication>label</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VALUE</source><target>&lt;act.patientMedication>quantity</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;act.patientMedication>product[0]&lt;participation.product>entity</target><excludeNull>true</excludeNull><value>&lt;product.*>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;act.patientMedication>product[0]&lt;participation.product>act</target><excludeNull>true</excludeNull><value>&lt;act.patientMedication>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientMedication>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;act.patientMedication>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientMedication>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>false</excludeNull><value>&lt;act.patientMedication>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>653</xloc>
-      <yloc>269</yloc>
+      <yloc>270</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -443,7 +401,7 @@
 <mappings><connection>openvpms</connection><idColumn>HISTORYID</idColumn><mapping><source>DATE</source><target>&lt;act.patientClinicalNote>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientClinicalNote>note</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientClinicalNote>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;act.patientClinicalNote>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalNote>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalNote>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>653</xloc>
-      <yloc>149</yloc>
+      <yloc>148</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -462,7 +420,31 @@
 <mappings><connection>openvpms</connection><idColumn>HISTORYID</idColumn><mapping><source>DATE</source><target>&lt;act.patientClinicalProblem>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientClinicalProblem>problem</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientClinicalProblem>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;act.patientClinicalProblem>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalProblem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalProblem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>654</xloc>
-      <yloc>497</yloc>
+      <yloc>377</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform Fields</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+CODE.setString(replace(CODE.getString(),&quot; &quot;,&quot;_&quot;))</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>470</xloc>
+      <yloc>267</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

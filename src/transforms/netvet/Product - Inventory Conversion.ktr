@@ -42,48 +42,6 @@
     </info>
   <notepads>
     </notepads>
-  <connection>
-    <name>openvpms</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>Visual Vetaid</name>
-    <server/>
-    <type>MSACCESS</type>
-    <access>ODBC</access>
-    <database>Visual Vetaid</database>
-    <port>-1</port>
-    <username/>
-    <password>Encrypted </password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>-1</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
   <hop> <from>Item Input</from><to>Select Inventory Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Medications</from><to>Product Medication Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Medications</from><to>Filter Merchandise</to><enabled>Y</enabled> </hop>  <hop> <from>Select Inventory Fields</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Filter Medications</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Merchandise</from><to>Product Merchandise Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Comments</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  <hop> <from>Modified Java Script Value</from><to>Product Service Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Comments</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Merchandise</from><to>Filter Comments</to><enabled>Y</enabled> </hop>  </order>
 
@@ -947,6 +905,11 @@ if (TYPE.getString() == &apos;X&apos;)
 var ACTIVE = true
 
 GROUP.setString(replace(upper(GROUP.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
+if (NAME.getString() == &quot;&quot; || NAME.getString() == null) {
+	NAME.setString(&quot;No Product Name&quot;)
+}
+
+CODE.setString(replace(CODE.getString(),&quot; &quot;,&quot;_&quot;))
 
 var typ = TYPE.getString()
 var PRODUCTTYPE
