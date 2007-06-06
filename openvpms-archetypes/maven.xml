@@ -115,6 +115,7 @@
         <ant:java
             classname="org.openvpms.tools.data.migration.DetailsMigrator"
             failonerror="true"
+        	maxmemory="512m"
             fork="true">
             <ant:classpath>
                 <ant:pathelement path="${maven.build.dest}"/>
