@@ -832,6 +832,7 @@
                     <directory>${basedir}/src/test/java</directory>
                     <includes>
                         <include>**/*.properties</include>
+                        <include>**/*.xml</include>
                     </includes>
                 </resource>
             </resources>
