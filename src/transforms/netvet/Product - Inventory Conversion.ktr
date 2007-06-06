@@ -909,7 +909,7 @@ if (NAME.getString() == &quot;&quot; || NAME.getString() == null) {
 	NAME.setString(&quot;No Product Name&quot;)
 }
 
-CODE.setString(replace(CODE.getString(),&quot; &quot;,&quot;_&quot;))
+CODE.setString(replace(upper(CODE.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
 
 var typ = TYPE.getString()
 var PRODUCTTYPE
