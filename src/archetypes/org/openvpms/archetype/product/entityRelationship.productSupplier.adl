@@ -29,6 +29,8 @@
         <node name="activeStartTime" path="/activeStartTime"
               type="java.util.Date" minCardinality="1"
               hidden="true" defaultValue="java.util.Date.new()"/>
+        <node name="reorderCode" displayName="Reorder Code" path="/details/reorderCode" type="java.lang.String" minCardinality="0"/>
+        <node name="reorderName" displayName="Reorder Description" path="/details/reorderName" type="java.lang.String" minCardinality="0"/>
         <node name="minimumQty" displayName="Minimum Order Qty" path="/details/minimumOrderQty" type="java.lang.Integer" minCardinality="0"/>
         <node name="orderQtyInc" displayName="Order Qty Increments" path="/details/orderQtyInc" type="java.lang.Integer" minCardinality="0"/>
         <node name="qtyUom" displayName="Units of Measure" path="/details/qtyUom" type="java.lang.String" minCardinality="0">
