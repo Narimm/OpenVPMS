@@ -42,50 +42,762 @@
     </info>
   <notepads>
     </notepads>
-  <connection>
-    <name>openvpms</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>Visual Vetaid</name>
-    <server/>
-    <type>MSACCESS</type>
-    <access>ODBC</access>
-    <database>Visual Vetaid</database>
-    <port>-1</port>
-    <username/>
-    <password>Encrypted </password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>-1</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
-  <hop> <from>Filter Invoices</from><to>Invoice Service Output</to><enabled>Y</enabled> </hop>  <hop> <from>Service Input</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Filter Invoices</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Invoices</from><to>Filter Counter Sales</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Counter Sales</from><to>Filter Credits</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Filter Cash Payments</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Cash Payments</from><to>Filter Cheque Payments</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Cheque Payments</from><to>Filter Credit Payments</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Service Input</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Filter Payments</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Payments</from><to>Filter Refunds</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Invoices</from><to>Filter Credits</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Refunds</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Invoices</from><to>Invoice Service Output</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Filter Invoices</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Credit Service Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Payments</from><to>Filter Cash</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Cash</from><to>Cash Payment</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Cash</from><to>Filter Cheque</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Cheque</from><to>Filter Credit Card</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credit Card</from><to>Credit Card Payment</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credit Card</from><to>Filter EFT</to><enabled>Y</enabled> </hop>  <hop> <from>Filter EFT</from><to>EFT Payment</to><enabled>Y</enabled> </hop>  <hop> <from>Filter EFT</from><to>Filter Discount</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Refund Cash</from><to>Cash Refund</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Refund Cash</from><to>Filter Refund Cheque</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Refund Cheque</from><to>Filter Refund Credit Card</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Refund Credit Card</from><to>Credit Card Refund</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Refund Credit Card</from><to>Filter Refund EFT</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Refund EFT</from><to>EFT Refund</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Refunds</from><to>Filter Refund Cash</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Refund EFT</from><to>Invalid Refund</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Refund Cheque</from><to>Cheque Refund</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Cheque</from><to>Cheque Payment</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Discount</from><to>Discount Payment</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Discount</from><to>Invalid Payment</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>Add sequence</name>
+    <type>Sequence</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <valuename>SERVICEID</valuename>
+      <use_database>N</use_database>
+      <connection/>
+      <schema/>
+      <seqname>SEQ_</seqname>
+      <use_counter>Y</use_counter>
+      <counter_name/>
+      <start_at>1</start_at>
+      <increment_by>1</increment_by>
+      <max_value>9999999</max_value>
+     <cluster_schema/>
+    <GUI>
+      <xloc>167</xloc>
+      <yloc>73</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Cash Payment</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SERVICEID</idColumn><mapping><source>AMOUNT</source><target>&lt;act.customerAccountPaymentCash>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;actRelationship.customerAccountPaymentItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPayment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;actRelationship.customerAccountPaymentItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPaymentCash>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>730</xloc>
+      <yloc>303</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Cash Refund</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SERVICEID</idColumn><mapping><source>AMOUNT</source><target>&lt;act.customerAccountRefundCash>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;actRelationship.customerAccountRefundItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountRefund>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;actRelationship.customerAccountRefundItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountRefundCash>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>729</xloc>
+      <yloc>743</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Cheque Payment</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SERVICEID</idColumn><mapping><source>AMOUNT</source><target>&lt;act.customerAccountPaymentCheque>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;actRelationship.customerAccountPaymentItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPayment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;actRelationship.customerAccountPaymentItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPaymentCheque>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>729</xloc>
+      <yloc>379</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Cheque Refund</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SERVICEID</idColumn><mapping><source>AMOUNT</source><target>&lt;act.customerAccountRefundCheque>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;actRelationship.customerAccountRefundItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountRefund>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;actRelationship.customerAccountRefundItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountRefundCheque>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>733</xloc>
+      <yloc>812</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Credit Card Payment</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SERVICEID</idColumn><mapping><source>AMOUNT</source><target>&lt;act.customerAccountPaymentCredit>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;actRelationship.customerAccountPaymentItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPayment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;actRelationship.customerAccountPaymentItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPaymentCredit>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>729</xloc>
+      <yloc>460</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Credit Card Refund</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SERVICEID</idColumn><mapping><source>AMOUNT</source><target>&lt;act.customerAccountRefundCredit>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;actRelationship.customerAccountRefundItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountRefund>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;actRelationship.customerAccountRefundItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountRefundCredit>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>733</xloc>
+      <yloc>880</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Credit Service Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SERVICEID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountCreditItem>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountCreditItem>unitPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAXAMT</source><target>&lt;act.customerAccountCreditItem>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DISPFEE</source><target>&lt;act.customerAccountCreditItem>fixedPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>QTY</source><target>&lt;act.customerAccountCreditItem>quantity</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.customerAccountCreditItem>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;act.customerAccountCreditItem>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountCreditItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ITEM</source><target>&lt;act.customerAccountCreditItem>product[0]&lt;participation.product>entity</target><excludeNull>true</excludeNull><value>&lt;product.*>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;act.customerAccountCreditItem>product[0]&lt;participation.product>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountCreditItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DOCTOR</source><target>&lt;act.customerAccountCreditItem>clinician[0]&lt;participation.clinician>entity</target><excludeNull>true</excludeNull><value>&lt;security.user>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;act.customerAccountCreditItem>clinician[0]&lt;participation.clinician>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountCreditItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;actRelationship.customerAccountCreditItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesCredit>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;actRelationship.customerAccountCreditItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountCreditItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>730</xloc>
+      <yloc>200</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Discount Payment</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SERVICEID</idColumn><mapping><source>AMOUNT</source><target>&lt;act.customerAccountPaymentDiscount>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;actRelationship.customerAccountPaymentItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPayment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;actRelationship.customerAccountPaymentItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPaymentDiscount>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>730</xloc>
+      <yloc>624</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Dummy (do nothing)</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+    <GUI>
+      <xloc>341</xloc>
+      <yloc>872</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>EFT Payment</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SERVICEID</idColumn><mapping><source>AMOUNT</source><target>&lt;act.customerAccountPaymentEFT>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;actRelationship.customerAccountPaymentItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPayment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;actRelationship.customerAccountPaymentItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPaymentEFT>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>728</xloc>
+      <yloc>543</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>EFT Refund</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SERVICEID</idColumn><mapping><source>AMOUNT</source><target>&lt;act.customerAccountRefundEFT>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;actRelationship.customerAccountRefundItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountRefund>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;actRelationship.customerAccountRefundItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountRefundEFT>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>733</xloc>
+      <yloc>964</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Cash</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Cash Payment</send_true_to>
+<send_false_to>Filter Cheque</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>ITEM</leftvalue>
+ <function>=</function>
+ <rightvalue/>
+ <value><name>constant</name><type>String</type><text>CASH</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>512</xloc>
+      <yloc>305</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Cheque</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Cheque Payment</send_true_to>
+<send_false_to>Filter Credit Card</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>ITEM</leftvalue>
+ <function>=</function>
+ <rightvalue/>
+ <value><name>constant</name><type>String</type><text>CHEQUE</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>511</xloc>
+      <yloc>379</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Credit Card</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Credit Card Payment</send_true_to>
+<send_false_to>Filter EFT</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>ITEM</leftvalue>
+   <function>=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>BNKCARD</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>DESCRIPTION</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>Y</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>510</xloc>
+      <yloc>459</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Credits</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Credit Service Output</send_true_to>
+<send_false_to>Filter Payments</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>TRANTYP</leftvalue>
+   <function>=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text> 2</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PATIENTID</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text>-1</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>ITEM</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>COMS</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>347</xloc>
+      <yloc>201</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Discount</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Discount Payment</send_true_to>
+<send_false_to>Invalid Payment</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>ITEM</leftvalue>
+   <function>=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>DISCOUNT</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>505</xloc>
+      <yloc>627</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter EFT</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>EFT Payment</send_true_to>
+<send_false_to>Filter Discount</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>ITEM</leftvalue>
+   <function>=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>BNKCARD</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>507</xloc>
+      <yloc>541</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Invoices</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Invoice Service Output</send_true_to>
+<send_false_to>Filter Credits</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>TRANTYP</leftvalue>
+   <function>=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text> 0</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PATIENTID</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text>-1</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>ITEM</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>COMS</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>348</xloc>
+      <yloc>76</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Payments</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Filter Cash</send_true_to>
+<send_false_to>Filter Refunds</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>TRANTYP</leftvalue>
+   <function>=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text> 1</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>344</xloc>
+      <yloc>304</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Refund Cash</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Cash Refund</send_true_to>
+<send_false_to>Filter Refund Cheque</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>ITEM</leftvalue>
+ <function>=</function>
+ <rightvalue/>
+ <value><name>constant</name><type>String</type><text>CASH</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>527</xloc>
+      <yloc>742</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Refund Cheque</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Cheque Refund</send_true_to>
+<send_false_to>Filter Refund Credit Card</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>ITEM</leftvalue>
+ <function>=</function>
+ <rightvalue/>
+ <value><name>constant</name><type>String</type><text>CHEQUE</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>523</xloc>
+      <yloc>811</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Refund Credit Card</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Credit Card Refund</send_true_to>
+<send_false_to>Filter Refund EFT</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>ITEM</leftvalue>
+   <function>=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>BNKCARD</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>DESCRIPTION</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>Y</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>522</xloc>
+      <yloc>880</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Refund EFT</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>EFT Refund</send_true_to>
+<send_false_to>Invalid Refund</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>ITEM</leftvalue>
+   <function>=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text>BNKCARD</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>519</xloc>
+      <yloc>963</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Refunds</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Filter Refund Cash</send_true_to>
+<send_false_to>Dummy (do nothing)</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>TRANTYP</leftvalue>
+ <function>=</function>
+ <rightvalue/>
+ <value><name>constant</name><type>Integer</type><text> 6</text><length>-1</length><precision>0</precision><isnull>N</isnull></value> </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>344</xloc>
+      <yloc>743</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Invalid Payment</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+    <GUI>
+      <xloc>504</xloc>
+      <yloc>685</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Invalid Refund</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+    <GUI>
+      <xloc>519</xloc>
+      <yloc>1031</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Invoice Service Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SERVICEID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountInvoiceItem>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountInvoiceItem>unitPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAXAMT</source><target>&lt;act.customerAccountInvoiceItem>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DISPFEE</source><target>&lt;act.customerAccountInvoiceItem>fixedPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>QTY</source><target>&lt;act.customerAccountInvoiceItem>quantity</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;act.customerAccountInvoiceItem>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ITEM</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>entity</target><excludeNull>true</excludeNull><value>&lt;product.*>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;act.customerAccountInvoiceItem>product[0]&lt;participation.product>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DOCTOR</source><target>&lt;act.customerAccountInvoiceItem>clinician[0]&lt;participation.clinician>entity</target><excludeNull>true</excludeNull><value>&lt;security.user>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;act.customerAccountInvoiceItem>clinician[0]&lt;participation.clinician>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;actRelationship.customerAccountInvoiceItem>source</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesInvoice>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target>&lt;actRelationship.customerAccountInvoiceItem>target</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInvoiceItem>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>730</xloc>
+      <yloc>76</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
 
   <step>
     <name>Service Input</name>
@@ -142,7 +854,7 @@
         <nullif>-</nullif>
         <ifnull/>
         <position>-1</position>
-        <length>2</length>
+        <length>8</length>
         <precision>0</precision>
         <trim_type>none</trim_type>
         <repeat>N</repeat>
@@ -229,7 +941,7 @@
         <currency>$</currency>
         <decimal>.</decimal>
         <group>,</group>
-        <nullif>          </nullif>
+        <nullif>-</nullif>
         <ifnull/>
         <position>-1</position>
         <length>10</length>
@@ -283,21 +995,6 @@
         <repeat>N</repeat>
         </field>
       <field>
-        <name>DISPFEE</name>
-        <type>Number</type>
-        <format>#,##0.###</format>
-        <currency>$</currency>
-        <decimal>.</decimal>
-        <group>,</group>
-        <nullif>-</nullif>
-        <ifnull/>
-        <position>-1</position>
-        <length>10</length>
-        <precision>3</precision>
-        <trim_type>left</trim_type>
-        <repeat>N</repeat>
-        </field>
-      <field>
         <name>COST</name>
         <type>Number</type>
         <format>#,##0.###</format>
@@ -314,6 +1011,21 @@
         </field>
       <field>
         <name>QTY</name>
+        <type>Number</type>
+        <format>#,##0.###</format>
+        <currency>$</currency>
+        <decimal>.</decimal>
+        <group>,</group>
+        <nullif>-</nullif>
+        <ifnull/>
+        <position>-1</position>
+        <length>10</length>
+        <precision>3</precision>
+        <trim_type>left</trim_type>
+        <repeat>N</repeat>
+        </field>
+      <field>
+        <name>DISPFEE</name>
         <type>Number</type>
         <format>#,##0.###</format>
         <currency>$</currency>
@@ -359,249 +1071,33 @@
     <date_format_locale>en_au</date_format_locale>
      <cluster_schema/>
     <GUI>
-      <xloc>83</xloc>
+      <xloc>43</xloc>
+      <yloc>73</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform Fields</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+ITEM.setString(replace(upper(ITEM.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
+</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>251</xloc>
       <yloc>74</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter Invoices</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<send_true_to/>
-<send_false_to/>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue/>
- <function>=</function>
- <rightvalue/>
- </condition>
-    </compare>
-     <cluster_schema/>
-    <GUI>
-      <xloc>331</xloc>
-      <yloc>76</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Invoice Service Output</name>
-    <type>OpenVPMSLoaderPlugin</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<mappings><connection>openvpms</connection><idColumn>SERVICEID</idColumn><mapping><source>TRANSID</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANTYP</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ITEM</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DOCTOR</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DATE</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>RRPAMT</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAXAMT</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DISPFEE</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>COST</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>QTY</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SERVICEID</source><target></target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
-    <GUI>
-      <xloc>648</xloc>
-      <yloc>76</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Add sequence</name>
-    <type>Sequence</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-      <valuename>SERVICEID</valuename>
-      <use_database>N</use_database>
-      <connection/>
-      <schema/>
-      <seqname>SEQ_</seqname>
-      <use_counter>Y</use_counter>
-      <counter_name/>
-      <start_at>1</start_at>
-      <increment_by>1</increment_by>
-      <max_value>9999999</max_value>
-     <cluster_schema/>
-    <GUI>
-      <xloc>197</xloc>
-      <yloc>76</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter Counter Sales</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<send_true_to/>
-<send_false_to/>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue/>
- <function>=</function>
- <rightvalue/>
- </condition>
-    </compare>
-     <cluster_schema/>
-    <GUI>
-      <xloc>328</xloc>
-      <yloc>153</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter Credits</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<send_true_to/>
-<send_false_to/>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue/>
- <function>=</function>
- <rightvalue/>
- </condition>
-    </compare>
-     <cluster_schema/>
-    <GUI>
-      <xloc>327</xloc>
-      <yloc>235</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter Cash Payments</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<send_true_to/>
-<send_false_to/>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue/>
- <function>=</function>
- <rightvalue/>
- </condition>
-    </compare>
-     <cluster_schema/>
-    <GUI>
-      <xloc>330</xloc>
-      <yloc>318</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter Cheque Payments</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<send_true_to/>
-<send_false_to/>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue/>
- <function>=</function>
- <rightvalue/>
- </condition>
-    </compare>
-     <cluster_schema/>
-    <GUI>
-      <xloc>328</xloc>
-      <yloc>391</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter Credit Payments</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<send_true_to/>
-<send_false_to/>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue/>
- <function>=</function>
- <rightvalue/>
- </condition>
-    </compare>
-     <cluster_schema/>
-    <GUI>
-      <xloc>327</xloc>
-      <yloc>476</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Dummy (do nothing)</name>
-    <type>Dummy</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-     <cluster_schema/>
-    <GUI>
-      <xloc>323</xloc>
-      <yloc>619</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
