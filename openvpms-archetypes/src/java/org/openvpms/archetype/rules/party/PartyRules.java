@@ -18,10 +18,6 @@
 
 package org.openvpms.archetype.rules.party;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -39,6 +35,12 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 
 /**
  * Business rules for <em>party.*</em> instances.
@@ -55,7 +57,7 @@ public class PartyRules {
 
 
     /**
-     * Constructs a new <code>PartyRules</code>.
+     * Constructs a new <tt>PartyRules</tt>.
      *
      * @throws ArchetypeServiceException if the archetype service is not
      *                                   configured
@@ -65,7 +67,7 @@ public class PartyRules {
     }
 
     /**
-     * Constructs a new <code>PartyRules/code>.
+     * Constructs a new <tt>PartyRules</tt>.
      *
      * @param service the archetype service
      */
@@ -170,8 +172,8 @@ public class PartyRules {
 
     /**
      * Returns a formatted billing address for a customer associated with an
-     * act via an <em>participation.customer</em> or an 
-     * <em>participation.patient</em> participation. 
+     * act via an <em>participation.customer</em> or an
+     * <em>participation.patient</em> participation.
      *
      * @param act the act
      * @return a formatted billing address for a party. May be empty if
@@ -180,10 +182,10 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getBillingAddress(Act act) {
-        ActBean bean = new ActBean(act, service);
-        Party party = (Party) bean.getParticipant("participation.customer");
-        if (party == null)
-        	party = new PatientRules().getOwner(act);
+        Party party = getCustomer(act);
+        if (party == null) {
+            party = new PatientRules(service).getOwner(act);
+        }
         return (party != null) ? getBillingAddress(party) : "";
     }
 
@@ -200,7 +202,7 @@ public class PartyRules {
 
     /**
      * Returns a formatted correspondence address for a customer associated with
-     * an act via an <em>participation.customer</em> or an 
+     * an act via an <em>participation.customer</em> or an
      * <em>participation.patient</em> participation.
      *
      * @param act the act
@@ -210,10 +212,10 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getCorrespondenceAddress(Act act) {
-        ActBean bean = new ActBean(act, service);
-        Party party = (Party) bean.getParticipant("participation.customer");
-        if (party == null)
-        	party = new PatientRules().getOwner(act);
+        Party party = getCustomer(act);
+        if (party == null) {
+            party = new PatientRules().getOwner(act);
+        }
         return (party != null) ? getCorrespondenceAddress(party) : "";
     }
 
@@ -233,21 +235,80 @@ public class PartyRules {
     }
 
     /**
+     * Returns a formatted work telephone number for a party.
+     *
+     * @param party the party
+     * @return a formatted home telephone number for the party. May be empty if
+     *         there is no corresponding <em>contact.phoneNumber</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getHomeTelephone(Party party) {
+        Contact contact = getContact(party, "contact.phoneNumber", "HOME",
+                                     true);
+        return (contact != null) ? formatPhone(contact) : "";
+    }
+
+    /**
+     * Returns a formatted home telephone number for a party associated with
+     * an act via an <em>participation.customer</em> participation.
+     *
+     * @param act the act
+     * @return a formatted home telephone number for the party. May be empty if
+     *         there is no customer, or corresponding
+     *         <em>contact.phoneNumber</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getHomeTelephone(Act act) {
+        Party party = getCustomer(act);
+        return (party != null) ? getHomeTelephone(party) : "";
+    }
+
+    /**
+     * Returns a formatted work telephone number for a party.
+     *
+     * @param party the party
+     * @return a formatted telephone number for the party. May be empty if
+     *         there is no corresponding <em>contact.phoneNumber</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getWorkTelephone(Party party) {
+        Contact contact = getContact(party, "contact.phoneNumber", "WORK",
+                                     true);
+        return (contact != null) ? formatPhone(contact) : "";
+    }
+
+    /**
+     * Returns a formatted work telephone number for a party associated with
+     * an act via an <em>participation.customer</em> participation.
+     *
+     * @param act the act
+     * @return a formatted work telephone number for the party. May be empty if
+     *         there is no customer, or corresponding
+     *         <em>contact.phoneNumber</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getWorkTelephone(Act act) {
+        Party party = getCustomer(act);
+        return (party != null) ? getWorkTelephone(party) : "";
+    }
+
+    /**
      * Returns a formatted fax number for a party.
      *
+     * @param party the party
      * @return a formatted fax number for a party. May be empty if
      *         there is no corresponding <em>contact.faxNumber</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getFaxNumber(Party party) {
-    	Contact contact = getContact(party, "contact.faxNumber","");
-    	if (contact != null) {
-    		IMObjectBean bean = new IMObjectBean(contact, service);
-    		String areaCode = bean.getString("areaCode");
-    		String faxNumber = bean.getString("faxNumber");
-    		return "(" + areaCode + ")" + faxNumber;  		
-    	}
-    	return "";
+        Contact contact = getContact(party, "contact.faxNumber", null);
+        if (contact != null) {
+            IMObjectBean bean = new IMObjectBean(contact, service);
+            String areaCode = bean.getString("areaCode");
+            String faxNumber = bean.getString("faxNumber");
+            return "(" + areaCode + ")" + faxNumber;
+        }
+        return "";
     }
 
     /**
@@ -285,9 +346,9 @@ public class PartyRules {
      * @throws LookupHelperException     if the title lookup is incorrect
      */
     private String getPersonName(Party party) {
-    	
+
         StringBuffer result = new StringBuffer();
-        if (party != null) {        	
+        if (party != null) {
             IMObjectBean bean = new IMObjectBean(party, service);
             NodeDescriptor descriptor = bean.getDescriptor("title");
             String title = LookupHelper.getName(service, descriptor, party);
@@ -308,52 +369,49 @@ public class PartyRules {
      *
      * @param party   the party
      * @param type    the contact archetype shortname
-     * @param purpose the contact purpose
-     * @return the corresponding contact, or <code>null</code>
+     * @param purpose the contact purpose. May be <tt>null</tt>
+     * @return the corresponding contact, or <tt>null</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Contact getContact(Party party, String type, String purpose) {
+        return getContact(party, type, purpose, false);
+    }
+
+    /**
+     * Looks for the contact that best matches the criteria.
+     *
+     * @param party   the party
+     * @param type    the contact type
+     * @param purpose the contact purpose. May be <tt>null</tt>
+     * @param exact   if <tt>true</tt>, the contact must have the specified
+     *                purpose
+     * @return the matching contact or <tt>null</tt>
+     */
+    private Contact getContact(Party party, String type, String purpose,
+                               boolean exact) {
         Contact result = null;
         if (party != null) {
+            PurposeMatcher matcher = new PurposeMatcher(type, purpose, exact);
             for (Contact contact : party.getContacts()) {
-                if (TypeHelper.isA(contact, type)) {
-                    IMObjectBean bean = new IMObjectBean(contact, service);
-                    if (hasContactPurpose(contact, purpose)) {
-                        // direct match
-                        result = contact;
-                        break;
-                    }
-                    if (bean.hasNode("preferred") && bean.getBoolean(
-                            "preferred"))
-                        // if preferred contact, save but keep searching just in
-                        // case there is another contact that is a direct match
-                        result = contact;
-                    else {
-                        if (result == null) {
-                            // closest match thus far
-                            result = contact;
-                        }
-                    }
+                if (matcher.matches(contact)) {
+                    break;
                 }
             }
+            result = matcher.getMatch();
         }
         return result;
     }
 
     /**
-     * Determines if a contact has a particular purpose.
+     * Returns the customer associated with an act via an
+     * <em>participation.customer</em> participation.
      *
-     * @param contact the contact
-     * @param purpose the contact purpose
-     * @return <code>true</code> if the contact has the specified purpose,
-     *         otherwise <code>false</code>
+     * @param act the act
+     * @return the customer, or <tt>null</tt> if none is present
      */
-    private boolean hasContactPurpose(Contact contact, String purpose) {
-        for (Lookup classification : contact.getClassifications()) {
-            if (classification.getCode().equals(purpose))
-                return true;
-        }
-        return false;
+    private Party getCustomer(Act act) {
+        ActBean bean = new ActBean(act, service);
+        return (Party) bean.getParticipant("participation.customer");
     }
 
     /**
@@ -373,11 +431,27 @@ public class PartyRules {
     }
 
     /**
+     * Returns a formatted telephone number from a <em>contact.phoneNumber</em>.
+     *
+     * @param contact the contact
+     * @return a formatted telephone number
+     */
+    private String formatPhone(Contact contact) {
+        IMObjectBean bean = new IMObjectBean(contact, service);
+        String areaCode = bean.getString("areaCode");
+        if (areaCode == null) {
+            areaCode = "";
+        }
+        String phone = bean.getString("telephoneNumber");
+        return "(" + areaCode + ") " + phone;
+    }
+
+    /**
      * Returns a concatenated list of values for a set of objects.
      *
      * @param objects the objects
      * @param node    the node name
-     * @return the stringified value of <code>node</code> for each object,
+     * @return the stringified value of <tt>node</tt> for each object,
      *         separated by ", "
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -394,6 +468,153 @@ public class PartyRules {
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Helper to find a contact matching some criteria.
+     */
+    private abstract class ContactMatcher {
+
+        /**
+         * The contact archetype short name.
+         */
+        private final String shortName;
+
+        /**
+         * The contacts matching some or all of the criteria, keyed on
+         * priority, where the 0 is the highest priority.
+         */
+        private SortedMap<Integer, Contact> contacts
+                = new TreeMap<Integer, Contact>();
+
+        /**
+         * Constructs a new <tt>ContactMatcher</tt>.
+         *
+         * @param shortName the contact archetype short name
+         */
+        public ContactMatcher(String shortName) {
+            this.shortName = shortName;
+        }
+
+        /**
+         * Determines if a contact matches the criteria.
+         *
+         * @param contact the contact
+         * @return <tt>true</tt> if the contact is an exact match; otherwise
+         *         <tt>false</tt>
+         */
+        public boolean matches(Contact contact) {
+            return TypeHelper.isA(contact, shortName);
+        }
+
+        /**
+         * Returns the contact that best matches the criteria.
+         *
+         * @return the contact that best matches the criteria, or <tt>null</tt>
+         */
+        public Contact getMatch() {
+            Integer best = null;
+            if (!contacts.isEmpty()) {
+                best = contacts.firstKey();
+            }
+            return (best != null) ? contacts.get(best) : null;
+        }
+
+        /**
+         * Registers a contact that matches some/all of the criteria.
+         *
+         * @param priority the priority, where <tt>0</tt> is the highest
+         *                 priority.
+         * @param contact  the contact
+         */
+        protected void setMatch(int priority, Contact contact) {
+            contacts.put(priority, contact);
+        }
+
+        /**
+         * Determines if a contact has a preferred node with value 'true'.
+         *
+         * @param contact the contact
+         * @return <tt>true</tt> if the contact is preferred
+         */
+        protected boolean isPreferred(Contact contact) {
+            IMObjectBean bean = new IMObjectBean(contact, service);
+            return bean.hasNode("preferred") && bean.getBoolean("preferred");
+        }
+    }
+
+    /**
+     * Matches contacts on purpose.
+     */
+    private class PurposeMatcher extends ContactMatcher {
+
+        /**
+         * The purpose to match on.
+         */
+        private final String purpose;
+
+        /**
+         * If <tt>true</tt> the contact must contain the purpose to be returned
+         */
+        private final boolean exact;
+
+        /**
+         * Constructs a new <tt>PurposeMatcher</tt>.
+         *
+         * @param shortName the contact archetype short name
+         * @param purpose   the purpose. May be <tt>null</tt>
+         * @param exact     if <tt>true</tt> the contact must contain the purpose
+         *                  in order to be considered a match
+         */
+        public PurposeMatcher(String shortName, String purpose, boolean exact) {
+            super(shortName);
+            this.purpose = purpose;
+            this.exact = exact;
+        }
+
+        @Override
+        public boolean matches(Contact contact) {
+            boolean best = false;
+            if (super.matches(contact)) {
+                boolean preferred = isPreferred(contact);
+                if (purpose != null) {
+                    if (hasContactPurpose(contact, purpose)) {
+                        if (preferred) {
+                            setMatch(0, contact);
+                            best = true;
+                        } else {
+                            setMatch(1, contact);
+                        }
+                    } else if (!exact) {
+                        setMatch(2, contact);
+                    }
+                } else {
+                    if (preferred) {
+                        setMatch(0, contact);
+                        best = true;
+                    } else {
+                        setMatch(1, contact);
+                    }
+                }
+            }
+            return best;
+        }
+
+        /**
+         * Determines if a contact has a particular purpose.
+         *
+         * @param contact the contact
+         * @param purpose the contact purpose
+         * @return <tt>true</tt> if the contact has the specified purpose,
+         *         otherwise <tt>false</tt>
+         */
+        private boolean hasContactPurpose(Contact contact, String purpose) {
+            for (Lookup classification : contact.getClassifications()) {
+                if (classification.getCode().equals(purpose))
+                    return true;
+            }
+            return false;
+        }
     }
 
 }
