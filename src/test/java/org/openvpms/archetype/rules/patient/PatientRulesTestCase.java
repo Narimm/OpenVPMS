@@ -21,10 +21,12 @@ package org.openvpms.archetype.rules.patient;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
@@ -141,6 +143,21 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         assertFalse(rules.isDesexed(patient));
         rules.setDesexed(patient);
         assertTrue(rules.isDesexed(patient));
+    }
+
+    /**
+     * Tests the {@link PatientRules#getMicrochip(Party)} method.
+     */
+    public void testGetMicrochip() {
+        Party patient = TestHelper.createPatient(false);
+        assertNull(rules.getMicrochip(patient));
+
+        EntityIdentity microchip = (EntityIdentity) create(
+                "entityIdentity.microchip");
+        IMObjectBean tagBean = new IMObjectBean(microchip);
+        tagBean.setValue("microchip", "1234567");
+        patient.addIdentity(microchip);
+        assertEquals("1234567", rules.getMicrochip(patient));
     }
 
     /**

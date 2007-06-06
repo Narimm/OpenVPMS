@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.patient;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -28,6 +29,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -280,4 +282,19 @@ public class PatientRules {
         return result;
     }
 
+    /**
+     * Returns the most recent microchip number for a patient.
+     *
+     * @param patient the patient
+     * @return the most recent microchip number, or <tt>null<tt> if none is
+     *         found patient
+     */
+    public String getMicrochip(Party patient) {
+        for (EntityIdentity identity : patient.getIdentities()) {
+            if (TypeHelper.isA(identity, "entityIdentity.microchip")) {
+                return identity.getIdentity();
+            }
+        }
+        return null;
+    }
 }

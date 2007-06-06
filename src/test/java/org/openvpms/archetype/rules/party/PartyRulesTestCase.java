@@ -20,10 +20,12 @@ package org.openvpms.archetype.rules.party;
 
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
@@ -98,7 +100,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         locationBean.setValue("address", "1 Foo St");
         locationBean.setValue("suburb", "Bar");
         locationBean.setValue("postcode", "3071");
-        location.addClassification(createContactPurpose("HOME"));
+        location.addClassification(getContactPurpose("HOME"));
         final String address = "1 Foo St Bar 3071 (Home)";
         assertEquals(address, rules.getPreferredContacts(party));
 
@@ -106,7 +108,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         phoneBean.setValue("preferred", true);
         phoneBean.setValue("areaCode", "03");
         phoneBean.setValue("telephoneNumber", "1234567");
-        phone.addClassification(createContactPurpose("WORK"));
+        phone.addClassification(getContactPurpose("WORK"));
         final String phoneNo = "(03) 1234567 (Work)";
 
         String contacts = rules.getPreferredContacts(party);
@@ -120,11 +122,11 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      */
     public void testGetContactPurposes() {
         Contact contact = (Contact) create("contact.location");
-        contact.addClassification(createContactPurpose("HOME"));
+        contact.addClassification(getContactPurpose("HOME"));
 
         assertEquals("(Home)", rules.getContactPurposes(contact));
 
-        contact.addClassification(createContactPurpose("WORK"));
+        contact.addClassification(getContactPurpose("WORK"));
 
         String purposes = rules.getContactPurposes(contact);
 
@@ -157,7 +159,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
                      rules.getBillingAddress(party));
 
         // remove all the contacts and verify there is no billing address
-        for (Contact c: party.getContacts().toArray(new Contact[0])) {
+        for (Contact c : party.getContacts().toArray(new Contact[0])) {
             party.removeContact(c);
         }
 
@@ -188,11 +190,89 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
                      rules.getCorrespondenceAddress(party));
 
         // remove all the contacts and verify there is no correspondence address
-        for (Contact c: party.getContacts().toArray(new Contact[0])) {
+        for (Contact c : party.getContacts().toArray(new Contact[0])) {
             party.removeContact(c);
         }
 
         assertEquals("", rules.getCorrespondenceAddress(party));
+    }
+
+    /**
+     * Tests the {@link PartyRules#getHomeTelephone(Party)} method.
+     */
+    public void testGetHomeTelephone() {
+        Party party = TestHelper.createCustomer(false);
+        Contact phone1 = getContact(party, "contact.phoneNumber");
+        populatePhone(phone1, "12345", false, null);
+
+        assertEquals("", rules.getHomeTelephone(party));
+        Lookup purpose = getContactPurpose("HOME");
+        phone1.addClassification(purpose);
+        assertEquals("(03) 12345", rules.getHomeTelephone(party));
+
+        Contact phone2 = createPhone("56789", true, null);
+        party.addContact(phone2);
+        assertEquals("(03) 12345", rules.getHomeTelephone(party));
+
+        phone2.addClassification(purpose);
+        assertEquals("(03) 56789", rules.getHomeTelephone(party));
+    }
+
+    /**
+     * Tests the {@link PartyRules#getWorkTelephone(Party)} method.
+     */
+    public void testGetWorkTelephone() {
+        Party party = TestHelper.createCustomer(false);
+        Contact phone1 = getContact(party, "contact.phoneNumber");
+        populatePhone(phone1, "12345", false, null);
+
+        assertEquals("", rules.getHomeTelephone(party));
+        Lookup purpose = getContactPurpose("WORK");
+        phone1.addClassification(purpose);
+        assertEquals("(03) 12345", rules.getWorkTelephone(party));
+
+        Contact phone2 = createPhone("56789", true, null);
+        party.addContact(phone2);
+        assertEquals("(03) 12345", rules.getWorkTelephone(party));
+
+        phone2.addClassification(purpose);
+        assertEquals("(03) 56789", rules.getWorkTelephone(party));
+    }
+
+    /**
+     * Tests the {@link PartyRules#getHomeTelephone(Act)} method.
+     */
+    public void testActGetHomeTelephone() {
+        Act act = (Act) create("act.customerEstimation");
+        assertEquals("", rules.getHomeTelephone(act));
+
+        Party party = TestHelper.createCustomer();
+        Contact phone = getContact(party, "contact.phoneNumber");
+        populatePhone(phone, "12345", false, "HOME");
+        save(phone);
+
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.customer", party);
+
+        assertEquals("(03) 12345", rules.getHomeTelephone(act));
+    }
+
+    /**
+     * Tests the {@link PartyRules#getWorkTelephone(Act)} method.
+     */
+    public void testActGetWorkTelephone() {
+        Act act = (Act) create("act.customerEstimation");
+        assertEquals("", rules.getWorkTelephone(act));
+
+        Party party = TestHelper.createCustomer();
+        Contact phone = getContact(party, "contact.phoneNumber");
+        populatePhone(phone, "12345", false, "WORK");
+        save(phone);
+
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.customer", party);
+
+        assertEquals("(03) 12345", rules.getWorkTelephone(act));
     }
 
     /**
@@ -260,14 +340,14 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to create a contact purpose.
+     * Gets an <em>lookup.contactPurpose</em> lookup, creating it if it
+     * doesn't exist.
      *
      * @param purpose the purpose
+     * @return the lookup
      */
-    private Lookup createContactPurpose(String purpose) {
-        Lookup lookup = (Lookup) create("lookup.contactPurpose");
-        lookup.setCode(purpose);
-        return lookup;
+    private Lookup getContactPurpose(String purpose) {
+        return TestHelper.getClassification("lookup.contactPurpose", purpose);
     }
 
     /**
@@ -275,7 +355,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      *
      * @param address the address
      * @param purpose the contact purpose. May be <code>null</code>
-     * @return a new lcoation contact
+     * @return a new location contact
      */
     private Contact createLocation(String address, String purpose) {
         Contact contact = (Contact) create("contact.location");
@@ -284,7 +364,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Populates an existing <em>contact.location</em>
+     * Populates a <em>contact.location</em>
      *
      * @param contact the contact
      * @param address the address
@@ -298,7 +378,43 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         bean.setValue("postcode", "3071");
         bean.setValue("state", "VIC");
         if (purpose != null) {
-            contact.addClassification(createContactPurpose(purpose));
+            contact.addClassification(getContactPurpose(purpose));
+        }
+    }
+
+    /**
+     * Creates a new <em>contact.phoneNumber</em>.
+     *
+     * @param number    the phone number
+     * @param preferred if <tt>true</tt>, marks the contact as the preferred
+     *                  contact
+     * @param purpose   the contact purpose. May be <tt>null</tt>
+     * @return a new phone contact
+     */
+    private Contact createPhone(String number, boolean preferred,
+                                String purpose) {
+        Contact contact = (Contact) create("contact.phoneNumber");
+        populatePhone(contact, number, preferred, purpose);
+        return contact;
+    }
+
+    /**
+     * Populates a <em>contact.phoneNumber</em>.
+     *
+     * @param contact   the contact
+     * @param number    the phone number
+     * @param preferred if <tt>true</tt>, marks the contact as the preferred
+     *                  contact
+     * @param purpose   the contact purpose. May be <tt>null</tt>
+     */
+    private void populatePhone(Contact contact, String number,
+                               boolean preferred, String purpose) {
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("areaCode", "03");
+        bean.setValue("telephoneNumber", number);
+        bean.setValue("preferred", preferred);
+        if (purpose != null) {
+            contact.addClassification(getContactPurpose(purpose));
         }
     }
 }
