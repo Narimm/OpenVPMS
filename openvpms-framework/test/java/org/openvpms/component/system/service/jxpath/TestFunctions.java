@@ -20,15 +20,14 @@
 package org.openvpms.component.system.service.jxpath;
 
 // java core
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-// openvpms-framework
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Some test finctions for JXPath test cases
@@ -77,8 +76,7 @@ public class TestFunctions {
      * Sum all the nodes, which will be BigDecimal nodes and and return
      * a BigDecimal
      * 
-     * @param context
-     *            the expression context
+     * @param list the list to sum
      * @return BigDecimal            
      */
     public static BigDecimal sum(List<BigDecimal> list) {
@@ -91,11 +89,10 @@ public class TestFunctions {
     }
     
     /**
-     * Return a {@link BigDecimal} given a double
+     * Converts a list of double values to big decimals.
      * 
-     * @param input
-     *            the double
-     * @return BigDecimal            
+     * @param doubles the doubles
+     * @return the converted values
      */
     public static List<BigDecimalValues> toBigDecimalValues(List<DoubleValues> doubles) {
         List<BigDecimalValues> dec = new ArrayList<BigDecimalValues>(doubles.size());
@@ -128,13 +125,29 @@ public class TestFunctions {
     }
     
     /**
-     * Return the contacts as a string
-     * 
-     * @param party
-     *            the party object
-     * @return String            
+     * Return the contacts as a string.
+     * @return String
      */
     public static String getContacts() {
         return "Jimmy";
+    }
+
+    /**
+     * Returns the element in a list.
+     *
+     * @param list the list
+     * @param index the index
+     */
+    public Object getValue(List list, int index) {
+        return list.get(index);
+    }
+
+    /**
+     * Returns the string 'foo'.
+     *
+     * @return a string
+     */
+    public String getValue() {
+        return "foo";
     }
 }
