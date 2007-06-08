@@ -250,20 +250,19 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     }
 
     /**
-     * Returns the action of an act.
+     * Returns the action of an reminder.
      *
-     * @param act the act
+     * @param act the reminder
      * @return the action component, or <tt>null</tt>
      */
     private Component getAction(Act act) {
         Label result = LabelFactory.create();
         if (rules.shouldCancel(act, new Date())) {
-            result.setText(
-                    Messages.get("patientremindertablemodel.cancel"));
+            result.setText(Messages.get("patientremindertablemodel.cancel"));
         } else {
             Party customer = getPatientOwner(act);
             if (customer != null) {
-                Contact contact = rules.getContact(customer.getContacts());
+                Contact contact = rules.getContact(customer, act);
                 if (contact != null) {
                     if (TypeHelper.isA(contact, "contact.location")) {
                         result.setText(
