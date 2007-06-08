@@ -68,6 +68,11 @@ public class ReminderRules {
      */
     private final IArchetypeService service;
 
+    /**
+     * The patient rules.
+     */
+    private final PatientRules rules;
+
 
     /**
      * Creates a new <tt>ReminderRules</tt>
@@ -83,6 +88,7 @@ public class ReminderRules {
      */
     public ReminderRules(IArchetypeService service) {
         this.service = service;
+        rules = new PatientRules(service);
     }
 
     /**
@@ -123,8 +129,7 @@ public class ReminderRules {
         List<IMObject> groups = bean.getValues("groups");
         if (!groups.isEmpty()) {
             ArchetypeQuery query = new ArchetypeQuery(PATIENT_REMINDER,
-                                                      false,
-                                                      true);
+                                                      false, true);
             query.add(new NodeConstraint("status",
                                          ReminderStatus.IN_PROGRESS));
             IMObjectReference ref = patient.getObjectReference();
@@ -179,14 +184,54 @@ public class ReminderRules {
     }
 
     /**
+     * Determines if a reminder is due.
+     *
+     * @param reminder the reminder
+     * @param from     the 'from' date. May be <tt>null</tt>
+     * @param to       the 'to' date. Nay be <tt>null</tt>
+     */
+    public boolean isDue(Act reminder, Date from, Date to) {
+        ActBean bean = new ActBean(reminder, service);
+        Entity reminderType = bean.getParticipant("participation.reminderType");
+        EntityRelationship template = null;
+        if (reminderType != null) {
+            int reminderCount = bean.getInt("reminderCount");
+            template = getReminderTypeTemplate(reminderCount, reminderType);
+        }
+        return isDue(reminder, template, from, to);
+    }
+
+    /**
+     * Determines if a reminder is due.
+     *
+     * @param reminder the reminder
+     * @param template the reminder type template. May be <tt>null</tt>
+     * @param from     the 'from' date. May be <tt>null</tt>
+     * @param to       the 'to' date. Nay be <tt>null</tt>
+     */
+    public boolean isDue(Act reminder, EntityRelationship template, Date from,
+                         Date to) {
+        Date due = new Date(reminder.getActivityEndTime().getTime());
+        Date nextDue;
+        if (template == null) {
+            nextDue = due;
+        } else {
+            nextDue = getNextDueDate(due, template);
+        }
+        return (from == null || nextDue.compareTo(from) >= 0)
+                && (to == null || nextDue.compareTo(to) <= 0);
+    }
+
+    /**
      * Determines if a reminder needs to be cancelled, based on its due
      * date and the specified date. Reminders should be cancelled if:
      * <em>endTime + (reminderType.cancelInterval * reminderType.cancelUnits)
      * &lt; date</em>
      *
      * @param reminder the reminder
-     * @return <code>true</code> if the reminder needs to be cancelled,
-     *         otherwise <code> false
+     * @param date     the date
+     * @return <tt>true</tt> if the reminder needs to be cancelled,
+     *         otherwise <tt>false</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
     public boolean shouldCancel(Act reminder, Date date) {
@@ -208,8 +253,8 @@ public class ReminderRules {
      * @param endTime      the due date
      * @param reminderType the reminderType
      * @param date         the date
-     * @return <code>true</code> if the reminder needs to be cancelled,
-     *         otherwise <code> false
+     * @return <tt>true</tt> if the reminder needs to be cancelled,
+     *         otherwise <tt>false</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
     public boolean shouldCancel(Date endTime, Entity reminderType, Date date) {
@@ -253,7 +298,7 @@ public class ReminderRules {
      *
      * @param reminderCount the no. of times a reminder has been sent
      * @param reminderType  the reminder type
-     * @return the corresponding reminder type template, or <code>null</code>
+     * @return the corresponding reminder type template, or <tt>null</tt>
      *         if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -310,20 +355,50 @@ public class ReminderRules {
     }
 
     /**
-     * Returns a contact for a patient.
-     * Returns the first contact with classification 'Reminders' or the
-     * preferred contact.location if no contact has this classification.
+     * Returns the contact for a reminder.
      *
-     * @param patient the patient
-     * @return a contact for the patient, or <code>null</code> if none is found
+     * @param reminder the reminder
+     * @return the contact, or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Contact getContact(Party patient) {
-        Party owner = new PatientRules(service).getOwner(patient);
-        if (owner != null) {
-            return getContact(owner.getContacts());
+    public Contact getContact(Act reminder) {
+        Contact contact = null;
+        ActBean bean = new ActBean(reminder, service);
+        Party patient = (Party) bean.getParticipant("participation.patient");
+        if (patient != null) {
+            Party owner = rules.getOwner(patient);
+            if (owner != null) {
+                contact = getContact(owner, reminder);
+            }
         }
-        return null;
+        return contact;
+    }
+
+    /**
+     * Returns the contact for a patient ownner and reminder.
+     *
+     * @param owner    the patient owner
+     * @param reminder the reminder
+     * @return the contact, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Contact getContact(Party owner, Act reminder) {
+        Contact contact;
+        ActBean bean = new ActBean(reminder, service);
+        Entity reminderType = bean.getParticipant("participation.reminderType");
+        EntityRelationship template = null;
+        if (reminderType != null) {
+            int reminderCount = bean.getInt("reminderCount");
+            template = getReminderTypeTemplate(reminderCount, reminderType);
+        }
+        if (template != null && template.getTarget() != null) {
+            contact = getContact(owner.getContacts());
+        } else {
+            // no document reminderTypeTemplate, so can't send email or print.
+            // Use the customer's phone contact.
+            contact = getPhoneContact(owner.getContacts());
+        }
+        return contact;
     }
 
     /**
@@ -334,17 +409,29 @@ public class ReminderRules {
      *
      * @param contacts the contacts
      * @return a contact, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Contact getContact(Set<Contact> contacts) {
         return getContact(contacts, "contact.location", true);
     }
 
     /**
+     * Returns the first phone contact with classification 'REMINDER' or
+     * the preferred phone contact if no contact has this classification.
+     *
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Contact getPhoneContact(Set<Contact> contacts) {
+        return getContact(contacts, "contact.phoneNumber", false);
+    }
+
+    /**
      * Returns the first email contact with classification 'REMINDER' or the
-     * preferred contact.email if no contact has this classification.
+     * preferred email contact.if no contact has this classification.
      *
      * @param contacts the contacts
      * @return a contact, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Contact getEmailContact(Set<Contact> contacts) {
         return getContact(contacts, "contact.email", false);
@@ -372,7 +459,7 @@ public class ReminderRules {
      *
      * @param groups   the groups
      * @param reminder the reminder
-     * @return <code>true</code> if the reminder has a matching group
+     * @return <tt>true</tt> if the reminder has a matching group
      * @throws ArchetypeServiceException for any archetype service error
      */
     private boolean hasMatchingGroup(List<IMObject> groups, Act reminder) {
@@ -411,30 +498,26 @@ public class ReminderRules {
         Contact fallback = null;
         for (Contact contact : contacts) {
             IMObjectBean bean = new IMObjectBean(contact, service);
-            boolean match = bean.isA(shortName) || anyContact;
-
-            if (reminder == null || !TypeHelper.isA(reminder, shortName)) {
-                List<Lookup> purposes = bean.getValues("purposes",
-                                                       Lookup.class);
-                for (Lookup purpose : purposes) {
-                    if ("REMINDER".equals(purpose.getCode())) {
-                        if (match) {
+            if (bean.isA(shortName) || anyContact) {
+                if (reminder == null || !TypeHelper.isA(reminder, shortName)) {
+                    List<Lookup> purposes = bean.getValues("purposes",
+                                                           Lookup.class);
+                    for (Lookup purpose : purposes) {
+                        if ("REMINDER".equals(purpose.getCode())) {
                             reminder = contact;
+                            break;
                         }
-                        break;
                     }
                 }
-            }
 
-            if (preferred == null || !TypeHelper.isA(preferred, shortName)) {
-                if (bean.hasNode("preferred") && bean.getBoolean("preferred")) {
-                    if (match) {
+                if (preferred == null
+                        || !TypeHelper.isA(preferred, shortName)) {
+                    if (bean.hasNode("preferred") && bean.getBoolean(
+                            "preferred")) {
                         preferred = contact;
                     }
                 }
-            }
-            if (fallback == null || !TypeHelper.isA(fallback, shortName)) {
-                if (match) {
+                if (fallback == null || !TypeHelper.isA(fallback, shortName)) {
                     fallback = contact;
                 }
             }

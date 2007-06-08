@@ -275,23 +275,15 @@ public class DueReminderQuery {
          * Determines if a reminder is due, relative to the 'from' and 'to'
          * dates.
          *
-         * @param bean         the reminder
+         * @param reminder         the reminder
          * @param reminderType the reminder type
          * @return <tt>true</tt> if the reminder is due
          */
-        private boolean isDue(ActBean bean, Entity reminderType) {
-            Date due = bean.getAct().getActivityEndTime();
-            int reminderCount = bean.getInt("reminderCount");
+        private boolean isDue(ActBean reminder, Entity reminderType) {
+            int reminderCount = reminder.getInt("reminderCount");
             EntityRelationship template = rules.getReminderTypeTemplate(
                     reminderCount, reminderType);
-            if (template != null) {
-                Date nextDue = rules.getNextDueDate(due, template);
-                if ((from == null || nextDue.compareTo(from) >= 0)
-                        && (to == null || nextDue.compareTo(to) <= 0)) {
-                    return true;
-                }
-            }
-            return false;
+            return rules.isDue(reminder.getAct(), template, from, to);
         }
     }
 
