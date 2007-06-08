@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.openvpms.archetype.rules.patient.PatientRules;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderEvent.Action;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.*;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -77,6 +78,11 @@ public class DefaultReminderProcessor implements ReminderProcessor {
     private final ReminderRules rules;
 
     /**
+     * Patient rules.
+     */
+    private final PatientRules patientRules;
+
+    /**
      * The listeners. Listen to all events.
      */
     private final List<ReminderProcessorListener> listeners;
@@ -130,6 +136,7 @@ public class DefaultReminderProcessor implements ReminderProcessor {
         actionListeners = new HashMap<ReminderEvent.Action,
                 List<ReminderProcessorListener>>();
         rules = new ReminderRules(service);
+        patientRules = new PatientRules(service);
     }
 
     /**
@@ -152,16 +159,10 @@ public class DefaultReminderProcessor implements ReminderProcessor {
             int reminderCount = bean.getInt("reminderCount");
             EntityRelationship template = rules.getReminderTypeTemplate(
                     reminderCount, reminderType);
-            if (template == null) {
-                skip(reminder, reminderType);
+            if (rules.isDue(reminder, template, from, to)) {
+                generate(reminder, reminderType, template);
             } else {
-                Date nextDue = rules.getNextDueDate(due, template);
-                if ((from == null || nextDue.compareTo(from) >= 0)
-                        && (to == null || nextDue.compareTo(to) <= 0)) {
-                    generate(reminder, reminderType, template);
-                } else {
-                    skip(reminder, reminderType);
-                }
+                skip(reminder, reminderType);
             }
         }
     }
@@ -218,7 +219,8 @@ public class DefaultReminderProcessor implements ReminderProcessor {
      * @param reminderType the reminder type. An instance of
      *                     <em>entity.reminderType</em>
      * @param template     the template. An instance of
-     *                     <em>entityRelationship.reminderTypeTemplate</em>
+     *                     <em>entityRelationship.reminderTypeTemplate</em>,
+     *                     or <tt>null</tt> if there is no template
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
@@ -229,32 +231,45 @@ public class DefaultReminderProcessor implements ReminderProcessor {
         if (patient == null) {
             throw new ReminderProcessorException(NoPatient);
         }
-        Contact contact = rules.getContact(patient);
-        if (contact == null) {
-            throw new ReminderProcessorException(NoContact);
-        }
-
-        IMObjectReference target = template.getTarget();
         Entity documentTemplate = null;
-        if (target != null) {
-            documentTemplate =
-                    (Entity) ArchetypeQueryHelper.getByObjectReference(
-                            service, target);
+        if (template != null) {
+            IMObjectReference target = template.getTarget();
+            if (target != null) {
+                documentTemplate =
+                        (Entity) ArchetypeQueryHelper.getByObjectReference(
+                                service, target);
+            }
         }
 
-        if (documentTemplate != null) {
-            if (TypeHelper.isA(contact, "contact.location")) {
-                print(reminder, reminderType, contact, documentTemplate);
-            } else if (TypeHelper.isA(contact, "contact.phoneNumber")) {
-                phone(reminder, reminderType, contact, documentTemplate);
-            } else if (TypeHelper.isA(contact, "contact.email")) {
-                email(reminder, reminderType, contact, documentTemplate);
-            } else {
-                // shouldn't occur
-                throw new ReminderProcessorException(NoContact);
-            }
+        Party owner = patientRules.getOwner(patient);
+        if (owner == null) {
+            throw new ReminderProcessorException(NoContact, patient.getName(),
+                                                 patient.getDescription());
+        }
+
+        Contact contact;
+        if (documentTemplate == null) {
+            // no document template, so can't send email or print. Use the
+            // customer's phone contact.
+            contact = rules.getPhoneContact(owner.getContacts());
         } else {
-            skip(reminder, reminderType);
+            contact = rules.getContact(owner.getContacts());
+        }
+        if (contact == null) {
+            throw new ReminderProcessorException(NoContact, patient.getName(),
+                                                 patient.getDescription());
+        }
+
+        if (TypeHelper.isA(contact, "contact.location")) {
+            print(reminder, reminderType, contact, documentTemplate);
+        } else if (TypeHelper.isA(contact, "contact.phoneNumber")) {
+            phone(reminder, reminderType, contact, documentTemplate);
+        } else if (TypeHelper.isA(contact, "contact.email")) {
+            email(reminder, reminderType, contact, documentTemplate);
+        } else {
+            // shouldn't occur
+            throw new ReminderProcessorException(NoContact, patient.getName(),
+                                                 patient.getDescription());
         }
     }
 
@@ -310,7 +325,7 @@ public class DefaultReminderProcessor implements ReminderProcessor {
      * @param reminder         the reminder
      * @param reminderType     the reminder type
      * @param contact          the reminder contact
-     * @param documentTemplate the document template
+     * @param documentTemplate the document template. May be <tt>null</tt>
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
@@ -324,8 +339,6 @@ public class DefaultReminderProcessor implements ReminderProcessor {
 
     /**
      * Notifies listeners to print a reminder.
-     * <p/>
-     * This implementation simply updates the statistics.
      *
      * @param reminder         the reminder
      * @param reminderType     the reminder type

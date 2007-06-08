@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -46,11 +47,25 @@ public class ReminderTestHelper extends TestHelper {
      * @return a new reminder
      */
     public static Entity createReminderType(Lookup ... groups) {
+        return createReminderType(1, DateRules.MONTHS, groups);
+    }
+
+    /**
+     * Creates and saves a new <em>entity.reminderType</em>.
+     *
+     * @param defaultInterval the default reminder interval
+     * @param defaultUnits    the default reminder interval units
+     * @param groups          a list of <em>lookup.reminderGroup</em>
+     * @return a new reminder
+     */
+    public static Entity createReminderType(int defaultInterval,
+                                            String defaultUnits,
+                                            Lookup ... groups) {
         Entity reminder = (Entity) create("entity.reminderType");
         EntityBean bean = new EntityBean(reminder);
         bean.setValue("name", "XReminderType");
-        bean.setValue("defaultInterval", 1);
-        bean.setValue("defaultUnits", "MONTHS");
+        bean.setValue("defaultInterval", defaultInterval);
+        bean.setValue("defaultUnits", defaultUnits);
         for (Lookup group : groups) {
             reminder.addClassification(group);
         }
@@ -68,13 +83,25 @@ public class ReminderTestHelper extends TestHelper {
      */
     public static Act createReminder(Party patient, Entity reminderType,
                                      Date dueDate) {
+        Act reminder = createReminder(patient, reminderType);
+        reminder.setActivityEndTime(dueDate);
+        save(reminder);
+        return reminder;
+    }
+
+    /**
+     * Creates a new reminder.
+     *
+     * @param patient      the patient
+     * @param reminderType the reminder type
+     * @return a new reminder
+     */
+    public static Act createReminder(Party patient, Entity reminderType) {
         Act act = (Act) create("act.patientReminder");
         ActBean bean = new ActBean(act);
         bean.setStatus(ActStatus.IN_PROGRESS);
-        bean.setValue("endTime", dueDate);
         bean.setParticipant("participation.patient", patient);
         bean.setParticipant("participation.reminderType", reminderType);
-        bean.save();
         return act;
     }
 

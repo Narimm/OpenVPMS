@@ -18,10 +18,12 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -30,6 +32,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
+import java.util.Set;
 
 
 /**
@@ -39,6 +42,12 @@ import java.util.Date;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ReminderRulesTestCase extends ArchetypeServiceTest {
+
+    /**
+     * The reminder rules.
+     */
+    private ReminderRules rules;
+
 
     /**
      * Tests the {@link ReminderRules#markMatchingRemindersCompleted(Act)}
@@ -58,22 +67,19 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         checkReminder(reminder0, ReminderStatus.IN_PROGRESS);
 
         // create a reminder for patient1, with an entity.reminderType with
-        // group1 lookup.reminderGroup. Verify it has not changed
-        // reminder0
+        // group1 lookup.reminderGroup. Verify it has not changed reminder0
         Act reminder1 = createReminder(patient1, group1);
         checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
         checkReminder(reminder0, ReminderStatus.IN_PROGRESS, true);
 
         // create a reminder for patient2, with an entity.reminderType with
-        // group2 lookup.reminderGroup. Verify it has not changed
-        // reminder1
+        // group2 lookup.reminderGroup. Verify it has not changed reminder1
         Act reminder2 = createReminder(patient2, group2);
         checkReminder(reminder2, ReminderStatus.IN_PROGRESS);
         checkReminder(reminder1, ReminderStatus.IN_PROGRESS, true);
 
         // create a reminder for patient1, with an entity.reminderType with
-        // group1 lookup.reminderGroup. Verify it marks reminder1
-        // COMPLETED.
+        // group1 lookup.reminderGroup. Verify it marks reminder1 COMPLETED.
         Act reminder3 = createReminder(patient1, group1);
         checkReminder(reminder3, ReminderStatus.IN_PROGRESS);
         checkReminder(reminder1, ReminderStatus.COMPLETED, true);
@@ -87,42 +93,118 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ReminderRules#getContact(Party)} method.
+     * Tests the {@link ReminderRules#calculateReminderDueDate(Date, Entity)}
+     * method.
+     */
+    public void testCalculateReminderDueDate() {
+        checkCalculateReminderDueDate(1, DateRules.DAYS, "2007-01-01",
+                                      "2007-01-02");
+        checkCalculateReminderDueDate(2, DateRules.WEEKS, "2007-01-01",
+                                      "2007-01-15");
+        checkCalculateReminderDueDate(2, DateRules.MONTHS, "2007-01-01",
+                                      "2007-03-01");
+        checkCalculateReminderDueDate(5, DateRules.YEARS, "2007-01-01",
+                                      "2012-01-01");
+    }
+
+    /**
+     * Tests the {@link ReminderRules#isDue(Act, Date, Date)} method.
+     */
+    public void testIsDue() {
+        Lookup group = ReminderTestHelper.createReminderGroup();
+        Party patient = TestHelper.createPatient();
+        Entity reminderType = ReminderTestHelper.createReminderType(
+                1, DateRules.MONTHS, group);
+        Date start = java.sql.Date.valueOf("2007-01-01");
+        Date due = rules.calculateReminderDueDate(start, reminderType);
+        Act reminder = ReminderTestHelper.createReminder(patient, reminderType,
+                                                         due);
+
+        checkDue(reminder, null, null, true);
+        checkDue(reminder, null, "2007-01-01", false);
+        checkDue(reminder, "2007-01-01", null, true);
+        checkDue(reminder, "2007-01-01", "2007-01-31", false);
+        checkDue(reminder, "2007-01-01", "2007-02-01", true);
+
+        // Now add a template to the reminderType, due 2 weeks after the current
+        // due date.
+        EntityRelationship reminderTypeTemplate = (EntityRelationship) create(
+                "entityRelationship.reminderTypeTemplate");
+        Entity template = (Entity) create("entity.documentTemplate");
+        template.setName("XTestTemplate_" + System.currentTimeMillis());
+        IMObjectBean bean = new IMObjectBean(reminderTypeTemplate);
+        bean.setValue("reminderCount", 0);
+        bean.setValue("interval", 2);
+        bean.setValue("units", DateRules.WEEKS);
+        bean.setValue("source", reminderType.getObjectReference());
+        bean.setValue("target", template.getObjectReference());
+        bean.save();
+        save(template);
+        checkDue(reminder, "2007-01-01", "2007-02-14", false);
+        checkDue(reminder, "2007-01-01", "2007-02-15", true);
+    }
+
+    /**
+     * Tests the {@link ReminderRules#shouldCancel(Act, Date)} method.
+     */
+    public void testShouldCancel() {
+        Lookup group = ReminderTestHelper.createReminderGroup();
+        Party patient = TestHelper.createPatient();
+        Entity reminderType = ReminderTestHelper.createReminderType(
+                1, DateRules.MONTHS, group);
+        Date start = java.sql.Date.valueOf("2007-01-01");
+        Act reminder = ReminderTestHelper.createReminder(patient, reminderType);
+        reminder.setActivityStartTime(start);
+        rules.calculateReminderDueDate(reminder);
+
+        checkShouldCancel(reminder, "2007-01-01", false);
+        checkShouldCancel(reminder, "2007-01-31", false);
+        checkShouldCancel(reminder, "2007-02-01", true);
+
+        // Now add a cancel interval to the reminderType, due 2 weeks after the
+        // current due date.
+        IMObjectBean bean = new IMObjectBean(reminderType);
+        bean.setValue("cancelInterval", 2);
+        bean.setValue("cancelUnits", DateRules.WEEKS);
+        bean.save();
+
+        checkShouldCancel(reminder, "2007-02-01", false);
+        checkShouldCancel(reminder, "2007-02-14", false);
+        checkShouldCancel(reminder, "2007-02-15", true);
+    }
+
+    /**
+     * Tests the {@link ReminderRules#getContact(Set<Contact>)} method.
      */
     public void testGetContact() {
         // create a patient, and owner. Remove default contacts from owner
-        ReminderRules rules = new ReminderRules();
         Party owner = TestHelper.createCustomer();
-        Party patient = TestHelper.createPatient(owner);
         for (Contact contact : owner.getContacts().toArray(new Contact[0])) {
             owner.removeContact(contact);
         }
 
         // add an email contact to the owner, and verify it is returned
         owner.addContact(createEmail());
-        save(owner);
-        Contact email = rules.getContact(patient);
+        Contact email = rules.getContact(owner.getContacts());
         assertTrue(TypeHelper.isA(email, "contact.email"));
 
         // add an preferred phone contact to the owner, and verify it is
         // returned instead of the email contact
         owner.addContact(createPhone(true));
-        save(owner);
-        Contact contact = rules.getContact(patient);
+        Contact contact = rules.getContact(owner.getContacts());
         assertTrue(TypeHelper.isA(contact, "contact.phoneNumber"));
 
         // add a location contact to the owner, and verify the preferred phone
         // contact is still returned
         owner.addContact(createLocation(false));
-        save(owner);
-        contact = rules.getContact(patient);
+        contact = rules.getContact(owner.getContacts());
         assertTrue(TypeHelper.isA(contact, "contact.phoneNumber"));
 
         // add a preferred location contact to the owner, and verify it is
         // returned instead of the phone contact
         owner.addContact(createLocation(true));
         save(owner);
-        Contact location = rules.getContact(patient);
+        Contact location = rules.getContact(owner.getContacts());
         assertTrue(TypeHelper.isA(location, "contact.location"));
 
         // add a REMINDER classification to the email contact and verify it is
@@ -132,7 +214,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
                                                        "REMINDER");
         email.addClassification(reminder);
         save(email);
-        contact = rules.getContact(patient);
+        owner = (Party) get(owner);
+        contact = rules.getContact(owner.getContacts());
         assertTrue(TypeHelper.isA(contact, "contact.email"));
 
         // add a REMINDER classification to the location contact and verify it
@@ -140,8 +223,20 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         location = (Contact) get(location);
         location.addClassification(reminder);
         save(location);
-        contact = rules.getContact(patient);
+        owner = (Party) get(owner);
+        contact = rules.getContact(owner.getContacts());
         assertTrue(TypeHelper.isA(contact, "contact.location"));
+    }
+
+    /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        rules = new ReminderRules();
     }
 
     /**
@@ -190,6 +285,58 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         } else {
             assertNull(date);
         }
+    }
+
+    /**
+     * Checks the {@link ReminderRules#calculateReminderDueDate(Date, Entity)}
+     * method.
+     *
+     * @param defaultInterval the default reminder interval
+     * @param defaultUnits    the interval units
+     * @param startDate       the reminder start date
+     * @param expectedDate    the expected due date
+     */
+    private void checkCalculateReminderDueDate(int defaultInterval,
+                                               String defaultUnits,
+                                               String startDate,
+                                               String expectedDate) {
+        Lookup group = ReminderTestHelper.createReminderGroup();
+        Entity reminderType = ReminderTestHelper.createReminderType(
+                defaultInterval, defaultUnits, group);
+        Date start = java.sql.Date.valueOf(startDate);
+        Date expected = java.sql.Date.valueOf(expectedDate);
+        Date to = rules.calculateReminderDueDate(start, reminderType);
+        assertEquals(expected, to);
+    }
+
+    /**
+     * Checks if a reminder is due using
+     * {@link ReminderRules#isDue(Act, Date, Date)}.
+     *
+     * @param reminder the reminder
+     * @param fromDate the from date. May be <tt>null</tt>
+     * @param toDate   the to date. May be <tt>null</tt>
+     * @param expected the expected isDue result
+     */
+    private void checkDue(Act reminder, String fromDate, String toDate,
+                          boolean expected) {
+        Date from = (fromDate != null) ? java.sql.Date.valueOf(fromDate) : null;
+        Date to = (toDate != null) ? java.sql.Date.valueOf(toDate) : null;
+        assertEquals(expected, rules.isDue(reminder, from, to));
+    }
+
+    /**
+     * Checks if a reminder should be cancelled using
+     * {@link ReminderRules#shouldCancel(Act, Date)}.
+     *
+     * @param reminder the reminder
+     * @param date     the date
+     * @param expected the expected shouldCancel result
+     */
+    private void checkShouldCancel(Act reminder, String date,
+                                   boolean expected) {
+        assertEquals(expected, rules.shouldCancel(reminder,
+                                                  java.sql.Date.valueOf(date)));
     }
 
     /**
