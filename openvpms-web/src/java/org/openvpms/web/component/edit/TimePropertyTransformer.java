@@ -19,7 +19,6 @@
 package org.openvpms.web.component.edit;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -142,6 +141,19 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
      * @throws ValidationException if the string can't be parsed
      */
     private Date parseHours(String value) throws ValidationException {
+        int hours = getHours(value);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hours);
+        return calendar.getTime();
+    }
+
+    /**
+     * Parses hours from a string, expected to be in the range 0..23.
+     *
+     * @param value the string to parse
+     * @throws ValidationException if the string can't be parsed
+     */
+    private int getHours(String value) {
         int hours;
         try {
             hours = Integer.parseInt(value);
@@ -151,7 +163,7 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
         if (hours < 0 || hours > 23) {
             throw getException(null);
         }
-        return new Date(hours * DateUtils.MILLIS_IN_HOUR);
+        return hours;
     }
 
     /**
@@ -168,7 +180,7 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
         } else {
             hourPart = value.substring(0, 2);
         }
-        Date hours = parseHours(hourPart);
+        int hours = getHours(hourPart);
         int mins;
         try {
             String minPart = value.substring(hourPart.length());
@@ -179,8 +191,10 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
         if (mins < 0 || mins > 59) {
             throw getException(null);
         }
-        long time = hours.getTime() + (mins * DateUtils.MILLIS_IN_MINUTE);
-        return new Date(time);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hours);
+        calendar.set(Calendar.MINUTE, mins);
+        return calendar.getTime();
     }
 
     /**
