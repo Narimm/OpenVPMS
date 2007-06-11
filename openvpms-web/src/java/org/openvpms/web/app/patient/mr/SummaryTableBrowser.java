@@ -19,6 +19,8 @@
 package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -49,7 +51,9 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
      * @param query the query
      */
     public SummaryTableBrowser(PatientSummaryQuery query) {
-        super(query, null, createTableModel());
+        super(query,
+              new SortConstraint[]{new NodeSortConstraint("startTime", false)},
+              createTableModel());
     }
 
     /**

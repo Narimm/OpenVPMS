@@ -111,7 +111,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         super(property);
         this.parent = parent;
         NodeDescriptor descriptor = property.getDescriptor();
-        selector = new IMObjectSelector(descriptor, allowCreate) {
+        selector = new IMObjectSelector<T>(descriptor, allowCreate) {
             @Override
             protected Query<T> createQuery(String name) {
                 return AbstractIMObjectReferenceEditor.this.createQuery(name);
