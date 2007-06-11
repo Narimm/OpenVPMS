@@ -113,6 +113,11 @@ public class Loader {
         if (!skipProcessed || !dao.processed(name, row.getRowId())) {
             try {
                 objects = mapper.map(row);
+                if (lookupHandler != null) {
+                    // commit lookups to make the available to the
+                    // openvpms:lookup() jxpath extension function
+                    lookupHandler.commit();
+                }
                 handler.commit();
             } catch (OpenVPMSException exception) {
                 handler.rollback();
