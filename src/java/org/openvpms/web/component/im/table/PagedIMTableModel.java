@@ -166,7 +166,7 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      */
     public boolean isSortable(int column) {
         SortConstraint[] sort = getModel().getSortConstraints(column, true);
-        return (sort != null);
+        return (sort != null && sort.length != 0);
     }
 
     /**

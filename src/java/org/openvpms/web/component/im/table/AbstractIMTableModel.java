@@ -71,7 +71,6 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      * @param objects the objects to display
      */
     public void setObjects(List<T> objects) {
-        this.objects.clear();
         this.objects = objects;
         fireTableDataChanged();
     }
