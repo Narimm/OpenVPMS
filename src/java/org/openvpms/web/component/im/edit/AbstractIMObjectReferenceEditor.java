@@ -30,6 +30,8 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -54,7 +56,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         extends AbstractPropertyEditor implements IMObjectReferenceEditor<T> {
 
     /**
-     * The parent object. May be <code>null</code>
+     * The parent object. May be <tt>null</tt>
      */
     private final IMObject parent;
 
@@ -70,16 +72,22 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     private boolean inListener;
 
     /**
+     * Listener for modifications to the property outside of this editor,
+     * to refresh the UI.
+     */
+    private final ModifiableListener propertyListener;
+
+    /**
      * The context.
      */
     private final Context context;
 
 
     /**
-     * Constructs a new <code>AbstractIMObjectReferenceEditor</code>.
+     * Constructs a new <tt>AbstractIMObjectReferenceEditor</tt>.
      *
      * @param property the reference property
-     * @param parent   the parent object. May be <code>null</code>
+     * @param parent   the parent object. May be <tt>null</tt>
      * @param context  the layout context
      */
     public AbstractIMObjectReferenceEditor(Property property,
@@ -89,14 +97,13 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     }
 
     /**
-     * Constructs a new <code>AbstractIMObjectReferenceEditor</code>.
+     * Constructs a new <tt>AbstractIMObjectReferenceEditor</tt>.
      *
      * @param property    the reference property
-     * @param parent      the parent object. May be <code>null</code>
+     * @param parent      the parent object. May be <tt>null</tt>
      * @param context     the layout context
      * @param allowCreate determines if objects may be created
      */
-    @SuppressWarnings("unchecked")
     public AbstractIMObjectReferenceEditor(Property property,
                                            IMObject parent,
                                            LayoutContext context,
@@ -124,20 +131,23 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
                 onCreate();
             }
         });
-        IMObjectReference reference = (IMObjectReference) property.getValue();
-        if (reference != null) {
-            T object = (T) IMObjectHelper.getObject(reference, descriptor,
-                                                    context.getContext());
-            selector.setObject(object);
-        }
 
         this.context = context.getContext();
+
+        updateSelector();
+
+        propertyListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateSelector();
+            }
+        };
+        addModifiableListener(propertyListener);
     }
 
     /**
      * Sets the value of the reference to the supplied object.
      *
-     * @param object the object. May  be <code>null</code>
+     * @param object the object. May  be <tt>null</tt>
      */
     public void setObject(T object) {
         if (!inListener) {
@@ -177,8 +187,8 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * Determines if the reference is null.
      * This treats an entered but incorrect name as being non-null.
      *
-     * @return <code>true</code>  if the reference is null; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt>  if the reference is null; otherwise
+     *         <tt>false</tt>
      */
     public boolean isNull() {
         boolean result = false;
@@ -194,7 +204,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     /**
      * Determines if objects may be created.
      *
-     * @param create if <code>true</code>, objects may be created
+     * @param create if <tt>true</tt>, objects may be created
      */
     public void setAllowCreate(boolean create) {
         selector.setAllowCreate(create);
@@ -203,7 +213,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     /**
      * Determines if objects may be created.
      *
-     * @return <code>true</code> if objects may be created
+     * @return <tt>true</tt> if objects may be created
      */
     public boolean allowCreate() {
         return selector.allowCreate();
@@ -213,8 +223,8 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * Validates the object.
      *
      * @param validator the validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the object and its descendents are valid
+     *         otherwise <tt>false</tt>
      */
     public boolean validate(Validator validator) {
         return (!selector.inSelect()) && super.validate(validator);
@@ -285,8 +295,8 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     /**
      * Creates a query to select objects.
      *
-     * @param name a name to filter on. May be <code>null</code>
-     * @param name the name to filter on. May be <code>null</code>
+     * @param name a name to filter on. May be <tt>null</tt>
+     * @param name the name to filter on. May be <tt>null</tt>
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
@@ -299,16 +309,35 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     }
 
     /**
+     * Updates the selector from the property.
+     */
+    @SuppressWarnings("unchecked")
+    private void updateSelector() {
+        Property property = getProperty();
+        IMObjectReference reference = (IMObjectReference) property.getValue();
+        if (reference != null) {
+            T object = (T) IMObjectHelper.getObject(reference, getDescriptor(),
+                                                    context);
+            selector.setObject(object);
+        }
+    }
+
+    /**
      * Updates the underlying property, notifying any registered listeners.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     private void updateProperty(IMObject object) {
-        Property property = getProperty();
-        if (object != null) {
-            property.setValue(object.getObjectReference());
-        } else {
-            property.setValue(null);
+        removeModifiableListener(propertyListener);
+        try {
+            Property property = getProperty();
+            if (object != null) {
+                property.setValue(object.getObjectReference());
+            } else {
+                property.setValue(null);
+            }
+        } finally {
+            addModifiableListener(propertyListener);
         }
     }
 
