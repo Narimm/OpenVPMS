@@ -214,7 +214,7 @@ public class AppointmentTableModel extends AbstractIMTableModel<ObjectSet> {
      *         sortable
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-        return new SortConstraint[0];
+        return null;
     }
 
     /**
