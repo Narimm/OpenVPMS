@@ -28,8 +28,8 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import static org.openvpms.etl.load.LoaderException.ErrorCode.*;
 
@@ -92,7 +92,7 @@ class LookupHandler {
         Map<NodeDescriptor, ArchetypeDescriptor> targets
                 = new HashMap<NodeDescriptor, ArchetypeDescriptor>();
 
-        // for each node in the mapping, determin which of those nodes are
+        // for each node in the mapping, determine which of those nodes are
         // lookups. Lookups of type 'lookup' are processed first.
         for (Mapping mapping : mappings.getMapping()) {
             String target = mapping.getTarget();
@@ -192,32 +192,37 @@ class LookupHandler {
      * @throws ArchetypeServiceException for any archetype service exception
      * @throws LoaderException           for any loader error
      */
-    @SuppressWarnings("HardCodedStringLiteral")
     public void commit() {
-        List<IMObject> objects = new ArrayList<IMObject>();
-        for (LookupDescriptor descriptor : lookups.values()) {
-            for (CodeName pair : descriptor.getLookups()) {
-                if (!exists(descriptor.getArchetype(), pair.getCode())) {
-                    Lookup lookup = (Lookup) service.create(
-                            descriptor.getArchetype());
-                    if (lookup == null) {
-                        throw new LoaderException(ArchetypeNotFound,
-                                                  descriptor.getArchetype());
+        if (!lookups.isEmpty() || !relationships.isEmpty()) {
+            List<IMObject> objects = new ArrayList<IMObject>();
+            for (LookupDescriptor descriptor : lookups.values()) {
+                for (CodeName pair : descriptor.getLookups()) {
+                    if (!exists(descriptor.getArchetype(), pair.getCode())) {
+                        Lookup lookup = (Lookup) service.create(
+                                descriptor.getArchetype());
+                        if (lookup == null) {
+                            throw new LoaderException(
+                                    ArchetypeNotFound,
+                                    descriptor.getArchetype());
+                        }
+                        lookup.setCode(pair.getCode());
+                        lookup.setName(pair.getName());
+                        objects.add(lookup);
+                        cache.add(lookup);
                     }
-                    lookup.setCode(pair.getCode());
-                    lookup.setName(pair.getName());
-                    objects.add(lookup);
-                    cache.add(lookup);
                 }
             }
-        }
-        save(objects);
+            save(objects);
 
-        for (LookupRelationshipDescriptor descriptor : relationships.values()) {
-            List<IMObject> relationships = createRelationships(descriptor);
-            if (!relationships.isEmpty()) {
-                save(relationships);
+            for (LookupRelationshipDescriptor descriptor
+                    : relationships.values()) {
+                List<IMObject> relationships = createRelationships(descriptor);
+                if (!relationships.isEmpty()) {
+                    save(relationships);
+                }
             }
+            lookups.clear();
+            relationships.clear();
         }
     }
 
