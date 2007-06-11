@@ -343,8 +343,12 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                 BigDecimal amount = DiscountRules.calculateDiscountAmount(
                         customer, patient, product, fixedPrice, unitPrice,
                         quantity, ArchetypeServiceHelper.getArchetypeService());
-                Property discount = getProperty("discount");
-                discount.setValue(amount);
+                // If disocount amount calculates to Zero don't update any existing value 
+                // as may have been manually modified.
+                if (!amount.equals(BigDecimal.ZERO)) {                	
+                    Property discount = getProperty("discount");
+                    discount.setValue(amount);
+                }
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
