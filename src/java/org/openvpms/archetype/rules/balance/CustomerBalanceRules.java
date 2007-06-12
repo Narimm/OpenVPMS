@@ -15,6 +15,23 @@
  *
  *  $Id$
  */
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
 
 package org.openvpms.archetype.rules.balance;
 
@@ -42,9 +59,13 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -252,7 +273,9 @@ public class CustomerBalanceRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getBalance(Party customer) {
-        Iterator<FinancialAct> iterator = getUnallocatedActs(customer, null);
+        ArchetypeQuery query = createObjectSetQuery(customer, SHORT_NAMES);
+        Iterator<ObjectSet> iterator
+                = new ObjectSetQueryIterator(service, query);
         return calculateBalance(iterator);
     }
 
@@ -304,11 +327,11 @@ public class CustomerBalanceRules {
         Date overdue = getOverdueDate(customer, date);
 
         // query all overdue debit acts
-        ArchetypeQuery query = createQuery(customer, DEBIT_SHORT_NAMES,
-                                           null);
+        ArchetypeQuery query = createObjectSetQuery(customer,
+                                                    DEBIT_SHORT_NAMES);
         query.add(new NodeConstraint("startTime", RelationalOp.LT, overdue));
-        Iterator<FinancialAct> iterator
-                = new IMObjectQueryIterator<FinancialAct>(service, query);
+        Iterator<ObjectSet> iterator
+                = new ObjectSetQueryIterator(service, query);
 
         BigDecimal amount = calculateBalance(iterator);
         if (amount.compareTo(BigDecimal.ZERO) < 0) {
@@ -342,7 +365,8 @@ public class CustomerBalanceRules {
         }
 
         // query all overdue debit acts
-        ArchetypeQuery query = createQuery(customer, DEBIT_SHORT_NAMES, null);
+        ArchetypeQuery query
+                = createObjectSetQuery(customer, DEBIT_SHORT_NAMES);
 
         NodeConstraint fromStartTime
                 = new NodeConstraint("startTime", RelationalOp.LT, overdueFrom);
@@ -396,9 +420,10 @@ public class CustomerBalanceRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getCreditBalance(Party customer) {
-        ArchetypeQuery query = createQuery(customer, CREDIT_SHORT_NAMES, null);
-        Iterator<FinancialAct> iterator
-                = new IMObjectQueryIterator<FinancialAct>(service, query);
+        ArchetypeQuery query = createObjectSetQuery(customer,
+                                                    CREDIT_SHORT_NAMES);
+        Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service,
+                                                                  query);
         return calculateBalance(iterator);
     }
 
@@ -411,7 +436,11 @@ public class CustomerBalanceRules {
     public BigDecimal getUnbilledAmount(Party customer) {
         String[] shortNames = {CHARGES_INVOICE, CHARGES_COUNTER,
                                CHARGES_CREDIT};
-        ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
+        ShortNameConstraint archetypes
+                = new ShortNameConstraint("a", shortNames, false, false);
+        ArchetypeQuery query = new ArchetypeQuery(archetypes);
+        query.add(new NodeSelectConstraint("a.amount"));
+        query.add(new NodeSelectConstraint("a.credit"));
         query.add(new NodeConstraint("status", RelationalOp.NE,
                                      ActStatus.POSTED));
         CollectionNodeConstraint constraint = new CollectionNodeConstraint(
@@ -420,9 +449,10 @@ public class CustomerBalanceRules {
                 "entity", customer.getObjectReference()));
         query.add(constraint);
 
-        Iterator<Act> iterator = new IMObjectQueryIterator<Act>(service, query);
+        Iterator<ObjectSet> iterator
+                = new ObjectSetQueryIterator(service, query);
         ActCalculator calculator = new ActCalculator(service);
-        return calculator.sum(iterator, "amount");
+        return calculator.sum(iterator, "a.amount", "a.credit");
     }
 
     /**
@@ -508,13 +538,16 @@ public class CustomerBalanceRules {
      * @param iterator an iterator over the collection
      * @return the outstanding balance
      */
-    private BigDecimal calculateBalance(Iterator<FinancialAct> iterator) {
+    private BigDecimal calculateBalance(Iterator<ObjectSet> iterator) {
         BigDecimal total = BigDecimal.ZERO;
         ActCalculator calculator = new ActCalculator(service);
         while (iterator.hasNext()) {
-            BalanceAct act = new BalanceAct(iterator.next());
-            BigDecimal unallocated = act.getAllocatable();
-            total = calculator.addAmount(total, unallocated, act.isCredit());
+            ObjectSet set = iterator.next();
+            BigDecimal amount = (BigDecimal) set.get("a.amount");
+            BigDecimal allocated = (BigDecimal) set.get("a.allocatedAmount");
+            boolean credit = (Boolean) set.get("a.credit");
+            BigDecimal unallocated = getAllocatable(amount, allocated);
+            total = calculator.addAmount(total, unallocated, credit);
         }
         return total;
     }
@@ -529,20 +562,25 @@ public class CustomerBalanceRules {
      */
     private Iterator<FinancialAct> getUnallocatedActs(Party customer,
                                                       Act exclude) {
-        ArchetypeQuery query = createQuery(customer, exclude);
-
+        ArchetypeQuery query = createQuery(customer, SHORT_NAMES, exclude);
         return new IMObjectQueryIterator<FinancialAct>(service, query);
     }
 
     /**
-     * Creates a query for unallocated acts for the specified customer.
+     * Creates an object set query for unallocated acts for the specified
+     * customer. Returns only the amount, allocatedAmount and credit nodes.
      *
-     * @param customer the customer
-     * @param exclude  the act to exclude. May be <tt>null</tt
+     * @param customer   the customer
+     * @param shortNames the act short names
      * @return a new query
      */
-    private ArchetypeQuery createQuery(Party customer, Act exclude) {
-        return createQuery(customer, SHORT_NAMES, exclude);
+    private ArchetypeQuery createObjectSetQuery(Party customer,
+                                                String[] shortNames) {
+        ArchetypeQuery query = createQuery(customer, shortNames, null);
+        query.add(new NodeSelectConstraint("a.amount"));
+        query.add(new NodeSelectConstraint("a.allocatedAmount"));
+        query.add(new NodeSelectConstraint("a.credit"));
+        return query;
     }
 
     /**
@@ -555,7 +593,9 @@ public class CustomerBalanceRules {
      */
     private ArchetypeQuery createQuery(Party customer, String[] shortNames,
                                        Act exclude) {
-        ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
+        ShortNameConstraint archetypes
+                = new ShortNameConstraint("a", shortNames, false, false);
+        ArchetypeQuery query = new ArchetypeQuery(archetypes);
         CollectionNodeConstraint constraint = new CollectionNodeConstraint(
                 "accountBalance", ACCOUNT_BALANCE_SHORTNAME, true, true);
         constraint.add(new ObjectRefNodeConstraint(
@@ -594,6 +634,16 @@ public class CustomerBalanceRules {
         }
     }
 
+    private BigDecimal getAllocatable(BigDecimal amount, BigDecimal allocated) {
+        if (amount == null) {
+            amount = BigDecimal.ZERO;
+        }
+        if (allocated == null) {
+            allocated = BigDecimal.ZERO;
+        }
+        return amount.subtract(allocated);
+    }
+
     /**
      * Wrapper for performing operations on an act that affects the customer
      * account balance.
@@ -620,15 +670,8 @@ public class CustomerBalanceRules {
          * @return the amount yet to be allocated
          */
         public BigDecimal getAllocatable() {
-            BigDecimal amount = act.getTotal();
-            if (amount == null) {
-                amount = BigDecimal.ZERO;
-            }
-            BigDecimal allocated = act.getAllocatedAmount();
-            if (allocated == null) {
-                allocated = BigDecimal.ZERO;
-            }
-            return amount.subtract(allocated);
+            return CustomerBalanceRules.this.getAllocatable(
+                    act.getTotal(), act.getAllocatedAmount());
         }
 
         /**
