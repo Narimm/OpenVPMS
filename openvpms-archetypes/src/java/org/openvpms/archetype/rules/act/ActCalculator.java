@@ -24,7 +24,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -122,30 +121,6 @@ public class ActCalculator {
             result = result.add(amount);
         }
         return round(result);
-    }
-
-    /**
-     * Sums an amount node in a collection of {@link ObjectSet}s,
-     * taking into account any credit node.
-     *
-     * @param sets the the iterator over the act collection
-     * @param amountKey the amount node key
-     * @param creditKey the credit node key
-     * @return the summed total
-     */
-    public BigDecimal sum(Iterator<ObjectSet> sets, String amountKey,
-                          String creditKey) {
-        BigDecimal result = BigDecimal.ZERO;
-        while (sets.hasNext()) {
-            ObjectSet set = sets.next();
-            BigDecimal value = (BigDecimal) set.get(amountKey);
-            Boolean credit = (Boolean) set.get(creditKey);
-            if (value != null) {
-                boolean isCredit = (credit != null) && credit;
-                result = addAmount(result, value, isCredit);
-            }
-        }
-        return result;
     }
 
     /**
