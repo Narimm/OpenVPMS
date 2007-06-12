@@ -476,22 +476,35 @@ public class CustomerBalanceRules {
     /**
      * Calculates the balance for the supplied customer.
      *
-     * @param act      the act that triggered the update
+     * @param act      the act that triggered the update.
      * @param customer the customer
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void updateBalance(FinancialAct act, Party customer) {
         Iterator<FinancialAct> results = getUnallocatedActs(customer, act);
+        updateBalance(act, results);
+    }
+
+    /**
+     * Calculates the balance for a customer.
+     *
+     * @param act         the act that triggered the update.
+     *                    May be <tt>null</tt>
+     * @param unallocated the unallocated acts
+     */
+    void updateBalance(FinancialAct act, Iterator<FinancialAct> unallocated) {
         List<BalanceAct> debits = new ArrayList<BalanceAct>();
         List<BalanceAct> credits = new ArrayList<BalanceAct>();
 
-        if (act.isCredit()) {
-            credits.add(new BalanceAct(act));
-        } else {
-            debits.add(new BalanceAct(act));
+        if (act != null) {
+            if (act.isCredit()) {
+                credits.add(new BalanceAct(act));
+            } else {
+                debits.add(new BalanceAct(act));
+            }
         }
-        while (results.hasNext()) {
-            FinancialAct a = results.next();
+        while (unallocated.hasNext()) {
+            FinancialAct a = unallocated.next();
             if (a.isCredit()) {
                 credits.add(new BalanceAct(a));
             } else {
