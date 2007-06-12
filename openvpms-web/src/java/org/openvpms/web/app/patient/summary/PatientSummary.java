@@ -25,10 +25,10 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
@@ -67,12 +67,18 @@ public class PatientSummary {
      */
     private final PatientRules rules;
 
+    /**
+     * The reminder rules.
+     */
+    private final ReminderRules reminderRules;
+
 
     /**
      * Creates a new <tt>PatientSummary</tt>.
      */
     public PatientSummary() {
         rules = new PatientRules();
+        reminderRules = new ReminderRules();
     }
 
     /**
@@ -85,9 +91,10 @@ public class PatientSummary {
         Component result = null;
         if (patient != null) {
             result = ColumnFactory.create();
-            Label patientName = LabelFactory.create(null,"Patient.Name");
+            Label patientName = LabelFactory.create(null, "Patient.Name");
             patientName.setText(patient.getName());
-            result.add(RowFactory.create("Patient.Deceased.Inset", patientName));            	
+            result.add(
+                    RowFactory.create("Patient.Deceased.Inset", patientName));
             if (rules.isDeceased(patient)) {
                 Label deceased = LabelFactory.create("patient.deceased",
                                                      "Patient.Deceased");
@@ -95,7 +102,7 @@ public class PatientSummary {
                                              deceased));
             }
             Label alertTitle = LabelFactory.create("patient.alerts");
-            int alerts = getTotalResults(getAlerts(patient));
+            int alerts = reminderRules.countAlerts(patient, new Date());
             Component alertCount;
             if (alerts == 0) {
                 alertCount = LabelFactory.create("patient.noreminders");
@@ -110,7 +117,7 @@ public class PatientSummary {
             }
 
             Label reminderTitle = LabelFactory.create("patient.reminders");
-            int reminders = getTotalResults(getReminders(patient));
+            int reminders = reminderRules.countReminders(patient);
             Component reminderCount;
             if (reminders == 0) {
                 reminderCount = LabelFactory.create("patient.noreminders");
@@ -162,17 +169,6 @@ public class PatientSummary {
                                             new ReminderTableCellRenderer());
         new ViewerDialog(Messages.get("patient.summary.reminders"),
                          "PatientSummary.ReminderDialog", table);
-    }
-
-    /**
-     * Helper to return the total no. of results in a result set.
-     *
-     * @param set the result set
-     * @return the total no. of results in the set
-     */
-    private int getTotalResults(ResultSet<Act> set) {
-        IPage<Act> page = set.getPage(0);
-        return (page != null) ? page.getTotalResults() : 0;
     }
 
     /**
