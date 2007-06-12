@@ -38,7 +38,7 @@ import java.util.Iterator;
 
 
 /**
- * Queries <em>act.act.patientReminder</em> acts.
+ * Queries <em>act.patientReminder</em> acts.
  * The acts are sorted on customer name, patient name and endTime.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>

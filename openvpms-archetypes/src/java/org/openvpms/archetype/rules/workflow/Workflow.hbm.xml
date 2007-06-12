@@ -53,7 +53,7 @@ where p.act.linkId = act.linkId
             and act.linkId = p.act.linkId
             and p.entity.linkId = :scheduleId
             and act.activityStartTime between :from and :to)
-order by act.activityStartTime, act.linkId
+
       ]]>
     </query>
 
