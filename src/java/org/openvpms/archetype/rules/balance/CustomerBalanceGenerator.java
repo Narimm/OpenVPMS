@@ -25,10 +25,13 @@ import com.martiansoftware.jsap.JSAPResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -41,7 +44,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -129,13 +138,14 @@ public class CustomerBalanceGenerator {
     public void generate() {
         ArchetypeQuery query = new ArchetypeQuery("party.customer*", true,
                                                   false);
-        query.setMaxResults(100);
+        query.setMaxResults(1000);
         if (name != null) {
             query.add(new NodeConstraint("name", name));
         }
         query.add(new NodeSortConstraint("name"));
-        Iterator<Party> iterator = new IMObjectQueryIterator<Party>(service,
-                                                                    query);
+        Collection<String> nodes = Arrays.asList("name");
+        Iterator<Party> iterator = new IMObjectQueryIterator<Party>(
+                service, query, nodes);
         while (iterator.hasNext()) {
             Party customer = iterator.next();
             log.info("Generating account balance for " + customer.getName());
@@ -161,24 +171,63 @@ public class CustomerBalanceGenerator {
                 "entity", customer.getObjectReference()));
         query.add(constraint);
         query.add(new NodeSortConstraint("startTime", true));
+        query.setMaxResults(1000);
 
         Iterator<FinancialAct> iterator
                 = new IMObjectQueryIterator<FinancialAct>(service, query);
+        List<FinancialAct> unallocated = new ArrayList<FinancialAct>();
+        Map<FinancialAct, Long> versions
+                = new HashMap<FinancialAct, Long>();
         while (iterator.hasNext()) {
             ++acts;
             FinancialAct act = iterator.next();
-            if (!rules.inBalance(act)) {
-                if (act.getAllocatedAmount() == null) {
-                    act.setAllocatedAmount(new Money(0));
+            if (act.getAllocatedAmount() == null) {
+                act.setAllocatedAmount(new Money(0));
+            }
+            if (act.getTotal() == null) {
+                act.setTotal(new Money(0));
+            }
+            ActBean bean = new ActBean(act, service);
+            for (ActRelationship relationship : bean.getRelationships(
+                    "actRelationship.customerAccountAllocation")) {
+                // early versions may not have defaulted the allocatedAmount to
+                // zero
+                IMObjectBean relBean = new IMObjectBean(relationship, service);
+                if (relBean.getMoney("allocatedAmount") == null) {
+                    relBean.setValue("allocatedAmount", new Money(0));
+                    versions.put(act, act.getVersion());
                 }
+            }
+            if (act.getTotal().compareTo(act.getAllocatedAmount()) != 0) {
                 try {
-                    rules.addToBalance(act);
-                    service.save(act);
-                    rules.updateBalance(act);
+                    if (!rules.inBalance(act)) {
+                        rules.addToBalance(act);
+                        versions.put(act, act.getVersion());
+                    }
+                    unallocated.add(act);
                 } catch (OpenVPMSException exception) {
                     log.error(exception, exception);
                 }
                 ++processed;
+            }
+        }
+        if (!unallocated.isEmpty()) {
+            // have one or more unallocated (or partially allocated) acts.
+            // Update the customer balance. This will save any acts that it
+            // modifies. Need to check versions to determine if the acts
+            // that this method has changed also need to be saved
+            try {
+                rules.updateBalance(null, unallocated.iterator());
+                for (Map.Entry<FinancialAct, Long> entry
+                        : versions.entrySet()) {
+                    FinancialAct act = entry.getKey();
+                    long version = entry.getValue();
+                    if (version == act.getVersion()) {
+                        service.save(act);
+                    }
+                }
+            } catch (OpenVPMSException exception) {
+                log.error(exception, exception);
             }
         }
         log.info("\tprocessed " + processed + " of " + acts + " acts");
