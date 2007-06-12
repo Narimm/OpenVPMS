@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -105,6 +106,57 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
                                       "2007-03-01");
         checkCalculateReminderDueDate(5, DateRules.YEARS, "2007-01-01",
                                       "2012-01-01");
+    }
+
+    /**
+     * Tests the {@link ReminderRules#countReminders(Party)} method.
+     * Requires <em>Reminder.hbm.xml</em>.
+     */
+    public void testCountReminders() {
+        Party patient = TestHelper.createPatient();
+        assertEquals(0, rules.countReminders(patient));
+        int count = 5;
+        Act[] reminders = new Act[count];
+        for (int i = 0; i < count; ++i) {
+            reminders[i] = createReminder(patient);
+        }
+        assertEquals(count, rules.countReminders(patient));
+
+        Act reminder0 = reminders[0];
+        reminder0.setStatus(ActStatus.COMPLETED);
+        save(reminder0);
+        assertEquals(count - 1, rules.countReminders(patient));
+
+        Act reminder1 = reminders[1];
+        reminder1.setStatus(ActStatus.CANCELLED);
+        save(reminder1);
+        assertEquals(count - 2, rules.countReminders(patient));
+    }
+
+    /**
+     * Tests the {@link ReminderRules#countAlerts} method.
+     * Requires <em>Reminder.hbm.xml</em>.
+     */
+    public void testCountAlerts() {
+        Party patient = TestHelper.createPatient();
+        Date date = new Date();
+        assertEquals(0, rules.countAlerts(patient, date));
+        int count = 5;
+        Act[] alerts = new Act[count];
+        for (int i = 0; i < count; ++i) {
+            alerts[i] = createAlert(patient);
+        }
+        assertEquals(count, rules.countAlerts(patient, date));
+
+        Act alert0 = alerts[0];
+        alert0.setStatus(ActStatus.COMPLETED);
+        save(alert0);
+        assertEquals(count - 1, rules.countAlerts(patient, date));
+
+        Act alert1 = alerts[1];
+        alert1.setActivityEndTime(date);
+        save(alert1);
+        assertEquals(count - 2, rules.countAlerts(patient, date));
     }
 
     /**
@@ -378,6 +430,22 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         bean.setValue("preferred", preferred);
         save(contact);
         return contact;
+    }
+
+    /**
+     * Helper to create and save an <em>act.patientAlert</tt> for a patient.
+     *
+     * @param patient the patient
+     */
+    private Act createAlert(Party patient) {
+        Act act = (Act) create("act.patientAlert");
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+        Lookup alertType
+                = TestHelper.getClassification("lookup.alertType", "OTHER");
+        bean.setValue("alertType", alertType.getCode());
+        bean.save();
+        return act;
     }
 
 }

@@ -37,10 +37,15 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -181,6 +186,35 @@ public class ReminderRules {
         int interval = bean.getInt("defaultInterval");
         String units = bean.getString("defaultUnits");
         return DateRules.getDate(startTime, interval, units);
+    }
+
+    /**
+     * Returns a count of 'in progress' reminders for a patient.
+     *
+     * @param patient the patient
+     * @throws ArchetypeServiceException for any error
+     */
+    public int countReminders(Party patient) {
+        NamedQuery query = new NamedQuery("act.patientReminder-count",
+                                          Arrays.asList("count"));
+        query.setParameter("patientId", patient.getLinkId());
+        return count(query);
+    }
+
+    /**
+     * Returns a count of 'in progress' alerts whose endTime is greater than
+     * the specified date/time.
+     *
+     * @param patient the patient
+     * @param date    the date/time
+     * @throws ArchetypeServiceException for any error
+     */
+    public int countAlerts(Party patient, Date date) {
+        NamedQuery query = new NamedQuery("act.patientAlert-count",
+                                          Arrays.asList("count"));
+        query.setParameter("patientId", patient.getLinkId());
+        query.setParameter("date", date);
+        return count(query);
     }
 
     /**
@@ -474,6 +508,23 @@ public class ReminderRules {
             }
         }
         return false;
+    }
+
+    /**
+     * Helper to return a count from a named query.
+     *
+     * @param query the query
+     * @return the count
+     * @throws ArchetypeServiceException for any error
+     */
+    private int count(NamedQuery query) {
+        Iterator<ObjectSet> iter = new ObjectSetQueryIterator(service, query);
+        if (iter.hasNext()) {
+            ObjectSet set = iter.next();
+            Number count = (Number) set.get("count");
+            return count != null ? count.intValue() : 0;
+        }
+        return 0;
     }
 
     /**
