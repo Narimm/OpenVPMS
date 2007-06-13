@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.workflow.InvoiceTask;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
@@ -69,11 +70,14 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // update the act status
         TaskProperties appProps = new TaskProperties();
         appProps.add("status", ActStatus.COMPLETED);
-        appProps.add(new Variable("endTime") {
-            public Object getValue(TaskContext context) {
-                return new Date();
-            }
-        });
+        if (TypeHelper.isA(act, "act.customerTask")) {
+            // update the end-time of the task
+            appProps.add(new Variable("endTime") {
+                public Object getValue(TaskContext context) {
+                    return new Date();
+                }
+            });
+        }
         addTask(new UpdateIMObjectTask(act, appProps));
 
         // add a task to update the global context at the end of the workflow
