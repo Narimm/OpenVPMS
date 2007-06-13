@@ -107,7 +107,7 @@
             <version>1.7</version>
             <url>http://jakarta.apache.org/commons/digester/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -116,7 +116,7 @@
             <version>1.0</version>
             <url>http://jakarta.apache.org/commons/fileupload/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -125,7 +125,7 @@
             <version>20060411</version>
             <url>http://jakarta.apache.org/commons/sandbox/javaflow</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -134,7 +134,7 @@
             <version>2.0</version>
             <url>http://jakarta.apache.org/commons/lang/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -143,7 +143,7 @@
             <version>1.0.4</version>
             <url>http://jakarta.apache.org/commons/logging/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -152,7 +152,7 @@
             <version>1.2.1</version>
             <url>http://jakarta.apache.org/commons/dbcp/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -161,7 +161,7 @@
             <version>1.3</version>
             <url>http://jakarta.apache.org/commons/dbcp/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -170,7 +170,7 @@
             <version>1.2</version>
             <url>http://jakarta.apache.org/commons/pool/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -179,7 +179,7 @@
             <version>1.2.11</version>
             <url>http://jakarta.apache.org/log4j/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -188,7 +188,7 @@
             <version>1.0-dev</version>
             <url>http://jakarta.apache.org/commons/resources/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -197,7 +197,7 @@
             <version>1.02b</version>
             <url>http://www.lowagie.com/iText/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -248,7 +248,7 @@
             <type>jar</type>
             <url>http://jakarta.apache.org/oro/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -258,7 +258,7 @@
             <type>jar</type>
             <url>http://www.springframework.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -268,7 +268,7 @@
             <type>jar</type>
             <url>http://www.springframework.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -278,7 +278,7 @@
             <type>jar</type>
             <url>http://www.springframework.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -295,7 +295,7 @@
             <type>jar</type>
             <url>http://www.springframework.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -305,7 +305,7 @@
             <type>jar</type>
             <url>http://www.springframework.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -315,7 +315,7 @@
             <type>jar</type>
             <url>http://www.springframework.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -325,7 +325,7 @@
             <type>jar</type>
             <url>http://www.springframework.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -335,7 +335,7 @@
             <type>jar</type>
             <url>http://www.springframework.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -345,7 +345,7 @@
             <type>jar</type>
             <url>http://www.springframework.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -355,7 +355,7 @@
             <type>jar</type>
             <url>http://www.springframework.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -365,7 +365,7 @@
             <type>jar</type>
             <url>http://springmodules.dev.java.net/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -385,7 +385,7 @@
             <type>jar</type>
             <url>http://www.aopalliance.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -395,7 +395,7 @@
             <type>jar</type>
             <url>http://drools.codehaus.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -405,7 +405,7 @@
             <type>jar</type>
             <url>http://drools.codehaus.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -415,7 +415,7 @@
             <type>jar</type>
             <url>http://www.janino.net/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -425,7 +425,7 @@
             <type>jar</type>
             <url>http://ehcache.sf.net</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -434,7 +434,7 @@
             <version>2.0rc4</version>
             <url>http://jug.safehaus.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -443,7 +443,7 @@
             <version>1.2</version>
             <url>http://jakarta.apache.org/commons/io/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -452,7 +452,7 @@
             <version>3.1</version>
             <url>http://jakarta.apache.org/commons/collections/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -473,7 +473,7 @@
             <version>1.2.1</version>
             <url>http://xstream.codehaus.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -482,7 +482,7 @@
             <version>1.1.2a</version>
             <url>http://xstream.codehaus.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -491,7 +491,7 @@
             <url>http://xml.apache.org/xerces2-j/</url>
             <version>2.4.0</version>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -500,7 +500,7 @@
             <url>http://xml.apache.org/xerces2-j/</url>
             <version>2.0.2</version>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -509,7 +509,7 @@
             <version>3.2.2</version>
             <url>http://www.hibernate.org</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -518,7 +518,7 @@
             <version>1.5.3</version>
             <url>http://asm.objectweb.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -527,7 +527,7 @@
             <version>1.5.3</version>
             <url>http://asm.objectweb.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -536,7 +536,7 @@
             <version>2.7.6</version>
             <url>http://www.antlr.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -545,7 +545,7 @@
             <version>2.0a</version>
             <url>http://jsap.sourceforge.net/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -554,7 +554,7 @@
             <version>1.6.1</version>
             <url>http://www.dom4j.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -563,7 +563,7 @@
             <version>1.0.1</version>
             <url>http://java.sun.com</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -572,7 +572,7 @@
             <version>2.1_3</version>
             <url>http://www.hibernate.org</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -581,7 +581,7 @@
             <version>5.0.0-beta-bin</version>
             <url>http://www.mysql.com</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -590,7 +590,7 @@
             <version>0.9.1</version>
             <url>http://sourceforge.net/projects/c3p0</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -608,7 +608,7 @@
             <version>1.7.0</version>
             <url>http://jakarta.apache.org/commons/jxpath/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -617,7 +617,7 @@
             <version>1.0.0-RC1</version>
             <url>http://www.acegisecurity.org</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -625,15 +625,6 @@
             <artifactId>servletapi</artifactId>
             <version>2.4</version>
             <url>http://java.sun.com</url>
-        </dependency>
-        <dependency>
-            <groupId>ognl</groupId>
-            <artifactId>ognl</artifactId>
-            <version>2.6.5</version>
-            <url>http://ognl.org</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>com.nextapp</groupId>
@@ -668,7 +659,7 @@
             <version>0.2.1</version>
             <url>http://www.nextapp.com/platform/echo2/extras/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -677,7 +668,7 @@
             <version>0.2.1</version>
             <url>http://www.nextapp.com/platform/echo2/extras/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency-->
         <dependency>
@@ -754,7 +745,7 @@
             <version>1.2.5</version>
             <url>http://jasperreports.sourceforge.net</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -763,7 +754,7 @@
             <version>2.1</version>
             <url>http://openoffice.org</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -772,7 +763,7 @@
             <version>2.1</version>
             <url>http://openoffice.org</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -781,7 +772,7 @@
             <version>2.1</version>
             <url>http://openoffice.org</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -790,7 +781,7 @@
             <version>2.1</version>
             <url>http://openoffice.org</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -799,7 +790,7 @@
             <version>1.0.2</version>
             <url>http://java.sun.com/products/javabeans/glasgow/jaf.html</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -808,7 +799,7 @@
             <version>1.3.2</version>
             <url>http://java.sun.com/products/javamail</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
     </dependencies>
