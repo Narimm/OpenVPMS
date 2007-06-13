@@ -62,6 +62,9 @@ public class PatientMedicationActEditor extends AbstractActEditor {
                         = bean.getParticipantRef("participation.product");
                 if (TypeHelper.isA(product, "product.medication")) {
                     setProduct(product);
+                    if (bean.hasNode("quantity")) {
+                        setQuantity(bean.getBigDecimal("quantity"));
+                    }
                 } else {
                     setProduct(null);
                 }
