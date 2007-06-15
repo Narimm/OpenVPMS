@@ -33,6 +33,8 @@
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST6" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST7" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST8" />
+    <data archetype="lookup.currency" code="AUD" name="Australian Dollar" defaultLookup="true" roundingMode="HALF_UP" minDenomination="0.05"/>
+    <data archetype="lookup.currency" code="NZD" name="New Zealand Dollar" roundingMode="HALF_UP" minDenomination="0.10"/>
 	<data archetype="lookup.appointmentReason" code="CHECKUP" defaultLookup="true" />
 	<data archetype="lookup.appointmentReason" code="VACCINATION" />
 	<data archetype="lookup.appointmentReason" code="OTHER" />

@@ -11,7 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $$Id$$
 -->
@@ -24,6 +24,13 @@
 			path="/description" hidden="true" derived="true"
 			derivedValue="/details/companyName" />
 		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+        <node name="currency" path="/details/currency" type="java.lang.String" minCardinality="1">
+           <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.currency"/>
+                <errorMessage>Invalid currency</errorMessage>
+            </assertion>
+        </node>
         <node name="mailHost" path="/details/mailHost" type="java.lang.String" minCardinality="0" maxCardinality="1"/>
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="1" maxCardinality="*">
