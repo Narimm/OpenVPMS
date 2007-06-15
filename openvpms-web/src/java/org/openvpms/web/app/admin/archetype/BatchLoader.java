@@ -108,20 +108,29 @@ public class BatchLoader {
         }
     }
 
+    /**
+     * Loads an archetype descriptor.
+     *
+     * @param descriptor the descriptor to load
+     */
     private void load(ArchetypeDescriptor descriptor) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        List<ValidationError> errors
-                = ValidationHelper.validate(descriptor, service);
-        if (errors == null) {
-            String shortName = descriptor.getShortName();
-            ArchetypeDescriptor existing
-                    = service.getArchetypeDescriptor(shortName);
-            if (existing != null) {
-                promptOnReplace(descriptor, existing);
-            } else {
-                save(descriptor, service);
+        try {
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            List<ValidationError> errors
+                    = ValidationHelper.validate(descriptor, service);
+            if (errors == null) {
+                String shortName = descriptor.getShortName();
+                ArchetypeDescriptor existing
+                        = service.getArchetypeDescriptor(shortName);
+                if (existing != null) {
+                    promptOnReplace(descriptor, existing);
+                } else {
+                    save(descriptor, service);
+                }
             }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
         }
     }
 

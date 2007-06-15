@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -40,10 +39,10 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class CustomerPaymentItemEditor extends AbstractIMObjectEditor {
+public class CustomerPaymentItemEditor extends PaymentItemEditor {
 
     /**
-     * Construct a new <code>CustomerPaymentItemEditor</code>.
+     * Construct a new <tt>CustomerPaymentItemEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent act
