@@ -19,10 +19,10 @@
 package org.openvpms.web.component.im.edit.payment;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
@@ -36,16 +36,16 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class SupplierPaymentItemEditor extends AbstractIMObjectEditor {
+public class SupplierPaymentItemEditor extends PaymentItemEditor {
 
     /**
-     * Construct a new <code>SupplierPaymentItemEditor</code>.
+     * Constructs a new <tt>SupplierPaymentItemEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent act
      * @param context the layout context
      */
-    public SupplierPaymentItemEditor(Act act, Act parent,
+    public SupplierPaymentItemEditor(FinancialAct act, FinancialAct parent,
                                      LayoutContext context) {
         super(act, parent, context);
         if (!TypeHelper.isA(act, "act.supplierAccountPayment*",
@@ -56,8 +56,7 @@ public class SupplierPaymentItemEditor extends AbstractIMObjectEditor {
                     "Invalid act type: " + act.getArchetypeId().getShortName());
         }
 
-        if (act.isNew() &&
-                TypeHelper.isA(act, "act.supplierAccountPayment*")) {
+        if (act.isNew() && TypeHelper.isA(act, "act.supplierAccountPayment*")) {
             // Default the amount to the outstanding balance
             Party supplier = context.getContext().getSupplier();
             if (supplier != null) {

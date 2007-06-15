@@ -33,6 +33,7 @@ import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -97,7 +98,9 @@ public class ValidationHelper {
                                                exception.getMessage()));
             }
         } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+            log.debug(exception, exception);
+            errors = new ArrayList<ValidationError>();
+            errors.add(new ValidationError(null, null, exception.getMessage()));
         }
         return errors;
     }

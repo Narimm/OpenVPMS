@@ -71,6 +71,8 @@ public class LookupWorkspace extends CRUDWorkspace<Lookup> {
         super.onSaved(object, isNew);
         if (TypeHelper.isA(object, "lookup.macro")) {
             refreshMacros();
+        } else if (TypeHelper.isA(object, "lookup.currency")) {
+            refreshCurrencies();
         }
     }
 
@@ -84,6 +86,8 @@ public class LookupWorkspace extends CRUDWorkspace<Lookup> {
         super.onDeleted(object);
         if (TypeHelper.isA(object, "lookup.macro")) {
             refreshMacros();
+        } else if (TypeHelper.isA(object, "lookup.currency")) {
+            refreshCurrencies();
         }
     }
 
@@ -93,6 +97,17 @@ public class LookupWorkspace extends CRUDWorkspace<Lookup> {
     private void refreshMacros() {
         try {
             ServiceHelper.getMacroCache().refresh();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Helper to refresh the currencies cache if a currency is saved or deleted.
+     */
+    private void refreshCurrencies() {
+        try {
+            ServiceHelper.getCurrencies().refresh();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }

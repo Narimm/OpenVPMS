@@ -482,6 +482,7 @@
     <!-- ================================================================== -->
     <!--                        MISC                                        -->
     <!-- ================================================================== -->
+    <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies"/>
     <bean id="macroCache" class="org.openvpms.archetype.util.MacroCache"/>
 
     <!-- ================================================================== -->
