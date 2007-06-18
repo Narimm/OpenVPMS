@@ -22,9 +22,12 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -34,6 +37,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -285,6 +289,36 @@ public class LoaderTestCase
     }
 
     /**
+     * Verifies that lookups and lookup relationships are saved after each
+     * row loads.
+     */
+    public void testLookups() {
+        // create a patient mapping containg species and breed mapping
+        Mappings mappings = new Mappings();
+        mappings.setIdColumn("PATIENTID");
+        Mapping speciesMap = createMapping(
+                "SPECIES", "<party.patientpet>species");
+        Mapping breedMap = createMapping("BREED", "<party.patientpet>breed");
+        mappings.addMapping(speciesMap);
+        mappings.addMapping(breedMap);
+
+        String species1 = "S1" + System.currentTimeMillis();
+        String species2 = "S2" + System.currentTimeMillis();
+        String breed1 = "B1" + System.currentTimeMillis();
+        String breed2 = "B2" + System.currentTimeMillis();
+
+        // load (partial) patients and verify the lookups have been created
+        Loader loader = createLoader("PATIENTLOAD", mappings);
+        ETLRow row1 = createPatientRow("patient1", species1, breed1);
+        loader.load(row1);
+        checkSpeciesBreedLookups(species1, breed1);
+
+        ETLRow row2 = createPatientRow("patient2", species2, breed2);
+        loader.load(row2);
+        checkSpeciesBreedLookups(species2, breed2);
+    }
+
+    /**
      * Returns the location of the spring config files.
      *
      * @return an array of config locations
@@ -307,6 +341,15 @@ public class LoaderTestCase
         dao = new ETLLogDAOTestImpl();
     }
 
+    /**
+     * Verifies a log contains the expected data.
+     *
+     * @param logs       the logs
+     * @param loaderName the expected loader name
+     * @param legacyId   the expected legacy row identifier
+     * @param archetype  the expected archetype
+     * @param index      the expected index
+     */
     private void checkLog(List<ETLLog> logs, String loaderName,
                           String legacyId, String archetype, int index) {
         boolean found = false;
@@ -320,6 +363,54 @@ public class LoaderTestCase
             }
         }
         assertTrue(found);
+    }
+
+    /**
+     * Verifies that species and breed lookups have been created, with a
+     * relationship between each
+     *
+     * @param speciesCode the species code
+     * @param breedCode   the breed code
+     */
+    private void checkSpeciesBreedLookups(String speciesCode,
+                                          String breedCode) {
+        ILookupService service = LookupServiceHelper.getLookupService();
+        Lookup species = service.getLookup("lookup.species", speciesCode);
+        assertNotNull(species);
+        Lookup breed = service.getLookup("lookup.breed", breedCode);
+        assertNotNull(breed);
+
+        // make sure the relationship exists
+        Set<LookupRelationship> speciesRelationships
+                = species.getLookupRelationships();
+        assertEquals(1, speciesRelationships.size());
+        LookupRelationship s = speciesRelationships.iterator().next();
+        assertEquals(species.getObjectReference(), s.getSource());
+        assertEquals(breed.getObjectReference(), s.getTarget());
+
+        Set<LookupRelationship> breedRelationships
+                = breed.getLookupRelationships();
+        assertEquals(1, breedRelationships.size());
+        LookupRelationship b = breedRelationships.iterator().next();
+        assertEquals(species.getObjectReference(), b.getSource());
+        assertEquals(breed.getObjectReference(), b.getTarget());
+    }
+
+    /**
+     * Helper to create a row containing a patient id, species and breed.
+     *
+     * @param rowId   the patient id
+     * @param species the species
+     * @param breed   the breed
+     * @return a new row
+     */
+    private ETLRow createPatientRow(String rowId, String species,
+                                    String breed) {
+        ETLRow row = new ETLRow("PATIENTID");
+        row.add("PATIENTID", rowId);
+        row.add("SPECIES", species);
+        row.add("BREED", breed);
+        return row;
     }
 
     /**

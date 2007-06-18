@@ -211,8 +211,11 @@ class LookupHandler {
                         cache.add(lookup);
                     }
                 }
+                descriptor.clear();
             }
-            save(objects);
+            if (!objects.isEmpty()) {
+                save(objects);
+            }
 
             for (LookupRelationshipDescriptor descriptor
                     : relationships.values()) {
@@ -220,9 +223,8 @@ class LookupHandler {
                 if (!relationships.isEmpty()) {
                     save(relationships);
                 }
+                descriptor.clear();
             }
-            lookups.clear();
-            relationships.clear();
         }
     }
 
@@ -432,7 +434,6 @@ class LookupHandler {
     private Lookup getLookup(LookupDescriptor descriptor, String code) {
         return cache.get(descriptor.getArchetype(), code);
     }
-
 
     /**
      * Returns the node with matching jxpath.

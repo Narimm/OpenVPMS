@@ -116,6 +116,13 @@ public class LookupRelationshipDescriptor {
     }
 
     /**
+     * Clears the code pairs.
+     */
+    public void clear() {
+        pairs.clear();
+    }
+
+    /**
      * Determines if this equals another object.
      *
      * @param other the other object
