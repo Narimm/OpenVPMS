@@ -98,6 +98,13 @@ public class LookupDescriptor {
     }
 
     /**
+     * Clears the lookups.
+     */
+    public void clear() {
+        lookups.clear();
+    }
+
+    /**
      * Determines if this equals another object.
      *
      * @param other the other object

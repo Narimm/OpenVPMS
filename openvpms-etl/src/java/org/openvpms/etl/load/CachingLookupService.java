@@ -21,6 +21,7 @@ package org.openvpms.etl.load;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.resources.Messages;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -137,6 +138,24 @@ public class CachingLookupService extends AbstractLookupService {
         String shortName = lookup.getArchetypeId().getShortName();
         Map<String, Lookup> lookups = get(shortName);
         lookups.put(lookup.getCode(), lookup);
+    }
+
+    /**
+     * Returns a lookup given its reference.
+     *
+     * @param reference the lookup reference
+     * @return the corresponding lookup, or <tt>null</tt> if it doesn't exist
+     */
+    public synchronized Lookup getLookup(IMObjectReference reference) {
+        String shortName = reference.getArchetypeId().getShortName();
+        Map<String, Lookup> lookups = get(shortName);
+        for (Lookup lookup : lookups.values()) {
+            if (lookup.getObjectReference().equals(reference)) {
+                return lookup;
+            }
+
+        }
+        return null;
     }
 
     /**
