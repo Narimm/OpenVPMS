@@ -327,11 +327,11 @@ public class ReportingWorkspace extends AbstractWorkspace<Entity> {
     protected void onRun() {
         TemplateHelper helper = new TemplateHelper();
         Document doc = helper.getDocumentFromTemplate(getObject());
-        String uri = "http://localhost:8080/openvpms-viewer/frameset?__report=report/" + doc.getName();
-        Command command = new BrowserOpenWindowCommand(
-                uri, "OpenVPMS Report Viewer",
-                "width=800,height=600,resizable=yes,scrollbars=yes");
-        OpenVPMSApp.getInstance().enqueueCommand(command);
+        //String uri = "http://localhost:8080/openvpms-viewer/frameset?__report=report/" + doc.getName();
+        //Command command = new BrowserOpenWindowCommand(
+        //        uri, "OpenVPMS Report Viewer",
+        //        "width=800,height=600,resizable=yes,scrollbars=yes");
+        //OpenVPMSApp.getInstance().enqueueCommand(command);
     }
 
 }
