@@ -163,7 +163,7 @@ public class MainPane extends SplitPane implements ContextChangeListener {
         addSubsystem(new WorkflowSubsystem());
         addSubsystem(new FinancialSubsystem());
         addSubsystem(new ProductSubsystem());
-        //addSubsystem(new ReportingSubsystem());
+        addSubsystem(new ReportingSubsystem());
         addSubsystem(new AdminSubsystem());
 
         menu.addButton("help", new ActionListener() {
