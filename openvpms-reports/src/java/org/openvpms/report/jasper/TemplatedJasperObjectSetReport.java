@@ -24,7 +24,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.report.IMReportException;
+import org.openvpms.report.ReportException;
 
 import java.util.Iterator;
 
@@ -45,7 +45,7 @@ public class TemplatedJasperObjectSetReport
      * @param template the document template
      * @param service  the archetype service
      * @param handlers the document handlers
-     * @throws IMReportException if the report cannot be created
+     * @throws ReportException if the report cannot be created
      */
     public TemplatedJasperObjectSetReport(Document template,
                                           IArchetypeService service,
@@ -59,7 +59,7 @@ public class TemplatedJasperObjectSetReport
      * @param design   the master report design
      * @param service  the archetype service
      * @param handlers the document handlers
-     * @throws IMReportException if the report cannot be created
+     * @throws ReportException if the report cannot be created
      */
     public TemplatedJasperObjectSetReport(JasperDesign design,
                                           IArchetypeService service,

@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
-import static org.openvpms.report.IMReportException.ErrorCode.FailedToCreateReport;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
 import org.openvpms.report.jasper.DynamicJasperReport;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
 import org.openvpms.report.jasper.TemplatedJasperObjectSetReport;
@@ -33,12 +33,31 @@ import org.openvpms.report.openoffice.OpenOfficeIMReport;
 
 
 /**
- * A factory for {@link IMReport} instances.
+ * A factory for {@link Report} instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMReportFactory {
+public class ReportFactory {
+
+    /**
+     * Creates a new report.
+     */
+    public static Report createReport(
+            Document template, IArchetypeService service,
+            DocumentHandlers handlers) {
+        String name = template.getName();
+        Report report;
+        if (name.endsWith(DocFormats.JRXML_EXT)) {
+            report = new TemplatedJasperIMObjectReport(template, service,
+                                                       handlers);
+        } else {
+            throw new ReportException(
+                    FailedToCreateReport,
+                    "Unsupported document template: '" + name + "'");
+        }
+        return report;
+    }
 
     /**
      * Creates a new report for a collection of {@link IMObject}s.
@@ -47,7 +66,7 @@ public class IMReportFactory {
      * @param service  the archetype service
      * @param handlers the document handlers
      * @return a new report
-     * @throws IMReportException         for any report error
+     * @throws ReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static IMReport<IMObject> createIMObjectReport(
@@ -61,9 +80,9 @@ public class IMReportFactory {
         } else if (name.endsWith(DocFormats.ODT_EXT)) {
             report = new OpenOfficeIMReport<IMObject>(template, handlers);
         } else {
-            throw new IMReportException(
+            throw new ReportException(
                     FailedToCreateReport,
-                    "Unrecognised document template: '" + name + "'");
+                    "Unsupported document template: '" + name + "'");
         }
         return report;
     }
@@ -75,7 +94,7 @@ public class IMReportFactory {
      * @param service   the archetype service
      * @param handlers  the document handlers
      * @return a new report
-     * @throws IMReportException         for any report error
+     * @throws ReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static IMReport<IMObject> createIMObjectReport(
@@ -98,7 +117,7 @@ public class IMReportFactory {
      * @param service  the archetype service
      * @param handlers the document handlers
      * @return a new report
-     * @throws IMReportException         for any report error
+     * @throws ReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static IMReport<ObjectSet> createObjectSetReport(
@@ -112,9 +131,9 @@ public class IMReportFactory {
         } else if (name.endsWith(DocFormats.ODT_EXT)) {
             report = new OpenOfficeIMReport<ObjectSet>(template, handlers);
         } else {
-            throw new IMReportException(
+            throw new ReportException(
                     FailedToCreateReport,
-                    "Unrecognised document template: '" + name + "'");
+                    "Unsupported document template: '" + name + "'");
         }
         return report;
     }

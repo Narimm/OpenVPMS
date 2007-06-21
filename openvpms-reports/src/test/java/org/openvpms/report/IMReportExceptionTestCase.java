@@ -19,10 +19,10 @@
 package org.openvpms.report;
 
 import junit.framework.TestCase;
-import static org.openvpms.report.IMReportException.ErrorCode.*;
+import static org.openvpms.report.ReportException.ErrorCode.*;
 
 /**
- * {@link IMReportException} test case.
+ * {@link ReportException} test case.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -34,7 +34,7 @@ public class IMReportExceptionTestCase extends TestCase {
      */
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     5, IMReportException.ErrorCode.values().length);
+                     5, ReportException.ErrorCode.values().length);
         checkException(FailedToCreateReport, "Failed to create report: foo",
                        "foo");
         checkException(FailedToGenerateReport, "Failed to generate report: foo",
@@ -48,17 +48,17 @@ public class IMReportExceptionTestCase extends TestCase {
     }
 
     /**
-     * Creates an {@link IMReportException} with the supplied code and
+     * Creates an {@link ReportException} with the supplied code and
      * arguments and verifies that the generated message matches that expected.
      *
      * @param code     the error code
      * @param expected the expected message
      * @param args     exception arguments
      */
-    private void checkException(IMReportException.ErrorCode code,
+    private void checkException(ReportException.ErrorCode code,
                                 String expected, Object ... args) {
-        IMReportException exception = new IMReportException(code,
-                                                            args);
+        ReportException exception = new ReportException(code,
+                                                        args);
         assertEquals(code, exception.getErrorCode());
         assertEquals(expected, exception.getMessage());
     }

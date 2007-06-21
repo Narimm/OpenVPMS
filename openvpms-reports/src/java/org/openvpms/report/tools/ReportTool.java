@@ -36,7 +36,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
-import org.openvpms.report.IMReportFactory;
+import org.openvpms.report.ReportFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -206,7 +206,7 @@ public class ReportTool {
      */
     protected IMReport<IMObject> getReport(IMObject object) {
         String shortName = object.getArchetypeId().getShortName();
-        return IMReportFactory.createIMObjectReport(shortName, service,
+        return ReportFactory.createIMObjectReport(shortName, service,
                                                     handlers);
     }
 

@@ -33,8 +33,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.IMReport;
-import org.openvpms.report.IMReportException;
-import static org.openvpms.report.IMReportException.ErrorCode.FailedToCreateReport;
+import org.openvpms.report.ReportException;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
 import org.openvpms.report.jasper.DynamicJasperReport;
 import org.openvpms.report.jasper.JasperIMReport;
 import org.openvpms.report.jasper.JasperReportHelper;
@@ -173,8 +173,8 @@ public class JasperReportTool extends ReportTool {
                         handlers);
             }
         } catch (JRException exception) {
-            throw new IMReportException(exception, FailedToCreateReport,
-                                        exception.getMessage());
+            throw new ReportException(exception, FailedToCreateReport,
+                                      exception.getMessage());
         }
 
         if (showXML) {

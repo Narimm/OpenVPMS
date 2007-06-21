@@ -28,7 +28,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
-import org.openvpms.report.IMReportException;
+import org.openvpms.report.ReportException;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -198,7 +198,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
                     // not comparable so null to avoid class cast exceptions
                     result = null;
                 }
-            } catch (IMReportException ignore) {
+            } catch (ReportException ignore) {
                 // node node found
                 result = null;
             }
