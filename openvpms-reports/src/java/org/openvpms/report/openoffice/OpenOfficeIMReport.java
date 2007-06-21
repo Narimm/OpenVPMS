@@ -92,6 +92,16 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     }
 
     /**
+     * Not supported.
+     *
+     * @throws UnsupportedOperationException if invoked
+     */
+    public void print(Map<String, Object> parameters,
+                      PrintProperties properties) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Generates a report for a collection of objects.
      *
      * @param objects   the objects to report on

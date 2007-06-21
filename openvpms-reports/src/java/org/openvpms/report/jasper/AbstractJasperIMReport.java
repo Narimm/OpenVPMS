@@ -21,13 +21,18 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.design.JRDefaultCompiler;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
+import net.sf.jasperreports.engine.fill.JREvaluator;
+import net.sf.jasperreports.engine.fill.JRExpressionEvalException;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -35,11 +40,10 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.DocFormats;
-import org.openvpms.report.ReportException;
-import static org.openvpms.report.ReportException.ErrorCode.FailedToGenerateReport;
-import static org.openvpms.report.ReportException.ErrorCode.UnsupportedMimeTypes;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.PrintProperties;
+import org.openvpms.report.ReportException;
+import static org.openvpms.report.ReportException.ErrorCode.*;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.HashPrintServiceAttributeSet;
@@ -77,6 +81,11 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     private final DocumentHandlers handlers;
 
+    /**
+     * Cached expression evaluator.
+     */
+    private JREvaluator evaluator;
+
 
     /**
      * Constructs a new <tt>AbstractJasperIMReport</tt>.
@@ -98,11 +107,18 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     public Set<ParameterType> getParameterTypes() {
         Set<ParameterType> types = new LinkedHashSet<ParameterType>();
-        for (JRParameter p : getReport().getParameters()) {
+        JasperReport report = getReport();
+        for (JRParameter p : report.getParameters()) {
             if (!p.isSystemDefined() && p.isForPrompting()) {
+                JRExpression expression = p.getDefaultValueExpression();
+                Object defaultValue = null;
+                if (expression != null) {
+                    defaultValue = evaluate(expression);
+                }
                 ParameterType type = new ParameterType(p.getName(),
                                                        p.getValueClass(),
-                                                       p.getDescription());
+                                                       p.getDescription(),
+                                                       defaultValue);
                 types.add(type);
             }
         }
@@ -144,7 +160,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
      * @return a document containing the report
-     * @throws ReportException         for any report error
+     * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(Iterator<T> objects, String[] mimeTypes) {
@@ -163,47 +179,39 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     /**
      * Prints a report directly to a printer.
      *
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report
+     * @param properties the print properties
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void print(Map<String, Object> parameters,
+                      PrintProperties properties) {
+        Map<String, Object> params = getDefaultParameters();
+        params.putAll(parameters);
+        try {
+            JasperPrint print = JasperFillManager.fillReport(getReport(),
+                                                             params);
+            print(print, properties);
+        } catch (JRException exception) {
+            throw new ReportException(exception, FailedToGenerateReport,
+                                      exception.getMessage());
+
+        }
+    }
+
+    /**
+     * Prints a report directly to a printer.
+     *
      * @param objects    the objects to report on
      * @param properties the print properties
-     * @throws ReportException         for any report error
+     * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void print(Iterator<T> objects, PrintProperties properties) {
         try {
             JasperPrint print = report(objects);
-            JRPrintServiceExporter exporter = new JRPrintServiceExporter();
-            exporter.setParameter(JRPrintServiceExporterParameter.JASPER_PRINT,
-                                  print);
-
-            // print 1 copy
-            PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
-            aset.add(new Copies(1));
-            MediaSizeName mediaSize = properties.getMediaSize();
-            OrientationRequested orientation = properties.getOrientation();
-            MediaTray tray = properties.getMediaTray();
-            if (mediaSize != null) {
-                aset.add(mediaSize);
-            }
-            if (orientation != null) {
-                aset.add(orientation);
-            }
-            if (tray != null) {
-                aset.add(tray);
-            }
-            exporter.setParameter(
-                    JRPrintServiceExporterParameter.PRINT_REQUEST_ATTRIBUTE_SET,
-                    aset);
-
-            // set the printer name
-            PrintServiceAttributeSet serviceAttributeSet
-                    = new HashPrintServiceAttributeSet();
-            serviceAttributeSet.add(
-                    new PrinterName(properties.getPrinterName(), null));
-            exporter.setParameter(
-                    JRPrintServiceExporterParameter.PRINT_SERVICE_ATTRIBUTE_SET,
-                    serviceAttributeSet);
-            // print it
-            exporter.exportReport();
+            print(print, properties);
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToGenerateReport,
                                       exception.getMessage());
@@ -257,7 +265,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param report   the report to convert
      * @param mimeType the mime-type of the document
      * @return a document containing the report
-     * @throws ReportException         for any error
+     * @throws ReportException           for any error
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected Document convert(JasperPrint report, String mimeType) {
@@ -325,4 +333,81 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         return mimeType;
     }
 
+    /**
+     * Prints a <tt>JasperPrint</tt> to a printer.
+     *
+     * @param print      the object to print
+     * @param properties the print properties
+     * @throws JRException for any error
+     */
+    private void print(JasperPrint print, PrintProperties properties) throws
+                                                                      JRException {
+        JRPrintServiceExporter exporter = new JRPrintServiceExporter();
+        exporter.setParameter(JRPrintServiceExporterParameter.JASPER_PRINT,
+                              print);
+
+        // print 1 copy
+        PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
+        aset.add(new Copies(1));
+        MediaSizeName mediaSize = properties.getMediaSize();
+        OrientationRequested orientation = properties.getOrientation();
+        MediaTray tray = properties.getMediaTray();
+        if (mediaSize != null) {
+            aset.add(mediaSize);
+        }
+        if (orientation != null) {
+            aset.add(orientation);
+        }
+        if (tray != null) {
+            aset.add(tray);
+        }
+        exporter.setParameter(
+                JRPrintServiceExporterParameter.PRINT_REQUEST_ATTRIBUTE_SET,
+                aset);
+
+        // set the printer name
+        PrintServiceAttributeSet serviceAttributeSet
+                = new HashPrintServiceAttributeSet();
+        serviceAttributeSet.add(
+                new PrinterName(properties.getPrinterName(), null));
+        exporter.setParameter(
+                JRPrintServiceExporterParameter.PRINT_SERVICE_ATTRIBUTE_SET,
+                serviceAttributeSet);
+        // print it
+        exporter.exportReport();
+    }
+
+    /**
+     * Evaluates an expression.
+     *
+     * @param expression the expression to evaluate
+     * @return the expression result
+     * @throws ReportException if the expression can't be evaluated
+     */
+    private Object evaluate(JRExpression expression) {
+        try {
+            return getEvaluator().evaluate(expression);
+        } catch (JRExpressionEvalException exception) {
+            throw new ReportException(FailedToEvaluateExpression, exception);
+        }
+    }
+
+    /**
+     * Returns the expression evaluator.
+     *
+     * @return the expression evaluator
+     * @throws ReportException if the evaluator can't be loaded
+     */
+    private JREvaluator getEvaluator() {
+        if (evaluator == null) {
+            try {
+                JRDefaultCompiler compiler = JRDefaultCompiler.getInstance();
+                evaluator = compiler.loadEvaluator(getReport());
+            } catch (JRException exception) {
+                throw new ReportException(FailedToGetExpressionEvaluator,
+                                          exception);
+            }
+        }
+        return evaluator;
+    }
 }

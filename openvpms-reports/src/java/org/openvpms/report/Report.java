@@ -19,9 +19,10 @@
 package org.openvpms.report;
 
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -31,7 +32,7 @@ import java.util.Map;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public interface Report {
-    
+
     /**
      * Returns the set of parameter types that may be supplied to the report.
      *
@@ -51,4 +52,16 @@ public interface Report {
      * @throws UnsupportedOperationException if this operation is not supported
      */
     Document generate(Map<String, Object> parameters, String[] mimeTypes);
+
+    /**
+     * Prints a report directly to a printer.
+     *
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report
+     * @param properties the print properties
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    void print(Map<String, Object> parameters, PrintProperties properties);
 }
