@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.bound;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateFieldImpl;
 import org.openvpms.web.component.util.DateHelper;
@@ -52,6 +53,9 @@ public class BoundDateField extends DateFieldImpl {
     public BoundDateField(Property property) {
         binder = createBinder(property);
         binder.setField();
+        if (!StringUtils.isEmpty(property.getDescription())) {
+            setToolTipText(property.getDescription());
+        }
     }
 
     /**

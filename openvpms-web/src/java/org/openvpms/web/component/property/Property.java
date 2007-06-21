@@ -13,7 +13,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id:Property.java 2147 2007-06-21 04:16:11Z tanderson $
  */
 
 package org.openvpms.web.component.property;
@@ -25,7 +25,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
  * Property that provides notification on modification.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate:2007-06-21 04:16:11Z $
  */
 public interface Property extends Modifiable {
 
@@ -42,6 +42,13 @@ public interface Property extends Modifiable {
      * @return the display name
      */
     String getDisplayName();
+
+    /**
+     * Returns the property description.
+     *
+     * @return the description. May be <tt>null</tt>
+     */
+    String getDescription();
 
     /**
      * Set the value of the property.

@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.property;
 
+
 /**
  * Abstract implementation of the {@link Property} interface.
  *

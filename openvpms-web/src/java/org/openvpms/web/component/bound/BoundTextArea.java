@@ -20,11 +20,12 @@ package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.TextArea;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.property.Property;
 
 
 /**
- * Binds a {@link Property} to a <code>TextArea</code>.
+ * Binds a {@link Property} to a <tt>TextArea</tt>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -32,17 +33,20 @@ import org.openvpms.web.component.property.Property;
 public class BoundTextArea extends TextArea {
 
     /**
-     * Construct a new <code>BoundTextField</code>.
+     * Constructs a new <tt>BoundTextArea</tt>.
      *
      * @param property the property to bind
      * @param columns  the no. of columns to display
-     * @param rows     TODO
+     * @param rows     the no. of rows to display
      */
     public BoundTextArea(Property property, int columns, int rows) {
         setWidth(new Extent(columns, Extent.EX));
         setHeight(new Extent(rows, Extent.EM));
         Binder binder = new TextComponentBinder(this, property);
         binder.setField();
+        if (!StringUtils.isEmpty(property.getDescription())) {
+            setToolTipText(property.getDescription());
+        }
     }
 
 }
