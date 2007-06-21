@@ -13,7 +13,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id:IMObjectProperty.java 2147 2007-06-21 04:16:11Z tanderson $
  */
 /*
  *  Version: 1.0
@@ -30,7 +30,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id:IMObjectProperty.java 2147 2007-06-21 04:16:11Z tanderson $
  */
 
 package org.openvpms.web.component.property;
@@ -60,7 +60,7 @@ import java.util.List;
  * Represents a property of an {@link IMObject}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate:2007-06-21 04:16:11Z $
  */
 public class IMObjectProperty extends AbstractProperty
         implements CollectionProperty {
@@ -164,6 +164,15 @@ public class IMObjectProperty extends AbstractProperty
      */
     public String getDisplayName() {
         return descriptor.getDisplayName();
+    }
+
+    /**
+     * Returns the property description.
+     *
+     * @return the description. May be <tt>null</tt>
+     */
+    public String getDescription() {
+        return null;
     }
 
     /**

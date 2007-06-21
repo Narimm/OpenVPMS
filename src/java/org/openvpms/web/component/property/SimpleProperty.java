@@ -55,7 +55,12 @@ public class SimpleProperty extends AbstractProperty {
     private String displayName;
 
     /**
-     * The property value.
+     * The property description. May be <tt>null</tt>
+     */
+    private String description;
+
+    /**
+     * The property value. May be <tt>null</tt>
      */
     private Object value;
 
@@ -137,6 +142,24 @@ public class SimpleProperty extends AbstractProperty {
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    /**
+     * Returns the property description.
+     *
+     * @return the description. May be <tt>null</tt>
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the property description.
+     *
+     * @param description the description. May be <tt>null</tt>
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**

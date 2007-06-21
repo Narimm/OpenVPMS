@@ -21,6 +21,7 @@ package org.openvpms.web.component.bound;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.property.Property;
 
 
@@ -70,7 +71,9 @@ public class BoundCheckBox extends CheckBox {
             }
         };
         binder.setField();
-
+        if (!StringUtils.isEmpty(property.getDescription())) {
+            setToolTipText(property.getDescription());
+        }
     }
 
 }

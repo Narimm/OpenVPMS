@@ -20,6 +20,7 @@ package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.TextField;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.TextDocument;
 
@@ -48,6 +49,9 @@ public class BoundTextField extends TextField {
 
         Binder binder = new TextComponentBinder(this, property);
         binder.setField();
+        if (!StringUtils.isEmpty(property.getDescription())) {
+            setToolTipText(property.getDescription());
+        }
     }
 
 }

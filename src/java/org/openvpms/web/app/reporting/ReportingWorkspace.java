@@ -25,45 +25,23 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
-import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.report.DocFormats;
-import org.openvpms.report.ParameterType;
-import org.openvpms.report.Report;
-import org.openvpms.report.ReportFactory;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.servlet.DownloadServlet;
-import org.openvpms.web.system.ServiceHelper;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -336,95 +314,14 @@ public class ReportingWorkspace extends AbstractWorkspace<Entity> {
     }
 
     /**
-     * Invoked when the run button is pressed. Runs the
-     * selected report.
+     * Invoked when the run button is pressed. Runs the selected report.
      */
     protected void onRun() {
         try {
-            TemplateHelper helper = new TemplateHelper();
-            Document doc = helper.getDocumentFromTemplate(getObject());
-            if (doc != null) {
-                final Report report = ReportFactory.createReport(
-                        doc, ArchetypeServiceHelper.getArchetypeService(),
-                        ServiceHelper.getDocumentHandlers());
-                ParameterType connectionParam = getConnectionParameter(report);
-                if (connectionParam == null) {
-                    ErrorHelper.show(Messages.get("reporting.noconnection"));
-                } else {
-                    doReport(report, connectionParam);
-                }
-            }
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    private void doReport(final Report report, ParameterType connectionParam)
-            throws SQLException {
-        final Map<String, Object> params
-                = new HashMap<String, Object>();
-        Set<ParameterType> types = report.getParameterTypes();
-        DataSource ds = ServiceHelper.getDataSource();
-        final Connection connection = ds.getConnection();
-        params.put(connectionParam.getName(), connection);
-        List<Property> properties = getProperties(types);
-        final ReportDialog dialog = new ReportDialog(properties) {
-            @Override
-            protected void doPreview() {
-                params.putAll(this.getValues());
-                doPrintPreview(report, params, connection);
-            }
-        };
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                String action = dialog.getAction();
-                if (PrintDialog.OK_ID.equals(action)) {
-                    params.putAll(dialog.getValues());
-                    doPrintPreview(report, params, connection);
-                }
-            }
-        });
-        dialog.show();
-
-    }
-
-    /**
-     * Returns the user-configurable report properties.
-     *
-     * @param types the report parameter types
-     * @return the corresponding list of user-configurable properties
-     */
-    private List<Property> getProperties(Set<ParameterType> types) {
-        List<Property> result = new ArrayList<Property>();
-        for (ParameterType type : types) {
-            if (!type.isSystem()) {
-                Property property = new SimpleProperty(type.getName(),
-                                                       type.getType());
-                if (property.isBoolean() || property.isString()
-                        || property.isNumeric() || property.isDate()) {
-                    result.add(property);
-                }
-            }
-        }
-        return result;
-    }
-
-    private ParameterType getConnectionParameter(Report report) {
-        for (ParameterType type : report.getParameterTypes()) {
-            if (Connection.class.equals(type.getType())) {
-                return type;
-            }
-        }
-        return null;
-    }
-
-    private void doPrintPreview(Report report, Map<String, Object> params,
-                                Connection connection) {
-        try {
-            Document d = report.generate(params,
-                                         new String[]{DocFormats.PDF_TYPE});
-            DownloadServlet.startDownload(d);
-            connection.close();
+            SQLReportPrinter printer = new SQLReportPrinter(getObject());
+            InteractiveSQLReportPrinter iPrinter
+                    = new InteractiveSQLReportPrinter(printer);
+            iPrinter.print();
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }

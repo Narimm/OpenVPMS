@@ -29,24 +29,25 @@ import java.util.Map;
 
 
 /**
- * Reporting dialog for reports that accept parameters.
+ * Reporting dialog for SQL reports that accept parameters.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ReportDialog extends PrintDialog {
+public class SQLReportDialog extends PrintDialog {
 
     /**
      * The report parameters.
      */
     private final ReportParameters parameters;
 
+
     /**
      * Constructs a new <tt>ReportDialog</tt>.
      *
      * @param properties the report properties
      */
-    public ReportDialog(List<Property> properties) {
+    public SQLReportDialog(List<Property> properties) {
         parameters = new ReportParameters(properties);
     }
 
@@ -66,8 +67,16 @@ public class ReportDialog extends PrintDialog {
     @Override
     protected void onOK() {
         if (parameters.validate()) {
+            doPrint();
             super.onOK();
         }
+    }
+
+    /**
+     * Invoked when the the report should be printed.
+     * This implementation does nothing.
+     */
+    protected void doPrint() {
     }
 
     /**
