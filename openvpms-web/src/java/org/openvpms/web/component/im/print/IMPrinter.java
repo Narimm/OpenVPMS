@@ -18,8 +18,7 @@
 
 package org.openvpms.web.component.im.print;
 
-import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.print.Printer;
 
 
 /**
@@ -28,7 +27,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMPrinter<T> {
+public interface IMPrinter<T> extends Printer {
 
     /**
      * Returns the objects being printed.
@@ -44,45 +43,4 @@ public interface IMPrinter<T> {
      */
     String getDisplayName();
 
-    /**
-     * Prints the object to the default printer.
-     *
-     * @throws OpenVPMSException for any error
-     */
-    void print();
-
-    /**
-     * Prints the object.
-     *
-     * @param printer the printer name. May be <code>null</code>
-     * @throws OpenVPMSException for any error
-     */
-    void print(String printer);
-
-    /**
-     * Returns the default printer for the object.
-     *
-     * @return the default printer for the object, or <code>null</code> if none
-     *         is defined
-     * @throws OpenVPMSException for any error
-     */
-    String getDefaultPrinter();
-
-    /**
-     * Returns a document for the object, corresponding to that which would be
-     * printed.
-     *
-     * @return a document
-     * @throws OpenVPMSException for any error
-     */
-    Document getDocument();
-
-    /**
-     * Determines if printing should occur interactively.
-     *
-     * @return <tt>true</tt> if printing should occur interactively,
-     *         <tt>false</tt> if it can be performed non-interactively
-     * @throws OpenVPMSException for any error
-     */
-    boolean getInteractive();
 }

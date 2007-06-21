@@ -31,9 +31,9 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMReport;
-import org.openvpms.report.IMReportException;
-import org.openvpms.report.IMReportFactory;
 import org.openvpms.report.PrintProperties;
+import org.openvpms.report.ReportException;
+import org.openvpms.report.ReportFactory;
 import org.openvpms.web.system.ServiceHelper;
 
 
@@ -137,7 +137,7 @@ public class IMObjectReportPrinter<T extends IMObject>
      * Creates a new report.
      *
      * @return a new report
-     * @throws IMReportException         for any report error
+     * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     @SuppressWarnings("unchecked")
@@ -148,16 +148,16 @@ public class IMObjectReportPrinter<T extends IMObject>
         DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
         IMReport<IMObject> report;
         if (template == null) {
-            report = IMReportFactory.createIMObjectReport(shortName, service,
-                                                          handlers);
+            report = ReportFactory.createIMObjectReport(shortName, service,
+                                                        handlers);
         } else {
             TemplateHelper helper = new TemplateHelper();
             Document doc = helper.getDocumentFromTemplate(template);
             if (doc == null) {
                 throw new DocumentException(NotFound);
             }
-            report = IMReportFactory.createIMObjectReport(doc, service,
-                                                          handlers);
+            report = ReportFactory.createIMObjectReport(doc, service,
+                                                        handlers);
         }
         return (IMReport<T>) report;
     }

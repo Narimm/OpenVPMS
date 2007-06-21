@@ -16,28 +16,38 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
+package org.openvpms.web.component.print;
 
-import org.openvpms.component.business.service.archetype.ValidationException;
+import java.util.EventListener;
 
 
 /**
- * A <code>PropertyTransformer</code> is responsible for processing user input
- * prior to it being set on {@link Property}.
+ * Listener for {@link Printer} events.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface PropertyTransformer {
+public interface PrinterListener extends EventListener {
 
     /**
-     * Transform an object to the required type, performing validation.
-     *
-     * @param object the object to convert
-     * @return the transformed object, or <code>object</code> if no
-     *         transformation is required
-     * @throws ValidationException if the object is invalid
+     * Notifies of a successful print.
      */
-    Object apply(Object object) throws ValidationException;
+    void printed();
 
+    /**
+     * Notifies that the print was cancelled.
+     */
+    void cancelled();
+
+    /**
+     * Notifies that the print was skipped.
+     */
+    void skipped();
+
+    /**
+     * Invoked when a print fails.
+     *
+     * @param cause the reason for the failure
+     */
+    void failed(Throwable cause);
 }

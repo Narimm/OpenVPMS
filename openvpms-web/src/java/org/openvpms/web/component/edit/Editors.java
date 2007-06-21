@@ -13,10 +13,16 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: Editors.java 2034 2007-05-04 07:03:38Z tanderson $
  */
 
 package org.openvpms.web.component.edit;
+
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.ModifiableListeners;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +36,7 @@ import java.util.Set;
  * Collection of {@link Editor} instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2007-05-04 07:03:38Z $
  */
 public class Editors implements Modifiable {
 
@@ -85,7 +91,7 @@ public class Editors implements Modifiable {
      */
     public void add(Editor editor, Property property) {
         addEditor(editor);
-        propertyEditors.put(property.getDescriptor().getName(), editor);
+        propertyEditors.put(property.getName(), editor);
     }
 
     /**

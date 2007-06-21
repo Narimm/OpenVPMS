@@ -21,17 +21,16 @@ package org.openvpms.web.component.im.edit.act;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.DefaultIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
 
 
 /**
@@ -59,8 +58,7 @@ public class ParticipationCollectionEditor
     public ParticipationCollectionEditor(CollectionProperty property,
                                          IMObject object,
                                          LayoutContext context) {
-        String[] shortNames = DescriptorHelper.getShortNames(
-                property.getDescriptor());
+        String[] shortNames = property.getArchetypeRange();
         int max = property.getMaxCardinality();
         if (max == 1 && shortNames.length == 1) {
             editor = new SingleParticipationCollectionEditor(property, object,

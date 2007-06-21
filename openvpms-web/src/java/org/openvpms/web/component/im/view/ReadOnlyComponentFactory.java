@@ -18,21 +18,16 @@
 
 package org.openvpms.web.component.im.view;
 
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateHelper;
-import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.TextComponentFactory;
 
 import java.text.DateFormat;
-import java.text.Format;
 
 
 /**
@@ -59,32 +54,14 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      * @param context  the context object
      * @return a component to display the lookup
      */
-    protected Component getLookup(Property property, IMObject context) {
+    protected Component createLookup(Property property, IMObject context) {
         TextComponent result;
         final int maxDisplayLength = 50;
-        NodeDescriptor descriptor = property.getDescriptor();
-        int length = descriptor.getMaxLength();
+        int length = property.getMaxLength();
         int columns = (length < maxDisplayLength) ? length : maxDisplayLength;
         result = TextComponentFactory.create(columns);
         result.setText(getLookupName(property, context));
         return result;
-    }
-
-    /**
-     * Returns a component to display a number.
-     *
-     * @param property
-     * @return a component to display the datge
-     */
-    protected Component getNumber(Property property) {
-        int maxColumns = 10;
-        NodeDescriptor descriptor = property.getDescriptor();
-        Format format = NumberFormatter.getFormat(descriptor, false);
-        TextField text = TextComponentFactory.create(property, maxColumns,
-                                                     format);
-        Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
-        text.setAlignment(align);
-        return text;
     }
 
     /**
@@ -93,7 +70,7 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      * @param property
      * @return a component to display the datge
      */
-    protected Component getDate(Property property) {
+    protected Component createDate(Property property) {
         DateFormat format = DateHelper.getDateFormat(false);
         int maxColumns = DateHelper.getLength(format);
         return TextComponentFactory.create(property, maxColumns, format);

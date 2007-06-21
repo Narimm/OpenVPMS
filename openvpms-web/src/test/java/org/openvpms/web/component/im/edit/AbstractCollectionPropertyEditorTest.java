@@ -28,9 +28,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.IMObjectProperty;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.test.AbstractAppTest;
 
 

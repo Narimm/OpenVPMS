@@ -13,20 +13,21 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: PropertyComponentEditor.java 1627 2006-12-12 03:25:07Z tanderson $
  */
 
 package org.openvpms.web.component.edit;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.property.Property;
 
 
 /**
  * Simple property editor, associated with a component.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-12-12 03:25:07Z $
  */
 public class PropertyComponentEditor extends AbstractPropertyEditor {
 
@@ -50,7 +51,7 @@ public class PropertyComponentEditor extends AbstractPropertyEditor {
     public PropertyComponentEditor(Property property, Component component) {
         super(property);
         this.component = component;
-        focusGroup = new FocusGroup(property.getDescriptor().getDisplayName());
+        focusGroup = new FocusGroup(property.getDisplayName());
         focusGroup.add(component);
     }
 

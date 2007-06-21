@@ -25,9 +25,9 @@
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Saveable;
-import org.openvpms.web.component.edit.Validator;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Validator;
 
 import java.util.List;
 

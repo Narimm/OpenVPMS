@@ -23,17 +23,12 @@ import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -44,6 +39,10 @@ import org.openvpms.web.component.im.select.IMObjectSelectorListener;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
 
 
 /**
@@ -110,8 +109,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
                                            boolean allowCreate) {
         super(property);
         this.parent = parent;
-        NodeDescriptor descriptor = property.getDescriptor();
-        selector = new IMObjectSelector<T>(descriptor, allowCreate) {
+        selector = new IMObjectSelector<T>(property, allowCreate) {
             @Override
             protected Query<T> createQuery(String name) {
                 return AbstractIMObjectReferenceEditor.this.createQuery(name);
@@ -172,15 +170,6 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      */
     public FocusGroup getFocusGroup() {
         return selector.getFocusGroup();
-    }
-
-    /**
-     * Returns the object reference's descriptor.
-     *
-     * @return the object reference's descriptor
-     */
-    public NodeDescriptor getDescriptor() {
-        return getProperty().getDescriptor();
     }
 
     /**
@@ -253,8 +242,8 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
             }
         };
 
-        IMObjectCreator.create(getDescriptor().getDisplayName(),
-                               getDescriptor().getArchetypeRange(),
+        IMObjectCreator.create(getProperty().getDisplayName(),
+                               getProperty().getArchetypeRange(),
                                listener);
     }
 
@@ -302,7 +291,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      *                                 archetypes
      */
     protected Query<T> createQuery(String name) {
-        String[] shortNames = getDescriptor().getArchetypeRange();
+        String[] shortNames = getProperty().getArchetypeRange();
         Query<T> query = QueryFactory.create(shortNames, context);
         query.setName(name);
         return query;
@@ -316,8 +305,8 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         Property property = getProperty();
         IMObjectReference reference = (IMObjectReference) property.getValue();
         if (reference != null) {
-            T object = (T) IMObjectHelper.getObject(reference, getDescriptor(),
-                                                    context);
+            T object = (T) IMObjectHelper.getObject(
+                    reference, property.getArchetypeRange(), context);
             selector.setObject(object);
         }
     }

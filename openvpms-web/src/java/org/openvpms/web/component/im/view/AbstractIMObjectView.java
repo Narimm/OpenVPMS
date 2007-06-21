@@ -22,10 +22,10 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.PropertySet;
 
 
 /**

@@ -32,12 +32,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.edit.IMObjectProperty;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.edit.TimePropertyTransformer;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.edit.act.CustomerParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationCollectionEditor;
@@ -46,11 +40,16 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.TimePropertyTransformer;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.DateHelper;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.TimeFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -132,11 +131,9 @@ public class AppointmentActEditor extends AbstractActEditor {
         };
         setDate(startTime);
 
-        startTimeXform = new TimePropertyTransformer(act, getDescriptor(
-                "startTime"));
+        startTimeXform = new TimePropertyTransformer(getProperty("startTime"));
         startTimeXform.setDate(startTime);
-        endTimeXform = new TimePropertyTransformer(act,
-                                                   getDescriptor("endTime"));
+        endTimeXform = new TimePropertyTransformer(getProperty("endTime"));
         endTimeXform.setDate(startTime);
 
         getProperty("status").addModifiableListener(new ModifiableListener() {
@@ -398,7 +395,7 @@ public class AppointmentActEditor extends AbstractActEditor {
             ComponentSet result = new ComponentSet();
             for (NodeDescriptor descriptor : descriptors) {
                 Property property = properties.get(descriptor);
-                String name = property.getDescriptor().getName();
+                String name = property.getName();
                 if (name.equals("startTime")) {
                     // insert the date component prior to the start time
                     ComponentState dateComp = new ComponentState(date);
@@ -426,15 +423,13 @@ public class AppointmentActEditor extends AbstractActEditor {
                                                  IMObject parent,
                                                  LayoutContext context) {
             ComponentState result;
-            String name = property.getDescriptor().getName();
+            String name = property.getName();
             if (name.equals("startTime")) {
-                IMObjectProperty startTime = (IMObjectProperty) property;
-                startTime.setTransformer(startTimeXform);
+                property.setTransformer(startTimeXform);
                 result = new ComponentState(TimeFieldFactory.create(property),
                                             property);
             } else if (name.equals("endTime")) {
-                IMObjectProperty endTime = (IMObjectProperty) property;
-                endTime.setTransformer(endTimeXform);
+                property.setTransformer(endTimeXform);
                 result = new ComponentState(TimeFieldFactory.create(property),
                                             property);
             } else {

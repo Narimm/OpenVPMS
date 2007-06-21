@@ -16,14 +16,10 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
+package org.openvpms.web.component.property;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.resource.util.Messages;
 
@@ -43,19 +39,18 @@ import java.util.GregorianCalendar;
 public class TimePropertyTransformer extends AbstractPropertyTransformer {
 
     /**
-     * The date component of the time. May be <code>null</code>.
+     * The date component of the time. May be <tt>null</tt>.
      */
     private Date date;
 
 
     /**
-     * Construct a new <code>TimePropertyTransformer</code>.
+     * Construct a new <tt>TimePropertyTransformer</tt>.
      *
-     * @param object     the parent object
-     * @param descriptor the node descriptor
+     * @param property the property
      */
-    public TimePropertyTransformer(IMObject object, NodeDescriptor descriptor) {
-        super(object, descriptor);
+    public TimePropertyTransformer(Property property) {
+        super(property);
     }
 
     /**
@@ -71,11 +66,11 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
      * Transform an object to the required type, performing validation.
      *
      * @param object the object to convert
-     * @return the transformed object, or <code>object</code> if no
+     * @return the transformed object, or <tt>object</tt> if no
      *         transformation is required
-     * @throws ValidationException if the object is invalid
+     * @throws PropertyException if the object is invalid
      */
-    public Object apply(Object object) throws ValidationException {
+    public Object apply(Object object) throws PropertyException {
         Object result;
         try {
             if (object instanceof String) {
@@ -215,18 +210,15 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
     }
 
     /**
-     * Helper to create a {@link ValidationException} from an exception.
+     * Helper to create a new property exception.
      *
-     * @param exception the exception. May be <code>null</code>
-     * @return a new <code>ValidationException</code>
+     * @param cause the cause. May be <tt>null</tt>
+     * @return a new property exception
      */
-    private ValidationException getException(Throwable exception) {
-        NodeDescriptor node = getDescriptor();
-        String message = Messages.get("node.error.invalidtime",
-                                      node.getDisplayName());
-        ArchetypeId id = getParent().getArchetypeId();
-        return ValidationHelper.createException(getParent(), node, message,
-                                                exception, id);
+    private PropertyException getException(Throwable cause) {
+        String message = Messages.get("property.error.invalidtime",
+                                      getProperty().getDisplayName());
+        return new PropertyException(getProperty(), message, cause);
     }
 
 }

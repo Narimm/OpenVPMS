@@ -41,11 +41,6 @@ import org.openvpms.web.resource.util.Messages;
 public class PrintDialog extends PopupDialog {
 
     /**
-     * The preview button identifier.
-     */
-    private static final String PREVIEW_ID = "preview";
-
-    /**
      * The print label.
      */
     private Label label;
@@ -53,18 +48,28 @@ public class PrintDialog extends PopupDialog {
     /**
      * The printers.
      */
-    private SelectField printers;
+    private final SelectField printers;
+
+    /**
+     * Determines if the preview button should be added.
+     */
+    private final boolean preview;
+
+    /**
+     * The preview button identifier.
+     */
+    private static final String PREVIEW_ID = "preview";
 
 
     /**
-     * Constructs a new <code>PrintDialog</code>.
+     * Constructs a new <tt>PrintDialog</tt>.
      */
     public PrintDialog() {
         this(Messages.get("printdialog.title"));
     }
 
     /**
-     * Constructs a new <code>PrintDialog</code>.
+     * Constructs a new <tt>PrintDialog</tt>.
      *
      * @param title the window title
      */
@@ -73,49 +78,36 @@ public class PrintDialog extends PopupDialog {
     }
 
     /**
-     * Constructs a new <code>PrintDialog</code>.
+     * Constructs a new <tt>PrintDialog</tt>.
      *
      * @param title   the window title
-     * @param preview if <code>true</code> add a 'preview' button
+     * @param preview if <tt>true</tt> add a 'preview' button
      */
     public PrintDialog(String title, boolean preview) {
         this(title, preview, false);
     }
 
     /**
-     * Constructs a new <code>PrintDialog</code>.
+     * Constructs a new <tt>PrintDialog</tt>.
      *
      * @param title   the window title
-     * @param preview if <code>true</code> add a 'preview' button
-     * @param skip    if <code>triue</code> display a 'skip' button that simply
+     * @param preview if <tt>true</tt> add a 'preview' button
+     * @param skip    if <tt>triue</tt> display a 'skip' button that simply
      *                closes the dialog
      */
     public PrintDialog(String title, boolean preview, boolean skip) {
         super(title, "PrintDialog", (skip) ? OK_SKIP_CANCEL : OK_CANCEL);
         setModal(true);
-
-        label = LabelFactory.create("printdialog.printer");
-        DefaultListModel model
-                = new DefaultListModel(PrintHelper.getPrinters());
+        DefaultListModel model = new DefaultListModel(
+                PrintHelper.getPrinters());
         printers = SelectFieldFactory.create(model);
-        Row row = RowFactory.create("ControlRow");
-        doLayout(row);
-        getLayout().add(row);
-        if (preview) {
-            addButton(PREVIEW_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    onPreview();
-                }
-            });
-        }
-
-        setDefaultPrinter(PrintHelper.getDefaultPrinter());
+        this.preview = preview;
     }
 
     /**
      * Sets the default printer.
      *
-     * @param name the default printer name. May be <code>null</code>
+     * @param name the default printer name. May be <tt>null</tt>
      */
     public void setDefaultPrinter(String name) {
         DefaultListModel model = (DefaultListModel) printers.getModel();
@@ -128,10 +120,20 @@ public class PrintDialog extends PopupDialog {
     /**
      * Returns the selected printer.
      *
-     * @return the selected printer, or <code>null</code> if none is selected
+     * @return the selected printer, or <tt>null</tt> if none is selected
      */
     public String getPrinter() {
         return (String) printers.getSelectedItem();
+    }
+
+    /**
+     * Lays out the component prior to display.
+     */
+    @Override
+    protected void doLayout() {
+        Row row = RowFactory.create("ControlRow");
+        doLayout(row);
+        getLayout().add(row);
     }
 
     /**
@@ -140,6 +142,16 @@ public class PrintDialog extends PopupDialog {
      * @param container the container
      */
     protected void doLayout(Component container) {
+        label = LabelFactory.create("printdialog.printer");
+        if (preview) {
+            addButton(PREVIEW_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    onPreview();
+                }
+            });
+        }
+
+        setDefaultPrinter(PrintHelper.getDefaultPrinter());
         container.add(label);
         container.add(printers);
     }

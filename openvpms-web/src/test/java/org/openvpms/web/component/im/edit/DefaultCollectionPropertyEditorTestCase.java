@@ -28,7 +28,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.test.TestHelper;
 
 import java.util.Arrays;

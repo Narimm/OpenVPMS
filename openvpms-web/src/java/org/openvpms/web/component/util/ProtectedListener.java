@@ -20,7 +20,6 @@ package org.openvpms.web.component.util;
 
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.web.component.im.util.ErrorHelper;
 
 
 /**

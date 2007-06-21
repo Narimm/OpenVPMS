@@ -22,13 +22,13 @@ import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.web.component.edit.IMObjectProperty;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
+import org.openvpms.web.component.property.IMObjectProperty;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateHelper;
 
 import java.util.Date;

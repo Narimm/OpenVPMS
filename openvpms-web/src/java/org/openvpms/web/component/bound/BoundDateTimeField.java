@@ -20,9 +20,8 @@ package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Row;
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.web.component.edit.IMObjectProperty;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.TimePropertyTransformer;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.TimePropertyTransformer;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
 import java.util.Calendar;
@@ -50,21 +49,19 @@ public class BoundDateTimeField extends Row {
 
 
     /**
-     * Construct a new <code>BoundDateTimeField</code>.
+     * Constructs a new <tt>BoundDateTimeField</tt>.
      *
      * @param property the property to bind
      */
     public BoundDateTimeField(Property property) {
         setStyleName("CellSpacing");
-        IMObjectProperty p = (IMObjectProperty) property;
         TimePropertyTransformer transformer
-                = new TimePropertyTransformer(p.getObject(),
-                                              p.getDescriptor());
-        Date current = (Date) p.getValue();
+                = new TimePropertyTransformer(property);
+        Date current = (Date) property.getValue();
         if (current != null) {
             transformer.setDate(current);
         }
-        p.setTransformer(transformer);
+        property.setTransformer(transformer);
 
         date = new DateField(property, transformer);
         time = TimeFieldFactory.create(property);

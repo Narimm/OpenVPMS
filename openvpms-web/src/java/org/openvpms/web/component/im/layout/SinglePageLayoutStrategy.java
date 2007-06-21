@@ -18,15 +18,14 @@
 
 package org.openvpms.web.component.im.layout;
 
-import java.util.Collection;
-import java.util.List;
-
 import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.property.PropertySet;
+
+import java.util.Collection;
+import java.util.List;
 
 
 /**

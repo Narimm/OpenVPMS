@@ -24,14 +24,13 @@
  */
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ValidationError;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Validator;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.ValidationHelper;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
@@ -56,34 +55,34 @@ public abstract class AbstractCollectionPropertyEditor
     /**
      * The property being edited.
      */
-    private final CollectionProperty _property;
+    private final CollectionProperty property;
 
     /**
      * The set of edited objects.
      */
-    private final Set<IMObject> _edited = new HashSet<IMObject>();
+    private final Set<IMObject> edited = new HashSet<IMObject>();
 
     /**
      * The editors. Where present, these will be responsible for saving/removing
      * the associated object.
      */
-    private Map<IMObject, IMObjectEditor> _editors
+    private Map<IMObject, IMObjectEditor> editors
             = new HashMap<IMObject, IMObjectEditor>();
 
 
     /**
      * Indicates if any object has been saved.
      */
-    private boolean _saved;
+    private boolean saved;
 
 
     /**
-     * Construct a new <code>AbstractCollectionPropertyEditor</code>.
+     * Construct a new <tt>AbstractCollectionPropertyEditor</tt>.
      *
      * @param property the collection property
      */
     public AbstractCollectionPropertyEditor(CollectionProperty property) {
-        _property = property;
+        this.property = property;
     }
 
     /**
@@ -92,7 +91,7 @@ public abstract class AbstractCollectionPropertyEditor
      * @return the property
      */
     public CollectionProperty getProperty() {
-        return _property;
+        return property;
     }
 
     /**
@@ -102,21 +101,19 @@ public abstract class AbstractCollectionPropertyEditor
      * @return the range of archetypes
      */
     public String[] getArchetypeRange() {
-        NodeDescriptor descriptor = _property.getDescriptor();
-        return DescriptorHelper.getShortNames(descriptor);
+        return property.getArchetypeRange();
     }
 
     /**
      * Adds an object to the collection, if it doesn't exist.
      *
      * @param object the object to add
-     * @return <code>true</code> if the object was added, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the object was added, otherwise <tt>false</tt>
      */
     public boolean add(IMObject object) {
         boolean added = false;
-        if (!_property.getValues().contains(object)) {
-            _property.add(object);
+        if (!property.getValues().contains(object)) {
+            property.add(object);
             added = true;
         }
         addEdited(object);
@@ -128,13 +125,13 @@ public abstract class AbstractCollectionPropertyEditor
      * will be responsible for saving/removing it.
      *
      * @param object the object
-     * @param editor the editor. Use <code>null</code> to remove an association
+     * @param editor the editor. Use <tt>null</tt> to remove an association
      */
     public void setEditor(IMObject object, IMObjectEditor editor) {
         if (editor == null) {
-            _editors.remove(object);
+            editors.remove(object);
         } else {
-            _editors.put(object, editor);
+            editors.put(object, editor);
         }
     }
 
@@ -142,10 +139,10 @@ public abstract class AbstractCollectionPropertyEditor
      * Returns the editor associated with an object in the collection.
      *
      * @param object the object
-     * @return the associated editor, or <code>null</code> if none is found
+     * @return the associated editor, or <tt>null</tt> if none is found
      */
     public IMObjectEditor getEditor(IMObject object) {
-        return _editors.get(object);
+        return editors.get(object);
     }
 
     /**
@@ -155,19 +152,19 @@ public abstract class AbstractCollectionPropertyEditor
      * @param object the object to remove
      */
     public void remove(IMObject object) {
-        _property.remove(object);
+        property.remove(object);
         removeEdited(object);
     }
 
     /**
      * Determines if the collection has been modified.
      *
-     * @return <code>true</code> if the collection has been modified
+     * @return <tt>true</tt> if the collection has been modified
      */
     public boolean isModified() {
-        boolean modified = _property.isModified() || !_edited.isEmpty();
+        boolean modified = property.isModified() || !edited.isEmpty();
         if (!modified) {
-            for (IMObjectEditor editor : _editors.values()) {
+            for (IMObjectEditor editor : editors.values()) {
                 if (editor.isModified()) {
                     modified = true;
                     break;
@@ -181,8 +178,8 @@ public abstract class AbstractCollectionPropertyEditor
      * Clears the modified status of the object.
      */
     public void clearModified() {
-        _property.clearModified();
-        for (IMObjectEditor editor : _editors.values()) {
+        property.clearModified();
+        for (IMObjectEditor editor : editors.values()) {
             editor.clearModified();
         }
     }
@@ -190,12 +187,12 @@ public abstract class AbstractCollectionPropertyEditor
     /**
      * Determines if the collection is valid.
      *
-     * @return <code>true</code> if the collection is valid; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the collection is valid; otherwise
+     *         <tt>false</tt>
      */
     public boolean isValid() {
         Validator validator = new Validator();
-        return validator.validate(_property);
+        return validator.validate(property);
     }
 
     /**
@@ -204,7 +201,7 @@ public abstract class AbstractCollectionPropertyEditor
      * @param validator thhe validator
      */
     public boolean validate(Validator validator) {
-        boolean valid = validator.validate(_property);
+        boolean valid = validator.validate(property);
         IArchetypeService service = ServiceHelper.getArchetypeService();
         for (IMObject object : getObjects()) {
             IMObjectEditor editor = getEditor(object);
@@ -213,10 +210,10 @@ public abstract class AbstractCollectionPropertyEditor
                     valid = false;
                 }
             } else {
-                List<ValidationError> errors
+                List<ValidatorError> errors
                         = ValidationHelper.validate(object, service);
                 if (errors != null) {
-                    validator.add(_property, errors);
+                    validator.add(property, errors);
                     valid = false;
                 }
             }
@@ -227,7 +224,7 @@ public abstract class AbstractCollectionPropertyEditor
     /**
      * Saves any edits.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the save was successful
      */
     public boolean save() {
         boolean saved = doSave();
@@ -240,10 +237,10 @@ public abstract class AbstractCollectionPropertyEditor
     /**
      * Determines if any edits have been saved.
      *
-     * @return <code>true</code> if edits have been saved.
+     * @return <tt>true</tt> if edits have been saved.
      */
     public boolean isSaved() {
-        return _saved;
+        return saved;
     }
 
     /**
@@ -253,7 +250,7 @@ public abstract class AbstractCollectionPropertyEditor
      */
     public List<IMObject> getObjects() {
         List<IMObject> objects = Collections.emptyList();
-        Collection values = _property.getValues();
+        Collection values = property.getValues();
         int size = values.size();
         if (size != 0) {
             objects = new ArrayList<IMObject>();
@@ -270,30 +267,30 @@ public abstract class AbstractCollectionPropertyEditor
      * @return the minimum cardinality
      */
     public int getMinCardinality() {
-        return _property.getMinCardinality();
+        return property.getMinCardinality();
     }
 
     /**
      * Returns the maximum cardinality.
      *
-     * @return the maximum cardinality, or <code>-1</code> if it is unbounded
+     * @return the maximum cardinality, or <tt>-1</tt> if it is unbounded
      */
     public int getMaxCardinality() {
-        return _property.getMaxCardinality();
+        return property.getMaxCardinality();
     }
 
     /**
      * Saves the collection.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the save was successful
      */
     protected boolean doSave() {
-        if (!_edited.isEmpty() || !_editors.isEmpty()) {
-            for (IMObjectEditor editor : _editors.values()) {
+        if (!edited.isEmpty() || !editors.isEmpty()) {
+            for (IMObjectEditor editor : editors.values()) {
                 boolean result = editor.save();
                 if (result) {
-                    _edited.remove(editor.getObject());
-                    _saved = true;
+                    edited.remove(editor.getObject());
+                    saved = true;
                 } else {
                     return false;
                 }
@@ -302,12 +299,12 @@ public abstract class AbstractCollectionPropertyEditor
             // now save objects with no associated editor
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
-            IMObject[] edited = _edited.toArray(new IMObject[0]);
+            IMObject[] edited = this.edited.toArray(new IMObject[0]);
             for (IMObject object : edited) {
                 boolean result = SaveHelper.save(object, service);
                 if (result) {
-                    _edited.remove(object);
-                    _saved = true;
+                    this.edited.remove(object);
+                    saved = true;
                 } else {
                     return false;
                 }
@@ -319,10 +316,10 @@ public abstract class AbstractCollectionPropertyEditor
     /**
      * Sets the saved state.
      *
-     * @param saved if <code>true</code> indicates that this has been saved
+     * @param saved if <tt>true</tt> indicates that this has been saved
      */
     protected void setSaved(boolean saved) {
-        _saved = saved;
+        this.saved = saved;
     }
 
     /**
@@ -332,7 +329,7 @@ public abstract class AbstractCollectionPropertyEditor
      * @param object the edited object
      */
     protected void addEdited(IMObject object) {
-        _edited.add(object);
+        edited.add(object);
     }
 
     /**
@@ -342,7 +339,7 @@ public abstract class AbstractCollectionPropertyEditor
      * @param object the object to remove
      */
     protected void removeEdited(IMObject object) {
-        _edited.remove(object);
-        _editors.remove(object);
+        edited.remove(object);
+        editors.remove(object);
     }
 }

@@ -16,38 +16,26 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.print;
-
-import java.util.EventListener;
+package org.openvpms.web.component.property;
 
 
 /**
- * Listener for {@link IMPrinter} events.
+ * A <code>PropertyTransformer</code> is responsible for processing user input
+ * prior to it being set on {@link Property}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMPrinterListener extends EventListener {
+public interface PropertyTransformer {
 
     /**
-     * Notifies of a successful print.
-     */
-    void printed();
-
-    /**
-     * Notifies that the print was cancelled.
-     */
-    void cancelled();
-
-    /**
-     * Notifies that the print was skipped.
-     */
-    void skipped();
-
-    /**
-     * Invoked when a print fails.
+     * Transform an object to the required type, performing validation.
      *
-     * @param cause the reason for the failure
+     * @param object the object to convert
+     * @return the transformed object, or <code>object</code> if no
+     *         transformation is required
+     * @throws PropertyException if the object is invalid
      */
-    void failed(Throwable cause);
+    Object apply(Object object);
+
 }

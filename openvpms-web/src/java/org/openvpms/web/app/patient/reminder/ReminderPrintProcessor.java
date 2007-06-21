@@ -29,9 +29,9 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
-import org.openvpms.web.component.im.print.IMPrinterListener;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.print.PrinterListener;
+import org.openvpms.web.component.util.ErrorHelper;
 
 
 /**
@@ -71,7 +71,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessorListener {
                 event.getReminder(), documentTemplate);
         InteractiveIMPrinter<Act> iPrinter
                 = new InteractiveIMPrinter<Act>(printer);
-        iPrinter.setListener(new IMPrinterListener() {
+        iPrinter.setListener(new PrinterListener() {
             public void printed() {
                 try {
                     update(event.getReminder());

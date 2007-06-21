@@ -18,14 +18,8 @@
 
 package org.openvpms.web.component.im.print;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
-import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.dialog.PrintDialog;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.servlet.DownloadServlet;
 
 
 /**
@@ -36,39 +30,12 @@ import org.openvpms.web.servlet.DownloadServlet;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class InteractiveIMPrinter<T> implements IMPrinter<T> {
-
-    /**
-     * The printer to delegate to.
-     */
-    private final IMPrinter<T> printer;
-
-    /**
-     * The print listener. May be <code>null</code>.
-     */
-    private IMPrinterListener listener;
-
-    /**
-     * The dialog title.
-     */
-    private final String title;
-
-    /**
-     * If <code>triue</code> display a 'skip' button that simply closes the
-     * dialog.
-     */
-    private final boolean skip;
-
-    /**
-     * Determines if printing should occur interactively or be performed
-     * without user intervention. If the printer doesn't support non-interactive
-     * printing, requests to do non-interactive printing are ignored.
-     */
-    private boolean interactive;
+public class InteractiveIMPrinter<T>
+        extends InteractivePrinter implements IMPrinter<T> {
 
 
     /**
-     * Constructs a new <code>InteractiveIMPrinter</code>.
+     * Constructs a new <tt>InteractiveIMPrinter</tt>.
      *
      * @param printer the printer to delegate to
      */
@@ -80,7 +47,7 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
      * Constructs a new <tt>InteractiveIMPrinter</tt>.
      *
      * @param printer the printer to delegate to
-     * @param skip    if <code>triue</code> display a 'skip' button that simply
+     * @param skip    if <tt>triue</tt> display a 'skip' button that simply
      *                closes the dialog
      */
     public InteractiveIMPrinter(IMPrinter<T> printer, boolean skip) {
@@ -98,19 +65,16 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
     }
 
     /**
-     * Constructs a new <code>InteractiveIMPrinter</code>.
+     * Constructs a new <tt>InteractiveIMPrinter</tt>.
      *
      * @param title   the dialog title. May be <tt>null</tt>
      * @param printer the printer to delegate to
-     * @param skip    if <code>triue</code> display a 'skip' button that simply
+     * @param skip    if <tt>triue</tt> display a 'skip' button that simply
      *                closes the dialog
      */
     public InteractiveIMPrinter(String title, IMPrinter<T> printer,
                                 boolean skip) {
-        this.title = title;
-        this.printer = printer;
-        this.skip = skip;
-        interactive = printer.getInteractive();
+        super(title, printer, skip);
     }
 
     /**
@@ -119,7 +83,7 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
      * @return a display name for the objects being printed
      */
     public String getDisplayName() {
-        return printer.getDisplayName();
+        return getPrinter().getDisplayName();
     }
 
     /**
@@ -128,93 +92,18 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
      * @return the objects being printed
      */
     public Iterable<T> getObjects() {
-        return printer.getObjects();
+        return getPrinter().getObjects();
     }
 
     /**
-     * Prints the object to the default printer.
+     * Returns the underlying printer.
      *
-     * @throws OpenVPMSException for any error
+     * @return the underlying printer
      */
-    public void print() {
-        print(getDefaultPrinter());
-    }
-
-    /**
-     * Initiates printing of an object.
-     * If the underlying printer requires interactive support, pops up a
-     * {@link PrintDialog} prompting if printing of an object should
-     * proceed, invoking {@link #doPrint} if 'OK' is selected, or
-     * {@link #doPrintPreview} if 'preview' is selected.
-     *
-     * @param printer the printer name. May be <code>null</code>
-     * @throws OpenVPMSException for any error
-     */
-    public void print(String printer) {
-        if (interactive) {
-            printInteractive(printer);
-        } else {
-            printDirect(printer);
-        }
-    }
-
-    /**
-     * Returns the default printer for the object.
-     *
-     * @return the default printer for the object, or <code>null</code> if none
-     *         is defined
-     * @throws OpenVPMSException for any error
-     */
-    public String getDefaultPrinter() {
-        return printer.getDefaultPrinter();
-    }
-
-    /**
-     * Returns a document for the object, corresponding to that which would be
-     * printed.
-     *
-     * @return a document
-     * @throws OpenVPMSException for any error
-     */
-    public Document getDocument() {
-        return printer.getDocument();
-    }
-
-    /**
-     * Determines if printing should occur interactively or be performed
-     * without user intervention. If the printer doesn't support non-interactive
-     * printing, requests to do non-interactive printing are ignored.
-     *
-     * @param interactive if <tt>true</tt> print interactively
-     * @throws OpenVPMSException for any error
-     */
-    public void setInteractive(boolean interactive) {
-        if (printer.getInteractive()) {
-            // must print interactively.
-            this.interactive = true;
-        } else {
-            this.interactive = interactive;
-        }
-    }
-
-    /**
-     * Determines if printing should occur interactively.
-     *
-     * @return <tt>true</tt> if printing should occur interactively,
-     *         <tt>false</tt> if it can be performed non-interactively
-     * @throws OpenVPMSException for any error
-     */
-    public boolean getInteractive() {
-        return printer.getInteractive();
-    }
-
-    /**
-     * Sets the listener for print events.
-     *
-     * @param listener the listener. May be <code>null</code>
-     */
-    public void setListener(IMPrinterListener listener) {
-        this.listener = listener;
+    @Override
+    @SuppressWarnings("unchecked")
+    protected IMPrinter<T> getPrinter() {
+        return (IMPrinter<T>) super.getPrinter();
     }
 
     /**
@@ -223,130 +112,10 @@ public class InteractiveIMPrinter<T> implements IMPrinter<T> {
      * @return a title for the print dialog
      */
     protected String getTitle() {
+        String title = super.getTitle();
         if (title != null) {
             return title;
         }
         return Messages.get("imobject.print.title", getDisplayName());
-    }
-
-    /**
-     * Prints interactively.
-     *
-     * @param printer the default printer to print to
-     * @throws OpenVPMSException for any error
-     */
-    protected void printInteractive(String printer) {
-        final PrintDialog dialog = new PrintDialog(getTitle(), true, skip) {
-            @Override
-            protected void onPreview() {
-                doPrintPreview();
-            }
-        };
-
-        if (printer == null) {
-            printer = getDefaultPrinter();
-        }
-        dialog.setDefaultPrinter(printer);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                String action = dialog.getAction();
-                if (PrintDialog.OK_ID.equals(action)) {
-                    String printer = dialog.getPrinter();
-                    if (printer == null) {
-                        doPrintPreview();
-                    } else {
-                        doPrint(printer);
-                    }
-                } else if (PrintDialog.SKIP_ID.equals(action)) {
-                    skipped();
-                } else {
-                    cancelled();
-                }
-            }
-        });
-        dialog.show();
-    }
-
-    /**
-     * Print directly to the printer, without popping up any dialogs.
-     *
-     * @param printer the printer
-     * @throws OpenVPMSException for any error
-     */
-    protected void printDirect(String printer) {
-        if (printer == null) {
-            printer = getDefaultPrinter();
-        }
-        doPrint(printer);
-    }
-
-    /**
-     * Prints the object.
-     *
-     * @param printerName the printer name. May be <tt>null</tt>
-     */
-    protected void doPrint(String printerName) {
-        try {
-            printer.print(printerName);
-            printed();
-        } catch (OpenVPMSException exception) {
-            failed(exception);
-        }
-    }
-
-    /**
-     * Generates a document and downloads it to the client.
-     */
-    protected void doPrintPreview() {
-        try {
-            Document document = getDocument();
-            DownloadServlet.startDownload(document);
-        } catch (OpenVPMSException exception) {
-            failed(exception);
-        }
-    }
-
-    /**
-     * Invoked when the object has been successfully printed.
-     * Notifies any registered listener.
-     */
-    protected void printed() {
-        if (listener != null) {
-            listener.printed();
-        }
-    }
-
-    /**
-     * Invoked when the print is cancelled.
-     * Notifies any registered listener.
-     */
-    protected void cancelled() {
-        if (listener != null) {
-            listener.cancelled();
-        }
-    }
-
-    /**
-     * Invoked when the print is skipped.
-     * Notifies any registered listener.
-     */
-    protected void skipped() {
-        if (listener != null) {
-            listener.skipped();
-        }
-    }
-
-    /**
-     * Invoked when the object has been failed to print.
-     * Notifies any registered listener.
-     *
-     * @param exception the cause of the failure
-     */
-    protected void failed(Throwable exception) {
-        if (listener != null) {
-            listener.failed(exception);
-        } else {
-            ErrorHelper.show(exception);
-        }
     }
 }

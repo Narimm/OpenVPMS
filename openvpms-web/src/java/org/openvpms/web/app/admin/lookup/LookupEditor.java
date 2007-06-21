@@ -21,14 +21,14 @@ package org.openvpms.web.app.admin.lookup;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 
 
 /**
@@ -62,7 +62,7 @@ public class LookupEditor extends AbstractIMObjectEditor {
             Property code = getProperty("code");
             Property name = getProperty("name");
             if (code != null && name != null) {
-                if (code.getDescriptor().isHidden()) {
+                if (code.isHidden()) {
                     // derive the code from the name
                     name.addModifiableListener(new ModifiableListener() {
                         public void modified(Modifiable modifiable) {
@@ -104,7 +104,7 @@ public class LookupEditor extends AbstractIMObjectEditor {
                 ComponentState state = super.createComponent(property,
                                                              parent,
                                                              context);
-                if ("code".equals(property.getDescriptor().getName())) {
+                if ("code".equals(property.getName())) {
                     code = state.getComponent();
                 }
                 return state;

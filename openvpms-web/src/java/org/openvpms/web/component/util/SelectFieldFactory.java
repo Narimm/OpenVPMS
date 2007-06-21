@@ -18,15 +18,13 @@
 
 package org.openvpms.web.component.util;
 
-import java.util.List;
-
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
-
 import org.openvpms.web.component.bound.BoundSelectField;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.resource.util.Styles;
+import org.openvpms.web.component.property.Property;
+
+import java.util.List;
 
 
 /**

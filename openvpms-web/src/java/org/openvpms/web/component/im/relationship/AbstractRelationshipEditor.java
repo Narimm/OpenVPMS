@@ -26,8 +26,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
@@ -40,6 +38,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.GridFactory;
 
 import java.util.List;
@@ -89,9 +89,11 @@ public abstract class AbstractRelationshipEditor
         targetRef = (IMObjectReference) targetProp.getValue();
 
         source = IMObjectHelper.getObject(sourceRef,
-                                          sourceProp.getDescriptor(), context);
+                                          sourceProp.getArchetypeRange(),
+                                          context);
         target = IMObjectHelper.getObject(targetRef,
-                                          targetProp.getDescriptor(), context);
+                                          targetProp.getArchetypeRange(),
+                                          context);
 
         // initialise the properties if null
         if (sourceRef == null && source != null) {

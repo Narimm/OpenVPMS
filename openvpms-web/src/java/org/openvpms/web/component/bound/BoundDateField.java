@@ -18,9 +18,7 @@
 
 package org.openvpms.web.component.bound;
 
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateFieldImpl;
 import org.openvpms.web.component.util.DateHelper;
 
@@ -52,14 +50,6 @@ public class BoundDateField extends DateFieldImpl {
      * @param property the property to bind
      */
     public BoundDateField(Property property) {
-        // Register an action listener to ensure document update events
-        // are triggered in a timely fashion
-        getTextField().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                // no-op.
-            }
-        });
-
         binder = createBinder(property);
         binder.setField();
     }

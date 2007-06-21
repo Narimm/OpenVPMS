@@ -36,13 +36,13 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -99,9 +99,8 @@ public class ActRelationshipCollectionPropertyEditor
             CollectionProperty property, Act act) {
         super(property);
         // @todo - no support for multiple relationship archetypes
-        NodeDescriptor descriptor = property.getDescriptor();
+        _relationshipType = property.getArchetypeRange()[0];
         _act = act;
-        _relationshipType = DescriptorHelper.getShortNames(descriptor)[0];
     }
 
     /**

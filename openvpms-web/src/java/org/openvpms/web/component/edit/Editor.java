@@ -13,20 +13,21 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: Editor.java 1627 2006-12-12 03:25:07Z tanderson $
  */
 
 package org.openvpms.web.component.edit;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.property.Modifiable;
 
 
 /**
  * Object editor.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-12-12 03:25:07Z $
  */
 public interface Editor extends Modifiable {
 

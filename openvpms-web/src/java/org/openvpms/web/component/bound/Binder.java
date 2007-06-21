@@ -19,9 +19,9 @@
 package org.openvpms.web.component.bound;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 
 
 /**

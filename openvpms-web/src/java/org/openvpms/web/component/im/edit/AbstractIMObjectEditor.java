@@ -53,12 +53,7 @@ import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Editors;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.edit.Saveable;
-import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
@@ -66,12 +61,18 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.LookupListModel;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
 import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.ValidationHelper;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeListener;
@@ -405,7 +406,7 @@ public abstract class AbstractIMObjectEditor
         if (valid) {
             // validate each property not associated with an editor
             for (Property property : properties.getProperties()) {
-                String name = property.getDescriptor().getName();
+                String name = property.getName();
                 if (editors.getEditor(name) == null) {
                     if (!validator.validate(property)) {
                         valid = false;
@@ -665,8 +666,7 @@ public abstract class AbstractIMObjectEditor
                 service.deriveValues(getObject());
 
                 for (Property property : properties.getProperties()) {
-                    if (modified != property
-                            && property.getDescriptor().isDerived()) {
+                    if (modified != property && property.isDerived()) {
                         property.refresh();
                     }
                 }
@@ -761,9 +761,9 @@ public abstract class AbstractIMObjectEditor
          * @return a component to edit the property
          */
         @Override
-        protected Editor getSelectEditor(Property property,
-                                         IMObject context) {
-            Editor editor = super.getSelectEditor(property, context);
+        protected Editor createLookupEditor(Property property,
+                                            IMObject context) {
+            Editor editor = super.createLookupEditor(property, context);
             SelectField lookup = (SelectField) editor.getComponent();
             lookup.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {

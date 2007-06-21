@@ -16,51 +16,39 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
-
-import java.util.Collection;
-
+package org.openvpms.web.component.property;
 
 /**
- * Collection property that provides notification on modification.
+ * PropertyTransformer is responsible for processing user input prior to it
+ * being set on {@link Property}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface CollectionProperty extends Property {
+public abstract class AbstractPropertyTransformer
+        implements PropertyTransformer {
 
     /**
-     * Add a value.
-     *
-     * @param value the value to add
+     * The property.
      */
-    void add(Object value);
+    private final Property property;
+
 
     /**
-     * Remove a value.
+     * Construct a new <tt>PropertyTransformer</tt>.
      *
-     * @param value the value to remove
+     * @param property the property
      */
-    void remove(Object value);
+    public AbstractPropertyTransformer(Property property) {
+        this.property = property;
+    }
 
     /**
-     * Returns the collection.
+     * Returns the property.
      *
-     * @return the collection
+     * @return the property
      */
-    Collection getValues();
-
-    /**
-     * Returns the minimum cardinality.
-     *
-     * @return the minimum cardinality
-     */
-    int getMinCardinality();
-
-    /**
-     * Returns the maximum cardinality.
-     *
-     * @return the maximum cardinality, or <code>-1</code> if it is unbounded
-     */
-    int getMaxCardinality();
+    public Property getProperty() {
+        return property;
+    }
 }

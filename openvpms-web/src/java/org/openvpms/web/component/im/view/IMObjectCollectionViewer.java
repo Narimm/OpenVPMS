@@ -20,7 +20,7 @@ package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**

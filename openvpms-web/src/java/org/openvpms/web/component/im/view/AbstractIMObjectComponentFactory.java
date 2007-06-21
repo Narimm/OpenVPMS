@@ -18,15 +18,11 @@
 
 package org.openvpms.web.component.im.view;
 
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.text.TextComponent;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.web.component.bound.BoundCheckBox;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.AbstractPropertyComponentFactory;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
 
 
 /**
@@ -36,12 +32,13 @@ import org.openvpms.web.component.util.TextComponentFactory;
  * @version $LastChangedDate$
  */
 public abstract class AbstractIMObjectComponentFactory
+        extends AbstractPropertyComponentFactory
         implements IMObjectComponentFactory {
 
     /**
      * The layout context.
      */
-    private final LayoutContext _context;
+    private final LayoutContext context;
 
     /**
      * Construct a new <code>AbstractIMObjectComponentFactory</code>.
@@ -52,7 +49,7 @@ public abstract class AbstractIMObjectComponentFactory
         if (context == null) {
             throw new IllegalArgumentException("Argument 'context' is null");
         }
-        _context = context;
+        this.context = context;
     }
 
     /**
@@ -61,68 +58,22 @@ public abstract class AbstractIMObjectComponentFactory
      * @return the layout context
      */
     protected LayoutContext getLayoutContext() {
-        return _context;
+        return context;
     }
 
     /**
      * Returns a label to display a property.
      *
      * @param property the property to display
-     * @return a label to display the property
+     * @return a new label
      */
-    protected Label getLabel(Property property) {
+    protected Label createLabel(Property property) {
         Label label = LabelFactory.create();
         Object value = property.getValue();
         if (value != null) {
             label.setText(value.toString());
         }
         return label;
-    }
-
-    /**
-     * Returns a check box to display a property.
-     *
-     * @param property the property to display
-     * @return a check box to display the property
-     */
-    protected Component getCheckBox(Property property) {
-        return new BoundCheckBox(property);
-    }
-
-    /**
-     * Returns a text component to display a property.
-     *
-     * @param property the property to display
-     * @return a text field to display the node, or a text area if it is large
-     */
-    protected TextComponent getTextComponent(Property property) {
-        final int maxDisplayLength = 50;
-        NodeDescriptor descriptor = property.getDescriptor();
-        int length = descriptor.getMaxLength();
-        int maxColumns = (length < maxDisplayLength) ? length : maxDisplayLength;
-        return getTextComponent(property, maxColumns);
-    }
-
-    /**
-     * Returns a text component to display a property.
-     *
-     * @param property the property to display
-     * @param columns  the maximum no, of columns to display
-     * @return a text field to display the node, or a text area if it is large
-     */
-    protected TextComponent getTextComponent(Property property, int columns) {
-        TextComponent result;
-        NodeDescriptor descriptor = property.getDescriptor();
-        if (descriptor.getMaxLength() > 255) {
-            if (descriptor.getMaxLength() < 500)
-                result = TextComponentFactory.createTextArea(property, columns,
-                                                             5);
-            else
-                result = TextComponentFactory.createTextArea(property, 90, 15);
-        } else {
-            result = TextComponentFactory.create(property, columns);
-        }
-        return result;
     }
 
 }

@@ -24,11 +24,11 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.im.edit.ValidationHelper;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.property.ValidationHelper;
+import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Iterator;
@@ -117,8 +117,8 @@ public class BatchLoader {
         try {
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
-            List<ValidationError> errors
-                    = ValidationHelper.validate(descriptor, service);
+            List<ValidatorError> errors = ValidationHelper.validate(descriptor,
+                                                                    service);
             if (errors == null) {
                 String shortName = descriptor.getShortName();
                 ArchetypeDescriptor existing

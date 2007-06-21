@@ -13,17 +13,19 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: PropertyEditor.java 891 2006-05-15 04:58:37Z tanderson $
  */
 
 package org.openvpms.web.component.edit;
+
+import org.openvpms.web.component.property.Property;
 
 
 /**
  * Property editor.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-15 04:58:37Z $
  */
 public interface PropertyEditor extends Editor {
 

@@ -18,9 +18,8 @@
 
 package org.openvpms.web.component.util;
 
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.resource.util.Messages;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -63,32 +62,30 @@ public class NumberFormatter {
     /**
      * Format a number according to its node descriptor.
      *
-     * @param value      the number to format
-     * @param descriptor the node descriptor
-     * @param edit       if <code>true</code> format the number for editing
+     * @param value    the number to format
+     * @param property the property
+     * @param edit     if <tt>true</tt> format the number for editing
      * @return the formatted number
      */
-    public static String format(Number value, NodeDescriptor descriptor,
-                                boolean edit) {
-        NumberFormat format = getFormat(descriptor, edit);
+    public static String format(Number value, Property property, boolean edit) {
+        NumberFormat format = getFormat(property, edit);
         return format(value, format);
     }
 
     /**
      * Returns the format for a numeric property.
      *
-     * @param descriptor the property descriptor
-     * @param edit       if <code>true</code> format the number for editing
+     * @param property the property
+     * @param edit     if <tt>true</tt> format the number for editing
      * @return a format for the property
      */
-    public static NumberFormat getFormat(NodeDescriptor descriptor,
-                                         boolean edit) {
+    public static NumberFormat getFormat(Property property, boolean edit) {
         NumberFormat format;
-        if (descriptor.isMoney()) {
+        if (property.isMoney()) {
             format = (edit) ? DECIMAL_EDIT : NumberFormat.getCurrencyInstance();
-        } else if (descriptor.getClazz().isAssignableFrom(Float.class)
-                || descriptor.getClazz().isAssignableFrom(Double.class)
-                || descriptor.getClazz().isAssignableFrom(BigDecimal.class)) {
+        } else if (property.getType().isAssignableFrom(Float.class)
+                || property.getType().isAssignableFrom(Double.class)
+                || property.getType().isAssignableFrom(BigDecimal.class)) {
             format = (edit) ? DECIMAL_EDIT : DECIMAL_VIEW;
         } else {
             format = (edit) ? INTEGER_EDIT : INTEGER_VIEW;

@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
-import org.openvpms.report.IMReportException;
+import org.openvpms.report.ReportException;
 
 
 /**
@@ -58,7 +58,7 @@ public abstract class AbstractIMReportPrinter<T>
      * Returns a document for an object.
      *
      * @return a document
-     * @throws IMReportException         for any report error
+     * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document getDocument() {

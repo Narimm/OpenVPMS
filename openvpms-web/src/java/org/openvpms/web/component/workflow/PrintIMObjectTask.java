@@ -22,8 +22,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
-import org.openvpms.web.component.im.print.IMPrinterListener;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.print.PrinterListener;
 
 
 /**
@@ -87,7 +87,7 @@ public class PrintIMObjectTask extends AbstractTask {
                         = new InteractiveIMPrinter<IMObject>(printer, skip);
                 iPrinter.setInteractive(interactive);
 
-                iPrinter.setListener(new IMPrinterListener() {
+                iPrinter.setListener(new PrinterListener() {
                     public void printed() {
                         notifyCompleted();
                     }

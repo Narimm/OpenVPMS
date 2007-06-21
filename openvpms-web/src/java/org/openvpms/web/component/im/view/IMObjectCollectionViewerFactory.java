@@ -20,13 +20,11 @@ package org.openvpms.web.component.im.view;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
+import org.openvpms.web.component.property.CollectionProperty;
 
 import java.lang.reflect.Constructor;
 
@@ -70,8 +68,7 @@ public class IMObjectCollectionViewerFactory {
                                                   LayoutContext context) {
         IMObjectCollectionViewer result = null;
 
-        NodeDescriptor descriptor = collection.getDescriptor();
-        String[] shortNames = DescriptorHelper.getShortNames(descriptor);
+        String[] shortNames = collection.getArchetypeRange();
         ArchetypeHandler handler = getViewers().getHandler(shortNames);
         if (handler != null) {
             Class type = handler.getType();

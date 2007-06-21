@@ -34,9 +34,9 @@ import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
-import org.openvpms.web.component.im.print.IMPrinterListener;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.print.PrinterListener;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
@@ -184,7 +184,7 @@ class PrintDocumentsTask extends AbstractTask {
      * due to limitations in downloading multiple pdf files to the client
      * browser.
      */
-    class BatchPrinter implements IMPrinterListener {
+    class BatchPrinter implements PrinterListener {
 
         /**
          * Iterator over the objects to  print.

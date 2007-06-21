@@ -18,9 +18,8 @@
 
 package org.openvpms.web.component.im.view;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.property.Property;
 
 
 /**
@@ -36,18 +35,16 @@ public interface IMObjectComponentFactory {
      *
      * @param property the property to display
      * @param context  the context object
-     * @return a component to display <code>object</code>
+     * @return a component to display <tt>object</tt>
      */
     ComponentState create(Property property, IMObject context);
 
     /**
      * Create a component to display an object.
      *
-     * @param object     the object to display
-     * @param context    the object's parent. May be <code>null</code>
-     * @param descriptor the parent object's descriptor. May be
-     * @return a component to display <code>object</code>
+     * @param object  the object to display
+     * @param context the object's parent. May be <tt>null</tt>
+     * @return a component to display <tt>object</tt>
      */
-    ComponentState create(IMObject object, IMObject context,
-                          NodeDescriptor descriptor);
+    ComponentState create(IMObject object, IMObject context);
 }

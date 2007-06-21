@@ -24,9 +24,9 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.ArrayList;
 import java.util.List;

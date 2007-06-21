@@ -20,15 +20,17 @@ package org.openvpms.web.app.reporting;
 
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
+
 /**
- * reporting subsystem.
+ * Reporting subsystem.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public class ReportingSubsystem extends AbstractSubsystem {
+
     /**
-     * Construct a new <code>WorkflowSubsystem</code>.
+     * Constructs a new <tt>ReportingSubsystem</tt>.
      */
     public ReportingSubsystem() {
         super("reporting");

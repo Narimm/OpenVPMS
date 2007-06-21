@@ -26,16 +26,16 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.IMObjectProperty;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.LabelFactory;
 
 
@@ -55,7 +55,7 @@ public abstract class AbstractReadOnlyComponentFactory
 
 
     /**
-     * Construct a new <code>AbstractReadOnlyComponentFactory</code>.
+     * Construct a new <tt>AbstractReadOnlyComponentFactory</tt>.
      *
      * @param context    the layout context
      * @param strategies the layout strategy factory
@@ -71,38 +71,33 @@ public abstract class AbstractReadOnlyComponentFactory
      *
      * @param property the property to display
      * @param context  the context object
-     * @return a component to display <code>object</code>
+     * @return a component to display <tt>object</tt>
      */
     public ComponentState create(Property property, IMObject context) {
         Component component;
         boolean enable = false;
-        NodeDescriptor descriptor = property.getDescriptor();
-        if (descriptor.isLookup()) {
-            component = getLookup(property, context);
-        } else if (descriptor.isBoolean()) {
-            component = getBoolean(property);
-        } else if (descriptor.isString()) {
-            component = getString(property);
-            if (component instanceof RichTextArea) {
-                ((RichTextArea) component).setEditable(enable);
+        component = create(property);
+        if (component == null) {
+            // not a simple property
+            if (property.isLookup()) {
+                component = createLookup(property, context);
+            } else if (property.isCollection()) {
+                component = getCollectionViewer((CollectionProperty) property,
+                                                context);
+                // need to enable this otherwise table selection is disabled
+                enable = true;
+            } else if (property.isObjectReference()) {
+                component = getObjectViewer(property, context);
+                // need to enable this for hyperlinks to work
+                enable = true;
+            } else {
+                Label label = LabelFactory.create();
+                label.setText("No viewer for type " + property.getType());
+                component = label;
             }
-        } else if (descriptor.isNumeric()) {
-            component = getNumber(property);
-        } else if (descriptor.isDate()) {
-            component = getDate(property);
-        } else if (descriptor.isCollection()) {
-            component = getCollectionViewer((CollectionProperty) property,
-                                            context);
-            // need to enable this otherwise table selection is disabled
-            enable = true;
-        } else if (descriptor.isObjectReference()) {
-            component = getObjectViewer(property, context);
-            // need to enable this for hyperlinks to work
-            enable = true;
-        } else {
-            Label label = LabelFactory.create();
-            label.setText("No viewer for type " + descriptor.getType());
-            component = label;
+        }
+        if (component instanceof RichTextArea) {
+            ((RichTextArea) component).setEditable(enable);
         }
         component.setEnabled(enable);
         component.setFocusTraversalParticipant(false);
@@ -112,13 +107,11 @@ public abstract class AbstractReadOnlyComponentFactory
     /**
      * Create a component to display an object.
      *
-     * @param object     the object to display
-     * @param context    the object's parent. May be <code>null</code>
-     * @param descriptor the parent object's descriptor. May be
-     * @return a component to display <code>object</code>
+     * @param object  the object to display
+     * @param context the object's parent. May be <tt>null</tt>
+     * @return a component to display <tt>object</tt>
      */
-    public ComponentState create(IMObject object, IMObject context,
-                                 NodeDescriptor descriptor) {
+    public ComponentState create(IMObject object, IMObject context) {
         IMObjectLayoutStrategy strategy = _strategies.create(object, context);
         IMObjectViewer viewer = new IMObjectViewer(object, context, strategy,
                                                    getLayoutContext());
@@ -133,43 +126,8 @@ public abstract class AbstractReadOnlyComponentFactory
      * @param context  the context object
      * @return a component to display the property
      */
-    protected abstract Component getLookup(Property property, IMObject context);
-
-    /**
-     * Returns a component to display a boolean property.
-     *
-     * @param property the boolean property
-     * @return a component to display the property
-     */
-    protected Component getBoolean(Property property) {
-        return getCheckBox(property);
-    }
-
-    /**
-     * Returns a component to display a string property.
-     *
-     * @param property the boolean property
-     * @return a component to display the property
-     */
-    protected Component getString(Property property) {
-        return getTextComponent(property);
-    }
-
-    /**
-     * Returns a component to display a number property.
-     *
-     * @param property the number property
-     * @return a component to display the property
-     */
-    protected abstract Component getNumber(Property property);
-
-    /**
-     * Returns a component to display a date property.
-     *
-     * @param property the date property
-     * @return a component to display the property
-     */
-    protected abstract Component getDate(Property property);
+    protected abstract Component createLookup(Property property,
+                                              IMObject context);
 
     /**
      * Returns a viewer for an object reference.
@@ -185,8 +143,7 @@ public abstract class AbstractReadOnlyComponentFactory
             // disable hyperlinks if an edit is in progress.
             link = false;
         }
-        String[] range = DescriptorHelper.getShortNames(
-                property.getDescriptor());
+        String[] range = property.getArchetypeRange();
         if (TypeHelper.matches(range, "document.*")) {
             return new DocumentViewer(ref, context, link).getComponent();
         }
@@ -206,14 +163,13 @@ public abstract class AbstractReadOnlyComponentFactory
         if (property.getMaxCardinality() == 1) {
             // handle the special case of a collection of one element.
             // This can be viewed inline
-            NodeDescriptor descriptor = property.getDescriptor();
-            String[] shortNames = DescriptorHelper.getShortNames(descriptor);
+            String[] shortNames = property.getArchetypeRange();
             if (shortNames.length == 1) {
                 Object[] values = property.getValues().toArray();
                 IMObject value;
                 if (values.length > 0) {
                     value = (IMObject) values[0];
-                    result = create(value, parent, descriptor).getComponent();
+                    result = create(value, parent).getComponent();
                 } else {
                     // nothing to display, so return an empty label
                     result = LabelFactory.create();
@@ -234,11 +190,12 @@ public abstract class AbstractReadOnlyComponentFactory
      *
      * @param property the property to use
      * @param context  the context object
-     * @return the lookup name, or <code>null</code> if it can't be found
+     * @return the lookup name, or <tt>null</tt> if it can't be found
      * @throws OpenVPMSException for any error
      */
     protected String getLookupName(Property property, IMObject context) {
-        NodeDescriptor descriptor = property.getDescriptor();
+        NodeDescriptor descriptor
+                = ((IMObjectProperty) property).getDescriptor();
 
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();

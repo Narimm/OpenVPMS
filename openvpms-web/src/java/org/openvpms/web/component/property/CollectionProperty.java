@@ -16,44 +16,52 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
+package org.openvpms.web.component.property;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import java.util.Collection;
 
 
 /**
- * Property that provides notification on modification.
+ * Collection property that provides notification on modification.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface Property extends Modifiable {
+public interface CollectionProperty extends Property {
 
     /**
-     * Set the value of the property.
+     * Add a value.
      *
-     * @param value the property value
-     * @return <code>true</code> if the value was set
+     * @param value the value to add
      */
-    boolean setValue(Object value);
+    void add(Object value);
 
     /**
-     * Returns the value of the property.
+     * Remove a value.
      *
-     * @return the property value
+     * @param value the value to remove
      */
-    Object getValue();
+    void remove(Object value);
 
     /**
-     * Returns the property descriptor.
+     * Returns the collection.
      *
-     * @return the property descriptor
+     * @return the collection
      */
-    NodeDescriptor getDescriptor();
+    Collection getValues();
 
     /**
-     * Notify any listeners that they need to refresh and marks this modified.
+     * Returns the minimum cardinality.
+     *
+     * @return the minimum cardinality
      */
-    void refresh();
+    int getMinCardinality();
+
+    /**
+     * Returns the maximum cardinality.
+     *
+     * @return the maximum cardinality, or <code>-1</code> if it is unbounded
+     */
+    int getMaxCardinality();
 
 }

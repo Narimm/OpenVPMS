@@ -25,11 +25,11 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.LabelFactory;
 
 import java.util.List;
@@ -87,7 +87,7 @@ public class DocumentTemplateLayoutStrategy extends AbstractLayoutStrategy {
                     = helper.getDocumentParticipation((Entity) object);
             if (participation != null) {
                 content = context.getComponentFactory().create(participation,
-                                                               object, null);
+                                                               object);
             } else {
                 content = new ComponentState(LabelFactory.create());
             }

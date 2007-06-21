@@ -16,20 +16,17 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
+package org.openvpms.web.component.property;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.util.MacroEvaluator;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 
 /**
- * String property transformer, that provides macro expansion.
+ * String property transformer, that provides macro expansion for
+ * {@link IMObjectProperty} instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -41,49 +38,64 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
      */
     private final MacroEvaluator macros;
 
+    /**
+     * The context.
+     */
+    private final Object context;
+
 
     /**
      * Constructs a new <tt>StringTransformer</tt>.
      *
-     * @param parent     the parent object
-     * @param descriptor the node descriptor.
+     * @param property the property
      */
-    public StringPropertyTransformer(IMObject parent,
-                                     NodeDescriptor descriptor) {
-        super(parent, descriptor);
-        macros = new MacroEvaluator(ServiceHelper.getMacroCache());
+    public StringPropertyTransformer(Property property) {
+        super(property);
+        if (property instanceof IMObjectProperty) {
+            macros = new MacroEvaluator(ServiceHelper.getMacroCache());
+            context = ((IMObjectProperty) property).getObject();
+        } else {
+            macros = null;
+            context = null;
+        }
     }
+
 
     /**
      * Transform an object to the required type, performing validation.
      *
      * @param object the object to convert
-     * @return the transformed object, or <code>object</code> if no
-     *         transformation is required
-     * @throws ValidationException if the object is invalid
+     * @return the transformed object, or <tt>object</tt> if no transformation
+     *         is required
+     * @throws PropertyException if the object is invalid
      */
-    public Object apply(Object object) throws ValidationException {
+    public Object apply(Object object) {
+        Property property = getProperty();
         String result = null;
         if (object instanceof String) {
-            String str = (String) object;
-            result = macros.evaluate(str, getParent());
+            if (macros != null) {
+                String str = (String) object;
+                result = macros.evaluate(str, context);
+            } else {
+                result = (String) object;
+            }
         } else if (object != null) {
             result = object.toString();
         }
         result = StringUtils.trimToNull(result);
-        NodeDescriptor desc = getDescriptor();
-        int minLength = desc.getMinLength();
-        int maxLength = desc.getMaxLength();
+        int minLength = property.getMinLength();
+        int maxLength = property.getMaxLength();
         if ((result == null && minLength > 0)
                 || (result != null && result.length() < minLength)) {
-            String msg = Messages.get("node.error.minLength", minLength);
-            throw ValidationHelper.createException(getParent(), desc, msg);
+            String msg = Messages.get("property.error.minLength", minLength);
+            throw new PropertyException(property, msg);
         }
         if (result != null && result.length() > maxLength) {
-            String msg = Messages.get("node.error.maxLength", maxLength);
-            throw ValidationHelper.createException(getParent(), desc, msg);
+            String msg = Messages.get("property.error.maxLength", maxLength);
+            throw new PropertyException(property, msg);
         }
 
         return result;
     }
+
 }

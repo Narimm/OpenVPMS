@@ -16,14 +16,10 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
+package org.openvpms.web.component.property;
 
 import org.openvpms.archetype.rules.math.MathRules;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
-import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
@@ -47,12 +43,10 @@ public class NumericPropertyTransformer extends AbstractPropertyTransformer {
     /**
      * Constructs a new <tt>NumericPropertyTransformer</tt>.
      *
-     * @param parent     the parent object
-     * @param descriptor the node descriptor
+     * @param property the property
      */
-    public NumericPropertyTransformer(IMObject parent,
-                                      NodeDescriptor descriptor) {
-        super(parent, descriptor);
+    public NumericPropertyTransformer(Property property) {
+        super(property);
     }
 
     /**
@@ -73,22 +67,21 @@ public class NumericPropertyTransformer extends AbstractPropertyTransformer {
      * @param object the object to convert
      * @return the transformed object, or <code>object</code> if no
      *         transformation is required
-     * @throws ValidationException if the object is invalid
+     * @throws PropertyException if the object is invalid
      */
-    public Object apply(Object object) throws ValidationException {
+    public Object apply(Object object) {
         Object result;
-        NodeDescriptor descriptor = getDescriptor();
+        Property property = getProperty();
         try {
-            Class type = descriptor.getClazz();
+            Class type = property.getType();
             result = CONVERTER.convert(object, type);
             if (result instanceof BigDecimal) {
                 result = MathRules.round((BigDecimal) result);
             }
         } catch (Throwable exception) {
-            String message = Messages.get("node.error.invalidnumeric",
-                                          descriptor.getDisplayName());
-            throw ValidationHelper.createException(getParent(), descriptor,
-                                                   message, exception);
+            String message = Messages.get("property.error.invalidnumeric",
+                                          property.getDisplayName());
+            throw new PropertyException(property, message, exception);
         }
 
         return result;
