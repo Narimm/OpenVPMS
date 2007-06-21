@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.edit.PropertyEditor;
@@ -47,13 +46,6 @@ public interface IMObjectReferenceEditor<T extends IMObject>
      * @return the component
      */
     Component getComponent();
-
-    /**
-     * Returns the object reference's descriptor.
-     *
-     * @return the object reference's descriptor
-     */
-    NodeDescriptor getDescriptor();
 
     /**
      * Determines if the reference is null.

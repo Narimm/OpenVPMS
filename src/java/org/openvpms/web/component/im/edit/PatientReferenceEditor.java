@@ -22,10 +22,10 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.ContextHelper;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.property.Property;
 
 
 /**

@@ -21,10 +21,10 @@ package org.openvpms.web.component.im.view.act;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectCollectionViewer;
+import org.openvpms.web.component.property.CollectionProperty;
 
 /**
  * Viewer for collections of {@link ActRelationship}s.

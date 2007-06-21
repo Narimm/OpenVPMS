@@ -29,8 +29,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
@@ -38,6 +36,8 @@ import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -371,7 +371,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         Property property = component.getProperty();
         String name = null;
         if (property != null) {
-            name = property.getDescriptor().getDisplayName();
+            name = property.getDisplayName();
         }
         add(container, name, component);
         setFocusTraversal(component);

@@ -20,11 +20,11 @@ package org.openvpms.web.app.customer;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionEditor;
 import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionPropertyEditor;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
+import org.openvpms.web.component.property.CollectionProperty;
 
 import java.util.Date;
 import java.util.List;

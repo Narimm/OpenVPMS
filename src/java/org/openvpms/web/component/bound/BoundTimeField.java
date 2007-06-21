@@ -19,8 +19,8 @@
 package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Extent;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.TimePropertyTransformer;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.TimePropertyTransformer;
 import org.openvpms.web.component.util.DateHelper;
 
 import java.text.DateFormat;

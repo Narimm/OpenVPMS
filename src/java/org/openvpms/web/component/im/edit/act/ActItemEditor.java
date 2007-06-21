@@ -25,14 +25,14 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 
 import java.math.BigDecimal;
 

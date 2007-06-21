@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
+package org.openvpms.web.component.property;
 
 
 /**

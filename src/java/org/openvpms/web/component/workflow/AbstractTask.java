@@ -24,7 +24,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.Collection;
 

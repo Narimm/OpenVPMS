@@ -24,14 +24,14 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.property.IMObjectProperty;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 
 import java.util.Date;
 
@@ -96,7 +96,8 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     protected void initParticipant(String name, IMObjectReference entity) {
         Property property = getProperty(name);
         if (property != null) {
-            Participation participant = getParticipation(property);
+            Participation participant
+                    = getParticipation((IMObjectProperty) property);
             if (participant != null) {
                 if (participant.getAct() == null) {
                     participant.setAct(getObject().getObjectReference());
@@ -128,7 +129,8 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      */
     protected void setParticipant(String name, IMObjectReference entity) {
         Property property = getProperty(name);
-        Participation participant = getParticipation(property);
+        Participation participant
+                = getParticipation((IMObjectProperty) property);
         if (participant != null) {
             boolean modified = false;
             if (participant.getAct() == null) {
@@ -153,7 +155,8 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     protected IMObjectReference getParticipantRef(String name) {
         Property property = getProperty(name);
         if (property != null) {
-            Participation participant = getParticipation(property);
+            Participation participant
+                    = getParticipation((IMObjectProperty) property);
             if (participant != null) {
                 return participant.getEntity();
             }
@@ -177,11 +180,10 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @param property the participation property
      * @return the participation
      */
-    protected Participation getParticipation(Property property) {
+    protected Participation getParticipation(IMObjectProperty property) {
         Object value = null;
-        if (property instanceof CollectionProperty) {
-            CollectionProperty c = (CollectionProperty) property;
-            Object[] values = c.getValues().toArray();
+        if (property.isCollection()) {
+            Object[] values = property.getValues().toArray();
             if (values.length > 0) {
                 value = values[0];
             } else {
@@ -190,7 +192,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
                 if (shortNames.length == 1) {
                     value = IMObjectCreator.create(shortNames[0]);
                     if (value != null) {
-                        c.add(value);
+                        property.add(value);
                     }
                 }
             }

@@ -21,11 +21,11 @@ package org.openvpms.web.app.patient.mr;
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 
 import java.util.Date;
 

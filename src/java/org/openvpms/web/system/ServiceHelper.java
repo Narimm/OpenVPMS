@@ -27,6 +27,8 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.javamail.JavaMailSender;
 
+import javax.sql.DataSource;
+
 
 /**
  * Helper for accessing services managed by Spring.
@@ -43,6 +45,15 @@ public final class ServiceHelper {
      */
     public static IArchetypeService getArchetypeService() {
         return ArchetypeServiceHelper.getArchetypeService();
+    }
+
+    /**
+     * Helper to return the data source.
+     *
+     * @return the data source
+     */
+    public static DataSource getDataSource() {
+        return (DataSource) getContext().getBean("dataSource");
     }
 
     /**

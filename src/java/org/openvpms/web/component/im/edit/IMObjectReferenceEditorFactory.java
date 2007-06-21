@@ -21,11 +21,10 @@ package org.openvpms.web.component.im.edit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
+import org.openvpms.web.component.property.Property;
 
 
 /**
@@ -66,8 +65,7 @@ public class IMObjectReferenceEditorFactory {
             create(Property property, IMObject parent, LayoutContext context) {
         IMObjectReferenceEditor<T> result = null;
 
-        String[] shortNames = DescriptorHelper.getShortNames(
-                property.getDescriptor());
+        String[] shortNames = property.getArchetypeRange();
         ArchetypeHandler handler = getEditors().getHandler(shortNames);
 
         if (handler != null) {

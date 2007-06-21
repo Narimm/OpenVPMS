@@ -18,10 +18,6 @@
 
 package org.openvpms.web.component.im.doc;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -30,11 +26,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
@@ -42,8 +34,16 @@ import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.util.ErrorHelper;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -78,7 +78,7 @@ public class DocumentActEditor extends AbstractActEditor {
      * @param context the layout context. May be <code>null</code>.
      */
     public DocumentActEditor(DocumentAct act, IMObject parent,
-                                    LayoutContext context) {
+                             LayoutContext context) {
         super(act, parent, context);
         Editor editor = getEditor(DOC_REFERENCE);
         if (editor != null) {
@@ -234,7 +234,8 @@ public class DocumentActEditor extends AbstractActEditor {
                 }
             }
             if (!found) {
-                NodeDescriptor node = archetype.getNodeDescriptor(DOC_REFERENCE);
+                NodeDescriptor node = archetype.getNodeDescriptor(
+                        DOC_REFERENCE);
                 if (node != null)
                     nodes.add(archetype.getNodeDescriptor(DOC_REFERENCE));
             }

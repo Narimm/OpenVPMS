@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
+package org.openvpms.web.component.property;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -39,10 +39,11 @@ public class PropertySet {
     /**
      * The properties.
      */
-    private Map<String, Property> _properties = new HashMap<String, Property>();
+    private Map<String, Property> properties = new HashMap<String, Property>();
+
 
     /**
-     * Construct a new <code>PropertySet</code>.
+     * Constructs a new <tt>PropertySet</tt> from an object.
      *
      * @param object the object
      */
@@ -51,7 +52,7 @@ public class PropertySet {
     }
 
     /**
-     * Construct a new <code>PropertySet</code>.
+     * Constructs a new <tt>PropertySet</tt> for an object and descriptor.
      *
      * @param object    the object
      * @param archetype the archetype descriptor
@@ -59,7 +60,7 @@ public class PropertySet {
     public PropertySet(IMObject object, ArchetypeDescriptor archetype) {
         for (NodeDescriptor descriptor : archetype.getAllNodeDescriptors()) {
             Property property = new IMObjectProperty(object, descriptor);
-            _properties.put(descriptor.getName(), property);
+            properties.put(descriptor.getName(), property);
         }
     }
 
@@ -67,19 +68,19 @@ public class PropertySet {
      * Returns the named property.
      *
      * @param name the name
-     * @return the property corresponding to <code>name</code>, or
-     *         <code>null</code> if none exists
+     * @return the property corresponding to <tt>name</tt>, or <tt>null</tt>
+     *         if none exists
      */
     public Property get(String name) {
-        return _properties.get(name);
+        return properties.get(name);
     }
 
     /**
      * Returns a property given its descriptor.
      *
      * @param descriptor the descriptor
-     * @return the property corresponding to <code>descriptor</code>, or
-     *         <code>null</code> if none exists
+     * @return the property corresponding to <tt>descriptor</tt>, or
+     *         <tt>null</tt> if none exists
      */
     public Property get(NodeDescriptor descriptor) {
         return get(descriptor.getName());
@@ -91,13 +92,13 @@ public class PropertySet {
      * @return the properties
      */
     public Collection<Property> getProperties() {
-        return _properties.values();
+        return properties.values();
     }
 
     /**
      * Determines if any of the properties have been modified.
      *
-     * @return <code>true</code> if at least one property has been modified
+     * @return <tt>true</tt> if at least one property has been modified
      */
     public boolean isModified() {
         for (Property property : getProperties()) {

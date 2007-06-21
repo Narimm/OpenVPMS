@@ -23,9 +23,9 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.layout.TableLayoutStrategyFactory;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
@@ -44,7 +44,7 @@ import java.util.Date;
 public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
 
     /**
-     * Construct a new <code>TableComponentFactory</code>.
+     * Construct a new <tt>TableComponentFactory</tt>.
      *
      * @param context the layout context.
      */
@@ -59,7 +59,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      * @param context  the context object
      * @return a component to display the lookup property
      */
-    protected Component getLookup(Property property, IMObject context) {
+    protected Component createLookup(Property property, IMObject context) {
         Label result = LabelFactory.create();
         result.setText(getLookupName(property, context));
         return result;
@@ -72,8 +72,8 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      * @return a component to display the property
      */
     @Override
-    protected Component getString(Property property) {
-        return getLabel(property);
+    protected Component createString(Property property) {
+        return createLabel(property);
     }
 
     /**
@@ -100,7 +100,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      * @param property the date property
      * @return a component to display the property
      */
-    protected Component getDate(Property property) {
+    protected Component createDate(Property property) {
         String value = getDateValue(property);
         Label label = LabelFactory.create();
         label.setText(value);
@@ -112,7 +112,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      *
      * @param property the numeric property
      * @return the string value of the property associated with
-     *         <code>property</code>
+     *         <tt>property</tt>
      */
     protected String getNumericValue(Property property) {
         Object tmp = property.getValue();
@@ -123,8 +123,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
             value = (Number) tmp;
         }
         if (value != null) {
-            return NumberFormatter.format(value, property.getDescriptor(),
-                                          false);
+            return NumberFormatter.format(value, property, false);
         }
         return null;
     }

@@ -19,9 +19,9 @@
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.property.CollectionProperty;
 
 /**
  * Editor for a collection of {@link IMObject}s.

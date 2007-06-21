@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
+package org.openvpms.web.component.property;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -47,8 +47,9 @@ public class StringPropertyTransformerTestCase
     public void testApply() {
         Party person = TestHelper.createCustomer();
         NodeDescriptor descriptor = getDescriptor(person, "name");
+        Property property = new IMObjectProperty(person, descriptor);
         StringPropertyTransformer handler
-                = new StringPropertyTransformer(person, descriptor);
+                = new StringPropertyTransformer(property);
 
         assertNull(handler.apply(null));
         assertNull(handler.apply(""));
@@ -63,8 +64,9 @@ public class StringPropertyTransformerTestCase
     public void testMacroExpansion() {
         Party person = TestHelper.createCustomer();
         NodeDescriptor descriptor = getDescriptor(person, "name");
+        Property property = new IMObjectProperty(person, descriptor);
         StringPropertyTransformer handler
-                = new StringPropertyTransformer(person, descriptor);
+                = new StringPropertyTransformer(property);
 
         Object text1 = handler.apply("macro1");
         assertEquals("macro 1 text", text1);

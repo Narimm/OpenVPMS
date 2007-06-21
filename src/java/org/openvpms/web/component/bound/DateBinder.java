@@ -20,7 +20,7 @@ package org.openvpms.web.component.bound;
 
 import echopointng.DateChooser;
 import echopointng.DateField;
-import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.property.Property;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

@@ -33,8 +33,8 @@ import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;

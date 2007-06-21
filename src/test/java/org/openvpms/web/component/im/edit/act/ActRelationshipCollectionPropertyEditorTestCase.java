@@ -28,9 +28,9 @@ import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditorTest;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
+import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.test.TestHelper;
 
 

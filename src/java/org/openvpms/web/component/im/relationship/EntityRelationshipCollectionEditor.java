@@ -22,14 +22,13 @@ import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -85,8 +84,7 @@ public class EntityRelationshipCollectionEditor
     @Override
     protected Row createControls(FocusGroup focus) {
         Row row = super.createControls(focus);
-        NodeDescriptor descriptor = getCollection().getDescriptor();
-        String name = descriptor.getDisplayName();
+        String name = getProperty().getDisplayName();
         String label = Messages.get("relationship.hide.inactive", name);
         hideInactive = CheckBoxFactory.create(null, true);
         hideInactive.setText(label);

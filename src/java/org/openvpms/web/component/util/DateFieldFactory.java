@@ -20,7 +20,7 @@ package org.openvpms.web.component.util;
 
 import echopointng.DateField;
 import org.openvpms.web.component.bound.BoundDateField;
-import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.property.Property;
 
 
 /**

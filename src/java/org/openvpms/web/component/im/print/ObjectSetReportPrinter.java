@@ -29,9 +29,9 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.IMReport;
-import org.openvpms.report.IMReportException;
-import org.openvpms.report.IMReportFactory;
 import org.openvpms.report.PrintProperties;
+import org.openvpms.report.ReportException;
+import org.openvpms.report.ReportFactory;
 import org.openvpms.web.system.ServiceHelper;
 
 
@@ -106,11 +106,11 @@ public class ObjectSetReportPrinter
      * Creates a new report.
      *
      * @return a new report
-     * @throws IMReportException         for any report error
+     * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected IMReport<ObjectSet> createReport() {
-        return IMReportFactory.createObjectSetReport(
+        return ReportFactory.createObjectSetReport(
                 document, ArchetypeServiceHelper.getArchetypeService(),
                 ServiceHelper.getDocumentHandlers());
     }

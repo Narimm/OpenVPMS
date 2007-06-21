@@ -24,7 +24,7 @@
  */
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**
@@ -33,7 +33,7 @@ import org.openvpms.web.component.edit.CollectionProperty;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DefaultCollectionPropertyEditor 
+public class DefaultCollectionPropertyEditor
         extends AbstractCollectionPropertyEditor {
 
     /**

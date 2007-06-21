@@ -16,14 +16,10 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
+package org.openvpms.web.component.property;
 
 import org.openvpms.archetype.rules.math.MathRules;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
@@ -31,7 +27,7 @@ import java.math.BigInteger;
 
 
 /**
- * Handler for money nodes.
+ * Handler for money properties.
  * todo - workaround for OBF-54
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -39,27 +35,24 @@ import java.math.BigInteger;
  */
 public class MoneyPropertyTransformer extends AbstractPropertyTransformer {
 
-
     /**
      * Constructs a new <tt>MoneyPropertyTransformer</tt>.
      *
-     * @param parent     the parent object
-     * @param descriptor the node descriptor
+     * @param property the property
      */
-    public MoneyPropertyTransformer(IMObject parent,
-                                    NodeDescriptor descriptor) {
-        super(parent, descriptor);
+    public MoneyPropertyTransformer(Property property) {
+        super(property);
     }
 
     /**
      * Transform an object to the required type, performing validation.
      *
      * @param object the object to convert
-     * @return the transformed object, or <code>object</code> if no
-     *         transformation is required
-     * @throws ValidationException if the object is invalid
+     * @return the transformed object, or <tt>object</tt> if no transformation
+     *         is required
+     * @throws PropertyException if the object is invalid
      */
-    public Object apply(Object object) throws ValidationException {
+    public Object apply(Object object) {
         BigDecimal result;
         try {
             if (object instanceof String) {
@@ -85,16 +78,15 @@ public class MoneyPropertyTransformer extends AbstractPropertyTransformer {
     }
 
     /**
-     * Helper to create a new validation exception.
+     * Helper to create a new property exception.
      *
-     * @param cause the cause. May be <code>null</code>
-     * @return a new validation exception
+     * @param cause the cause. May be <tt>null</tt>
+     * @return a new property exception
      */
-    private ValidationException getException(Throwable cause) {
-        String message = Messages.get("node.error.invalidnumeric",
-                                      getDescriptor().getDisplayName());
-        return ValidationHelper.createException(getParent(), getDescriptor(),
-                                                message, cause);
+    private PropertyException getException(Throwable cause) {
+        String message = Messages.get("property.error.invalidnumeric",
+                                      getProperty().getDisplayName());
+        return new PropertyException(getProperty(), message, cause);
     }
 
 }

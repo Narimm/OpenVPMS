@@ -19,7 +19,7 @@
 package org.openvpms.web.component.util;
 
 import org.openvpms.web.component.bound.BoundTimeField;
-import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.property.Property;
 
 
 /**

@@ -22,13 +22,13 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.LabelFactory;
 
 
@@ -61,7 +61,7 @@ public class ActRelationshipLayoutStrategy extends AbstractLayoutStrategy {
             IMObjectReference ref = (IMObjectReference) property.getValue();
             IMObject target = IMObjectHelper.getObject(ref);
             IMObjectComponentFactory factory = context.getComponentFactory();
-            result = factory.create(target, parent, null);
+            result = factory.create(target, parent);
         } else {
             Component component = LabelFactory.create();
             result = new ComponentState(component);

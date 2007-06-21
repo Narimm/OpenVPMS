@@ -102,6 +102,7 @@ public abstract class PopupWindow extends WindowPane {
      */
     public void show() {
         if (getParent() == null) {
+            doLayout();
             DialogManager.show(this);
         }
         if (defaultButton != null) {
@@ -135,6 +136,13 @@ public abstract class PopupWindow extends WindowPane {
      */
     public void close() {
         userClose();
+    }
+
+    /**
+     * Lays out the component prior to display.
+     * This implementation is a no-op.
+     */
+    protected void doLayout() {
     }
 
     /**

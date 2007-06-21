@@ -20,8 +20,7 @@ package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.TextArea;
-
-import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.property.Property;
 
 
 /**
@@ -37,7 +36,7 @@ public class BoundTextArea extends TextArea {
      *
      * @param property the property to bind
      * @param columns  the no. of columns to display
-     * @param rows TODO
+     * @param rows     TODO
      */
     public BoundTextArea(Property property, int columns, int rows) {
         setWidth(new Extent(columns, Extent.EX));

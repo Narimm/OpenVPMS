@@ -23,8 +23,7 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.DocumentEvent;
 import nextapp.echo2.app.event.DocumentListener;
 import nextapp.echo2.app.text.TextComponent;
-
-import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.property.Property;
 
 
 /**

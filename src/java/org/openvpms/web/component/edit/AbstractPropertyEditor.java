@@ -13,33 +13,37 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: AbstractPropertyEditor.java 1535 2006-11-14 04:41:04Z tanderson $
  */
 
 package org.openvpms.web.component.edit;
+
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
 
 
 /**
  * Abstract implementation of the {@link PropertyEditor} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-11-14 04:41:04Z $
  */
 public abstract class AbstractPropertyEditor implements PropertyEditor {
 
     /**
      * The property being edited.
      */
-    private final Property _property;
+    private final Property property;
 
 
     /**
-     * Construct a new <code>AbstractPropertyEditor</code>.
+     * Creates a new <tt>AbstractPropertyEditor</tt>.
      *
      * @param property the property being edited
      */
     public AbstractPropertyEditor(Property property) {
-        _property = property;
+        this.property = property;
     }
 
     /**
@@ -48,13 +52,13 @@ public abstract class AbstractPropertyEditor implements PropertyEditor {
      * @return the property being edited
      */
     public Property getProperty() {
-        return _property;
+        return property;
     }
 
     /**
      * Determines if the object has been modified.
      *
-     * @return <code>true</code> if the object has been modified
+     * @return <tt>true</tt> if the object has been modified
      */
     public boolean isModified() {
         return getProperty().isModified();
@@ -88,8 +92,8 @@ public abstract class AbstractPropertyEditor implements PropertyEditor {
     /**
      * Determines if the object is valid.
      *
-     * @return <code>true</code> if the object is valid; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the object is valid; otherwise
+     *         <tt>false</tt>
      */
     public boolean isValid() {
         Validator validator = new Validator();
@@ -100,8 +104,8 @@ public abstract class AbstractPropertyEditor implements PropertyEditor {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the object and its descendents are valid
+     *         otherwise <tt>false</tt>
      */
     public boolean validate(Validator validator) {
         return validator.validate(getProperty());

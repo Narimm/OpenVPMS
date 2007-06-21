@@ -24,9 +24,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -37,6 +35,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
+import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
 
@@ -244,8 +243,8 @@ public class AbstractIMObjectCollectionViewer
      * @return a new table model
      */
     protected IMObjectTableModel<IMObject> createTableModel() {
-        NodeDescriptor descriptor = property.getDescriptor();
-        return IMObjectTableModelFactory.create(descriptor, context);
+        return IMObjectTableModelFactory.create(property.getArchetypeRange(),
+                                                context);
     }
 
     /**

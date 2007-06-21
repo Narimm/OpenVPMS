@@ -20,11 +20,11 @@ package org.openvpms.web.component.im.view;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
+import org.openvpms.web.component.property.PropertySet;
 
 
 /**

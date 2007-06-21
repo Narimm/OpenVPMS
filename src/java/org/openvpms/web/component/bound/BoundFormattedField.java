@@ -21,7 +21,7 @@ package org.openvpms.web.component.bound;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
-import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.property.Property;
 
 import java.text.Format;
 import java.text.ParseException;

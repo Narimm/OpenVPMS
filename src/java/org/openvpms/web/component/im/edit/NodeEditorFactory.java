@@ -18,24 +18,19 @@
 
 package org.openvpms.web.component.im.edit;
 
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.list.ListModel;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.bound.BoundPalette;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Editors;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertyComponentEditor;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.doc.DocumentEditor;
@@ -49,13 +44,12 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.palette.Palette;
-import org.openvpms.web.component.util.DateFieldFactory;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.IMObjectProperty;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
 
-import java.text.Format;
 import java.util.List;
 
 
@@ -70,23 +64,23 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     /**
      * Collects the editors created by this factory.
      */
-    private Editors _editors;
+    private Editors editors;
 
     /**
      * Component factory for read-only/derived properties.
      */
-    private IMObjectComponentFactory _readOnly;
+    private IMObjectComponentFactory readOnly;
 
 
     /**
-     * Construct a new <code>NodeEditorFactory</code>.
+     * Construct a new <tt>NodeEditorFactory</tt>.
      *
      * @param editors the editors
      * @param context the layout context
      */
     public NodeEditorFactory(Editors editors, LayoutContext context) {
         super(context);
-        _editors = editors;
+        this.editors = editors;
     }
 
     /**
@@ -94,37 +88,36 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      *
      * @param property the property to display
      * @param context  the context object
-     * @return a component to display <code>object</code>
+     * @return a component to display <tt>object</tt>
      */
     public ComponentState create(Property property, IMObject context) {
         ComponentState result;
-        NodeDescriptor descriptor = property.getDescriptor();
-        if (descriptor.isReadOnly() || descriptor.isDerived()) {
+        if (property.isReadOnly() || property.isDerived()) {
             result = getReadOnlyFactory().create(property, context);
         } else {
             Editor editor = null;
-            if (descriptor.isLookup()) {
-                editor = getSelectEditor(property, context);
-            } else if (descriptor.isBoolean()) {
-                editor = getBooleanEditor(property);
-            } else if (descriptor.isString()) {
-                editor = getTextEditor(property);
-            } else if (descriptor.isNumeric()) {
-                editor = getNumericEditor(property);
-            } else if (descriptor.isDate()) {
-                editor = getDateEditor(property);
-            } else if (descriptor.isCollection()) {
-                editor = getCollectionEditor((CollectionProperty) property,
-                                             context);
-            } else if (descriptor.isObjectReference()) {
-                editor = getObjectReferenceEditor(property, context);
+            if (property.isLookup()) {
+                editor = createLookupEditor(property, context);
+            } else if (property.isBoolean()) {
+                editor = createBooleanEditor(property);
+            } else if (property.isString()) {
+                editor = createStringEditor(property);
+            } else if (property.isNumeric()) {
+                editor = createNumericEditor(property);
+            } else if (property.isDate()) {
+                editor = createDateEditor(property);
+            } else if (property.isCollection()) {
+                editor = createCollectionEditor((CollectionProperty) property,
+                                                context);
+            } else if (property.isObjectReference()) {
+                editor = createObjectReferenceEditor(property, context);
             }
             if (editor != null) {
                 result = new ComponentState(editor.getComponent(), property,
                                             editor.getFocusGroup());
             } else {
                 Label label = LabelFactory.create();
-                label.setText("No editor for type " + descriptor.getType());
+                label.setText("No editor for type " + property.getType());
                 result = new ComponentState(label);
             }
         }
@@ -134,14 +127,12 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     /**
      * Create a component to display an object.
      *
-     * @param object     the object to display
-     * @param context    the object's parent. May be <code>null</code>
-     * @param descriptor the parent object's descriptor. May be
+     * @param object  the object to display
+     * @param context the object's parent. May be <tt>null</tt>
      */
-    public ComponentState create(IMObject object, IMObject context,
-                                 NodeDescriptor descriptor) {
+    public ComponentState create(IMObject object, IMObject context) {
         Editor editor = getObjectEditor(object, context);
-        _editors.add(editor);
+        editors.add(editor);
         return new ComponentState(editor.getComponent(),
                                   editor.getFocusGroup());
     }
@@ -150,8 +141,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * Creates an editor for an {@link IMObject}.
      *
      * @param object  the object to edit
-     * @param context the object's parent. May be <code>null</code>
-     * @return a new editor for <code>object</code>
+     * @param context the object's parent. May be <tt>null</tt>
+     * @return a new editor for <tt>object</tt>
      */
     protected IMObjectEditor getObjectEditor(IMObject object,
                                              IMObject context) {
@@ -163,31 +154,21 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * Returns an editor for a numeric property.
      *
      * @param property the numeric property
-     * @return a new editor for <code>property</code>
+     * @return a new editor for <tt>property</tt>
      */
-    protected Editor getNumericEditor(Property property) {
-        int maxColumns = 10;
-        NodeDescriptor descriptor = property.getDescriptor();
-        boolean edit = !descriptor.isReadOnly() || descriptor.isDerived();
-        Format format = NumberFormatter.getFormat(descriptor, edit);
-        TextField text = TextComponentFactory.create(property, maxColumns,
-                                                     format);
-        if (!edit) {
-            Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
-            text.setAlignment(align);
-        }
-        return createPropertyEditor(property, text);
+    protected Editor createNumericEditor(Property property) {
+        Component component = createNumeric(property);
+        return createPropertyEditor(property, component);
     }
-
 
     /**
      * Returns an editor for a date property.
      *
      * @param property the date property
-     * @return a new editor for <code>property</code>
+     * @return a new editor for <tt>property</tt>
      */
-    protected Editor getDateEditor(Property property) {
-        Component date = DateFieldFactory.create(property);
+    protected Editor createDateEditor(Property property) {
+        Component date = createDate(property);
         return createPropertyEditor(property, date);
     }
 
@@ -196,11 +177,11 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      *
      * @param property the lookup property
      * @param context  the parent object
-     * @return a new editor for <code>property</code>
+     * @return a new editor for <tt>property</tt>
      */
-    protected Editor getSelectEditor(Property property, IMObject context) {
-        ListModel model = new LookupListModel(context,
-                                              property.getDescriptor());
+    protected Editor createLookupEditor(Property property, IMObject context) {
+        IMObjectProperty p = (IMObjectProperty) property;
+        ListModel model = new LookupListModel(context, p.getDescriptor());
         SelectField field = SelectFieldFactory.create(property, model);
         field.setCellRenderer(new LookupListCellRenderer());
         return createPropertyEditor(property, field);
@@ -210,10 +191,10 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * Returns an editor for a boolean property.
      *
      * @param property the boolean property
-     * @return a new editor for <code>property</code>
+     * @return a new editor for <tt>property</tt>
      */
-    protected Editor getBooleanEditor(Property property) {
-        Component component = getCheckBox(property);
+    protected Editor createBooleanEditor(Property property) {
+        Component component = createBoolean(property);
         return createPropertyEditor(property, component);
     }
 
@@ -221,10 +202,10 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * Returns an editor for a text property.
      *
      * @param property the boolean property
-     * @return a new editor for <code>property</code>
+     * @return a new editor for <tt>property</tt>
      */
-    protected Editor getTextEditor(Property property) {
-        Component component = getTextComponent(property);
+    protected Editor createStringEditor(Property property) {
+        Component component = createString(property);
         return createPropertyEditor(property, component);
     }
 
@@ -233,18 +214,19 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      *
      * @param property the collection property
      * @param object   the parent object
-     * @return a new editor for <code>property</code>
+     * @return a new editor for <tt>property</tt>
      */
-    protected Editor getCollectionEditor(CollectionProperty property,
-                                         IMObject object) {
+    protected Editor createCollectionEditor(CollectionProperty property,
+                                            IMObject object) {
         Editor editor = null;
-        NodeDescriptor descriptor = property.getDescriptor();
+        IMObjectProperty p = (IMObjectProperty) property;
+        NodeDescriptor descriptor = p.getDescriptor();
         if (descriptor.isParentChild()) {
             if (descriptor.getMinCardinality() == 1
                     && descriptor.getMaxCardinality() == 1) {
                 // handle the special case of a collection of one element.
                 // This can be edited inline
-                String[] range = DescriptorHelper.getShortNames(descriptor);
+                String[] range = property.getArchetypeRange();
                 if (range.length == 1) {
                     Object[] values = property.getValues().toArray();
                     IMObject value;
@@ -258,14 +240,14 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                     }
                     if (value != null) {
                         editor = getObjectEditor(value, object);
-                        _editors.add(editor, property);
+                        editors.add(editor, property);
                     }
                 }
             }
             if (editor == null) {
                 editor = IMObjectCollectionEditorFactory.create(
                         property, object, getLayoutContext());
-                _editors.add(editor);
+                editors.add(editor);
             }
         } else {
             IArchetypeService service
@@ -284,12 +266,11 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      *
      * @param property the object reference properrty
      * @param object   the parent object
-     * @return a new editor for <code>property</code>
+     * @return a new editor for <tt>property</tt>
      */
-    protected Editor getObjectReferenceEditor(Property property,
-                                              IMObject object) {
-        String[] range = DescriptorHelper.getShortNames(
-                property.getDescriptor());
+    protected Editor createObjectReferenceEditor(Property property,
+                                                 IMObject object) {
+        String[] range = property.getArchetypeRange();
         Editor editor;
         if (TypeHelper.matches(range, "document.*")) {
             editor = new DocumentEditor(property);
@@ -297,7 +278,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             editor = IMObjectReferenceEditorFactory.create(property, object,
                                                            getLayoutContext());
         }
-        _editors.add(editor);
+        editors.add(editor);
         return editor;
     }
 
@@ -307,10 +288,10 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * @return a factory for creating read-only components
      */
     private IMObjectComponentFactory getReadOnlyFactory() {
-        if (_readOnly == null) {
-            _readOnly = new ReadOnlyComponentFactory(getLayoutContext());
+        if (readOnly == null) {
+            readOnly = new ReadOnlyComponentFactory(getLayoutContext());
         }
-        return _readOnly;
+        return readOnly;
     }
 
     /**
@@ -321,7 +302,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                                                 Component component) {
         PropertyComponentEditor editor
                 = new PropertyComponentEditor(property, component);
-        _editors.add(editor);
+        editors.add(editor);
         return editor;
     }
 

@@ -28,13 +28,13 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.edit.IMObjectProperty;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
+import org.openvpms.web.component.property.IMObjectProperty;
+import org.openvpms.web.component.property.Property;
 
 import java.util.ArrayList;
 import java.util.HashMap;

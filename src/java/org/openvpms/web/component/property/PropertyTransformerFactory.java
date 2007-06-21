@@ -16,10 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
+package org.openvpms.web.component.property;
 
 
 /**
@@ -39,20 +36,18 @@ public class PropertyTransformerFactory {
     /**
      * Creates a new property transformer.
      *
-     * @param parent     the parent object
-     * @param descriptor the node descriptor
+     * @param property the property
      */
-    public static PropertyTransformer create(IMObject parent,
-                                             NodeDescriptor descriptor) {
+    public static PropertyTransformer create(Property property) {
         PropertyTransformer result;
-        if (descriptor.isLookup()) {
+        if (property.isLookup()) {
             result = DEFAULT;
-        } else if (descriptor.isString()) {
-            result = new StringPropertyTransformer(parent, descriptor);
-        } else if (descriptor.isMoney()) {
-            result = new MoneyPropertyTransformer(parent, descriptor);
-        } else if (descriptor.isNumeric()) {
-            result = new NumericPropertyTransformer(parent, descriptor);
+        } else if (property.isString()) {
+            result = new StringPropertyTransformer(property);
+        } else if (property.isMoney()) {
+            result = new MoneyPropertyTransformer(property);
+        } else if (property.isNumeric()) {
+            result = new NumericPropertyTransformer(property);
         } else {
             result = DEFAULT;
         }

@@ -30,7 +30,7 @@ import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ShortNameListModel;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 

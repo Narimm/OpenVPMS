@@ -16,9 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
-
-import org.openvpms.component.business.service.archetype.ValidationError;
+package org.openvpms.web.component.property;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,16 +35,15 @@ public class Validator {
     /**
      * Modifiable instances with their corresponding errors.
      */
-    private Map<Modifiable, List<ValidationError>> errors
-            = new HashMap<Modifiable, List<ValidationError>>();
+    private Map<Modifiable, List<ValidatorError>> errors
+            = new HashMap<Modifiable, List<ValidatorError>>();
 
 
     /**
      * Validates an object.
      *
      * @param modifiable the object to validate
-     * @return <code>true</code> if the object is valid; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the object is valid; otherwise <tt>false</tt>
      */
     public boolean validate(Modifiable modifiable) {
         return modifiable.validate(this);
@@ -58,7 +55,7 @@ public class Validator {
      * @param modifiable the object
      * @param errors     the validation errors
      */
-    public void add(Modifiable modifiable, List<ValidationError> errors) {
+    public void add(Modifiable modifiable, List<ValidatorError> errors) {
         if (!errors.isEmpty()) {
             this.errors.put(modifiable, errors);
         }
@@ -77,10 +74,10 @@ public class Validator {
      * Returns any errors for an object.
      *
      * @param modifiable the object
-     * @return errors associated with <code>modifiable</code>, or
-     *         <code>null</code> if there are no errors
+     * @return errors associated with <tt>modifiable</tt>, or <tt>null</tt>
+     *         if there are no errors
      */
-    public List<ValidationError> getErrors(Modifiable modifiable) {
+    public List<ValidatorError> getErrors(Modifiable modifiable) {
         return errors.get(modifiable);
     }
 

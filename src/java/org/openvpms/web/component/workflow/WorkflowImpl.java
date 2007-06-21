@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.workflow;
 
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.ArrayList;
 import java.util.Iterator;

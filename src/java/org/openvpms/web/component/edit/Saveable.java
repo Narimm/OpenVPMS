@@ -13,7 +13,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: Saveable.java 891 2006-05-15 04:58:37Z tanderson $
  */
 
 package org.openvpms.web.component.edit;
@@ -23,7 +23,7 @@ package org.openvpms.web.component.edit;
  * Interface to track the saved status of an object.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-15 04:58:37Z $
  */
 public interface Saveable {
 

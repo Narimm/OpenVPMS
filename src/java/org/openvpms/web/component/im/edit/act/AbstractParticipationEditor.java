@@ -23,8 +23,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditorFactory;
@@ -32,6 +30,8 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 
 
 /**

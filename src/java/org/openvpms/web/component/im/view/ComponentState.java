@@ -19,8 +19,8 @@
 package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.property.Property;
 
 
 /**

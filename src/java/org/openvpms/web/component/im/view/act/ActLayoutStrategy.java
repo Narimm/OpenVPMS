@@ -19,13 +19,13 @@
 package org.openvpms.web.component.im.view.act;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Property;
 
 
 /**
@@ -95,7 +95,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     protected ComponentState createComponent(Property property, IMObject parent,
                                              LayoutContext context) {
-        String name = property.getDescriptor().getName();
+        String name = property.getName();
         ComponentState component;
         if (name.equals("items")) {
             if (_editor != null) {

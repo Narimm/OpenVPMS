@@ -34,7 +34,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;

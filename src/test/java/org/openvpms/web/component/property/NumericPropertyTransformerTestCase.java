@@ -16,14 +16,13 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
+package org.openvpms.web.component.property;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
@@ -53,16 +52,17 @@ public class NumericPropertyTransformerTestCase
         assertEquals(Integer.class, intNode.getClazz());
 
         IMObject parent = service.create(shortName);
+        IMObjectProperty property = new IMObjectProperty(parent, intNode);
 
-        NumericPropertyTransformer handler = new NumericPropertyTransformer(
-                parent, intNode);
+        NumericPropertyTransformer handler
+                = new NumericPropertyTransformer(property);
 
         // test string conversions
         try {
             handler.apply("abc");
             fail("expected conversion from 'abc' to fail");
-        } catch (ValidationException exception) {
-            assertFalse(exception.getErrors().isEmpty());
+        } catch (PropertyException expected) {
+            assertEquals(property, expected.getProperty());
         }
 
         Integer int1 = (Integer) handler.apply("1");
@@ -71,9 +71,9 @@ public class NumericPropertyTransformerTestCase
         try {
             handler.apply("1.0");
             fail("expected conversion from '1.0' to fail");
-        } catch (ValidationException exception) {
+        } catch (PropertyException expected) {
             // not supported by Integer.parseInt()
-            assertFalse(exception.getErrors().isEmpty());
+            assertEquals(property, expected.getProperty());
         }
 
         // test numeric conversions
@@ -97,14 +97,15 @@ public class NumericPropertyTransformerTestCase
 
         IMObject parent = service.create(shortName);
 
-        NumericPropertyTransformer handler = new NumericPropertyTransformer(
-                parent, decNode);
+        IMObjectProperty property = new IMObjectProperty(parent, decNode);
+        NumericPropertyTransformer handler
+                = new NumericPropertyTransformer(property);
 
         // test string conversions
         try {
             handler.apply("abc");
-        } catch (ValidationException exception) {
-            assertFalse(exception.getErrors().isEmpty());
+        } catch (PropertyException expected) {
+            assertEquals(property, expected.getProperty());
         }
 
         // Note: BigDecimal.compareTo() is used instead of equals as equals

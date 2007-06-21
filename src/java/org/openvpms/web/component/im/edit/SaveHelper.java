@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 

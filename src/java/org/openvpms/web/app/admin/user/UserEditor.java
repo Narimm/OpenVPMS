@@ -25,16 +25,16 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.ValidationError;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -71,7 +71,7 @@ public class UserEditor extends AbstractIMObjectEditor {
     public UserEditor(User object, IMObject parent, LayoutContext context) {
         super(object, parent, context);
         Property property = getPassword();
-        int width = property.getDescriptor().getMaxLength();
+        int width = property.getMaxLength();
         if (width > 20) {
             width = 20;
         }
@@ -106,9 +106,9 @@ public class UserEditor extends AbstractIMObjectEditor {
             if (ObjectUtils.equals(property.getValue(), confirm.getText())) {
                 valid = true;
             } else {
-                ValidationError error = new ValidationError(
+                ValidatorError error = new ValidatorError(
                         getObject().getArchetypeId().getShortName(),
-                        property.getDescriptor().getName(),
+                        property.getName(),
                         Messages.get("admin.user.password.mismatch"));
                 validator.add(property, Arrays.asList(error));
             }

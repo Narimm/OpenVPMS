@@ -21,9 +21,7 @@ package org.openvpms.web.component.im.table;
 import org.apache.commons.beanutils.ConstructorUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
@@ -55,19 +53,6 @@ public class IMObjectTableModelFactory {
      * Prevent construction.
      */
     private IMObjectTableModelFactory() {
-    }
-
-    /**
-     * Creates a new table model.
-     *
-     * @param collection the collection node descriptor
-     * @param context    the layout context. May be <tt>null</tt>
-     * @return a new table model
-     */
-    public static <T extends IMObject> IMObjectTableModel<T> create(
-            NodeDescriptor collection, LayoutContext context) {
-        String[] shortNames = DescriptorHelper.getShortNames(collection);
-        return create(shortNames, context);
     }
 
     /**

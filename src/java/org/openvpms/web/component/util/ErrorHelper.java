@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.util;
+package org.openvpms.web.component.util;
 
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.logging.Log;

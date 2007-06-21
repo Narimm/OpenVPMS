@@ -36,11 +36,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.PatientMedicationActEditor;
@@ -48,8 +43,13 @@ import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.util.ErrorHelper;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -345,7 +345,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                         quantity, ArchetypeServiceHelper.getArchetypeService());
                 // If disocount amount calculates to Zero don't update any existing value 
                 // as may have been manually modified.
-                if (!amount.equals(BigDecimal.ZERO)) {                	
+                if (!amount.equals(BigDecimal.ZERO)) {
                     Property discount = getProperty("discount");
                     discount.setValue(amount);
                 }

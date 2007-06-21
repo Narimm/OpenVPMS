@@ -20,7 +20,7 @@ package org.openvpms.web.component.util;
 
 import org.openvpms.web.component.bound.BoundDateField;
 import org.openvpms.web.component.bound.BoundDateTimeField;
-import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.property.Property;
 
 /**
  * Factory for {@link BoundDateTimeField}s.

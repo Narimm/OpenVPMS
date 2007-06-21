@@ -32,10 +32,10 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
-import org.openvpms.web.component.im.print.IMPrinterListener;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
@@ -192,7 +192,7 @@ public abstract class ActCRUDWindow<T extends Act>
     protected IMPrinter<T> createPrinter(final T object) {
         InteractiveIMPrinter<T> printer
                 = (InteractiveIMPrinter<T>) super.createPrinter(object);
-        printer.setListener(new IMPrinterListener() {
+        printer.setListener(new PrinterListener() {
             public void printed() {
                 ActCRUDWindow.this.printed(object);
             }

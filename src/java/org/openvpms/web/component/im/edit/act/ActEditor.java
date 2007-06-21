@@ -20,13 +20,13 @@ package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
 
 
 /**
@@ -68,7 +68,7 @@ public abstract class ActEditor extends AbstractActEditor {
         if (editItems) {
             CollectionProperty items = (CollectionProperty) getProperty(
                     "items");
-            if (items != null && !items.getDescriptor().isHidden()) {
+            if (items != null && !items.isHidden()) {
                 _editor = (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(
                         items, act, getLayoutContext());
                 _editor.addModifiableListener(new ModifiableListener() {

@@ -16,9 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.edit;
-
-import org.openvpms.component.business.service.archetype.ValidationException;
+package org.openvpms.web.component.property;
 
 
 /**
@@ -35,9 +33,8 @@ public class DefaultPropertyTransformer implements PropertyTransformer {
      * @param object the object to convert
      * @return the transformed object, or <code>object</code> if no
      *         transformation is required
-     * @throws ValidationException if the object is invalid
      */
-    public Object apply(Object object) throws ValidationException {
+    public Object apply(Object object) {
         return object;
     }
 

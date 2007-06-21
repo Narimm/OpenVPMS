@@ -14,8 +14,8 @@
         </property>
     </bean>
 
-    <!--  The MySQL DataSource -->
-    <bean id="mySQLDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+    <!--  The DataSource -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
         <property name="driverClassName"
                   value="${hibernate.connection.driver_class}"/>
         <property name="url" value="${hibernate.connection.url}"/>
@@ -33,7 +33,7 @@
     <bean id="sessionFactory"
           class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
         <property name="dataSource">
-            <ref local="mySQLDataSource"/>
+            <ref local="dataSource"/>
         </property>
         <property name="entityInterceptor">
             <ref local="entityInterceptor"/>

@@ -27,7 +27,6 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
@@ -39,7 +38,8 @@ import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -79,7 +79,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     private final DocumentListener textListener;
 
     /**
-     * The listener. May be <code>null</code>
+     * The listener. May be <tt>null</tt>
      */
     private IMObjectSelectorListener<T> listener;
 
@@ -95,27 +95,27 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
 
 
     /**
-     * Constructs a new <code>QuerySelector</code>.
+     * Constructs a new <tt>IMObjectSelector</tt>.
      *
-     * @param descriptor the node descriptor
+     * @param property the property
      */
-    public IMObjectSelector(NodeDescriptor descriptor) {
-        this(descriptor, false);
+    public IMObjectSelector(Property property) {
+        this(property, false);
     }
 
     /**
-     * Constructs a new <code>QuerySelector</code>.
+     * Constructs a new <tt>IMObjectSelector</tt>.
      *
-     * @param descriptor  the node descriptor
+     * @param property    the property
      * @param allowCreate determines if objects may be created
      */
-    public IMObjectSelector(NodeDescriptor descriptor, boolean allowCreate) {
-        this(descriptor.getDisplayName(), descriptor.getArchetypeRange(),
+    public IMObjectSelector(Property property, boolean allowCreate) {
+        this(property.getDisplayName(), property.getArchetypeRange(),
              allowCreate);
     }
 
     /**
-     * Constructs a new <code>IMObjectSelector</code>.
+     * Constructs a new <tt>IMObjectSelector</tt>.
      *
      * @param type       display name for the types of objects this may select
      * @param shortNames the archetype short names to query
@@ -125,7 +125,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     }
 
     /**
-     * Constructs a new <code>IMObjectSelector</code>.
+     * Constructs a new <tt>IMObjectSelector</tt>.
      *
      * @param type        display name for the types of objects this may select
      * @param shortNames  the archetype short names to query
@@ -165,7 +165,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(T object) {
@@ -180,7 +180,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Returns the current object.
      *
-     * @return the current object. May be <code>null</code>
+     * @return the current object. May be <tt>null</tt>
      */
     public T getObject() {
         return object;
@@ -189,7 +189,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Sets the listener.
      *
-     * @param listener the listener. May be <code>null</code>
+     * @param listener the listener. May be <tt>null</tt>
      */
     public void setListener(IMObjectSelectorListener<T> listener) {
         this.listener = listener;
@@ -200,8 +200,8 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * It is valid if an object has been selected, or no object is present
      * and no text is input.
      *
-     * @return <code>true</code> if the selector is valid, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the selector is valid, otherwise
+     *         <tt>false</tt>
      */
     public boolean isValid() {
         return (object != null) || StringUtils.isEmpty(getText().getText());
@@ -210,8 +210,8 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Determines if a selection dialog has been popped up.
      *
-     * @return <code>true</code> if a selection dialog has been popped up
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if a selection dialog has been popped up
+     *         otherwise <tt>false</tt>
      */
     public boolean inSelect() {
         return inSelect;
@@ -220,7 +220,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Determines if objects may be created.
      *
-     * @param create if <code>true</code>, objects may be created
+     * @param create if <tt>true</tt>, objects may be created
      */
     public void setAllowCreate(boolean create) {
         allowCreate = create;
@@ -229,7 +229,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Determines if objects may be created.
      *
-     * @return <code>true</code> if objects may be created
+     * @return <tt>true</tt> if objects may be created
      */
     public boolean allowCreate() {
         return allowCreate;
@@ -255,7 +255,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * Pop up a dialog to select an object.
      *
      * @param query    the query
-     * @param runQuery if <code>true</code> run the query
+     * @param runQuery if <tt>true</tt> run the query
      */
     protected void onSelect(Query<T> query, boolean runQuery) {
         if (runQuery) {
@@ -333,7 +333,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Creates a query to select objects.
      *
-     * @param name a name to filter on. May be <code>null</code>
+     * @param name a name to filter on. May be <tt>null</tt>
      * @param name
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any
@@ -359,7 +359,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Determines if a selection dialog has been popped up.
      *
-     * @param select if <code>true</code> denotes that a selection dialog has
+     * @param select if <tt>true</tt> denotes that a selection dialog has
      *               been popped up
      */
     protected void setInSelect(boolean select) {

@@ -19,8 +19,8 @@
 package org.openvpms.web.component.im.view;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**

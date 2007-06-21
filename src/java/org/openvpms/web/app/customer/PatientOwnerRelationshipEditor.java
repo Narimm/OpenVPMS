@@ -21,11 +21,11 @@ package org.openvpms.web.app.customer;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.PatientReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
+import org.openvpms.web.component.property.Property;
 
 
 /**

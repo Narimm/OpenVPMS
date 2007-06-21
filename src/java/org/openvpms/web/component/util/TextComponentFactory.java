@@ -28,7 +28,7 @@ import org.openvpms.web.component.bound.BoundFormattedField;
 import org.openvpms.web.component.bound.BoundRichTextArea;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.bound.BoundTextField;
-import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.property.Property;
 
 import java.text.Format;
 
@@ -61,10 +61,9 @@ public class TextComponentFactory extends ComponentFactory {
     public static TextField create(int columns) {
         TextField text = create();
         if (columns <= 10) {
-            text.setWidth(new Extent(columns, Extent.EM));        	
-        }
-        else {
-            text.setWidth(new Extent(columns, Extent.EX));        	        	
+            text.setWidth(new Extent(columns, Extent.EM));
+        } else {
+            text.setWidth(new Extent(columns, Extent.EX));
         }
         setDefaultStyle(text);
         return text;
@@ -159,10 +158,9 @@ public class TextComponentFactory extends ComponentFactory {
     public static TextField createPassword(int columns) {
         TextField text = createPassword();
         if (columns <= 10) {
-            text.setWidth(new Extent(columns, Extent.EM));        	
-        }
-        else {
-            text.setWidth(new Extent(columns, Extent.EX));        	        	
+            text.setWidth(new Extent(columns, Extent.EM));
+        } else {
+            text.setWidth(new Extent(columns, Extent.EX));
         }
         return text;
     }

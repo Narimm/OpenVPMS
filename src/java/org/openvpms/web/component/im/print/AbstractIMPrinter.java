@@ -18,26 +18,12 @@
 
 package org.openvpms.web.component.im.print;
 
-import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.doc.MediaHelper;
-import org.openvpms.archetype.rules.doc.TemplateHelper;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMReport;
-import org.openvpms.report.IMReportException;
-import org.openvpms.report.PrintProperties;
-import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.servlet.DownloadServlet;
+import org.openvpms.report.ReportException;
+import org.openvpms.web.component.print.AbstractPrinter;
 
-import javax.print.attribute.standard.MediaSizeName;
-import javax.print.attribute.standard.MediaTray;
-import javax.print.attribute.standard.OrientationRequested;
-import java.math.BigDecimal;
 import java.util.Arrays;
 
 
@@ -47,7 +33,8 @@ import java.util.Arrays;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
+public abstract class AbstractIMPrinter<T>
+        extends AbstractPrinter implements IMPrinter<T> {
 
     /**
      * The objects to print.
@@ -59,29 +46,19 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
      */
     private final T object;
 
-    /**
-     * Determines if printing should be interactive.
-     */
-    private boolean interactive = true;
 
     /**
-     * The template helper.
-     */
-    private final TemplateHelper helper;
-
-    /**
-     * Constructs a new <code>AbstractIMPrinter</code> to print a single object.
+     * Constructs a new <tt>AbstractIMPrinter</tt> to print a single object.
      *
      * @param object the object to print
      */
     public AbstractIMPrinter(T object) {
         objects = Arrays.asList(object);
         this.object = object;
-        helper = new TemplateHelper();
     }
 
     /**
-     * Constructs a new <code>AbstractIMPrinter</code> to print a collection
+     * Constructs a new <tt>AbstractIMPrinter</tt> to print a collection
      * of objects.
      *
      * @param objects the objects to print
@@ -89,7 +66,6 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
     public AbstractIMPrinter(Iterable<T> objects) {
         this.objects = objects;
         object = null;
-        helper = new TemplateHelper();
     }
 
     /**
@@ -102,18 +78,9 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
     }
 
     /**
-     * Prints the object to the default printer.
-     *
-     * @throws OpenVPMSException for any error
-     */
-    public void print() {
-        print(getDefaultPrinter());
-    }
-
-    /**
      * Prints the object.
      *
-     * @param printer the printer name. May be <code>null</code>
+     * @param printer the printer name. May be <tt>null</tt>
      * @throws OpenVPMSException for any error
      */
     public void print(String printer) {
@@ -122,19 +89,9 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
     }
 
     /**
-     * Determines if printing should occur interactively.
-     *
-     * @return <tt>true</tt> if printing should occur interactively,
-     *         <tt>false</tt> if it can be performed non-interactively
-     */
-    public boolean getInteractive() {
-        return interactive;
-    }
-
-    /**
      * Returns the object being printed.
      *
-     * @return the object being printed, or <code>null</code> if a collection
+     * @return the object being printed, or <tt>null</tt> if a collection
      *         is being printed
      */
     protected T getObject() {
@@ -145,175 +102,9 @@ public abstract class AbstractIMPrinter<T> implements IMPrinter<T> {
      * Creates a new report.
      *
      * @return a new report
-     * @throws IMReportException         for any report error
+     * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected abstract IMReport<T> createReport();
-
-    /**
-     * Returns the print properties for an object.
-     *
-     * @param printer the printer
-     * @return the print properties
-     * @throws OpenVPMSException for any error
-     */
-    protected PrintProperties getProperties(String printer) {
-        return new PrintProperties(printer);
-    }
-
-    /**
-     * Returns the print properties for an object.
-     *
-     * @param printer  the printer
-     * @param template an <em>entity.documentTemplate</em>. May be <tt>null</tt>
-     * @return the print properties
-     * @throws OpenVPMSException for any error
-     */
-    protected PrintProperties getProperties(String printer, Entity template) {
-        PrintProperties properties = new PrintProperties(printer);
-        if (template != null) {
-            properties.setMediaSize(getMediaSize(template));
-            properties.setOrientation(getOrientation(template));
-            properties.setMediaTray(getMediaTray(template, printer));
-        }
-        return properties;
-    }
-
-    /**
-     * Generates a document and downloads it to the client.
-     *
-     * @throws OpenVPMSException for any error
-     */
-    protected void download() {
-        Document document = getDocument();
-        DownloadServlet.startDownload(document);
-    }
-
-    /**
-     * Determines if printing should occur interactively.
-     *
-     * @param interactive if <tt>true</tt> print interactively
-     */
-    protected void setInteractive(boolean interactive) {
-        this.interactive = interactive;
-    }
-
-    /**
-     * Helper to return the default printer for a template for the current
-     * practice.
-     *
-     * @param template an <em>entity.documentTemplate</em>
-     */
-    protected String getDefaultPrinter(Entity template) {
-        String result = null;
-        Party practice = GlobalContext.getInstance().getPractice();
-        if (practice != null) {
-            EntityRelationship printer = helper.getDocumentTemplatePrinter(
-                    template, practice);
-            if (printer != null) {
-                result = helper.getPrinter(printer);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Helper to return the media size for a document template.
-     *
-     * @param template an <em>entity.documentTemplate</em>
-     * @return the media size for the template, or <code>null</code> if none
-     *         is defined
-     * @throws OpenVPMSException for any error
-     */
-    protected MediaSizeName getMediaSize(Entity template) {
-        IMObjectBean bean = new IMObjectBean(template);
-        String size = bean.getString("paperSize");
-        if (size != null) {
-            BigDecimal width = bean.getBigDecimal("paperWidth");
-            BigDecimal height = bean.getBigDecimal("paperHeight");
-            String units = bean.getString("paperUnits");
-            return MediaHelper.getMedia(size, width, height, units);
-        }
-        return null;
-    }
-
-    /**
-     * Helper to return the media orientation for a document template.
-     *
-     * @param template an <em>entity.documentTemplate</em>
-     * @return the orientation for the template, or <code>null</code> if none
-     *         is defined
-     * @throws OpenVPMSException for any error
-     */
-    protected OrientationRequested getOrientation(Entity template) {
-        IMObjectBean bean = new IMObjectBean(template);
-        String orientation = bean.getString("orientation");
-        if (orientation != null) {
-            return MediaHelper.getOrientation(orientation);
-        }
-        return null;
-    }
-
-    /**
-     * Helper to return the <em>entityRelationship.documentTemplatePrinter</em>
-     * for a template and printer and current practice.
-     *
-     * @param template an <em>entity.documentTemplate</em>
-     * @param printer  the printer
-     * @return the corresponding
-     *         <em>entityRelationship.documentTemplatePrinter</em>
-     *         or <tt>null</tt> if none is found
-     */
-    protected EntityRelationship getDocumentTemplatePrinter(Entity template,
-                                                            String printer) {
-        Party practice = GlobalContext.getInstance().getPractice();
-        if (practice != null) {
-            EntityRelationship relationship
-                    = helper.getDocumentTemplatePrinter(template, practice);
-            if (relationship != null) {
-                // make sure the relationship is for the same printer
-                if (ObjectUtils.equals(printer,
-                                       helper.getPrinter(relationship))) {
-                    return relationship;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Helper to return the media tray for a document template for a particular
-     * printer for the current practice.
-     *
-     * @param template an <em>entity.documentTemplate</em>
-     * @param printer  the printer name
-     * @return the media tray for the template, or <code>null</code> if none
-     *         is defined
-     */
-    protected MediaTray getMediaTray(Entity template, String printer) {
-        EntityRelationship r = getDocumentTemplatePrinter(template, printer);
-        return (r != null) ? helper.getMediaTray(r) : null;
-    }
-
-    /**
-     * Helper to determine if printing should occur interactively for a
-     * particular document template, printer and the current practice.
-     * If no relationship is defined, defaults to <tt>true</tt>.
-     *
-     * @param template an <em>entity.documentTemplate</em>
-     * @param printer  the printer name
-     * @return <tt>true</tt> if printing should occur interactively
-     */
-    protected boolean getInteractive(Entity template, String printer) {
-        boolean result = true;
-        if (template != null) {
-            EntityRelationship r = getDocumentTemplatePrinter(template,
-                                                              printer);
-            if (r != null) {
-                result = helper.getInteractive(r);
-            }
-        }
-        return result;
-    }
 
 }
