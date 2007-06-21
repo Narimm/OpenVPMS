@@ -36,8 +36,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.IMReportException;
-import static org.openvpms.report.IMReportException.ErrorCode.FailedToCreateReport;
+import org.openvpms.report.ReportException;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -45,7 +45,7 @@ import java.util.Map;
 
 
 /**
- * Generates a jasper report for an <code>IMObject</code>.
+ * Generates a jasper report for an <tt>IMObject</code>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -75,12 +75,12 @@ public class DynamicJasperReport extends AbstractJasperIMReport<IMObject> {
 
 
     /**
-     * Construct a new <code>DynamicJasperReport</code>.
+     * Constructs a new <tt>DynamicJasperReport</tt>.
      *
      * @param archetype the archetype descriptor
      * @param service   the archetype service
      * @param handlers  the document handlers
-     * @throws IMReportException if the report cannot be created
+     * @throws ReportException if the report cannot be created
      */
     public DynamicJasperReport(ArchetypeDescriptor archetype,
                                IArchetypeService service,
@@ -89,8 +89,8 @@ public class DynamicJasperReport extends AbstractJasperIMReport<IMObject> {
         try {
             init(archetype);
         } catch (JRException exception) {
-            throw new IMReportException(exception, FailedToCreateReport,
-                                        exception.getMessage());
+            throw new ReportException(exception, FailedToCreateReport,
+                                      exception.getMessage());
         }
     }
 
@@ -123,12 +123,12 @@ public class DynamicJasperReport extends AbstractJasperIMReport<IMObject> {
     }
 
     /**
-     * Returns the report parameters to use when filling the report.
+     * Returns the default report parameters to use when filling the report.
      *
      * @return the report parameters
      */
-    protected Map<String, Object> getParameters() {
-        Map<String, Object> result = super.getParameters();
+    protected Map<String, Object> getDefaultParameters() {
+        Map<String, Object> result = super.getDefaultParameters();
         result.putAll(subreports);
         return result;
     }

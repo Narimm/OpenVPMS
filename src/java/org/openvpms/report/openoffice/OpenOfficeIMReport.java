@@ -27,13 +27,17 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ExpressionEvaluator;
 import org.openvpms.report.ExpressionEvaluatorFactory;
-import org.openvpms.report.IMReportException;
-import static org.openvpms.report.IMReportException.ErrorCode.*;
 import org.openvpms.report.IMReport;
+import org.openvpms.report.ReportException;
+import static org.openvpms.report.ReportException.ErrorCode.*;
+import org.openvpms.report.ParameterType;
 import org.openvpms.report.PrintProperties;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -60,12 +64,31 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      *
      * @param template the document template
      * @param handlers the document handlers
-     * @throws IMReportException if the mime-type is invalid
+     * @throws ReportException if the mime-type is invalid
      */
     public OpenOfficeIMReport(Document template,
                               DocumentHandlers handlers) {
         this.template = template;
         this.handlers = handlers;
+    }
+
+    /**
+     * Returns the set of parameter types that may be supplied to the report.
+     *
+     * @return the parameter types
+     */
+    public Set<ParameterType> getParameterTypes() {
+        return new HashSet<ParameterType>();
+    }
+
+    /**
+     * Not supported.
+     *
+     * @throws UnsupportedOperationException if invoked
+     */
+    public Document generate(Map<String, Object> parameters,
+                             String[] mimeTypes) {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -75,7 +98,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
      * @return a document containing the report
-     * @throws IMReportException for any report error
+     * @throws ReportException for any report error
      */
     public Document generate(Iterator<T> objects, String[] mimeTypes) {
         String mimeType = null;
@@ -87,7 +110,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             }
         }
         if (mimeType == null) {
-            throw new IMReportException(UnsupportedMimeTypes);
+            throw new ReportException(UnsupportedMimeTypes);
         }
 
 
@@ -111,7 +134,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      *
      * @param objects    the objects to report on
      * @param properties the print properties
-     * @throws IMReportException   for any report error
+     * @throws ReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void print(Iterator<T> objects, PrintProperties properties) {
@@ -122,9 +145,9 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             OpenOfficeDocument doc = create(objects, connection);
             service.print(doc, properties.getPrinterName(), true);
         } catch (OpenOfficeException exception) {
-            throw new IMReportException(exception,
-                                        FailedToPrintReport,
-                                        exception.getMessage());
+            throw new ReportException(exception,
+                                      FailedToPrintReport,
+                                      exception.getMessage());
         } finally {
             OpenOfficeHelper.close(connection);
         }
@@ -137,7 +160,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @param objects    the objects to generate the document from
      * @param connection a connection to the OpenOffice service
      * @return a new openoffice document
-     * @throws IMReportException   for any report error
+     * @throws ReportException         for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     private OpenOfficeDocument create(Iterator<T> objects,
@@ -148,7 +171,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             object = objects.next();
         }
         if (object == null || objects.hasNext()) {
-            throw new IMReportException(
+            throw new ReportException(
                     FailedToGenerateReport,
                     "Can only report on single objects");
         }

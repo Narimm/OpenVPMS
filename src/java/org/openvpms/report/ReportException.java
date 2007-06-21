@@ -23,12 +23,12 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
- * Exception class for exceptions raised by {@link IMReport}.
+ * Exception class for exceptions raised by {@link Report}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMReportException extends OpenVPMSException {
+public class ReportException extends OpenVPMSException {
 
     /**
      * Default SUID.
@@ -66,7 +66,7 @@ public class IMReportException extends OpenVPMSException {
      * @param errorCode the error code
      * @param args arguments used to format the error message
      */
-    public IMReportException(ErrorCode errorCode, Object ... args) {
+    public ReportException(ErrorCode errorCode, Object ... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args));
         _errorCode = errorCode;
     }
@@ -78,8 +78,8 @@ public class IMReportException extends OpenVPMSException {
      * @param errorCode the error code
      * @param args arguments used to format the error message
      */
-    public IMReportException(Throwable cause, ErrorCode errorCode,
-                             Object ... args) {
+    public ReportException(Throwable cause, ErrorCode errorCode,
+                           Object ... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args), cause);
         _errorCode = errorCode;
     }

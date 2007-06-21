@@ -21,7 +21,7 @@ package org.openvpms.report;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
-import static org.openvpms.report.IMReportException.ErrorCode.NoExpressionEvaluatorForType;
+import static org.openvpms.report.ReportException.ErrorCode.NoExpressionEvaluatorForType;
 
 
 /**
@@ -47,7 +47,7 @@ public class ExpressionEvaluatorFactory {
             return new ObjectSetExpressionEvaluator((ObjectSet) object,
                                                     service);
         }
-        throw new IMReportException(NoExpressionEvaluatorForType,
-                                    object.getClass().getName());
+        throw new ReportException(NoExpressionEvaluatorForType,
+                                  object.getClass().getName());
     }
 }

@@ -11,35 +11,44 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
 package org.openvpms.report;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
-import java.util.Collection;
+import java.util.Set;
+import java.util.Map;
 
 
 /**
- * Generates a report for a collection of objects.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectCollectionReport {
+public interface Report {
+    
+    /**
+     * Returns the set of parameter types that may be supplied to the report.
+     *
+     * @return the parameter types
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    Set<ParameterType> getParameterTypes();
 
     /**
-     * Generates a report for a collection of objects.
+     * Generates a report.
      *
-     * @param objects the objects
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report
+     * @param mimeTypes  a list of mime-types, used to select the preferred
+     *                   output format of the report
      * @return a document containing the report
-     * @throws ReportException   for any report error
-     * @throws ArchetypeServiceException for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
      */
-    Document generate(Collection<IMObject> objects);
+    Document generate(Map<String, Object> parameters, String[] mimeTypes);
 }

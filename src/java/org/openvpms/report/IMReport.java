@@ -30,7 +30,7 @@ import java.util.Iterator;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMReport<T> {
+public interface IMReport<T> extends Report {
 
     /**
      * Generates a report for a collection of objects.
@@ -39,8 +39,9 @@ public interface IMReport<T> {
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
      * @return a document containing the report
-     * @throws IMReportException   for any report error
-     * @throws ArchetypeServiceException for any archetype service error
+     * @throws ReportException             for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
      */
     Document generate(Iterator<T> objects, String[] mimeTypes);
 
@@ -49,8 +50,9 @@ public interface IMReport<T> {
      *
      * @param objects    the objects to report on
      * @param properties the print properties
-     * @throws IMReportException   for any report error
-     * @throws ArchetypeServiceException for any archetype service error
+     * @throws ReportException             for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
      */
     void print(Iterator<T> objects, PrintProperties properties);
 

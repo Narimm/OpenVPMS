@@ -18,14 +18,20 @@
 
 package org.openvpms.report.jasper;
 
+import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JRQuery;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JasperDesign;
+import static net.sf.jasperreports.engine.query.JRJdbcQueryExecuterFactory.QUERY_LANGUAGE_SQL;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.IMReportException;
+import org.openvpms.report.ParameterType;
+import org.openvpms.report.ReportException;
 
+import java.sql.Connection;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -44,12 +50,12 @@ public abstract class AbstractTemplatedJasperIMReport<T>
 
 
     /**
-     * Constructs a new <code>AbstractTemplatedJasperIMReport</code>.
+     * Constructs a new <tt>AbstractTemplatedJasperIMReport</tt>.
      *
      * @param template the document template
      * @param service  the archetype service
      * @param handlers the document handlers
-     * @throws IMReportException if the report cannot be created
+     * @throws ReportException if the report cannot be created
      */
     public AbstractTemplatedJasperIMReport(Document template,
                                            IArchetypeService service,
@@ -59,12 +65,33 @@ public abstract class AbstractTemplatedJasperIMReport<T>
     }
 
     /**
+     * Returns the set of parameter types that may be supplied to the report.
+     * If the report specifies an SQL query, includes a Connection parameter
+     * type in the result.
+     *
+     * @return the parameter types
+     */
+    @Override
+    public Set<ParameterType> getParameterTypes() {
+        Set<ParameterType> result = super.getParameterTypes();
+        JRQuery query = getReport().getQuery();
+        if (query != null
+                && QUERY_LANGUAGE_SQL.equalsIgnoreCase(query.getLanguage())) {
+            ParameterType type = new ParameterType(
+                    JRParameter.REPORT_CONNECTION, Connection.class,
+                    "JDBC connection", true);
+            result.add(type);
+        }
+        return result;
+    }
+
+    /**
      * Constructs a new <code>AbstractTemplatedJasperIMReport</code>.
      *
      * @param design   the master report design
      * @param service  the archetype service
      * @param handlers the document handlers
-     * @throws IMReportException if the report cannot be created
+     * @throws ReportException if the report cannot be created
      */
     public AbstractTemplatedJasperIMReport(JasperDesign design,
                                            IArchetypeService service,
@@ -85,19 +112,19 @@ public abstract class AbstractTemplatedJasperIMReport<T>
     /**
      * Returns the sub-reports.
      *
-     * @return the sub-reports.
+     * @return the sub-reports
      */
     public JasperReport[] getSubreports() {
         return template.getSubreports();
     }
 
     /**
-     * Returns the report parameters to use when filling the report.
+     * Returns the default report parameters to use when filling the report.
      *
      * @return the report parameters
      */
-    protected Map<String, Object> getParameters() {
-        Map<String, Object> result = super.getParameters();
+    protected Map<String, Object> getDefaultParameters() {
+        Map<String, Object> result = super.getDefaultParameters();
         result.putAll(template.getParameters());
         return result;
     }
