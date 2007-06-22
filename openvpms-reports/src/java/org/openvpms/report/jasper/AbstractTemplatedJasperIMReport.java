@@ -70,6 +70,7 @@ public abstract class AbstractTemplatedJasperIMReport<T>
      * type in the result.
      *
      * @return the parameter types
+     * @throws ReportException if a parameter expression can't be evaluated
      */
     @Override
     public Set<ParameterType> getParameterTypes() {

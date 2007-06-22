@@ -27,14 +27,14 @@ import static org.openvpms.report.ReportException.ErrorCode.*;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMReportExceptionTestCase extends TestCase {
+public class ReportExceptionTestCase extends TestCase {
 
     /**
      * Verifies that the messages are generated correctly.
      */
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     5, ReportException.ErrorCode.values().length);
+                     6, ReportException.ErrorCode.values().length);
         checkException(FailedToCreateReport, "Failed to create report: foo",
                        "foo");
         checkException(FailedToGenerateReport, "Failed to generate report: foo",
@@ -45,6 +45,8 @@ public class IMReportExceptionTestCase extends TestCase {
                        "Mime types not supported by report");
         checkException(NoExpressionEvaluatorForType,
                        "No ExpressionEvalutor for type: foo", "foo");
+        checkException(ReportException.ErrorCode.FailedToGetParameters,
+                       "Failed to get report parameters");
     }
 
     /**
