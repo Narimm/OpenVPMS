@@ -43,7 +43,7 @@
                         <property name="shortName"
                                   value="productPrice.fixedPrice"/>
                     </propertyMap>
-                    <propertyMap name="archetype">
+                    <!-- propertyMap name="archetype">
                         <property name="shortName"
                                   value="productPrice.minimumPrice"/>
                     </propertyMap>
@@ -58,10 +58,14 @@
                     <propertyMap name="archetype">
                         <property name="shortName"
                                   value="productPrice.qtyBreakPrice"/>
-                    </propertyMap>
+                    </propertyMap-->
                     <propertyMap name="archetype">
                         <property name="shortName"
                                   value="productPrice.unitPrice"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="productPrice.unitCost"/>
                     </propertyMap>
                     <propertyMap name="archetype">
                         <property name="shortName"

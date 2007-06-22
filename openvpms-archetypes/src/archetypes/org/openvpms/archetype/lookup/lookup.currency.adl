@@ -23,9 +23,16 @@
               hidden="true" readOnly="true"/>
         <node displayName="ISO code" name="code" path="/code"
               type="java.lang.String" minCardinality="1" maxLength="3">
-            <assertion name="regularExpression">
-                <property name="expression" value="[A-Z]*"/>
-                <errorMessage>errorMessage</errorMessage>
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="AUD" value="AUD"/>
+                    <property name="NZD" value="NZD"/>
+                    <property name="USD" value="USD"/>
+                    <property name="EUR" value="EUR"/>
+                    <property name="CAD" value="CAD"/>
+                    <property name="GBP" value="GBP"/>
+                </propertyList>
+                <errorMessage>Invalid ISO Code</errorMessage>
             </assertion>
         </node>
         <node displayName="Currency" name="name" path="/name"

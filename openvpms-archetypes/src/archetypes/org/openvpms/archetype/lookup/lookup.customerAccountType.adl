@@ -60,7 +60,7 @@
         <node name="accountFeeDays" displayName="Overdue Days" path="/details/accountFeeDays" type="java.lang.Integer" minCardinality="0"/>
         <node name="accountFeeMessage" displayName="Fee Message" path="/details/accountFeeMessage" type="java.lang.String" minCardinality="0" maxLength="300"/>
         <node name="settlementDiscount" displayName="Settlement Discount Type" path="/details/settlementDiscount" type="java.lang.String" minCardinality="0"
-              defaultValue="'PERCENTAGE'">
+              defaultValue="'PERCENTAGE'" hidden="true">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="FIXED" value="Fixed"/>
@@ -70,11 +70,11 @@
             </assertion>
         </node>
         <node name="settlementDiscountAmount" displayName="Discount Amount" path="/details/settlementDiscountAmount"
-              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'" hidden="true"/>
         <node name="settlementDiscountMaximum" displayName="Maximum Balance" path="/details/settlementDiscountMinimum"
-              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
-        <node name="settlementDiscountDays" displayName="Payment Days" path="/details/settlementDiscountDays" type="java.lang.Integer" minCardinality="0"/>
-        <node name="settlementDiscountMessage" displayName="Message" path="/details/settlementDiscountMessage" type="java.lang.String" minCardinality="0" maxLength="300"/>
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'" hidden="true"/>
+        <node name="settlementDiscountDays" displayName="Payment Days" path="/details/settlementDiscountDays" type="java.lang.Integer" minCardinality="0" hidden="true"/>
+        <node name="settlementDiscountMessage" displayName="Message" path="/details/settlementDiscountMessage" type="java.lang.String" minCardinality="0" maxLength="300" hidden="true"/>
         <node name="generalMessage" displayName="General Message" path="/details/generalMessage" type="java.lang.String" minCardinality="0" maxLength="300"/>
         <node name="overdueMessage" displayName="Overdue Message" path="/details/overdueMessage" type="java.lang.String" minCardinality="0" maxLength="300"/>
     </archetype>
