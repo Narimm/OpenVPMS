@@ -40,8 +40,9 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
 
+
 /**
- * Add description here.
+ * Exports the pre 1.0-beta-2 details columns to the 1.0-beta-2 tables.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -63,6 +64,7 @@ public class DetailsMigrator {
     private final static String APPLICATION_CONTEXT
             = "applicationContext.xml";
 
+
     /**
      * Constructs a new <tt>DetailsExporter</tt>.
      *
@@ -73,6 +75,11 @@ public class DetailsMigrator {
         stream = new XStream();
     }
 
+    /**
+     * Export the details.
+     *
+     * @throws SQLException for any SQL error
+     */
     public void export() throws SQLException {
         Connection connection = dataSource.getConnection();
         connection.setAutoCommit(false);
@@ -125,14 +132,17 @@ public class DetailsMigrator {
                 Map<String, Serializable> attributes = map.getAttributes();
                 for (Map.Entry<String, Serializable> entry
                         : attributes.entrySet()) {
-                    String name = entry.getKey();
-                    TypedValue value = new TypedValue(entry.getValue());
-                    insert.setLong(1, id);
-                    insert.setString(2, value.getType());
-                    insert.setString(3, name);
-                    insert.setString(4, value.getValue());
-                    insert.addBatch();
-                    ++output;
+                    if (entry.getValue() != null) {
+                        // don't insert nulls. See OBF-161
+                        String name = entry.getKey();
+                        TypedValue value = new TypedValue(entry.getValue());
+                        insert.setLong(1, id);
+                        insert.setString(2, value.getType());
+                        insert.setString(3, name);
+                        insert.setString(4, value.getValue());
+                        insert.addBatch();
+                        ++output;
+                    }
                 }
             }
             ++batch;
@@ -155,7 +165,6 @@ public class DetailsMigrator {
         System.out.printf("Processed %d rows, generating %d rows in %.2fs\n",
                           input, output, elapsed);
     }
-
 
     /**
      * Main line.
