@@ -18,11 +18,9 @@
 
 package org.openvpms.web.app.reporting;
 
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.ColumnFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -45,9 +43,12 @@ public class SQLReportDialog extends PrintDialog {
     /**
      * Constructs a new <tt>ReportDialog</tt>.
      *
+     * @param title      the dialog title
      * @param properties the report properties
      */
-    public SQLReportDialog(List<Property> properties) {
+    public SQLReportDialog(String title, List<Property> properties) {
+        super(title);
+        setStyleName("SQLReportDialog");
         parameters = new ReportParameters(properties);
     }
 
@@ -95,16 +96,6 @@ public class SQLReportDialog extends PrintDialog {
      * This implementation does nothing.
      */
     protected void doPreview() {
-    }
-
-    /**
-     * Lays out the component prior to display.
-     */
-    @Override
-    protected void doLayout() {
-        Column column = ColumnFactory.create("ControlColumn");
-        doLayout(column);
-        getLayout().add(column);
     }
 
     /**

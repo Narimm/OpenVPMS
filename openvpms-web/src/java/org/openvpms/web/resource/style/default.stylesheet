@@ -575,6 +575,14 @@
         </properties>
     </style>
 
+    <style name="SQLReportDialog" base-name="PrintDialog"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="680px"/>
+            <property name="height" value="380px"/>
+        </properties>
+    </style>
+
     <style name="SelectUserDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
     </style>

@@ -18,14 +18,15 @@
 
 package org.openvpms.web.component.dialog;
 
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.list.DefaultListModel;
 import org.openvpms.web.component.im.util.PrintHelper;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
@@ -131,9 +132,9 @@ public class PrintDialog extends PopupDialog {
      */
     @Override
     protected void doLayout() {
-        Row row = RowFactory.create("ControlRow");
-        doLayout(row);
-        getLayout().add(row);
+        Column column = ColumnFactory.create("WideCellSpacing");
+        doLayout(column);
+        getLayout().add(ColumnFactory.create("Inset", column));
     }
 
     /**
@@ -152,8 +153,11 @@ public class PrintDialog extends PopupDialog {
         }
 
         setDefaultPrinter(PrintHelper.getDefaultPrinter());
-        container.add(label);
-        container.add(printers);
+        Column column = ColumnFactory.create("CellSpacing", label,
+                                             RowFactory.create(printers));
+        // wrap printers in a row so it renders min width on FF
+
+        container.add(column);
     }
 
     /**

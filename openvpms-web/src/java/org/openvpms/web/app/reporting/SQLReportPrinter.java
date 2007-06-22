@@ -101,6 +101,15 @@ public class SQLReportPrinter extends AbstractPrinter {
     }
 
     /**
+     * Returns the report name.
+     *
+     * @return the report name
+     */
+    public String getName() {
+        return template.getName();
+    }
+
+    /**
      * Returns the report parameter types.
      *
      * @return the report parameter types

@@ -23,6 +23,7 @@ import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
     @Override
     protected PrintDialog createDialog() {
         final SQLReportPrinter printer = getPrinter();
-        return new SQLReportDialog(getProperties()) {
+        return new SQLReportDialog(getTitle(), getProperties()) {
 
             @Override
             protected void doPrint() {
@@ -86,6 +87,16 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
      */
     protected SQLReportPrinter getPrinter() {
         return (SQLReportPrinter) super.getPrinter();
+    }
+
+    /**
+     * Returns a title for the print dialog.
+     *
+     * @return a title for the print dialog
+     */
+    @Override
+    protected String getTitle() {
+        return Messages.get("reporting.run.title", getPrinter().getName());
     }
 
     /**

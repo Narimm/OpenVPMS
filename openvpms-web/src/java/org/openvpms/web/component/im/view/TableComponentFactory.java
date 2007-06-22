@@ -59,6 +59,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      * @param context  the context object
      * @return a component to display the lookup property
      */
+    @Override
     protected Component createLookup(Property property, IMObject context) {
         Label result = LabelFactory.create();
         result.setText(getLookupName(property, context));
@@ -82,13 +83,13 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      * @param property the numeric property
      * @return a component to display the property
      */
-    protected Component getNumber(Property property) {
+    @Override
+    protected Component createNumeric(Property property) {
         String value = getNumericValue(property);
         Label label = LabelFactory.create();
         label.setText(value);
         TableLayoutData layout = new TableLayoutData();
-        Alignment right = new Alignment(Alignment.RIGHT,
-                                        Alignment.DEFAULT);
+        Alignment right = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
         layout.setAlignment(right);
         label.setLayoutData(layout);
         return label;
@@ -100,6 +101,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      * @param property the date property
      * @return a component to display the property
      */
+    @Override
     protected Component createDate(Property property) {
         String value = getDateValue(property);
         Label label = LabelFactory.create();

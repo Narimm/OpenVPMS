@@ -74,9 +74,11 @@ public abstract class AbstractReadOnlyComponentFactory
      * @return a component to display <tt>object</tt>
      */
     public ComponentState create(Property property, IMObject context) {
-        Component component;
+        Component component = null;
         boolean enable = false;
-        component = create(property);
+        if (!property.isLookup()) {
+            component = create(property); // isString() returns true for lookups
+        }
         if (component == null) {
             // not a simple property
             if (property.isLookup()) {
