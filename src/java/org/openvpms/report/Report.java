@@ -37,6 +37,8 @@ public interface Report {
      * Returns the set of parameter types that may be supplied to the report.
      *
      * @return the parameter types
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
     Set<ParameterType> getParameterTypes();
@@ -49,6 +51,8 @@ public interface Report {
      * @param mimeTypes  a list of mime-types, used to select the preferred
      *                   output format of the report
      * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
     Document generate(Map<String, Object> parameters, String[] mimeTypes);

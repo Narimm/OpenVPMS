@@ -44,8 +44,7 @@ public class ReportException extends OpenVPMSException {
         FailedToPrintReport,
         UnsupportedMimeTypes,
         NoExpressionEvaluatorForType,
-        FailedToEvaluateExpression,
-        FailedToGetExpressionEvaluator
+        FailedToGetParameters
     }
 
     /**

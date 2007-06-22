@@ -32,7 +32,6 @@ import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
 import net.sf.jasperreports.engine.fill.JREvaluator;
-import net.sf.jasperreports.engine.fill.JRExpressionEvalException;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -103,7 +102,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * Returns the set of parameter types that may be supplied to the report.
      *
      * @return the parameter types
-     * @throws UnsupportedOperationException if this operation is not supported
+     * @throws ReportException if a parameter expression can't be evaluated
      */
     public Set<ParameterType> getParameterTypes() {
         Set<ParameterType> types = new LinkedHashSet<ParameterType>();
@@ -113,7 +112,12 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
                 JRExpression expression = p.getDefaultValueExpression();
                 Object defaultValue = null;
                 if (expression != null) {
-                    defaultValue = evaluate(expression);
+                    try {
+                        defaultValue = getEvaluator().evaluate(expression);
+                    } catch (JRException exception) {
+                        throw new ReportException(FailedToGetParameters,
+                                                  exception);
+                    }
                 }
                 ParameterType type = new ParameterType(p.getName(),
                                                        p.getValueClass(),
@@ -340,8 +344,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @param properties the print properties
      * @throws JRException for any error
      */
-    private void print(JasperPrint print, PrintProperties properties) throws
-                                                                      JRException {
+    private void print(JasperPrint print, PrintProperties properties)
+            throws JRException {
         JRPrintServiceExporter exporter = new JRPrintServiceExporter();
         exporter.setParameter(JRPrintServiceExporterParameter.JASPER_PRINT,
                               print);
@@ -378,35 +382,15 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     }
 
     /**
-     * Evaluates an expression.
-     *
-     * @param expression the expression to evaluate
-     * @return the expression result
-     * @throws ReportException if the expression can't be evaluated
-     */
-    private Object evaluate(JRExpression expression) {
-        try {
-            return getEvaluator().evaluate(expression);
-        } catch (JRExpressionEvalException exception) {
-            throw new ReportException(FailedToEvaluateExpression, exception);
-        }
-    }
-
-    /**
      * Returns the expression evaluator.
      *
      * @return the expression evaluator
-     * @throws ReportException if the evaluator can't be loaded
+     * @throws JRException if the evaluator can't be loaded
      */
-    private JREvaluator getEvaluator() {
+    private JREvaluator getEvaluator() throws JRException {
         if (evaluator == null) {
-            try {
-                JRDefaultCompiler compiler = JRDefaultCompiler.getInstance();
-                evaluator = compiler.loadEvaluator(getReport());
-            } catch (JRException exception) {
-                throw new ReportException(FailedToGetExpressionEvaluator,
-                                          exception);
-            }
+            JRDefaultCompiler compiler = JRDefaultCompiler.getInstance();
+            evaluator = compiler.loadEvaluator(getReport());
         }
         return evaluator;
     }
