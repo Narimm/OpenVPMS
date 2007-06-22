@@ -62,6 +62,7 @@ public class ReportParameters {
      */
     public ReportParameters(List<Property> properties) {
         this.properties = properties;
+        Component child;
         if (properties.size() > 0) {
             Grid grid;
             if (properties.size() <= 4) {
@@ -81,12 +82,13 @@ public class ReportParameters {
                     grid.add(component);
                 }
             }
-            component = GroupBoxFactory.create("reporting.parameters", grid);
+            child = grid;
         } else {
             Label label = LabelFactory.create();
-            label.setText(Messages.get("reporting.noparameters"));
-            component = GroupBoxFactory.create("reporting.parameters", label);
+            label.setText(Messages.get("reporting.run.noparameters"));
+            child = label;
         }
+        component = GroupBoxFactory.create("reporting.run.parameters", child);
     }
 
     /**
