@@ -384,15 +384,26 @@ public class CustomerBalanceRules {
         if (bean.hasNode("type")) {
             List<Lookup> types = bean.getValues("type", Lookup.class);
             if (!types.isEmpty()) {
-                IMObjectBean type = new IMObjectBean(types.get(0), service);
-                date = DateUtils.truncate(date,
-                                          Calendar.DATE); // strip any time
-                int days = type.getInt("paymentTerms");
-                String units = type.getString("paymentUom");
-                overdue = DateRules.getDate(date, -days, units);
+                overdue = getOverdueDate(types.get(0), date);
             }
         }
         return overdue;
+    }
+
+    /**
+     * Returns the overdue date relative to the specified date for a customer
+     * type.
+     *
+     * @param type a <em>lookup.customerAccountType</em>
+     * @param date the date
+     * @return the overdue date
+     */
+    public Date getOverdueDate(Lookup type, Date date) {
+        IMObjectBean bean = new IMObjectBean(type, service);
+        date = DateUtils.truncate(date, Calendar.DATE); // strip any time
+        int days = bean.getInt("paymentTerms");
+        String units = bean.getString("paymentUom");
+        return DateRules.getDate(date, -days, units);
     }
 
     /**
@@ -639,7 +650,7 @@ public class CustomerBalanceRules {
         }
     }
 
-    private BigDecimal getAllocatable(BigDecimal amount, BigDecimal allocated) {
+    BigDecimal getAllocatable(BigDecimal amount, BigDecimal allocated) {
         if (amount == null) {
             amount = BigDecimal.ZERO;
         }
