@@ -29,10 +29,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.balance.CustomerBalanceSummaryQuery;
-import org.openvpms.archetype.rules.balance.OutstandingBalanceQuery;
-import org.openvpms.archetype.rules.balance.OverdueBalanceQuery;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -56,7 +53,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -201,21 +197,16 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
     public List<ObjectSet> getObjects() {
         List<ObjectSet> sets = new ArrayList<ObjectSet>();
         try {
-            Iterator<Party> iterator;
+            CustomerBalanceSummaryQuery query;
             if (overdue.isSelected()) {
-                OverdueBalanceQuery overdueQuery = new OverdueBalanceQuery();
-                overdueQuery.setAccountType(getAccountType());
-                overdueQuery.setFrom(getNumber(periodFrom));
-                overdueQuery.setTo(getNumber(periodTo));
-                iterator = overdueQuery.query();
+                query = new CustomerBalanceSummaryQuery(new Date(),
+                                                        getNumber(periodFrom),
+                                                        getNumber(periodTo),
+                                                        getAccountType());
             } else {
-                OutstandingBalanceQuery balanceQuery
-                        = new OutstandingBalanceQuery();
-                balanceQuery.setAccountType(getAccountType());
-                iterator = balanceQuery.query();
+                query = new CustomerBalanceSummaryQuery(new Date(),
+                                                        getAccountType());
             }
-            CustomerBalanceSummaryQuery query
-                    = new CustomerBalanceSummaryQuery(iterator, new Date());
             while (query.hasNext()) {
                 sets.add(query.next());
             }

@@ -25,7 +25,7 @@ import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.archetype.rules.balance.CustomerBalanceSummaryQuery;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
@@ -89,7 +89,7 @@ public class CustomerBalanceSummaryTableModel
      * the corresponding column display name.
      */
     private String[][] columns = {
-            {CustomerBalanceSummaryQuery.CUSTOMER,
+            {CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE,
              Messages.get("customerbalancetablemodel.customer")},
             {CustomerBalanceSummaryQuery.BALANCE,
              Messages.get("customerbalancetablemodel.balance")},
@@ -153,7 +153,9 @@ public class CustomerBalanceSummaryTableModel
         Object value = set.get(columns[index][0]);
         switch (index) {
             case CUSTOMER_INDEX:
-                result = getViewer((Party) value);
+                result = getViewer((IMObjectReference) value,
+                                   (String) set.get(
+                                           CustomerBalanceSummaryQuery.CUSTOMER_NAME));
                 break;
             case BALANCE_INDEX:
                 result = getAmount((BigDecimal) value);
@@ -180,12 +182,13 @@ public class CustomerBalanceSummaryTableModel
     /**
      * Helper to return a component to display a party.
      *
-     * @param party the party
+     * @param party the party reference
+     * @param name  the party name
      * @return a component to display the party
      */
-    private Component getViewer(Party party) {
+    private Component getViewer(IMObjectReference party, String name) {
         IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
-                party.getObjectReference(), party.getName(), true);
+                party, name, true);
         return viewer.getComponent();
     }
 

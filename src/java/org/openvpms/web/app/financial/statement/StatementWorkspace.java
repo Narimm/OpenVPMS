@@ -143,7 +143,7 @@ public class StatementWorkspace extends AbstractWorkspace {
         Component heading = super.doLayout();
         root.add(heading);
         FocusGroup group = new FocusGroup("StatementWorkspace");
-        ButtonRow buttons = new ButtonRow(group, ButtonRow.STYLE, "default");
+        ButtonRow buttons = new ButtonRow(group, "ControlRow", "default");
         SplitPane content = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
                 "StatementWorkspace.Layout", buttons);
