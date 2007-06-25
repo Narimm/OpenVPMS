@@ -18,11 +18,17 @@
 
 package org.openvpms.archetype.rules.balance;
 
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.archetype.rules.act.ActCalculator;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
@@ -31,9 +37,15 @@ import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -47,9 +59,14 @@ import java.util.Set;
 public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
 
     /**
-     * The customer.
+     * The customer reference.
      */
-    public static final String CUSTOMER = "customer";
+    public static final String CUSTOMER_REFERENCE = "customer.objectReference";
+
+    /**
+     * The customer name.
+     */
+    public static final String CUSTOMER_NAME = "customer.name";
 
     /**
      * The customer balance.
@@ -87,14 +104,24 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     public static final String LAST_INVOICE_AMOUNT = "lastInvoiceAmount";
 
     /**
-     * The customers.
-     */
-    private final Iterator<Party> customers;
-
-    /**
      * The date.
      */
     private final Date date;
+
+    /**
+     * Determines if only overdue account summaries should be returned.
+     */
+    private final boolean overdue;
+
+    /**
+     * The overdue from-day range.
+     */
+    private int from;
+
+    /**
+     * The overrdue to-day range.
+     */
+    private int to;
 
     /**
      * The archetype service.
@@ -102,15 +129,39 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     private final IArchetypeService service;
 
     /**
+     * The last retrieved set.
+     */
+    private ObjectSet last;
+
+    /**
+     * The next set to return.
+     */
+    private ObjectSet next;
+
+    /**
+     * The balance iterator.
+     */
+    private Iterator<ObjectSet> iterator;
+
+    /**
      * The rules.
      */
     private final CustomerBalanceRules rules;
 
+    /**
+     * Customer account type lookup cache.
+     */
+    private Map<String, Lookup> lookups = new HashMap<String, Lookup>();
+
+    /**
+     * Object set key names.
+     */
     private static final Set<String> NAMES;
 
     static {
         NAMES = new LinkedHashSet<String>();
-        NAMES.add(CUSTOMER);
+        NAMES.add(CUSTOMER_REFERENCE);
+        NAMES.add(CUSTOMER_NAME);
         NAMES.add(BALANCE);
         NAMES.add(OVERDUE_BALANCE);
         NAMES.add(CREDIT_BALANCE);
@@ -120,29 +171,81 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         NAMES.add(LAST_INVOICE_AMOUNT);
     }
 
+
     /**
-     * Constructs a new <tt>CustomerBalanceSummaryQuery</tt>.
+     * Constructs a new <tt>CustomerBalanceSummaryQuery</tt> for all account
+     * types.
      *
-     * @param customers an iterator over the customers
-     * @param date      the date
+     * @param date the date
      */
-    public CustomerBalanceSummaryQuery(Iterator<Party> customers, Date date) {
-        this(customers, date, ArchetypeServiceHelper.getArchetypeService());
+    public CustomerBalanceSummaryQuery(Date date) {
+        this(date, -1, -1, null);
     }
 
     /**
-     * Constructs a new <code>CustomerBalanceSummaryQuery</code>.
+     * Constructs a new <tt>CustomerAccountBalanceSummaryQuery</tt> for a
+     * particular account type.
      *
-     * @param customers an iterator over the customers
-     * @param date      the date
-     * @param service   the archetype service
+     * @param date        the date
+     * @param accountType the account type
      */
-    public CustomerBalanceSummaryQuery(Iterator<Party> customers, Date date,
+    public CustomerBalanceSummaryQuery(Date date, Lookup accountType) {
+        this(date, -1, -1, accountType);
+    }
+
+    /**
+     * Constructs a new <tt>CustomerBalanceSummaryQuery</tt> that returns
+     * overdue balances within the specified date range.
+     *
+     * @param date        the date
+     * @param overdueFrom the overdue-from date. Use <code>&lt;= 0</code> to
+     *                    indicate all dates
+     * @param overdueTo   the overdue-to date. Use <code>&lt;= 0</code> to
+     *                    indicate all dates
+     * @param accountType the account type. May be <tt>null</tt> to indicate
+     *                    all account types
+     */
+    public CustomerBalanceSummaryQuery(Date date, int overdueFrom,
+                                       int overdueTo, Lookup accountType) {
+        this(date, overdueFrom, overdueTo, accountType,
+             ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Constructs a new <tt>CustomerBalanceSummaryQuery</tt> that returns
+     * overdue balances within the specified date range.
+     *
+     * @param date        the date
+     * @param overdueFrom the overdue-from date. Use <code>&lt;= 0</code> to
+     *                    indicate all dates
+     * @param overdueTo   the overdue-to date. Use <code>&lt;= 0</code> to
+     *                    indicate all dates
+     * @param accountType the account type. May be <tt>null</tt> to indicate
+     *                    all account types
+     * @param service     the archetype service
+     */
+    public CustomerBalanceSummaryQuery(Date date, int overdueFrom,
+                                       int overdueTo, Lookup accountType,
                                        IArchetypeService service) {
-        this.customers = customers;
         this.date = date;
         this.service = service;
+        this.overdue = overdueFrom >= 0 && overdueTo >= 0;
+        this.from = overdueFrom;
+        this.to = overdueTo;
         rules = new CustomerBalanceRules(service);
+        Collection<String> names = Arrays.asList("e.name", "p.entity", "p.act",
+                                                 "a.activityStartTime",
+                                                 "a.total", "a.allocatedAmount",
+                                                 "a.credit", "c.code");
+        NamedQuery query;
+        if (accountType == null) {
+            query = new NamedQuery("getBalances", names);
+        } else {
+            query = new NamedQuery("getBalancesForAccountType", names);
+            query.setParameter("accountType", accountType.getLinkId());
+        }
+        query.setMaxResults(1000);
+        iterator = new ObjectSetQueryIterator(service, query);
     }
 
     /**
@@ -151,7 +254,15 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      * @return <tt>true</tt> if the iterator has more elements.
      */
     public boolean hasNext() {
-        return customers.hasNext();
+        if (next == null) {
+            while (last != null || iterator.hasNext()) {
+                next = doNext();
+                if (next != null) {
+                    break;
+                }
+            }
+        }
+        return (next != null);
     }
 
     /**
@@ -163,8 +274,9 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      * @throws NoSuchElementException iteration has no more elements.
      */
     public ObjectSet next() {
-        Party customer = customers.next();
-        return new BalanceObjectSet(customer);
+        ObjectSet result = next;
+        next = null;
+        return result;
     }
 
     /**
@@ -177,6 +289,148 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     }
 
     /**
+     * Returns the next set in the iteration.
+     *
+     * @return the next set or <tt>null</tt> if overdue balances are being
+     *         queried and the current balance is not overdue
+     */
+    private ObjectSet doNext() {
+        IMObjectReference current = null;
+        Map<IMObjectReference, ObjectSet> sets
+                = new LinkedHashMap<IMObjectReference, ObjectSet>();
+        // the sets for the current customer, keyed on act. This is necessary
+        // to filter duplicate rows, should a customer erroneously have > 1
+        // account type configured
+
+        if (last != null) {
+            sets.put(getAct(last), last);
+            current = getEntity(last);
+            last = null;
+        }
+        while (iterator.hasNext()) {
+            ObjectSet set = iterator.next();
+            IMObjectReference party = getEntity(set);
+            if (party != null) {
+                if (current == null || current.equals(party)) {
+                    current = party;
+                    sets.put(getAct(set), set);
+                } else {
+                    last = set;
+                    break;
+                }
+            }
+        }
+        if (sets.isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
+        String name = null;
+        BigDecimal balance = BigDecimal.ZERO;
+        BigDecimal overdueBalance = BigDecimal.ZERO;
+        BigDecimal creditBalance = BigDecimal.ZERO;
+        Date overdueDate = null;
+        Date overdueFrom = null;
+        Date overdueTo = null;
+        String code;
+        ActCalculator calculator = new ActCalculator(service);
+        Lookup lookup = null;
+        for (ObjectSet set : sets.values()) {
+            name = (String) set.get("e.name");
+            Date startTime = (Date) set.get("a.activityStartTime");
+            if (startTime instanceof Timestamp) {
+                startTime = new Date(startTime.getTime());
+            }
+            BigDecimal amount = (BigDecimal) set.get("a.total");
+            BigDecimal allocated = (BigDecimal) set.get("a.allocatedAmount");
+            boolean credit = (Boolean) set.get("a.credit");
+            BigDecimal unallocated = rules.getAllocatable(amount, allocated);
+            balance = calculator.addAmount(balance, unallocated, credit);
+            code = (String) set.get("c.code");
+            if (code != null && lookup == null) {
+                lookup = getLookup(code);
+            }
+            if (overdueDate == null) {
+                if (lookup == null) {
+                    overdueDate = date;
+                } else {
+                    overdueDate = rules.getOverdueDate(lookup, date);
+                }
+                overdueFrom = overdueDate;
+                if (from > 0) {
+                    overdueFrom = DateRules.getDate(overdueFrom, -from,
+                                                    DateRules.DAYS);
+                }
+                if (to > 0) {
+                    overdueTo = DateRules.getDate(overdueDate, -to,
+                                                  DateRules.DAYS);
+                }
+            }
+            if (!credit && startTime.compareTo(overdueFrom) < 0
+                    && (overdueTo == null || (overdueTo != null && startTime.compareTo(
+                    overdueTo) > 0))) {
+                overdueBalance = calculator.addAmount(overdueBalance,
+                                                      unallocated, credit);
+            }
+            if (credit) {
+                creditBalance = calculator.addAmount(creditBalance, unallocated,
+                                                     credit);
+            }
+        }
+        if (overdueBalance.signum() < 0) {
+            overdueBalance = BigDecimal.ZERO;
+        }
+        if (overdue && overdueBalance.compareTo(BigDecimal.ZERO) == 0) {
+            return null;
+        }
+        ObjectSet result = new BalanceObjectSet(current);
+        result.add(CUSTOMER_REFERENCE, current);
+        result.add(CUSTOMER_NAME, name);
+        result.add(BALANCE, balance);
+        result.add(OVERDUE_BALANCE, overdueBalance);
+        result.add(CREDIT_BALANCE, creditBalance);
+        return result;
+    }
+
+    /**
+     * Returns a lookup given its code.
+     *
+     * @param code the lookup code
+     * @return the lookup corresponding to <tt>code</tt> or <tt>null</tt>
+     *         if none is found
+     */
+    private Lookup getLookup(String code) {
+        Lookup lookup;
+        if ((lookup = lookups.get(code)) == null) {
+            ILookupService lookupService
+                    = LookupServiceHelper.getLookupService();
+            lookup = lookupService.getLookup(
+                    "lookup.customerAccountType", code);
+            lookups.put(code, lookup);
+        }
+        return lookup;
+    }
+
+    /**
+     * Helper to return the entity reference from a set.
+     *
+     * @param set the set
+     * @return the entity
+     */
+    private IMObjectReference getEntity(ObjectSet set) {
+        return (IMObjectReference) set.get("p.entity");
+    }
+
+    /**
+     * Helper to return the act reference from a set.
+     *
+     * @param set the set
+     * @return the ct
+     */
+    private IMObjectReference getAct(ObjectSet set) {
+        return (IMObjectReference) set.get("p.act");
+    }
+
+    /**
      * Helper to lazily load ObjectSet values.
      */
     private class BalanceObjectSet extends ObjectSet {
@@ -184,7 +438,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         /**
          * The customer.
          */
-        private final Party customer;
+        private final IMObjectReference customer;
 
         /**
          * Determines if the last payment details have been queried.
@@ -196,15 +450,13 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
          */
         private boolean queriedLastInvoice;
 
-
         /**
          * Constructs a new <tt>BalanceObjectSet</tt>.
          *
          * @param customer the customer
          */
-        public BalanceObjectSet(Party customer) {
+        public BalanceObjectSet(IMObjectReference customer) {
             this.customer = customer;
-            add(CUSTOMER, customer);
         }
 
         /**
@@ -227,18 +479,14 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         public Object get(String name) {
             Object object = super.get(name);
             if (object == null) {
-                if (BALANCE.equals(name)) {
-                    object = set(name, rules.getBalance(customer));
-                } else if (OVERDUE_BALANCE.equals(name)) {
-                    object = set(name, rules.getOverdueBalance(customer, date));
-                } else if (CREDIT_BALANCE.equals(name)) {
-                    object = set(name, rules.getCreditBalance(customer));
-                } else if (LAST_PAYMENT_DATE.equals(name)) {
+                if (LAST_PAYMENT_DATE.equals(name)) {
                     object = getLastPaymentDate();
                 } else if (LAST_PAYMENT_AMOUNT.equals(name)) {
                     object = getLastPaymentAmount();
                 } else if (LAST_INVOICE_DATE.equals(name)) {
                     object = getLastInvoiceDate();
+                } else if (LAST_INVOICE_AMOUNT.equals(name)) {
+                    object = getLastInvoiceAmount();
                 }
             }
             return object;
@@ -250,10 +498,8 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
          * @return the last payment date, or <tt>null</tt>
          */
         private Date getLastPaymentDate() {
-            if (getLastPaymentDetails()) {
-                return (Date) super.get(LAST_PAYMENT_DATE);
-            }
-            return null;
+            getLastPaymentDetails();
+            return (Date) super.get(LAST_PAYMENT_DATE);
         }
 
         /**
@@ -262,24 +508,19 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
          * @return the last payment amount, or <tt>null</tt>
          */
         private BigDecimal getLastPaymentAmount() {
-            if (getLastPaymentDetails()) {
-                return (BigDecimal) super.get(LAST_PAYMENT_AMOUNT);
-            }
-            return null;
+            getLastPaymentDetails();
+            return (BigDecimal) super.get(LAST_PAYMENT_AMOUNT);
         }
 
         /**
          * Gets the last payment details for the customer.
-         *
-         * @return <tt>true</tt> if the details could be found
          */
-        private boolean getLastPaymentDetails() {
+        private void getLastPaymentDetails() {
             if (!queriedLastPayment) {
                 queriedLastPayment = true;
-                return query("act.customerAccountPayment", LAST_PAYMENT_DATE,
-                             LAST_PAYMENT_AMOUNT);
+                query("act.customerAccountPayment", LAST_PAYMENT_DATE,
+                      LAST_PAYMENT_AMOUNT);
             }
-            return false;
         }
 
         /**
@@ -288,15 +529,29 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
          * @return the last invoice date, or <tt>null</tt>
          */
         private Date getLastInvoiceDate() {
-            Date result = null;
+            getLastInvoiceDetails();
+            return (Date) super.get(LAST_INVOICE_DATE);
+        }
+
+        /**
+         * Returns the last invoice amount.
+         *
+         * @return the last invoice amount, or <tt>null</tt>
+         */
+        private BigDecimal getLastInvoiceAmount() {
+            getLastInvoiceDetails();
+            return (BigDecimal) super.get(LAST_INVOICE_AMOUNT);
+        }
+
+        /**
+         * Gets the last invoice details.
+         */
+        private void getLastInvoiceDetails() {
             if (!queriedLastInvoice) {
                 queriedLastInvoice = true;
-                if (query("act.customerAccountChargesInvoice",
-                          LAST_INVOICE_DATE, LAST_INVOICE_AMOUNT)) {
-                    result = (Date) super.get(LAST_INVOICE_DATE);
-                }
+                query("act.customerAccountChargesInvoice",
+                      LAST_INVOICE_DATE, LAST_INVOICE_AMOUNT);
             }
-            return result;
         }
 
         /**
@@ -316,8 +571,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
             ArchetypeQuery query = new ArchetypeQuery(archetype);
             CollectionNodeConstraint constraint
                     = new CollectionNodeConstraint("customer");
-            constraint.add(new ObjectRefNodeConstraint(
-                    "entity", customer.getObjectReference()));
+            constraint.add(new ObjectRefNodeConstraint("entity", customer));
             query.add(constraint);
             query.add(new NodeSortConstraint("startTime", false));
             query.add(new NodeSelectConstraint("act.startTime"));
@@ -351,4 +605,5 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         }
 
     }
+
 }
