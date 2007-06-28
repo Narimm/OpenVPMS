@@ -18,7 +18,7 @@
 
 package org.openvpms.web.app.customer.account;
 
-import org.openvpms.archetype.rules.tax.TaxRules;
+import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;

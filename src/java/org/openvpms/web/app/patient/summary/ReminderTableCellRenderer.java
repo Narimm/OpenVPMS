@@ -18,14 +18,11 @@
 
 package org.openvpms.web.app.patient.summary;
 
-import java.sql.Timestamp;
-import java.util.Date;
-
 import nextapp.echo2.app.Table;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -34,6 +31,9 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.table.AbstractTableCellRenderer;
+
+import java.sql.Timestamp;
+import java.util.Date;
 
 
 /**
@@ -107,7 +107,8 @@ public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
                 if (reminderType != null) {
                     EntityBean bean = new EntityBean(reminderType);
                     int interval = bean.getInt("sensitivityInterval");
-                    String units = bean.getString("sensitivityUnits");
+                    DateUnits units = DateUnits.valueOf(
+                            bean.getString("sensitivityUnits"));
                     Date now = new Date();
                     Date from = DateRules.getDate(now, -interval, units);
                     Date to = DateRules.getDate(now, interval, units);

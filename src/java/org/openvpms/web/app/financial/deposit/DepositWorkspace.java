@@ -19,7 +19,7 @@
 package org.openvpms.web.app.financial.deposit;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.archetype.rules.deposit.DepositStatus;
+import org.openvpms.archetype.rules.finance.deposit.DepositStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;

@@ -152,7 +152,7 @@
                     /org/openvpms/archetype/rules/patient/reminder/Reminder.hbm.xml
                 </value>
                 <value>
-                    /org/openvpms/archetype/rules/balance/Balance.hbm.xml
+                    /org/openvpms/archetype/rules/finance/account/Balance.hbm.xml
                 </value>
             </list>
         </property>
