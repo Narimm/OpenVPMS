@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -27,13 +28,14 @@ import java.util.Date;
 
 
 /**
- * Abstract implementation of the {@link ReminderProcessorListener} interface.
+ * Abstract implementation of the {@link ProcessorListener} interface
+ * for the {@link ReminderProcessor}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class AbstractReminderProcessorListener
-        implements ReminderProcessorListener {
+        implements ProcessorListener<ReminderEvent> {
 
     /**
      * The rules.

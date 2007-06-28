@@ -95,7 +95,7 @@
         <attainGoal name="java:jar-resources"/>
         <attainGoal name="generate-hibernate-properties"/>
         <ant:java
-                classname="org.openvpms.archetype.rules.balance.CustomerBalanceGenerator"
+                classname="org.openvpms.archetype.rules.finance.account.CustomerBalanceGenerator"
                 failonerror="true"
                 maxmemory="512m"
                 fork="true">

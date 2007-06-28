@@ -32,48 +32,31 @@ import java.util.GregorianCalendar;
 public class DateRules {
 
     /**
-     * Day units.
-     */
-    public static final String DAYS = "DAYS";
-
-    /**
-     * Week units.
-     */
-    public static final String WEEKS = "WEEKS";
-
-    /**
-     * Month units.
-     */
-    public static final String MONTHS = "MONTHS";
-
-    /**
-     * Year units.
-     */
-    public static final String YEARS = "YEARS";
-
-
-    /**
      * Calculates a date given a start time, interval and the date units.
      *
      * @param startTime the start time
      * @param interval  the time interval. May be negative to calculate a date
      *                  in the past
      * @param units     the interval units
-     * @return the date for a reminder
+     * @return the date
      */
-    public static Date getDate(Date startTime, int interval, String units) {
+    public static Date getDate(Date startTime, int interval, DateUnits units) {
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(startTime);
         if (units != null) {
-            units = units.toUpperCase();
-            if (YEARS.equals(units)) {
-                calendar.add(Calendar.YEAR, interval);
-            } else if (MONTHS.equals(units)) {
-                calendar.add(Calendar.MONTH, interval);
-            } else if (WEEKS.equals(units)) {
-                calendar.add(Calendar.DAY_OF_YEAR, interval * 7);
-            } else if (DAYS.equals(units)) {
-                calendar.add(Calendar.DAY_OF_YEAR, interval);
+            switch (units) {
+                case YEARS:
+                    calendar.add(Calendar.YEAR, interval);
+                    break;
+                case MONTHS:
+                    calendar.add(Calendar.MONTH, interval);
+                    break;
+                case WEEKS:
+                    calendar.add(Calendar.DAY_OF_YEAR, interval * 7);
+                    break;
+                case DAYS:
+                    calendar.add(Calendar.DAY_OF_YEAR, interval);
+                    break;
             }
         }
         return calendar.getTime();

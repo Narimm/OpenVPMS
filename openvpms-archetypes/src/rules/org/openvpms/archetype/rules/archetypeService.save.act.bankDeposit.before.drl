@@ -30,7 +30,7 @@
              <java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
          </parameter>
          <java:consequence>
-             org.openvpms.archetype.rules.deposit.DepositRules.checkCanSaveBankDeposit(act, service);
+             org.openvpms.archetype.rules.finance.deposit.DepositRules.checkCanSaveBankDeposit(act, service);
          </java:consequence>
 
     </rule>

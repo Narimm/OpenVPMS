@@ -30,7 +30,7 @@
         	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
         </parameter>
         <java:consequence>
-            import org.openvpms.archetype.rules.invoice.InvoiceRules;
+            import org.openvpms.archetype.rules.finance.invoice.InvoiceRules;
             InvoiceRules rules = new InvoiceRules(service);
             rules.removeInvoice(act);
         </java:consequence>

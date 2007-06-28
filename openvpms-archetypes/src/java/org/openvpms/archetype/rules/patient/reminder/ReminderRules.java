@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -185,7 +186,7 @@ public class ReminderRules {
         EntityBean bean = new EntityBean(reminderType, service);
         int interval = bean.getInt("defaultInterval");
         String units = bean.getString("defaultUnits");
-        return DateRules.getDate(startTime, interval, units);
+        return DateRules.getDate(startTime, interval, DateUnits.valueOf(units));
     }
 
     /**
@@ -295,7 +296,8 @@ public class ReminderRules {
         EntityBean bean = new EntityBean(reminderType, service);
         int interval = bean.getInt("cancelInterval");
         String units = bean.getString("cancelUnits");
-        Date cancelDate = DateRules.getDate(endTime, interval, units);
+        Date cancelDate = DateRules.getDate(endTime, interval,
+                                            DateUnits.valueOf(units));
         return (cancelDate.compareTo(date) <= 0);
     }
 
@@ -385,7 +387,7 @@ public class ReminderRules {
                                                      service);
         int interval = templateBean.getInt("interval");
         String units = templateBean.getString("units");
-        return DateRules.getDate(endTime, interval, units);
+        return DateRules.getDate(endTime, interval, DateUnits.valueOf(units));
     }
 
     /**
