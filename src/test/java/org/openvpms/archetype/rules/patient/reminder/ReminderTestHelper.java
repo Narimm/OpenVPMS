@@ -19,7 +19,7 @@
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -47,7 +47,7 @@ public class ReminderTestHelper extends TestHelper {
      * @return a new reminder
      */
     public static Entity createReminderType(Lookup ... groups) {
-        return createReminderType(1, DateRules.MONTHS, groups);
+        return createReminderType(1, DateUnits.MONTHS, groups);
     }
 
     /**
@@ -59,13 +59,13 @@ public class ReminderTestHelper extends TestHelper {
      * @return a new reminder
      */
     public static Entity createReminderType(int defaultInterval,
-                                            String defaultUnits,
+                                            DateUnits defaultUnits,
                                             Lookup ... groups) {
         Entity reminder = (Entity) create("entity.reminderType");
         EntityBean bean = new EntityBean(reminder);
         bean.setValue("name", "XReminderType");
         bean.setValue("defaultInterval", defaultInterval);
-        bean.setValue("defaultUnits", defaultUnits);
+        bean.setValue("defaultUnits", defaultUnits.toString());
         for (Lookup group : groups) {
             reminder.addClassification(group);
         }

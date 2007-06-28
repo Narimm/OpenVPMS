@@ -18,13 +18,18 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.openvpms.archetype.component.processor.ProcessorListener;
+
+
 /**
- * Add description here.
+ * A {@link ProcessorListener} for gathering reminder statistincs.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @see ReminderProcessor
  */
-public class ReminderStatisticsListener implements ReminderProcessorListener {
+public class ReminderStatisticsListener
+        implements ProcessorListener<ReminderEvent> {
 
     /**
      * Processing statistics.

@@ -18,8 +18,24 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.openvpms.archetype.component.processor.AbstractProcessor;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderEvent.Action;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.*;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+
+import java.util.Date;
 
 
 /**
@@ -28,15 +44,254 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface ReminderProcessor {
+public class ReminderProcessor
+        extends AbstractProcessor<ReminderEvent.Action, Act, ReminderEvent> {
+
+    /**
+     * The processing date, used to determine when reminders should be
+     * cancelled.
+     */
+    private final Date processingDate;
+
+    /**
+     * The 'from' date. If non-null, only process reminders that have a next-due
+     * date >= from.
+     */
+    private final Date from;
+
+    /**
+     * The 'to' date. If non-null, only process reminders that have a next-due
+     * date <= to.
+     */
+    private final Date to;
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * Reminder rules.
+     */
+    private final ReminderRules rules;
+
+    /**
+     * Patient rules.
+     */
+    private final PatientRules patientRules;
+
+
+    /**
+     * Constructs a new <tt>DefaultReminderProcessor</tt>, using the current
+     * time as the processing date.
+     *
+     * @param from the 'from' date. May be <tt>null</tt>
+     * @param to   the 'to' date. Nay be <tt>null</tt>
+     */
+    public ReminderProcessor(Date from, Date to) {
+        this(from, to, ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Constructs a new <tt>ReminderProcessor</tt>, using the current time
+     * as the processing date.
+     *
+     * @param from    the 'from' date. May be <tt>null</tt>
+     * @param to      the 'to' date. Nay be <tt>null</tt>
+     * @param service the archetype service
+     */
+    public ReminderProcessor(Date from, Date to,
+                             IArchetypeService service) {
+        this(from, to, new Date(), service);
+    }
+
+    /**
+     * Constructs a new <tt>ReminderProcessor</tt>.
+     *
+     * @param from           the 'from' date. May be <tt>null</tt>
+     * @param to             the 'to' date. Nay be <tt>null</tt>
+     * @param processingDate the processing date
+     * @param service        the archetype service
+     */
+    public ReminderProcessor(Date from, Date to, Date processingDate,
+                             IArchetypeService service) {
+        this.from = from;
+        this.to = to;
+        this.processingDate = processingDate;
+        this.service = service;
+        rules = new ReminderRules(service);
+        patientRules = new PatientRules(service);
+    }
 
     /**
      * Process a reminder.
      *
      * @param reminder the reminder to process
-     * @throws ArchetypeServiceException for any archetype service error
+     * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    void process(Act reminder);
+    public void process(Act reminder) {
+        ActBean bean = new ActBean(reminder, service);
+        Entity reminderType = bean.getParticipant("participation.reminderType");
+        if (reminderType == null) {
+            throw new ReminderProcessorException(NoReminderType);
+        }
+        Date due = reminder.getActivityEndTime();
+        if (rules.shouldCancel(due, reminderType, processingDate)) {
+            cancel(reminder, reminderType);
+        } else {
+            int reminderCount = bean.getInt("reminderCount");
+            EntityRelationship template = rules.getReminderTypeTemplate(
+                    reminderCount, reminderType);
+            if (rules.isDue(reminder, template, from, to)) {
+                generate(reminder, reminderType, template);
+            } else {
+                skip(reminder, reminderType);
+            }
+        }
+    }
+
+    /**
+     * Generates a reminder.
+     *
+     * @param reminder     the reminder
+     * @param reminderType the reminder type. An instance of
+     *                     <em>entity.reminderType</em>
+     * @param template     the template. An instance of
+     *                     <em>entityRelationship.reminderTypeTemplate</em>,
+     *                     or <tt>null</tt> if there is no template
+     * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReminderProcessorException if the reminder cannot be processed
+     */
+    protected void generate(Act reminder, Entity reminderType,
+                            EntityRelationship template) {
+        ActBean bean = new ActBean(reminder);
+        Party patient = (Party) bean.getParticipant("participation.patient");
+        if (patient == null) {
+            throw new ReminderProcessorException(NoPatient);
+        }
+        Entity documentTemplate = null;
+        if (template != null) {
+            IMObjectReference target = template.getTarget();
+            if (target != null) {
+                documentTemplate =
+                        (Entity) ArchetypeQueryHelper.getByObjectReference(
+                                service, target);
+            }
+        }
+
+        Party owner = patientRules.getOwner(patient);
+        if (owner == null) {
+            throw new ReminderProcessorException(NoContact, patient.getName(),
+                                                 patient.getDescription());
+        }
+
+        Contact contact;
+        if (documentTemplate == null) {
+            // no document template, so can't send email or print. Use the
+            // customer's phone contact.
+            contact = rules.getPhoneContact(owner.getContacts());
+        } else {
+            contact = rules.getContact(owner.getContacts());
+        }
+        if (contact == null) {
+            throw new ReminderProcessorException(NoContact, patient.getName(),
+                                                 patient.getDescription());
+        }
+
+        if (TypeHelper.isA(contact, "contact.location")) {
+            print(reminder, reminderType, contact, documentTemplate);
+        } else if (TypeHelper.isA(contact, "contact.phoneNumber")) {
+            phone(reminder, reminderType, contact, documentTemplate);
+        } else if (TypeHelper.isA(contact, "contact.email")) {
+            email(reminder, reminderType, contact, documentTemplate);
+        } else {
+            // shouldn't occur
+            throw new ReminderProcessorException(NoContact, patient.getName(),
+                                                 patient.getDescription());
+        }
+    }
+
+    /**
+     * Notifies listeners to skip a reminder.
+     *
+     * @param reminder     the reminder
+     * @param reminderType the reminder to skip
+     * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReminderProcessorException if the reminder cannot be processed
+     */
+    protected void skip(Act reminder, Entity reminderType) {
+        ReminderEvent event = new ReminderEvent(Action.SKIP, reminder,
+                                                reminderType);
+        notifyListeners(event.getAction(), event);
+    }
+
+    /**
+     * Notifies listeners to cancel a reminder.
+     *
+     * @param reminder     the reminder
+     * @param reminderType the reminder type
+     * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReminderProcessorException if the reminder cannot be processed
+     */
+    protected void cancel(Act reminder, Entity reminderType) {
+        ReminderEvent event = new ReminderEvent(Action.CANCEL, reminder,
+                                                reminderType);
+        notifyListeners(event.getAction(), event);
+    }
+
+    /**
+     * Notifies listeners to email a reminder.
+     *
+     * @param reminder         the reminder
+     * @param reminderType     the reminder type
+     * @param contact          the reminder contact
+     * @param documentTemplate the document template
+     * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReminderProcessorException if the reminder cannot be processed
+     */
+    protected void email(Act reminder, Entity reminderType, Contact contact,
+                         Entity documentTemplate) {
+        ReminderEvent event = new ReminderEvent(Action.EMAIL, reminder,
+                                                reminderType, contact,
+                                                documentTemplate);
+        notifyListeners(event.getAction(), event);
+    }
+
+    /**
+     * Notifies listeners to phone a reminder.
+     *
+     * @param reminder         the reminder
+     * @param reminderType     the reminder type
+     * @param contact          the reminder contact
+     * @param documentTemplate the document template. May be <tt>null</tt>
+     * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReminderProcessorException if the reminder cannot be processed
+     */
+    protected void phone(Act reminder, Entity reminderType, Contact contact,
+                         Entity documentTemplate) {
+        ReminderEvent event = new ReminderEvent(Action.PHONE, reminder,
+                                                reminderType, contact,
+                                                documentTemplate);
+        notifyListeners(event.getAction(), event);
+    }
+
+    /**
+     * Notifies listeners to print a reminder.
+     *
+     * @param reminder         the reminder
+     * @param reminderType     the reminder type
+     * @param contact          the reminder contact
+     * @param documentTemplate the document template
+     * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReminderProcessorException if the reminder cannot be processed
+     */
+    protected void print(Act reminder, Entity reminderType, Contact contact,
+                         Entity documentTemplate) {
+        ReminderEvent event = new ReminderEvent(Action.PRINT, reminder,
+                                                reminderType, contact,
+                                                documentTemplate);
+        notifyListeners(event.getAction(), event);
+    }
 
 }

@@ -13,7 +13,7 @@
              <java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
         </parameter>
         <java:consequence>
-            import org.openvpms.archetype.rules.tax.TaxRules;
+            import org.openvpms.archetype.rules.finance.tax.TaxRules;
             TaxRules rules = new TaxRules(service);
             rules.calculateTax(act);
         </java:consequence>

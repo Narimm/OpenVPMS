@@ -19,7 +19,7 @@
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -98,13 +98,13 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * method.
      */
     public void testCalculateReminderDueDate() {
-        checkCalculateReminderDueDate(1, DateRules.DAYS, "2007-01-01",
+        checkCalculateReminderDueDate(1, DateUnits.DAYS, "2007-01-01",
                                       "2007-01-02");
-        checkCalculateReminderDueDate(2, DateRules.WEEKS, "2007-01-01",
+        checkCalculateReminderDueDate(2, DateUnits.WEEKS, "2007-01-01",
                                       "2007-01-15");
-        checkCalculateReminderDueDate(2, DateRules.MONTHS, "2007-01-01",
+        checkCalculateReminderDueDate(2, DateUnits.MONTHS, "2007-01-01",
                                       "2007-03-01");
-        checkCalculateReminderDueDate(5, DateRules.YEARS, "2007-01-01",
+        checkCalculateReminderDueDate(5, DateUnits.YEARS, "2007-01-01",
                                       "2012-01-01");
     }
 
@@ -166,7 +166,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Lookup group = ReminderTestHelper.createReminderGroup();
         Party patient = TestHelper.createPatient();
         Entity reminderType = ReminderTestHelper.createReminderType(
-                1, DateRules.MONTHS, group);
+                1, DateUnits.MONTHS, group);
         Date start = java.sql.Date.valueOf("2007-01-01");
         Date due = rules.calculateReminderDueDate(start, reminderType);
         Act reminder = ReminderTestHelper.createReminder(patient, reminderType,
@@ -187,7 +187,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         IMObjectBean bean = new IMObjectBean(reminderTypeTemplate);
         bean.setValue("reminderCount", 0);
         bean.setValue("interval", 2);
-        bean.setValue("units", DateRules.WEEKS);
+        bean.setValue("units", DateUnits.WEEKS);
         bean.setValue("source", reminderType.getObjectReference());
         bean.setValue("target", template.getObjectReference());
         bean.save();
@@ -203,7 +203,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Lookup group = ReminderTestHelper.createReminderGroup();
         Party patient = TestHelper.createPatient();
         Entity reminderType = ReminderTestHelper.createReminderType(
-                1, DateRules.MONTHS, group);
+                1, DateUnits.MONTHS, group);
         Date start = java.sql.Date.valueOf("2007-01-01");
         Act reminder = ReminderTestHelper.createReminder(patient, reminderType);
         reminder.setActivityStartTime(start);
@@ -217,7 +217,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         // current due date.
         IMObjectBean bean = new IMObjectBean(reminderType);
         bean.setValue("cancelInterval", 2);
-        bean.setValue("cancelUnits", DateRules.WEEKS);
+        bean.setValue("cancelUnits", DateUnits.WEEKS.toString());
         bean.save();
 
         checkShouldCancel(reminder, "2007-02-01", false);
@@ -349,7 +349,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * @param expectedDate    the expected due date
      */
     private void checkCalculateReminderDueDate(int defaultInterval,
-                                               String defaultUnits,
+                                               DateUnits defaultUnits,
                                                String startDate,
                                                String expectedDate) {
         Lookup group = ReminderTestHelper.createReminderGroup();

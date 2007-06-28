@@ -30,7 +30,7 @@
         	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
         </parameter>
         <java:consequence>
-            import org.openvpms.archetype.rules.till.TillRules;
+            import org.openvpms.archetype.rules.finance.till.TillRules;
             TillRules rules = new TillRules(service);
             rules.addToTill(act);
         </java:consequence>

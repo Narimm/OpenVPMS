@@ -30,8 +30,8 @@
         	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
         </parameter>
         <java:consequence>
-            import org.openvpms.archetype.rules.balance.CustomerBalanceRules;
-            CustomerBalanceRules rules = new CustomerBalanceRules(service);
+            import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+            CustomerAccountRules rules = new CustomerAccountRules(service);
             rules.updateBalance(act);
         </java:consequence>
     </rule>

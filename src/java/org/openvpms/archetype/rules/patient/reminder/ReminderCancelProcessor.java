@@ -18,12 +18,13 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
 /**
- * An {@link ReminderProcessorListener} that cancels reminders.
+ * A {@link ProcessorListener} that cancels reminders.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
