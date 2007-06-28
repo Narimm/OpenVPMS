@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.im.edit.payment;
 
-import org.openvpms.archetype.rules.balance.CustomerBalanceRules;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -58,7 +58,7 @@ public class CustomerPaymentItemEditor extends PaymentItemEditor {
             if (customer != null) {
                 boolean payment = TypeHelper.isA(act,
                                                  "act.customerAccountPayment*");
-                CustomerBalanceRules rules = new CustomerBalanceRules();
+                CustomerAccountRules rules = new CustomerAccountRules();
                 BigDecimal balance = rules.getBalance(
                         customer, getRunningTotal(parent), payment);
                 Property amount = getProperty("amount");

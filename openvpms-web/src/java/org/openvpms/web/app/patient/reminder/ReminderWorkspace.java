@@ -25,6 +25,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -240,12 +241,16 @@ public class ReminderWorkspace extends AbstractWorkspace {
      * @param generator the generator
      */
     private void generateReminders(ReminderGenerator generator) {
-        generator.setListener(new ReminderGenerator.CompletionListener() {
+        generator.setListener(new BatchProcessorListener() {
             public void completed() {
                 browser.query();
             }
+
+            public void error(Throwable exception) {
+                ErrorHelper.show(exception);
+            }
         });
-        generator.generate();
+        generator.process();
     }
 
 }

@@ -18,22 +18,21 @@
 
 package org.openvpms.web.app.customer;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.GridLayoutData;
-
-import org.openvpms.archetype.rules.balance.CustomerBalanceRules;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.RowFactory;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -54,11 +53,12 @@ public class CustomerSummary {
         Component result = null;
         if (customer != null) {
             result = ColumnFactory.create();
-            Label customerName = LabelFactory.create(null,"Customer.Name");
+            Label customerName = LabelFactory.create(null, "Customer.Name");
             customerName.setText(customer.getName());
-            result.add(RowFactory.create("Patient.Deceased.Inset", customerName));
-            
-            CustomerBalanceRules rules = new CustomerBalanceRules();
+            result.add(
+                    RowFactory.create("Patient.Deceased.Inset", customerName));
+
+            CustomerAccountRules rules = new CustomerAccountRules();
             Label balanceTitle = create("customer.account.balance");
             BigDecimal balance = rules.getBalance(customer);
             Label balanceValue = create(balance);
@@ -80,10 +80,10 @@ public class CustomerSummary {
             Label unbilledValue = create(unbilled);
 
             Grid grid = GridFactory.create(2, balanceTitle, balanceValue,
-                                        overdueTitle, overdueValue,
-                                        currentTitle, currentValue,
-                                        creditTitle, creditValue,
-                                        unbilledTitle, unbilledValue);
+                                           overdueTitle, overdueValue,
+                                           currentTitle, currentValue,
+                                           creditTitle, creditValue,
+                                           unbilledTitle, unbilledValue);
             result.add(grid);
         }
         return result;

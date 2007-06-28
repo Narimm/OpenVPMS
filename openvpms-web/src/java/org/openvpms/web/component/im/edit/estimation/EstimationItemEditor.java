@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.im.edit.estimation;
 
-import org.openvpms.archetype.rules.discount.DiscountRules;
+import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;

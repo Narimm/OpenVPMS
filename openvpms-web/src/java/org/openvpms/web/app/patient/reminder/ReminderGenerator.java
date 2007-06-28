@@ -23,10 +23,12 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.rules.patient.reminder.DefaultReminderProcessor;
+import org.openvpms.archetype.component.processor.AsynchronousBatchProcessor;
+import org.openvpms.archetype.component.processor.Processor;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderCancelProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderStatisticsListener;
@@ -36,11 +38,9 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.workflow.AbstractTask;
@@ -69,27 +69,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderGenerator {
-
-    public interface CompletionListener {
-
-        void completed();
-    }
-
-    /**
-     * The iterator over the reminders.
-     */
-    private Iterator<Act> iterator;
-
-    /**
-     * Indicates if processing should suspend, so the client can be updated.
-     */
-    private boolean suspend;
-
-    /**
-     * The processor.
-     */
-    private DefaultReminderProcessor processor;
+class ReminderGenerator extends AsynchronousBatchProcessor<ReminderEvent.Action,
+        Act, ReminderEvent> {
 
     /**
      * Phone listener.
@@ -100,11 +81,6 @@ class ReminderGenerator {
      * Statistics listener.
      */
     private ReminderStatisticsListener stats;
-
-    /**
-     * Invoked when generation is complete.
-     */
-    private CompletionListener listener;
 
 
     /**
@@ -118,8 +94,8 @@ class ReminderGenerator {
      */
     public ReminderGenerator(Act reminder, Date from, Date to,
                              Context context) {
-        iterator = Arrays.asList(reminder).iterator();
-        init(from, to, context);
+        Iterator<Act> iterator = Arrays.asList(reminder).iterator();
+        init(from, to, iterator, context);
     }
 
     /**
@@ -134,55 +110,16 @@ class ReminderGenerator {
         for (Act reminder : query.query()) {
             reminders.add(reminder);
         }
-        iterator = reminders.iterator();
-        init(query.getFrom(), query.getTo(), context);
+        init(query.getFrom(), query.getTo(), reminders.iterator(), context);
     }
 
     /**
-     * Generate reminders.
+     * Invoked when batch processing has completed.
+     * Notifies any listener.
      */
-    public void generate() {
-        try {
-            setSuspend(false);
-            while (!isSuspended() && iterator.hasNext()) {
-                Act reminder = iterator.next();
-                processor.process(reminder);
-            }
-            if (!isSuspended()) {
-                // generation completed.
-                onGenerationComplete();
-            }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-            notifyCompletionListener();
-        }
-    }
-
-    /**
-     * Sets the listener to invoke when generation is complete.
-     *
-     * @param listener the listener. May be <tt>null</tt>
-     */
-    public void setListener(CompletionListener listener) {
-        this.listener = listener;
-    }
-
-    /**
-     * Sets the suspend state.
-     *
-     * @param suspend if <tt>true</tt> suspend generation
-     */
-    public void setSuspend(boolean suspend) {
-        this.suspend = suspend;
-    }
-
-    /**
-     * Determines if generation has been suspended.
-     *
-     * @return <tt>true</tt> if generation has been suspended
-     */
-    public boolean isSuspended() {
-        return suspend;
+    @Override
+    protected void processingCompleted() {
+        onGenerationComplete();
     }
 
     /**
@@ -191,8 +128,10 @@ class ReminderGenerator {
      * @param context the context
      * @throws ReminderProcessorException for any error
      */
-    private void init(Date from, Date to, Context context) {
-        processor = new DefaultReminderProcessor(from, to);
+    private void init(Date from, Date to, Iterator<Act> iterator,
+                      Context context) {
+        Processor<ReminderEvent.Action, Act, ReminderEvent> processor
+                = new ReminderProcessor(from, to);
         phone = new ReminderPhoneListener();
         stats = new ReminderStatisticsListener();
         processor.addListener(stats);
@@ -231,15 +170,8 @@ class ReminderGenerator {
         processor.addListener(ReminderEvent.Action.EMAIL, emailer);
         processor.addListener(ReminderEvent.Action.PHONE, phone);
         processor.addListener(ReminderEvent.Action.PRINT, printer);
-    }
-
-    /**
-     * Notifies any registered listener that generation has completed.
-     */
-    private void notifyCompletionListener() {
-        if (listener != null) {
-            listener.completed();
-        }
+        setProcessor(processor);
+        setIterator(iterator);
     }
 
     /**
@@ -274,7 +206,7 @@ class ReminderGenerator {
         });
         workflow.addTaskListener(new TaskListener() {
             public void taskEvent(TaskEvent event) {
-                notifyCompletionListener();
+                notifyCompleted();
             }
         });
         workflow.start();

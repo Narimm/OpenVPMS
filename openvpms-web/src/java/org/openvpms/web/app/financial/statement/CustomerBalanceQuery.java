@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.financial.statement;
 
+import echopointng.DateField;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
@@ -28,7 +29,7 @@ import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.rules.balance.CustomerBalanceSummaryQuery;
+import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
@@ -43,6 +44,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.ComponentHelper;
+import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -73,6 +75,11 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
      * Determines if only customers with overdue balances should be queried.
      */
     private CheckBox overdue;
+
+    /**
+     * The processing date.
+     */
+    private DateField date;
 
     /**
      * The 'overdue period from' days label.
@@ -140,6 +147,7 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
     @Override
     protected void doLayout(Component container) {
         LookupListModel model = createAccountTypeModel();
+
         accountType = SelectFieldFactory.create(model);
         accountType.setCellRenderer(new LookupListCellRenderer());
 
@@ -147,6 +155,16 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
                 "CellSpacing",
                 LabelFactory.create("financial.statements.accountType"),
                 accountType);
+
+        date = DateFieldFactory.create();
+        date.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+            }
+        });
+        Row statementDateRow = createRow(
+                "CellSpacing",
+                LabelFactory.create("financial.statements.date"),
+                date);
 
         overdue = CheckBoxFactory.create("financial.statements.overdue", true);
         overdue.addActionListener(new ActionListener() {
@@ -178,10 +196,12 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
                                    periodRange);
 
         container.add(accountTypeRow);
+        container.add(statementDateRow);
         container.add(overdueRow);
 
         FocusGroup group = getFocusGroup();
         group.add(accountType);
+        group.add(date);
         group.add(overdue);
         group.add(periodFrom);
         group.add(periodTo);
@@ -199,12 +219,12 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
         try {
             CustomerBalanceSummaryQuery query;
             if (overdue.isSelected()) {
-                query = new CustomerBalanceSummaryQuery(new Date(),
+                query = new CustomerBalanceSummaryQuery(getDate(),
                                                         getNumber(periodFrom),
                                                         getNumber(periodTo),
                                                         getAccountType());
             } else {
-                query = new CustomerBalanceSummaryQuery(new Date(),
+                query = new CustomerBalanceSummaryQuery(getDate(),
                                                         getAccountType());
             }
             while (query.hasNext()) {
@@ -240,6 +260,15 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
             return (LookupListModel.ALL == lookup) ? null : lookup;
         }
         return null;
+    }
+
+    /**
+     * Returns the statement date.
+     *
+     * @return the statement date
+     */
+    private Date getDate() {
+        return date.getSelectedDate().getTime();
     }
 
     /**

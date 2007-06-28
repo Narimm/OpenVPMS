@@ -18,9 +18,9 @@
 
 package org.openvpms.web.component.im.edit.invoice;
 
-import org.openvpms.archetype.rules.discount.DiscountRules;
-import org.openvpms.archetype.rules.tax.TaxRuleException;
-import org.openvpms.archetype.rules.tax.TaxRules;
+import org.openvpms.archetype.rules.finance.discount.DiscountRules;
+import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
+import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;

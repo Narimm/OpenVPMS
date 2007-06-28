@@ -19,7 +19,7 @@
 package org.openvpms.web.app.financial.till;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.archetype.rules.till.TillBalanceStatus;
+import org.openvpms.archetype.rules.finance.till.TillBalanceStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;

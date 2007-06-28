@@ -70,8 +70,9 @@ public class ReminderEmailProcessor extends AbstractReminderProcessorListener {
      */
     private final DocumentHandlers handlers;
 
+
     /**
-     * Constructs a new <tt>ReminderEmailProcessor</tt>
+     * Constructs a new <tt>ReminderEmailProcessor</tt>.
      *
      * @param sender       the mail sender
      * @param emailAddress the email address

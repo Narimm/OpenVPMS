@@ -25,9 +25,13 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.component.processor.BatchProcessorListener;
+import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -183,7 +187,7 @@ public class StatementWorkspace extends AbstractWorkspace {
     }
 
     /**
-     * Invoked when the 'Process All' button is pressed.
+     * Invoked when the 'process all' button is pressed.
      */
     private void onProcessAll() {
         String title = Messages.get("financial.statements.run.title");
@@ -204,13 +208,53 @@ public class StatementWorkspace extends AbstractWorkspace {
      * Processes all customers matching the criteria.
      */
     private void doProcessAll() {
-        browser.query();
+        try {
+            GlobalContext context = GlobalContext.getInstance();
+            StatementGenerator generator = new StatementGenerator(query,
+                                                                  context);
+            generateStatements(generator);
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**
-     * Invoked when the 'Process' button is pressed.
+     * Invoked when the 'process' button is pressed.
      */
     private void onProcess() {
+        try {
+            ObjectSet selected = browser.getSelected();
+            if (selected != null) {
+                IMObjectReference ref = (IMObjectReference) selected.get(
+                        CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
+                if (ref != null) {
+                    GlobalContext context = GlobalContext.getInstance();
+                    StatementGenerator generator
+                            = new StatementGenerator(ref, context);
+                    generateStatements(generator);
+                }
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Generates statements.
+     *
+     * @param generator the statement generator
+     */
+    private void generateStatements(StatementGenerator generator) {
+        generator.setListener(new BatchProcessorListener() {
+            public void completed() {
+                browser.query();
+            }
+
+            public void error(Throwable exception) {
+                ErrorHelper.show(exception);
+            }
+        });
+        generator.process();
     }
 
     /**

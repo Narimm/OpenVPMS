@@ -24,7 +24,7 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import org.openvpms.archetype.rules.balance.CustomerBalanceRules;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -213,7 +213,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     private void reverse(FinancialAct act) {
         try {
-            CustomerBalanceRules rules = new CustomerBalanceRules();
+            CustomerAccountRules rules = new CustomerAccountRules();
             rules.reverse(act, new Date());
         } catch (OpenVPMSException exception) {
             String title = Messages.get(

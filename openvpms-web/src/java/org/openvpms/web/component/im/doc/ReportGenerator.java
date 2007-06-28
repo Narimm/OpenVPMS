@@ -39,6 +39,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 
 /**
@@ -131,6 +132,33 @@ public class ReportGenerator {
     }
 
     /**
+     * Generates a report.
+     *
+     * @param objects the objects to generate the report for
+     * @return the generated report
+     * @throws DocumentException         if the template document can't be found
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Document generate(Iterator<IMObject> objects) {
+        return generate(objects, DocFormats.PDF_TYPE);
+    }
+
+    /**
+     * Generates a report.
+     *
+     * @param objects  the objects to generate the report for
+     * @param mimeType the mime type of the report.
+     * @return the generated report
+     * @throws DocumentException         if the template document can't be found
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Document generate(Iterator<IMObject> objects, String mimeType) {
+        return generate(objects, new String[]{mimeType});
+    }
+
+    /**
      * Creates a report.
      *
      * @return a new report
@@ -162,8 +190,23 @@ public class ReportGenerator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected Document generate(IMObject object, String[] mimeTypes) {
-        IMReport<IMObject> report = createReport();
-        return report.generate(Arrays.asList(object).iterator(), mimeTypes);
+        return generate(Arrays.asList(object).iterator(), mimeTypes);
     }
 
+    /**
+     * Generates a report.
+     *
+     * @param objects   the objects to generate the report for
+     * @param mimeTypes a list of mime-types, used to select the preferred
+     *                  output format of the report
+     * @return the generated report
+     * @throws DocumentException         if the template document can't be found
+     * @throws ReportException           for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected Document generate(Iterator<IMObject> objects,
+                                String[] mimeTypes) {
+        IMReport<IMObject> report = createReport();
+        return report.generate(objects, mimeTypes);
+    }
 }

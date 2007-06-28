@@ -75,7 +75,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessorListener {
             public void printed() {
                 try {
                     update(event.getReminder());
-                    generator.generate();
+                    generator.process();
                 } catch (OpenVPMSException exception) {
                     ErrorHelper.show(exception);
                 }
