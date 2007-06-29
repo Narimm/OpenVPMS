@@ -39,6 +39,12 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
     private final MacroEvaluator macros;
 
     /**
+     * Determines if leading and trailing spaces and new lines should be
+     * trimmed.
+     */
+    private final boolean trim;
+
+    /**
      * The context.
      */
     private final Object context;
@@ -50,6 +56,17 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
      * @param property the property
      */
     public StringPropertyTransformer(Property property) {
+        this(property, true);
+    }
+
+    /**
+     * Constructs a new <tt>StringTransformer</tt>.
+     *
+     * @param property the property
+     * @param trim     if <tt>true</tt> trim the string of leading and trailing
+     *                 spaces, new lines
+     */
+    public StringPropertyTransformer(Property property, boolean trim) {
         super(property);
         if (property instanceof IMObjectProperty) {
             macros = new MacroEvaluator(ServiceHelper.getMacroCache());
@@ -58,8 +75,8 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
             macros = null;
             context = null;
         }
+        this.trim = trim;
     }
-
 
     /**
      * Transform an object to the required type, performing validation.
@@ -82,7 +99,9 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         } else if (object != null) {
             result = object.toString();
         }
-        result = StringUtils.trimToNull(result);
+        if (trim) {
+            result = StringUtils.trimToNull(result);
+        }
         int minLength = property.getMinLength();
         int maxLength = property.getMaxLength();
         if ((result == null && minLength > 0)
