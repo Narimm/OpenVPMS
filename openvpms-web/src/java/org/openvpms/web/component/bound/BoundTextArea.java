@@ -22,6 +22,7 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.TextArea;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.StringPropertyTransformer;
 
 
 /**
@@ -34,6 +35,8 @@ public class BoundTextArea extends TextArea {
 
     /**
      * Constructs a new <tt>BoundTextArea</tt>.
+     * The property is associated with an {@link StringPropertyTransformer}
+     * that doesn't trim leading and trailing spaces or new lines.
      *
      * @param property the property to bind
      * @param columns  the no. of columns to display
@@ -47,6 +50,7 @@ public class BoundTextArea extends TextArea {
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
+        property.setTransformer(new StringPropertyTransformer(property, false));
     }
 
 }
