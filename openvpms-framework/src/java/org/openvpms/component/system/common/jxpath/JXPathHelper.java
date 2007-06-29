@@ -18,101 +18,116 @@
 
 package org.openvpms.component.system.common.jxpath;
 
-import java.util.Properties;
-
 import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathContextFactory;
 import org.apache.commons.jxpath.util.TypeUtils;
-import org.apache.log4j.Logger;
+
+import java.util.Map;
+
 
 /**
  * This helper class is used to instantiate new {@link JXPathContext} objects
  * with the relevant extension functions.
- * <p>
+ * <p/>
  * The instance must be initialized correctly, with the extension functions
  * registered before use.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public class JXPathHelper {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger.getLogger(JXPathHelper.class);
-    
+
     /**
      * A list of extension functions. These are cached in a class attribute
      */
     private static FunctionLibrary functions = new FunctionLibrary();
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public JXPathHelper() {
         // set the factory name so that the correct version context
         // factory is invoked
         System.setProperty(JXPathContextFactory.FACTORY_NAME_PROPERTY,
-                OpenVPMSContextFactoryReferenceImpl.class.getName());
-        
+                           OpenVPMSContextFactoryReferenceImpl.class.getName());
+
         // set the extended type converter
         TypeUtils.setTypeConverter(new OpenVPMSTypeConverter());
-        
+
         // now just add the default functions
-        functions.addFunctions(JXPathContext.newContext(new Object()).getFunctions());
+        functions.addFunctions(
+                JXPathContext.newContext(new Object()).getFunctions());
     }
 
     /**
      * Instantiate an instance of this helper using the specified properties.
      * Each property has a key, which is the namespace and the value, which is
-     * the function class.
-     * 
-     * @param properties
-     *            the class function luibraries to include
+     * the function class or function object.
+     *
+     * @param properties the class function luibraries to include
      */
-    public JXPathHelper(Properties props) {
-        // call the default constructor
+    public JXPathHelper(Map properties) {
         this();
         
         // add the extension functions
-        if (props != null) {
-            for (Object ns : props.keySet()) {
+        if (properties != null) {
+            for (Object ns : properties.keySet()) {
                 String namespace = (String) ns;
-    
-                try {
-                    Class clazz = Thread.currentThread().getContextClassLoader()
-                            .loadClass(props.getProperty(namespace));
-                    functions.addFunctions(new ClassFunctions(clazz, namespace));
-                } catch (Exception exception) {
-                    throw new JXPathHelperException(
-                            JXPathHelperException.ErrorCode.InvalidClassSpecified,
-                            new Object[] { props.getProperty(namespace) },
-                            exception);
+                Object value = properties.get(namespace);
+                if (value instanceof String) {
+                    addFunctions((String) value, namespace);
+                } else {
+                    addFunctions(value, namespace);
                 }
+
             }
         }
     }
-    
+
     /**
-     * Create a new context for the specified object
-     * 
-     * @param object
-     *            the context bean
-     * @return JXPathContext
-     *            the context object            
+     * Create a new context for the specified object.
+     *
+     * @param object the context bean
+     * @return JXPathContext the context object
      */
     public static JXPathContext newContext(Object object) {
-        JXPathContext context  = JXPathContext.newContext(object);
+        JXPathContext context = JXPathContext.newContext(object);
         FunctionLibrary lib = new FunctionLibrary();
         lib.addFunctions(context.getFunctions());
         lib.addFunctions(functions);
         context.setFunctions(lib);
         context.setLenient(true);
-        
+
         return context;
     }
 
+    /**
+     * Adds functions for the specified class name and namespace.
+     *
+     * @param className the class name
+     * @param namespace the namespace
+     */
+    private void addFunctions(String className, String namespace) {
+        try {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            Class clazz = loader.loadClass(className);
+            functions.addFunctions(new ClassFunctions(clazz, namespace));
+        } catch (Exception exception) {
+            throw new JXPathHelperException(
+                    JXPathHelperException.ErrorCode.InvalidClassSpecified,
+                    new Object[]{className}, exception);
+        }
+    }
+
+    /**
+     * Adds functions for the specified function object and namespace.
+     *
+     * @param functionObject the function object
+     * @param namespace      the namespace
+     */
+    private void addFunctions(Object functionObject, String namespace) {
+        functions.addFunctions(new ObjectFunctions(functionObject, namespace));
+    }
 }

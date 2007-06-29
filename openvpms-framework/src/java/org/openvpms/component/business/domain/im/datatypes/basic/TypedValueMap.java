@@ -153,7 +153,11 @@ public class TypedValueMap implements Map<String, Object> {
      */
     public Object put(String key, Object value) {
         Object old = get(key);
-        map.put(key, new TypedValue(value));
+        if (value == null) {
+            map.remove(key);
+        } else {
+            map.put(key, new TypedValue(value));
+        }
         return old;
     }
 
@@ -195,7 +199,7 @@ public class TypedValueMap implements Map<String, Object> {
     public void putAll(Map<? extends String, ? extends Object> t) {
         for (Map.Entry<? extends String, ? extends Object> entry :
                 t.entrySet()) {
-            map.put(entry.getKey(), new TypedValue(entry.getValue()));
+            put(entry.getKey(), entry.getValue());
         }
     }
 
