@@ -84,7 +84,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>OpenVPMS Demo Clinic</nullif>
+        <nullif>Swanbourne Veterinary Hospital</nullif>
         <length>-1</length>
         <precision>-1</precision>
         </field>
@@ -95,7 +95,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>Boronia Road</nullif>
+        <nullif>2 Devon Road</nullif>
         <length>-1</length>
         <precision>-1</precision>
         </field>
@@ -106,7 +106,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>Boronia</nullif>
+        <nullif>Swanbourne</nullif>
         <length>-1</length>
         <precision>-1</precision>
         </field>
@@ -117,7 +117,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>VIC</nullif>
+        <nullif>WA</nullif>
         <length>-1</length>
         <precision>-1</precision>
         </field>
@@ -128,7 +128,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>3035</nullif>
+        <nullif>6034</nullif>
         <length>-1</length>
         <precision>-1</precision>
         </field>
@@ -139,7 +139,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>97623177</nullif>
+        <nullif>93842644</nullif>
         <length>-1</length>
         <precision>-1</precision>
         </field>
