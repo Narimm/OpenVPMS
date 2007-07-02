@@ -42,6 +42,26 @@
     </info>
   <notepads>
     </notepads>
+  <connection>
+    <name>openvpms</name>
+    <server>localhost</server>
+    <type>MYSQL</type>
+    <access>Native</access>
+    <database>openvpms</database>
+    <port>3306</port>
+    <username>openvpms</username>
+    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
   <order>
   <hop> <from>Text file input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Patient Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  </order>
 
@@ -116,9 +136,9 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PATIENTID</idColumn><mapping><source>NAME</source><target>&lt;party.patientpet>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SPECIES</source><target>&lt;party.patientpet>species</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>BREED</source><target>&lt;party.patientpet>breed</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>COLOUR</source><target>&lt;party.patientpet>colour</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DOB</source><target>&lt;party.patientpet>dateOfBirth</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SEX</source><target>&lt;party.patientpet>sex</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESEXFLAG</source><target>&lt;party.patientpet>desexed</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DECEASEDFLAG</source><target>&lt;party.patientpet>deceased</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;party.patientpet>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAG</source><target>&lt;party.patientpet>identities[0]&lt;entityIdentity.petTag>petTag</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MICROCHIP</source><target>&lt;party.patientpet>identities[1]&lt;entityIdentity.microchip>microchip</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>PATIENTID</idColumn><mapping><source>NAME</source><target>&lt;party.patientpet>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SPECIES</source><target>&lt;party.patientpet>species</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>BREED</source><target>&lt;party.patientpet>breed</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>COLOUR</source><target>&lt;party.patientpet>colour</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DOB</source><target>&lt;party.patientpet>dateOfBirth</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SEX</source><target>&lt;party.patientpet>sex</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESEXFLAG</source><target>&lt;party.patientpet>desexed</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DECEASEDFLAG</source><target>&lt;party.patientpet>deceased</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;party.patientpet>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAG</source><target>&lt;party.patientpet>identities[0]&lt;entityIdentity.petTag>petTag</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MICROCHIP</source><target>&lt;party.patientpet>identities[1]&lt;entityIdentity.microchip>microchip</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>531</xloc>
+      <xloc>530</xloc>
       <yloc>145</yloc>
       <draw>Y</draw>
       </GUI>
@@ -375,7 +395,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>          </nullif>
+        <nullif/>
         <ifnull/>
         <position>-1</position>
         <length>10</length>
@@ -476,7 +496,7 @@
       </fields>
     <limit>0</limit>
     <error_ignored>Y</error_ignored>
-    <error_line_skipped>Y</error_line_skipped>
+    <error_line_skipped>N</error_line_skipped>
     <error_count_field/>
     <error_fields_field/>
     <error_text_field/>
@@ -490,7 +510,7 @@
     <date_format_locale>en_au</date_format_locale>
      <cluster_schema/>
     <GUI>
-      <xloc>61</xloc>
+      <xloc>60</xloc>
       <yloc>146</yloc>
       <draw>Y</draw>
       </GUI>
@@ -538,7 +558,8 @@ if (DECEASED.getString() == &quot;TRUE&quot;)
 var ACTIVE = true
 if (INACTIVE.getString() == &quot;TRUE&quot;)
 	ACTIVE = false
-</jsScript_script>
+&#47;&#47;if(DOB.getString() == null || DOB.getString() == &quot;&quot;)
+	&#47;&#47;DOB.setString(&quot;01&#47;01&#47;1980&quot;)</jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>DESEXFLAG</name>
         <rename>DESEXFLAG</rename>
         <type>Boolean</type>
@@ -556,7 +577,7 @@ if (INACTIVE.getString() == &quot;TRUE&quot;)
         <precision>-1</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>397</xloc>
+      <xloc>396</xloc>
       <yloc>146</yloc>
       <draw>Y</draw>
       </GUI>
