@@ -1,5 +1,5 @@
 <archetypes>
-	<archetype name="openvpms-product-product.product.1.0" latest="true"
+	<archetype name="product.product.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.product.Product">
 		<node name="uid" path="/uid" displayName="id"
 			type="java.lang.Long" />

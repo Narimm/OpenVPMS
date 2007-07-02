@@ -19,9 +19,6 @@
 
 package org.openvpms.component.business.service.archetype.descriptor;
 
-// spring framework
-
-import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -37,12 +34,6 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  */
 public class AssertionDescriptorTestCase
         extends AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(AssertionDescriptorTestCase.class);
 
 
     /**
@@ -50,47 +41,15 @@ public class AssertionDescriptorTestCase
      */
     private ArchetypeService service;
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(AssertionDescriptorTestCase.class);
-    }
-
-    /**
-     * Constructor for DescriptorTestCase.
-     */
-    public AssertionDescriptorTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/descriptor/descriptor-test-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (ArchetypeService) applicationContext.getBean(
-                "archetypeService");
-    }
 
     /**
      * Test that the assertion descriptors are returned in the order they were
-     * entered
+     * entered.
      */
     public void testAssertionDescriptorOrdering()
             throws Exception {
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                "person.bernief");
+                "party.personbernief");
         assertTrue(adesc != null);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("identities");
         assertTrue(ndesc != null);
@@ -140,7 +99,7 @@ public class AssertionDescriptorTestCase
     public void testAssertionPropertyOrder()
             throws Exception {
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                "person.bernief");
+                "party.personbernief");
         assertTrue(adesc != null);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("identities");
         assertTrue(ndesc != null);
@@ -175,7 +134,7 @@ public class AssertionDescriptorTestCase
     public void testOBF10()
             throws Exception {
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                "person.person");
+                "party.person");
         assertTrue(adesc != null);
 
         // find and remove the classifications node
@@ -191,4 +150,28 @@ public class AssertionDescriptorTestCase
         // now validate the archetype
         service.validateObject(adesc);
     }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{
+                "org/openvpms/component/business/service/archetype/descriptor/descriptor-test-appcontext.xml"
+        };
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+
+        this.service = (ArchetypeService) applicationContext.getBean(
+                "archetypeService");
+    }
+
 }

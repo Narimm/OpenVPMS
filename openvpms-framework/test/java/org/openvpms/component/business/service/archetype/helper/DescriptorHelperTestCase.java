@@ -43,9 +43,9 @@ public class DescriptorHelperTestCase
      */
     public void testGetArchetypeDescriptor() {
         ArchetypeDescriptor animal
-                = DescriptorHelper.getArchetypeDescriptor("animal.pet");
+                = DescriptorHelper.getArchetypeDescriptor("party.animalpet");
         assertNotNull(animal);
-        assertEquals("animal.pet", animal.getType().getShortName());
+        assertEquals("party.animalpet", animal.getType().getShortName());
 
         ArchetypeDescriptor noExist
                 = DescriptorHelper.getArchetypeDescriptor("fox.pet");
@@ -53,7 +53,7 @@ public class DescriptorHelperTestCase
 
         // verify wildcards not expanded
         ArchetypeDescriptor noWild
-                = DescriptorHelper.getArchetypeDescriptor("animal.*");
+                = DescriptorHelper.getArchetypeDescriptor("party.animal*");
         assertNull(noWild);
     }
 
@@ -63,7 +63,7 @@ public class DescriptorHelperTestCase
     public void testGetArchetypeDescriptorFromRef() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        IMObject pet = service.create("animal.pet");
+        IMObject pet = service.create("party.animalpet");
         assertNotNull(pet);
 
         ArchetypeDescriptor expected;
@@ -71,7 +71,7 @@ public class DescriptorHelperTestCase
 
         IMObjectReference ref = pet.getObjectReference();
 
-        expected = DescriptorHelper.getArchetypeDescriptor("animal.pet");
+        expected = DescriptorHelper.getArchetypeDescriptor("party.animalpet");
         actual = DescriptorHelper.getArchetypeDescriptor(ref);
         assertNotNull(expected);
         assertNotNull(actual);
@@ -128,25 +128,25 @@ public class DescriptorHelperTestCase
     }
 
     /**
-     * Tests the {@link DescriptorHelper#getShortNames(String, String, String)}
+     * Tests the {@link DescriptorHelper#getShortNames(String, String)}
      * method.
      */
     public void testGetShortNames() {
         String[] result;
-        result = DescriptorHelper.getShortNames("party", "animal", "pet");
-        checkEquals(result, "animal.pet");
+        result = DescriptorHelper.getShortNames("party", "animalpet");
+        checkEquals(result, "party.animalpet");
 
-        result = DescriptorHelper.getShortNames(null, "animal", "pet");
-        checkEquals(result, "animal.pet");
+        result = DescriptorHelper.getShortNames(null, "animalpet");
+        checkEquals(result, "party.animalpet");
 
-        result = DescriptorHelper.getShortNames(null, null, "pet");
-        checkEquals(result, "animal.pet", "horse.pet");
+        result = DescriptorHelper.getShortNames(null, "*pet");
+        checkEquals(result, "party.patientpet", "party.animalpet",
+                    "party.horsepet");
 
-        result = DescriptorHelper.getShortNames("party", "animal", null);
-        checkEquals(result, "animal.pet");
+        result = DescriptorHelper.getShortNames("party", "animal*");
+        checkEquals(result, "party.animalpet");
 
-        result = DescriptorHelper.getShortNames(null, "act",
-                                                "customerEstimation*");
+        result = DescriptorHelper.getShortNames("act", "customerEstimation*");
         checkEquals(result, "act.customerEstimation",
                     "act.customerEstimationItem");
     }
@@ -156,7 +156,7 @@ public class DescriptorHelperTestCase
      */
     public void testGetShortNamesFromNodeDescriptor() {
         ArchetypeDescriptor person = DescriptorHelper.getArchetypeDescriptor(
-                "person.person");
+                "party.person");
         assertNotNull(person);
 
         // get a range from a collection node
@@ -167,7 +167,7 @@ public class DescriptorHelperTestCase
 
         // now check a node with a filter
         ArchetypeDescriptor personFilter
-                = DescriptorHelper.getArchetypeDescriptor("person.filter");
+                = DescriptorHelper.getArchetypeDescriptor("party.personfilter");
         assertNotNull(personFilter);
         NodeDescriptor patients
                 = personFilter.getNodeDescriptor("staffClassifications");
@@ -183,12 +183,13 @@ public class DescriptorHelperTestCase
     public void testGetShortNamesFromSingleShortName() {
         String[] actual;
 
-        actual = DescriptorHelper.getShortNames("animal.pet");
-        checkEquals(actual, "animal.pet");
+        actual = DescriptorHelper.getShortNames("party.animalpet");
+        checkEquals(actual, "party.animalpet");
 
         // now check wildcards
-        actual = DescriptorHelper.getShortNames("*.pet");
-        checkEquals(actual, "animal.pet", "horse.pet");
+        actual = DescriptorHelper.getShortNames("*pet");
+        checkEquals(actual, "party.patientpet", "party.animalpet",
+                    "party.horsepet");
     }
 
     /**
@@ -210,11 +211,11 @@ public class DescriptorHelperTestCase
      * Tests the {@link DescriptorHelper#getShortNames(String[])} method.
      */
     public void testGetShortNamesFromRange() {
-        String[] expected = {"animal.pet", "horse.pet"};
+        String[] expected = {"party.animalpet", "party.horsepet"};
         String[] actual = DescriptorHelper.getShortNames(expected);
         checkEquals(actual, expected);
 
-        String[] wildcards = {"animal.*", "horse.*"};
+        String[] wildcards = {"party.animal*", "party.horse*"};
         actual = DescriptorHelper.getShortNames(wildcards);
         checkEquals(actual, expected);
     }
@@ -237,7 +238,7 @@ public class DescriptorHelperTestCase
      * Tests the {@link DescriptorHelper#getDisplayName(String)} method.
      */
     public void testGetDisplayName() {
-        String name = DescriptorHelper.getDisplayName("animal.pet");
+        String name = DescriptorHelper.getDisplayName("party.animalpet");
         assertEquals("Patient(Pet)", name);
 
         // now check non-existent archetype
@@ -251,7 +252,7 @@ public class DescriptorHelperTestCase
     public void testGetDisplayNameForObject() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        IMObject object = service.create("animal.pet");
+        IMObject object = service.create("party.animalpet");
         assertNotNull(object);
         String name = DescriptorHelper.getDisplayName(object);
         assertEquals("Patient(Pet)", name);

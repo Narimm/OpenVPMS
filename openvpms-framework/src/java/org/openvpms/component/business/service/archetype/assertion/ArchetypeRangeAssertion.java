@@ -104,7 +104,7 @@ public class ArchetypeRangeAssertion {
                     ArchetypeId aid = adesc.getType();
                 List<IMObject> objects = ArchetypeQueryHelper.get(
                         ArchetypeServiceHelper.getArchetypeService(),
-                        aid.getRmName(), aid.getEntityName(), aid.getConcept(),
+                        aid.getEntityName(), aid.getConcept(),
                         type.defaultValue, true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
                     
                     // if can not find a matching entity
@@ -166,7 +166,7 @@ public class ArchetypeRangeAssertion {
         if (target instanceof Collection) {
             entries = (Collection) target;
         } else if (target instanceof Map) {
-            entries = (Collection) ((Map) target).values();
+            entries = ((Map) target).values();
         } else if (target instanceof PropertyCollection) {
             entries = ((PropertyCollection) target).values();
         }

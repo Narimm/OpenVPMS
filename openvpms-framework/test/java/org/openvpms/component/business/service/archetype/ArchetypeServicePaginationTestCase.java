@@ -79,7 +79,7 @@ public class ArchetypeServicePaginationTestCase extends
         for (int index = 0; index < 10; index++) {
             int rowsPerPage = index + 1;
             IPage<IMObject> objects = ArchetypeQueryHelper.get(service,
-                    "entity", "act", null, null, false, 0, rowsPerPage);
+                    "act", null, null, false, 0, rowsPerPage);
             int totalCount = objects.getTotalResults();
             int rowCount = objects.getResults().size();
             int pages = (totalCount % rowsPerPage) == 0 ? totalCount/rowsPerPage : totalCount /rowsPerPage + 1;
@@ -90,15 +90,15 @@ public class ArchetypeServicePaginationTestCase extends
             }
             
             for (int page = 1; page < pages; page++) {
-                objects = ArchetypeQueryHelper.get(service, "entity", "act", 
+                objects = ArchetypeQueryHelper.get(service, "act",
                         null, null, false, page*rowsPerPage, rowsPerPage);
+                assertNotNull(objects);
                 rowCount += objects.getResults().size();
                 if (logger.isDebugEnabled()) {
                     logger.debug("Page " + page + " numofRows " 
                             + objects.getResults().size()
                             + " totalCount " + totalCount + " rowCount " + rowCount);
                 }
-                assertTrue(objects != null);
                 assertTrue(objects.getResults().size() <= rowsPerPage);
             }
             assertTrue(rowCount == totalCount);
@@ -110,10 +110,10 @@ public class ArchetypeServicePaginationTestCase extends
      */
     public void testPaginationWithOversizedPages()
     throws Exception {
-        IPage<IMObject> objects = ArchetypeQueryHelper.get(service, "entity", 
+        IPage<IMObject> objects = ArchetypeQueryHelper.get(service,
                 "act", null, null, false, 0, 1);
         int totalCount = objects.getTotalResults();
-        objects = ArchetypeQueryHelper.get(service, "entity", "act", null, null, 
+        objects = ArchetypeQueryHelper.get(service, "act", null, null,
                 false, 0, totalCount*2);
         assertTrue(objects.getTotalResults() == totalCount);
     }
@@ -128,7 +128,7 @@ public class ArchetypeServicePaginationTestCase extends
         int rowsPerPage = 10;
         for (int startRow = 0;; startRow +=10) {
             IPage<IMObject> objects = ArchetypeQueryHelper.get(service,
-                    "common", "entityRelationship", "a*", null, false, 
+                    "entityRelationship", "a*", null, false,
                     startRow, rowsPerPage);
             for (IMObject object : objects.getResults()) {
                 if (linkIds.contains(object.getLinkId())) {
@@ -148,10 +148,10 @@ public class ArchetypeServicePaginationTestCase extends
      */
     public void testWithNullPagination()
     throws Exception {
-        IPage<IMObject> objects = ArchetypeQueryHelper.get(service, "entity", 
+        IPage<IMObject> objects = ArchetypeQueryHelper.get(service,
                 "act", null, null, false, 0, 1);
         int totalCount = objects.getTotalResults();
-        objects = ArchetypeQueryHelper.get(service, "entity", "act", null, null, 
+        objects = ArchetypeQueryHelper.get(service, "act", null, null, 
                 false, 0, ArchetypeQuery.ALL_RESULTS);
         assertTrue(objects.getTotalResults() == totalCount);
     }

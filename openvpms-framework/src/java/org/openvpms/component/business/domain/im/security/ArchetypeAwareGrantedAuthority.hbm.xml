@@ -29,13 +29,7 @@
     <version name="version" access="property" type="long" />
     <property name="linkId" access="property" type="string" length="100" />
     <component name="archetypeId">
-      <property name="namespace" access="property" column="arch_namespace"
-        type="string" length="100" />
-      <property name="rmName" access="property" column="arch_rm_name"
-        type="string" length="100" />
-      <property name="concept" access="property" column="arch_concept_name"
-        type="string" length="100" />
-      <property name="entityName" access="property" column="arch_entity_name"
+      <property name="shortName" access="property" column="arch_short_name"
         type="string" length="100" />
       <property name="version" access="property" column="arch_version"
         type="string" length="100" />
@@ -47,7 +41,7 @@
     <property name="prefix" access="field" column="prefix" type="string" />
     <property name="serviceName" access="property" column="service_name" type="string" />
     <property name="method" access="property" column="method" type="string" />
-    <property name="archetypeShortName" access="property" column="arch_short_name" type="string" />
+    <property name="archetypeShortName" access="property" column="archetype" type="string" />
     <property name="authority" access="property" column="authority" type="string" />
   </class>
 

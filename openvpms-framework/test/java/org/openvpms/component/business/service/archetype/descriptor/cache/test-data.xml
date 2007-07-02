@@ -89,8 +89,8 @@
 				</param>
 				<param name="archetypes" type="java.util.Vector"
 					value-type="java.lang.String">
-					<param>person.customer</param>
-					<param>animal.pet</param>
+					<param>party.personcustomer</param>
+					<param>party.animalpet</param>
 					<param>party.supplier</param>
 					<param>party.administrator</param>
 				</param>
@@ -145,21 +145,6 @@
 			</params>
 		</method>
 
-		<!--  Data for the testRetrievalByReferenceModelName method -->
-		<method name="testRetrievalByReferenceModelName"
-			test-case="normal">
-			<params>
-				<param name="recordCount1" type="java.lang.Integer">
-					14
-				</param>
-				<param name="recordCount2" type="java.lang.Integer">
-					15
-				</param>
-				<param name="recordCount3" type="java.lang.Integer">
-					16
-				</param>
-			</params>
-		</method>
 	</class>
 
 </tests>

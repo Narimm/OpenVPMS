@@ -47,6 +47,7 @@ import org.openvpms.component.system.service.hibernate.EntityInterceptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -378,10 +379,12 @@ public class ArchetypeService implements IArchetypeService {
      * (non-Javadoc)
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptorsByRmName(java.lang.String)
+     * @deprecated
      */
+    @Deprecated
     public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(
             String rmName) {
-        return dCache.getArchetypeDescriptorsByRmName(rmName);
+        return Collections.emptyList();
     }
 
     /* (non-Javadoc)
@@ -597,17 +600,34 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeShortNames(java.lang.String,
      *      java.lang.String, java.lang.String, boolean)
      */
+    @Deprecated
     public List<String> getArchetypeShortNames(String rmName,
                                                String entityName,
                                                String conceptName,
                                                boolean primaryOnly) {
-        return dCache.getArchetypeShortNames(rmName, entityName, conceptName,
+        return dCache.getArchetypeShortNames(entityName, conceptName,
+                                             primaryOnly);
+    }
+
+    /**
+     * Return a list of archtype short names given the specified criteria.
+     *
+     * @param entityName  the entity name
+     * @param conceptName the concept name
+     * @param primaryOnly indicates whether to return primary objects only.
+     * @return a list of short names
+     * @throws ArchetypeServiceException for any error
+     */
+    public List<String> getArchetypeShortNames(String entityName,
+                                               String conceptName,
+                                               boolean primaryOnly) {
+        return dCache.getArchetypeShortNames(entityName, conceptName,
                                              primaryOnly);
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeShortNames(java.lang.String, boolean)
-     */
+    * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeShortNames(java.lang.String, boolean)
+    */
     public List<String> getArchetypeShortNames(String shortName,
                                                boolean primaryOnly) {
         return dCache.getArchetypeShortNames(shortName, primaryOnly);
@@ -661,10 +681,10 @@ public class ArchetypeService implements IArchetypeService {
      * specified assertions. The assertions are defined in the node and can be
      * hierarchical, which means that this method is re-entrant.
      *
-     * @param context holds the object to be validated
+     * @param context    holds the object to be validated
      * @param descriptor the archetype descriptor
-     * @param nodes the node to validate
-     * @param errors  the errors are collected in this object
+     * @param nodes      the node to validate
+     * @param errors     the errors are collected in this object
      */
     private void validateObject(JXPathContext context,
                                 ArchetypeDescriptor descriptor,
@@ -752,9 +772,10 @@ public class ArchetypeService implements IArchetypeService {
                         IMObject imobj = (IMObject) obj;
                         if (imobj.getArchetypeId() == null) {
                             errors.add(
-                                    new ValidationError(null, null, new StringBuffer(
-                                            "No archetype Id was set for object of type ")
-                                            .append(imobj.getClass().getName()).toString()));
+                                    new ValidationError(null, null,
+                                                        new StringBuffer(
+                                                                "No archetype Id was set for object of type ")
+                                                                .append(imobj.getClass().getName()).toString()));
                             continue;
                         }
 
@@ -762,9 +783,10 @@ public class ArchetypeService implements IArchetypeService {
                                 imobj.getArchetypeId());
                         if (adesc == null) {
                             errors.add(
-                                    new ValidationError(null, null, new StringBuffer(
-                                            "No archetype definition for ").append(
-                                            imobj.getArchetypeId()).toString()));
+                                    new ValidationError(null, null,
+                                                        new StringBuffer(
+                                                                "No archetype definition for ").append(
+                                                                imobj.getArchetypeId()).toString()));
                             logger.error(new ArchetypeServiceException(
                                     ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
                                     imobj.getArchetypeId().toString()));
@@ -801,7 +823,8 @@ public class ArchetypeService implements IArchetypeService {
 
                     try {
                         if (!assertionType.validate(value, node, assertion)) {
-                            errors.add(new ValidationError(shortName, node.getName(),
+                            errors.add(new ValidationError(shortName,
+                                                           node.getName(),
                                                            assertion.getErrorMessage()));
                             if (logger.isDebugEnabled()) {
                                 logger.debug("Assertion failed for Node: "
@@ -813,8 +836,9 @@ public class ArchetypeService implements IArchetypeService {
                         // log the error
                         logger.error("Error in validateObject for node "
                                 + node.getName(), exception);
-                        errors.add(new ValidationError(shortName, node.getName(),
-                                                       assertion.getErrorMessage()));
+                        errors.add(
+                                new ValidationError(shortName, node.getName(),
+                                                    assertion.getErrorMessage()));
                     }
                 }
             }

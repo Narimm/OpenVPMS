@@ -19,32 +19,23 @@
 
 package org.openvpms.component.business.domain.im.datatypes.property;
 
-// java core
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-//commons-lang
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.log4j.Logger;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-
 
 /**
  * A property list extends {@link NamedProperty} and implements the
- * {@link Link} interface.
+ * {@link PropertyCollection} interface.
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
 public class PropertyList extends NamedProperty implements PropertyCollection {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(PropertyList.class);
 
     /**
      * Default SUID
@@ -60,7 +51,7 @@ public class PropertyList extends NamedProperty implements PropertyCollection {
      * Default constructor 
      */
     public PropertyList() {
-        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.propertyList.1.0"));
+        setArchetypeId(new ArchetypeId("descriptor.propertyList.1.0"));
     }
 
     /**
@@ -101,8 +92,7 @@ public class PropertyList extends NamedProperty implements PropertyCollection {
      * @return Returns the properties.
      */
     public NamedProperty[] getPropertiesAsArray() {
-        return (NamedProperty[])properties.toArray(
-                new NamedProperty[properties.size()]);
+        return properties.toArray(new NamedProperty[properties.size()]);
     }
 
     /**
@@ -135,7 +125,7 @@ public class PropertyList extends NamedProperty implements PropertyCollection {
      */
     @Override
     public void setValue(Object value) {
-        properties = (Set<NamedProperty>)properties;
+        properties = (Set<NamedProperty>)value;
     }
 
     /* (non-Javadoc)

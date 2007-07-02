@@ -18,7 +18,6 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// java-core
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -30,76 +29,43 @@ import org.openvpms.component.system.common.test.BaseTestCase;
 import java.util.Date;
 import java.util.Hashtable;
 
+
 /**
- * Test that validation errors work correctly
+ * Test that validation errors work correctly.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-
 @SuppressWarnings("HardCodedStringLiteral")
 public class ValidationErrorTestCase extends BaseTestCase {
+
     /**
-     * cache the archetype service
+     * cache the archetype service.
      */
     private ArchetypeService service;
 
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(ValidationErrorTestCase.class);
-    }
-
-    /**
-     * Constructor for ArchetypeServiceTestCase.
-     *
-     * @param name
-     */
-    public ValidationErrorTestCase(String name) {
-        super(name);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.openvpms.component.system.common.test.BaseTestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        Hashtable params = getTestData().getGlobalParams();
-        String assertionFile = (String) params.get("assertionFile");
-        String dir = (String) params.get("dir");
-        String extension = (String) params.get("extension");
-
-        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(dir,
-                new String[] { extension }, assertionFile);
-        service = new ArchetypeService(cache);
-    }
 
     /**
      * Test that a validation exception is actually generated for an invalid
-     * object
+     * object.
      */
     public void testSimpleValidationException() throws Exception {
         Party person = new Party();
-        person.setArchetypeId(service.getArchetypeDescriptor("person.person")
+        person.setArchetypeId(service.getArchetypeDescriptor("party.person")
                 .getType());
         try {
             service.validateObject(person);
             fail("This object should not have passed validation");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            ValidationException ve = (ValidationException)exception;
+            ValidationException ve = (ValidationException) exception;
             assertEquals(1, ve.getErrors().size());
         }
     }
 
     /**
      * Test that no validation exception is thrown for this extended validation
-     * example
+     * example.
      */
     public void testExtendedValidationException() throws Exception {
         Party person = createPerson("MR", "Jim", "Alateras");
@@ -112,16 +78,17 @@ public class ValidationErrorTestCase extends BaseTestCase {
     }
 
     /**
-     * Test an object going from 5 to zero validation errors
+     * Test an object going from 5 to zero validation errors.
      */
     public void testDecreaseToZeroErrors() throws Exception {
-        Party person = (Party)service.create("person.person");
+        Party person = (Party) service.create("party.person");
         try {
             service.validateObject(person);
             fail("This object should not have passed validation");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(
+                    ((ValidationException) exception).getErrors().size() == 1);
         }
 
         person.getDetails().put("lastName", "Alateras");
@@ -130,7 +97,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
     /**
      * Test that the correct error is generated when a incorrect value is passed
-     * in for title
+     * in for title.
      */
     public void testIncorrectLookupValue() throws Exception {
         Party person = createPerson("Mister", "Jim", "Alateras");
@@ -139,13 +106,14 @@ public class ValidationErrorTestCase extends BaseTestCase {
             fail("This object should not have passed validation");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(
+                    ((ValidationException) exception).getErrors().size() == 1);
         }
     }
 
     /**
      * Test the min cardinality attached to the archetypeRange assertion being
-     * satisfied
+     * satisfied.
      */
     public void testValidMinCardinalityOnArchetypeRange() throws Exception {
         Party person = createPerson("MR", "Jim", "Alateras");
@@ -156,11 +124,11 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
     /**
      * Test the max cardinality attached to the archetypeRange
-     * assertion being satisfied
+     * assertion being satisfied.
      */
     public void testValidMaxCardinalityOnArchetypeRange()
-    throws Exception {
-        Party person = (Party)service.create("person.jima");
+            throws Exception {
+        Party person = (Party) service.create("party.personjima");
 
         person.getDetails().put("title", "MR");
         person.getDetails().put("firstName", "Jim");
@@ -208,7 +176,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
     }
 
     /**
-     * Test a simple regex validation
+     * Test a simple regex validation.
      */
     public void testRegExValidation() throws Exception {
         Hashtable cparams = getTestData().getGlobalParams();
@@ -217,10 +185,10 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
                 (String) params.get("file"), (String) cparams
-                        .get("assertionFile"));
+                .get("assertionFile"));
         ArchetypeService service = new ArchetypeService(cache);
 
-        assertTrue(service.getArchetypeDescriptor("contact.phoneNumber") != null);
+        assertNotNull(service.getArchetypeDescriptor("contact.phoneNumber"));
         Contact contact = (Contact) service.create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
         contact.getDetails().put("telephoneNumber", "976767666");
@@ -237,7 +205,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
     }
 
     /**
-     * Test that min and max cardinalities also work for collection classes
+     * Test that min and max cardinalities also work for collection classes.
      */
     public void testMinMaxCardinalityOnCollections() throws Exception {
         Hashtable cparams = getTestData().getGlobalParams();
@@ -246,11 +214,11 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
                 (String) params.get("file"), (String) cparams
-                        .get("assertionFile"));
+                .get("assertionFile"));
         ArchetypeService service = new ArchetypeService(cache);
 
-        assertTrue(service.getArchetypeDescriptor("animal.pet") != null);
-        Party pet = (Party) service.create("animal.pet");
+        assertTrue(service.getArchetypeDescriptor("party.animalpet") != null);
+        Party pet = (Party) service.create("party.animalpet");
         pet.setName("bill");
         pet.getDetails().put("sex", "male");
         pet.getDetails().put("dateOfBirth", new Date());
@@ -260,34 +228,40 @@ public class ValidationErrorTestCase extends BaseTestCase {
             fail("Validation should have failed since min cardinality was violated");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(
+                    ((ValidationException) exception).getErrors().size() == 1);
         }
 
         // this should now validate
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
 
         // so should this
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus1"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus1"));
         service.validateObject(pet);
 
         // and this
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus2"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus2"));
         service.validateObject(pet);
 
         // but not this
         try {
-            pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus3"));
+            pet.getIdentities().add(createEntityIdentity(
+                    "entityIdentity.animalAlias", "brutus3"));
             service.validateObject(pet);
             fail("Validation should have failed since max cardinality was violated");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(
+                    ((ValidationException) exception).getErrors().size() == 1);
         }
     }
 
     /**
-     * Test where only the max cardinality is specified on a collection
+     * Test where only the max cardinality is specified on a collection.
      */
     public void testMaxCardinalityOnCollections() throws Exception {
         Hashtable cparams = getTestData().getGlobalParams();
@@ -296,41 +270,46 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
                 (String) params.get("file"), (String) cparams
-                        .get("assertionFile"));
+                .get("assertionFile"));
         ArchetypeService service = new ArchetypeService(cache);
 
-        assertTrue(service.getArchetypeDescriptor("animal.pet1") != null);
-        Party pet = (Party) service.create("animal.pet1");
+        assertNotNull(service.getArchetypeDescriptor("party.animalpet1"));
+        Party pet = (Party) service.create("party.animalpet1");
         pet.setName("bill");
         pet.getDetails().put("sex", "male");
         pet.getDetails().put("dateOfBirth", new Date());
         service.validateObject(pet);
 
         // this should validate
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
 
         // and this
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus1"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus1"));
         service.validateObject(pet);
 
         // and this
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus2"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus2"));
         service.validateObject(pet);
 
         // but not this
         try {
-            pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus3"));
+            pet.getIdentities().add(createEntityIdentity(
+                    "entityIdentity.animalAlias", "brutus3"));
             service.validateObject(pet);
             fail("Validation should have failed since min cardinality was violated");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(
+                    ((ValidationException) exception).getErrors().size() == 1);
         }
     }
 
     /**
-     * Test where min cardinality and unbounded is specifed on collection
+     * Test where min cardinality and unbounded is specifed on collection.
      */
     public void testMinUnboundedCardinalityOnCollections() throws Exception {
         Hashtable cparams = getTestData().getGlobalParams();
@@ -339,11 +318,11 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
                 (String) params.get("file"), (String) cparams
-                        .get("assertionFile"));
+                .get("assertionFile"));
         ArchetypeService service = new ArchetypeService(cache);
 
-        assertTrue(service.getArchetypeDescriptor("animal.pet") != null);
-        Party pet = (Party) service.create("animal.pet2");
+        assertTrue(service.getArchetypeDescriptor("party.animalpet") != null);
+        Party pet = (Party) service.create("party.animalpet2");
         pet.setName("bill");
         pet.getDetails().put("sex", "male");
         pet.getDetails().put("dateOfBirth", new Date());
@@ -352,11 +331,13 @@ public class ValidationErrorTestCase extends BaseTestCase {
             fail("Validation should have failed since min cardinality was violated");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(
+                    ((ValidationException) exception).getErrors().size() == 1);
         }
 
         // this should not validate
-        EntityIdentity eid = (EntityIdentity)service.create("entityIdentity.animalAlias");
+        EntityIdentity eid = (EntityIdentity) service.create(
+                "entityIdentity.animalAlias");
         eid.setIdentity("animal1");
         pet.getIdentities().add(eid);
         try {
@@ -364,35 +345,45 @@ public class ValidationErrorTestCase extends BaseTestCase {
             fail("Validation should have failed since min cardinality was violated");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(
+                    ((ValidationException) exception).getErrors().size() == 1);
         }
 
         // this should not validate
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         try {
             service.validateObject(pet);
             fail("Validation should have failed since min cardinality was violated");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(((ValidationException) exception).getErrors().size() == 1);
+            assertTrue(
+                    ((ValidationException) exception).getErrors().size() == 1);
         }
 
         // but this should
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
 
         // and so should this
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
     }
 
     /**
-     * Tst where only unbounded cardinality is specified on collections
+     * Tst where only unbounded cardinality is specified on collections.
      */
     public void testUnboundedCardinalityOnCollections() throws Exception {
         Hashtable cparams = getTestData().getGlobalParams();
@@ -401,41 +392,69 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
                 (String) params.get("file"), (String) cparams
-                        .get("assertionFile"));
+                .get("assertionFile"));
         ArchetypeService service = new ArchetypeService(cache);
 
-        assertTrue(service.getArchetypeDescriptor("animal.pet3") != null);
-        Party pet = (Party) service.create("animal.pet3");
+        assertNotNull(service.getArchetypeDescriptor("party.animalpet3"));
+        Party pet = (Party) service.create("party.animalpet3");
         pet.setName("bill");
         pet.getDetails().put("sex", "male");
         pet.getDetails().put("dateOfBirth", new Date());
         service.validateObject(pet);
 
         // this should also validate
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
 
         // and this
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
 
         // and this
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
-        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(
+                createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
+    }
+
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.openvpms.component.system.common.test.BaseTestCase#setUp()
+    */
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        Hashtable params = getTestData().getGlobalParams();
+        String assertionFile = (String) params.get("assertionFile");
+        String dir = (String) params.get("dir");
+        String extension = (String) params.get("extension");
+
+        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
+                dir, new String[]{extension}, assertionFile);
+        service = new ArchetypeService(cache);
     }
 
     /**
      * Dump the errors in the validation exception.
      *
-     * @param exception
-     *            the validation exception
+     * @param exception the validation exception
      */
     protected void dumpErrors(ValidationException exception) {
         for (ValidationError error : exception.getErrors()) {
@@ -457,17 +476,16 @@ public class ValidationErrorTestCase extends BaseTestCase {
     }
 
     /**
-     * This will create an entity identtiy with the specified identity
+     * This will create an entity identtiy with the specified identity.
      *
-     * @param shortName
-     *            the archetype
-     * @param identity
-     *            the identity to set
+     * @param shortName the archetype
+     * @param identity  the identity to set
      * @return EntityIdentity
      * @throws Exception
      */
-    private EntityIdentity createEntityIdentity(String shortName, String identity)
-    throws Exception {
+    private EntityIdentity createEntityIdentity(String shortName,
+                                                String identity)
+            throws Exception {
         EntityIdentity eid = (EntityIdentity) service.create(shortName);
         eid.setIdentity(identity);
 
@@ -475,18 +493,15 @@ public class ValidationErrorTestCase extends BaseTestCase {
     }
 
     /**
-     * Create a person
+     * Create a person.
      *
-     * @param title
-     *            the person's title
-     * @param firstName
-     *            the person's first name
-     * @param lastName
-     *            the person's last name
+     * @param title     the person's title
+     * @param firstName the person's first name
+     * @param lastName  the person's last name
      * @return Person
      */
     public Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party)service.create("person.person");
+        Party person = (Party) service.create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);

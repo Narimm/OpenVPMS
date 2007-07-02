@@ -19,16 +19,13 @@
 
 package org.openvpms.component.business.domain.im.datatypes.property;
 
-// java core
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-// commons-lang
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.log4j.Logger;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
 /**
@@ -39,13 +36,6 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
  * @version  $LastChangedDate$
  */
 public class PropertyMap extends NamedProperty implements PropertyCollection {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(PropertyMap.class);
-
 
     /**
      * Default SUID
@@ -62,7 +52,7 @@ public class PropertyMap extends NamedProperty implements PropertyCollection {
      * Default constructor 
      */
     public PropertyMap() {
-        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.propertyMap.1.0"));
+        setArchetypeId(new ArchetypeId("descriptor.propertyMap.1.0"));
     }
 
     /**
@@ -112,7 +102,7 @@ public class PropertyMap extends NamedProperty implements PropertyCollection {
      * @return Returns the properties.
      */
     public NamedProperty[] getPropertiesAsArray() {
-        return (NamedProperty[])properties.values().toArray(
+        return properties.values().toArray(
                 new NamedProperty[properties.size()]);
     }
 
@@ -146,7 +136,7 @@ public class PropertyMap extends NamedProperty implements PropertyCollection {
      */
     @Override
     public void setValue(Object value) {
-        properties = (Map<String, NamedProperty>)properties;
+        properties = (Map<String, NamedProperty>)value;
     }
 
     /* (non-Javadoc)

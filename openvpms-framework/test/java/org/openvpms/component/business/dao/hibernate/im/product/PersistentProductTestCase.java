@@ -25,6 +25,7 @@ import org.openvpms.component.business.dao.hibernate.im.party.HibernatePartyUtil
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.lookup.LookupUtil;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -422,7 +423,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
      */
     private Product createProduct(String name) throws Exception {
         Product product = new Product();
-        product.setArchetypeIdAsString("openvpms-product-product.basic.1.0");
+        product.setArchetypeIdAsString("product.basic.1.0");
         product.setName(name);
 
         return product;
@@ -439,7 +440,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
      */
     private ProductPrice createProductPrice(int price, boolean fixed) throws Exception {
         ProductPrice pp = new ProductPrice();
-        pp.setArchetypeIdAsString("openvpms-product-productPrice.basic.1.0");
+        pp.setArchetypeIdAsString("productPrice.basic.1.0");
         pp.setName("price");
         pp.setFromDate(new Date());
         pp.setThruDate(new Date());
@@ -456,10 +457,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
      * @return a new lookup
      */
     private Lookup createClassification(String code) throws Exception {
-        Lookup result = new Lookup();
-        result.setArchetypeIdAsString("openvpms-productprice-classification.current.1.0");
-        result.setCode(code);
-        return result;
+        return LookupUtil.createLookup("lookup.classification", code);
     }
 
     /* (non-Javadoc)

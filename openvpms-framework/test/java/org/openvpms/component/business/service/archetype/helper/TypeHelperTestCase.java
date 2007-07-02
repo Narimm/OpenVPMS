@@ -35,30 +35,31 @@ public class TypeHelperTestCase
         extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * The archetype service service
+     * The archetype service.
      */
-    private ArchetypeService _service;
+    private ArchetypeService service;
+
 
     /**
      * Tests the {@link TypeHelper#isA(IMObject, String)} method.
      */
     public void testIsASingle() {
-        IMObject object = _service.create("animal.pet");
+        IMObject object = service.create("party.animalpet");
         assertNotNull(object);
-        assertTrue(TypeHelper.isA(object, "animal.pet"));
-        assertFalse(TypeHelper.isA(object, "horse.pet"));
+        assertTrue(TypeHelper.isA(object, "party.animalpet"));
+        assertFalse(TypeHelper.isA(object, "party.horsepet"));
 
         // test wildcards
-        assertTrue(TypeHelper.isA(object, "animal.*"));
-        assertTrue(TypeHelper.isA(object, "animal.p*"));
-        assertFalse(TypeHelper.isA(object, "horse.p*"));
+        assertTrue(TypeHelper.isA(object, "party.animal*"));
+        assertTrue(TypeHelper.isA(object, "party.animalp*"));
+        assertFalse(TypeHelper.isA(object, "party.horsep*"));
     }
 
     /**
      * Tests the {@link TypeHelper#isA(IMObject, String...)} method.
      */
     public void testIsAMultiple() {
-        IMObject object = _service.create("act.customerAccountPayment");
+        IMObject object = service.create("act.customerAccountPayment");
         assertNotNull(object);
         String[] matches = {"act.customerAccountPaymentCash",
                             "act.customerAccountPayment"};
@@ -82,7 +83,7 @@ public class TypeHelperTestCase
      * Tests the {@link TypeHelper#isA(IMObjectReference, String)} method.
      */
     public void testIsARef() {
-        IMObject object = _service.create("party.customerperson");
+        IMObject object = service.create("party.customerperson");
         assertNotNull(object);
         IMObjectReference ref = object.getObjectReference();
 
@@ -99,7 +100,7 @@ public class TypeHelperTestCase
      * Tests the {@link TypeHelper#matches(ArchetypeId, String)} method.
      */
     public void testMatchesId() {
-        IMObject object = _service.create("party.customerperson");
+        IMObject object = service.create("party.customerperson");
         assertNotNull(object);
         ArchetypeId id = object.getArchetypeId();
 
@@ -158,7 +159,7 @@ public class TypeHelperTestCase
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        _service = (ArchetypeService) applicationContext.getBean(
+        service = (ArchetypeService) applicationContext.getBean(
                 "archetypeService");
     }
 }

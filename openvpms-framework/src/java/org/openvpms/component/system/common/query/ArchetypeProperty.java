@@ -23,8 +23,10 @@ package org.openvpms.component.system.common.query;
  * An enumeration of the different archetype properties
  *  
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @version  $LastChangedDate: 2006-04-24 07:55:08Z
+ * @deprecated no replacement
  */
+@Deprecated
 public enum ArchetypeProperty {
     ReferenceModelName,
     EntityName,

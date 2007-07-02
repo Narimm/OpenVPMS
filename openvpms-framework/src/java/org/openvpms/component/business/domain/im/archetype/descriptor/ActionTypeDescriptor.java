@@ -49,7 +49,7 @@ public class ActionTypeDescriptor extends Descriptor {
      * Default constructor
      */
     public ActionTypeDescriptor() {
-        this.setArchetypeId(new ArchetypeId("openvpms-system-descriptor.actionType.1.0"));
+        this.setArchetypeId(new ArchetypeId("descriptor.actionType.1.0"));
     }
     
     /**

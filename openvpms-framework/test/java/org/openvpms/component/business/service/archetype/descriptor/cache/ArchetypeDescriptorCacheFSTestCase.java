@@ -18,13 +18,12 @@
 
 package org.openvpms.component.business.service.archetype.descriptor.cache;
 
-// java-core
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.system.common.test.BaseTestCase;
 
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Vector;
+
 
 /**
  * Test the
@@ -34,22 +33,6 @@ import java.util.Vector;
  * @version $LastChangedDate$
  */
 public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
-
-    /**
-     * @param args  
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(ArchetypeDescriptorCacheFSTestCase.class);
-    }
-
-    /**
-     * Constructor for ArchetypeDescriptorCacheFSTestCase.
-     * 
-     * @param name
-     */
-    public ArchetypeDescriptorCacheFSTestCase(String name) {
-        super(name);
-    }
 
     /**
      * Test the creation of a new registry with a null filename
@@ -90,9 +73,8 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
                         "valid-files", "assertionFile");
         Vector testData = (Vector) this.getTestData().getTestCaseParameter(
                 "testCreationWithValidFileContent", "valid-files", "files");
-        Iterator iter = testData.iterator();
-        while (iter.hasNext()) {
-            new ArchetypeDescriptorCacheFS((String) iter.next(), assertionFile);
+        for (Object str : testData) {
+            new ArchetypeDescriptorCacheFS((String) str, assertionFile);
         }
     }
 
@@ -105,13 +87,12 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
                         "invalid-files", "assertionFile");
         Vector testData = (Vector) this.getTestData().getTestCaseParameter(
                 "testCreationWithInvalidFileContent", "invalid-files", "files");
-        Iterator iter = testData.iterator();
-        while (iter.hasNext()) {
+        for (Object str : testData) {
             try {
-                new ArchetypeDescriptorCacheFS((String) iter.next(), assertionFile);
+                new ArchetypeDescriptorCacheFS((String) str, assertionFile);
             } catch (ArchetypeDescriptorCacheException exception) {
-                assertTrue(exception.getErrorCode() == 
-                    ArchetypeDescriptorCacheException.ErrorCode.InvalidFile);
+                assertTrue(exception.getErrorCode() ==
+                        ArchetypeDescriptorCacheException.ErrorCode.InvalidFile);
             }
         }
     }
@@ -128,11 +109,10 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
         Vector archetypes = (Vector) this.getTestData().getTestCaseParameter(
                 "testValidEntryRetrieval", "valid-retrieval", "archetypes");
 
-        ArchetypeDescriptorCacheFS cache = new ArchetypeDescriptorCacheFS(validFile,
-                assertionFile);
-        Iterator iter = archetypes.iterator();
-        while (iter.hasNext()) {
-            String key = (String) iter.next();
+        ArchetypeDescriptorCacheFS cache
+                = new ArchetypeDescriptorCacheFS(validFile, assertionFile);
+        for (Object archetype : archetypes) {
+            String key = (String) archetype;
             ArchetypeDescriptor descriptor = cache.getArchetypeDescriptor(key);
             assertTrue(("Looking for " + key), (descriptor != null));
             assertTrue(descriptor.getType() != null);
@@ -153,11 +133,10 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
 
         ArchetypeDescriptorCacheFS cache = new ArchetypeDescriptorCacheFS(validFile,
                 assertionFile);
-        Iterator iter = archetypes.iterator();
-        while (iter.hasNext()) {
-            String key = (String) iter.next();
-            assertTrue(("Looking for " + key), 
-                    cache.getArchetypeDescriptor(key) == null);
+        for (Object archetype : archetypes) {
+            String key = (String) archetype;
+            assertTrue(("Looking for " + key),
+                       cache.getArchetypeDescriptor(key) == null);
         }
     }
 
@@ -198,42 +177,17 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
         assertEquals(((Integer) params.get("recordCount1")).intValue(),
                      cache.getArchetypeDescriptors("entityRelationship.*").size());
 
-        // test retrieval for anything with animal
+        // test retrieval for anything with party.animal
         assertEquals(((Integer) params.get("recordCount2")).intValue(),
-                     cache.getArchetypeDescriptors("animal.*pet*").size());
+                     cache.getArchetypeDescriptors("*party.animal*").size());
 
-        // test retrieval for anything that starts with person
+        // test retrieval for anything that starts with party.person
         assertEquals(((Integer) params.get("recordCount3")).intValue(),
-                   cache.getArchetypeDescriptors("person.*").size());
+                   cache.getArchetypeDescriptors("party.person*").size());
 
-        // test retrieval for anything that matches person.person
+        // test retrieval for anything that matches party.person
         assertEquals(((Integer) params.get("recordCount4")).intValue(),
-                     cache.getArchetypeDescriptors("person.person").size());
+                     cache.getArchetypeDescriptors("party.person").size());
     }
 
-    /**
-     * 
-     */
-    public void testRetrievalByReferenceModelName() throws Exception {
-        Hashtable cparams = getTestData().getGlobalParams();
-        Hashtable params = this.getTestData().getTestCaseParams(
-                "testRetrievalByReferenceModelName", "normal");
-
-        ArchetypeDescriptorCacheFS cache = new ArchetypeDescriptorCacheFS(
-                (String) cparams.get("dir"),
-                new String[] { (String) cparams.get("extension") },
-                (String) cparams.get("assertionFile"));
-
-        // test retrieval of all records that start with party
-        assertEquals(((Integer) params.get("recordCount1")).intValue(),
-                cache.getArchetypeDescriptorsByRmName("party").size());
-
-        // test retrieval for anything with common
-        assertEquals(((Integer) params.get("recordCount2")).intValue(),
-                   cache.getArchetypeDescriptorsByRmName("common").size());
-
-        // test retrieval for anything that starts with lookup
-        assertEquals(((Integer) params.get("recordCount3")).intValue(),
-                     cache.getArchetypeDescriptorsByRmName("lookup").size());
-    }
 }

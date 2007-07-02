@@ -82,6 +82,7 @@ public class CollectionNodeConstraint extends JoinConstraint {
      * @param primaryOnly only deal with primary archetypes
      * @param activeOnly  constraint to active only objects
      */
+    @Deprecated
     public CollectionNodeConstraint(String nodeName, String rmName,
                                     String entityName, String conceptName,
                                     boolean primaryOnly, boolean activeOnly) {

@@ -1,5 +1,5 @@
 <archetypes>
-    <archetype name="openvpms-common-act.customerAccountPayment.1.0"
+    <archetype name="act.customerAccountPayment.1.0"
                latest="true"
                type="org.openvpms.component.business.domain.im.act.Act"
                displayName="Customer Payment">

@@ -92,7 +92,7 @@ public class IMObjectBeanTestCase
      * Tests the {@link IMObjectBean#getDisplayName()} method.
      */
     public void testGetDisplayName() {
-        IMObjectBean pet = createBean("animal.pet");
+        IMObjectBean pet = createBean("party.animalpet");
         assertEquals("Patient(Pet)", pet.getDisplayName());
 
         // verify shortname is returned when no display name is present
@@ -109,7 +109,7 @@ public class IMObjectBeanTestCase
 
         // verify that a node without a custom display name is an uncamel-cased
         // version of the node name
-        IMObjectBean pet = createBean("animal.pet");
+        IMObjectBean pet = createBean("party.animalpet");
         assertEquals("Date Of Birth", pet.getDisplayName("dateOfBirth"));
     }
 

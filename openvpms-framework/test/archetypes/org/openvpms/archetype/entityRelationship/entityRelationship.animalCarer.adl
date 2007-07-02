@@ -1,5 +1,5 @@
 <archetypes>
-	<archetype name="openvpms-common-entityRelationship.animalCarer.1.0"
+	<archetype name="entityRelationship.animalCarer.1.0"
 		latest="true"
 		type="org.openvpms.component.business.domain.im.common.EntityRelationship">
 		<node name="uid" path="/uid" displayName="id"
@@ -16,7 +16,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="person.person" />
+							value="party.person" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
@@ -32,10 +32,10 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="animal.pet" />
+							value="party.animalpet" />
 					</propertyMap>
 				</propertyList>
-				<errorMessage>Must be of type animal.pet</errorMessage>
+				<errorMessage>Must be of type party.animalpet</errorMessage>
 			</assertion>
 		</node>
 	</archetype>

@@ -224,7 +224,7 @@ public class NodeDescriptor extends Descriptor {
      * Default constructor
      */
     public NodeDescriptor() {
-        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.node.1.0"));
+        setArchetypeId(new ArchetypeId("descriptor.node.1.0"));
     }
 
     /**
@@ -323,12 +323,11 @@ public class NodeDescriptor extends Descriptor {
         if ((nodeDescriptors != null) && (nodeDescriptors.size() > 0)) {
             if (getArchetypeId().getConcept().equals("node")) {
                 setArchetypeId(new ArchetypeId(
-                        "openvpms-system-descriptor.collectionNode.1.0"));
+                        "descriptor.collectionNode.1.0"));
             }
         } else {
             if (getArchetypeId().getConcept().equals("collectionNode")) {
-                setArchetypeId(new ArchetypeId(
-                        "openvpms-system-descriptor.node.1.0"));
+                setArchetypeId(new ArchetypeId("descriptor.node.1.0"));
             }
         }
     }

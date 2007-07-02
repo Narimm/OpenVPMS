@@ -19,8 +19,6 @@
 package org.openvpms.component.business.service.audit;
 
 
-// commons-lang
-import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.audit.AuditRecord;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -37,12 +35,6 @@ import java.util.List;
  */
 public class AuditServiceTestCase extends
         AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(AuditServiceTestCase.class);
 
     /**
      * Holds a reference to the archetectype service
@@ -54,40 +46,6 @@ public class AuditServiceTestCase extends
      */
     private IAuditService audit;
     
-    
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(AuditServiceTestCase.class);
-    }
-
-    /**
-     * Default constructor
-     */
-    public AuditServiceTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[] { "org/openvpms/component/business/service/audit/audit-service-appcontext.xml" };
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        this.archetype = (IArchetypeService)applicationContext
-            .getBean("archetypeService");
-        this.audit = (IAuditService)applicationContext
-            .getBean("auditService");
-    }
     
     /**
      * Test that audit recrods are successfully created on save
@@ -186,11 +144,36 @@ public class AuditServiceTestCase extends
      * @return Person
      */
      public Party createPerson(String title, String firstName, String lastName) {
-         Party person = (Party)archetype.create("person.person");
+         Party person = (Party)archetype.create("party.person");
          person.getDetails().put("lastName", lastName);
          person.getDetails().put("firstName", firstName);
          person.getDetails().put("title", title);
          
          return person;
      }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[] { "org/openvpms/component/business/service/audit/audit-service-appcontext.xml" };
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        this.archetype = (IArchetypeService)applicationContext
+            .getBean("archetypeService");
+        this.audit = (IAuditService)applicationContext
+            .getBean("auditService");
+    }
+
 }

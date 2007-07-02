@@ -268,7 +268,7 @@ public class ActTestCase extends
      * @return Person
      */
     private Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party)archetypeService.create("person.person");
+        Party person = (Party)archetypeService.create("party.person");
 
         person.getDetails().put("title", title);
         person.getDetails().put("firstName", firstName);

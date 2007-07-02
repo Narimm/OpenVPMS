@@ -42,7 +42,6 @@ public class QueryBuilderException extends OpenVPMSException {
      */
     public enum ErrorCode {
         NullQuery,
-        InvalidShortName,
         NoShortNamesSpeified,
         InvalidLongNameSpecified,
         MustSpecifyNodeName,
@@ -59,7 +58,6 @@ public class QueryBuilderException extends OpenVPMSException {
         NoMatchingArchetypesForId,
         NoMatchingArchetypesForShortName,
         NoMatchingArchetypesForLongName,
-        MustSpecifyArchetypeProperty,
         NoArchetypeRangeAssertion
     }
 

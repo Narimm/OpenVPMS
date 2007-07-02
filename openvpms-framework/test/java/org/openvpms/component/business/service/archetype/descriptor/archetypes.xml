@@ -1,5 +1,5 @@
 <archetypes>
-    <archetype name="openvpms-party-person.person.1.0" latest="true"
+    <archetype name="party.person.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party">
         <node name="uid" path="/uid" displayName="id"
               type="java.lang.Long"/>
@@ -87,7 +87,7 @@
         </node>
     </archetype>
 
-    <archetype name="openvpms-common-classification.staff.1.0" latest="true"
+    <archetype name="lookup.staff.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.lookup.Lookup">
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long"/>
         <node name="name" path="/name" type="java.lang.String"

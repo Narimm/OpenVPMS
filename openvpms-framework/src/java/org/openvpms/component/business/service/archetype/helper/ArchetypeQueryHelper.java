@@ -107,7 +107,7 @@ public class ArchetypeQueryHelper {
                                 Date endTimeThru, String status,
                                 boolean activeOnly, int firstResult,
                                 int maxResults) {
-        ArchetypeQuery query = new ArchetypeQuery(null, entityName,
+        ArchetypeQuery query = new ArchetypeQuery(entityName,
                                                   aConceptName,
                                                   false, activeOnly)
                 .setFirstResult(firstResult)
@@ -206,7 +206,7 @@ public class ArchetypeQueryHelper {
                                 Date endTimeFrom, Date endTimeThru,
                                 String status, boolean activeOnly,
                                 int firstResult, int maxResults) {
-        ArchetypeQuery query = new ArchetypeQuery(null, entityName, conceptName,
+        ArchetypeQuery query = new ArchetypeQuery(entityName, conceptName,
                                                   false, activeOnly)
                 .setFirstResult(firstResult)
                 .setMaxResults(maxResults)
@@ -258,14 +258,49 @@ public class ArchetypeQueryHelper {
      * @return IPage<IMObject>
      * @throws ArchetypeServiceException if there is a problem executing the
      *                                   service request
+     * @deprecated replaced by {@link #get(IArchetypeService, String, String,
+     *             String, boolean, int, int)}
      */
+    @Deprecated
     public static IPage<IMObject> get(IArchetypeService service, String rmName,
+                                      String entityName, String conceptName,
+                                      String instanceName, boolean activeOnly,
+                                      int firstResult, int maxResults) {
+        return get(service, entityName, conceptName, instanceName, activeOnly,
+                   firstResult, maxResults);
+    }
+
+    /**
+     * Uses the specified criteria to return zero, one or more matching .
+     * entities. This is a very generic query which will constrain the
+     * result set to one or more of the supplied values.
+     * <p/>
+     * Each of the parameters can denote an exact match or a partial match. If
+     * a partial match is required then the last character of the value must be
+     * a '*'. In every other case the search will look for an exact match.
+     * <p/>
+     * All the values are optional. In the case where all the values are null
+     * then all the entities will be returned. In the case where two or more
+     * values are specified (i.e. rmName and entityName) then only entities
+     * satisfying both conditions will be returned.
+     *
+     * @param service      a reference to the archetype service
+     * @param entityName   the name of the entity (partial or complete)
+     * @param conceptName  the concept name (partial or complete)
+     * @param instanceName the particular instance name
+     * @param activeOnly   whether to retrieve only the active objects
+     * @param firstResult  the first result to retrieve
+     * @param maxResults   the no. of results to retrieve
+     * @return IPage<IMObject>
+     * @throws ArchetypeServiceException if there is a problem executing the
+     *                                   service request
+     */
+    public static IPage<IMObject> get(IArchetypeService service,
                                       String entityName, String conceptName,
                                       String instanceName,
                                       boolean activeOnly, int firstResult,
                                       int maxResults) {
-        ArchetypeQuery query = new ArchetypeQuery(rmName, entityName,
-                                                  conceptName,
+        ArchetypeQuery query = new ArchetypeQuery(entityName, conceptName,
                                                   false, activeOnly)
                 .setFirstResult(firstResult)
                 .setMaxResults(maxResults)
@@ -278,6 +313,7 @@ public class ArchetypeQueryHelper {
 
         return service.get(query);
     }
+
 
     /**
      * Retrieve a list of IMObjects that match one or more of the supplied

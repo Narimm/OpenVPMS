@@ -31,14 +31,8 @@
     <property name="linkId" access="property" type="string" length="100"
       index="participation_linkId_idx" />
     <component name="archetypeId">
-      <property name="namespace" access="property" column="arch_namespace"
-        type="string" length="100" />
-      <property name="rmName" access="property" column="arch_rm_name"
-        type="string" length="100" />
-      <property name="concept" access="property" column="arch_concept"
-        type="string" length="100" index="participation_arch_concept_idx"/>
-      <property name="entityName" access="property" column="arch_entity_name"
-        type="string" length="100" />
+      <property name="shortName" access="property" column="arch_short_name"
+        type="string" length="100" index="participation_arch_short_name_idx"/>
       <property name="version" access="property" column="arch_version"
         type="string" length="100" />
     </component>
@@ -46,13 +40,6 @@
     <property name="description" access="property" column="description"
       type="string" />
     <property name="active" access="property" column="active" type="boolean" />
-    <property name="sequence" column="sequence" access="property" type="int" />
-    <property name="mode" column="mode" type="string" />
-    <property name="percentage" column="percentage" type="int" />
-    <property name="activeStartTime" access="property"
-      column="active_start_time" type="date" />
-    <property name="activeEndTime" access="property" column="active_end_time"
-      type="date" />
     <component name="entity">
       <component name="archetypeId" access="field">
         <property name="qualifiedName" access="property" type="string"

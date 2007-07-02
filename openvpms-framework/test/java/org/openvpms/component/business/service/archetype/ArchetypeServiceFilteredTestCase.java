@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.util.List;
@@ -34,36 +35,14 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeServiceFilteredTestCase extends
-                                              AbstractDependencyInjectionSpringContextTests {
+public class ArchetypeServiceFilteredTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
      * Holds a reference to the archetype service.
      */
     private ArchetypeService service;
 
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(ArchetypeServiceFilteredTestCase.class);
-    }
-
-    /**
-     * Default constructor
-     */
-    public ArchetypeServiceFilteredTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
 
     /**
      * Test the creation process still works with the filtered set in place.
@@ -128,6 +107,36 @@ public class ArchetypeServiceFilteredTestCase extends
         }
     }
 
+    /**
+     * Create a person with the specified title, firstName and LastName
+     *
+     * @param title
+     * @param firstName
+     * @param lastName
+     * @return Party
+     */
+    public Party createPersonFilter(String title, String firstName,
+                                    String lastName) {
+        Party person = (Party) service.create("party.personfilter");
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
+
+        return person;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{
+                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
+        };
+    }
+
     /* (non-Javadoc)
     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
     */
@@ -140,33 +149,13 @@ public class ArchetypeServiceFilteredTestCase extends
     }
 
     /**
-     * Create a person with the specified title, firstName and LastName
-     *
-     * @param title
-     * @param firstName
-     * @param lastName
-     * @return Party
-     */
-    public Party createPersonFilter(String title, String firstName,
-                                    String lastName) {
-        Party person = (Party) service.create("person.filter");
-        person.getDetails().put("lastName", lastName);
-        person.getDetails().put("firstName", firstName);
-        person.getDetails().put("title", title);
-
-        return person;
-    }
-
-    /**
      * Create a lookup with the specified code.
      *
-     * @param shortName the archetype short name to create
-     * @param code      the code of the lookup
+     * @param shortName the lookup short name
+     * @param code    the code of the lookup
      * @return a new lookup
      */
     private Lookup createLookup(String shortName, String code) {
-        Lookup result = (Lookup) service.create(shortName);
-        result.setCode(code);
-        return result;
+        return LookupUtil.createLookup(shortName, code);
     }
 }

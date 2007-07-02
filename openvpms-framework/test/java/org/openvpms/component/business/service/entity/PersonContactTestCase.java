@@ -30,42 +30,20 @@ import java.util.Random;
 
 
 /**
- * Test the entity service
+ * Tests {@link Contact}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class PersonContactTestCase extends
-                                   AbstractDependencyInjectionSpringContextTests {
+public class PersonContactTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * Holds a reference to the archetype service
+     * Holds a reference to the archetype service.
      */
     private ArchetypeService service;
 
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(PersonContactTestCase.class);
-    }
-
-    /**
-     * Default constructor
-     */
-    public PersonContactTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[] {
-                "org/openvpms/component/business/service/entity/entity-service-appcontext.xml"
-                };
-    }
 
     /**
      * Test the creation of a person with contacts and addresses as
@@ -73,7 +51,7 @@ public class PersonContactTestCase extends
      */
     public void testValidPersonContactCreation()
     throws Exception {
-        Party person = createPerson("person.person", "MR", "John", "Dillon");
+        Party person = createPerson("party.person", "MR", "John", "Dillon");
         Contact contact = createLocationContact();
         person.addContact(contact);
         service.save(person);
@@ -90,9 +68,9 @@ public class PersonContactTestCase extends
      */
     public void testContactRelationship()
     throws Exception {
-        Party person1 = createPerson("person.person", "MR", "John",
+        Party person1 = createPerson("party.person", "MR", "John",
                                      "Dimantaris");
-        Party person2 = createPerson("person.person", "MS", "Jenny", "Love");
+        Party person2 = createPerson("party.person", "MS", "Jenny", "Love");
 
         Contact contact1 = createLocationContact();
         Contact contact2 = createLocationContact();
@@ -138,7 +116,7 @@ public class PersonContactTestCase extends
      */
     public void testContactLifecycle()
     throws Exception {
-        Party person = createPerson("person.person", "MR", "Jim", "Alateras");
+        Party person = createPerson("party.person", "MR", "Jim", "Alateras");
         person.addContact(createLocationContact());
         person.addContact(createLocationContact());
         person.addContact(createLocationContact());
@@ -165,7 +143,7 @@ public class PersonContactTestCase extends
      */
     public void testOBF049()
     throws Exception {
-        Party person = createPerson("person.obf49", "MR", "Jim", "Alateras");
+        Party person = createPerson("party.personobf49", "MR", "Jim", "Alateras");
         try {
             service.validateObject(person);
             fail("This should not have validated");
@@ -187,6 +165,18 @@ public class PersonContactTestCase extends
             // ingore
         }
     }
+
+    /*
+      * (non-Javadoc)
+      *
+      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+      */
+     @Override
+     protected String[] getConfigLocations() {
+         return new String[] {
+                 "org/openvpms/component/business/service/entity/entity-service-appcontext.xml"
+                 };
+     }
 
     /**
      * Create a valid location contact

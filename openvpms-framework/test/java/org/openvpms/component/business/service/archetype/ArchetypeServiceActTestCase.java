@@ -18,10 +18,7 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// java core
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -40,6 +37,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import java.math.BigDecimal;
 import java.util.Date;
 
+
 /**
  * Test that ability to create and query on acts.
  *
@@ -47,53 +45,14 @@ import java.util.Date;
  * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeServiceActTestCase extends
-                                         AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeServiceActTestCase.class);
+public class ArchetypeServiceActTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
      * Holds a reference to the entity service
      */
     private IArchetypeService service;
 
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(ArchetypeServiceActTestCase.class);
-    }
-
-    /**
-     * Default constructor
-     */
-    public ArchetypeServiceActTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
-    }
 
     /**
      * Test the creation of a simple act
@@ -265,6 +224,28 @@ public class ArchetypeServiceActTestCase extends
                    ndesc.getValue(act) instanceof BigDecimal);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{
+                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
+        };
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+
+        this.service = (IArchetypeService) applicationContext.getBean(
+                "archetypeService");
+    }
 
     /**
      * Create a simple act
@@ -313,7 +294,7 @@ public class ArchetypeServiceActTestCase extends
      */
     private Party createPerson(String title, String firstName,
                                String lastName) {
-        Party person = (Party) service.create("person.person");
+        Party person = (Party) service.create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);

@@ -31,19 +31,13 @@
     <property name="linkId" access="property" type="string" length="100"
       index="entity_linkId_idx" />
     <component name="archetypeId">
-      <property name="namespace" access="property" column="arch_namespace"
-        type="string" length="100" />
-      <property name="rmName" access="property" column="arch_rm_name"
-        type="string" length="100" />
-      <property name="concept" access="property" column="arch_concept_name"
-        type="string" length="100" index="entity_concept_idx,entity_concept_name_idx,entity_concept_code_idx" />
-      <property name="entityName" access="property" column="arch_entity_name"
-        type="string" length="100" />
+      <property name="shortName" access="property" column="arch_short_name"
+        type="string" length="100" index="entity_short_name_idx,entity_arch_sn_name_idx" />
       <property name="version" access="property" column="arch_version"
         type="string" length="100" />
     </component>
     <property name="name" access="property" column="name" type="string"
-      length="100" index="entity_name_idx,entity_concept_name_idx" />
+      length="100" index="entity_name_idx,entity_arch_sn_name_idx" />
     <property name="description" access="property" column="description"
       type="string" />
     <property name="active" access="property" column="active" type="boolean" />

@@ -23,8 +23,8 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
  * This is a runtime exception that is raised when there is an issue with
- * the {@link ArchetypeId}. 
- * 
+ * the {@link ArchetypeId}.
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -41,11 +41,13 @@ public class ArchetypeIdException extends OpenVPMSException {
     public enum ErrorCode {
         EmptyQualifiedName,
         InvalidQNameFormat,
+        EmptyShortName,
+        InvalidShortNameFormat,
         EmptyElement
     }
 
     /**
-     * Cache the werror code
+     * Cache the error code.
      */
     private ErrorCode errorCode;
 
@@ -59,10 +61,9 @@ public class ArchetypeIdException extends OpenVPMSException {
 
     /**
      * Instantiate an exception given an error code. The error code corresponds
-     * to a message that does not require any parameters to redner
-     * 
-     * @param errorCode
-     *            the error code
+     * to a message that does not require any parameters to render
+     *
+     * @param errorCode the error code
      */
     public ArchetypeIdException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
@@ -72,14 +73,12 @@ public class ArchetypeIdException extends OpenVPMSException {
     /**
      * Instantiate an exception given an error code and a set of associated
      * object parameters. The params are required to render the message
-     * 
-     * @param errorCode
-     *            the error code
-     * @param parama
-     *            the parameters used to render the message associated with the
-     *            error code
+     *
+     * @param errorCode the error code
+     * @param params    the parameters used to render the message associated
+     *                  with the error code
      */
-    public ArchetypeIdException(ErrorCode errorCode, Object[] params) {
+    public ArchetypeIdException(ErrorCode errorCode, Object ... params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -87,11 +86,9 @@ public class ArchetypeIdException extends OpenVPMSException {
     /**
      * Create an exception with the following error code and the root exception.
      * The error code is used to render a local specific message.
-     * 
-     * @param errorCode
-     *            the error code
-     * @param cause
-     *            the root exception
+     *
+     * @param errorCode the error code
+     * @param cause     the root exception
      */
     public ArchetypeIdException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
@@ -99,25 +96,9 @@ public class ArchetypeIdException extends OpenVPMSException {
     }
 
     /**
-     * Create an exception with the following error code and the root exception.
-     * The params is used to render the messsgae that is associated with the
-     * error code
-     * 
-     * @param errorCode
-     *            the error code
-     * @param params
-     *            additional information required to render the message
-     * @param cause
-     *            the root exception
-     */
-    public ArchetypeIdException(ErrorCode errorCode, Object[] params,
-            Throwable cause) {
-        super(messages.getMessage(errorCode.toString(), params), cause);
-        this.errorCode = errorCode;
-    }
-
-    /**
-     * @return Returns the errorCode.
+     * Returns the error code.
+     *
+     * @return the error code
      */
     public ErrorCode getErrorCode() {
         return errorCode;

@@ -33,18 +33,10 @@
 		<property name="name" access="property" column="name"
 			type="string" not-null="true" />
 		<component name="archetypeId">
-			<property name="namespace" access="property"
-				column="arch_namespace" type="string" length="100" />
-			<property name="rmName" access="property"
-				column="arch_rm_name" type="string" length="100" />
-			<property name="concept" access="property"
-				column="arch_concept_name" type="string" length="100" />
-			<property name="entityName" access="property"
-				column="arch_entity_name" type="string" length="100" />
-			<property name="version" access="property"
-				column="arch_version" type="string" length="100" />
 			<property name="shortName" access="property"
 				column="arch_short_name" type="string" length="100" />
+            <property name="version" access="property"
+                column="arch_version" type="string" length="100" />
 		</component>
 		<property name="active" access="property" column="active"
 			type="boolean" />

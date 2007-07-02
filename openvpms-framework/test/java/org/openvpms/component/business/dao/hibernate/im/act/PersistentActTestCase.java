@@ -22,10 +22,8 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 // hibernate
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-
-//openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
-import org.openvpms.component.business.dao.hibernate.im.lookup.HibernateLookupUtil;
+import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 
@@ -59,8 +57,8 @@ public class PersistentActTestCase extends HibernateInfoModelTestCase {
         Transaction tx = null;
 
         try {
-            // get initial numbr of entries in tables
-            int acount = HibernateLookupUtil.getTableRowCount(session, "act");
+            // get initial number of entries in tables
+            int acount = HibernateUtil.getTableRowCount(session, "act");
 
             // execute the test
             tx = session.beginTransaction();
@@ -73,7 +71,7 @@ public class PersistentActTestCase extends HibernateInfoModelTestCase {
             tx.commit();
 
             // ensure that the correct number of rows have been inserted
-            int acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
+            int acount1 = HibernateUtil.getTableRowCount(session, "act");
             assertTrue(acount1 == acount + 3);
         } catch (Exception exception) {
             if (tx != null) {
@@ -94,7 +92,7 @@ public class PersistentActTestCase extends HibernateInfoModelTestCase {
 
         try {
             // get initial numbr of entries in tables
-            int acount = HibernateLookupUtil.getTableRowCount(session, "act");
+            int acount = HibernateUtil.getTableRowCount(session, "act");
 
             // execute the test
             tx = session.beginTransaction();
@@ -105,7 +103,7 @@ public class PersistentActTestCase extends HibernateInfoModelTestCase {
             tx.commit();
 
             // ensure that the correct number of rows have been inserted
-            int acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
+            int acount1 = HibernateUtil.getTableRowCount(session, "act");
             assertTrue(acount1 == acount + 2);
             
             // modify the act
@@ -116,7 +114,7 @@ public class PersistentActTestCase extends HibernateInfoModelTestCase {
             session.saveOrUpdate(act1);
             tx.commit();
             
-            acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
+            acount1 = HibernateUtil.getTableRowCount(session, "act");
             assertTrue(acount1 == acount + 2);
         } catch (Exception exception) {
             if (tx != null) {
@@ -138,7 +136,7 @@ public class PersistentActTestCase extends HibernateInfoModelTestCase {
 
         try {
             // get initial numbr of entries in tables
-            int acount = HibernateLookupUtil.getTableRowCount(session, "act");
+            int acount = HibernateUtil.getTableRowCount(session, "act");
 
             // execute the test
             tx = session.beginTransaction();
@@ -151,7 +149,7 @@ public class PersistentActTestCase extends HibernateInfoModelTestCase {
             tx.commit();
 
             // ensure that the correct number of rows have been inserted
-            int acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
+            int acount1 = HibernateUtil.getTableRowCount(session, "act");
             assertTrue(acount1 == acount + 3);
             
             // delete a couple of acts
@@ -160,7 +158,7 @@ public class PersistentActTestCase extends HibernateInfoModelTestCase {
             session.delete(act2);
             tx.commit();
             
-            acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
+            acount1 = HibernateUtil.getTableRowCount(session, "act");
             assertTrue(acount1 == acount + 1);
         } catch (Exception exception) {
             if (tx != null) {
@@ -204,7 +202,7 @@ public class PersistentActTestCase extends HibernateInfoModelTestCase {
      */
     private Act createAct(String name) {
         Act act = new Act();
-        act.setArchetypeId(new ArchetypeId("openvpms-party-act.simple.1.0"));
+        act.setArchetypeId(new ArchetypeId("act.simple.1.0"));
         act.setName(name);
         
         return act;

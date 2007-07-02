@@ -1,5 +1,5 @@
 <archetypes>
-    <archetype name="openvpms-entity-act.numericAssertions.1.0"
+    <archetype name="act.numericAssertions.1.0"
                latest="true"
                type="org.openvpms.component.business.domain.im.act.Act">
         <node name="name" path="/name" displayName="name"

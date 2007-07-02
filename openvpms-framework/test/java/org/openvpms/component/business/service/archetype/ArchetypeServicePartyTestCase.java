@@ -23,6 +23,7 @@ import org.hibernate.SessionFactory;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 /**
@@ -45,14 +46,34 @@ public class ArchetypeServicePartyTestCase extends
      */
     private SessionFactory sessionFactory;
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(ArchetypeServicePartyTestCase.class);
-    }
 
     /**
-     * Default constructor
+     * Test the creation of a simple contact with a contact classification.
      */
-    public ArchetypeServicePartyTestCase() {
+    public void testSimplePartyWithContactCreation() throws Exception {
+        Lookup classification = createLookup("EMAIL");
+        service.save(classification);
+        Lookup classification1 = createLookup("HOME");
+        service.save(classification1);
+
+        Party person = createPerson("MR", "Jim", "Alateras");
+        person.addContact(createContact(classification));
+        person.addContact(createContact(classification1));
+        service.save(person);
+
+        // try the hql query
+        Query query = sessionFactory.openSession().createQuery(
+                "select party from " + Party.class.getName()
+                        + " as party inner join party.contacts as contact "
+                        + "left outer join contact.classifications as "
+                        + "classification "
+                        + "where party.uid = :uid and "
+                        + "contact.archetypeId.shortName = :shortName "
+                        + "and classification.name = :classification");
+        query.setParameter("uid", person.getUid());
+        query.setParameter("shortName", "contact.location");
+        query.setParameter("classification", classification.getName());
+        assertEquals(1, query.list().size());
     }
 
     /*
@@ -81,47 +102,15 @@ public class ArchetypeServicePartyTestCase extends
     }
 
     /**
-     * Test the creation of a simple contact with a contact classification
-     */
-    @SuppressWarnings("unchecked")
-    public void testSimplePartyWithContactCreation()
-    throws Exception {
-        Lookup classification = createLookup("EMAIL");
-        service.save(classification);
-        Lookup classification1 = createLookup("HOME");
-        service.save(classification1);
-
-        Party person = createPerson("MR", "Jim", "Alateras");
-        person.addContact(createContact(classification));
-        person.addContact(createContact(classification1));
-        service.save(person);
-
-        // try the hql query
-        Query query = sessionFactory.openSession().createQuery(
-                "select party from " + Party.class.getName()
-                        + " as party inner join party.contacts as contact "
-                        + "left outer join contact.classifications as "
-                        + "classification "
-                        + "where contact.archetypeId.entityName = :entityName "
-                        + "and contact.archetypeId.concept = :concept "
-                        + "and classification.name = :classification");
-        query.setParameter("entityName", "contact");
-        query.setParameter("concept", "location");
-        query.setParameter("classification", "email");
-        query.list();
-    }
-
-    /**
-     * Create a person with the specified title, firstName and LastName
+     * Create a person with the specified title, firstName and lastName.
      *
-     * @param title
-     * @param firstName
-     * @param lastName
-     *
-     * @return Person
+     * @param title the title
+     * @param firstName the first name
+     * @param lastName the last name
+     * @return a new person
      */
-    public Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party)service.create("person.person");
+    private Party createPerson(String title, String firstName, String lastName) {
+        Party person = (Party)service.create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);
@@ -155,8 +144,6 @@ public class ArchetypeServicePartyTestCase extends
      * @return a new lookup
      */
     private Lookup createLookup(String code) {
-        Lookup result = (Lookup) service.create("lookup.contactPurpose");
-        result.setCode(code);
-        return result;
+        return LookupUtil.createLookup("lookup.contactPurpose", code);
     }
 }

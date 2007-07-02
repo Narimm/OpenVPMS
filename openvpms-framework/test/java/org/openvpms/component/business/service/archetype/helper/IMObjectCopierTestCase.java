@@ -34,12 +34,12 @@ public class IMObjectCopierTestCase
         extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * Tests the {@link DescriptorHelper#getArchetypeDescriptor(String)} method.
+     * Tests copying.
      */
     public void testCopy() {
         IMObjectCopier copier
                 = new IMObjectCopier(new DefaultIMObjectCopyHandler());
-        IMObjectBean bean = createBean("animal.pet");
+        IMObjectBean bean = createBean("party.animalpet");
         bean.setValue("name", "Fido");
 
         IMObject copy = copier.copy(bean.getObject());

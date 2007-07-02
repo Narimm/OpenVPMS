@@ -31,7 +31,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
  */
 @SuppressWarnings("HardCodedStringLiteral")
 public abstract class SecurityServiceTests extends
-        AbstractDependencyInjectionSpringContextTests {
+                                           AbstractDependencyInjectionSpringContextTests {
 
     /**
      * Holds a reference to the archetectype service
@@ -39,14 +39,14 @@ public abstract class SecurityServiceTests extends
     protected IArchetypeService archetype;
 
 
-
     /**
      * Test that the caller has the credentials to make the call
      */
     public void testValidAuthorizationOnSave()
-    throws Exception {
+            throws Exception {
         // create a security contect before executing a method
-        createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.person");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.save:party.person");
         Party person = createPerson("MR", "Jim", "Alateras");
         archetype.save(person);
     }
@@ -55,16 +55,18 @@ public abstract class SecurityServiceTests extends
      * Test that the caller does not have the credentials to make the call
      */
     public void testInvalidAuthorizationOnSave()
-    throws Exception {
+            throws Exception {
         // create a security contect before executing a method
-        createSecurityContext("bernief", "bernief", "archetype:archetypeService.save:party.person");
+        createSecurityContext("bernief", "bernief",
+                              "archetype:archetypeService.save:person.person");
         Party person = createPerson("MR", "Peter", "Alateras");
 
         try {
             archetype.save(person);
             fail("The caller does not have the authority to call IArchetypeService.save");
         } catch (OpenVPMSAccessDeniedException exception) {
-            if (exception.getErrorCode() != OpenVPMSAccessDeniedException.ErrorCode.AccessDenied) {
+            if (exception.getErrorCode() != OpenVPMSAccessDeniedException.ErrorCode.AccessDenied)
+            {
                 fail("Incorrect error code was specified during the exception");
             }
             exception.printStackTrace();
@@ -76,33 +78,40 @@ public abstract class SecurityServiceTests extends
      * Test archetype wild card authorization
      */
     public void testArchetypeWildcardAuthorizationOnSave()
-    throws Exception {
+            throws Exception {
         // create a security contect before executing a method
-        createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.per*");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.save:party.per*");
         Party person = createPerson("MR", "Peter1", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.save:pers*.person");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.save:part*.person");
         person = createPerson("MR", "Peter2", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.*erson");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.save:party.*erson");
         person = createPerson("MR", "Peter3", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.save:*son.person");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.save:*rty.person");
         person = createPerson("MR", "Peter4", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.save:*son.per*");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.save:*rty.per*");
         person = createPerson("MR", "Peter5", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.save:per*.*son*");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.save:par*.*son*");
         person = createPerson("MR", "Peter6", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.save:*.*");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.save:*.*");
         person = createPerson("MR", "Peter7", "Alateras");
         archetype.save(person);
     }
@@ -111,21 +120,25 @@ public abstract class SecurityServiceTests extends
      * Test method wild card on save
      */
     public void testMethodWildcardAuthorizationOnSave()
-    throws Exception {
+            throws Exception {
         // create a security contect before executing a method
-        createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.person");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.save:party.person");
         Party person = createPerson("MR", "Save", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.s*:person.person");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.s*:party.person");
         person = createPerson("MR", "Save2", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.*ave:person.person");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.*ave:party.person");
         person = createPerson("MR", "Save3", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.*:person.person");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.*:party.person");
         person = createPerson("MR", "Save4", "Alateras");
         archetype.save(person);
     }
@@ -136,23 +149,28 @@ public abstract class SecurityServiceTests extends
     public void testMethodAndArchetypeWildcardAuthorizationOnSave()
             throws Exception {
         // create a security contect before executing a method
-        createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.person");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.save:party.person");
         Party person = createPerson("MR", "Bob", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.s*:pers*.*son");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.s*:part*.*son");
         person = createPerson("MR", "Bob2", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.*ave:*.*");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.*ave:*.*");
         person = createPerson("MR", "Bob3", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.*:person.*");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.*:party.*");
         person = createPerson("MR", "Bob4", "Alateras");
         archetype.save(person);
 
-        createSecurityContext("jima", "jima", "archetype:archetypeService.*:*.*");
+        createSecurityContext("jima", "jima",
+                              "archetype:archetypeService.*:*.*");
         person = createPerson("MR", "Bob4", "Alateras");
         archetype.save(person);
     }
@@ -160,16 +178,14 @@ public abstract class SecurityServiceTests extends
     /**
      * Create a person
      *
-     * @param title
-     *            the person's title
-     * @param firstName
-     *            the person's first name
-     * @param lastName
-     *            the person's last name
+     * @param title     the person's title
+     * @param firstName the person's first name
+     * @param lastName  the person's last name
      * @return Person
      */
-    public Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party)archetype.create("person.person");
+    private Party createPerson(String title, String firstName,
+                               String lastName) {
+        Party person = (Party) archetype.create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);
@@ -184,7 +200,7 @@ public abstract class SecurityServiceTests extends
      * @return Contact
      */
     private Contact createPhoneContact() {
-        Contact contact = (Contact)archetype.create("contact.phoneNumber");
+        Contact contact = (Contact) archetype.create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
         contact.getDetails().put("telephoneNumber", "1234567");
         contact.getDetails().put("preferred", true);
@@ -195,13 +211,10 @@ public abstract class SecurityServiceTests extends
     /**
      * Create a secure context so that we can do some authorization testing
      *
-     * @param user
-     *            the user name
-     * @param password
-     *            the password
-     * @param authority
-     *            the authority of the person
-     *
+     * @param user      the user name
+     * @param password  the password
+     * @param authority the authority of the person
      */
-    abstract protected void createSecurityContext(String user, String password, String authority);
+    protected abstract void createSecurityContext(String user, String password,
+                                                  String authority);
 }
