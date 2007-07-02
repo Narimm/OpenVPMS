@@ -25,7 +25,8 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="' '" />
-		<node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
+		<node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
+        <node name="roundedAmount" path="/details/roundedAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" readOnly="true" defaultValue="0.0"/>
 		<node name="credit" path="/credit" type="java.lang.Boolean"
 			defaultValue="false()" readOnly="true" hidden="true" />
 	</archetype>
