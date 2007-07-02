@@ -25,10 +25,10 @@
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(' Tendered : ',/details/tendered)"/>
-        <node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
+        <node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="true()" readOnly="true" hidden="true"/>
-        <node name="roundedAmount" path="/details/roundedAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" readOnly="true" defaultValue="1.0"/>
+        <node name="roundedAmount" path="/details/roundedAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" readOnly="true" defaultValue="0.0"/>
         <node name="tendered" path="/details/tendered" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
         <node name="change" path="/details/change" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               derived="true" derivedValue="/details/tendered - /details/roundedAmount"/>
