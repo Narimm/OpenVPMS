@@ -1,7 +1,0 @@
-<rules>
-  <rule source="classpath"  path="org/openvpms/rules/archetypeService.save.animal.pet.before.drl" />
-  <rule source="classpath"  path="org/openvpms/rules/archetypeService.save.person.person.before.drl" />
-  <rule source="classpath"  path="org/openvpms/rules/archetypeService.save.person.person.after.drl" />
-  <rule source="classpath"  path="org/openvpms/rules/person.copyName.drl" />
-  <rule source="classpath"  path="org/openvpms/rules/person.uppercaseName.drl" />
-</rules>
