@@ -114,17 +114,14 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
 
 
     /**
-     * Creates a new <code>TillCRUDWindow</code>.
+     * Creates a new <tt>TillCRUDWindow</tt>.
      *
-     * @param type         display name for the types of objects that this may
-     *                     create
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param type      display name for the types of objects that this may
+     *                  create
+     * @param shortName the archetype short name
      */
-    public TillCRUDWindow(String type, String refModelName,
-                          String entityName, String conceptName) {
-        super(type, new ShortNameList(refModelName, entityName, conceptName));
+    public TillCRUDWindow(String type, String shortName) {
+        super(type, new ShortNameList(shortName));
     }
 
     /**

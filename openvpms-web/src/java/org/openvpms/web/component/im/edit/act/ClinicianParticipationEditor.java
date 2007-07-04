@@ -29,7 +29,6 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
-import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -107,7 +106,7 @@ public class ClinicianParticipationEditor
      */
     private void addConstraints(Query query) {
         IConstraint hasClinicianClassification = new ArchetypeNodeConstraint(
-                ArchetypeProperty.ConceptName, RelationalOp.EQ, "userType");
+                RelationalOp.EQ, "lookup.userType");
 
         IConstraint isClinician = new NodeConstraint("code", RelationalOp.EQ,
                                                      "CLINICIAN");

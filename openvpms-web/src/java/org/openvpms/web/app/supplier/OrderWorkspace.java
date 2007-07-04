@@ -52,7 +52,7 @@ public class OrderWorkspace extends SupplierActWorkspace<Act> {
      */
     protected CRUDWindow<Act> createCRUDWindow() {
         String type = Messages.get("supplier.estimation.createtype");
-        return new OrderCRUDWindow(type, "common", "act", "supplierOrder");
+        return new OrderCRUDWindow(type, "act.supplierOrder");
     }
 
     /**

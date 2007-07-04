@@ -36,7 +36,7 @@ public class RoleWorkspace extends CRUDWorkspace<SecurityRole> {
      * Constructs a new <tt>RoleWorkspace</tt>.
      */
     public RoleWorkspace() {
-        super("admin", "role", new ShortNameList("system", "security", "role"));
+        super("admin", "role", new ShortNameList("security.role"));
     }
 
     /**

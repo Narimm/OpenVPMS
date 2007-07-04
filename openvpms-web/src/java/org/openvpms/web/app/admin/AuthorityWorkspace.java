@@ -38,7 +38,7 @@ public class AuthorityWorkspace
      */
     public AuthorityWorkspace() {
         super("admin", "authority",
-              new ShortNameList("system", "security", "archetypeAuthority"));
+              new ShortNameList("security.archetypeAuthority"));
     }
 
     /**

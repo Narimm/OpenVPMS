@@ -117,8 +117,7 @@ public class IMObjectListModel extends AbstractListModel {
     }
 
     static {
-        ArchetypeId dummy = new ArchetypeId("dummy", "dummy", "dummy", "dummy",
-                                            "1.0");
+        ArchetypeId dummy = new ArchetypeId("dummy", "dummy", "1.0");
         ALL = new IMObject();
         ALL.setArchetypeId(dummy);
         NONE = new IMObject();

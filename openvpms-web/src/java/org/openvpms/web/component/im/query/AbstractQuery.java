@@ -30,7 +30,6 @@ import org.apache.commons.lang.CharSetUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -58,7 +57,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * The archetypes to query.
      */
-    private final BaseArchetypeConstraint archetypes;
+    private final ShortNameConstraint archetypes;
 
     /**
      * Archetype short names to matches on.
@@ -339,7 +338,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
      *
      * @return the archetypes to select from
      */
-    public BaseArchetypeConstraint getArchetypes() {
+    public ShortNameConstraint getArchetypes() {
         return archetypes;
     }
 
@@ -375,10 +374,10 @@ public abstract class AbstractQuery<T> implements Query<T> {
      *
      * @return the archetypes to query
      */
-    protected BaseArchetypeConstraint getArchetypeConstraint() {
+    protected ShortNameConstraint getArchetypeConstraint() {
         String type = getShortName();
         boolean activeOnly = !includeInactive();
-        BaseArchetypeConstraint result;
+        ShortNameConstraint result;
         if (type == null || type.equals(ShortNameListModel.ALL)) {
             result = getArchetypes();
             result.setActiveOnly(activeOnly);

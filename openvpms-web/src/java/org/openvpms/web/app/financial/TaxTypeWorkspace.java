@@ -36,8 +36,7 @@ public class TaxTypeWorkspace extends CRUDWorkspace<Entity> {
      * Construct a new <tt>ProductTypeWorkspace</tt>.
      */
     public TaxTypeWorkspace() {
-        super("financial", "taxType",
-              new ShortNameList("common", "entity", "taxType"));
+        super("financial", "taxType", new ShortNameList("entity.taxType"));
     }
 
     /**

@@ -16,23 +16,7 @@
  *  $Id$
  */
 
-/**
- * Add description here.
- *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- */
 package org.openvpms.web.component.im.util;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ArchetypeProperty;
-import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
 
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.FunctorException;
@@ -42,6 +26,14 @@ import org.apache.commons.collections.comparators.TransformingComparator;
 import org.apache.commons.collections.functors.ChainedTransformer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -59,7 +51,7 @@ public class IMObjectSorter {
     /**
      * The logger.
      */
-    private static final Log _log = LogFactory.getLog(IMObjectSorter.class);
+    private static final Log log = LogFactory.getLog(IMObjectSorter.class);
 
 
     /**
@@ -93,8 +85,8 @@ public class IMObjectSorter {
      * @param sort        the sort criteria
      * @param transformer a transformer to return the underlying IMObject.
      */
-    public static void sort(List objects, SortConstraint[] sort,
-                            Transformer transformer) {
+    public static <T extends IMObject> void sort(
+            List<T> objects, SortConstraint[] sort, Transformer transformer) {
         ComparatorChain comparator = new ComparatorChain();
         for (SortConstraint constraint : sort) {
             if (constraint instanceof NodeSortConstraint) {
@@ -120,16 +112,6 @@ public class IMObjectSorter {
      */
     private static Transformer getTransformer(NodeSortConstraint sort) {
         return new NodeTransformer(sort.getNodeName());
-    }
-
-    /**
-     * Returns a new transformer for an archetype sort constraint.
-     *
-     * @param sort the sort constraint
-     * @return a new transformer
-     */
-    private static Transformer getTransformer(ArchetypeSortConstraint sort) {
-        return new ArchetypeTransformer(sort.getProperty());
     }
 
     /**
@@ -168,7 +150,7 @@ public class IMObjectSorter {
     private static Comparator<Object> getComparator(
             ArchetypeSortConstraint sort) {
         Comparator comparator = getComparator(sort.isAscending());
-        Transformer transformer = getTransformer(sort);
+        Transformer transformer = new ArchetypeTransformer();
         return new TransformingComparator(transformer, comparator);
     }
 
@@ -182,14 +164,14 @@ public class IMObjectSorter {
             ArchetypeSortConstraint sort, Transformer transformer) {
         Comparator comparator = getComparator(sort.isAscending());
         Transformer transform = ChainedTransformer.getInstance(
-                transformer, getTransformer(sort));
+                transformer, new ArchetypeTransformer());
         return new TransformingComparator(transform, comparator);
     }
 
     /**
      * Returns a new comparator.
      *
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
+     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
      *                  sort in descending order
      */
     private static Comparator getComparator(boolean ascending) {
@@ -208,26 +190,26 @@ public class IMObjectSorter {
         /**
          * The node name.
          */
-        private final String _node;
+        private final String node;
 
         /**
          * Cached archetype descriptor.
          */
-        private ArchetypeDescriptor _archetype;
+        private ArchetypeDescriptor archetype;
 
         /**
          * Cached node descriptor.
          */
-        private NodeDescriptor _descriptor;
+        private NodeDescriptor descriptor;
 
 
         /**
-         * Construct a new <code>NodeTransformer</code>.
+         * Construct a new <tt>NodeTransformer</tt>.
          *
          * @param node the node name
          */
         public NodeTransformer(String node) {
-            _node = node;
+            this.node = node;
         }
 
         /**
@@ -248,44 +230,30 @@ public class IMObjectSorter {
             NodeDescriptor descriptor = getDescriptor(object);
             if (descriptor != null) {
                 try {
-                    result = _descriptor.getValue(object);
+                    result = descriptor.getValue(object);
                     if (!(result instanceof Comparable)) {
                         // not comparable so null to avoid class cast exceptions
                         result = null;
                     }
                 } catch (DescriptorException exception) {
-                    _log.error(exception);
+                    log.error(exception);
                 }
             }
             return result;
         }
 
         private NodeDescriptor getDescriptor(IMObject object) {
-            if (_archetype == null
-                    || !_archetype.getType().equals(object.getArchetypeId())) {
-                _archetype = DescriptorHelper.getArchetypeDescriptor(object);
-                _descriptor = _archetype.getNodeDescriptor(_node);
+            if (archetype == null
+                    || !archetype.getType().equals(object.getArchetypeId())) {
+                archetype = DescriptorHelper.getArchetypeDescriptor(object);
+                descriptor = archetype.getNodeDescriptor(node);
             }
-            return _descriptor;
+            return descriptor;
         }
 
     }
 
     private static class ArchetypeTransformer implements Transformer {
-
-        /**
-         * The archetype property to return.
-         */
-        private final ArchetypeProperty _property;
-
-        /**
-         * Construct a new <code>ArchetypeTransformer</code>.
-         *
-         * @param property the property to return
-         */
-        public ArchetypeTransformer(ArchetypeProperty property) {
-            _property = property;
-        }
 
         /**
          * Transforms the input object (leaving it unchanged) into some output
@@ -300,20 +268,8 @@ public class IMObjectSorter {
          *                                  completed
          */
         public Object transform(Object input) {
-            Object result = null;
             IMObject object = (IMObject) input;
-            switch (_property) {
-                case ReferenceModelName:
-                    result = object.getArchetypeId().getRmName();
-                    break;
-                case EntityName:
-                    result = object.getArchetypeId().getEntityName();
-                    break;
-                case ConceptName:
-                    result = object.getArchetypeId().getConcept();
-                    break;
-            }
-            return result;
+            return object.getArchetypeId().getShortName();
         }
     }
 

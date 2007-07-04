@@ -118,17 +118,14 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
 
 
     /**
-     * Create a new <code>OrderCRUDWindow</code>.
+     * Create a new <tt>OrderCRUDWindow</tt>.
      *
-     * @param type         display name for the types of objects that this may
-     *                     create
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param type      display name for the types of objects that this may
+     *                  create
+     * @param shortName the archetype short name
      */
-    public OrderCRUDWindow(String type, String refModelName,
-                           String entityName, String conceptName) {
-        super(type, new ShortNameList(refModelName, entityName, conceptName));
+    public OrderCRUDWindow(String type, String shortName) {
+        super(type, new ShortNameList(shortName));
     }
 
     /**

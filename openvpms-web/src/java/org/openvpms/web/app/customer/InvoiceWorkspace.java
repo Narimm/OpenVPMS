@@ -55,8 +55,7 @@ public class InvoiceWorkspace extends CustomerFinancialActWorkspace {
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
         String type = Messages.get("customer.invoice.createtype");
-        return new InvoiceCRUDWindow(type, "common", "act",
-                                     "customerAccountCharges*");
+        return new InvoiceCRUDWindow(type, "act.customerAccountCharges*");
     }
 
     /**

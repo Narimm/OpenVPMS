@@ -82,15 +82,12 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     /**
      * Create a new <code>AccountCRUDWindow</code>.
      *
-     * @param type         display name for the types of objects that this may
-     *                     create
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param type      display name for the types of objects that this may
+     *                  create
+     * @param shortName the archetype short name
      */
-    public AccountCRUDWindow(String type, String refModelName,
-                             String entityName, String conceptName) {
-        super(type, new ShortNameList(refModelName, entityName, conceptName));
+    public AccountCRUDWindow(String type, String shortName) {
+        super(type, new ShortNameList(shortName));
     }
 
     /**

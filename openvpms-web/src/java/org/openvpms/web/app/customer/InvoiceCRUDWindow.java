@@ -33,17 +33,14 @@ import org.openvpms.web.component.button.ButtonSet;
 public class InvoiceCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
     /**
-     * Create a new <code>InvoiceCRUDWindow</code>.
+     * Creates a new <tt>InvoiceCRUDWindow</tt>.
      *
-     * @param type         display name for the types of objects that this may
-     *                     create
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param type      display name for the types of objects that this may
+     *                  create
+     * @param shortName the archetype short name
      */
-    public InvoiceCRUDWindow(String type, String refModelName,
-                             String entityName, String conceptName) {
-        super(type, new ShortNameList(refModelName, entityName, conceptName));
+    public InvoiceCRUDWindow(String type, String shortName) {
+        super(type, new ShortNameList(shortName));
     }
 
     /**

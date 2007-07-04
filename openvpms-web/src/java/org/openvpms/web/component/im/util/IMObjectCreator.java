@@ -76,33 +76,6 @@ public final class IMObjectCreator {
     }
 
     /**
-     * Create a new object, selecting from a list of short names that matches
-     * the supplied criteria.
-     *
-     * @param type         display name for the type of the object
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     * @param listener     the listener to notify
-     */
-    public static void create(String type, String refModelName,
-                              String entityName, String conceptName,
-                              IMObjectCreatorListener listener) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        List<String> shortNames = service.getArchetypeShortNames(
-                refModelName, entityName, conceptName, true);
-        if (shortNames.isEmpty()) {
-            String title = Messages.get("imobject.create.failed.title");
-            String message = Messages.get("imobject.noarchetype",
-                                          refModelName, entityName,
-                                          conceptName);
-            ErrorHelper.show(title, message);
-        } else {
-            create(type, shortNames, listener);
-        }
-    }
-
-    /**
      * Create a new object, selected from a list. This implementation pops up a
      * selection dialog if needed.
      *
