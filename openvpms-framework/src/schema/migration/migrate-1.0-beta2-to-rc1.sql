@@ -169,7 +169,9 @@ alter table entity_relationships
     add column arch_short_name varchar(100) after linkId;
 
 update entity_relationships
-    set arch_short_name=concat(arch_entity_name, '.', arch_concept_name);
+    set arch_short_name=concat(arch_entity_name, '.', arch_concept_name),
+    source_archetype_id = substring_index(source_archetype_id, '-', -1),
+    target_archetype_id = substring_index(target_archetype_id, '-', -1);    
 
 alter table entity_relationships
     drop column arch_namespace,

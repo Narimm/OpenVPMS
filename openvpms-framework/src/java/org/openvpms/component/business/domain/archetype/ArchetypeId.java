@@ -59,7 +59,17 @@ public class ArchetypeId implements Serializable, Cloneable {
             = new ArchetypeId("lookup.local.1.0");
 
     /**
-     * The entity name.
+     * The namespace
+     */
+    private String namespace;
+
+    /**
+     * The reference model name(i.e. equivalent to the package name)
+     */
+    private String rmName;
+
+    /**
+     * The entity name (i.e. equivalent to the
      */
     private String entityName;
 
@@ -173,7 +183,24 @@ public class ArchetypeId implements Serializable, Cloneable {
     }
 
     /**
-     * Return the archetype short name. This is the concatenation of the entity
+     * @return the namespace
+     * @deprecated no replacement
+     */
+    public String getNamespace() {
+        return namespace;
+    }
+    
+    /**
+     * @return Returns the rmName.
+     * @deprecated no replacement
+     */
+    @Deprecated
+    public String getRmName() {
+        return rmName;
+    }
+
+    /**
+     * Return the short name, which is the concatenation of the rmName and
      * name, concept and version number.
      *
      * @return the archetype short name
@@ -226,6 +253,24 @@ public class ArchetypeId implements Serializable, Cloneable {
     @Override
     public String toString() {
         return getQualifiedName();
+    }
+
+    /**
+     * @param namespace The namespace to set.
+     * @deprecated no replacement
+     */
+    @Deprecated
+    protected void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    /**
+     * @param rmName The rmName to set.
+     * @deprecated no replacement
+     */
+    @Deprecated
+    protected void setRmName(String rmName) {
+        this.rmName = rmName;
     }
 
     /**
