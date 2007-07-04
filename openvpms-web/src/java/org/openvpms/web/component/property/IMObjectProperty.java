@@ -443,7 +443,7 @@ public class IMObjectProperty extends AbstractProperty
                 PropertyTransformer transformer = getTransformer();
                 try {
                     transformer.apply(getValue());
-                } catch (ValidationException exception) {
+                } catch (PropertyException exception) {
                     invalidate(exception);
                 }
             }
