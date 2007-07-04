@@ -38,9 +38,9 @@ import java.util.Map;
 public class Participation extends IMObject {
 
     /**
-     * Generated SUID
+     * Serial version identifier.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * An integer representing the relative order of the participantion in
@@ -51,7 +51,7 @@ public class Participation extends IMObject {
     /**
      * Indicates the mode that the {@link Entity} is participating in the
      * {@link Act}
-     * 
+     *
      * TODO Look at incorporating with the terminology service
      */
     private String mode;
@@ -88,7 +88,7 @@ public class Participation extends IMObject {
 
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public Participation() {
         // do nothing
@@ -96,13 +96,13 @@ public class Participation extends IMObject {
 
     /**
      * Constructs a participantion between an {@link Entity} and an {@link Act}.
-     * 
+     *
      * @param archetypeId
      *            the archetype id constraining this object
      * @param entity
      *            the entity in the participation
      * @param act
-     *            the act that this participation is associated with                        
+     *            the act that this participation is associated with
      * @param details
      *            holds dynamic details about the participation.
      */
@@ -130,6 +130,7 @@ public class Participation extends IMObject {
 
     /**
      * @return Returns the mode.
+     * @deprecated no replacement
      */
     public String getMode() {
         return mode;
@@ -137,42 +138,54 @@ public class Participation extends IMObject {
 
     /**
      * @param mode The mode to set.
+     * @deprecated no replacement
      */
+    @Deprecated
     public void setMode(String mode) {
         this.mode = mode;
     }
 
     /**
      * @return Returns the sequence.
+     * @deprecated no replacement
      */
+    @Deprecated
     public int getSequence() {
         return sequence;
     }
 
     /**
      * @param sequence The sequence to set.
+     * @deprecated no replacement
      */
+    @Deprecated
     public void setSequence(int sequence) {
         this.sequence = sequence;
     }
 
     /**
      * @return Returns the activeEndTime.
+     * @deprecated no replacement
      */
+    @Deprecated
     public Date getActiveEndTime() {
         return activeEndTime;
     }
 
     /**
      * @param activeEndTime The activeEndTime to set.
+     * @deprecated no replacement
      */
+    @Deprecated
     public void setActiveEndTime(Date activeEndTime) {
         this.activeEndTime = activeEndTime;
     }
 
     /**
-     * @return Returns the activeStartTime.
+     * @return <tt>null</tt>
+     * @deprecated no replacement
      */
+    @Deprecated
     public Date getActiveStartTime() {
         return activeStartTime;
     }
@@ -200,14 +213,18 @@ public class Participation extends IMObject {
 
     /**
      * @return Returns the percentage.
+     * @deprecated no replacement
      */
+    @Deprecated
     public int getPercentage() {
         return percentage;
     }
 
     /**
      * @param percentage The percentage to set.
+     * @deprecated no replacement
      */
+    @Deprecated
     public void setPercentage(int percentage) {
         this.percentage = percentage;
     }

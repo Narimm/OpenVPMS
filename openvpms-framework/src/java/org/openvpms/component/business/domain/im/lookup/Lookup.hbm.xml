@@ -35,14 +35,14 @@
             <property name="shortName" access="property"
                       column="arch_short_name"
                       type="string" length="100"
-                      index="lookup_short_name_index, lookup_short_name_code_idx"
-                      unique-key="lookup_key"/>
+                      index="lookup_short_name_index"
+                      unique-key="lookup_short_name_code_idx"/>
             <property name="version" access="property" column="arch_version"
                       type="string" length="100"/>
         </component>
         <property name="code" access="property" column="code" type="string"
-                  length="100" not-null="true" index="lookup_short_name_code_idx"
-                  unique-key="lookup_key"/>
+                  length="100" not-null="true"
+                  unique-key="lookup_short_name_code_idx"/>
         <property name="name" access="property" column="name" type="string"/>
         <property name="description" access="property" column="description"
                   type="string"/>

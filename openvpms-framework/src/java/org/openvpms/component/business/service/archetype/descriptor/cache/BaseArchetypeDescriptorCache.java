@@ -134,6 +134,7 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeShortNames(java.lang.String, java.lang.String, java.lang.String, boolean)
      */
+    @Deprecated
     public List<String> getArchetypeShortNames(String rmName,
             String entityName, String conceptName, boolean primaryOnly) {
         return getArchetypeShortNames(entityName, conceptName, primaryOnly);
