@@ -31,14 +31,15 @@
 		<version name="version" access="property" type="long" />
 		<property name="lastModified" access="property"
 			column="last_modified" type="timestamp" />
-		<property name="linkId" access="property" type="string" length="100" />
+		<property name="linkId" access="property" type="string" length="36"
+                  not-null="true" unique="true"/>
 		<property name="name" access="property" column="name"
-			type="string" />
+			type="string" length="100" not-null="true"/>
         <component name="archetypeId">
             <property name="shortName" access="property"
-                column="arch_short_name" type="string" length="100" />
+                column="arch_short_name" type="string" length="100" not-null="true"/>
             <property name="version" access="property"
-                column="arch_version" type="string" length="100" />
+                column="arch_version" type="string" length="100" not-null="true"/>
         </component>
 		<property name="active" access="property" column="active"
 			type="boolean" />

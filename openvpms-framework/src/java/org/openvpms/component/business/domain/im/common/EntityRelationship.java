@@ -164,14 +164,18 @@ public class EntityRelationship extends IMObject {
 
     /**
      * @return Returns the reason.
+     * @deprecated no replacement
      */
+    @Deprecated
     public String getReason() {
         return reason;
     }
 
     /**
      * @return Returns the sequence.
+     * @deprecated no replacement
      */
+    @Deprecated
     public int getSequence() {
         return sequence;
     }
@@ -225,7 +229,9 @@ public class EntityRelationship extends IMObject {
     /**
      * @param reason
      *            The reason to set.
+     * @deprecated no replacement
      */
+    @Deprecated
     public void setReason(String reason) {
         this.reason = reason;
     }
@@ -233,7 +239,9 @@ public class EntityRelationship extends IMObject {
     /**
      * @param sequence
      *            The sequence to set.
+     * @deprecated no replacement
      */
+    @Deprecated
     public void setSequence(int sequence) {
         this.sequence = sequence;
     }
@@ -264,7 +272,6 @@ public class EntityRelationship extends IMObject {
             .appendSuper(null)
             .append("source", source)
             .append("target", target)
-            .append("sequence", sequence)
             .append("identity", identity)
             .toString();
     }

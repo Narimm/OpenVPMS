@@ -49,7 +49,7 @@ public class ActionTypeDescriptor extends Descriptor {
      * Default constructor
      */
     public ActionTypeDescriptor() {
-        this.setArchetypeId(new ArchetypeId("descriptor.actionType.1.0"));
+        setArchetypeId(new ArchetypeId("descriptor.actionType.1.0"));
     }
     
     /**

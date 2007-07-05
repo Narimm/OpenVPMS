@@ -33,7 +33,7 @@ import java.util.StringTokenizer;
  * <ul>
  * <li>entityName - is the entity name</li>
  * <li>concept - is the concept attached to the archetype</li>
- * <li>version - is the version of the archetype</li>
+ * <li>version - is the version of the archetype, and is optional</li>
  * </ul>
  * <p>Examples:
  * <ul>
@@ -79,13 +79,13 @@ public class ArchetypeId implements Serializable, Cloneable {
     private String concept;
 
     /**
-     * The version number.
+     * The version number. May be <tt>null</tt>
      */
     private String version;
 
     /**
      * The fully qualified name. The concatenation of the entityName,
-     * concept and version.
+     * concept and version (if non-null).
      */
     private String qualifiedName;
 
@@ -104,9 +104,9 @@ public class ArchetypeId implements Serializable, Cloneable {
     }
 
     /**
-     * Create an archetypeId from a fully qualified name.
+     * Create an archetypeId from a qualified name.
      *
-     * @param qname the fully qualified name
+     * @param qname the qualified name. The version is optional
      * @throws ArchetypeIdException if an illegal archetype id has been
      *                              specified
      */
@@ -119,13 +119,12 @@ public class ArchetypeId implements Serializable, Cloneable {
      *
      * @param entityName the entity name
      * @param concept    the concept that the archetype denotes
-     * @param version    the version of the archetype
+     * @param version    the version of the archetype. May be <tt>null</tt>
      * @throws ArchetypeIdException if a legal archetype id cannot be
      *                              constructed.
      */
     public ArchetypeId(String entityName, String concept, String version) {
-        if (StringUtils.isEmpty(concept) || StringUtils.isEmpty(entityName)
-                || StringUtils.isEmpty(version)) {
+        if (StringUtils.isEmpty(concept) || StringUtils.isEmpty(entityName)) {
             throw new ArchetypeIdException(
                     ArchetypeIdException.ErrorCode.EmptyElement);
         }
@@ -164,19 +163,17 @@ public class ArchetypeId implements Serializable, Cloneable {
 
     /**
      * Returns the qualified name. This is the concatenation of the
-     * entity name, concept and version.
+     * entity name, concept and version (if non-null).
      *
      * @return the qualified name
      */
     public String getQualifiedName() {
         if (qualifiedName == null) {
-            qualifiedName = new StringBuffer()
-                    .append(entityName)
-                    .append(".")
-                    .append(concept)
-                    .append(".")
-                    .append(version)
-                    .toString();
+            StringBuffer buff = new StringBuffer(getShortName());
+            if (!StringUtils.isEmpty(version)) {
+                buff.append(".").append(version);
+            }
+            qualifiedName = buff.toString();
         }
 
         return qualifiedName;
@@ -189,7 +186,7 @@ public class ArchetypeId implements Serializable, Cloneable {
     public String getNamespace() {
         return namespace;
     }
-    
+
     /**
      * @return Returns the rmName.
      * @deprecated no replacement
@@ -217,11 +214,16 @@ public class ArchetypeId implements Serializable, Cloneable {
         return shortName;
     }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see java.lang.Object#equals(java.lang.Object)
-    */
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     * <p/>
+     * Note that equalivalence is primarily determined by the archetype
+     * short name. If the version of both objects being compared is non-null,
+     * then this will also be compared. If one or both is null, then the
+     * objects will be considered equal if the short names are the same.
+     *
+     * @return <tt>true</tt> if this equals <tt>obj</tt>
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
@@ -232,7 +234,13 @@ public class ArchetypeId implements Serializable, Cloneable {
             return false;
         }
         ArchetypeId rhs = (ArchetypeId) obj;
-        return ObjectUtils.equals(getQualifiedName(), rhs.getQualifiedName());
+        if (ObjectUtils.equals(getShortName(), rhs.getShortName())) {
+            if (version != null && rhs.getVersion() != null) {
+                return version.equals(rhs.getVersion());
+            }
+            return true;
+        }
+        return false;
     }
 
     /*
@@ -242,7 +250,7 @@ public class ArchetypeId implements Serializable, Cloneable {
      */
     @Override
     public int hashCode() {
-        return getQualifiedName().hashCode();
+        return getShortName().hashCode();
     }
 
     /*
@@ -294,7 +302,7 @@ public class ArchetypeId implements Serializable, Cloneable {
     /**
      * Sets the qualified name.
      *
-     * @param qname the qualified name
+     * @param qname the qualified name. The version is optional
      * @throws ArchetypeIdException if an illegal archetype id has been
      *                              specified
      */
@@ -351,7 +359,7 @@ public class ArchetypeId implements Serializable, Cloneable {
 
         // the qname is made up of entity name, concept and version
         StringTokenizer tokens = new StringTokenizer(qname, ".");
-        if (tokens.countTokens() < 3) {
+        if (tokens.countTokens() < 2) {
             throw new ArchetypeIdException(
                     ArchetypeIdException.ErrorCode.InvalidQNameFormat, qname);
         }
@@ -359,12 +367,15 @@ public class ArchetypeId implements Serializable, Cloneable {
         entityName = tokens.nextToken();
         concept = tokens.nextToken();
 
-        // all the rest have to be the version number which may have a '.'
-        StringBuffer buf = new StringBuffer(tokens.nextToken());
-        while (tokens.hasMoreTokens()) {
-            buf.append(".").append(tokens.nextToken());
+        if (tokens.hasMoreTokens()) {
+
+            // all the rest have to be the version number which may have a '.'
+            StringBuffer buf = new StringBuffer(tokens.nextToken());
+            while (tokens.hasMoreTokens()) {
+                buf.append(".").append(tokens.nextToken());
+            }
+            version = buf.toString();
         }
-        version = buf.toString();
 
         // store the qualified name
         qualifiedName = qname;

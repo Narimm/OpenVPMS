@@ -28,7 +28,8 @@
             <generator class="native"/>
         </id>
         <version name="version" access="property" type="long"/>
-        <property name="linkId" access="property" type="string" length="100"/>
+        <property name="linkId" access="property" type="string" length="36"
+                not-null="true" unique="true"/>
         <property name="active" access="property" column="active"
                   type="boolean"/>
         <component name="archetypeId">
@@ -36,9 +37,9 @@
                       column="arch_short_name"
                       type="string" length="100"
                       index="lookup_short_name_index"
-                      unique-key="lookup_short_name_code_idx"/>
+                      not-null="true" unique-key="lookup_short_name_code_idx"/>
             <property name="version" access="property" column="arch_version"
-                      type="string" length="100"/>
+                      type="string" length="100" not-null="true"/>
         </component>
         <property name="code" access="property" column="code" type="string"
                   length="100" not-null="true"

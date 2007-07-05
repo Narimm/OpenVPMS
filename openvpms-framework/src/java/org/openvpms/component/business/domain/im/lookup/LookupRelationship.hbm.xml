@@ -29,28 +29,29 @@
       <generator class="native" />
     </id>
     <version name="version" access="field" type="long" />
-    <property name="linkId" access="property" type="string" length="100" />
+    <property name="linkId" access="property" type="string" length="36"
+            not-null="true" unique="true"/>
     <component name="archetypeId">
       <property name="shortName" access="property" column="arch_short_name"
-        type="string" length="100" />
+        type="string" length="100" not-null="true"/>
       <property name="version" access="property" column="arch_version"
-        type="string" length="100" />
+        type="string" length="100" not-null="true"/>
     </component>
     <property name="active" access="property" column="active" type="boolean" />
     <component name="source">
       <component name="archetypeId" access="field">
-        <property name="qualifiedName" access="property" type="string"
-          column="source_archetype_id" />
+        <property name="shortName" access="property" type="string" length="100"
+          column="source_arch_short_name" />
       </component>
-      <property name="linkId" access="field" type="string" length="100"
+      <property name="linkId" access="field" type="string" length="36"
         column="source_linkId" index="lookup_relationship_source_linkId_idx"/>
     </component>
     <component name="target">
       <component name="archetypeId" access="field">
-        <property name="qualifiedName" access="property" type="string"
-          column="target_archetype_id" />
+        <property name="shortName" access="property" type="string" length="100"
+          column="target_arch_short_name" />
       </component>
-      <property name="linkId" access="field" type="string" length="100"
+      <property name="linkId" access="field" type="string" length="36"
         column="target_linkId" index="lookup_relationship_target_linkId_idx"/>
     </component>
     <map name="details" access="field" table="lookup_relationship_details"

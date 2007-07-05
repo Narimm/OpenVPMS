@@ -19,57 +19,50 @@
 
 package org.openvpms.component.business.domain.im.common;
 
-// java core
-import java.io.Serializable;
-
-// commons-lang
 import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+
+import java.io.Serializable;
 
 
 /**
  * This class holds a reference to another {@link IMObject}. To create a
- * valid reference you must supply an archetypeId and the linkId. 
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * valid reference you must supply an archetypeId and the linkId.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class IMObjectReference implements Serializable, Cloneable {
 
     /**
-     * Generated SUID
+     * Serialisation version identifier.
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * A archetype identity.
+     * The archetype identity.
      */
     private ArchetypeId archetypeId;
-    
+
     /**
-     * The unique identity of the object.
+     * The identity of the object.
      */
     private String linkId;
-    
+
     /**
-     * Default constructor. 
+     * Default constructor provided for serialization.
      */
-    public IMObjectReference() {
+    protected IMObjectReference() {
         // do nothing
     }
-    
+
     /**
-     * Costruct an object object reference using the specified 
+     * Costruct an object object reference using the specified
      * {@link IMObject}
-     * 
-     * @param object
-     *            the im object
-     * @throws IMObjectException
-     *            if an object reference cannot be constructed.                                 
+     *
+     * @param object the im object
+     * @throws IMObjectException if an object reference cannot be constructed.
      */
     public IMObjectReference(IMObject object) {
         if (object == null) {
@@ -80,45 +73,48 @@ public class IMObjectReference implements Serializable, Cloneable {
         this.archetypeId = object.getArchetypeId();
         this.linkId = object.getLinkId();
     }
-    
+
     /**
-     * Construct an object reference using the specified arhcetype id and 
+     * Construct an object reference using the specified arhcetype id and
      * uid
-     * 
-     * @param archetypeId 
-     *            the archetype id of the object
-     * @param linkId
-     *            the link of the object
-     * @throws IMObjectException                                          
+     *
+     * @param archetypeId the archetype id of the object
+     * @param linkId      the link of the object
+     * @throws IMObjectException
      */
     public IMObjectReference(ArchetypeId archetypeId, String linkId) {
         if (archetypeId == null) {
             throw new IMObjectException(
                     IMObjectException.ErrorCode.FailedToCreateObjectReference);
         }
-        
+
         this.archetypeId = archetypeId;
         this.linkId = linkId;
     }
 
     /**
-     * @return Returns the archetypeId.
+     * Returns the archetype identifier.
+     *
+     * @return the archetype identifier
      */
     public ArchetypeId getArchetypeId() {
         return archetypeId;
     }
-    
+
     /**
-     * Return the archetypeId as a string
-     * 
+     * Return the archetypeId as a string.
+     *
      * @return String
      */
+    @Deprecated
     public String getArchetypeIdAsString() {
         return archetypeId.getQualifiedName();
     }
 
     /**
-     * @return Returns the linkId.
+     * Returns the object identity.
+     *
+     * @return the object identity
      */
     public String getLinkId() {
         return linkId;
@@ -129,11 +125,11 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     @Override
     public boolean equals(Object obj) {
-        IMObjectReference rhs = (IMObjectReference)obj;
+        IMObjectReference rhs = (IMObjectReference) obj;
         return new EqualsBuilder()
-            .append(linkId, rhs.linkId)
-            .append(archetypeId, rhs.archetypeId)
-            .isEquals();
+                .append(linkId, rhs.linkId)
+                .append(archetypeId, rhs.archetypeId)
+                .isEquals();
     }
 
     /* (non-Javadoc)
@@ -141,10 +137,7 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .append(archetypeId)   
-            .append(linkId)
-            .toHashCode();
+        return linkId.hashCode();
     }
 
     /* (non-Javadoc)
@@ -153,9 +146,9 @@ public class IMObjectReference implements Serializable, Cloneable {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .append("linkId", linkId)
-            .append("archetypeId", archetypeId)
-            .toString();
+                .append("linkId", linkId)
+                .append("archetypeId", archetypeId)
+                .toString();
     }
 
     /* (non-Javadoc)
@@ -163,25 +156,29 @@ public class IMObjectReference implements Serializable, Cloneable {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        IMObjectReference copy = (IMObjectReference)super.clone();
-        
+        IMObjectReference copy = (IMObjectReference) super.clone();
+
         copy.archetypeId = this.archetypeId;
         copy.linkId = linkId;
-        
+
         return copy;
     }
 
     /**
-     * @param archetypeId The archetypeId to set.
+     * Sets the archetype identity.
+     *
+     * @param archetypeId the archetype identity to set
      */
-    public void setArchetypeId(ArchetypeId archetypeId) {
+    protected void setArchetypeId(ArchetypeId archetypeId) {
         this.archetypeId = archetypeId;
     }
 
     /**
-     * @param linkId The linkId to set.
+     * Sets the object identity.
+     *
+     * @param linkId the object identity to set
      */
-    public void setLinkId(String linkId) {
+    protected void setLinkId(String linkId) {
         this.linkId = linkId;
     }
 

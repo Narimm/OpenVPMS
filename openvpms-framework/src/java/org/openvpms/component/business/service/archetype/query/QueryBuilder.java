@@ -87,8 +87,7 @@ public class QueryBuilder {
      */
     public QueryContext build(ArchetypeQuery query) {
         select.clear();
-        if ((query == null) ||
-                (query.getArchetypeConstraint() == null)) {
+        if (query == null || query.getArchetypeConstraint() == null) {
             throw new QueryBuilderException(
                     QueryBuilderException.ErrorCode.NullQuery);
         }

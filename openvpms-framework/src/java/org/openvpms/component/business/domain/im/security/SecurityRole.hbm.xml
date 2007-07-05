@@ -28,12 +28,13 @@
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" access="property" type="string" length="100" />
+    <property name="linkId" access="property" type="string" length="36"
+            not-null="true" unique="true"/>
     <component name="archetypeId">
       <property name="shortName" access="property" column="arch_short_name"
-        type="string" length="100" />
+        type="string" length="100" not-null="true"/>
       <property name="version" access="property" column="arch_version"
-        type="string" length="100" />
+        type="string" length="100" not-null="true"/>
     </component>
     <property name="name" access="property" column="name" type="string" />
     <property name="description" access="property" column="description"

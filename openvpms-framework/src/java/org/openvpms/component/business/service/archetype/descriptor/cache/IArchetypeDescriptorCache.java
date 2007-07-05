@@ -49,7 +49,8 @@ public interface IArchetypeDescriptorCache {
 
     /**
      * Retrieve the {@link ArchetypeDescriptor} with the specified
-     * {@link ArchetypeId}.
+     * {@link ArchetypeId}. If the archetype version isn't specified, it
+     * will retrieve the first descriptor marked with latest=true.
      *
      * @param id the archetype id
      * @return ArchetypeDescriptor

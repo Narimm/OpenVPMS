@@ -84,7 +84,11 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
      * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptor(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
     public ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id) {
-        return archetypesById.get(id.getQualifiedName());
+        ArchetypeDescriptor result = archetypesById.get(id.getQualifiedName());
+        if (result == null && id.getVersion() == null) {
+            result = getArchetypeDescriptor(id.getShortName());
+        }
+        return result;
     }
 
     /* (non-Javadoc)
@@ -184,8 +188,7 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
             ArchetypeDescriptor desc = archetypesByShortName.get(archshortName);
             if (StringUtilities.matches(archshortName, shortName)) {
                 // are we requesting only primary
-                if ((primaryOnly) &&
-                    (!desc.isPrimary())) {
+                if (primaryOnly && !desc.isPrimary()) {
                     continue;
                 }
     
@@ -209,8 +212,7 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
     public void addArchetypeDescriptor(ArchetypeDescriptor adesc, boolean replace) {
         ArchetypeDescriptor temp = archetypesById.get(adesc.getType().getQualifiedName());
         
-        if ((temp == null) ||
-            (replace)) {
+        if (temp == null || replace) {
             addArchetypeById(adesc);
             addArchetypeByShortName(adesc);
         }

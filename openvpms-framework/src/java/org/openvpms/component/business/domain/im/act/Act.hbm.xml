@@ -28,14 +28,14 @@
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" access="property" type="string" length="100"
-      index="act_linkId_idx" />
+    <property name="linkId" access="property" type="string" length="36"
+              not-null="true" unique="true"/>
     <component name="archetypeId">
       <property name="shortName" access="property" column="arch_short_name"
-        type="string" length="100"
+        type="string" length="100" not-null="true"
         index="act_short_name_idx" />
       <property name="version" access="property" column="arch_version"
-        type="string" length="100" />
+        type="string" length="100" not-null="true"/>
     </component>
     <property name="name" access="property" column="name" type="string" />
     <property name="description" access="property" column="description"
@@ -44,7 +44,7 @@
     <property name="title" column="title" type="string" />
     <property name="activityStartTime" column="activity_start_time" type="timestamp"
       index="act_start_time_idx" />
-    <property name="activityEndTime" column="activity_end_time" type="timestamp" 
+    <property name="activityEndTime" column="activity_end_time" type="timestamp"
       index="act_end_time_idx"/>
     <property name="reason" column="reason" type="string" />
     <property name="status" column="status" type="string"
@@ -114,10 +114,10 @@
         type="boolean" />
       <component name="docReference">
         <component name="archetypeId" access="field">
-          <property name="qualifiedName" access="property" type="string"
-            column="docref_archetype_id" />
+          <property name="shortName" access="property" type="string"
+                    length="100" column="docref_arch_short_name" />
         </component>
-        <property name="linkId" access="field" type="string" length="100"
+        <property name="linkId" access="field" type="string" length="36"
           column="docref_linkId" />
       </component>
     </joined-subclass>
