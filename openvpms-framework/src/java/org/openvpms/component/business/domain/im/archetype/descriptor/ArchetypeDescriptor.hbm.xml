@@ -24,8 +24,7 @@
 		name="org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor"
 		table="archetype_descriptors">
 		<id name="uid" type="long" unsaved-value="-1">
-			<column name="archetype_desc_id"
-				index="archetype_desc_id_idx" />
+			<column name="archetype_desc_id"/>
 			<generator class="native" />
 		</id>
 		<version name="version" access="property" type="long" />

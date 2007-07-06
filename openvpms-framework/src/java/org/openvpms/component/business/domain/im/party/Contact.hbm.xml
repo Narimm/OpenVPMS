@@ -24,7 +24,7 @@
     table="contacts">
     <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="contact_id" index="contact_id_idx" />
+      <column name="contact_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />

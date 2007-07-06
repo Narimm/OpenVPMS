@@ -24,7 +24,7 @@
            table="lookups">
         <cache usage="read-write"/>
         <id name="uid" type="long" unsaved-value="-1">
-            <column name="lookup_id" index="lookup_id_idx"/>
+            <column name="lookup_id"/>
             <generator class="native"/>
         </id>
         <version name="version" access="property" type="long"/>

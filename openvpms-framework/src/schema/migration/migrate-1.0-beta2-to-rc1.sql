@@ -82,6 +82,7 @@ alter table act_relationships
     drop column arch_concept_name,
     drop column arch_entity_name,
     drop column sequence,
+    drop index act_relationship_id_idx,
     add unique key (linkId);
 
 alter table action_type_descriptors
@@ -92,6 +93,7 @@ alter table action_type_descriptors
     drop column arch_rm_name,
     drop column arch_concept_name,
     drop column arch_entity_name,
+	drop index action_type_desc_id_idx,
     add unique key (linkId);
 
 alter table acts
@@ -107,6 +109,7 @@ alter table acts
     drop column arch_rm_name,
     drop column arch_concept_name,
     drop column arch_entity_name,
+    drop index act_id_idx,
     drop index act_concept_idx,
     drop index act_linkId_idx,
     add unique key (linkId),
@@ -124,10 +127,12 @@ alter table archetype_descriptors
     drop column arch_rm_name,
     drop column arch_concept_name,
     drop column arch_entity_name,
+    drop index archetype_desc_id_idx,
     add unique key linkId (linkId);
 
 alter table assertion_descriptors
     modify linkId varchar(36) not null,
+    drop index assertion_desc_id_idx,
     add unique key (linkId);
 
 update assertion_type_descriptors
@@ -141,7 +146,11 @@ alter table assertion_type_descriptors
     drop column arch_rm_name,
     drop column arch_concept_name,
     drop column arch_entity_name,
+    drop index assertion_type_id_idx,
     add unique key (linkId);
+
+alter table audit_records
+    drop index audit_id_idx;
 
 alter table contacts
     modify linkId varchar(36) not null,
@@ -156,6 +165,7 @@ alter table contacts
     drop column arch_rm_name,
     drop column arch_concept_name,
     drop column arch_entity_name,
+    drop index contact_id_idx,
     add unique key (linkId);
 
 alter table document_acts
@@ -178,6 +188,7 @@ alter table documents
     drop column arch_rm_name,
     drop column arch_concept_name,
     drop column arch_entity_name,
+    drop index document_id_idx,
     add unique key (linkId);
 
 alter table entities
@@ -196,6 +207,7 @@ alter table entities
     drop column arch_rm_name,
     drop column arch_concept_name,
     drop column arch_entity_name,
+    drop index entity_id_idx,
     drop index entity_linkId_idx,
     add unique key (linkId),
     add index entity_arch_sn_name_idx (arch_short_name, name),
@@ -214,6 +226,7 @@ alter table entity_identities
     drop column arch_rm_name,
     drop column arch_concept_name,
     drop column arch_entity_name,
+    drop index entity_identity_id_idx,
     add unique key (linkId);
 
 alter table entity_relationships
@@ -237,6 +250,7 @@ alter table entity_relationships
     drop column arch_entity_name,
     drop column sequence,
     drop column reason,
+    drop index entity_relationship_id_idx,
     add unique key (linkId);
 
 alter table granted_authorities
@@ -253,6 +267,7 @@ alter table granted_authorities
     drop column arch_rm_name,
     drop column arch_concept_name,
     drop column arch_entity_name,
+    drop index granted_authority_id_idx,
     add unique key (linkId);
 
 alter table lookup_relationships
@@ -274,6 +289,7 @@ alter table lookup_relationships
     drop column arch_rm_name,
     drop column arch_concept_name,
     drop column arch_entity_name,
+    drop index lookup_relationship_id_idx,
     add unique key (linkId);
 
 alter table lookups
@@ -306,6 +322,7 @@ where code="PACKET" and arch_short_name="lookup.uom" limit 1;
 #
 
 alter table lookups
+    drop index lookup_id_idx,
     add unique key (linkId),
     add unique index lookup_short_name_code_idx (arch_short_name,code),
     add index lookup_short_name_index (arch_short_name);
@@ -313,6 +330,7 @@ alter table lookups
 alter table node_descriptors
     modify linkId varchar(36) not null,
     change default_name default_value varchar(255),
+    drop index node_desc_id_idx,
     add unique key (linkId);
 
 alter table participations
@@ -340,9 +358,11 @@ alter table participations
     drop column percentage,
     drop column active_start_time,
     drop column active_end_time,
+    drop index participation_id_idx,
     drop index participation_linkId_idx,
+    drop index participation_entity_linkId_idx,
     add unique key (linkId),
-    add index participation_arch_short_name_idx (arch_short_name);
+    add index participation_entity_linkId_act_sn_index (entity_linkId, act_arch_short_name);
 
 alter table product_prices
     modify linkId varchar(36) not null,
@@ -357,6 +377,7 @@ alter table product_prices
     drop column arch_rm_name,
     drop column arch_concept_name,
     drop column arch_entity_name,
+    drop index product_price_id_idx,
     add unique key (linkId);
 
 alter table security_roles
@@ -372,5 +393,6 @@ alter table security_roles
     drop column arch_rm_name,
     drop column arch_concept_name,
     drop column arch_entity_name,
+    drop index security_role_id_idx,
     add unique key (linkId);
 

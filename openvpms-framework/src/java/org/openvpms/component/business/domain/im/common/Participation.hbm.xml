@@ -24,7 +24,7 @@
     table="participations">
     <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="participation_id" index="participation_id_idx" />
+      <column name="participation_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />
@@ -46,12 +46,12 @@
           column="entity_arch_short_name" />
       </component>
       <property name="linkId" access="field" type="string" length="36"
-        column="entity_linkId" index="participation_entity_linkId_idx" />
+        column="entity_linkId" index="participation_entity_linkId_act_sn_index_idx" />
     </component>
     <component name="act">
       <component name="archetypeId" access="field">
         <property name="shortName" access="property" type="string" length="100"
-          column="act_arch_short_name" />
+          column="act_arch_short_name" index="participation_entity_linkId_act_sn_index_idx"/>
       </component>
       <property name="linkId" access="field" type="string" length="36"
       	column="act_linkId" index="participation_act_linkId_idx" />

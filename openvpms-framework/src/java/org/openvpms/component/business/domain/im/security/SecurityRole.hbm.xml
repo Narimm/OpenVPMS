@@ -24,7 +24,7 @@
     table="security_roles">
     <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="security_role_id" index="security_role_id_idx" />
+      <column name="security_role_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />

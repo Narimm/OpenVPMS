@@ -24,8 +24,7 @@
 		name="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor"
 		table="assertion_type_descriptors">
 		<id name="uid" type="long" unsaved-value="-1">
-			<column name="assertion_type_desc_id"
-				index="assertion_type_id_idx" />
+			<column name="assertion_type_desc_id"/>
 			<generator class="native" />
 		</id>
 		<version name="version" access="property" type="long" />

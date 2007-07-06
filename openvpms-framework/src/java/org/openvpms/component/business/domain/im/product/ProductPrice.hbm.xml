@@ -24,7 +24,7 @@
     table="product_prices">
     <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="product_price_id" index="product_price_id_idx" />
+      <column name="product_price_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />

@@ -24,7 +24,7 @@
     name="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor"
     table="node_descriptors">
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="node_desc_id" index="node_desc_id_idx" />
+      <column name="node_desc_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />

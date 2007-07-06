@@ -23,7 +23,7 @@
   <class name="org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority"
     table="granted_authorities">
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="granted_authority_id" index="granted_authority_id_idx" />
+      <column name="granted_authority_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />

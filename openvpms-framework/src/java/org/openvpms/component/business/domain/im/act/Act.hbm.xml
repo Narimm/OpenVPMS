@@ -24,7 +24,7 @@
     table="acts">
     <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="act_id" index="act_id_idx" />
+      <column name="act_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />

@@ -24,7 +24,7 @@
     table="act_relationships">
     <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="act_relationship_id" index="act_relationship_id_idx" />
+      <column name="act_relationship_id"/>
       <generator class="native" />
     </id>
     <property name="linkId" access="property" type="string" length="36"

@@ -25,7 +25,7 @@
     table="lookup_relationships">
     <cache usage="read-write" />
     <id name="uid" access="field" type="long" unsaved-value="-1">
-      <column name="lookup_relationship_id" index="lookup_relationship_id_idx" />
+      <column name="lookup_relationship_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="field" type="long" />
