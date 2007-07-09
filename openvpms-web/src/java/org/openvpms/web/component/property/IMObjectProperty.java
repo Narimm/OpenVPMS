@@ -35,7 +35,6 @@
 
 package org.openvpms.web.component.property;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,6 +47,7 @@ import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.im.util.ObjectHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -139,7 +139,7 @@ public class IMObjectProperty extends AbstractProperty
         checkReadOnly();
         try {
             value = getTransformer().apply(value);
-            if (!ObjectUtils.equals(getValue(), value)) {
+            if (!ObjectHelper.equals(getValue(), value)) {
                 descriptor.setValue(object, value);
                 set = true;
                 modified();

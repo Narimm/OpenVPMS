@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.property;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -26,6 +25,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.im.util.ObjectHelper;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -150,8 +150,8 @@ public class PropertySet {
         for (Property property : derived.keySet()) {
             Object old = derived.get(property);
             Object now = property.getValue();
-            if (!ObjectUtils.equals(old, now)) {
-                derived.put(property, old);
+            if (!ObjectHelper.equals(old, now)) {
+                derived.put(property, now);
                 property.refresh();
             }
         }
