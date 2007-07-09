@@ -18,9 +18,13 @@
 
 package org.openvpms.web.component.property;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import java.util.Collection;
@@ -29,7 +33,7 @@ import java.util.Map;
 
 
 /**
- * Set of {@link Property} instances.
+ * Set of {@link Property} instances that tracks modification of derived values.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -37,9 +41,19 @@ import java.util.Map;
 public class PropertySet {
 
     /**
+     * The object that the properties belong to.
+     */
+    private final IMObject object;
+
+    /**
      * The properties.
      */
     private Map<String, Property> properties = new HashMap<String, Property>();
+
+    /**
+     * Derived property values.
+     */
+    private Map<Property, Object> derived = new HashMap<Property, Object>();
 
 
     /**
@@ -58,9 +72,13 @@ public class PropertySet {
      * @param archetype the archetype descriptor
      */
     public PropertySet(IMObject object, ArchetypeDescriptor archetype) {
+        this.object = object;
         for (NodeDescriptor descriptor : archetype.getAllNodeDescriptors()) {
             Property property = new IMObjectProperty(object, descriptor);
             properties.put(descriptor.getName(), property);
+            if (property.isDerived()) {
+                derived.put(property, property.getValue());
+            }
         }
     }
 
@@ -115,6 +133,27 @@ public class PropertySet {
     public void clearModified() {
         for (Property property : getProperties()) {
             property.clearModified();
+        }
+    }
+
+    /**
+     * Updates derived properties. Any derived property that has changed
+     * since the last call will notify their registered listeners.
+     *
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void updateDerivedProperties() {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        service.deriveValues(object);
+
+        for (Property property : derived.keySet()) {
+            Object old = derived.get(property);
+            Object now = property.getValue();
+            if (!ObjectUtils.equals(old, now)) {
+                derived.put(property, old);
+                property.refresh();
+            }
         }
     }
 

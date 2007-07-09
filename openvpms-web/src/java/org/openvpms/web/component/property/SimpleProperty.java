@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.property;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -163,19 +164,24 @@ public class SimpleProperty extends AbstractProperty {
     }
 
     /**
-     * Set the value of the property.
+     * Sets the value of the property.
+     * The value will only be set if it is valid, and different to the existing
+     * value. If the value is set, any listeners will be notified.
      *
      * @param value the property value
-     * @return <code>true</code> if the value was set
+     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it
+     *         cannot be set due to error, or is the same as the existing value
      */
     public boolean setValue(Object value) {
         boolean set = false;
         checkReadOnly();
         try {
-            value = getTransformer().apply(value);
-            this.value = value;
-            set = true;
-            modified();
+            if (!ObjectUtils.equals(this.value, value)) {
+                value = getTransformer().apply(value);
+                this.value = value;
+                set = true;
+                modified();
+            }
         } catch (OpenVPMSException exception) {
             invalidate(exception);
         }

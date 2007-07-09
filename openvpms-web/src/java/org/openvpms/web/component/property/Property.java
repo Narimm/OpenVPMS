@@ -51,10 +51,13 @@ public interface Property extends Modifiable {
     String getDescription();
 
     /**
-     * Set the value of the property.
+     * Sets the value of the property.
+     * The value will only be set if it is valid, and different to the existing
+     * value. If the value is set, any listeners will be notified.
      *
      * @param value the property value
-     * @return <code>true</code> if the value was set
+     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it
+     *         cannot be set due to error, or is the same as the existing value
      */
     boolean setValue(Object value);
 
