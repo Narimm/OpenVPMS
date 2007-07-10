@@ -58,7 +58,7 @@ public class AccountWorkspace extends CustomerFinancialActWorkspace {
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
         String type = Messages.get("customer.account.createtype");
-        return new AccountCRUDWindow(type, "common", "act", "customerAccount*");
+        return new AccountCRUDWindow(type, "act.customerAccount*");
     }
 
     /**

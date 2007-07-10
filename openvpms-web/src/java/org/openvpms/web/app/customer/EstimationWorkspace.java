@@ -53,8 +53,7 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
      */
     protected CRUDWindow<Act> createCRUDWindow() {
         String type = Messages.get("customer.estimation.createtype");
-        return new EstimationCRUDWindow(type, "common", "act",
-                                        "customerEstimation");
+        return new EstimationCRUDWindow(type, "act.customerEstimation");
     }
 
     /**

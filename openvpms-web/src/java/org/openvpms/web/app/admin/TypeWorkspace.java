@@ -36,7 +36,7 @@ public class TypeWorkspace extends CRUDWorkspace<Entity> {
      * Constructs a new <tt>TypeWorkspace</tt>.
      */
     public TypeWorkspace() {
-        super("admin", "type", new ShortNameList("common", "entity", "*Type"));
+        super("admin", "type", new ShortNameList("entity.*Type"));
     }
 
     /**

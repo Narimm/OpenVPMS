@@ -50,20 +50,6 @@ public class ShortNameList implements ShortNames {
     /**
      * Creates a new <tt>ShortNameList</tt>.
      *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public ShortNameList(String refModelName, String entityName,
-                         String conceptName) {
-        shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
-                                                    conceptName);
-        expanded = shortNames;
-    }
-
-    /**
-     * Creates a new <tt>ShortNameList</tt>.
-     *
      * @param shortNames the short names
      */
     public ShortNameList(String[] shortNames) {

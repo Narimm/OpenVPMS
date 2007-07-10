@@ -36,8 +36,7 @@ public class ProductTypeWorkspace extends CRUDWorkspace<Entity> {
      * Constructs a new <tt>ProductTypeWorkspace</tt>.
      */
     public ProductTypeWorkspace() {
-        super("admin", "productType",
-              new ShortNameList("common", "entity", "productType"));
+        super("admin", "productType", new ShortNameList("entity.productType"));
     }
 
     /**

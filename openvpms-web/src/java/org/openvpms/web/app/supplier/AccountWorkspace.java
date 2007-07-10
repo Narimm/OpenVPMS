@@ -51,7 +51,7 @@ public class AccountWorkspace extends SupplierFinancialActWorkspace {
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
         String type = Messages.get("supplier.account.createtype");
-        return new AccountCRUDWindow(type, "common", "act", "supplierAccount*");
+        return new AccountCRUDWindow(type, "act.supplierAccount*");
     }
 
     /**

@@ -121,7 +121,7 @@ public abstract class ContextApplicationInstance
                 = ArchetypeServiceHelper.getArchetypeService();
         // First get the Practice.  Should only be one but get first if more.
         List<IMObject> rows = ArchetypeQueryHelper.get(
-                service, "party", "party", "organisationPractice", null, true,
+                service, "party", "organisationPractice", null, true,
                 0, 1).getResults();
         if (!rows.isEmpty()) {
             Party practice = (Party) rows.get(0);

@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -159,9 +158,10 @@ public class EstimationItemEditor extends ActItemEditor {
                                                           BigDecimal.ZERO);
                 BigDecimal quantity = bean.getBigDecimal("highQty",
                                                          BigDecimal.ZERO);
-                BigDecimal amount = DiscountRules.calculateDiscountAmount(
+                DiscountRules rules = new DiscountRules();
+                BigDecimal amount = rules.calculateDiscountAmount(
                         customer, patient, product, fixedPrice, unitPrice,
-                        quantity, ArchetypeServiceHelper.getArchetypeService());
+                        quantity);
                 Property discount = getProperty("discount");
                 discount.setValue(amount);
             }

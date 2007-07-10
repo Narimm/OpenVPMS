@@ -19,8 +19,8 @@
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 
@@ -34,7 +34,7 @@ public class DefaultResultSet<T extends IMObject> extends NameResultSet<T> {
 
 
     /**
-     * Construct a new <code>DefaultResultSet</code>.
+     * Construct a new <tt>DefaultResultSet</tt>.
      *
      * @param archetypes   the archetypes to query
      * @param instanceName the instance name
@@ -44,7 +44,7 @@ public class DefaultResultSet<T extends IMObject> extends NameResultSet<T> {
      * @param rows         the maximum no. of rows per page
      * @param distinct     if <code>true</code> filter duplicate rows
      */
-    public DefaultResultSet(BaseArchetypeConstraint archetypes,
+    public DefaultResultSet(ShortNameConstraint archetypes,
                             String instanceName, IConstraint constraints,
                             SortConstraint[] sort, int rows, boolean distinct) {
         super(archetypes, instanceName, constraints, sort, rows, distinct);

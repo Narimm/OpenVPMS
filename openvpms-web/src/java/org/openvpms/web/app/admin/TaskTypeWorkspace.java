@@ -36,8 +36,7 @@ public class TaskTypeWorkspace extends CRUDWorkspace<Entity> {
      * Constructs a new <tt>TaskTypeWorkspace</tt>.
      */
     public TaskTypeWorkspace() {
-        super("admin", "taskType",
-              new ShortNameList("common", "entity", "taskType"));
+        super("admin", "taskType", new ShortNameList("entity.taskType"));
     }
 
     /**

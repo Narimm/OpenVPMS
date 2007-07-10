@@ -90,8 +90,7 @@ public class TillWorkspace extends ActWorkspace<Party, FinancialAct> {
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
         String type = Messages.get("financial.till.createtype");
-        return new TillCRUDWindow(type, "common", "act",
-                                  "tillBalanceAdjustment");
+        return new TillCRUDWindow(type, "act.tillBalanceAdjustment");
     }
 
     /**

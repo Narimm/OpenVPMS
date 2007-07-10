@@ -37,8 +37,7 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
      * Construct a new <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
-        super("supplier", "info",
-              new ShortNameList("party", "party", "supplier*"));
+        super("supplier", "info", new ShortNameList("party.supplier*"));
     }
 
     /**

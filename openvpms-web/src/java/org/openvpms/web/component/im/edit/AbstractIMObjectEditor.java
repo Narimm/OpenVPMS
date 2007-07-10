@@ -661,15 +661,7 @@ public abstract class AbstractIMObjectEditor
         if (modified instanceof Property) {
             editors.removeModifiableListener(derivedFieldRefresher);
             try {
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
-                service.deriveValues(getObject());
-
-                for (Property property : properties.getProperties()) {
-                    if (modified != property && property.isDerived()) {
-                        property.refresh();
-                    }
-                }
+                properties.updateDerivedProperties();
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);
             }

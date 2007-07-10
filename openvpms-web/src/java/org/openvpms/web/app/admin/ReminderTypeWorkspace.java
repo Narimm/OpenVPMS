@@ -37,7 +37,7 @@ public class ReminderTypeWorkspace extends CRUDWorkspace<Entity> {
      */
     public ReminderTypeWorkspace() {
         super("admin", "reminderType",
-              new ShortNameList("common", "entity", "reminderType"));
+              new ShortNameList("entity.reminderType"));
     }
 
     /**

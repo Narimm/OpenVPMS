@@ -39,7 +39,7 @@ public class OrganisationWorkspace extends CRUDWorkspace<Party> {
      */
     public OrganisationWorkspace() {
         super("admin", "organisation",
-              new ShortNameList("party", "party", "organisation*"));
+              new ShortNameList("party.organisation*"));
     }
 
     /**

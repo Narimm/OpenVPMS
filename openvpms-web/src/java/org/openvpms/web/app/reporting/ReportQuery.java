@@ -12,7 +12,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -138,7 +137,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
             userReportLevel = userBean.getInt("userLevel", 0);
         }
         // Do the initial archetype query
-        BaseArchetypeConstraint archetypes;
+        ShortNameConstraint archetypes;
         if (type == null || type.equals(ShortNameListModel.ALL)) {
             archetypes = getArchetypes();
             archetypes.setActiveOnly(activeOnly);

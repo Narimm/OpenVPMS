@@ -117,17 +117,14 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
 
 
     /**
-     * Create a new <code>EstimationCRUDWindow</code>.
+     * Create a new <tt>EstimationCRUDWindow</tt>.
      *
-     * @param type         display name for the types of objects that this may
-     *                     create
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param type      display name for the types of objects that this may
+     *                  create
+     * @param shortName the archetype short name
      */
-    public EstimationCRUDWindow(String type, String refModelName,
-                                String entityName, String conceptName) {
-        super(type, new ShortNameList(refModelName, entityName, conceptName));
+    public EstimationCRUDWindow(String type, String shortName) {
+        super(type, new ShortNameList(shortName));
     }
 
     /**
