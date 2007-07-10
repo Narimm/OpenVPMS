@@ -25,8 +25,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
@@ -50,6 +48,11 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * 5% discount classification.
      */
     private Lookup discount5;
+
+    /**
+     * The rules.
+     */
+    private DiscountRules rules;
 
 
     /**
@@ -176,6 +179,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         super.onSetUp();
         discount10 = createDiscount(BigDecimal.TEN, true);
         discount5 = createDiscount(new BigDecimal("5"), true);
+        rules = new DiscountRules();
     }
 
     /**
@@ -190,15 +194,12 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
     private void checkCalculateDiscount(Party customer, Party patient,
                                         Product product,
                                         BigDecimal expectedDiscount) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
         BigDecimal fixedPrice = new BigDecimal("0.50");
         BigDecimal unitPrice = new BigDecimal("0.50");
         BigDecimal quantity = BigDecimal.ONE;
 
-        BigDecimal discount = DiscountRules.calculateDiscountAmount(
-                customer, patient, product, fixedPrice, unitPrice, quantity,
-                service);
+        BigDecimal discount = rules.calculateDiscountAmount(
+                customer, patient, product, fixedPrice, unitPrice, quantity);
         assertTrue(expectedDiscount.compareTo(discount) == 0);
     }
 

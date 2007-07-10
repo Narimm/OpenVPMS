@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-document.other.1.0" latest="true"
+	<archetype name="document.other.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.document.Document"  displayName="Generic Document" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name" minCardinality="1" />

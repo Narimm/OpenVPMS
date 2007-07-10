@@ -24,14 +24,19 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -43,6 +48,28 @@ import java.util.Set;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DiscountRules {
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+
+    /**
+     * Constructs a new <tt>DiscountRules</tt>.
+     */
+    public DiscountRules() {
+        this(ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Constructs a new <tt>DiscountRules</tt>.
+     *
+     * @param service the archetype service
+     */
+    public DiscountRules(IArchetypeService service) {
+        this.service = service;
+    }
 
     /**
      * Calculates the discount amount for a customer, patient and product.
@@ -58,7 +85,7 @@ public class DiscountRules {
      * </ol>
      * The rates associated with the remaining discountTypes are used to calculate
      * the discount amount. The discount amount is the sum of:
-     * <code>(fixedPrice * discountRate/100) + qty * (unitPrice * discountRate/100)</code>
+     * <tt>(fixedPrice * discountRate/100) + qty * (unitPrice * discountRate/100)</tt>
      * for each rate.
      *
      * @param customer   the customer
@@ -67,27 +94,25 @@ public class DiscountRules {
      * @param fixedPrice the fixed amount
      * @param unitPrice  the unit price
      * @param quantity   the quantity
-     * @param service    the archetype service
      * @return the discount amount
      */
-    public static BigDecimal calculateDiscountAmount(
-            Party customer, Party patient, Product product,
-            BigDecimal fixedPrice, BigDecimal unitPrice, BigDecimal quantity,
-            IArchetypeService service) {
+    public BigDecimal calculateDiscountAmount(Party customer, Party patient,
+                                              Product product,
+                                              BigDecimal fixedPrice,
+                                              BigDecimal unitPrice,
+                                              BigDecimal quantity) {
         BigDecimal discount;
         if (fixedPrice.compareTo(BigDecimal.ZERO) == 0
                 && (unitPrice.compareTo(BigDecimal.ZERO) == 0
                 || quantity.compareTo(BigDecimal.ZERO) == 0)) {
             discount = BigDecimal.ZERO;
         } else {
-            Set<IMObject> discounts = getDiscounts(customer, patient, product,
-                                                   service);
+            Set<IMObject> discounts = getDiscounts(customer, patient, product);
             if (discounts.isEmpty()) {
                 discount = BigDecimal.ZERO;
             } else {
                 discount = calculateDiscountAmount(fixedPrice, unitPrice,
-                                                   quantity, discounts,
-                                                   service);
+                                                   quantity, discounts);
             }
         }
         return MathRules.round(discount);
@@ -104,13 +129,11 @@ public class DiscountRules {
      * @param unitPrice  the unit price
      * @param quantity   the quantity
      * @param discounts  the discount classifications
-     * @param service    the archetype service
      * @return the discount amount for the act
      */
-    private static BigDecimal calculateDiscountAmount(
+    private BigDecimal calculateDiscountAmount(
             BigDecimal fixedPrice, BigDecimal unitPrice, BigDecimal quantity,
-            Set<IMObject> discounts,
-            IArchetypeService service) {
+            Set<IMObject> discounts) {
         BigDecimal result = BigDecimal.ZERO;
 
         for (IMObject discount : discounts) {
@@ -144,8 +167,8 @@ public class DiscountRules {
      * @param rate   the rate
      * @return amount * discountRate/100
      */
-    private static BigDecimal calcDiscount(BigDecimal amount, BigDecimal rate,
-                                           String discountType) {
+    private BigDecimal calcDiscount(BigDecimal amount, BigDecimal rate,
+                                    String discountType) {
         if (discountType.equalsIgnoreCase("Percentage")) {
             final BigDecimal hundred = new BigDecimal(100);
             return amount.multiply(rate).divide(hundred, 3,
@@ -161,17 +184,14 @@ public class DiscountRules {
      * @param customer the customer
      * @param patient  the patient
      * @param product  the product
-     * @param service  the archetype service
      * @return the discount classifications
      */
-    private static Set<IMObject> getDiscounts(Party customer,
-                                              Party patient,
-                                              Product product,
-                                              IArchetypeService service) {
+    private Set<IMObject> getDiscounts(Party customer, Party patient,
+                                       Product product) {
         Set<IMObject> discounts;
-        Set<IMObject> productSet = getProductDiscounts(product, service);
-        Set<IMObject> customerSet = getPartyDiscounts(customer, service);
-        Set<IMObject> patientSet = getPartyDiscounts(patient, service);
+        Set<IMObject> productSet = getProductDiscounts(product);
+        Set<IMObject> customerSet = getPartyDiscounts(customer);
+        Set<IMObject> patientSet = getPartyDiscounts(patient);
         Set<IMObject> partySet = new HashSet<IMObject>(customerSet);
         partySet.addAll(patientSet);
 
@@ -183,12 +203,10 @@ public class DiscountRules {
     /**
      * Returns a set of discounts for a party.
      *
-     * @param party   the party
-     * @param service the archetype service
+     * @param party the party
      * @return a list fo tax rate classifications for the customer
      */
-    private static Set<IMObject> getPartyDiscounts(Party party,
-                                                   IArchetypeService service) {
+    private Set<IMObject> getPartyDiscounts(Party party) {
         Set<IMObject> result = Collections.emptySet();
         if (party != null) {
             IMObjectBean bean = new IMObjectBean(party, service);
@@ -204,12 +222,9 @@ public class DiscountRules {
      * Returns a list of discounts for a product.
      *
      * @param product the product
-     * @param service the archetype service
      * @return a list of taxes for the product
      */
-    private static Set<IMObject> getProductDiscounts(
-            Product product,
-            IArchetypeService service) {
+    private Set<IMObject> getProductDiscounts(Product product) {
         IMObjectBean bean = new IMObjectBean(product, service);
         Set<IMObject> discounts = new HashSet<IMObject>();
         discounts.addAll(bean.getValues("discounts"));
@@ -219,17 +234,29 @@ public class DiscountRules {
                 EntityRelationship relationship = (EntityRelationship) object;
                 IMObjectReference srcRef = relationship.getSource();
                 if (srcRef != null) {
-                    IMObject src = ArchetypeQueryHelper.getByObjectReference(
-                            service, srcRef);
-                    if (src != null) {
-                        IMObjectBean productType
-                                = new IMObjectBean(src, service);
-                        discounts.addAll(productType.getValues("discounts"));
-                    }
+                    discounts.addAll(getProductTypeDiscounts(srcRef));
                 }
             }
         }
         return discounts;
+    }
+
+    /**
+     * Returns discounts associated with an <em>entity.productType</em>.
+     *
+     * @param ref the product type reference
+     * @return the discounts associated with the reference
+     */
+    private List<IMObject> getProductTypeDiscounts(IMObjectReference ref) {
+        ArchetypeQuery query = new ArchetypeQuery(
+                new ObjectRefConstraint(ref));
+        Iterator<IMObject> iter = new IMObjectQueryIterator<IMObject>(
+                query, Arrays.asList("discounts"));
+        if (iter.hasNext()) {
+            IMObjectBean bean = new IMObjectBean(iter.next(), service);
+            return bean.getValues("discounts");
+        }
+        return Collections.emptyList();
     }
 
 }

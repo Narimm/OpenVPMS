@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-entityRelationship.productEquivalent.1.0"
+	<archetype name="entityRelationship.productEquivalent.1.0"
 		latest="true"
 		type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Product Equivalent" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />

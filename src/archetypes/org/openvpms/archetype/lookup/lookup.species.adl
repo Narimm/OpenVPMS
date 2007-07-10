@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-    <archetype name="openvpms-lookup-lookup.species.1.0" latest="true"
+    <archetype name="lookup.species.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.lookup.Lookup"
                displayName="Species">
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long"

@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-party-contact.email.1.0" latest="true" primary="false"
+	<archetype name="contact.email.1.0" latest="true" primary="false"
 		type="org.openvpms.component.business.domain.im.party.Contact"  displayName="Email Contact" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
@@ -31,7 +31,7 @@
 		<node name="startDate" path="/activeStartTime"
 			type="java.util.Date" hidden="true" minCardinality="1" defaultValue="java.util.Date.new()"/>
 		<node name="endDate" path="/activeEndTime"
-			type="java.util.Date" hidden="true" minCardinality="0" />		
+			type="java.util.Date" hidden="true" minCardinality="0" />
 		<node name="purposes" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">

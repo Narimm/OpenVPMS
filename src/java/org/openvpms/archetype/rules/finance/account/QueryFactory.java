@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_BALANCE_SHORTNAME;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -26,6 +27,7 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
@@ -108,11 +110,23 @@ class QueryFactory {
         ShortNameConstraint archetypes
                 = new ShortNameConstraint("a", shortNames, false, false);
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
+        ShortNameConstraint participation = new ShortNameConstraint(
+                "p", "participation.customer", false, false);
         CollectionNodeConstraint constraint = new CollectionNodeConstraint(
-                "customer", "participation.customer", false, false);
+                "customer", participation);
         constraint.add(new ObjectRefNodeConstraint(
-                "entity", customer.getObjectReference()));
+                "p.entity", customer.getObjectReference()));
+        OrConstraint or = new OrConstraint();
+
+        // re-specify the act short names, this time on the participation act
+        // node. Ideally wouldn't specify them on the acts at all, but this
+        // is not supported by ArchetypeQuery.
+        for (String shortName : shortNames) {
+            ArchetypeId id = new ArchetypeId(shortName);
+            or.add(new ObjectRefNodeConstraint("p.act", id));
+        }
         query.add(constraint);
+        query.add(or);
         return query;
     }
 

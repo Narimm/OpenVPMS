@@ -163,7 +163,7 @@ public class CustomerBalanceGenerator {
         int processed = 0;
         CustomerAccountRules rules = new CustomerAccountRules(service);
         ArchetypeQuery query = new ArchetypeQuery(
-                CustomerAccountActTypes.SHORT_NAMES, true, true);
+                CustomerAccountActTypes.DEBIT_CREDIT_SHORT_NAMES, true, true);
         query.add(new NodeConstraint("status", ActStatus.POSTED));
         CollectionNodeConstraint constraint = new CollectionNodeConstraint(
                 "customer", "participation.customer", true, true);

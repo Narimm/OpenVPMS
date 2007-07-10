@@ -28,11 +28,9 @@ select count(act)
       from org.openvpms.component.business.domain.im.act.Act as act,
       org.openvpms.component.business.domain.im.common.Participation as p
 where p.entity.linkId = :patientId
-      and p.archetypeId.entityName = 'participation'
-      and p.archetypeId.concept = 'patient'
+      and p.archetypeId.shortName = 'participation.patient'
       and p.act.linkId = act.linkId
-      and act.archetypeId.entityName='act'
-      and act.archetypeId.concept='patientReminder'
+      and act.archetypeId.shortName='act.patientReminder'
       and act.status = 'IN_PROGRESS'
       ]]>
     </query>
@@ -43,11 +41,9 @@ select count(act)
       from org.openvpms.component.business.domain.im.act.Act as act,
       org.openvpms.component.business.domain.im.common.Participation as p
 where p.entity.linkId = :patientId
-      and p.archetypeId.entityName = 'participation'
-      and p.archetypeId.concept = 'patient'
+      and p.archetypeId.shortName = 'participation.patient'
       and p.act.linkId = act.linkId
-      and act.archetypeId.entityName='act'
-      and act.archetypeId.concept='patientAlert'
+      and act.archetypeId.shortName='act.patientAlert'
       and act.status = 'IN_PROGRESS'
       and (act.activityEndTime > :date or act.activityEndTime is null)
       ]]>

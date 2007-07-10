@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-party-party.supplierVeterinaryPractice.1.0" latest="true"
+	<archetype name="party.supplierVeterinaryPractice.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.party.Party"  displayName="Veterinary Practice" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name" minCardinality="1" displayName="Practice Name"/>

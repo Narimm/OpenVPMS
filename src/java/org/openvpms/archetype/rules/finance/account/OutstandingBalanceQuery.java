@@ -104,8 +104,9 @@ public class OutstandingBalanceQuery {
      * @throws ArchetypeServiceException for any error
      */
     public Iterator<Party> query() {
-        String[] shortNames = (debit) ? CustomerAccountActTypes.DEBIT_SHORT_NAMES
-                : CustomerAccountActTypes.SHORT_NAMES;
+        String[] shortNames = (debit)
+                ? CustomerAccountActTypes.DEBIT_SHORT_NAMES
+                : CustomerAccountActTypes.DEBIT_CREDIT_SHORT_NAMES;
         ShortNameConstraint acts = new ShortNameConstraint(
                 "act", shortNames, true, true);
         ShortNameConstraint balance = new ShortNameConstraint(

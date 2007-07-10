@@ -17,7 +17,7 @@
 -->
 <archetypes>
     <archetype
-            name="openvpms-common-actRelationship.customerAppointmentTask.1.0"
+            name="actRelationship.customerAppointmentTask.1.0"
             latest="true"
             type="org.openvpms.component.business.domain.im.act.ActRelationship"
             displayName="Customer Appointment Task Relationship">

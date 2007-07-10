@@ -80,7 +80,7 @@ public class CustomerAccountActTypes {
     /**
      * Short names of the credit and debit acts the affect the balance.
      */
-    public static final String[] SHORT_NAMES = {
+    public static final String[] DEBIT_CREDIT_SHORT_NAMES = {
             CHARGES_COUNTER,
             CHARGES_CREDIT,
             CHARGES_INVOICE,

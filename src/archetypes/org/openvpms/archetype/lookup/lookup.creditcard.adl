@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-    <archetype name="openvpms-lookup-lookup.creditcard.1.0" latest="true"
+    <archetype name="lookup.creditcard.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.lookup.Lookup"
                displayName="Credit Card">
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long"

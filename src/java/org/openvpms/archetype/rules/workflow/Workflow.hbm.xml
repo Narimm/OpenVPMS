@@ -39,17 +39,14 @@ from  org.openvpms.component.business.domain.im.act.Act as act,
 left outer join act.details as details
 where p.act.linkId = act.linkId
       and p.entity.linkId = e.linkId
-      and act.archetypeId.entityName = 'act'
-      and act.archetypeId.concept = 'customerAppointment'
+      and act.archetypeId.shortName = 'act.customerAppointment'
       and act.activityStartTime between :from and :to
       and act.linkId in (
             select distinct act.linkId
             from org.openvpms.component.business.domain.im.act.Act as act,
            org.openvpms.component.business.domain.im.common.Participation as p
-      where act.archetypeId.entityName = 'act'
-            and act.archetypeId.concept = 'customerAppointment'
-            and p.archetypeId.entityName = 'participation'
-            and p.archetypeId.concept = 'schedule'
+      where act.archetypeId.shortName = 'act.customerAppointment'
+            and p.archetypeId.shortName = 'participation.schedule'
             and act.linkId = p.act.linkId
             and p.entity.linkId = :scheduleId
             and act.activityStartTime between :from and :to)
@@ -74,17 +71,14 @@ from  org.openvpms.component.business.domain.im.act.Act as act,
 left outer join act.details as details
 where p.act.linkId = act.linkId
       and p.entity.linkId = e.linkId
-      and act.archetypeId.entityName = 'act'
-      and act.archetypeId.concept = 'customerAppointment'
+      and act.archetypeId.shortName = 'act.customerAppointment'
       and act.activityStartTime between :from and :to
       and act.linkId in (
             select distinct act.linkId
             from org.openvpms.component.business.domain.im.act.Act as act,
            org.openvpms.component.business.domain.im.common.Participation as p
-      where act.archetypeId.entityName = 'act'
-            and act.archetypeId.concept = 'customerAppointment'
-            and p.archetypeId.entityName = 'participation'
-            and p.archetypeId.concept = 'schedule'
+      where act.archetypeId.shortName = 'act.customerAppointment'
+            and p.archetypeId.shortName = 'participation.schedule'
             and act.linkId = p.act.linkId
             and p.entity.linkId = :scheduleId
             and act.activityStartTime between :from and :to
@@ -110,17 +104,14 @@ from  org.openvpms.component.business.domain.im.act.Act as act,
 left outer join act.details as details
 where p.act.linkId = act.linkId
       and p.entity.linkId = e.linkId
-      and act.archetypeId.entityName = 'act'
-      and act.archetypeId.concept = 'customerAppointment'
+      and act.archetypeId.shortName = 'act.customerAppointment'
       and act.activityStartTime between :from and :to
       and act.linkId in (
             select distinct act.linkId
             from org.openvpms.component.business.domain.im.act.Act as act,
            org.openvpms.component.business.domain.im.common.Participation as p
-      where act.archetypeId.entityName = 'act'
-            and act.archetypeId.concept = 'customerAppointment'
-            and p.archetypeId.entityName = 'participation'
-            and p.archetypeId.concept = 'schedule'
+      where act.archetypeId.shortName = 'act.customerAppointment'
+            and p.archetypeId.shortName = 'participation.schedule'
             and act.linkId = p.act.linkId
             and p.entity.linkId = :scheduleId
             and act.activityStartTime between :from and :to
@@ -146,22 +137,18 @@ from  org.openvpms.component.business.domain.im.act.Act as act,
 left outer join act.details as details
 where p.act.linkId = act.linkId
       and p.entity.linkId = e.linkId
-      and act.archetypeId.entityName = 'act'
-      and act.archetypeId.concept = 'customerAppointment'
+      and act.archetypeId.shortName = 'act.customerAppointment'
       and act.activityStartTime between :from and :to
       and act.linkId in (
             select distinct act.linkId
             from org.openvpms.component.business.domain.im.act.Act as act,
            org.openvpms.component.business.domain.im.common.Participation as pschedule,
            org.openvpms.component.business.domain.im.common.Participation as pclinician
-      where act.archetypeId.entityName = 'act'
-            and act.archetypeId.concept = 'customerAppointment'
-            and pschedule.archetypeId.entityName = 'participation'
-            and pschedule.archetypeId.concept = 'schedule'
+      where act.archetypeId.shortName = 'act.customerAppointment'
+            and pschedule.archetypeId.shortName = 'participation.schedule'
             and act.linkId = pschedule.act.linkId
             and pschedule.entity.linkId = :scheduleId
-            and pclinician.archetypeId.entityName = 'participation'
-            and pclinician.archetypeId.concept = 'clinician'
+            and pclinician.archetypeId.shortName = 'participation.clinician'
             and act.linkId = pclinician.act.linkId
             and pclinician.entity.linkId = :clinicianId
             and act.activityStartTime between :from and :to)
@@ -186,22 +173,18 @@ from  org.openvpms.component.business.domain.im.act.Act as act,
 left outer join act.details as details
 where p.act.linkId = act.linkId
       and p.entity.linkId = e.linkId
-      and act.archetypeId.entityName = 'act'
-      and act.archetypeId.concept = 'customerAppointment'
+      and act.archetypeId.shortName = 'act.customerAppointment'
       and act.activityStartTime between :from and :to
       and act.linkId in (
             select distinct act.linkId
             from org.openvpms.component.business.domain.im.act.Act as act,
            org.openvpms.component.business.domain.im.common.Participation as pschedule,
            org.openvpms.component.business.domain.im.common.Participation as pclinician
-      where act.archetypeId.entityName = 'act'
-            and act.archetypeId.concept = 'customerAppointment'
-            and pschedule.archetypeId.entityName = 'participation'
-            and pschedule.archetypeId.concept = 'schedule'
+      where act.archetypeId.shortName = 'act.customerAppointment'
+            and pschedule.archetypeId.shortName = 'participation.schedule'
             and act.linkId = pschedule.act.linkId
             and pschedule.entity.linkId = :scheduleId
-            and pclinician.archetypeId.entityName = 'participation'
-            and pclinician.archetypeId.concept = 'clinician'
+            and pclinician.archetypeId.shortName = 'participation.clinician'
             and act.linkId = pclinician.act.linkId
             and pclinician.entity.linkId = :clinicianId
             and act.activityStartTime between :from and :to
@@ -227,22 +210,18 @@ from  org.openvpms.component.business.domain.im.act.Act as act,
 left outer join act.details as details
 where p.act.linkId = act.linkId
       and p.entity.linkId = e.linkId
-      and act.archetypeId.entityName = 'act'
-      and act.archetypeId.concept = 'customerAppointment'
+      and act.archetypeId.shortName = 'act.customerAppointment'
       and act.activityStartTime between :from and :to
       and act.linkId in (
             select distinct act.linkId
             from org.openvpms.component.business.domain.im.act.Act as act,
            org.openvpms.component.business.domain.im.common.Participation as pschedule,
            org.openvpms.component.business.domain.im.common.Participation as pclinician
-      where act.archetypeId.entityName = 'act'
-            and act.archetypeId.concept = 'customerAppointment'
-            and pschedule.archetypeId.entityName = 'participation'
-            and pschedule.archetypeId.concept = 'schedule'
+      where act.archetypeId.shortName = 'act.customerAppointment'
+            and pschedule.archetypeId.shortName = 'participation.schedule'
             and act.linkId = pschedule.act.linkId
             and pschedule.entity.linkId = :scheduleId
-            and pclinician.archetypeId.entityName = 'participation'
-            and pclinician.archetypeId.concept = 'clinician'
+            and pclinician.archetypeId.shortName = 'participation.clinician'
             and act.linkId = pclinician.act.linkId
             and pclinician.entity.linkId = :clinicianId
             and act.activityStartTime between :from and :to
