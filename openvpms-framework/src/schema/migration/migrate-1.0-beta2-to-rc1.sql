@@ -128,7 +128,8 @@ alter table archetype_descriptors
     drop column arch_concept_name,
     drop column arch_entity_name,
     drop index archetype_desc_id_idx,
-    add unique key linkId (linkId);
+    add unique key linkId (linkId),
+    add unique key name (name);
 
 alter table assertion_descriptors
     modify linkId varchar(36) not null,
