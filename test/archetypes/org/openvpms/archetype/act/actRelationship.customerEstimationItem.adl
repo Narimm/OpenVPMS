@@ -1,5 +1,5 @@
 <archetypes>
-	<archetype name="openvpms-common-actRelationship.customerEstimationItem.1.0"
+	<archetype name="actRelationship.customerEstimationItem.1.0"
 		latest="true"
 		type="org.openvpms.component.business.domain.im.act.ActRelationship" displayName="Estimation Item Relationship" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />

@@ -245,7 +245,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      */
     private Participation createParticipation(Entity entity, Act act) {
         return new Participation(
-                new ArchetypeId("openvpms-common-participation.participation.1.0"),
+                new ArchetypeId("participation.participation.1.0"),
                 entity.getObjectReference(), act.getObjectReference(), null);
     }
 
@@ -258,8 +258,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      * @return Entity
      */
     private Entity createEntity(String name) {
-        return new Entity(new ArchetypeId("openvpms-party-role.role.1.0"), name,
-                          null, null);
+        return new Entity(new ArchetypeId("role.role.1.0"), name, null, null);
     }
 
     /**
@@ -271,7 +270,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      */
     private Act createAct(String name) {
         Act act = new Act();
-        act.setArchetypeId(new ArchetypeId("openvpms-party-act.simple.1.0"));
+        act.setArchetypeId(new ArchetypeId("act.simple.1.0"));
         act.setName(name);
 
         return act;

@@ -46,8 +46,8 @@ public class EntityBeanTestCase
      * {@link EntityBean#getRelationship)} methods.
      */
     public void testRelationships() {
-        Party pet = (Party) create("animal.pet");
-        EntityBean bean = createBean("person.person");
+        Party pet = (Party) create("party.animalpet");
+        EntityBean bean = createBean("party.person");
         assertNull(bean.getRelationship(pet));
 
         EntityRelationship r = bean.addRelationship(OWNER, pet);
@@ -209,7 +209,7 @@ public class EntityBeanTestCase
      * @return a new pet
      */
     private EntityBean createPet() {
-        EntityBean pet = createBean("animal.pet");
+        EntityBean pet = createBean("party.animalpet");
         pet.setValue("name", "XAnimalPet");
         pet.setValue("species", "CANINE");
         pet.save();
@@ -222,7 +222,7 @@ public class EntityBeanTestCase
      * @return a new person
      */
     private EntityBean createPerson() {
-        EntityBean person = createBean("person.person");
+        EntityBean person = createBean("party.person");
         person.setValue("firstName", "J");
         person.setValue("lastName", "Zoo");
         person.save();

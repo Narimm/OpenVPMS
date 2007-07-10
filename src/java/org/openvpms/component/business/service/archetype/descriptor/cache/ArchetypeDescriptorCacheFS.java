@@ -20,6 +20,18 @@
 package org.openvpms.component.business.service.archetype.descriptor.cache;
 
 // java core
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.exolab.castor.mapping.Mapping;
+import org.exolab.castor.xml.Unmarshaller;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
+import org.xml.sax.InputSource;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -28,31 +40,9 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-
-// commons-io
-import org.apache.commons.io.FileUtils;
-
-// commons-lang
-import org.apache.commons.lang.StringUtils;
-
-//log4j
-import org.apache.log4j.Logger;
-
-// castor
-import org.exolab.castor.mapping.Mapping;
-import org.exolab.castor.xml.Unmarshaller;
-
-// openvpms-framework
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
-import org.xml.sax.InputSource;
 
 /**
  * This implementation reads the archetype descriptors from the file system,
@@ -102,9 +92,9 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
      * definitions in the specified directory. Only process files with the
      * specified extensions
      * 
-     * @param archeDir
+     * @param archDir
      *            the directory
-     * @parsm extensions only process files with these extensions
+     * @param extensions only process files with these extensions
      * @param assertFile
      *            the file that holds the assertions
      * @throws ArchetypeDescriptorCacheException
@@ -124,7 +114,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
      * If a scanInterval greater than 0 is specified then a thread will be
      * created to monitor changes in the archetype definition.
      * 
-     * @param archeDir
+     * @param archDir
      *            the directory
      * @param extensions 
      *            only process files with these extensions
@@ -210,23 +200,23 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
 
         // process all the files in the directory, that match the filter
         Collection collection = FileUtils.listFiles(dir, extensions, true);
-        Iterator files = collection.iterator();
-        while (files.hasNext()) {
-            File file = (File) files.next();
+        for (Object f: collection) {
+            File file = (File) f;
             try {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Attempting to process records in "
                             + file.getName());
                 }
 
-                processArchetypeDescriptors(loadArchetypeDescriptors(new FileReader(
-                        file)));
+                processArchetypeDescriptors(
+                        loadArchetypeDescriptors(new FileReader(
+                                file)));
             } catch (Exception exception) {
                 // do not throw an exception but log a warning
                 logger.warn("Failed to load archetype",
-                        new ArchetypeDescriptorCacheException(
-                                ArchetypeDescriptorCacheException.ErrorCode.InvalidFile,
-                                new Object[] { file.getName() }, exception));
+                            new ArchetypeDescriptorCacheException(
+                                    ArchetypeDescriptorCacheException.ErrorCode.InvalidFile,
+                                    new Object[]{file.getName()}, exception));
             }
 
         }
@@ -270,7 +260,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
     }
 
     /**
-     * Process the file and load all the {@link AssertionTypeRecord} instances
+     * Process the file and load all the {@link AssertionTypeDescriptor} instances
      * 
      * @param assertFile
      *            the name of the file holding the assertion types
@@ -282,16 +272,14 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
                     ArchetypeDescriptorCacheException.ErrorCode.NoAssertionTypeFileSpecified);
         }
 
-        AssertionTypeDescriptors types = null;
+        AssertionTypeDescriptors types;
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("Attempting to process file " + assertFile);
             }
             types = loadAssertionTypeDescriptors(assertFile);
-            Iterator iter = types.getAssertionTypeDescriptors().values().iterator();
-            while (iter.hasNext()) {
-                AssertionTypeDescriptor descriptor = (AssertionTypeDescriptor) iter
-                        .next();
+            for (AssertionTypeDescriptor descriptor
+                    : types.getAssertionTypeDescriptors().values()) {
                 assertionTypes.put(descriptor.getName(), descriptor);
 
                 if (logger.isDebugEnabled()) {
@@ -456,8 +444,6 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
          *            the base directory
          * @param extensions
          *            only search for these files
-         * @param interval
-         *            the scan interval
          */
         ArchetypeMonitor(File dir, String[] extensions) {
             this.dir = dir;
@@ -501,9 +487,8 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
             try {
                 Collection collection = FileUtils.listFiles(dir, extensions,
                         true);
-                Iterator files = collection.iterator();
-                while (files.hasNext()) {
-                    File file = (File) files.next();
+                for (Object f : collection) {
+                    File file = (File) f;
                     if (FileUtils.isFileNewer(file, lastScan)) {
                         changedFiles.add(file);
                     }

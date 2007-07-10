@@ -27,6 +27,7 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
@@ -223,20 +224,89 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         collectorFactory = factory;
     }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#get(java.lang.String,
-    *      java.lang.String, java.lang.String, java.lang.String,
-    *      java.lang.String, boolean, int, int, PagingCriteria,
-    *      java.lang.String, boolean)
-    */
-    @SuppressWarnings("unchecked")
+    /**
+     * Retrieve the objects that matches the specified search criteria.
+     * This is a very generic method that provides a mechanism to return
+     * objects based on, one or more criteria.
+     * <p/>
+     * All parameters are optional and can either denote an exact or partial
+     * match semantics. If a parameter has a '*' at the start or end of the
+     * value then it will perform a wildcard match.  If not '*' is specified in
+     * the value then it will only return objects with the exact value.
+     * <p/>
+     * If two or more parameters are specified then it will return entities
+     * that matching all criteria.
+     * <p/>
+     * The results will be returned in a {@link Page} object, which may contain
+     * a subset of the total result set. The caller can then use the context
+     * information in the {@link Page} object to make subsequent calls.
+     *
+     * @param rmName       the reference model name
+     * @param entityName   the entity name
+     * @param conceptName  the concept name
+     * @param instanceName the instance name
+     * @param clazz        the fully qualified name of the class to search for
+     * @param activeOnly   indicates whether to return active objects.
+     * @param firstResult  the first result to retrieve
+     * @param maxResults   the maximum number of results to return
+     * @return IPage<IMObject>
+     *         the results and associated context information
+     * @throws IMObjectDAOException a runtime exception if the request cannot
+     *                              complete
+     * @deprecated replaced by {@link #get(String, String, String, boolean,
+     *             int, int)}
+     */
+    @Deprecated
     public IPage<IMObject> get(String rmName, String entityName,
                                String conceptName, String instanceName,
-                               String clazz,
-                               boolean activeOnly, int firstRow,
-                               int numOfRows) {
+                               String clazz, boolean activeOnly,
+                               int firstResult, int maxResults) {
+        StringBuffer shortName = new StringBuffer();
+        if (entityName != null) {
+            shortName.append(entityName);
+        } else {
+            shortName.append("*");
+        }
+        shortName.append(".");
+        if (conceptName != null) {
+            shortName.append(conceptName);
+        } else {
+            shortName.append("*");
+        }
+        return get(shortName.toString(), instanceName, clazz, activeOnly,
+                   firstResult, maxResults);
+    }
+
+    /**
+     * Retrieve the objects that matches the specified search criteria.
+     * This is a very generic method that provides a mechanism to return
+     * objects based on, one or more criteria.
+     * <p/>
+     * All parameters are optional and can either denote an exact or partial
+     * match semantics. If a parameter has a '*' at the start or end of the
+     * value then it will perform a wildcard match.  If not '*' is specified in
+     * the value then it will only return objects with the exact value.
+     * <p/>
+     * If two or more parameters are specified then it will return entities
+     * that matching all criteria.
+     * <p/>
+     * The results will be returned in a {@link Page} object, which may contain
+     * a subset of the total result set. The caller can then use the context
+     * information in the {@link Page} object to make subsequent calls.
+     *
+     * @param shortName    the archetype short name
+     * @param instanceName the instance name
+     * @param clazz        the fully qualified name of the class to search for
+     * @param activeOnly   indicates whether to return active objects.
+     * @param firstResult  the first result to retrieve
+     * @param maxResults   the maximum number of results to return
+     * @return a page of the results
+     * @throws IMObjectDAOException a runtime exception if the request cannot
+     *                              complete
+     */
+    public IPage<IMObject> get(String shortName, String instanceName,
+                               String clazz, boolean activeOnly,
+                               int firstResult, int maxResults) {
         try {
             // check that rm has been specified
             if (StringUtils.isEmpty(clazz)) {
@@ -255,67 +325,25 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             queryString.append(" as entity");
 
             // check to see if one or more of the values have been specified
-            if (!StringUtils.isEmpty(rmName)
-                    || !StringUtils.isEmpty(entityName)
-                    || !(StringUtils.isEmpty(conceptName))
-                    || !(StringUtils.isEmpty(instanceName))) {
+            if (!StringUtils.isEmpty(shortName)
+                    || !StringUtils.isEmpty(instanceName)) {
                 queryString.append(" where ");
             }
 
-            // process the rmName
-            if (!StringUtils.isEmpty(rmName)) {
-                names.add("rmName");
+            // process the shortName
+            if (!StringUtils.isEmpty(shortName)) {
+                names.add("shortName");
                 andRequired = true;
-                if ((rmName.endsWith("*")) || rmName.startsWith("*")) {
-                    queryString
-                            .append(" entity.archetypeId.rmName like :rmName");
-                    params.add(rmName.replace("*", "%"));
+                if (shortName.endsWith("*") || shortName.startsWith("*")) {
+                    queryString.append(
+                            " entity.archetypeId.shortName like :shortName");
+                    params.add(shortName.replace("*", "%"));
                 } else {
-                    queryString.append(" entity.archetypeId.rmName = :rmName");
-                    params.add(rmName);
+                    queryString.append(
+                            " entity.archetypeId.shortName = :shortName");
+                    params.add(shortName);
                 }
 
-            }
-
-            // process the entity name
-            if (!StringUtils.isEmpty(entityName)) {
-                if (andRequired) {
-                    queryString.append(" and ");
-                }
-
-                names.add("entityName");
-                andRequired = true;
-                if ((entityName.endsWith("*")) || (entityName.startsWith("*")))
-                {
-                    queryString
-                            .append(" entity.archetypeId.entityName like :entityName");
-                    params.add(entityName.replace("*", "%"));
-                } else {
-                    queryString
-                            .append(" entity.archetypeId.entityName = :entityName");
-                    params.add(entityName);
-                }
-
-            }
-
-            // process the concept name
-            if (!StringUtils.isEmpty(conceptName)) {
-                if (andRequired) {
-                    queryString.append(" and ");
-                }
-
-                names.add("conceptName");
-                andRequired = true;
-                if ((conceptName.endsWith("*"))
-                        || (conceptName.startsWith("*"))) {
-                    queryString
-                            .append(" entity.archetypeId.concept like :conceptName");
-                    params.add(conceptName.replace("*", "%"));
-                } else {
-                    queryString
-                            .append(" entity.archetypeId.concept = :conceptName");
-                    params.add(conceptName);
-                }
             }
 
             // process the instance name
@@ -326,8 +354,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
 
                 names.add("instanceName");
                 andRequired = true;
-                if ((instanceName.endsWith("*"))
-                        || (instanceName.startsWith("*"))) {
+                if (instanceName.endsWith("*")
+                        || instanceName.startsWith("*")) {
                     queryString.append(" entity.name like :instanceName");
                     params.add(instanceName.replace("*", "%"));
                 } else {
@@ -352,12 +380,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             ResultCollector<IMObject> collector
                     = collectorFactory.createIMObjectCollector();
             executeQuery(queryString.toString(), new Params(names, params),
-                         collector, firstRow, numOfRows, true);
+                         collector, firstResult, maxResults, true);
             return collector.getPage();
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindIMObjects,
-                    exception, rmName, entityName, conceptName, instanceName);
+                    exception, shortName, instanceName, clazz);
         }
     }
 

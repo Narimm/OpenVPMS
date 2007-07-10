@@ -100,11 +100,39 @@ public class ArchetypeQuery extends AbstractArchetypeQuery
      * @param primaryOnly only deal with the primary archetypes
      * @param activeOnly  constraint to active only objects
      */
+    @Deprecated
     public ArchetypeQuery(String rmName, String entityName,
                           String conceptName, boolean primaryOnly,
                           boolean activeOnly) {
-        archetypeConstraint = new LongNameConstraint(
-                rmName, entityName, conceptName, primaryOnly, activeOnly);
+        this(entityName, conceptName, primaryOnly, activeOnly);
+    }
+
+    /**
+     * Create an instance of this query specifying one or more elements.
+     * Any of the parameters can be null or may  include the wild card
+     * character.
+     *
+     * @param entityName  the entity name (optional)
+     * @param conceptName the concept name (optional)
+     * @param primaryOnly only deal with the primary archetypes
+     * @param activeOnly  constraint to active only objects
+     */
+    public ArchetypeQuery(String entityName, String conceptName,
+                          boolean primaryOnly, boolean activeOnly) {
+        StringBuffer shortName = new StringBuffer();
+        if (entityName != null) {
+            shortName.append(entityName);
+        } else {
+            shortName.append("*");
+        }
+        shortName.append(".");
+        if (conceptName != null) {
+            shortName.append(conceptName);
+        } else {
+            shortName.append("*");
+        }
+        archetypeConstraint = new ShortNameConstraint(shortName.toString(),
+                primaryOnly, activeOnly);
     }
 
     /**

@@ -19,12 +19,8 @@
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
-// commons-lang
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
@@ -35,13 +31,6 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
  * @version  $LastChangedDate$
  */
 public class AssertionDescriptor extends Descriptor {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(AssertionDescriptor.class);
-
 
     /**
      * Default SUID
@@ -69,7 +58,7 @@ public class AssertionDescriptor extends Descriptor {
      * Default constructor
      */
     public AssertionDescriptor() {
-        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.assertion.1.0"));
+        setArchetypeId(new ArchetypeId("descriptor.assertion.1.0"));
     }
 
     /**
@@ -95,7 +84,7 @@ public class AssertionDescriptor extends Descriptor {
     }
 
     /**
-     * @param properties 
+     * @param propertyMap
      *            the properties to add
      */
     public void setPropertyMap(PropertyMap propertyMap) {
@@ -148,7 +137,7 @@ public class AssertionDescriptor extends Descriptor {
      * @return Returns the properties.
      */
     public NamedProperty[] getPropertiesAsArray() {
-        return (NamedProperty[])propertyMap.getProperties().values().toArray(
+        return propertyMap.getProperties().values().toArray(
                 new NamedProperty[propertyMap.getProperties().size()]);
     }
 

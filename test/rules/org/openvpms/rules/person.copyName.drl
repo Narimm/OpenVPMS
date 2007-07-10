@@ -15,7 +15,7 @@
         	<java:class>java.lang.StringBuffer</java:class>
         </parameter>
         
-        <java:condition>person.getArchetypeId().getShortName().equals("person.person")</java:condition>
+        <java:condition>person.getArchetypeId().getShortName().equals("party.person")</java:condition>
         <java:consequence>
         	if (prefix != null) {
         		tarString.append(prefix);

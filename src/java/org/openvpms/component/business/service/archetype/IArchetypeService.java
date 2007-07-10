@@ -141,7 +141,9 @@ public interface IArchetypeService {
      * @param rmName the reference model name
      * @return a list of matching archetype descriptors
      * @throws ArchetypeServiceException for any error
+     * @deprecated no replacement
      */
+    @Deprecated
     public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(
             String rmName);
 
@@ -274,8 +276,25 @@ public interface IArchetypeService {
      * @param primaryOnly indicates whether to return primary objects only.
      * @return a list of short names
      * @throws ArchetypeServiceException for any error
+     * @see #getArchetypeShortNames(String entityName, String conceptName,
+     *      boolean primaryOnly)
+     * @deprecated
      */
+    @Deprecated
     public List<String> getArchetypeShortNames(String rmName, String entityName,
+                                               String conceptName,
+                                               boolean primaryOnly);
+
+    /**
+     * Return a list of archtype short names given the specified criteria.
+     *
+     * @param entityName  the entity name
+     * @param conceptName the concept name
+     * @param primaryOnly indicates whether to return primary objects only.
+     * @return a list of short names
+     * @throws ArchetypeServiceException for any error
+     */
+    public List<String> getArchetypeShortNames(String entityName,
                                                String conceptName,
                                                boolean primaryOnly);
 

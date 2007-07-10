@@ -1,5 +1,5 @@
 <archetypes>
-	<archetype name="openvpms-system-descriptor.collectionNode.1.0"
+	<archetype name="descriptor.collectionNode.1.0"
 		latest="true" primary="false"
 		type="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor">
 		<node name="uid" path="/uid" displayName="id"

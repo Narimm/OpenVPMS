@@ -24,11 +24,12 @@
     name="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor"
     table="assertion_descriptors">
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="assertion_desc_id" index="assertion_desc_id_idx" />
+      <column name="assertion_desc_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" access="property" type="string" length="100" />
+    <property name="linkId" access="property" type="string" length="36"
+              not-null="true" unique="true"/>
     <property name="name" access="property" column="name" type="string"
       not-null="true" />
     <property name="active" access="property" column="active" type="boolean" />

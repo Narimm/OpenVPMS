@@ -1,5 +1,5 @@
 <archetypes>
-    <archetype name="openvpms-party-horse.pet.1.0" latest="true"
+    <archetype name="party.horsepet.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party"
                displayName="Patient(Pet)">
         <node name="uid" path="/uid" displayName="id"

@@ -93,7 +93,7 @@ public class ArchetypeDescriptor extends Descriptor {
      * Default constructor 
      */
     public ArchetypeDescriptor() {
-        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.archetype.1.0"));
+        setArchetypeId(new ArchetypeId("descriptor.archetype.1.0"));
     }
 
     /**

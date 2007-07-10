@@ -76,7 +76,7 @@ class LocalLookup extends AbstractLookupAssertion {
                 .getProperties().get("entries"); // NON-NLS
         for (NamedProperty prop : list.getProperties()) {
             AssertionProperty aprop = (AssertionProperty) prop;
-            lookups.add(new Lookup(ArchetypeId.LocalLookupId,
+            lookups.add(new Lookup(ArchetypeId.LOCAL_LOOKUP_ID,
                                    aprop.getName(), aprop.getValue()));
         }
     }

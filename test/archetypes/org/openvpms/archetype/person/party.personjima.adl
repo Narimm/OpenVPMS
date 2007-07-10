@@ -1,5 +1,5 @@
 <archetypes>
-    <archetype name="openvpms-party-person.jima.1.0" latest="true"
+    <archetype name="party.personjima.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party">
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"

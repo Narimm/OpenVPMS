@@ -18,84 +18,56 @@
 
 package org.openvpms.component.business.service.security;
 
-// acegi security
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-
-//log4j
-import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
 /**
  * Uses the memory based user details service to exercise the test cases
- * 
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
-public class MemorySecurityServiceTestCase extends
-        SecurityServiceTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(MemorySecurityServiceTestCase.class);
-
-    
-    
-    
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(MemorySecurityServiceTestCase.class);
-    }
-
-    /**
-     * Default constructor
-     */
-    public MemorySecurityServiceTestCase() {
-    }
+public class MemorySecurityServiceTestCase
+        extends SecurityServiceTests {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
      */
     @Override
     protected String[] getConfigLocations() {
-        return new String[] { "org/openvpms/component/business/service/security/memory-security-service-appcontext.xml" };
+        return new String[]{"org/openvpms/component/business/service/security/memory-security-service-appcontext.xml"};
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
      */
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        this.archetype = (IArchetypeService)applicationContext
-            .getBean("archetypeService");
+        this.archetype = (IArchetypeService) applicationContext
+                .getBean("archetypeService");
     }
-    
+
     /**
      * Create a secure context so that we can do some authorization testing
-     * 
-     * @param user
-     *            the user name
-     * @param password
-     *            the password    
-     * @param authority
-     *            the authority of the person                    
      *
+     * @param user      the user name
+     * @param password  the password
+     * @param authority the authority of the person
      */
-    protected void createSecurityContext(String user, String password, String authority) {
+    protected void createSecurityContext(String user, String password,
+                                         String authority) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                user, password, new GrantedAuthority[] {
-                        new ArchetypeAwareGrantedAuthority(authority)});
+                user, password, new GrantedAuthority[]{
+                new ArchetypeAwareGrantedAuthority(authority)});
         SecurityContextHolder.getContext().setAuthentication(token);
     }
 }

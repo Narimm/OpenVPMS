@@ -117,7 +117,7 @@ public class JXPathTestCase extends BaseTestCase {
 
         // retrieve the node descriptor for animal.pet
         ArchetypeDescriptor adesc = service
-                .getArchetypeDescriptor("person.person");
+                .getArchetypeDescriptor("party.person");
         NodeDescriptor ndesc = adesc.getNodeDescriptor("firstName");
         assertTrue(ndesc != null);
         assertTrue(((Boolean) getValue(adesc, "nodeDescriptors/name/string")));
@@ -165,7 +165,7 @@ public class JXPathTestCase extends BaseTestCase {
      */
     public void testBooleanExpressionEvaulation() throws Exception {
         ArchetypeDescriptor adesc = service
-                .getArchetypeDescriptor("person.person");
+                .getArchetypeDescriptor("party.person");
         assertTrue(((Boolean) getValue(
                 adesc,
                 "nodeDescriptors/name/string and nodeDescriptors/description/string")));
@@ -213,7 +213,7 @@ public class JXPathTestCase extends BaseTestCase {
      */
     @SuppressWarnings("unchecked")
     public void testSetEntityIdentityOnEntity() throws Exception {
-        Party person = (Party) service.create("person.person");
+        Party person = (Party) service.create("party.person");
         assertTrue(person != null);
         EntityIdentity eidentity = (EntityIdentity) service
                 .create("entityIdentity.personAlias");
@@ -558,7 +558,7 @@ public class JXPathTestCase extends BaseTestCase {
      */
     private Party createPerson(String title, String firstName,
                                String lastName) {
-        Party person = (Party) service.create("person.person");
+        Party person = (Party) service.create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);

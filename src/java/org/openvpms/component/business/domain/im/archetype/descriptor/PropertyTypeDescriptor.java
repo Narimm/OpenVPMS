@@ -52,7 +52,7 @@ public class PropertyTypeDescriptor extends Descriptor {
      * Default constructor 
      */
     public PropertyTypeDescriptor() {
-        this.setArchetypeId(new ArchetypeId("openvpms-system-descriptor.propertyType.1.0"));
+        this.setArchetypeId(new ArchetypeId("descriptor.propertyType.1.0"));
     }
 
     /**

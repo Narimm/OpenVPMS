@@ -19,13 +19,12 @@
 
 package org.openvpms.component.business.dao.hibernate.im.lookup;
 
-// hibernate
-
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.lookup.LookupUtil;
 
 
 /**
@@ -57,17 +56,16 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
         Transaction tx;
 
         // get initial count of lookups.
-        int acount = HibernateLookupUtil.getTableRowCount(session, "lookup");
+        int acount = HibernateUtil.getTableRowCount(session, "lookup");
 
         // execute the test
         tx = session.beginTransaction();
-        Lookup lookup = new Lookup(
-                createLookArchetypeId("breed"), "DOG", "dog");
+        Lookup lookup = LookupUtil.createLookup("lookup.breed", "DOG", "dog");
         session.save(lookup);
         tx.commit();
 
         // ensure that there is one more lookup
-        int acount1 = HibernateLookupUtil.getTableRowCount(session, "lookup");
+        int acount1 = HibernateUtil.getTableRowCount(session, "lookup");
         assertEquals(acount + 1, acount1);
     }
 
@@ -78,17 +76,17 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
         Transaction tx;
 
         // get initial number of entries in lookup table
-        int acount = HibernateLookupUtil.getTableRowCount(session,
-                                                          "lookup");
+        int acount = HibernateUtil.getTableRowCount(session,
+                                                    "lookup");
 
         // execute the test
         tx = session.beginTransaction();
-        Lookup lookup = new Lookup(createLookArchetypeId("breed"), "JIMMY");
+        Lookup lookup = LookupUtil.createLookup("lookup.breed", "JIMMY");
         session.save(lookup);
         tx.commit();
 
         // ensure that there is one more lookup
-        int acount1 = HibernateLookupUtil.getTableRowCount(session, "lookup");
+        int acount1 = HibernateUtil.getTableRowCount(session, "lookup");
         assertEquals(acount + 1, acount1);
 
         // retrieve update and save
@@ -99,7 +97,7 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // ensure that there is one more lookup
-        acount1 = HibernateLookupUtil.getTableRowCount(session, "lookup");
+        acount1 = HibernateUtil.getTableRowCount(session, "lookup");
         assertEquals(acount + 1, acount1);
     }
 
@@ -112,17 +110,17 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
         Transaction tx;
 
         // get initial number of entries in lookup table
-        int acount = HibernateLookupUtil.getTableRowCount(session,
-                                                          "lookup");
+        int acount = HibernateUtil.getTableRowCount(session,
+                                                    "lookup");
 
         // execute the test
         tx = session.beginTransaction();
-        Lookup lookup = new Lookup(createLookArchetypeId("breed"), "JOHHNY");
+        Lookup lookup = LookupUtil.createLookup("lookup.breed", "JOHHNY");
         session.save(lookup);
         tx.commit();
 
         // ensure that there is one more lookup
-        int acount1 = HibernateLookupUtil.getTableRowCount(session, "lookup");
+        int acount1 = HibernateUtil.getTableRowCount(session, "lookup");
         assertEquals(acount + 1, acount1);
 
         // retrieve update and save
@@ -132,7 +130,7 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
         tx.commit();
 
         // check lookup count
-        acount1 = HibernateLookupUtil.getTableRowCount(session, "lookup");
+        acount1 = HibernateUtil.getTableRowCount(session, "lookup");
         assertEquals(acount, acount1);
     }
 
@@ -143,34 +141,28 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
         Transaction tx;
 
         // get initial number of lookups
-        int acount = HibernateLookupUtil.getTableRowCount(session,
-                                                          "lookup");
+        int acount = HibernateUtil.getTableRowCount(session,
+                                                    "lookup");
 
         // execute the test
         tx = session.beginTransaction();
-        Lookup lookup = new Lookup(
-                createLookArchetypeId("species"), "DOG", "dog");
+        Lookup lookup = LookupUtil.createLookup("species", "DOG", "dog");
         session.save(lookup);
-        lookup = new Lookup(
-                createLookArchetypeId("species"), "CAT", "cat");
+        lookup = LookupUtil.createLookup("lookup.species", "CAT", "cat");
         session.save(lookup);
-        lookup = new Lookup(
-                createLookArchetypeId("species"), "MOUSE", "mouse");
+        lookup = LookupUtil.createLookup("lookup.species", "MOUSE", "mouse");
         session.save(lookup);
-        lookup = new Lookup(
-                createLookArchetypeId("species"), "RABBIT", "rabbit");
+        lookup = LookupUtil.createLookup("lookup.species", "RABBIT", "rabbit");
         session.save(lookup);
-        lookup = new Lookup(
-                createLookArchetypeId("species"), "COW", "cow");
+        lookup = LookupUtil.createLookup("lookup.species", "COW", "cow");
         session.save(lookup);
-        lookup = new Lookup(
-                createLookArchetypeId("species"), "DONKEY", "donkey");
+        lookup = LookupUtil.createLookup("lookup.species", "DONKEY", "donkey");
         session.save(lookup);
         tx.commit();
 
         // ensure that there is correct no. of lookups
-        int acount1 = HibernateLookupUtil.getTableRowCount(session,
-                                                           "lookup");
+        int acount1 = HibernateUtil.getTableRowCount(session,
+                                                     "lookup");
         assertEquals(acount + 6, acount1);
     }
 
@@ -178,7 +170,7 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
      * Test lookup equality.
      */
     public void testOVPMS84() throws Exception {
-        Lookup lookup = new Lookup(createLookArchetypeId("species"), "DOG");
+        Lookup lookup = LookupUtil.createLookup("lookup.species", "DOG");
         Lookup copy = (Lookup) lookup.clone();
         assertTrue(lookup.equals(copy));
 
@@ -193,7 +185,7 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
         Session session = currentSession();
         Transaction tx;
         tx = session.beginTransaction();
-        Lookup lookup = new Lookup(createLookArchetypeId("equality"), "FOO");
+        Lookup lookup = LookupUtil.createLookup("lookup.equality", "FOO");
         session.save(lookup);
         tx.commit();
         closeSession();
@@ -211,32 +203,26 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
         Transaction tx;
 
         // get initial no. of lookups
-        int acount = HibernateLookupUtil.getTableRowCount(session, "lookup");
+        int acount = HibernateUtil.getTableRowCount(session, "lookup");
 
         // execute the test
         tx = session.beginTransaction();
-        Lookup lookup = new Lookup(
-                createLookArchetypeId("colour"), "RED", "red");
+        Lookup lookup = LookupUtil.createLookup("lookup.colour", "RED", "red");
         session.save(lookup);
-        lookup = new Lookup(
-                createLookArchetypeId("colour"), "GREEN", "green");
+        lookup = LookupUtil.createLookup("lookup.colour", "GREEN", "green");
         session.save(lookup);
-        lookup = new Lookup(
-                createLookArchetypeId("colour"), "BLUE", "blue");
+        lookup = LookupUtil.createLookup("lookup.colour", "BLUE", "blue");
         session.save(lookup);
-        lookup = new Lookup(
-                createLookArchetypeId("species"), "RABBIT", "rabbit");
+        lookup = LookupUtil.createLookup("lookup.species", "RABBIT", "rabbit");
         session.save(lookup);
-        lookup = new Lookup(
-                createLookArchetypeId("title"), "MR");
+        lookup = LookupUtil.createLookup("lookup.title", "MR");
         session.save(lookup);
-        lookup = new Lookup(
-                createLookArchetypeId("title"), "MRS");
+        lookup = LookupUtil.createLookup("lookup.title", "MRS");
         session.save(lookup);
         tx.commit();
 
         // check expected count of lookups
-        int acount1 = HibernateLookupUtil.getTableRowCount(session, "lookup");
+        int acount1 = HibernateUtil.getTableRowCount(session, "lookup");
         assertEquals(acount + 6, acount1);
     }
 
@@ -264,13 +250,4 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
         // no test data for this
     }
 
-    /**
-     * Create an archetype id for the specified concept
-     *
-     * @param concept the concept to create
-     * @return ArchetypeId
-     */
-    private ArchetypeId createLookArchetypeId(String concept) {
-        return new ArchetypeId("openvpms-lookup-lookup." + concept + ".1.0");
-    }
 }

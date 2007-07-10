@@ -119,11 +119,44 @@ public interface IMObjectDAO {
      * @param maxResults   the maximum number of results to return
      * @return IPage<IMObject>
      *         the results and associated context information
-     * @throws IMObjectDAOException a runtime exception if the request cannot complete
+     * @throws IMObjectDAOException a runtime exception if the request cannot
+     *                              complete
+     * @deprecated replaced by {@link #get(String, String, String, boolean,
+     *             int, int)}
      */
+    @Deprecated
     IPage<IMObject> get(String rmName, String entityName, String conceptName,
                         String instanceName, String clazz, boolean activeOnly,
                         int firstResult, int maxResults);
+
+    /**
+     * Retrieve the objects that matches the specified search criteria.
+     * This is a very generic method that provides a mechanism to return
+     * objects based on, one or more criteria.
+     * <p/>
+     * All parameters are optional and can either denote an exact or partial
+     * match semantics. If a parameter has a '*' at the start or end of the
+     * value then it will perform a wildcard match.  If not '*' is specified in
+     * the value then it will only return objects with the exact value.
+     * <p/>
+     * If two or more parameters are specified then it will return entities
+     * that matching all criteria.
+     * <p/>
+     * The results will be returned in a {@link Page} object, which may contain
+     * a subset of the total result set. The caller can then use the context
+     * information in the {@link Page} object to make subsequent calls.
+     *
+     * @param shortName    the archetype short name
+     * @param instanceName the instance name
+     * @param clazz        the fully qualified name of the class to search for
+     * @param activeOnly   indicates whether to return active objects.
+     * @param firstResult  the first result to retrieve
+     * @param maxResults   the maximum number of results to return
+     * @return a page of the results
+     * @throws IMObjectDAOException a runtime exception if the request cannot complete
+     */
+    IPage<IMObject> get(String shortName, String instanceName, String clazz,
+                        boolean activeOnly, int firstResult, int maxResults);
 
     /**
      * Return an object with the specified uid for the nominated clazz and null

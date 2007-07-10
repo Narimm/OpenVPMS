@@ -45,7 +45,7 @@ public class PersistentTypedValueMapTestCase
      * Tests the workaround for OBF-161.
      */
     public void testOBF161() {
-        Party person = (Party) service.create("person.person");
+        Party person = (Party) service.create("party.person");
         assertNotNull(person);
         person.getDetails().put("lastName", "foo");
         person.getDetails().put("firstName", null);

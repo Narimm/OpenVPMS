@@ -20,6 +20,7 @@
 package org.openvpms.component.system.common.query;
 
 // commons-lang
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
@@ -28,65 +29,81 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * whether it be the entity name, the concept name or some other part. This class
  * can be used instead of the classes derived from {@link BaseArchetypeConstraint}
  * in the query.  In particular it is usedful to use with {@link CollectionNodeConstraint}.
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ArchetypeNodeConstraint implements IConstraint {
 
     /**
-     * Default SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
-    
+
     /**
-     * The archetype property
-     */
-    private ArchetypeProperty property;
-    
-    /**
-     * The operator
+     * The operator.
      */
     private RelationalOp operator;
-    
+
     /**
      * The parameter to use with the relational operator
      */
     private Object parameter;
 
+
     /**
-     * Construct an instance of this class specifying the archetype property 
+     * Construct an instance of this class specifying the archetype property
      * you wish to constrain and the associated operator. In some instance, such
      * as an 'is null' constraint a parameter is not required.
-     * 
-     * @param property
-     *            the archetype property to constrain
-     * @param operator
-     *            the operator to use.             
+     *
+     * @param property the archetype property to constrain
+     * @param operator the operator to use.
+     * @deprecated ArchetypeProperty no longer supported
      */
-    public ArchetypeNodeConstraint(ArchetypeProperty property, RelationalOp operator) {
+    @Deprecated
+    public ArchetypeNodeConstraint(ArchetypeProperty property,
+                                   RelationalOp operator) {
         this(property, operator, null);
     }
-    
+
     /**
-     * Construct an instance of this class specifying the archetype property, 
+     * Construct an instance of this class specifying the archetype property,
      * the relational operator and the associated parameter.
-     * 
-     * @param property
-     *            the archetype property to constraint
-     * @param operator
-     *            the operator to use
-     * @param param
-     *            the parameter using in conjunction with the operator                        
+     *
+     * @param property the archetype property to constraint
+     * @param operator the operator to use
+     * @param param    the parameter using in conjunction with the operator
+     * @deprecated ArchetypeProperty no longer supported
      */
-    public ArchetypeNodeConstraint(ArchetypeProperty property, 
-            RelationalOp operator, Object param) {
+    @Deprecated
+    public ArchetypeNodeConstraint(ArchetypeProperty property,
+                                   RelationalOp operator, Object param) {
+        this(operator, param);
+    }
+
+    /**
+     * Construct an instance of this class specifying the relational operator
+     * and the associated parameter.
+     *
+     * @param operator the operator to use
+     */
+    public ArchetypeNodeConstraint(RelationalOp operator) {
+        this(operator, null);
+    }
+
+    /**
+     * Construct an instance of this class specifying the relational operator
+     * and the associated parameter.
+     *
+     * @param operator the operator to use
+     * @param param    the parameter used in conjunction with the operator. May be <tt>null</tt>
+     */
+    public ArchetypeNodeConstraint(RelationalOp operator, Object param) {
         if (operator == RelationalOp.BTW) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.BtwInvalidForArchetypeNodeConstraint);
         }
-        
-        this.property = property;
+
         this.operator = operator;
         this.parameter = param;
     }
@@ -108,8 +125,9 @@ public class ArchetypeNodeConstraint implements IConstraint {
     /**
      * @return Returns the property.
      */
+    @Deprecated
     public ArchetypeProperty getProperty() {
-        return property;
+        return null;
     }
 
     /* (non-Javadoc)
@@ -124,13 +142,12 @@ public class ArchetypeNodeConstraint implements IConstraint {
         if (!(obj instanceof ArchetypeNodeConstraint)) {
             return false;
         }
-        
+
         ArchetypeNodeConstraint rhs = (ArchetypeNodeConstraint) obj;
         return new EqualsBuilder()
-            .append(property, rhs.property)
-            .append(operator, rhs.operator)
-            .append(parameter, rhs.parameter)
-            .isEquals();
+                .append(operator, rhs.operator)
+                .append(parameter, rhs.parameter)
+                .isEquals();
     }
 
     /* (non-Javadoc)
@@ -139,10 +156,9 @@ public class ArchetypeNodeConstraint implements IConstraint {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .append("property", property)
-            .append("operator", operator)
-            .append("parameter", parameter)
-            .toString();
+                .append("operator", operator)
+                .append("parameter", parameter)
+                .toString();
     }
 
     /* (non-Javadoc)
@@ -150,11 +166,10 @@ public class ArchetypeNodeConstraint implements IConstraint {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        ArchetypeNodeConstraint copy = (ArchetypeNodeConstraint)super.clone();
-        copy.property = this.property;
+        ArchetypeNodeConstraint copy = (ArchetypeNodeConstraint) super.clone();
         copy.operator = this.operator;
         copy.parameter = this.parameter;
-        
+
         return copy;
     }
 }

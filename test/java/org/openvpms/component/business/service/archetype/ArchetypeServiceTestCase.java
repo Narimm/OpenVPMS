@@ -81,11 +81,11 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
     }
 
     /**
-     * Test create an instance of animal.pet
+     * Test create an instance of party.animalpet.
      */
     public void testCreationAnimalPet() throws Exception {
-        Party animal = (Party)service.create("animal.pet");
-        assertTrue(animal != null);
+        Party animal = (Party)service.create("party.animalpet");
+        assertNotNull(animal);
     }
 
     /**
@@ -116,7 +116,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         assertTrue(StringUtils.isEmpty(
                 (String) contact.getDetails().get("postCode")));
 
-        Party person = createPerson("person.person", "MR", "Jim", "Alateras");
+        Party person = createPerson("party.person", "MR", "Jim", "Alateras");
         assertEquals("MR", person.getDetails().get("title"));
     }
 
@@ -134,7 +134,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testOVPMS197()
             throws Exception {
-        Party person = createPerson("person.bernief", "MS", "Bernadette",
+        Party person = createPerson("party.personbernief", "MS", "Bernadette",
                                     "Feeney");
         person.addIdentity(
                 createEntityIdentity("entityIdentity.personAlias", "special"));
@@ -296,7 +296,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
     throws Exception {
         Party person;
         if (shortName == null) {
-            person = (Party) service.create("person.person");
+            person = (Party) service.create("party.person");
         } else {
             person = (Party) service.create(shortName);
         }
