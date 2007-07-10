@@ -27,11 +27,10 @@ select e.name, p.entity, p.act, a.activityStartTime, a.total, a.allocatedAmount,
 from  org.openvpms.component.business.domain.im.common.Participation as p,
       org.openvpms.component.business.domain.im.act.FinancialAct as a,
       org.openvpms.component.business.domain.im.party.Party as e
-left outer join e.classifications c with c.archetypeId.concept='customerAccountType'
+left outer join e.classifications c with c.archetypeId.shortName='lookup.customerAccountType'
 where a.linkId = p.act.linkId
       and p.entity.linkId = e.linkId
-      and p.archetypeId.concept='customerAccountBalance'
-      and p.archetypeId.entityName='participation'
+      and p.archetypeId.shortName='participation.customerAccountBalance'
 order by e.name, a.activityStartTime
       ]]>
     </query>
@@ -42,11 +41,10 @@ select e.name, p.entity, p.act, a.activityStartTime, a.total, a.allocatedAmount,
 from  org.openvpms.component.business.domain.im.common.Participation as p,
       org.openvpms.component.business.domain.im.act.FinancialAct as a,
       org.openvpms.component.business.domain.im.party.Party as e
-left outer join e.classifications c with c.archetypeId.concept='customerAccountType'
+left outer join e.classifications c with c.archetypeId.shortName='lookup.customerAccountType'
 where a.linkId = p.act.linkId
       and p.entity.linkId = e.linkId
-      and p.archetypeId.concept='customerAccountBalance'
-      and p.archetypeId.entityName='participation'
+      and p.archetypeId.shortName='participation.customerAccountBalance'
       and c.linkId = :accountType
 order by e.name, a.activityStartTime
       ]]>

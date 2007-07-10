@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-actRelationship.invoiceItemDispensing.1.0"
+	<archetype name="actRelationship.invoiceItemDispensing.1.0"
 		latest="true"
 		type="org.openvpms.component.business.domain.im.act.ActRelationship" displayName="Invoice Item Dispensing" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />

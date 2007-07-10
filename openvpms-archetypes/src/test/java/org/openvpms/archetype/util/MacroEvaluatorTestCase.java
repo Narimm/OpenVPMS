@@ -20,9 +20,13 @@ package org.openvpms.archetype.util;
 
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NodeConstraint;
 
 
 /**
@@ -132,12 +136,28 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
      * @param expression the macro expression
      */
     private void createMacro(String code, String expression) {
+        deleteExisting(code);
         Lookup macro = (Lookup) create("lookup.macro");
         IMObjectBean bean = new IMObjectBean(macro);
         bean.setValue("code", code);
         bean.setValue("name", code);
         bean.setValue("expression", expression);
         bean.save();
+    }
+
+    /**
+     * Deletes any exising macro with the specified code, to avoid duplicate
+     * errors.
+     *
+     * @param code the macro code
+     */
+    private void deleteExisting(String code) {
+        ArchetypeQuery query = new ArchetypeQuery("lookup.macro", false, false);
+        query.add(new NodeConstraint("code", code));
+        IArchetypeService service = getArchetypeService();
+        for (IMObject object : service.get(query).getResults()) {
+            service.remove(object);
+        }
     }
 
 }

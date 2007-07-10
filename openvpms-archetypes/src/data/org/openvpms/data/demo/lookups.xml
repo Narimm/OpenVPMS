@@ -52,7 +52,6 @@
 	<data archetype="lookup.uom" code="AMPOULE" />
 	<data archetype="lookup.uom" code="MLS" />
 	<data archetype="lookup.uom" code="TUBE" />
-	<data archetype="lookup.uom" code="PACKET" />
 	<data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" />
 	<data id="Pounds" archetype="lookup.uom" code="POUNDS" />
     <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>

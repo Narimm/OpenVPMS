@@ -31,13 +31,11 @@ from  org.openvpms.component.business.domain.im.act.Act as act,
       org.openvpms.component.business.domain.im.common.Participation as p,
       org.openvpms.component.business.domain.im.common.Entity as e
 left outer join act.targetActRelationships as r
-      with r.archetypeId.entityName='actRelationship'
-      and r.archetypeId.concept='patientClinicalEventItem'
-where (act.archetypeId.concept='patientMedication'
-       or act.archetypeId.concept like 'patientInvestigation%')
+      with r.archetypeId.shortName='actRelationship.patientClinicalEventItem'
+where (act.archetypeId.shortName='act.patientMedication'
+       or act.archetypeId.shortName like 'act.patientInvestigation%')
       and act.linkId = p.act.linkId
-      and p.archetypeId.entityName='participation'
-      and p.archetypeId.concept='patient'
+      and p.archetypeId.shortName='participation.patient'
       and p.entity.linkId = e.linkId
       and r.uid is null
 order by e.name, act.activityStartTime

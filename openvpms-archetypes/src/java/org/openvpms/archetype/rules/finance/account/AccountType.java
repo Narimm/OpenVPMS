@@ -72,11 +72,12 @@ public class AccountType {
     /**
      * The payment unit of measure.
      *
-     * @return the payment unit of measure.
+     * @return the payment unit of measure, or <tt>null</tt> if none is
+     *         specified
      */
     public DateUnits getPaymentUOM() {
         String value = bean.getString("paymentUom");
-        return DateUnits.valueOf(value);
+        return (value != null) ? DateUnits.valueOf(value) : null;
     }
 
     /**
@@ -87,9 +88,13 @@ public class AccountType {
      * @return the overdue date
      */
     public Date getOverdueDate(Date date) {
-        date = DateUtils.truncate(date, Calendar.DATE); // strip any time
-        int days = getPaymentTerms();
-        return DateRules.getDate(date, -days, getPaymentUOM());
+        DateUnits payment = getPaymentUOM();
+        if (payment != null) {
+            date = DateUtils.truncate(date, Calendar.DATE); // strip any time
+            int days = getPaymentTerms();
+            return DateRules.getDate(date, -days, payment);
+        }
+        return date;
     }
 
     /**

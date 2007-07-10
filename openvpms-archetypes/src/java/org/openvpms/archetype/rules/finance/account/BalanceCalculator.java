@@ -65,7 +65,7 @@ class BalanceCalculator {
      */
     public BigDecimal getBalance(Party customer) {
         ArchetypeQuery query = QueryFactory.createUnallocatedObjectSetQuery(
-                customer, SHORT_NAMES);
+                customer, DEBIT_CREDIT_SHORT_NAMES);
         Iterator<ObjectSet> iterator
                 = new ObjectSetQueryIterator(service, query);
         return calculateBalance(iterator);

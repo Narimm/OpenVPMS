@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-system-assertion.regularExpression.1.0"
+	<archetype name="assertion.regularExpression.1.0"
 		latest="true" primary="true"
 		type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor">
 		<node name="name" path="/name" displayName="Regular Expression"

@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-system-assertion.localLookup.1.0"
+	<archetype name="assertion.localLookup.1.0"
 		latest="true" primary="true"
 		type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor">
 		<node name="name" path="/name" displayName="Name" defaultValue="'localLookup'"
@@ -47,7 +47,7 @@
 		</node>
 	</archetype>
 
-	<archetype name="openvpms-system-assertion.localLookupEntryProperties.1.0"
+	<archetype name="assertion.localLookupEntryProperties.1.0"
 		latest="true" primary="false" dislayName="Lookup Entry"
 		type="org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty">
 		<node name="name" path="/name" type="java.lang.String" minCardinality="1" />

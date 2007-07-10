@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-product-productPrice.maximumPrice.1.0"
+	<archetype name="productPrice.maximumPrice.1.0"
 		latest="true"
 		type="org.openvpms.component.business.domain.im.product.ProductPrice" displayName="Product Maximum Price" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />

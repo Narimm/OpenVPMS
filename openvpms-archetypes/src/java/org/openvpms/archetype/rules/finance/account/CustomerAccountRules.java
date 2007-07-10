@@ -515,7 +515,7 @@ public class CustomerAccountRules {
     private Iterator<FinancialAct> getUnallocatedActs(Party customer,
                                                       Act exclude) {
         ArchetypeQuery query = QueryFactory.createUnallocatedQuery(
-                customer, SHORT_NAMES, exclude);
+                customer, DEBIT_CREDIT_SHORT_NAMES, exclude);
         return new IMObjectQueryIterator<FinancialAct>(service, query);
     }
 

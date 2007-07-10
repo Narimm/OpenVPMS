@@ -143,9 +143,7 @@ public class ProductQueryFactory {
         query.setParameter("species", species);
         int index = 1;
         for (String shortName : shortNames) {
-            String concept = shortName.substring(
-                    shortName.lastIndexOf(".") + 1);
-            query.setParameter("concept" + index, concept);
+            query.setParameter("shortName" + index, shortName);
             ++index;
         }
         return query;

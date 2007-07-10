@@ -30,27 +30,24 @@ where p.uid in (
        select p2.uid
        from org.openvpms.component.business.domain.im.product.Product as p2
        inner join p2.classifications c
-       where (p2.archetypeId.concept=:concept1)
-             and p2.archetypeId.entityName='product'
+       where p2.archetypeId.shortName=:shortName1
              and c.active=true
-             and c.archetypeId.concept='species'
-             and c.name=:species)
+             and c.archetypeId.shortName='lookup.species'
+             and c.code=:species)
        or p.uid in (
        select p3.uid
        from org.openvpms.component.business.domain.im.product.Product p3
        left join p3.classifications c
-       where (p3.archetypeId.concept=:concept1)
-             and p3.archetypeId.entityName='product'
-             and ((c.active=1 and c.archetypeId.concept!='species') or c.active is null)
+       where p3.archetypeId.shortName=:shortName1
+             and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
              and p3.uid not in (
              select p4.uid
              from org.openvpms.component.business.domain.im.product.Product as p4
              inner join p4.classifications c
-             where (p4.archetypeId.concept=:concept1)
-                   and p4.archetypeId.entityName='product'
+             where p4.archetypeId.shortName=:shortName1
                    and c.active=true
-                   and c.archetypeId.concept='species'
-                   and c.name!=:species)
+                   and c.archetypeId.shortName='lookup.species'
+                   and c.code!=:species)
                    )
 order by p.name
         ]]>
@@ -64,30 +61,27 @@ where p.uid in (
        select p2.uid
        from org.openvpms.component.business.domain.im.product.Product as p2
        inner join p2.classifications c
-       where (p2.archetypeId.concept=:concept1)
-             and p2.archetypeId.entityName='product'
+       where (p2.archetypeId.shortName=:shortName1)
              and p2.name like :name
              and c.active=true
-             and c.archetypeId.concept='species'
-             and c.name=:species)
+             and c.archetypeId.shortName='lookup.species'
+             and c.code=:species)
        or p.uid in (
        select p3.uid
        from org.openvpms.component.business.domain.im.product.Product p3
        left join p3.classifications c
-       where (p3.archetypeId.concept=:concept1)
-             and p3.archetypeId.entityName='product'
+       where p3.archetypeId.shortName=:shortName1
              and p3.name like :name
-             and ((c.active=1 and c.archetypeId.concept!='species') or c.active is null)
+             and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
              and p3.uid not in (
              select p4.uid
              from org.openvpms.component.business.domain.im.product.Product as p4
              inner join p4.classifications c
-             where (p4.archetypeId.concept=:concept1)
-                   and p4.archetypeId.entityName='product'
+             where (p4.archetypeId.shortName=:shortName1)
                    and p4.name like :name
                    and c.active=true
-                   and c.archetypeId.concept='species'
-                   and c.name!=:species)
+                   and c.archetypeId.shortName='lookup.species'
+                   and c.code!=:species)
                    )
 order by p.name
        ]]>
@@ -101,27 +95,24 @@ where p.uid in (
        select p2.uid
        from org.openvpms.component.business.domain.im.product.Product as p2
        inner join p2.classifications c
-       where (p2.archetypeId.concept=:concept1 or p2.archetypeId.concept=:concept2)
-             and p2.archetypeId.entityName='product'
+       where (p2.archetypeId.shortName=:shortName1 or p2.archetypeId.shortName=:shortName2)
              and c.active=true
-             and c.archetypeId.concept='species'
-             and c.name=:species)
+             and c.archetypeId.shortName='lookup.species'
+             and c.code=:species)
        or p.uid in (
        select p3.uid
        from org.openvpms.component.business.domain.im.product.Product p3
        left join p3.classifications c
-       where (p3.archetypeId.concept=:concept1 or p3.archetypeId.concept=:concept2)
-             and p3.archetypeId.entityName='product'
-             and ((c.active=1 and c.archetypeId.concept!='species') or c.active is null)
+       where (p3.archetypeId.shortName=:shortName1 or p3.archetypeId.shortName=:shortName2)
+             and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
              and p3.uid not in (
              select p4.uid
              from org.openvpms.component.business.domain.im.product.Product as p4
              inner join p4.classifications c
-             where (p4.archetypeId.concept=:concept1 or p4.archetypeId.concept=:concept2)
-                   and p4.archetypeId.entityName='product'
+             where (p4.archetypeId.shortName=:shortName1 or p4.archetypeId.shortName=:shortName2)
                    and c.active=true
-                   and c.archetypeId.concept='species'
-                   and c.name!=:species)
+                   and c.archetypeId.shortName='lookup.species'
+                   and c.code!=:species)
                    )
 order by p.name
         ]]>
@@ -135,30 +126,27 @@ where p.uid in (
        select p2.uid
        from org.openvpms.component.business.domain.im.product.Product as p2
        inner join p2.classifications c
-       where (p2.archetypeId.concept=:concept1 or p2.archetypeId.concept=:concept2)
-             and p2.archetypeId.entityName='product'
+       where (p2.archetypeId.shortName=:shortName1 or p2.archetypeId.shortName=:shortName2)
              and p2.name like :name
              and c.active=true
-             and c.archetypeId.concept='species'
-             and c.name=:species)
+             and c.archetypeId.shortName='lookup.species'
+             and c.code=:species)
        or p.uid in (
        select p3.uid
        from org.openvpms.component.business.domain.im.product.Product p3
        left join p3.classifications c
-       where (p3.archetypeId.concept=:concept1 or p3.archetypeId.concept=:concept2)
-             and p3.archetypeId.entityName='product'
+       where (p3.archetypeId.shortName=:shortName1 or p3.archetypeId.shortName=:shortName2)
              and p3.name like :name
-             and ((c.active=1 and c.archetypeId.concept!='species') or c.active is null)
+             and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
              and p3.uid not in (
              select p4.uid
              from org.openvpms.component.business.domain.im.product.Product as p4
              inner join p4.classifications c
-             where (p4.archetypeId.concept=:concept1 or p4.archetypeId.concept=:concept2)
-                   and p4.archetypeId.entityName='product'
+             where (p4.archetypeId.shortName=:shortName1 or p4.archetypeId.shortName=:shortName2)
                    and p4.name like :name
                    and c.active=true
-                   and c.archetypeId.concept='species'
-                   and c.name!=:species)
+                   and c.archetypeId.shortName='lookup.species'
+                   and c.code!=:species)
                    )
 order by p.name
        ]]>
@@ -172,27 +160,24 @@ where p.uid in (
        select p2.uid
        from org.openvpms.component.business.domain.im.product.Product as p2
        inner join p2.classifications c
-       where (p2.archetypeId.concept=:concept1 or p2.archetypeId.concept=:concept2 or p2.archetypeId.concept=:concept3)
-             and p2.archetypeId.entityName='product'
+       where (p2.archetypeId.shortName=:shortName1 or p2.archetypeId.shortName=:shortName2 or p2.archetypeId.shortName=:shortName3)
              and c.active=true
-             and c.archetypeId.concept='species'
-             and c.name=:species)
+             and c.archetypeId.shortName='lookup.species'
+             and c.code=:species)
        or p.uid in (
        select p3.uid
        from org.openvpms.component.business.domain.im.product.Product p3
        left join p3.classifications c
-       where (p3.archetypeId.concept=:concept1 or p3.archetypeId.concept=:concept2 or p3.archetypeId.concept=:concept3)
-             and p3.archetypeId.entityName='product'
-             and ((c.active=1 and c.archetypeId.concept!='species') or c.active is null)
+       where (p3.archetypeId.shortName=:shortName1 or p3.archetypeId.shortName=:shortName2 or p3.archetypeId.shortName=:shortName3)
+             and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
              and p3.uid not in (
              select p4.uid
              from org.openvpms.component.business.domain.im.product.Product as p4
              inner join p4.classifications c
-             where (p4.archetypeId.concept=:concept1 or p4.archetypeId.concept=:concept2 or p4.archetypeId.concept=:concept3)
-                   and p4.archetypeId.entityName='product'
+             where (p4.archetypeId.shortName=:shortName1 or p4.archetypeId.shortName=:shortName2 or p4.archetypeId.shortName=:shortName3)
                    and c.active=true
-                   and c.archetypeId.concept='species'
-                   and c.name!=:species)
+                   and c.archetypeId.shortName='lookup.species'
+                   and c.code!=:species)
                    )
 order by p.name
         ]]>
@@ -206,30 +191,27 @@ where p.uid in (
        select p2.uid
        from org.openvpms.component.business.domain.im.product.Product as p2
        inner join p2.classifications c
-       where (p2.archetypeId.concept=:concept1 or p2.archetypeId.concept=:concept2 or p2.archetypeId.concept=:concept3)
-             and p2.archetypeId.entityName='product'
+       where (p2.archetypeId.shortName=:shortName1 or p2.archetypeId.shortName=:shortName2 or p2.archetypeId.shortName=:shortName3)
              and p2.name like :name
              and c.active=true
-             and c.archetypeId.concept='species'
-             and c.name=:species)
+             and c.archetypeId.shortName='lookup.species'
+             and c.code=:species)
        or p.uid in (
        select p3.uid
        from org.openvpms.component.business.domain.im.product.Product p3
        left join p3.classifications c
-       where (p3.archetypeId.concept=:concept1 or p3.archetypeId.concept=:concept2 or p3.archetypeId.concept=:concept3)
-             and p3.archetypeId.entityName='product'
+       where (p3.archetypeId.shortName=:shortName1 or p3.archetypeId.shortName=:shortName2 or p3.archetypeId.shortName=:shortName3)
              and p3.name like :name
-             and ((c.active=1 and c.archetypeId.concept!='species') or c.active is null)
+             and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
              and p3.uid not in (
              select p4.uid
              from org.openvpms.component.business.domain.im.product.Product as p4
              inner join p4.classifications c
-             where (p4.archetypeId.concept=:concept1 or p4.archetypeId.concept=:concept2 or p4.archetypeId.concept=:concept3)
-                   and p4.archetypeId.entityName='product'
+             where (p4.archetypeId.shortName=:shortName1 or p4.archetypeId.shortName=:shortName2 or p4.archetypeId.shortName=:shortName3)
                    and p4.name like :name
                    and c.active=true
-                   and c.archetypeId.concept='species'
-                   and c.name!=:species)
+                   and c.archetypeId.shortName='lookup.species'
+                   and c.code!=:species)
                    )
 order by p.name
        ]]>
@@ -243,27 +225,24 @@ where p.uid in (
        select p2.uid
        from org.openvpms.component.business.domain.im.product.Product as p2
        inner join p2.classifications c
-       where (p2.archetypeId.concept=:concept1 or p2.archetypeId.concept=:concept2 or p2.archetypeId.concept=:concept3 or p2.archetypeId.concept=:concept4)
-             and p2.archetypeId.entityName='product'
+       where (p2.archetypeId.shortName=:shortName1 or p2.archetypeId.shortName=:shortName2 or p2.archetypeId.shortName=:shortName3 or p2.archetypeId.shortName=:shortName4)
              and c.active=true
-             and c.archetypeId.concept='species'
-             and c.name=:species)
+             and c.archetypeId.shortName='lookup.species'
+             and c.code=:species)
        or p.uid in (
        select p3.uid
        from org.openvpms.component.business.domain.im.product.Product p3
        left join p3.classifications c
-       where (p3.archetypeId.concept=:concept1 or p3.archetypeId.concept=:concept2 or p3.archetypeId.concept=:concept3 or p3.archetypeId.concept=:concept4)
-             and p3.archetypeId.entityName='product'
-             and ((c.active=1 and c.archetypeId.concept!='species') or c.active is null)
+       where (p3.archetypeId.shortName=:shortName1 or p3.archetypeId.shortName=:shortName2 or p3.archetypeId.shortName=:shortName3 or p3.archetypeId.shortName=:shortName4)
+             and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
              and p3.uid not in (
              select p4.uid
              from org.openvpms.component.business.domain.im.product.Product as p4
              inner join p4.classifications c
-             where (p4.archetypeId.concept=:concept1 or p4.archetypeId.concept=:concept2 or p4.archetypeId.concept=:concept3 or p4.archetypeId.concept=:concept4)
-                   and p4.archetypeId.entityName='product'
+             where (p4.archetypeId.shortName=:shortName1 or p4.archetypeId.shortName=:shortName2 or p4.archetypeId.shortName=:shortName3 or p4.archetypeId.shortName=:shortName4)
                    and c.active=true
-                   and c.archetypeId.concept='species'
-                   and c.name!=:species)
+                   and c.archetypeId.shortName='lookup.species'
+                   and c.code!=:species)
                    )
 order by p.name
        ]]>
@@ -277,30 +256,27 @@ where p.uid in (
        select p2.uid
        from org.openvpms.component.business.domain.im.product.Product as p2
        inner join p2.classifications c
-       where (p2.archetypeId.concept=:concept1 or p2.archetypeId.concept=:concept2 or p2.archetypeId.concept=:concept3 or p2.archetypeId.concept=:concept4)
-             and p2.archetypeId.entityName='product'
+       where (p2.archetypeId.shortName=:shortName1 or p2.archetypeId.shortName=:shortName2 or p2.archetypeId.shortName=:shortName3 or p2.archetypeId.shortName=:shortName4)
              and p2.name like :name
              and c.active=true
-             and c.archetypeId.concept='species'
-             and c.name=:species)
+             and c.archetypeId.shortName='lookup.species'
+             and c.code=:species)
        or p.uid in (
        select p3.uid
        from org.openvpms.component.business.domain.im.product.Product p3
        left join p3.classifications c
-       where (p3.archetypeId.concept=:concept1 or p3.archetypeId.concept=:concept2 or p3.archetypeId.concept=:concept3 or p3.archetypeId.concept=:concept4)
-             and p3.archetypeId.entityName='product'
+       where (p3.archetypeId.shortName=:shortName1 or p3.archetypeId.shortName=:shortName2 or p3.archetypeId.shortName=:shortName3 or p3.archetypeId.shortName=:shortName4)
              and p3.name like :name
-             and ((c.active=1 and c.archetypeId.concept!='species') or c.active is null)
+             and ((c.active=1 and c.archetypeId.shortName!='lookup.species') or c.active is null)
              and p3.uid not in (
              select p4.uid
              from org.openvpms.component.business.domain.im.product.Product as p4
              inner join p4.classifications c
-             where (p4.archetypeId.concept=:concept1 or p4.archetypeId.concept=:concept2 or p4.archetypeId.concept=:concept3 or p4.archetypeId.concept=:concept4)
-                   and p4.archetypeId.entityName='product'
+             where (p4.archetypeId.shortName=:shortName1 or p4.archetypeId.shortName=:shortName2 or p4.archetypeId.shortName=:shortName3 or p4.archetypeId.shortName=:shortName4)
                    and p4.name like :name
                    and c.active=true
-                   and c.archetypeId.concept='species'
-                   and c.name!=:species)
+                   and c.archetypeId.shortName='lookup.species'
+                   and c.code!=:species)
                    )
 order by p.name
        ]]>

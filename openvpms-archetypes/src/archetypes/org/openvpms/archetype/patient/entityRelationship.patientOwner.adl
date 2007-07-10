@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-entityRelationship.patientOwner.1.0"
+	<archetype name="entityRelationship.patientOwner.1.0"
 		latest="true"
 		type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Patient Owner" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />

@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-    <archetype name="openvpms-lookup-lookup.taxType.1.0"
+    <archetype name="lookup.taxType.1.0"
                latest="true"
                type="org.openvpms.component.business.domain.im.lookup.Lookup" displayName="Tax Type">
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>

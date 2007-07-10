@@ -31,7 +31,10 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -54,10 +57,24 @@ public abstract class AbstractStatementProcessorListener
      */
     private final IArchetypeService service;
 
+    /**
+     * The short names to query. This contains all debit/credit parent acts,
+     * and opening and closing balances.
+     */
+    private static final String[] SHORT_NAMES;
+
+    static {
+        List<String> shortNames = new ArrayList<String>();
+        shortNames.addAll(Arrays.asList(
+                CustomerAccountActTypes.DEBIT_CREDIT_SHORT_NAMES));
+        shortNames.add(CustomerAccountActTypes.OPENING_BALANCE);
+        shortNames.add(CustomerAccountActTypes.CLOSING_BALANCE);
+        SHORT_NAMES = shortNames.toArray(new String[0]);
+    }
+
 
     /**
      * Creates a new <tt>AbstractStatementProcessorLister</tt>.
-     * .
      *
      * @param service the archetype service
      */
@@ -94,7 +111,7 @@ public abstract class AbstractStatementProcessorListener
             close = rules.getClosingBalanceDateAfter(customer, date);
         }
         ShortNameConstraint archetypes = new ShortNameConstraint(
-                "a", CustomerAccountActTypes.SHORT_NAMES, false, false);
+                "a", SHORT_NAMES, false, false);
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
         CollectionNodeConstraint constraint = new CollectionNodeConstraint(
                 "customer", "participation.customer", false, false);
