@@ -401,12 +401,19 @@ public class QueryBuilder {
     private void process(ObjectRefNodeConstraint constraint,
                          QueryContext context) {
         // get the name of the attribute
-        IMObjectReference ref = constraint.getObjectReference();
         RelationalOp op = constraint.getOperator();
         String property = getQualifiedPropertyName(constraint.getNodeName(),
                                                    constraint.getAlias(),
                                                    context);
-        context.addWhereConstraint(property + ".linkId", op, ref.getLinkId());
+        if (constraint.getObjectReference() != null) {
+            IMObjectReference ref = constraint.getObjectReference();
+            context.addWhereConstraint(property + ".linkId", op,
+                                       ref.getLinkId());
+        } else {
+            ArchetypeId id = constraint.getArchetypeId();
+            context.addWhereConstraint(property + ".archetypeId.shortName", op,
+                                       id.getShortName());
+        }
     }
 
     /**

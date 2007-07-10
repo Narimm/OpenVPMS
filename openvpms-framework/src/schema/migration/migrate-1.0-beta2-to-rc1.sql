@@ -362,6 +362,7 @@ alter table participations
     drop index participation_linkId_idx,
     drop index participation_entity_linkId_idx,
     add unique key (linkId),
+    add index participation_arch_short_name_idx (arch_short_name),
     add index participation_entity_linkId_act_sn_index (entity_linkId, act_arch_short_name);
 
 alter table product_prices

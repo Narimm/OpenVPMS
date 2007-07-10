@@ -22,6 +22,7 @@ import org.hibernate.HibernateException;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -35,6 +36,7 @@ import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
@@ -351,6 +353,9 @@ public class QueryBuilderTestCase
         checkQuery(query, expected);
     }
 
+    /**
+     * Tests select constraints.
+     */
     public void testMultipleSelect() {
         final String expected = "select estimation.name, "
                 + "estimation.description, estimation.status, estimationItem "
@@ -384,11 +389,40 @@ public class QueryBuilderTestCase
         checkQuery(query, expected);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+    /**
+     * Tests queries on object reference nodes.
      */
+    public void testObjectRefNodeConstraints() {
+        final String expected = "select act0 from "
+                + Act.class.getName() + " as act0 "
+                + "inner join act0.participations as participations0 "
+                + "where (act0.archetypeId.shortName = :shortName0 and "
+                + "(participations0.entity.linkId = :linkId0 or "
+                + "participations0.entity.archetypeId.shortName "
+                + "= :shortName1))";
+
+        // create a query that returns all customer estimations for a particular
+        // customer or that has an author.
+        ObjectRefNodeConstraint customer = new ObjectRefNodeConstraint(
+                "entity", new IMObjectReference(
+                new ArchetypeId("participation.customer"), "alinkId"));
+        ObjectRefNodeConstraint author = new ObjectRefNodeConstraint(
+                "entity", new ArchetypeId("participation.author"));
+        ArchetypeQuery query
+                = new ArchetypeQuery("act.customerEstimation",
+                                     false, false);
+        query.add(new CollectionNodeConstraint("participants")
+                .add(new OrConstraint().add(customer).add(author)));
+
+        checkQuery(query, expected);
+    }
+
+
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+    */
     @Override
     protected String[] getConfigLocations() {
         return new String[]{

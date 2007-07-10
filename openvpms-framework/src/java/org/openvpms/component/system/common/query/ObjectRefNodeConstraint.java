@@ -19,11 +19,16 @@
 
 package org.openvpms.component.system.common.query;
 
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 
 /**
- * This is applicable to node descriptors that point to an object reference.
+ * A constraint on object reference nodes.
+ * When constructed with an {@link IMObjectReference},
+ * the {@link IMObjectReference#getLinkId} is used to constrain the node.
+ * When constructed with an {@link ArchetypeId}, the
+ * {@link ArchetypeId#getShortName()} is used to constrain the node.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -31,7 +36,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 public class ObjectRefNodeConstraint extends AbstractNodeConstraint {
 
     /**
-     * Default SUID.
+     * Serialisation version identifier.
      */
     private static final long serialVersionUID = 1L;
 
@@ -62,12 +67,53 @@ public class ObjectRefNodeConstraint extends AbstractNodeConstraint {
     }
 
     /**
+     * Construct a constraint on the specified node and the passed in
+     * archetype identifier.
+     *
+     * @param nodeName the name of the node descriptor
+     * @param id       the archetype identifier
+     */
+    public ObjectRefNodeConstraint(String nodeName, ArchetypeId id) {
+        this(nodeName, RelationalOp.EQ, id);
+    }
+
+    /**
+     * Construct a constraint on the specified node and the passed in
+     * archetype identifier.
+     *
+     * @param nodeName the name of the node descriptor
+     * @param operator the operator
+     * @param id       the archetype identifier
+     */
+    public ObjectRefNodeConstraint(String nodeName, RelationalOp operator,
+                                   ArchetypeId id) {
+        super(nodeName, operator, new Object[]{id});
+    }
+
+    /**
      * Returns the object reference.
      *
-     * @return the object reference
+     * @return the object reference, or <tt>null</tt> if this was constructed
+     *         with an archetype id.
      */
     public IMObjectReference getObjectReference() {
-        return (IMObjectReference) getParameters()[0];
+        if (getParameters()[0] instanceof IMObjectReference) {
+            return (IMObjectReference) getParameters()[0];
+        }
+        return null;
+    }
+
+    /**
+     * Returns the archetype id.
+     *
+     * @return the archetype id, or <tt>null</tt> if this was constructed
+     *         with an object reference.
+     */
+    public ArchetypeId getArchetypeId() {
+        if (getParameters()[0] instanceof ArchetypeId) {
+            return (ArchetypeId) getParameters()[0];
+        }
+        return null;
     }
 
 }
