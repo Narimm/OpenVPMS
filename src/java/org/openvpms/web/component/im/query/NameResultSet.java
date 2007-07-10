@@ -29,9 +29,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -52,7 +50,7 @@ public abstract class NameResultSet<T extends IMObject>
     /**
      * The archetypes to query.
      */
-    private final BaseArchetypeConstraint archetypes;
+    private final ShortNameConstraint archetypes;
 
     /**
      * The instance name.
@@ -76,7 +74,7 @@ public abstract class NameResultSet<T extends IMObject>
      * @param rows         the maximum no. of rows per page
      * @param distinct     if <code>true</code> filter duplicate rows
      */
-    public NameResultSet(BaseArchetypeConstraint archetypes,
+    public NameResultSet(ShortNameConstraint archetypes,
                          String instanceName, IConstraint constraints,
                          SortConstraint[] sort, int rows, boolean distinct) {
         super(constraints, rows, sort);
@@ -90,7 +88,7 @@ public abstract class NameResultSet<T extends IMObject>
      *
      * @return the archetypes
      */
-    protected BaseArchetypeConstraint getArchetypes() {
+    protected ShortNameConstraint getArchetypes() {
         return archetypes;
     }
 
@@ -124,22 +122,11 @@ public abstract class NameResultSet<T extends IMObject>
      * @throws OpenVPMSException for any error
      */
     protected List<ArchetypeDescriptor> getArchetypes(
-            BaseArchetypeConstraint archetypes) {
+            ShortNameConstraint archetypes) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        String[] shortNames;
-        if (archetypes instanceof LongNameConstraint) {
-            LongNameConstraint constraint = (LongNameConstraint) archetypes;
-            shortNames = DescriptorHelper.getShortNames(
-                    constraint.getRmName(), constraint.getEntityName(),
-                    constraint.getConceptName());
-        } else if (archetypes instanceof ShortNameConstraint) {
-            ShortNameConstraint constraint = (ShortNameConstraint) archetypes;
-            shortNames = DescriptorHelper.getShortNames(
-                    constraint.getShortNames());
-        } else {
-            shortNames = new String[0];
-        }
+        String[] shortNames = DescriptorHelper.getShortNames(
+                archetypes.getShortNames());
         List<ArchetypeDescriptor> result
                 = new ArrayList<ArchetypeDescriptor>(shortNames.length);
         for (String shortName : shortNames) {

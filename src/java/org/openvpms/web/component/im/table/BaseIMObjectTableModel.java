@@ -25,7 +25,6 @@ import nextapp.echo2.app.table.TableColumnModel;
 import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -180,14 +179,9 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
         SortConstraint[] result;
         switch (column) {
             case ARCHETYPE_INDEX:
-                SortConstraint refModelName = new ArchetypeSortConstraint(
-                        ArchetypeProperty.ReferenceModelName, ascending);
-                SortConstraint entityName = new ArchetypeSortConstraint(
-                        ArchetypeProperty.EntityName, ascending);
-                SortConstraint conceptName = new ArchetypeSortConstraint(
-                        ArchetypeProperty.ConceptName, ascending);
-                result = new SortConstraint[]{refModelName, entityName,
-                                              conceptName};
+                ArchetypeSortConstraint archetype
+                        = new ArchetypeSortConstraint(ascending);
+                result = new SortConstraint[]{archetype};
                 break;
             case NAME_INDEX:
                 SortConstraint name = new NodeSortConstraint("name", ascending);

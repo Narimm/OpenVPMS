@@ -27,6 +27,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.test.TestHelper;
@@ -131,6 +133,7 @@ public class StringPropertyTransformerTestCase
      * @param expression the macro expression
      */
     private void createMacro(String code, String expression) {
+        deleteExisting(code);
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         Lookup macro = (Lookup) service.create("lookup.macro");
@@ -139,6 +142,22 @@ public class StringPropertyTransformerTestCase
         bean.setValue("name", code);
         bean.setValue("expression", expression);
         bean.save();
+    }
+
+    /**
+     * Deletes any exising macro with the specified code, to avoid duplicate
+     * errors.
+     *
+     * @param code the macro code
+     */
+    private void deleteExisting(String code) {
+        ArchetypeQuery query = new ArchetypeQuery("lookup.macro", false, false);
+        query.add(new NodeConstraint("code", code));
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        for (IMObject object : service.get(query).getResults()) {
+            service.remove(object);
+        }
     }
 
 }

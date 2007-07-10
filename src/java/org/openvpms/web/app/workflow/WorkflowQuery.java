@@ -28,6 +28,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -92,7 +93,8 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
      * Indicates no valid clinician selected.
      */
     protected static final IMObjectReference INVALID_CLINICIAN
-            = new IMObjectReference();
+            = new IMObjectReference(new ArchetypeId("security.user"),
+                                    "dummylinkId");
 
     /**
      * All acts.

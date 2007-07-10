@@ -59,7 +59,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         if (property.getMinCardinality() > 0) {
             assertFalse("Collection should be invalid", editor.isValid());
         } else {
-            assertFalse("Collection should be valid", editor.isValid());
+            assertTrue("Collection should be valid", editor.isValid());
         }
     }
 

@@ -36,8 +36,7 @@ public class UserWorkspace extends CRUDWorkspace<User> {
      * Constructs a new <tt>UserWorkspace</tt>.
      */
     public UserWorkspace() {
-        super("admin", "user",
-              new ShortNameList("system", "security", "user*"));
+        super("admin", "user", new ShortNameList("security.user*"));
     }
 
     /**

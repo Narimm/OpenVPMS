@@ -40,7 +40,7 @@ public class LookupWorkspace extends CRUDWorkspace<Lookup> {
      * Construct a new <tt>LookupWorkspace</tt>.
      */
     public LookupWorkspace() {
-        super("admin", "lookup", new ShortNameList("lookup", "lookup", null));
+        super("admin", "lookup", new ShortNameList("lookup.*"));
     }
 
     /**

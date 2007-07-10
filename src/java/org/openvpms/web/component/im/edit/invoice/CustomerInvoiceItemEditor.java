@@ -31,7 +31,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -340,12 +339,13 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                 if (quantity == null) {
                     quantity = BigDecimal.ZERO;
                 }
-                BigDecimal amount = DiscountRules.calculateDiscountAmount(
+                DiscountRules rules = new DiscountRules();
+                BigDecimal amount = rules.calculateDiscountAmount(
                         customer, patient, product, fixedPrice, unitPrice,
-                        quantity, ArchetypeServiceHelper.getArchetypeService());
-                // If disocount amount calculates to Zero don't update any existing value 
-                // as may have been manually modified.
-                if (!amount.equals(BigDecimal.ZERO)) {
+                        quantity);
+                // If discount amount calculates to zero don't update any
+                // existing value as may have been manually modified.
+                if (amount.compareTo(BigDecimal.ZERO) != 0) {
                     Property discount = getProperty("discount");
                     discount.setValue(amount);
                 }

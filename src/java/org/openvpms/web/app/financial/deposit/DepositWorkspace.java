@@ -89,7 +89,7 @@ public class DepositWorkspace extends ActWorkspace<Party, FinancialAct> {
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
         String type = Messages.get("financial.deposit.createtype");
-        return new DepositCRUDWindow(type, "common", "act", "bankDeposit");
+        return new DepositCRUDWindow(type, "act.bankDeposit");
     }
 
     /**

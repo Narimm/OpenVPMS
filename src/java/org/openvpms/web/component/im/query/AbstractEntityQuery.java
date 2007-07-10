@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ShortNameListModel;
@@ -84,7 +83,7 @@ public abstract class AbstractEntityQuery<T extends Entity>
         ResultSet<T> result;
 
         if (canQueryOnName()) {
-            BaseArchetypeConstraint archetypes;
+            ShortNameConstraint archetypes;
             if (type == null || type.equals(ShortNameListModel.ALL)) {
                 archetypes = getArchetypes();
                 archetypes.setActiveOnly(activeOnly);

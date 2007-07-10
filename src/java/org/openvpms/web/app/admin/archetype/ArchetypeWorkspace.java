@@ -37,8 +37,7 @@ public class ArchetypeWorkspace extends CRUDWorkspace<ArchetypeDescriptor> {
      * Constructs a new <tt>ArchetypeWorkspace</tt>.
      */
     public ArchetypeWorkspace() {
-        super("admin", "archetype",
-              new ShortNameList("system", "descriptor", null));
+        super("admin", "archetype", new ShortNameList("descriptor.*"));
     }
 
     /**

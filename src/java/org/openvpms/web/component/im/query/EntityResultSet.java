@@ -24,11 +24,11 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 import java.util.HashSet;
@@ -62,7 +62,7 @@ public class EntityResultSet<T extends Entity> extends NameResultSet<T> {
      * @param rows             the maximum no. of rows per page
      * @param distinct         if <code>true</code> filter duplicate rows
      */
-    public EntityResultSet(BaseArchetypeConstraint archetypes,
+    public EntityResultSet(ShortNameConstraint archetypes,
                            String instanceName, boolean searchIdentities,
                            IConstraint constraints, SortConstraint[] sort,
                            int rows,
