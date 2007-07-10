@@ -19,14 +19,13 @@
 
 package org.openvpms.component.business.domain.im.datatypes.property;
 
-// commons-lang
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
 /**
- * An assertion property extends {@link NamesProperty} and adds a type
+ * An assertion property extends {@link NamedProperty} and adds a type
  * and a value.
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -54,7 +53,7 @@ public class AssertionProperty extends NamedProperty {
      * Default constructor 
      */
     public AssertionProperty() {
-        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.assertionProperty.1.0"));
+        setArchetypeId(new ArchetypeId("descriptor.assertionProperty.1.0"));
     }
 
     /**

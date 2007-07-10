@@ -94,14 +94,18 @@ public class ActRelationship extends IMObject {
 
     /**
      * @return Returns the sequence.
+     * @deprecated no replacement
      */
+    @Deprecated
     public int getSequence() {
         return sequence;
     }
 
     /**
      * @param sequence The sequence to set.
+     * @deprecated no replacement
      */
+    @Deprecated
     public void setSequence(int sequence) {
         this.sequence = sequence;
     }
@@ -157,7 +161,6 @@ public class ActRelationship extends IMObject {
         copy.details = (details == null) ? null
                 : new HashMap<String, TypedValue>(details);
         copy.parentChildRelationship = this.parentChildRelationship;
-        copy.sequence = this.sequence;
 
         // no need to clone the source and target act
         copy.source = this.source;

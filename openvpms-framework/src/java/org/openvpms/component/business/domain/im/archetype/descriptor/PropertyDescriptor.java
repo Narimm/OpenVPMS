@@ -19,11 +19,11 @@
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -60,7 +60,7 @@ public class PropertyDescriptor  extends Descriptor {
      * Default constructor
      */
     public PropertyDescriptor() {
-        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.property.1.0"));
+        setArchetypeId(new ArchetypeId("descriptor.property.1.0"));
     }
 
     /**

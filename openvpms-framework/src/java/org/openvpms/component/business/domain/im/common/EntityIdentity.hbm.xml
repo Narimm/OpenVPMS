@@ -24,23 +24,18 @@
     table="entity_identities">
     <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="entity_identity_id" index="entity_identity_id_idx" />
+      <column name="entity_identity_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" access="property" type="string" length="100" />
+    <property name="linkId" access="property" type="string" length="36"
+            not-null="true" unique="true"/>
     <many-to-one name="entity" column="entity_id" />
     <component name="archetypeId">
-      <property name="namespace" access="property" column="arch_namespace"
-        type="string" length="100" />
-      <property name="rmName" access="property" column="arch_rm_name"
-        type="string" length="100" />
-      <property name="concept" access="property" column="arch_concept_name"
-        type="string" length="100" />
-      <property name="entityName" access="property" column="arch_entity_name"
-        type="string" length="100" />
+      <property name="shortName" access="property" column="arch_short_name"
+        type="string" length="100" not-null="true"/>
       <property name="version" access="property" column="arch_version"
-        type="string" length="100" />
+        type="string" length="100" not-null="true"/>
     </component>
     <property name="name" access="property" column="name" type="string" index="entity_identity_name_idx"/>
     <property name="description" access="property" column="description"

@@ -24,11 +24,12 @@
     name="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor"
     table="node_descriptors">
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="node_desc_id" index="node_desc_id_idx" />
+      <column name="node_desc_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" access="property" type="string" length="100" />
+    <property name="linkId" access="property" type="string" length="36"
+              not-null="true" unique="true"/>
     <property name="name" access="property" column="name" type="string"
       not-null="true" />
     <property name="active" access="property" column="active" type="boolean" />
@@ -40,7 +41,7 @@
       not-null="true" />
     <property name="baseName" access="property" column="base_name"
       type="string" />
-    <property name="defaultValue" access="property" column="default_name"
+    <property name="defaultValue" access="property" column="default_value"
       type="string" />
     <property name="filter" access="property" column="filter"
       type="string" />

@@ -9,7 +9,7 @@
         <parameter identifier="person">
         	<java:class>org.openvpms.component.business.domain.im.party.Party</java:class>
         </parameter>
-        <java:condition>person.getArchetypeId().getShortName().equals("person.person")</java:condition>
+        <java:condition>person.getArchetypeId().getShortName().equals("party.person")</java:condition>
         <java:consequence>
         	if (person.getName() != null) {
 	            person.setName(person.getName().toUpperCase());

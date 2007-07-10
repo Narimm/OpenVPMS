@@ -19,25 +19,21 @@
 
 package org.openvpms.component.business.service.archetype.descriptor.cache;
 
-// java core
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-// log4j
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.system.common.util.StringUtilities;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 /**
  * This is an abstract class which is used by some cache implementations.
@@ -88,7 +84,11 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
      * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptor(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
     public ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id) {
-        return archetypesById.get(id.getQualifiedName());
+        ArchetypeDescriptor result = archetypesById.get(id.getQualifiedName());
+        if (result == null && id.getVersion() == null) {
+            result = getArchetypeDescriptor(id.getShortName());
+        }
+        return result;
     }
 
     /* (non-Javadoc)
@@ -116,17 +116,9 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptorsByRmName(java.lang.String)
      */
+    @Deprecated
     public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(String rmName) {
-        List<ArchetypeDescriptor> descriptors = new ArrayList<ArchetypeDescriptor>();
-
-        for (String qName : archetypesById.keySet()) {
-            ArchetypeDescriptor adesc = archetypesById.get(qName);
-            if (StringUtilities.matches(adesc.getType().getRmName(), rmName)) {
-                descriptors.add(adesc);
-            }
-        }
-
-        return descriptors;
+        return Collections.emptyList();
     }
 
     /* (non-Javadoc)
@@ -146,39 +138,43 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeShortNames(java.lang.String, java.lang.String, java.lang.String, boolean)
      */
+    @Deprecated
     public List<String> getArchetypeShortNames(String rmName,
             String entityName, String conceptName, boolean primaryOnly) {
+        return getArchetypeShortNames(entityName, conceptName, primaryOnly);
+    }
+
+       /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeShortNames(java.lang.String, java.lang.String, boolean)
+     */
+    public List<String> getArchetypeShortNames(String entityName,
+                                               String conceptName,
+                                               boolean primaryOnly) {
         List<String> shortNames = new ArrayList<String>();
-        
+
         for (ArchetypeDescriptor desc : archetypesByShortName.values()) {
             ArchetypeId archId = desc.getType();
-            // do a check on rm name
-            if ((StringUtils.isEmpty(rmName) == false) && 
-                (StringUtilities.matches(archId.getRmName(), rmName) == false)) {
-                continue;
-            }
 
             // do the check on entity name
-            if ((StringUtils.isEmpty(entityName) == false) && 
-                (StringUtilities.matches(archId.getEntityName(), entityName) == false)) {
+            if (!StringUtils.isEmpty(entityName) && !StringUtilities.matches(
+                    archId.getEntityName(), entityName)) {
                 continue;
             }
 
             // do the check on concept name
-            if ((StringUtils.isEmpty(conceptName) == false) && 
-                (StringUtilities.matches(archId.getConcept(), conceptName) == false)) {
+            if (!StringUtils.isEmpty(conceptName) && !StringUtilities.matches(
+                    archId.getConcept(), conceptName)) {
                 continue;
             }
-            
+
             // are we requesting only primary
-            if ((primaryOnly) &&
-                (!desc.isPrimary())) {
+            if (primaryOnly && !desc.isPrimary()) {
                 continue;
             }
 
             shortNames.add(archId.getShortName());
         }
-        
+
         return shortNames;
     }
 
@@ -192,8 +188,7 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
             ArchetypeDescriptor desc = archetypesByShortName.get(archshortName);
             if (StringUtilities.matches(archshortName, shortName)) {
                 // are we requesting only primary
-                if ((primaryOnly) &&
-                    (!desc.isPrimary())) {
+                if (primaryOnly && !desc.isPrimary()) {
                     continue;
                 }
     
@@ -217,8 +212,7 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
     public void addArchetypeDescriptor(ArchetypeDescriptor adesc, boolean replace) {
         ArchetypeDescriptor temp = archetypesById.get(adesc.getType().getQualifiedName());
         
-        if ((temp == null) ||
-            (replace)) {
+        if (temp == null || replace) {
             addArchetypeById(adesc);
             addArchetypeByShortName(adesc);
         }
@@ -228,17 +222,15 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
      * Process all the assertions defined for a specified node. This is a
      * re-entrant method.
      * 
-     * @param node
-     *            the node to process
+     * @param nodes
+     *            the nodes to process
      * @throws ArchetypeDescriptorCacheException
      *             runtime exception that is raised when the
      */
-    protected void checkAssertionsInNode(Map nodes) {
-        Iterator niter = nodes.values().iterator();
-        while (niter.hasNext()) {
-            NodeDescriptor node = (NodeDescriptor) niter.next();
-            for (AssertionDescriptor assertion : node
-                    .getAssertionDescriptorsAsArray()) {
+    protected void checkAssertionsInNode(Map<String, NodeDescriptor> nodes) {
+        for (NodeDescriptor node : nodes.values()) {
+            for (AssertionDescriptor assertion
+                    : node.getAssertionDescriptorsAsArray()) {
                 AssertionTypeDescriptor atDesc = assertionTypes.get(
                         assertion.getName());
                 if (atDesc == null) {
@@ -246,10 +238,10 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
                             + " in [" + assertionTypes + "]");
                     throw new ArchetypeDescriptorCacheException(
                             ArchetypeDescriptorCacheException.ErrorCode.InvalidAssertionSpecified,
-                            new Object[] { assertion.getName() });
+                            new Object[]{assertion.getName()});
                 }
             }
-    
+
             if (node.getNodeDescriptors().size() > 0) {
                 checkAssertionsInNode(node.getNodeDescriptors());
             }
@@ -265,8 +257,8 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
         ArchetypeId archId = adesc.getType();
         
         // only store one copy of the archetype by short name
-        if ((archetypesByShortName.containsKey(archId.getShortName()) == false) || 
-            (adesc.isLatest())) {
+        if (!archetypesByShortName.containsKey(archId.getShortName())
+                || adesc.isLatest()) {
             archetypesByShortName.put(archId.getShortName(), adesc);
             if (logger.isDebugEnabled()) {
                 logger.debug("Loading  [" + archId.getShortName()

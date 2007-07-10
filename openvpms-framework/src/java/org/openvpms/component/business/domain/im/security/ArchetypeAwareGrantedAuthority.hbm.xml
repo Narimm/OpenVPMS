@@ -23,22 +23,17 @@
   <class name="org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority"
     table="granted_authorities">
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="granted_authority_id" index="granted_authority_id_idx" />
+      <column name="granted_authority_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" access="property" type="string" length="100" />
+    <property name="linkId" access="property" type="string" length="36"
+              not-null="true" unique="true"/>
     <component name="archetypeId">
-      <property name="namespace" access="property" column="arch_namespace"
-        type="string" length="100" />
-      <property name="rmName" access="property" column="arch_rm_name"
-        type="string" length="100" />
-      <property name="concept" access="property" column="arch_concept_name"
-        type="string" length="100" />
-      <property name="entityName" access="property" column="arch_entity_name"
-        type="string" length="100" />
+      <property name="shortName" access="property" column="arch_short_name"
+        type="string" length="100" not-null="true"/>
       <property name="version" access="property" column="arch_version"
-        type="string" length="100" />
+        type="string" length="100" not-null="true"/>
     </component>
     <property name="name" access="property" column="name" type="string" />
     <property name="description" access="property" column="description"
@@ -47,7 +42,8 @@
     <property name="prefix" access="field" column="prefix" type="string" />
     <property name="serviceName" access="property" column="service_name" type="string" />
     <property name="method" access="property" column="method" type="string" />
-    <property name="archetypeShortName" access="property" column="arch_short_name" type="string" />
+    <property name="archetypeShortName" access="property" column="archetype"
+              type="string" length="100"/>
     <property name="authority" access="property" column="authority" type="string" />
   </class>
 

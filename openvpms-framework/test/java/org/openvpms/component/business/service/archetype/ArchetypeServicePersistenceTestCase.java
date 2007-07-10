@@ -18,7 +18,6 @@
 
 package org.openvpms.component.business.service.archetype;
 
-import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -32,6 +31,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -44,6 +44,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
+
 /**
  * Test the persistence side of the archetype service.
  *
@@ -53,22 +54,12 @@ import java.util.StringTokenizer;
 @SuppressWarnings("HardCodedStringLiteral")
 public class ArchetypeServicePersistenceTestCase
         extends AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeServicePersistenceTestCase.class);
 
     /**
      * Holds a reference to the entity service
      */
     private IArchetypeService service;
 
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(ArchetypeServicePersistenceTestCase.class);
-    }
 
     /**
      * Default constructor
@@ -89,11 +80,10 @@ public class ArchetypeServicePersistenceTestCase
     }
 
     /**
-     * Test that we can create a {@link Party} through this service
+     * Test that we can create a {@link Party} through this service.
      */
-    public void testCreatePerson()
-            throws Exception {
-        Entity entity = (Entity) service.create("person.person");
+    public void testCreatePerson() throws Exception {
+        Entity entity = (Entity) service.create("party.person");
         assertTrue(entity instanceof Party);
 
         Party person = (Party) entity;
@@ -109,11 +99,10 @@ public class ArchetypeServicePersistenceTestCase
     }
 
     /**
-     * Test create, retrieve and update person
+     * Test create, retrieve and update person.
      */
-    public void testPersonLifecycle()
-            throws Exception {
-        Entity entity = (Entity) service.create("person.person");
+    public void testPersonLifecycle() throws Exception {
+        Entity entity = (Entity) service.create("party.person");
         assertTrue(entity instanceof Party);
 
         Party person = (Party) entity;
@@ -140,19 +129,17 @@ public class ArchetypeServicePersistenceTestCase
     }
 
     /**
-     * Test that we can create a {@link Party} through this service
+     * Test that we can create a {@link Party} through this service.
      */
-    public void testAnimalCreation()
-            throws Exception {
+    public void testAnimalCreation() throws Exception {
         // create and insert a new pet
         service.save(createPet("brutus"));
     }
 
     /**
-     * Test that we can create a {@link Lookup} through this service
+     * Test that we can create a {@link Lookup} through this service.
      */
-    public void testLookupCreation()
-            throws Exception {
+    public void testLookupCreation() throws Exception {
         // create and insert a new lookup
         Lookup lookup = createCountryLookup("South Africa");
         service.save(lookup);
@@ -162,14 +149,12 @@ public class ArchetypeServicePersistenceTestCase
     }
 
     /**
-     * Test that we can locate entities by RmName and EntityName only
+     * Test that we can locate entities by EntityName only.
      */
-    public void testFindWithEntityName()
-            throws Exception {
+    public void testFindWithEntityName() throws Exception {
 
         // get the initial count
-        ArchetypeQuery query = new ArchetypeQuery("party", "animal", null,
-                                                  false, false);
+        ArchetypeQuery query = new ArchetypeQuery("party", null, false, false);
         query.setCountResults(true);
         query.setMaxResults(1);
         int before = service.get(query).getTotalResults();
@@ -183,14 +168,12 @@ public class ArchetypeServicePersistenceTestCase
     }
 
     /**
-     * Test that we can locate entities by RmName and partial EntityName
+     * Test that we can locate entities by partial EntityName.
      */
-    public void testFindWithPartialEntityName()
-            throws Exception {
+    public void testFindWithPartialEntityName() throws Exception {
 
         // get the initial count
-        ArchetypeQuery query = new ArchetypeQuery("party", "ani*", null, false,
-                                                  false);
+        ArchetypeQuery query = new ArchetypeQuery("party*", null, false, false);
         query.setCountResults(true);
         query.setMaxResults(1);
         int before = service.get(query).getTotalResults();
@@ -200,42 +183,40 @@ public class ArchetypeServicePersistenceTestCase
 
         // now get a new count
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List after = service.get(query).getResults();
+        List<IMObject> after = service.get(query).getResults();
         assertEquals(before + 1, after.size());
 
-        for (Object entity : after) {
+        for (IMObject entity : after) {
             assertTrue(
-                    ((Entity) entity).getArchetypeId().getEntityName().matches(
-                            "ani.*"));
+                    entity.getArchetypeId().getEntityName().matches("part.*"));
         }
 
         // now  test with a starts with
-        after = service.get(new ArchetypeQuery("party", "*mal", null, false,
-                                               false)).getResults();
-        for (Object entity : after) {
+        ArchetypeQuery query2 = new ArchetypeQuery("*arty", null, false, false);
+        after = service.get(query2).getResults();
+        for (IMObject entity : after) {
             assertTrue(
-                    ((Entity) entity).getArchetypeId().getEntityName().matches(
-                            ".*mal"));
+                    entity.getArchetypeId().getEntityName().matches(".*arty"));
         }
 
         // now  test with a start and ends with
-        after = service.get(new ArchetypeQuery("party", "*nim*", null, false,
-                                               false)).getResults();
-        for (Object entity : after) {
+        ArchetypeQuery query3 = new ArchetypeQuery("*arty*", null, false,
+                                                   false);
+        after = service.get(query3).getResults();
+        for (IMObject entity : after) {
             assertTrue(
-                    ((Entity) entity).getArchetypeId().getEntityName().matches(
-                            ".*nim.*"));
+                    entity.getArchetypeId().getEntityName().matches(
+                            ".*arty.*"));
         }
     }
 
     /**
-     * Test that we can locate entities by RmName, EntityName and ConceptName
+     * Test that we can locate entities by EntityName and ConceptName.
      */
-    public void testFindWithConceptName()
-            throws Exception {
+    public void testFindWithConceptName() throws Exception {
 
         // get the initial count
-        ArchetypeQuery query = new ArchetypeQuery("party", "animal", "pet",
+        ArchetypeQuery query = new ArchetypeQuery("party", "animalpet",
                                                   false, false);
         query.setMaxResults(1);
         query.setCountResults(true);
@@ -246,18 +227,17 @@ public class ArchetypeServicePersistenceTestCase
 
         // now get a new count
         int after = service.get(query).getTotalResults();
-        assertTrue(after == before + 1);
+        assertEquals(before + 1, after);
     }
 
     /**
-     * Test that we can locate entities by RmName, EntityName and partial
+     * Test that we can locate entities by EntityName and partial
      * conceptName
      */
-    public void testFindWithPartialConceptName()
-            throws Exception {
+    public void testFindWithPartialConceptName() throws Exception {
 
         // get the initial count
-        ArchetypeQuery query = new ArchetypeQuery("party", "animal", "p*",
+        ArchetypeQuery query = new ArchetypeQuery("party", "anim*",
                                                   false, false);
         query.setMaxResults(1);
         query.setCountResults(true);
@@ -268,40 +248,41 @@ public class ArchetypeServicePersistenceTestCase
 
         // now get a new count
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List after = service.get(query).getResults();
+        List<IMObject> after = service.get(query).getResults();
         assertEquals(before + 1, after.size());
-        for (Object entity : after) {
-            assertTrue(((Entity) entity).getArchetypeId().getConcept().matches(
-                    "p.*"));
+        for (IMObject entity : after) {
+            assertTrue(entity.getArchetypeId().getConcept().matches("anim.*"));
         }
 
         // now test with a starts with
-        after = service.get(new ArchetypeQuery("party", "animal", "*et", false,
-                                               false)).getResults();
-        for (Object entity : after) {
-            assertTrue(((Entity) entity).getArchetypeId().getConcept().matches(
-                    ".*et"));
+        ArchetypeQuery query2 = new ArchetypeQuery("party", "*nimalpet", false,
+                                                   false);
+        after = service.get(query2).getResults();
+        for (IMObject entity : after) {
+            assertTrue(
+                    entity.getArchetypeId().getConcept().matches(".*nimalpet"));
         }
 
         // now test with a start and ends with
-        after = service.get(new ArchetypeQuery("party", "animal", "*e*", false,
-                                               false)).getResults();
-        for (Object entity : after) {
-            assertTrue(((Entity) entity).getArchetypeId().getConcept().matches(
-                    ".*et.*"));
+        ArchetypeQuery query3 = new ArchetypeQuery("party", "*nimalpe*", false,
+                                                   false);
+        after = service.get(query3).getResults();
+        for (IMObject entity : after) {
+            assertTrue(entity.getArchetypeId().getConcept().matches(
+                    ".*nimalpe.*"));
         }
     }
 
     /**
-     * Test that we can locate entities by RmName, EntityName, ConceptName
+     * Test that we can locate entities by EntityName, ConceptName
      * and instance name
      */
     public void testFindWithInstanceName()
             throws Exception {
 
         // get the initial count
-        ArchetypeQuery query = new ArchetypeQuery("party", "animal", "pet",
-                                                  false, false);
+        ArchetypeQuery query = new ArchetypeQuery("party", "animalpet", false,
+                                                  false);
         query.add(new NodeConstraint("name", RelationalOp.EQ, "brutus"));
         query.setCountResults(true);
         query.setMaxResults(1);
@@ -317,15 +298,15 @@ public class ArchetypeServicePersistenceTestCase
 
 
     /**
-     * Test that we can locate entities by RmName, EntityName, ConceptName
+     * Test that we can locate entities by EntityName, ConceptName
      * and partial instance name
      */
     public void testFindWithPartialInstanceName()
             throws Exception {
 
         // get the initial count
-        ArchetypeQuery query = new ArchetypeQuery("party", "animal", "pet",
-                                                  false, false)
+        ArchetypeQuery query = new ArchetypeQuery("party", "animalpet", false,
+                                                  false)
                 .add(new NodeConstraint("name", RelationalOp.EQ, "br*"));
         query.setCountResults(true);
         query.setMaxResults(1);
@@ -336,33 +317,31 @@ public class ArchetypeServicePersistenceTestCase
 
         // now get a new count
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List after = service.get(query).getResults();
+        List<IMObject> after = service.get(query).getResults();
         assertEquals(before + 1, after.size());
-        for (Object entity : after) {
-            assertTrue(((Entity) entity).getName(),
-                       ((Entity) entity).getName().matches("br.*"));
+        for (IMObject entity : after) {
+            assertTrue(entity.getName(), entity.getName().matches("br.*"));
         }
 
         // now test with a starts with
-        ArchetypeQuery query2 = new ArchetypeQuery("party", "animal", "pet",
-                                                   false, false)
+        ArchetypeQuery query2 = new ArchetypeQuery("party", "animalpet", false,
+                                                   false)
                 .add(new NodeConstraint("name", RelationalOp.EQ,
                                         "*tus"));
         query2.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         after = service.get(query2).getResults();
-        for (Object entity : after) {
-            assertTrue(((Entity) entity).getName().matches(".*tus"));
+        for (IMObject entity : after) {
+            assertTrue(entity.getName().matches(".*tus"));
         }
 
         // now test with a start and ends with
-        ArchetypeQuery query3 = new ArchetypeQuery("party", "animal", "pet",
-                                                   false, false)
+        ArchetypeQuery query3 = new ArchetypeQuery("party", "animalpet", false,
+                                                   false)
                 .add(new NodeConstraint("name", RelationalOp.EQ, "*utu*"));
         query3.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        after = service.get(
-                query3).getResults();
-        for (Object entity : after) {
-            assertTrue(((Entity) entity).getName().matches(".*utu.*"));
+        after = service.get(query3).getResults();
+        for (IMObject entity : after) {
+            assertTrue(entity.getName().matches(".*utu.*"));
         }
     }
 
@@ -370,10 +349,9 @@ public class ArchetypeServicePersistenceTestCase
      * Test for OVPMS-147, where I pass in a set of archetypes short names and
      * return a list of objects
      */
-    public void testOVPMS147()
-            throws Exception {
+    public void testOVPMS147() throws Exception {
         // setup a list of archetype short names
-        String[] shortNames = {"animal.p*", "person.person"};
+        String[] shortNames = {"party.animalp*", "party.person"};
 
         // get the initial count
         ArchetypeQuery query = new ArchetypeQuery(shortNames,
@@ -397,80 +375,65 @@ public class ArchetypeServicePersistenceTestCase
 
     /**
      * Test that that we can retrieve short names using a combination
-     * of rmName, entityName and conceptName
+     * of entityName and conceptName.
      */
-    public void testGetArchetypeShortNames()
-            throws Exception {
+    public void testGetArchetypeShortNames() throws Exception {
         List<String> shortNames = service.getArchetypeShortNames("jimaparty",
-                                                                 null,
                                                                  null, true);
         assertTrue(shortNames.size() == 0);
 
-        shortNames = service.getArchetypeShortNames("party", null,
-                                                    null, true);
+        // check primary short names
+        shortNames = service.getArchetypeShortNames("party", null, true);
         assertTrue(shortNames.size() > 0);
         for (String shortName : shortNames) {
             ArchetypeDescriptor desc = service.getArchetypeDescriptor(
                     shortName);
             ArchetypeId archId = desc.getType();
-            if ((archId.getRmName().matches("party")) &&
-                    (desc.isPrimary())) {
-                continue;
-            }
-            fail("shortName: " + shortName + " in invalid for rmName=party");
+            assertEquals("party", archId.getEntityName());
+            assertTrue(desc.isPrimary());
         }
 
-        // check when primaryOnly is set to false
+        // now check primary is set to false. Should be identical as
+        // parties are primary.
         int count = shortNames.size();
-        shortNames = service.getArchetypeShortNames("party", null,
-                                                    null, false);
-        assertTrue(shortNames.size() > count);
+        shortNames = service.getArchetypeShortNames("party", null, false);
+        assertEquals(count, shortNames.size());
 
+        // now check contacts. Test data has all contacts with primary=false
+        // check primary short names
+        shortNames = service.getArchetypeShortNames("contact", null, true);
+        assertEquals(0, shortNames.size());
 
-        shortNames = service.getArchetypeShortNames("party", "person",
-                                                    null, true);
+        // check non-primary contacts
+        shortNames = service.getArchetypeShortNames("contact", null, false);
         assertTrue(shortNames.size() > 0);
         for (String shortName : shortNames) {
             ArchetypeDescriptor desc = service.getArchetypeDescriptor(
                     shortName);
             ArchetypeId archId = desc.getType();
-            if ((archId.getRmName().matches("party")) &&
-                    (archId.getEntityName().matches("person")) &&
-                    (desc.isPrimary())) {
-                continue;
-            }
-            fail("shortName: " + shortName + " in invalid for rmName=party,entityName=person");
+            assertEquals("contact", archId.getEntityName());
+            assertFalse(desc.isPrimary());
         }
 
         // test with a partial entity name
-        shortNames = service.getArchetypeShortNames("party", "per*",
-                                                    null, true);
+        shortNames = service.getArchetypeShortNames("part*", null, true);
         assertTrue(shortNames.size() > 0);
         for (String shortName : shortNames) {
             ArchetypeDescriptor desc = service.getArchetypeDescriptor(
                     shortName);
             ArchetypeId archId = desc.getType();
-            if ((archId.getRmName().matches("party")) &&
-                    (archId.getEntityName().matches("per.*")) &&
-                    (desc.isPrimary())) {
-                continue;
-            }
-            fail("shortName: " + shortName + " in invalid for rmName=party,entityName=per*");
+            assertTrue(archId.getEntityName().matches("part.*"));
+            assertTrue(desc.isPrimary());
         }
 
         // test with a partial entity name
-        shortNames = service.getArchetypeShortNames("party", "*tact",
-                                                    null, false);
+        shortNames = service.getArchetypeShortNames("*arty", null, false);
         assertTrue(shortNames.size() > 0);
         for (String shortName : shortNames) {
             ArchetypeDescriptor desc = service.getArchetypeDescriptor(
                     shortName);
             ArchetypeId archId = desc.getType();
-            if ((archId.getRmName().matches("party")) &&
-                    (archId.getEntityName().matches(".*tact"))) {
-                continue;
-            }
-            fail("shortName: " + shortName + " in invalid for rmName=party,entityName=*dress");
+            assertTrue(archId.getEntityName().matches(".*arty"));
         }
     }
 
@@ -479,27 +442,23 @@ public class ArchetypeServicePersistenceTestCase
      * classification.
      */
     public void testGetCandidates() throws Exception {
-        Lookup cf = (Lookup) service.create("lookup.staff");
-        cf.setCode("VET");
+        Lookup cf = LookupUtil.createLookup(service, "lookup.staff", "VET");
         cf.setDescription("vet");
         service.save(cf);
 
-        cf = (Lookup) service.create("lookup.staff");
-        cf.setCode("VET1");
+        cf = LookupUtil.createLookup(service, "lookup.staff", "VET1");
         cf.setDescription("vet1");
         service.save(cf);
 
-        cf = (Lookup) service.create("lookup.patient");
-        cf.setCode("PREMIUM");
+        cf = LookupUtil.createLookup(service, "lookup.patient", "PREMIUM");
         cf.setDescription("premium");
         service.save(cf);
 
-        cf = (Lookup) service.create("lookup.patient");
-        cf.setCode("STANDARD");
+        cf = LookupUtil.createLookup(service, "lookup.patient", "STANDARD");
         cf.setDescription("standard");
         service.save(cf);
 
-        Party person = (Party) service.create("person.person");
+        Party person = (Party) service.create("party.person");
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
                 person.getArchetypeId());
         NodeDescriptor ndesc = adesc.getNodeDescriptor("classifications");
@@ -518,16 +477,15 @@ public class ArchetypeServicePersistenceTestCase
 
             // if a match cannot be found then signal an error
             if (!matchFound) {
-                fail(candidate.getArchetypeId() + " does not match " +
-                        ndesc.getArchetypeRange().toString());
+                fail(candidate.getArchetypeId() + " does not match "
+                        + ndesc.getArchetypeRange());
 
             }
         }
     }
 
     /**
-     * )
-     * Test active flag on pet object
+     * Test active flag on pet object.
      */
     public void testActiveFlagOnAnimal()
             throws Exception {
@@ -536,8 +494,7 @@ public class ArchetypeServicePersistenceTestCase
 
         ArchetypeId aid = pet.getArchetypeId();
         IPage<IMObject> pageOfPet = service.get(
-                new ArchetypeQuery(aid.getRmName(),
-                                   aid.getEntityName(), aid.getConcept(), false,
+                new ArchetypeQuery(aid.getEntityName(), aid.getConcept(), false,
                                    true)
                         .add(new NodeConstraint("name", RelationalOp.EQ,
                                                 pet.getName()))
@@ -570,11 +527,8 @@ public class ArchetypeServicePersistenceTestCase
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
                 party.getArchetypeId());
         for (NodeDescriptor ndesc : adesc.getAllNodeDescriptors()) {
-            //party.pathToObject(ndesc.getPath());
-            //error("Value for " + ndesc.getName() + " is " + party.pathToObject(ndesc.getName()) == null ? null : party.pathToObject(ndesc.getName()).getValue());
             ndesc.getValue(party);
         }
-
 
         service.save(party);
         party = (Party) ArchetypeQueryHelper.getByUid(service,
@@ -588,12 +542,10 @@ public class ArchetypeServicePersistenceTestCase
     /**
      * Test the creation of a SecurityRole
      */
-    public void testOVPMS115()
-            throws Exception {
+    public void testOVPMS115() throws Exception {
 
         // retrieve the initial count
-        ArchetypeQuery query = new ArchetypeQuery("system", "security",
-                                                  "role", false,
+        ArchetypeQuery query = new ArchetypeQuery("security", "role", false,
                                                   true);
         query.setCountResults(true);
         query.setMaxResults(1);
@@ -615,7 +567,7 @@ public class ArchetypeServicePersistenceTestCase
     }
 
     /**
-     * Test OVPMS-135 bug
+     * Test OVPMS-135 bug.
      */
     public void testOVPMS135()
             throws Exception {
@@ -625,8 +577,8 @@ public class ArchetypeServicePersistenceTestCase
         NodeDescriptor ndesc = adesc.getNodeDescriptor("alias");
         assertTrue(ndesc != null);
 
-        Lookup object = (Lookup) service.create("lookup.staff");
-        object.setCode("jima");
+        Lookup object = LookupUtil.createLookup(service, "lookup.staff",
+                                                "jima");
         object.setDescription("head chef");
         ndesc.setValue(object, "jimmya");
         assertTrue(ndesc.getValue(object) != null);
@@ -645,7 +597,7 @@ public class ArchetypeServicePersistenceTestCase
      */
     public void testOVPMS146()
             throws Exception {
-        Entity entity = (Entity) service.create("person.person");
+        Entity entity = (Entity) service.create("party.person");
         assertTrue(entity instanceof Party);
 
         Party person = (Party) entity;
@@ -715,7 +667,7 @@ public class ArchetypeServicePersistenceTestCase
      * @return Animal
      */
     private Party createPet(String name) {
-        Entity entity = (Entity) service.create("animal.pet");
+        Entity entity = (Entity) service.create("party.animalpet");
         assertTrue(entity instanceof Party);
 
         Party pet = (Party) entity;
@@ -734,9 +686,9 @@ public class ArchetypeServicePersistenceTestCase
     }
 
     /**
-     * Create a contact
+     * Creates a contact.
      *
-     * @return Contact
+     * @return a new contact
      */
     private Contact createConact() {
         Contact contact = (Contact) service.create("contact.location");
@@ -751,15 +703,15 @@ public class ArchetypeServicePersistenceTestCase
     }
 
     /**
-     * Create a person with the specified title, firstName and LastName
+     * Creates a person with the specified title, firstName and lastName.
      *
-     * @param title
-     * @param firstName
-     * @param lastName
-     * @return Person
+     * @param title     the title
+     * @param firstName the first name
+     * @param lastName  the last name
+     * @return a new person
      */
     public Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party) service.create("person.person");
+        Party person = (Party) service.create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);
@@ -768,24 +720,20 @@ public class ArchetypeServicePersistenceTestCase
     }
 
     /**
-     * Create a country lookup
+     * Creates a country lookup.
      *
-     * @param name the role name
-     * @return Lookup
+     * @param code the lookup code
+     * @return a new lookup
      */
-    private Lookup createCountryLookup(String name) {
-        Lookup lookup = (Lookup) service.create("lookup.country");
-        assertNotNull(lookup);
-
-        lookup.setCode(name);
-        return lookup;
+    private Lookup createCountryLookup(String code) {
+        return LookupUtil.createLookup(service, "lookup.country", code);
     }
 
     /**
-     * Create a product
+     * Creates a product.
      *
      * @param name the product name
-     * @return Product
+     * @return a new product
      */
     private Product createProduct(String name) {
         Product product = (Product) service.create("product.product");
@@ -795,10 +743,10 @@ public class ArchetypeServicePersistenceTestCase
     }
 
     /**
-     * Create a product price margin with the specified value
+     * Creates a product price margin with the specified value.
      *
      * @param margin the product price margin
-     * @return ProductPrice
+     * @return a new product price
      */
     private ProductPrice createPriceMargin(BigDecimal margin) {
         ProductPrice price = (ProductPrice) service.create(
@@ -820,7 +768,7 @@ public class ArchetypeServicePersistenceTestCase
     }
 
     /**
-     * Display the validation errors
+     * Display the validation errors.
      *
      * @param exception the validation exception
      */

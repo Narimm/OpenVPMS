@@ -1,5 +1,5 @@
 <archetypes>
-	<archetype name="openvpms-common-entityRelationship.animalOwner.1.0"
+	<archetype name="entityRelationship.animalOwner.1.0"
 		latest="true"
 		type="org.openvpms.component.business.domain.im.common.EntityRelationship">
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
@@ -15,7 +15,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="person.person" />
+							value="party.person" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
@@ -31,7 +31,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="animal.pet" />
+							value="party.animalpet" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

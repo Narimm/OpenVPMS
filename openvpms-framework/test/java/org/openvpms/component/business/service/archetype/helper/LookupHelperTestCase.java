@@ -24,6 +24,8 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
@@ -50,38 +52,30 @@ public class LookupHelperTestCase
      * Tests the {@link LookupHelper#getName} method.
      */
     public void testGetName() {
-        String code = "CANINE-" + System.currentTimeMillis();
-        String name = "Canine";
+        Lookup lookup = createLookup("lookup.species", "CANINE", "Canine");
 
-        createLookup("lookup.species", code, name);
-
-        IMObject pet = service.create("animal.pet");
+        IMObject pet = service.create("party.animalpet");
         IMObjectBean bean = new IMObjectBean(pet, service);
-        bean.setValue("species", code);
+        bean.setValue("species", lookup.getCode());
 
         NodeDescriptor species = bean.getDescriptor("species");
         assertNotNull(species);
-        assertEquals(name, LookupHelper.getName(service, species, pet));
+        assertEquals(lookup.getName(),
+                     LookupHelper.getName(service, species, pet));
     }
 
     /**
      * Tests the {@link LookupHelper#getName} method for a target lookup.
      */
     public void testGetNameTargetLookup() {
-        String speciesCode = "CANINE-" + System.currentTimeMillis();
-        String speciesName = "Canine";
+        Lookup speciesLookup = createLookup("lookup.species", "CANINE",
+                                            "Canine");
+        Lookup breedLookup = createLookup("lookup.breed", "KELPIE", "Kelpie");
 
-        String breedCode = "KELPIE-" + System.currentTimeMillis();
-        String breedName = "Kelpie";
-
-        Lookup speciesLookup = createLookup("lookup.species", speciesCode,
-                                            speciesName);
-        Lookup breedLookup = createLookup("lookup.breed", breedCode, breedName);
-
-        IMObject pet = service.create("animal.pet");
+        IMObject pet = service.create("party.animalpet");
         IMObjectBean bean = new IMObjectBean(pet, service);
-        bean.setValue("species", speciesCode);
-        bean.setValue("breed", breedCode);
+        bean.setValue("species", speciesLookup.getCode());
+        bean.setValue("breed", breedLookup.getCode());
 
         NodeDescriptor breed = bean.getDescriptor("breed");
         assertNotNull(breed);
@@ -97,14 +91,15 @@ public class LookupHelperTestCase
         relationship.setTarget(breedLookup.getObjectReference());
         service.save(relationship);
 
-        assertEquals(breedName, LookupHelper.getName(service, breed, pet));
+        assertEquals(breedLookup.getName(),
+                     LookupHelper.getName(service, breed, pet));
     }
 
     /**
      * Tests the {@link LookupHelper#getName} method for a local lookup.
      */
     public void testGetNameLocalLookup() {
-        IMObject pet = service.create("animal.pet");
+        IMObject pet = service.create("party.animalpet");
         IMObjectBean bean = new IMObjectBean(pet, service);
 
         bean.setValue("sex", "MALE");
@@ -117,24 +112,21 @@ public class LookupHelperTestCase
      * Tests the {@link LookupHelper#getDefaultLookup} methods.
      */
     public void testDefaultLookup() {
-        String shortName = "lookup.colour";
-
         // create two new colour lookups. Make RED the default.
-        Lookup red = (Lookup) create(shortName);
-        red.setCode("RED");
+        Lookup red = LookupUtil.createLookup("lookup.colour", "RED");
         red.setDefaultLookup(true);
 
-        Lookup blue = (Lookup) create(shortName);
-        blue.setCode("BLUE");
+        Lookup blue = LookupUtil.createLookup("lookup.colour", "BLUE");
         blue.setDefaultLookup(false);
 
         service.save(red);
         service.save(blue);
 
         // verify the correct lookup is returned
-        Lookup lookup = LookupHelper.getDefaultLookup(service, shortName);
+        Lookup lookup = LookupServiceHelper.getLookupService().getDefaultLookup(
+                "lookup.colour");
         assertNotNull(lookup);
-        assertEquals("RED", lookup.getCode());
+        assertEquals(red.getCode(), lookup.getCode());
     }
 
     @Override
@@ -165,15 +157,13 @@ public class LookupHelperTestCase
     /**
      * Helper to create a lookup.
      *
-     * @param archetype the lookup archetype short name
-     * @param code the lookup code
-     * @param name the lookup name
+     * @param shortName the lookup short name
+     * @param code    the lookup code
+     * @param name    the lookup name
      * @return a new lookup
      */
-    private Lookup createLookup(String archetype, String code, String name) {
-        Lookup lookup = (Lookup) create(archetype);
-        lookup.setCode(code);
-        lookup.setName(name);
+    private Lookup createLookup(String shortName, String code, String name) {
+        Lookup lookup = LookupUtil.createLookup(service, shortName, code, name);
         service.save(lookup);
         return lookup;
     }

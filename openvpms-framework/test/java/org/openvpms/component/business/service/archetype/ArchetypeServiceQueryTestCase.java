@@ -22,9 +22,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
-import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IPage;
@@ -51,68 +51,34 @@ import java.util.Set;
  * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeServiceQueryTestCase extends
-                                           AbstractDependencyInjectionSpringContextTests {
+public class ArchetypeServiceQueryTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
     /**
      * Holds a reference to the entity service
      */
     private IArchetypeService service;
 
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(ArchetypeServiceQueryTestCase.class);
-    }
-
     /**
-     * Default constructor
+     * Test the query by name in the lookup entity. This will support
+     * OVPMS-35.
      */
-    public ArchetypeServiceQueryTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (IArchetypeService) applicationContext.getBean(
-                "archetypeService");
-    }
-
-    /**
-     * Test the query by code in the lookup entity. This will support
-     * OVPMS-35
-     */
-    public void testOVPMS35()
-            throws Exception {
+    public void testOVPMS35() throws Exception {
         ArchetypeQuery query = new ArchetypeQuery("lookup.country", false,
                                                   true).add(
                 new NodeConstraint("name", RelationalOp.EQ, "Belarus"));
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
         int acount = service.get(query).getResults().size();
-        Lookup lookup = (Lookup) service.create("lookup.country");
-        lookup.setCode("Belarus");
+        Lookup lookup = LookupUtil.createLookup(service, "lookup.country",
+                                                "Belarus", "Belarus");
         service.save(lookup);
         int acount1 = service.get(query).getResults().size();
         assertEquals(acount + 1, acount1);
     }
 
     /**
-     * Test query by code with wildcard
+     * Test query by name with wildcard.
      */
     public void testGetByCodeWithWildcard()
             throws Exception {
@@ -122,15 +88,15 @@ public class ArchetypeServiceQueryTestCase extends
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
         int acount = service.get(query).getResults().size();
-        Lookup lookup = (Lookup) service.create("lookup.country");
-        lookup.setCode("Belarus");
+        Lookup lookup = LookupUtil.createLookup(service, "lookup.country",
+                                                "Belarus", "Belarus");
         service.save(lookup);
         int acount1 = service.get(query).getResults().size();
         assertEquals(acount + 1, acount1);
     }
 
     /**
-     * Test query by code with wild in short name
+     * Test query by name with wild in short name.
      */
     public void testGetCodeWithWildCardShortName()
             throws Exception {
@@ -140,15 +106,15 @@ public class ArchetypeServiceQueryTestCase extends
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
         int acount = service.get(query).getResults().size();
-        Lookup lookup = (Lookup) service.create("lookup.country");
-        lookup.setCode("Belarus");
+        Lookup lookup = LookupUtil.createLookup(service, "lookup.country",
+                                                "Belarus", "Belarus");
         service.save(lookup);
         int acount1 = service.get(query).getResults().size();
         assertEquals(acount + 1, acount1);
     }
 
     /**
-     * Test query by code with wild in short name and an order clause
+     * Test query by name with wild in short name and an order clause.
      */
     public void testGetCodeWithWildCardShortNameAndOrdered()
             throws Exception {
@@ -158,8 +124,8 @@ public class ArchetypeServiceQueryTestCase extends
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
         int acount = service.get(query).getResults().size();
-        Lookup lookup = (Lookup) service.create("lookup.country");
-        lookup.setCode("Belarus");
+        Lookup lookup = LookupUtil.createLookup(service, "lookup.country",
+                                                "Belarus", "Belarus");
         service.save(lookup);
         int acount1 = service.get(query).getResults().size();
         assertEquals(acount + 1, acount1);
@@ -177,12 +143,10 @@ public class ArchetypeServiceQueryTestCase extends
                         .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
                         .add(new OrConstraint()
                         .add(new ArchetypeNodeConstraint(
-                                ArchetypeProperty.ConceptName,
                                 RelationalOp.IsNULL))
                         .add(new AndConstraint()
-                        .add(new ArchetypeNodeConstraint(
-                                ArchetypeProperty.ConceptName, RelationalOp.EQ,
-                                "species"))
+                        .add(new ArchetypeNodeConstraint(RelationalOp.EQ,
+                                                         "lookup.species"))
                         .add(new NodeConstraint("name", RelationalOp.EQ,
                                                 "Canine"))
                         .add(new NodeSortConstraint("name", true)))));
@@ -193,20 +157,21 @@ public class ArchetypeServiceQueryTestCase extends
 
     /**
      * Tests the NodeSet get method. This verifies that subcollections are
-     * loaded correctly, avoiding LazyInitializationException.
+     * loaded correctly, avoiding LazyInitializationExceptionnException.
      */
     public void testGetNodeSet() {
         // set up a party with a single contact and contact purpose
         Contact contact = (Contact) service.create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
         contact.getDetails().put("telephoneNumber", "0123456789");
-        Lookup purpose = (Lookup) service.create("lookup.contactPurpose");
-        purpose.setCode("Home");
+        Lookup purpose = LookupUtil.createLookup(service,
+                                                 "lookup.contactPurpose",
+                                                 "Home", "Home");
         service.save(purpose);
 
         contact.addClassification(purpose);
 
-        Party person = (Party) service.create("person.person");
+        Party person = (Party) service.create("party.person");
         person.getDetails().put("lastName", "Anderson");
         person.getDetails().put("firstName", "Tim");
         person.getDetails().put("title", "MR");
@@ -257,13 +222,14 @@ public class ArchetypeServiceQueryTestCase extends
         Contact contact = (Contact) service.create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
         contact.getDetails().put("telephoneNumber", "0123456789");
-        Lookup purpose = (Lookup) service.create("lookup.contactPurpose");
-        purpose.setCode("HOME");
+        Lookup purpose = LookupUtil.createLookup(service,
+                                                 "lookup.contactPurpose",
+                                                 "HOME");
         service.save(purpose);
 
         contact.addClassification(purpose);
 
-        Party person = (Party) service.create("person.person");
+        Party person = (Party) service.create("party.person");
         person.getDetails().put("lastName", "Anderson");
         person.getDetails().put("firstName", "Tim");
         person.getDetails().put("title", "MR");
@@ -302,7 +268,7 @@ public class ArchetypeServiceQueryTestCase extends
                      contact2.getDetails().get("telephoneNumber"));
         assertEquals(1, contact2.getClassificationsAsArray().length);
         Lookup purpose2 = contact2.getClassificationsAsArray()[0];
-        assertEquals("HOME", purpose2.getCode());
+        assertEquals(purpose.getCode(), purpose2.getCode());
     }
 
     /**
@@ -310,7 +276,7 @@ public class ArchetypeServiceQueryTestCase extends
      * {@link ObjectRefConstraint}.
      */
     public void testOBF155() {
-        Party person = (Party) service.create("person.person");
+        Party person = (Party) service.create("party.person");
         person.getDetails().put("lastName", "Anderson");
         person.getDetails().put("firstName", "Tim");
         person.getDetails().put("title", "MR");
@@ -326,6 +292,29 @@ public class ArchetypeServiceQueryTestCase extends
         query.add(new NodeConstraint("name", "Mr Foo"));
         page = service.get(query);
         assertEquals(0, page.getResults().size());
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{
+                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
+        };
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+
+        this.service = (IArchetypeService) applicationContext.getBean(
+                "archetypeService");
     }
 
 }

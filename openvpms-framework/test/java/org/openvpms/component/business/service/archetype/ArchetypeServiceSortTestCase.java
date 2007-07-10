@@ -75,8 +75,7 @@ public class ArchetypeServiceSortTestCase extends
     public void testSortOnNonExistentProperty()
     throws Exception {
         try {
-            ArchetypeQuery query = new ArchetypeQuery("entity", "act", null,
-                                                      false, false)
+            ArchetypeQuery query = new ArchetypeQuery("act", null, false, false)
                     .setFirstResult(0)
                     .setMaxResults(1)
                     .add(new NodeSortConstraint("baby", true));
@@ -95,12 +94,11 @@ public class ArchetypeServiceSortTestCase extends
      */
     public void testSortOnNameInAscendingOrder()
     throws Exception {
-        ArchetypeQuery query = new ArchetypeQuery("entity", "act", null,
-                                                  false, false);
+        ArchetypeQuery query = new ArchetypeQuery("act", null, false, false);
         query.add(new NodeSortConstraint("name"));
         IPage<IMObject> objects = service.get(query);
         IMObject lhs = null;
-        IMObject rhs = null;
+        IMObject rhs;
         for (IMObject object : objects.getResults()) {
             if (lhs == null) {
                 lhs = object;
@@ -123,14 +121,13 @@ public class ArchetypeServiceSortTestCase extends
      */
     public void testSortOnNameInDescendingOrder()
     throws Exception {
-        ArchetypeQuery query = new ArchetypeQuery("entity", "act", null,
-                                                  false, false)
+        ArchetypeQuery query = new ArchetypeQuery("act", null, false, false)
                 .setFirstResult(0)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
                 .add(new NodeSortConstraint("name", false));
         IPage<IMObject> objects = service.get(query);
         IMObject lhs = null;
-        IMObject rhs = null;
+        IMObject rhs;
         for (IMObject object : objects.getResults()) {
             if (lhs == null) {
                 lhs = object;

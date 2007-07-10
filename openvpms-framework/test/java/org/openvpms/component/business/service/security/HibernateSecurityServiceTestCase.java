@@ -148,7 +148,7 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
         User user = createUser("jima", "jima");
         SecurityRole role1 = createSecurityRole("role1");
         ArchetypeAwareGrantedAuthority authority = createAuthority(
-                "save.person.person", "archetypeService", "save", "person.person");
+                "save.person.person", "archetypeService", "save", "party.person");
         dao.save(authority);
         
         role1.addAuthority(authority);
@@ -179,7 +179,7 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
     @Override
     protected void createSecurityContext(String name, String password,
             String authority) {
-        List<IMObject> users = dao.get("system", "security", "user", name,
+        List<IMObject> users = dao.get("security.user", name,
                 User.class.getName(), true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
         if (users.size() != 1) {
             fail("Failed to create security context. Could not locate user "
@@ -200,8 +200,7 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
      */
     private void deleteUser(String name) 
     throws Exception {
-        // delete and recreate the user jima
-        List<IMObject> users = dao.get("system", "security", "user", name,
+        List<IMObject> users = dao.get("security.user", name,
                 User.class.getName(), true, 0, ArchetypeQuery.ALL_RESULTS).getResults();
         if (users.size() > 0) {
             for (IMObject im : users) {

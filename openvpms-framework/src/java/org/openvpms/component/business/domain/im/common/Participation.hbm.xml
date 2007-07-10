@@ -24,49 +24,36 @@
     table="participations">
     <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="participation_id" index="participation_id_idx" />
+      <column name="participation_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" access="property" type="string" length="100"
-      index="participation_linkId_idx" />
+    <property name="linkId" access="property" type="string" length="36"
+      not-null="true" unique="true" />
     <component name="archetypeId">
-      <property name="namespace" access="property" column="arch_namespace"
-        type="string" length="100" />
-      <property name="rmName" access="property" column="arch_rm_name"
-        type="string" length="100" />
-      <property name="concept" access="property" column="arch_concept"
-        type="string" length="100" index="participation_arch_concept_idx"/>
-      <property name="entityName" access="property" column="arch_entity_name"
-        type="string" length="100" />
+      <property name="shortName" access="property" column="arch_short_name"
+        type="string" length="100" not-null="true" index="participation_arch_short_name_idx"/>
       <property name="version" access="property" column="arch_version"
-        type="string" length="100" />
+        type="string" length="100" not-null="true"/>
     </component>
     <property name="name" access="property" column="name" type="string" />
     <property name="description" access="property" column="description"
       type="string" />
     <property name="active" access="property" column="active" type="boolean" />
-    <property name="sequence" column="sequence" access="property" type="int" />
-    <property name="mode" column="mode" type="string" />
-    <property name="percentage" column="percentage" type="int" />
-    <property name="activeStartTime" access="property"
-      column="active_start_time" type="date" />
-    <property name="activeEndTime" access="property" column="active_end_time"
-      type="date" />
     <component name="entity">
       <component name="archetypeId" access="field">
-        <property name="qualifiedName" access="property" type="string"
-          column="entity_archetype_id" />
+        <property name="shortName" access="property" type="string" length="100"
+          column="entity_arch_short_name" />
       </component>
-      <property name="linkId" access="field" type="string" length="100"
-        column="entity_linkId" index="participation_entity_linkId_idx" />
+      <property name="linkId" access="field" type="string" length="36"
+        column="entity_linkId" index="participation_entity_linkId_act_sn_index_idx" />
     </component>
     <component name="act">
       <component name="archetypeId" access="field">
-        <property name="qualifiedName" access="property" type="string"
-          column="act_archetype_id" />
+        <property name="shortName" access="property" type="string" length="100"
+          column="act_arch_short_name" index="participation_entity_linkId_act_sn_index_idx"/>
       </component>
-      <property name="linkId" access="field" type="string" length="100" 
+      <property name="linkId" access="field" type="string" length="36"
       	column="act_linkId" index="participation_act_linkId_idx" />
     </component>
     <map name="details" access="field" table="participation_details" cascade="all,delete-orphan">

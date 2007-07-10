@@ -215,10 +215,10 @@ class TypeSet {
      * @throws QueryBuilderException     if there are no matching archetypes for
      *                                   the constraint
      */
+    @Deprecated
     public static TypeSet create(LongNameConstraint constraint) {
         Set<ArchetypeDescriptor> descriptors
-                = getDescriptors(constraint.getRmName(),
-                                 constraint.getEntityName(),
+                = getDescriptors(constraint.getEntityName(),
                                  constraint.getConceptName(),
                                  constraint.isPrimaryOnly());
 
@@ -234,20 +234,17 @@ class TypeSet {
     /**
      * Returns all archetype descriptors matching the criteria.
      *
-     * @param rmName      the archetype reference model name.
-     *                    May be <code>null</code>
      * @param entityName  the archetype entity name. May be <code>null</code>
      * @param conceptName the archetype concept name. May be <code>null</code>
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private static Set<ArchetypeDescriptor> getDescriptors(String rmName,
-                                                           String entityName,
+    private static Set<ArchetypeDescriptor> getDescriptors(String entityName,
                                                            String conceptName,
                                                            boolean primaryOnly) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         List<String> shortNames = service.getArchetypeShortNames(
-                rmName, entityName, conceptName, primaryOnly);
+                entityName, conceptName, primaryOnly);
         return getDescriptors(shortNames.toArray(new String[0]));
     }
 

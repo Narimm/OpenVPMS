@@ -1,5 +1,5 @@
 <archetypes>
-    <archetype name="openvpms-party-person.footballer.1.0" latest="true"
+    <archetype name="party.personfootballer.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party">
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
@@ -37,7 +37,7 @@
               minCardinality="1" maxLength="30"/>
     </archetype>
 
-    <archetype name="openvpms-party-person.newfootballer.1.0" latest="true"
+    <archetype name="party.personnewfootballer.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party">
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"

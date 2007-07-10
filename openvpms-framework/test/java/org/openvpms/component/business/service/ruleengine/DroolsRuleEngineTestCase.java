@@ -18,9 +18,6 @@
 
 package org.openvpms.component.business.service.ruleengine;
 
-
-// log4j
-import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -32,65 +29,29 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.util.Date;
 
+
 /**
  * Test the
  * {@link org.openvpms.component.business.service.ruleengine.DroolsRuleEngine}
+ * class.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class DroolsRuleEngineTestCase extends
-        AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(DroolsRuleEngineTestCase.class);
+public class DroolsRuleEngineTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * Holds a reference to the entity service
+     * Holds a reference to the entity service.
      */
     private IArchetypeService archetype;
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(DroolsRuleEngineTestCase.class);
-    }
 
     /**
-     * Default constructor
+     * Test that rule engine is called when this object is being saved.
      */
-    public DroolsRuleEngineTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[] { "org/openvpms/component/business/service/ruleengine/rule-engine-appcontext.xml" };
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-        this.archetype = (IArchetypeService)applicationContext
-                .getBean("archetypeService");
-    }
-
-    /**
-     * Test that rule engine is called when this object is being saved
-     */
-    public void testRuleEngineOnSave()
-    throws Exception {
+    public void testRuleEngineOnSave() throws Exception {
         try {
             Party person = createPerson("MR", "Jim", "Alateras");
             archetype.save(person);
@@ -105,10 +66,9 @@ public class DroolsRuleEngineTestCase extends
     }
 
     /**
-     * Test for OVPMS-127
+     * Test for OVPMS-127.
      */
-    public void testOVPMS127()
-    throws Exception {
+    public void testOVPMS127() throws Exception {
         Party personA = createPerson("MR", "Jim", "Alateras");
         archetype.save(personA);
         Party personB = createPerson("MR", "Oscar", "Alateras");
@@ -124,7 +84,7 @@ public class DroolsRuleEngineTestCase extends
         assertTrue(rel.getActiveEndTime() == null);
 
         EntityRelationship rel1 = createEntityRelationship(personB, pet,
-        "entityRelationship.animalOwner");
+                                                           "entityRelationship.animalOwner");
         pet.addEntityRelationship(rel1);
         archetype.save(pet);
 
@@ -133,24 +93,45 @@ public class DroolsRuleEngineTestCase extends
 
         pet = createAnimal("billy");
         archetype.save(pet);
-        rel = createEntityRelationship(personB, pet, "entityRelationship.animalOwner");
+        rel = createEntityRelationship(personB, pet,
+                                       "entityRelationship.animalOwner");
         personB.addEntityRelationship(rel);
         archetype.save(personB);
     }
 
-    /**
-     * Create a person
+    /*
+     * (non-Javadoc)
      *
-     * @param title
-     *            the person's title
-     * @param firstName
-     *            the person's first name
-     * @param lastName
-     *            the person's last name
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{"org/openvpms/component/business/service/ruleengine/rule-engine-appcontext.xml"};
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        this.archetype = (IArchetypeService) applicationContext
+                .getBean("archetypeService");
+    }
+
+    /**
+     * Creates a person.
+     *
+     * @param title     the person's title
+     * @param firstName the person's first name
+     * @param lastName  the person's last name
      * @return Person
      */
-    public Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party)archetype.create("person.person");
+    private Party createPerson(String title, String firstName,
+                               String lastName) {
+        Party person = (Party) archetype.create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);
@@ -160,14 +141,13 @@ public class DroolsRuleEngineTestCase extends
     }
 
     /**
-     * Create an anima entity
+     * Creates an animal entity.
      *
-     * @param name
-     *            the name of the pet
+     * @param name the name of the pet
      * @return Animal
      */
     private Party createAnimal(String name) {
-        Party pet = (Party)archetype.create("animal.pet");
+        Party pet = (Party) archetype.create("party.animalpet");
         pet.setName(name);
         pet.getDetails().put("breed", "dog");
         pet.getDetails().put("colour", "brown");
@@ -180,12 +160,12 @@ public class DroolsRuleEngineTestCase extends
     }
 
     /**
-     * Create a phone contact
+     * Creates a phone contact.
      *
      * @return Contact
      */
     private Contact createPhoneContact() {
-        Contact contact = (Contact)archetype.create("contact.phoneNumber");
+        Contact contact = (Contact) archetype.create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
         contact.getDetails().put("telephoneNumber", "1234567");
         contact.getDetails().put("preferred", true);
@@ -195,19 +175,18 @@ public class DroolsRuleEngineTestCase extends
 
     /**
      * Create an entity relationship of the specified type between the
-     * source and target entities
+     * source and target entities.
      *
-     * @param source
-     *            the source entity
-     * @param target
-     *            the target entity
-     * @param shortName
-     *            the short name of the relationship to create
+     * @param source    the source entity
+     * @param target    the target entity
+     * @param shortName the short name of the relationship to create
      * @return EntityRelationship
      */
     private EntityRelationship createEntityRelationship(Entity source,
-            Entity target, String shortName) {
-        EntityRelationship rel = (EntityRelationship)archetype.create(shortName);
+                                                        Entity target,
+                                                        String shortName) {
+        EntityRelationship rel = (EntityRelationship) archetype.create(
+                shortName);
 
         rel.setActiveStartTime(new Date());
         rel.setSequence(1);

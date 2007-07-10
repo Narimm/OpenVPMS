@@ -23,7 +23,7 @@
   <class name="org.openvpms.component.business.domain.im.audit.AuditRecord"
     table="audit_records">
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="audit_id" index="audit_id_idx" />
+      <column name="audit_id"/>
       <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />

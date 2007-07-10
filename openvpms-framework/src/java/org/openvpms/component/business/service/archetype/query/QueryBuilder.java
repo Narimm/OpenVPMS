@@ -50,7 +50,6 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 
 /**
@@ -88,8 +87,7 @@ public class QueryBuilder {
      */
     public QueryContext build(ArchetypeQuery query) {
         select.clear();
-        if ((query == null) ||
-                (query.getArchetypeConstraint() == null)) {
+        if (query == null || query.getArchetypeConstraint() == null) {
             throw new QueryBuilderException(
                     QueryBuilderException.ErrorCode.NullQuery);
         }
@@ -168,14 +166,9 @@ public class QueryBuilder {
         ArchetypeId id = constraint.getArchetypeId();
         String alias = constraint.getAlias();
 
-        context.addWhereConstraint(alias, "archetypeId.rmName", RelationalOp.EQ,
-                                   id.getRmName());
-        context.addWhereConstraint(alias, "archetypeId.entityName",
+        context.addWhereConstraint(alias, "archetypeId.shortName",
                                    RelationalOp.EQ,
-                                   id.getEntityName());
-        context.addWhereConstraint(alias, "archetypeId.concept",
-                                   RelationalOp.EQ,
-                                   id.getConcept());
+                                   id.getShortName());
 
         // process the active flag
         if (constraint.isActiveOnly()) {
@@ -230,41 +223,15 @@ public class QueryBuilder {
         }
 
         for (String shortName : shortNames) {
-            // derive the entityName and the shortName
-            StringTokenizer tokens = new StringTokenizer(shortName, ".");
-
-            if (tokens.countTokens() != 2) {
-                throw new QueryBuilderException(InvalidShortName, shortName);
-            }
-
-            String entityName = tokens.nextToken();
-            String conceptName = tokens.nextToken();
-
-            // push the logical and operator on the stack
-            context.pushLogicalOperator(LogicalOperator.And);
-
             // process the entity name
-            if (entityName.endsWith("*") || entityName.startsWith("*")) {
-                context.addWhereConstraint(alias, "archetypeId.entityName",
+            if (shortName.endsWith("*") || shortName.startsWith("*")) {
+                context.addWhereConstraint(alias, "archetypeId.shortName",
                                            RelationalOp.EQ,
-                                           entityName.replace("*", "%"));
+                                           shortName.replace("*", "%"));
             } else {
-                context.addWhereConstraint(alias, "archetypeId.entityName",
-                                           RelationalOp.EQ, entityName);
+                context.addWhereConstraint(alias, "archetypeId.shortName",
+                                           RelationalOp.EQ, shortName);
             }
-
-            // process the concept name
-            if (conceptName.endsWith("*") || conceptName.startsWith("*")) {
-                context.addWhereConstraint(alias, "archetypeId.concept",
-                                           RelationalOp.EQ,
-                                           conceptName.replace("*", "%"));
-            } else {
-                context.addWhereConstraint(alias, "archetypeId.concept",
-                                           RelationalOp.EQ, conceptName);
-            }
-
-            // pop ir
-            context.popLogicalOperator();
         }
 
         if (shortNames.length > 1) {
@@ -310,20 +277,7 @@ public class QueryBuilder {
      * @param constraint the constraint
      * @param context    the hql context
      */
-    private void process(LongNameConstraint constraint,
-                         QueryContext context) {
-        String rmName = constraint.getRmName();
-        String entityName = constraint.getEntityName();
-        String conceptName = constraint.getConceptName();
-
-        // check that not all of rmName, entityName and conceptName are empty
-        if (StringUtils.isEmpty(rmName) &&
-                StringUtils.isEmpty(entityName) &&
-                StringUtils.isEmpty(conceptName)) {
-            throw new QueryBuilderException(InvalidLongNameSpecified,
-                                            rmName, entityName, conceptName);
-        }
-
+    private void process(LongNameConstraint constraint, QueryContext context) {
         context.pushLogicalOperator(LogicalOperator.And);
         context.pushTypeSet(getTypeSet(constraint));
 
@@ -344,46 +298,24 @@ public class QueryBuilder {
     private void processArchetypeConstraint(LongNameConstraint constraint,
                                             QueryContext context) {
         String alias = constraint.getAlias();
-        String rmName = constraint.getRmName();
         String entityName = constraint.getEntityName();
         String conceptName = constraint.getConceptName();
 
-        // process the rmName
-        if (!StringUtils.isEmpty(rmName)) {
-            if ((rmName.endsWith("*")) || rmName.startsWith("*")) {
-                context.addWhereConstraint(alias, "archetypeId.rmName",
-                                           RelationalOp.EQ,
-                                           rmName.replace("*", "%"));
-            } else {
-                context.addWhereConstraint(alias, "archetypeId.rmName",
-                                           RelationalOp.EQ, rmName);
-            }
+        StringBuffer shortName = new StringBuffer();
+        if (StringUtils.isEmpty(entityName)) {
+            shortName.append("*.");
+        } else {
+            shortName.append(entityName);
+            shortName.append(".");
         }
-
-        // process the entity name
-        if (!StringUtils.isEmpty(entityName)) {
-            if ((entityName.endsWith("*")) || (entityName.startsWith("*"))) {
-                context.addWhereConstraint(alias, "archetypeId.entityName",
-                                           RelationalOp.EQ,
-                                           entityName.replace("*", "%"));
-            } else {
-                context.addWhereConstraint(alias, "archetypeId.entityName",
-                                           RelationalOp.EQ, entityName);
-            }
+        if (StringUtils.isEmpty(conceptName)) {
+            shortName.append("*");
+        } else {
+            shortName.append(conceptName);
         }
-
-        // process the concept name
-        if (!StringUtils.isEmpty(conceptName)) {
-            if ((conceptName.endsWith("*")) || (conceptName.startsWith("*"))) {
-                context.addWhereConstraint(alias, "archetypeId.concept",
-                                           RelationalOp.EQ,
-                                           conceptName.replace("*", "%"));
-            } else {
-                context.addWhereConstraint(alias, "archetypeId.concept",
-                                           RelationalOp.EQ, conceptName);
-            }
-        }
-
+        context.addWhereConstraint(alias, "archetypeId.shortName",
+                                   RelationalOp.EQ,
+                                   shortName.toString().replace("*", "%"));
         // process the active flag
         if (constraint.isActiveOnly()) {
             context.addWhereConstraint(alias, "active", RelationalOp.EQ, true);
@@ -455,28 +387,8 @@ public class QueryBuilder {
      */
     private void process(ArchetypeNodeConstraint constraint,
                          QueryContext context) {
-        if (constraint == null || constraint.getProperty() == null) {
-            throw new QueryBuilderException(
-                    QueryBuilderException.ErrorCode.MustSpecifyArchetypeProperty);
-        }
-
-        String property = null;
-
-        switch (constraint.getProperty()) {
-            case EntityName:
-                property = "archetypeId.entityName";
-                break;
-
-            case ConceptName:
-                property = "archetypeId.concept";
-                break;
-
-            case ReferenceModelName:
-                property = "archetypeId.rmName";
-                break;
-        }
-
-        context.addWhereConstraint(null, property, constraint.getOperator(),
+        context.addWhereConstraint(null, "archetypeId.shortName",
+                                   constraint.getOperator(),
                                    constraint.getParameter());
     }
 
@@ -489,14 +401,19 @@ public class QueryBuilder {
     private void process(ObjectRefNodeConstraint constraint,
                          QueryContext context) {
         // get the name of the attribute
-        IMObjectReference ref = constraint.getObjectReference();
         RelationalOp op = constraint.getOperator();
         String property = getQualifiedPropertyName(constraint.getNodeName(),
                                                    constraint.getAlias(),
                                                    context);
-        context.addWhereConstraint(property + ".linkId", op, ref.getLinkId());
-        context.addWhereConstraint(property + ".archetypeId.qualifiedName", op,
-                                   ref.getArchetypeIdAsString());
+        if (constraint.getObjectReference() != null) {
+            IMObjectReference ref = constraint.getObjectReference();
+            context.addWhereConstraint(property + ".linkId", op,
+                                       ref.getLinkId());
+        } else {
+            ArchetypeId id = constraint.getArchetypeId();
+            context.addWhereConstraint(property + ".archetypeId.shortName", op,
+                                       id.getShortName());
+        }
     }
 
     /**
@@ -535,12 +452,8 @@ public class QueryBuilder {
         context.pushTypeSet(types);
 
         String alias = constraint.getAlias();
-        context.addWhereConstraint(alias, "archetypeId.rmName", RelationalOp.EQ,
-                                   id.getRmName());
-        context.addWhereConstraint(alias, "archetypeId.entityName",
-                                   RelationalOp.EQ, id.getEntityName());
-        context.addWhereConstraint(alias, "archetypeId.concept",
-                                   RelationalOp.EQ, id.getConcept());
+        context.addWhereConstraint(alias, "archetypeId.shortName",
+                                   RelationalOp.EQ, id.getShortName());
         context.addWhereConstraint(alias, "linkId", RelationalOp.EQ,
                                    constraint.getLinkId());
 
@@ -548,7 +461,7 @@ public class QueryBuilder {
         for (IConstraint oc : constraint.getConstraints()) {
             processConstraint(oc, context);
         }
-        
+
         // pop the stack when we have finished processing this constraint
         context.popTypeSet();
         context.popLogicalOperator();
@@ -601,24 +514,8 @@ public class QueryBuilder {
      */
     private void process(ArchetypeSortConstraint constraint,
                          QueryContext context) {
-        String property = null;
-
-        switch (constraint.getProperty()) {
-            case EntityName:
-                property = "archetypeId.entityName";
-                break;
-
-            case ConceptName:
-                property = "archetypeId.concept";
-                break;
-
-            case ReferenceModelName:
-                property = "archetypeId.rmName";
-                break;
-        }
-
-        context.addSortConstraint(constraint.getAlias(), property,
-                                  constraint.isAscending());
+        context.addSortConstraint(constraint.getAlias(), "" +
+                "archetypeId.shortName", constraint.isAscending());
     }
 
     /**

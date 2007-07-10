@@ -69,7 +69,7 @@ class LookupAssertionType extends AbstractLookupAssertion {
         List<AssertionTypeDescriptor> descs =
                 getArchetypeService().getAssertionTypeDescriptors();
         for (AssertionTypeDescriptor adesc : descs) {
-            lookups.add(new Lookup(ArchetypeId.LocalLookupId,
+            lookups.add(new Lookup(ArchetypeId.LOCAL_LOOKUP_ID,
                                    adesc.getName(), adesc.getName()));
         }
         return lookups;
@@ -89,7 +89,7 @@ class LookupAssertionType extends AbstractLookupAssertion {
                 getArchetypeService().getAssertionTypeDescriptors();
         for (AssertionTypeDescriptor adesc : descs) {
             if (adesc.getName().equals(code)) {
-                return new Lookup(ArchetypeId.LocalLookupId,
+                return new Lookup(ArchetypeId.LOCAL_LOOKUP_ID,
                                   adesc.getName(), adesc.getName());
             }
         }

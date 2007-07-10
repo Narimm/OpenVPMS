@@ -77,7 +77,7 @@ public class EntityIdentityTestCase extends
                 person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
-        assertTrue(((EntityIdentity)person.getIdentities().iterator().next()).getUid() != -1);
+        assertTrue((person.getIdentities().iterator().next()).getUid() != -1);
     }
 
     /**
@@ -149,7 +149,7 @@ public class EntityIdentityTestCase extends
         EntityIdentity eidentity = createEntityIdentity("jimbo");
         EntityIdentity copy = (EntityIdentity)eidentity.clone();
         copy.setIdentity("jimmya");
-        assertTrue(copy.getIdentity().equals(eidentity.getIdentity()) == false);
+        assertFalse(copy.getIdentity().equals(eidentity.getIdentity()));
     }
 
     /**
@@ -164,7 +164,7 @@ public class EntityIdentityTestCase extends
      * @return Person
      */
     public Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party)service.create("person.person");
+        Party person = (Party)service.create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);

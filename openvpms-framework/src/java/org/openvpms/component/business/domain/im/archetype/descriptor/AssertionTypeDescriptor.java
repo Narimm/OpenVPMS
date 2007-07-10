@@ -18,16 +18,14 @@
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
-// java core
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+
 import java.lang.reflect.Method;
 import java.util.HashSet;
-import java.util.TreeSet;
 import java.util.Set;
+import java.util.TreeSet;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.service.archetype.ArchetypeService;
 
 /**
  * This is used to define the assertion type. It is used to map an assertion to
@@ -37,12 +35,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeService;
  * @version $LastChangedDate$
  */
 public class AssertionTypeDescriptor extends Descriptor {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeService.class);
 
     /**
      * A list of well known actions which may be supported by assertions
@@ -71,8 +63,7 @@ public class AssertionTypeDescriptor extends Descriptor {
      * Default constructor
      */
     public AssertionTypeDescriptor() {
-        setArchetypeId(new ArchetypeId(
-                "openvpms-system-descriptor.assertionType.1.0"));
+        setArchetypeId(new ArchetypeId("descriptor.assertionType.1.0"));
     }
 
     /**
@@ -96,8 +87,8 @@ public class AssertionTypeDescriptor extends Descriptor {
      * @return ActionTypeDescriptor[]
      */
     public ActionTypeDescriptor[] getActionTypesAsArray() {
-        return (ActionTypeDescriptor[]) actionTypes
-                .toArray(new ActionTypeDescriptor[actionTypes.size()]);
+        return actionTypes.toArray(
+                new ActionTypeDescriptor[actionTypes.size()]);
     }
 
     /**
@@ -122,8 +113,8 @@ public class AssertionTypeDescriptor extends Descriptor {
     }
 
     /**
-     * Retrieve the {@link ActionType} with the specified name or null if one
-     * doesn't exist
+     * Retrieve the {@link ActionTypeDescriptor} with the specified name or
+     * null if one doesn't exist.
      * 
      * @param name
      *            the action name
@@ -157,7 +148,7 @@ public class AssertionTypeDescriptor extends Descriptor {
     }
 
     /**
-     * @param propertyArchetypeQName
+     * @param propertyArchetype
      *            The propertyArchetypeQName to set.
      */
     public void setPropertyArchetype(String propertyArchetype) {
@@ -225,7 +216,6 @@ public class AssertionTypeDescriptor extends Descriptor {
      * @param assertion
      *            this is the assertion obect holds the parameters to the method
      *            call
-     * @return boolean
      * @throws AssertionException
      *             a runtime exception that is raised if the assertion cannot be
      *             evaluated.
@@ -276,8 +266,8 @@ public class AssertionTypeDescriptor extends Descriptor {
                 return true;
             }
 
-            return ((Boolean) evaluateAction(Actions.validate.toString(),
-                    target, node, assertion)).booleanValue();
+            return (Boolean) evaluateAction(Actions.validate.toString(),
+                    target, node, assertion);
         } catch (Exception exception) {
             throw new AssertionException(
                     AssertionException.ErrorCode.FailedToApplyAssertion,

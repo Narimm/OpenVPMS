@@ -23,6 +23,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.EntityException;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
 import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
@@ -306,16 +307,18 @@ public class Act extends IMObject {
      *            if this relationship cannot be removed from this act            
      */
     public void removeActRelationship(ActRelationship actRel) {
-        if ((actRel.getSource().getLinkId().equals(this.getLinkId())) &&
-            (actRel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
+        IMObjectReference source = actRel.getSource();
+        IMObjectReference target = actRel.getTarget();
+        if (source.getLinkId().equals(getLinkId())
+                && source.getArchetypeId().equals(getArchetypeId())){
             removeSourceActRelationship(actRel);
-        } else if ((actRel.getTarget().getLinkId().equals(this.getLinkId())) &&
-            (actRel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
+        } else if (target.getLinkId().equals(getLinkId())
+                && target.getArchetypeId().equals(getArchetypeId())){
             removeTargetActRelationship(actRel);
         } else {
             throw new EntityException(
                     EntityException.ErrorCode.FailedToRemoveActRelationship,
-                    new Object[] { actRel.getSource(), actRel.getTarget()});
+                    new Object[] { source, target});
         }
     }
 

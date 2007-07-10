@@ -24,43 +24,37 @@
     table="act_relationships">
     <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="act_relationship_id" index="act_relationship_id_idx" />
+      <column name="act_relationship_id"/>
       <generator class="native" />
     </id>
-    <property name="linkId" access="property" type="string" length="100" />
+    <property name="linkId" access="property" type="string" length="36"
+            not-null="true" unique="true"/>
     <component name="archetypeId">
-      <property name="namespace" access="property" column="arch_namespace"
-        type="string" length="100" />
-      <property name="rmName" access="property" column="arch_rm_name"
-        type="string" length="100" />
-      <property name="concept" access="property" column="arch_concept_name"
-        type="string" length="100" />
-      <property name="entityName" access="property" column="arch_entity_name"
-        type="string" length="100" />
+      <property name="shortName" access="property" column="arch_short_name"
+        type="string" length="100" not-null="true"/>
       <property name="version" access="property" column="arch_version"
-        type="string" length="100" />
+        type="string" length="100" not-null="true"/>
     </component>
     <property name="name" access="property" column="name" type="string" />
     <property name="description" access="property" column="description"
       type="string" />
     <property name="active" access="property" column="active" type="boolean" />
-    <property name="sequence" type="int" column="sequence" />
     <property name="parentChildRelationship" type="boolean"
       column="parent_child_relationship" />
     <component name="source">
       <component name="archetypeId" access="field">
-        <property name="qualifiedName" access="property" type="string"
-          column="source_archetype_id" />
+        <property name="shortName" access="property" type="string" length="100"
+          column="source_arch_short_name" />
       </component>
-      <property name="linkId" access="field" type="string" length="100"
+      <property name="linkId" access="field" type="string" length="36"
         column="source_linkId" index="act_relationship_source_linkId_idx"/>
     </component>
     <component name="target">
       <component name="archetypeId" access="field">
-        <property name="qualifiedName" access="property" type="string"
-          column="target_archetype_id" />
+        <property name="shortName" access="property" type="string" length="100"
+          column="target_arch_short_name" />
       </component>
-      <property name="linkId" access="field" type="string" length="100"
+      <property name="linkId" access="field" type="string" length="36"
         column="target_linkId" index="act_relationship_target_linkId_idx"/>
     </component>
     <map name="details" access="field" table="act_relationship_details"

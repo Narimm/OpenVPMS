@@ -1,5 +1,5 @@
 <archetypes>
-    <archetype name="openvpms-party-animal.pet.1.0" latest="true"
+    <archetype name="party.animalpet.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party">
         <node name="name" path="/name" type="java.lang.String"
               minCardinality="1"/>
@@ -24,7 +24,7 @@
               maxCardinality="0"/>
     </archetype>
 
-    <archetype name="openvpms-party-animal.pet1.1.0" latest="true"
+    <archetype name="party.animalpet1.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party">
         <node name="name" path="/name" type="java.lang.String"
               minCardinality="1"/>
@@ -53,7 +53,7 @@
               maxCardinality="0"/>
     </archetype>
 
-    <archetype name="openvpms-party-animal.pet2.1.0" latest="true"
+    <archetype name="party.animalpet2.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party">
         <node name="name" path="/name" type="java.lang.String"
               minCardinality="1"/>
@@ -82,7 +82,7 @@
               maxCardinality="0"/>
     </archetype>
 
-    <archetype name="openvpms-party-animal.pet3.1.0" latest="true"
+    <archetype name="party.animalpet3.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party">
         <node name="name" path="/name" type="java.lang.String"
               minCardinality="1"/>
@@ -111,7 +111,7 @@
               maxCardinality="0"/>
     </archetype>
 
-    <archetype name="openvpms-common-entityIdentity.animalAlias.1.0"
+    <archetype name="entityIdentity.animalAlias.1.0"
                latest="true"
                type="org.openvpms.component.business.domain.im.common.EntityIdentity">
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long"/>

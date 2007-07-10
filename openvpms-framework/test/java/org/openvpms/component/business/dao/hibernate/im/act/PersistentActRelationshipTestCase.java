@@ -19,17 +19,16 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
-// hibernate
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
-import org.openvpms.component.business.dao.hibernate.im.lookup.HibernateLookupUtil;
+import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 
 /**
- * Exercise the act and act relationships
+ * Exercise the act and act relationships.
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
@@ -59,8 +58,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
 
         try {
             // get initial numbr of entries in tables
-            int acount = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount = HibernateUtil.getTableRowCount(session, "act");
+            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
 
             // execute the test
             tx = session.beginTransaction();
@@ -74,8 +73,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // test the counts
-            int acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount1 = HibernateUtil.getTableRowCount(session, "act");
+            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 2);
             assertTrue(arcount1 == arcount + 1);
         } catch (Exception exception) {
@@ -98,8 +97,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
 
         try {
             // get initial numbr of entries in tables
-            int acount = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount = HibernateUtil.getTableRowCount(session, "act");
+            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
 
             // execute the test
             tx = session.beginTransaction();
@@ -115,8 +114,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // test the counts
-            int acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount1 = HibernateUtil.getTableRowCount(session, "act");
+            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 2);
             assertTrue(arcount1 == arcount + 2);
             
@@ -125,8 +124,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // retest the counts
-            acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            acount1 = HibernateUtil.getTableRowCount(session, "act");
+            arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 2);
             assertTrue(arcount1 == arcount + 1);
         } catch (Exception exception) {
@@ -149,8 +148,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
 
         try {
             // get initial numbr of entries in tables
-            int acount = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount = HibernateUtil.getTableRowCount(session, "act");
+            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
 
             // execute the test
             tx = session.beginTransaction();
@@ -164,8 +163,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // test the counts
-            int acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount1 = HibernateUtil.getTableRowCount(session, "act");
+            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 2);
             assertTrue(arcount1 == arcount + 1);
             
@@ -178,8 +177,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // retest the counts
-            acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            acount1 = HibernateUtil.getTableRowCount(session, "act");
+            arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 2);
             assertTrue(arcount1 == arcount + 1);
         } catch (Exception exception) {
@@ -202,8 +201,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
 
         try {
             // get initial numbr of entries in tables
-            int acount = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount = HibernateUtil.getTableRowCount(session, "act");
+            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
 
             // execute the test
             tx = session.beginTransaction();
@@ -219,8 +218,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // test the counts
-            int acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount1 = HibernateUtil.getTableRowCount(session, "act");
+            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 2);
             assertTrue(arcount1 == arcount + 2);
             
@@ -233,8 +232,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // retest the counts;
-            acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            acount1 = HibernateUtil.getTableRowCount(session, "act");
+            arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 2);
             assertTrue(arcount1 == arcount + 1);
         } catch (Exception exception) {
@@ -257,8 +256,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
 
         try {
             // get initial numbr of entries in tables
-            int acount = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount = HibernateUtil.getTableRowCount(session, "act");
+            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
 
             // execute the test
             tx = session.beginTransaction();
@@ -271,8 +270,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // test the counts
-            int acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount1 = HibernateUtil.getTableRowCount(session, "act");
+            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 2);
             assertTrue(arcount1 == arcount + 1);
         } catch (Exception exception) {
@@ -296,8 +295,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
 
         try {
             // get initial numbr of entries in tables
-            int acount = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount = HibernateUtil.getTableRowCount(session, "act");
+            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
 
             // execute the test
             tx = session.beginTransaction();
@@ -309,8 +308,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // test the counts
-            int acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount1 = HibernateUtil.getTableRowCount(session, "act");
+            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 2);
             assertTrue(arcount1 == arcount + 1);
         } catch (Exception exception) {
@@ -379,8 +378,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
 
         try {
             // get initial numbr of entries in tables
-            int acount = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount = HibernateUtil.getTableRowCount(session, "act");
+            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
 
             // execute the test
             tx = session.beginTransaction();
@@ -396,8 +395,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // test the counts
-            int acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount1 = HibernateUtil.getTableRowCount(session, "act");
+            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 2);
             assertTrue(arcount1 == arcount + 2);
             
@@ -410,8 +409,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // retest the counts;
-            acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            acount1 = HibernateUtil.getTableRowCount(session, "act");
+            arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 2);
             assertTrue(arcount1 == arcount + 1);
         } catch (Exception exception) {
@@ -435,8 +434,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
 
         try {
             // get initial numbr of entries in tables
-            int acount = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount = HibernateUtil.getTableRowCount(session, "act");
+            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
 
             // execute the test
             tx = session.beginTransaction();
@@ -452,8 +451,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // test the counts
-            int acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            int acount1 = HibernateUtil.getTableRowCount(session, "act");
+            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 2);
             assertTrue(arcount1 == arcount + 2);
             
@@ -466,8 +465,8 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
             tx.commit();
             
             // retest the counts;
-            acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
-            arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            acount1 = HibernateUtil.getTableRowCount(session, "act");
+            arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
             assertTrue(acount1 == acount + 1);
             assertTrue(arcount1 == arcount);
         } catch (Exception exception) {
@@ -512,7 +511,7 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
      */
     private Act createAct(String name) {
         Act act = new Act();
-        act.setArchetypeId(new ArchetypeId("openvpms-party-act.simple.1.0"));
+        act.setArchetypeId(new ArchetypeId("act.simple.1.0"));
         act.setName(name);
         
         return act;
@@ -527,7 +526,7 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
      */
     private ActRelationship createActRelationship(String name, Act source, Act target) {
         ActRelationship rel = new ActRelationship();
-        rel.setArchetypeId(new ArchetypeId("openvpms-party-act.simpleRel.1.0"));
+        rel.setArchetypeId(new ArchetypeId("act.simpleRel.1.0"));
         rel.setName(name);
         rel.setSource(source.getObjectReference());
         rel.setTarget(target.getObjectReference());

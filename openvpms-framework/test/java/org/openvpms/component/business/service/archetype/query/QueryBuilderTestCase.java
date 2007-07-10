@@ -22,21 +22,21 @@ import org.hibernate.HibernateException;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
-import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.JoinConstraint;
-import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
@@ -58,38 +58,6 @@ public class QueryBuilderTestCase
      */
     private QueryBuilder builder;
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(QueryBuilderTestCase.class);
-    }
-
-    /**
-     * Default constructor
-     */
-    public QueryBuilderTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[]{
-                "org/openvpms/component/business/service/archetype/query/query-appcontext.xml"
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
-     */
-    @Override
-    protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.builder = (QueryBuilder) applicationContext.getBean(
-                "queryBuilder");
-    }
 
     /**
      * Test the query by uid and archetype Id
@@ -98,12 +66,10 @@ public class QueryBuilderTestCase
             throws Exception {
         final String expected = "select party0 "
                 + "from " + Party.class.getName() + " as party0 "
-                + "where (party0.archetypeId.rmName = :rmName0 and "
-                + "party0.archetypeId.entityName = :entityName0 and "
-                + "party0.archetypeId.concept = :concept0 and "
+                + "where (party0.archetypeId.shortName = :shortName0 and "
                 + "party0.uid = :uid0)";
         ArchetypeQuery query = new ArchetypeQuery(
-                new ArchetypeId("openvpms-party-person.person.1.0"), false)
+                new ArchetypeId("party.person.1.0"), false)
                 .add(new NodeConstraint("uid", "1"));
         checkQuery(query, expected);
     }
@@ -115,10 +81,9 @@ public class QueryBuilderTestCase
             throws Exception {
         final String expected = "select party0 "
                 + "from " + Party.class.getName() + " as party0 "
-                + "where ((party0.archetypeId.entityName = :entityName0 and "
-                + "party0.archetypeId.concept = :concept0) and "
+                + "where (party0.archetypeId.shortName = :shortName0 and "
                 + "party0.uid = :uid0)";
-        ArchetypeQuery query = new ArchetypeQuery("person.person", false, false)
+        ArchetypeQuery query = new ArchetypeQuery("party.person", false, false)
                 .add(new NodeConstraint("uid", "1"));
         checkQuery(query, expected);
     }
@@ -130,12 +95,10 @@ public class QueryBuilderTestCase
             throws Exception {
         final String expected = "select party0 "
                 + "from " + Party.class.getName() + " as party0 "
-                + "where (party0.archetypeId.rmName = :rmName0 and "
-                + "party0.archetypeId.entityName = :entityName0 and "
-                + "party0.archetypeId.concept = :concept0 and "
+                + "where (party0.archetypeId.shortName = :shortName0 and "
                 + "party0.name like :name0)";
         ArchetypeQuery query = new ArchetypeQuery(
-                new ArchetypeId("openvpms-party-person.person.1.0"), false)
+                new ArchetypeId("party.person.1.0"), false)
                 .add(new NodeConstraint("name", "sa*"));
         checkQuery(query, expected);
     }
@@ -148,15 +111,12 @@ public class QueryBuilderTestCase
         final String expected = "select party0 "
                 + "from " + Party.class.getName() + " as party0 "
                 + "inner join party0.contacts as contacts0 "
-                + "where (party0.archetypeId.rmName = :rmName0 and "
-                + "party0.archetypeId.entityName = :entityName0 and "
-                + "party0.archetypeId.concept = :concept0 and "
+                + "where (party0.archetypeId.shortName = :shortName0 and "
                 + "party0.name like :name0 and "
-                + "(contacts0.archetypeId.entityName = :entityName1 and "
-                + "contacts0.archetypeId.concept = :concept1)) "
+                + "contacts0.archetypeId.shortName = :shortName1) "
                 + "order by party0.name asc";
         ArchetypeQuery query = new ArchetypeQuery(
-                new ArchetypeId("openvpms-party-person.person.1.0"), false)
+                new ArchetypeId("party.person.1.0"), false)
                 .add(new NodeConstraint("name", "sa*"))
                 .add(new NodeSortConstraint("name", true))
                 .add(new CollectionNodeConstraint("contacts",
@@ -174,17 +134,14 @@ public class QueryBuilderTestCase
         final String expected = "select party0 "
                 + "from " + Party.class.getName() + " as party0 "
                 + "inner join party0.contacts as contacts0 "
-                + "where (((party0.archetypeId.entityName = :entityName0 and "
-                + "party0.archetypeId.concept = :concept0) or "
-                + "(party0.archetypeId.entityName = :entityName1 and "
-                + "party0.archetypeId.concept = :concept1)) and "
+                + "where ((party0.archetypeId.shortName = :shortName0 or "
+                + "party0.archetypeId.shortName = :shortName1) and "
                 + "party0.uid = :uid0 and party0.name like :name0 and "
-                + "(contacts0.archetypeId.entityName = :entityName2 and "
-                + "contacts0.archetypeId.concept = :concept2)) "
+                + "contacts0.archetypeId.shortName = :shortName2) "
                 + "order by party0.name asc";
         ArchetypeQuery query = new ArchetypeQuery(
                 new ShortNameConstraint(
-                        new String[]{"person.person", "organization.organization"},
+                        new String[]{"party.person", "organization.organization"},
                         false, false))
                 .add(new NodeConstraint("uid", "1"))
                 .add(new NodeConstraint("name", "sa*"))
@@ -205,17 +162,15 @@ public class QueryBuilderTestCase
         final String expected = "select party0 "
                 + "from " + Party.class.getName() + " as party0 "
                 + "inner join party0.contacts as contacts0 "
-                + "where (((party0.archetypeId.entityName = :entityName0 and "
-                + "party0.archetypeId.concept = :concept0) or "
-                + "(party0.archetypeId.entityName = :entityName1 and "
-                + "party0.archetypeId.concept = :concept1)) and "
+                + "where ((party0.archetypeId.shortName = :shortName0 or "
+                + "party0.archetypeId.shortName = :shortName1) and "
                 + "party0.uid = :uid0 and party0.name like :name0 and "
-                + "(contacts0.archetypeId.entityName = :entityName2 and "
-                + "contacts0.archetypeId.concept like :concept2)) "
+                + "contacts0.archetypeId.shortName like :shortName2) "
                 + "order by party0.name asc";
         ArchetypeQuery query = new ArchetypeQuery(
                 new ShortNameConstraint(
-                        new String[]{"person.person", "organization.organization"},
+                        new String[]{"party.person",
+                                     "organization.organization"},
                         false, false))
                 .add(new NodeConstraint("uid", "1"))
                 .add(new NodeConstraint("name", "sa*"))
@@ -234,48 +189,45 @@ public class QueryBuilderTestCase
         String expected = "select party0 "
                 + "from " + Party.class.getName() + " as party0 "
                 + "inner join party0.contacts as contacts0 "
-                + "where (((party0.archetypeId.entityName = :entityName0 and "
-                + "party0.archetypeId.concept = :concept0) or "
-                + "(party0.archetypeId.entityName = :entityName1 and "
-                + "party0.archetypeId.concept = :concept1)) and "
+                + "where ((party0.archetypeId.shortName = :shortName0 or "
+                + "party0.archetypeId.shortName = :shortName1) and "
                 + "party0.uid = :uid0 and party0.name like :name0 and "
-                + "(contacts0.archetypeId.entityName = :entityName2 and "
-                + "contacts0.archetypeId.concept like :concept2)) "
-                + "order by party0.name asc, party0.archetypeId.concept asc, "
-                + "contacts0.archetypeId.concept desc";
+                + "contacts0.archetypeId.shortName like :shortName2) "
+                + "order by party0.name asc, party0.archetypeId.shortName asc, "
+                + "contacts0.archetypeId.shortName desc";
         ArchetypeQuery query = new ArchetypeQuery(
                 new ShortNameConstraint(
-                        new String[]{"person.person", "organization.organization"},
+                        new String[]{"party.person",
+                                     "organization.organization"},
                         false, false))
                 .add(new NodeConstraint("uid", "1"))
                 .add(new NodeConstraint("name", "sa*"))
                 .add(new NodeSortConstraint("name", true))
-                .add(new ArchetypeSortConstraint(ArchetypeProperty.ConceptName,
-                                                 true))
+                .add(new ArchetypeSortConstraint(true))
                 .add(new CollectionNodeConstraint(
                         "contacts",
                         new ShortNameConstraint("contact.*", false,
                                                 false))
-                        .add(new ArchetypeSortConstraint(
-                        ArchetypeProperty.ConceptName, false)));
+                        .add(new ArchetypeSortConstraint(false)));
         checkQuery(query, expected);
     }
 
     /**
      * Test target lookups.
      */
-    public void testTargetLookups()
-            throws Exception {
+    public void testTargetLookups() throws Exception {
         final String expected = "select lookup0 "
                 + "from " + Lookup.class.getName() + " as lookup0 "
                 + "inner join lookup0.targetLookupRelationships "
                 + "as targetLookupRelationships0 "
-                + "where (lookup0.archetypeId.entityName = :entityName0) "
+                + "where (lookup0.archetypeId.shortName like :shortName0 "
+                + "and targetLookupRelationships0.archetypeId.shortName "
+                + "= :shortName1) "
                 + "order by lookup0.name asc";
-        ArchetypeQuery query = new ArchetypeQuery(
-                new LongNameConstraint(
-                        null, "lookup", null, false, false))
-                .add(new CollectionNodeConstraint("target"))
+        ArchetypeQuery query = new ArchetypeQuery("lookup", null, false, false)
+                .add(new CollectionNodeConstraint(
+                        "target", "lookupRelationship.countryState",
+                        false, false))
                 .add(new NodeSortConstraint("name", true))
                 .setFirstResult(0)
                 .setMaxResults(-1);
@@ -292,11 +244,9 @@ public class QueryBuilderTestCase
                 + "from " + Product.class.getName() + " "
                 + "as product0 "
                 + "inner join product0.classifications as classifications0 "
-                + "where ((product0.archetypeId.entityName = :entityName0 and "
-                + "product0.archetypeId.concept = :concept0) and "
+                + "where (product0.archetypeId.shortName = :shortName0 and "
                 + "product0.active = :active0 and "
-                + "(classifications0.archetypeId.entityName = :entityName1 and "
-                + "classifications0.archetypeId.concept = :concept1) and "
+                + "classifications0.archetypeId.shortName = :shortName1 and "
                 + "(classifications0.code = :code0 or "
                 + "classifications0.code = :code1))";
         ArchetypeQuery query = new ArchetypeQuery(
@@ -320,12 +270,11 @@ public class QueryBuilderTestCase
         final String expected = "select product0 "
                 + "from " + Product.class.getName() + " as product0 "
                 + "left outer join product0.classifications as classifications0"
-                + " where ((product0.archetypeId.entityName = :entityName0 and "
-                + "product0.archetypeId.concept = :concept0) and "
+                + " where (product0.archetypeId.shortName = :shortName0 and "
                 + "(classifications0.active = :active0 or "
                 + "classifications0.active is NULL) and "
-                + "(classifications0.archetypeId.concept is NULL or "
-                + "(classifications0.archetypeId.concept = :concept1 and "
+                + "(classifications0.archetypeId.shortName is NULL or "
+                + "(classifications0.archetypeId.shortName = :shortName1 and "
                 + "classifications0.name = :name0)))";
         ArchetypeQuery query = new ArchetypeQuery(
                 new ShortNameConstraint("product.product", false,
@@ -338,13 +287,10 @@ public class QueryBuilderTestCase
                                 .add(new NodeConstraint("active",
                                                         RelationalOp.IsNULL)))
                         .add(new OrConstraint()
-                        .add(new ArchetypeNodeConstraint(
-                                ArchetypeProperty.ConceptName,
-                                RelationalOp.IsNULL))
+                        .add(new ArchetypeNodeConstraint(RelationalOp.IsNULL))
                         .add(new AndConstraint()
-                        .add(new ArchetypeNodeConstraint(
-                                ArchetypeProperty.ConceptName, RelationalOp.EQ,
-                                "species"))
+                        .add(new ArchetypeNodeConstraint(RelationalOp.EQ,
+                                                         "lookup.species"))
                         .add(new NodeConstraint("name", RelationalOp.EQ,
                                                 "Canine")))));
         checkQuery(query, expected);
@@ -360,22 +306,17 @@ public class QueryBuilderTestCase
                 + EntityRelationship.class.getName() + " as owner, "
                 + Party.class.getName() + " as patient, "
                 + Party.class.getName() + " as customer "
-                + "where ((act.archetypeId.entityName = :entityName0 and "
-                + "act.archetypeId.concept = :concept0) and "
+                + "where (act.archetypeId.shortName = :shortName0 and "
                 + "act.active = :active0 and "
                 + "act.status = :status0 and "
-                + "(participation.archetypeId.entityName = :entityName1 and "
-                + "participation.archetypeId.concept = :concept1) and "
+                + "participation.archetypeId.shortName = :shortName1 and "
                 + "participation.active = :active1 and "
                 + "act.linkId = participation.act.linkId and "
-                + "((owner.archetypeId.entityName = :entityName2 and "
-                + "owner.archetypeId.concept = :concept2) and "
+                + "(owner.archetypeId.shortName = :shortName2 and "
                 + "owner.active = :active2) and "
-                + "((patient.archetypeId.entityName = :entityName3 and "
-                + "patient.archetypeId.concept = :concept3) and "
+                + "(patient.archetypeId.shortName = :shortName3 and "
                 + "patient.active = :active3) and "
-                + "((customer.archetypeId.entityName = :entityName4 and "
-                + "customer.archetypeId.concept like :concept4) and "
+                + "(customer.archetypeId.shortName like :shortName4 and "
                 + "customer.active = :active4) and "
                 + "participation.entity.linkId = patient.linkId and "
                 + "patient.linkId = owner.target.linkId and "
@@ -412,20 +353,20 @@ public class QueryBuilderTestCase
         checkQuery(query, expected);
     }
 
+    /**
+     * Tests select constraints.
+     */
     public void testMultipleSelect() {
         final String expected = "select estimation.name, "
                 + "estimation.description, estimation.status, estimationItem "
                 + "from " + Act.class.getName() + " as estimation "
                 + "inner join estimation.sourceActRelationships as items, "
                 + Act.class.getName() + " as estimationItem "
-                + "where ((estimation.archetypeId.entityName = :entityName0 and"
-                + " estimation.archetypeId.concept = :concept0) and "
+                + "where (estimation.archetypeId.shortName = :shortName0 and "
                 + "estimation.active = :active0 and "
-                + "(items.archetypeId.entityName = :entityName1 and "
-                + "items.archetypeId.concept = :concept1) and "
+                + "items.archetypeId.shortName = :shortName1 and "
                 + "items.active = :active1 and "
-                + "((estimationItem.archetypeId.entityName = :entityName2 and "
-                + "estimationItem.archetypeId.concept = :concept2) and "
+                + "(estimationItem.archetypeId.shortName = :shortName2 and "
                 + "estimationItem.active = :active2) and "
                 + "items.source.linkId = estimation.linkId and "
                 + "items.target.linkId = estimationItem.linkId)";
@@ -446,6 +387,58 @@ public class QueryBuilderTestCase
         query.add(new IdConstraint("items.target", "estimationItem"));
 
         checkQuery(query, expected);
+    }
+
+    /**
+     * Tests queries on object reference nodes.
+     */
+    public void testObjectRefNodeConstraints() {
+        final String expected = "select act0 from "
+                + Act.class.getName() + " as act0 "
+                + "inner join act0.participations as participations0 "
+                + "where (act0.archetypeId.shortName = :shortName0 and "
+                + "(participations0.entity.linkId = :linkId0 or "
+                + "participations0.entity.archetypeId.shortName "
+                + "= :shortName1))";
+
+        // create a query that returns all customer estimations for a particular
+        // customer or that has an author.
+        ObjectRefNodeConstraint customer = new ObjectRefNodeConstraint(
+                "entity", new IMObjectReference(
+                new ArchetypeId("participation.customer"), "alinkId"));
+        ObjectRefNodeConstraint author = new ObjectRefNodeConstraint(
+                "entity", new ArchetypeId("participation.author"));
+        ArchetypeQuery query
+                = new ArchetypeQuery("act.customerEstimation",
+                                     false, false);
+        query.add(new CollectionNodeConstraint("participants")
+                .add(new OrConstraint().add(customer).add(author)));
+
+        checkQuery(query, expected);
+    }
+
+
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+    */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{
+                "org/openvpms/component/business/service/archetype/query/query-appcontext.xml"
+        };
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+
+        this.builder = (QueryBuilder) applicationContext.getBean(
+                "queryBuilder");
     }
 
     /**

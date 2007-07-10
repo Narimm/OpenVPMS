@@ -67,7 +67,7 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
      * Tests the {@link NodeDescriptor#getDisplayName()} method.
      */
     public void testDisplayName() {
-        ArchetypeDescriptor archetype = getArchetype("person.person");
+        ArchetypeDescriptor archetype = getArchetype("party.person");
 
         // node with display name specified
         NodeDescriptor uid = archetype.getNodeDescriptor("uid");
@@ -90,7 +90,7 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
      * Tests the {@link NodeDescriptor#getMaxLength()} method.
      */
     public void testDefaultMaxLength() {
-        ArchetypeDescriptor archetype = getArchetype("person.person");
+        ArchetypeDescriptor archetype = getArchetype("party.person");
 
         // no max length specified, should be default
         NodeDescriptor title = archetype.getNodeDescriptor("title");
@@ -107,7 +107,7 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
      * Tests the {@link NodeDescriptor#isLookup()} method.
      */
     public void testIsLookup() {
-        ArchetypeDescriptor archetype = getArchetype("person.person");
+        ArchetypeDescriptor archetype = getArchetype("party.person");
 
         // lookup node
         NodeDescriptor title = archetype.getNodeDescriptor("title");
@@ -124,7 +124,7 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
      * Tests the {@link NodeDescriptor#isHidden()} method.
      */
     public void testIsHidden() {
-        ArchetypeDescriptor archetype = getArchetype("person.person");
+        ArchetypeDescriptor archetype = getArchetype("party.person");
 
         // hidden node
         NodeDescriptor relationships
@@ -142,7 +142,7 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
      * Tests the {@link NodeDescriptor#getArchetypeRange()} method.
      */
     public void testArchetypeRange() {
-        ArchetypeDescriptor archetype = getArchetype("person.person");
+        ArchetypeDescriptor archetype = getArchetype("party.person");
         NodeDescriptor node = archetype.getNodeDescriptor("classifications");
         assertTrue(node != null);
         String[] range = node.getArchetypeRange();
@@ -158,7 +158,7 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
      * {@link NodeDescriptor#getMaxCardinality()} methods.
      */
     public void testCardinality() {
-        ArchetypeDescriptor archetype = getArchetype("person.person");
+        ArchetypeDescriptor archetype = getArchetype("party.person");
 
         // simple node with unspecified cardinality
         NodeDescriptor initials = archetype.getNodeDescriptor("initials");
@@ -190,7 +190,7 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
      * Tests the {@link NodeDescriptor#isParentChild()} method.
      */
     public void testParentChildAttribute() {
-        ArchetypeDescriptor archetype = getArchetype("person.person");
+        ArchetypeDescriptor archetype = getArchetype("party.person");
 
         // parent-child node
         NodeDescriptor contacts = archetype.getNodeDescriptor("contacts");
@@ -209,7 +209,7 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
      * a baseName is specified on the descriptor.
      */
     public void testCollectionAddRemove() {
-        ArchetypeDescriptor archetype = getArchetype("person.person");
+        ArchetypeDescriptor archetype = getArchetype("party.person");
         Party party = new Party();
         NodeDescriptor node = archetype.getNodeDescriptor("contacts");
         assertNotNull(node);
@@ -241,7 +241,7 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
      * no baseName is specified on the descriptor.
      */
     public void testCollectionAddRemoveNoBaseName() {
-        ArchetypeDescriptor archetype = getArchetype("person.person");
+        ArchetypeDescriptor archetype = getArchetype("party.person");
         Party party = new Party();
         NodeDescriptor node = archetype.getNodeDescriptor("classifications");
         assertNotNull(node);
@@ -272,7 +272,7 @@ public class NodeDescriptorTestCase extends LoggedTestCase {
      * no baseName is specified on the descriptor.
      */
     public void testRemoveChildFromCollectionNoBaseName() {
-        ArchetypeDescriptor archetype = getArchetype("person.person");
+        ArchetypeDescriptor archetype = getArchetype("party.person");
         Party party = new Party();
 
         Lookup classification = new Lookup();

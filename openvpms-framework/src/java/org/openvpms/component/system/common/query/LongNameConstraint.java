@@ -32,7 +32,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
+ * @deprecated
  */
+@Deprecated
 public class LongNameConstraint extends BaseArchetypeConstraint {
 
     /**
@@ -93,7 +95,7 @@ public class LongNameConstraint extends BaseArchetypeConstraint {
                 StringUtils.isEmpty(conceptName)) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.InvalidLongNameConstraint,
-                    new Object[]{rmName, entityName, conceptName});
+                    rmName, entityName, conceptName);
         }
 
         this.rmName = rmName;

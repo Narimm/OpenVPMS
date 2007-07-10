@@ -225,11 +225,28 @@ public final class DescriptorHelper {
      * @param conceptName  the archetype concept name
      * @return a list of short names matching the criteria
      * @throws ArchetypeServiceException for any error
+     * @deprecated see {@link #getShortNames(String, String)}
      */
+    @Deprecated
     public static String[] getShortNames(String refModelName,
                                          String entityName,
                                          String conceptName) {
         return getShortNames(refModelName, entityName, conceptName,
+                             ArchetypeServiceHelper.getArchetypeService());
+    }
+
+
+    /**
+     * Returns primary archetype short names matching the specified criteria.
+     *
+     * @param entityName  the archetype entity name
+     * @param conceptName the archetype concept name
+     * @return a list of short names matching the criteria
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String[] getShortNames(String entityName,
+                                         String conceptName) {
+        return getShortNames(entityName, conceptName,
                              ArchetypeServiceHelper.getArchetypeService());
     }
 
@@ -243,6 +260,7 @@ public final class DescriptorHelper {
      * @return a list of short names matching the criteria
      * @throws ArchetypeServiceException for any error
      */
+    @Deprecated
     public static String[] getShortNames(String refModelName,
                                          String entityName,
                                          String conceptName,
@@ -251,6 +269,22 @@ public final class DescriptorHelper {
                                                             entityName,
                                                             conceptName,
                                                             true);
+        return names.toArray(new String[0]);
+    }
+
+    /**
+     * Returns primary archetype short names matching the specified criteria.
+     *
+     * @param entityName  the archetype entity name
+     * @param conceptName the archetype concept name
+     * @param service     the archetype service
+     * @return a list of short names matching the criteria
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String[] getShortNames(String entityName, String conceptName,
+                                         IArchetypeService service) {
+        List<String> names = service.getArchetypeShortNames(
+                entityName, conceptName, true);
         return names.toArray(new String[0]);
     }
 

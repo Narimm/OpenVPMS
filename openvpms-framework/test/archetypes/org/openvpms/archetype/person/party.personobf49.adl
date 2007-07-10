@@ -1,9 +1,8 @@
 <archetypes>
-    <archetype name="openvpms-party-person.person.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.party.Party"
-               displayName="Customer(Person)">
-        <node name="uid" path="/uid" displayName="id" type="java.lang.Long"
-              readOnly="true"/>
+    <archetype name="party.personobf49.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.party.Party">
+        <node name="uid" path="/uid" displayName="id"
+              type="java.lang.Long"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
               derivedValue="concat(/details/lastName, ',', /details/firstName)"/>
@@ -30,73 +29,51 @@
         <node name="initials" path="/details/initials" type="java.lang.String"/>
         <node name="lastName" path="/details/lastName" type="java.lang.String"
               minCardinality="1" maxLength="30"/>
-        <node name="Active" path="/active" type="java.lang.Boolean"
-              defaultValue="true()"/>
-        <node name="contacts" path="/contacts"
-              type="java.util.HashSet" baseName="Contact" minCardinality="0"
-              maxCardinality="*">
+        <node name="staffClassifications" path="/classifications"
+              parentChild="false" type="java.util.HashSet" filter="lookup.st*"
+              baseName="classification" minCardinality="1" maxCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="contact.location"/>
-                    </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.phoneNumber"/>
+                                  value="lookup.staff"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
+                <errorMessage>
+                    Invalid staff classifications specified
+                </errorMessage>
             </assertion>
         </node>
-        <node name="patients" path="/entityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship"
-              minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.animal*">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.animalCarer"/>
-                    </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.animalOwner"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
-        <node name="classifications" path="/classifications" parentChild="false"
-              type="java.util.HashSet" baseName="Classification"
-              minCardinality="0" maxCardinality="*">
+        <node name="patientClassifications" path="/classifications"
+              parentChild="false" type="java.util.HashSet" filter="lookup.pat*"
+              baseName="classification" minCardinality="1" maxCardinality="1">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
                                   value="lookup.patient"/>
                     </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.staff"/>
-                    </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
+                <errorMessage>
+                    Invalid patient classifications specified
+                </errorMessage>
             </assertion>
         </node>
-        <node name="identities" path="/identities"
-              type="java.util.HashSet" baseName="Identity" minCardinality="0"
-              maxCardinality="*">
+        <node name="identities" type="java.util.HashSet"
+              baseName="identity" path="/identities" maxCardinality="*">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="entityIdentity.*"/>
+                                  value="entityIdentity.personAlias"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
+                <errorMessage>
+                    Idnetities must be of type
+                    entityIdentity.personAlias
+                </errorMessage>
             </assertion>
         </node>
+
     </archetype>
 </archetypes>
-	

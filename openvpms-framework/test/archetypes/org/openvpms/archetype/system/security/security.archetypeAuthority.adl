@@ -1,5 +1,5 @@
 <archetypes>
-	<archetype name="openvpms-system-security.archetypeAuthority.1.0"
+	<archetype name="security.archetypeAuthority.1.0"
 		latest="true" primary="true"
 		type="org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority">
 		<node name="uid" path="/uid" displayName="id"

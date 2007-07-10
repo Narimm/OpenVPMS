@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
 
 import java.util.List;
 
@@ -70,31 +71,12 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
     }
 
     /**
-     * Construct and instance of this cache and then proceed to load all 
-     * the archetypes in the database.
-     * <p>
-     * If a scanInterval greater than 0 is specified then a thread will be
-     * created to monitor changes in the archetype definition.
-     * 
-     * @param dao
-     *            data access object
-     * @param scanInterval
-     *            the interval that the archetype directory is scanned.
-     * @throws ArchetypeDescriptorCacheException
-     *             thrown if it cannot bootstrap the cache
-     */
-    public ArchetypeDescriptorCacheDB(IMObjectDAO dao, long scanInterval) {
-        this(dao);
-        // determine whether we should create a monitor thread
-    }
-
-    /**
      * Return the {@link AssertionTypeDescriptors} in the specified file
      * 
      * @throws ArchetypeDescriptorCacheException
      */
     private void loadAssertionTypeDescriptors() {
-        List<IMObject> atypes = dao.get("system", "descriptor", "assertionType", 
+        List<IMObject> atypes = dao.get("descriptor.assertionType",
                 null, AssertionTypeDescriptor.class.getName(), true, 0,
                 ArchetypeQuery.ALL_RESULTS).getResults();
         for (IMObject imobj : atypes) {
@@ -120,9 +102,10 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
      * @throws ArchetypeDescriptorCacheException
      */
     private void loadArchetypeDescriptors() {
-        processArchetypeDescriptors(dao.get("system", "descriptor", 
-                null, null, ArchetypeDescriptor.class.getName(), true, 0,
-                ArchetypeQuery.ALL_RESULTS).getResults());
+        IPage<IMObject> page = dao.get("descriptor.*", null,
+                                       ArchetypeDescriptor.class.getName(),
+                                       true, 0, ArchetypeQuery.ALL_RESULTS);
+        processArchetypeDescriptors(page.getResults());
     }
 
     /**
@@ -154,10 +137,10 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
                         descriptor.getClassName());
 
                 // only store one copy of the archetype by short name
-                if ((archetypesByShortName.containsKey(archId.getShortName()) == false)
-                        || (descriptor.isLatest())) {
-                    archetypesByShortName
-                            .put(archId.getShortName(), descriptor);
+                if (!archetypesByShortName.containsKey(archId.getShortName())
+                        || descriptor.isLatest()) {
+                    archetypesByShortName.put(archId.getShortName(),
+                                              descriptor);
                     if (logger.isDebugEnabled()) {
                         logger.debug("Loading  [" + archId.getShortName()
                                 + "] in shortNameCache");
