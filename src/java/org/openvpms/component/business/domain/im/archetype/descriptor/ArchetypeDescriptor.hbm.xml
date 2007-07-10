@@ -33,7 +33,7 @@
 		<property name="linkId" access="property" type="string" length="36"
                   not-null="true" unique="true"/>
 		<property name="name" access="property" column="name"
-			type="string" length="100" not-null="true"/>
+			type="string" length="100" not-null="true" unique="true"/>
         <component name="archetypeId">
             <property name="shortName" access="property"
                 column="arch_short_name" type="string" length="100" not-null="true"/>
