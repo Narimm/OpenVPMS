@@ -145,22 +145,14 @@ public class CustomerAccountRules {
      *         fully allocated
      */
     public boolean inBalance(FinancialAct act) {
-        boolean result = hasBalanceParticipation(act);
-        if (!result) {
-            ActBean bean = new ActBean(act, service);
-            List<ActRelationship> relationships = bean.getRelationships(
-                    ACCOUNT_ALLOCATION_SHORTNAME);
-            if (!relationships.isEmpty()) {
-                result = true;
-            } else {
-                // check for a zero total.
-                Money total = act.getTotal();
-                if (total != null && total.compareTo(BigDecimal.ZERO) == 0) {
-                    result = true;
-                }
+        Money allocated = act.getAllocatedAmount();
+        Money total = act.getTotal();
+        if (allocated != null && total != null) {
+            if (allocated.compareTo(total) == 0) {
+                return true;
             }
         }
-        return result;
+        return false;
     }
 
     /**
@@ -608,7 +600,7 @@ public class CustomerAccountRules {
         private final FinancialAct act;
 
         /**
-         * Determines if the act has been modified to.
+         * Determines if the act has been modified.
          */
         private boolean dirty;
 
@@ -659,9 +651,10 @@ public class CustomerAccountRules {
          * @param allocated the allocated amount
          */
         public void addRelationship(BalanceAct credit, BigDecimal allocated) {
-            ActBean bean = new ActBean(act, service);
-            ActRelationship relationship = bean.addRelationship(
+            ActBean debitBean = new ActBean(act, service);
+            ActRelationship relationship = debitBean.addRelationship(
                     ACCOUNT_ALLOCATION_SHORTNAME, credit.getAct());
+            credit.getAct().addActRelationship(relationship);
             IMObjectBean relBean = new IMObjectBean(relationship, service);
             relBean.setValue("allocatedAmount", allocated);
         }
