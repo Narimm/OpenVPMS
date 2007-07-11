@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+
 /**
  * Act status types for <em>act.customerTask</em> acts.
  *
@@ -25,11 +26,6 @@ package org.openvpms.archetype.rules.workflow;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class TaskStatus extends WorkflowStatus {
-
-    /**
-     * Billed status.
-     */
-    public static final String BILLED = "BILLED";
 
     /**
      * Complete status range.
