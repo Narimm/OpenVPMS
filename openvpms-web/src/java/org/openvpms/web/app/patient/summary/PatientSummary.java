@@ -93,13 +93,11 @@ public class PatientSummary {
             result = ColumnFactory.create();
             Label patientName = LabelFactory.create(null, "Patient.Name");
             patientName.setText(patient.getName());
-            result.add(
-                    RowFactory.create("Patient.Deceased.Inset", patientName));
+            result.add(RowFactory.create("Inset.Small", patientName));
             if (rules.isDeceased(patient)) {
                 Label deceased = LabelFactory.create("patient.deceased",
                                                      "Patient.Deceased");
-                result.add(RowFactory.create("Patient.Deceased.Inset",
-                                             deceased));
+                result.add(RowFactory.create("Inset.Small", deceased));
             }
             Label alertTitle = LabelFactory.create("patient.alerts");
             int alerts = reminderRules.countAlerts(patient, new Date());

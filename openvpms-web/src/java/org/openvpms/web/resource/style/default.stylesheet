@@ -327,11 +327,6 @@
             <property name="foreground" value="#ff0000"/>
         </properties>
     </style>
-    <style name="Patient.Deceased.Inset" type="nextapp.echo2.app.Row">
-        <properties>
-            <property name="insets" value="5px 5px"/>
-        </properties>
-    </style>
     <style name="Patient.Name" type="nextapp.echo2.app.Label">
         <properties>
             <property name="foreground" value="#0000ff"/>
@@ -839,6 +834,18 @@
         </properties>
     </style>
 
+    <style name="Inset.Small" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="insets" value="5px 5px"/>
+        </properties>
+    </style>
+
+    <style name="Inset.Small" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="insets" value="5px 5px"/>
+        </properties>
+    </style>
+
     <style name="InsetX" type="nextapp.echo2.app.Row">
         <properties>
             <property name="insets" value="10px 0px"/>
@@ -890,6 +897,10 @@
     </style>
 
     <style name="MessageDialog" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+    </style>
+
+    <style name="InformationDialog" base-name="MessageDialog"
            type="nextapp.echo2.app.WindowPane">
     </style>
 

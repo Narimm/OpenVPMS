@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.dialog;
 
+
 /**
  * A modal dialog that prompts the user to select an OK or Cancel button.
  *
