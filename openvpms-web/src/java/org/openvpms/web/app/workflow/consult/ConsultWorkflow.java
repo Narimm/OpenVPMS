@@ -19,12 +19,11 @@
 package org.openvpms.web.app.workflow.consult;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.workflow.TaskStatus;
+import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.workflow.InvoiceTask;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
@@ -56,11 +55,6 @@ public class ConsultWorkflow extends WorkflowImpl {
      * The initial context.
      */
     private TaskContext initial;
-
-    /**
-     * The customer task act short name.
-     */
-    private static final String CUSTOMER_TASK = "act.customerTask";
 
 
     /**
@@ -94,17 +88,17 @@ public class ConsultWorkflow extends WorkflowImpl {
         // get/create the invoice, and edit it
         addTask(new InvoiceTask());
         addTask(new EditIMObjectTask(InvoiceTask.INVOICE_SHORTNAME));
-        if (TypeHelper.isA(act, CUSTOMER_TASK)) {
-            NodeConditionTask<String> invoiceCompleted
-                    = new NodeConditionTask<String>(
-                    InvoiceTask.INVOICE_SHORTNAME, "status",
-                    ActStatus.COMPLETED);
-            TaskProperties billProps = new TaskProperties();
-            billProps.add("status", TaskStatus.BILLED);
-            UpdateIMObjectTask billTask = new UpdateIMObjectTask(act, billProps,
-                                                                 true);
-            addTask(new ConditionalTask(invoiceCompleted, billTask));
-        }
+
+        // update the task/appointment status to BILLED if the invoice
+        // is COMPLETED
+        NodeConditionTask<String> invoiceCompleted
+                = new NodeConditionTask<String>(InvoiceTask.INVOICE_SHORTNAME,
+                                                "status", ActStatus.COMPLETED);
+        TaskProperties billProps = new TaskProperties();
+        billProps.add("status", WorkflowStatus.BILLED);
+        UpdateIMObjectTask billTask = new UpdateIMObjectTask(act, billProps,
+                                                             true);
+        addTask(new ConditionalTask(invoiceCompleted, billTask));
 
         // add a task to update the global context at the end of the workflow
         addTask(new SynchronousTask() {
