@@ -22,6 +22,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
@@ -50,6 +51,16 @@ public class AccountType {
      */
     private IMObjectBean bean;
 
+
+    /**
+     * Constructs a new <tt>AccountType</tt>.
+     *
+     * @param lookup the lookup
+     */
+    public AccountType(Lookup lookup) {
+        this(lookup, ArchetypeServiceHelper.getArchetypeService());
+    }
+
     /**
      * Creates a new <tt>AccountType</tt>.
      *
@@ -58,6 +69,15 @@ public class AccountType {
      */
     public AccountType(Lookup lookup, IArchetypeService service) {
         bean = new IMObjectBean(lookup, service);
+    }
+
+    /**
+     * Returns the account type name.
+     *
+     * @return the account type name
+     */
+    public String getName() {
+        return bean.getString("name");
     }
 
     /**
@@ -184,5 +204,15 @@ public class AccountType {
             return amount;
         }
         return amount.multiply(overdue);
+    }
+
+    /**
+     * Determines if an alert should be displayed for this account type.
+     *
+     * @return <tt>true</tt> if an alert should be displayed, otherwise
+     * <tt>false</tt>
+     */
+    public boolean showAlert() {
+        return bean.getBoolean("showAlert");
     }
 }

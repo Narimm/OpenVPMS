@@ -77,5 +77,6 @@
         <node name="settlementDiscountMessage" displayName="Message" path="/details/settlementDiscountMessage" type="java.lang.String" minCardinality="0" maxLength="300" hidden="true"/>
         <node name="generalMessage" displayName="General Message" path="/details/generalMessage" type="java.lang.String" minCardinality="0" maxLength="300"/>
         <node name="overdueMessage" displayName="Overdue Message" path="/details/overdueMessage" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="showAlert" path="/details/showAlert" type="java.lang.Boolean" minCardinality="0" defaultValue="'false'"/>
     </archetype>
 </archetypes>
