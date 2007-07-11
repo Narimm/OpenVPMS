@@ -80,6 +80,16 @@ public class PropertySet {
                 derived.put(property, property.getValue());
             }
         }
+        if (!derived.isEmpty()) {
+            ModifiableListener listener = new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    updateDerivedProperties();
+                }
+            };
+            for (Property property : properties.values()) {
+                property.addModifiableListener(listener);
+            }
+        }
     }
 
     /**
