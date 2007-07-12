@@ -392,9 +392,20 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
-     * Sets focus on the first focusable field.
+     * Sets focus on a component.
+     * Delegates to {@link #setFocus(List<ComponentState>)}.
      */
     protected void setFocus() {
+        setFocus(components);
+    }
+
+    /**
+     * Sets focus on a component.
+     * This implementation sets focus on the first focusable field.
+     *
+     * @param components the components
+     */
+    protected void setFocus(List<ComponentState> components) {
         Component focusable = FocusHelper.getFocusable(components);
         if (focusable != null) {
             ApplicationInstance.getActive().setFocusedComponent(focusable);

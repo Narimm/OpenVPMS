@@ -20,6 +20,8 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import echopointng.DateChooser;
 import echopointng.DateField;
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
@@ -32,6 +34,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.edit.act.CustomerParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationCollectionEditor;
@@ -436,6 +439,25 @@ public class AppointmentActEditor extends AbstractActEditor {
                 result = super.createComponent(property, parent, context);
             }
             return result;
+        }
+
+        /**
+         * Sets focus on the customer component.
+         *
+         * @param components the components
+         */
+        @Override
+        protected void setFocus(List<ComponentState> components) {
+            for (ComponentState state : components) {
+                Property property = state.getProperty();
+                if (property != null && "customer".equals(property.getName())) {
+                    Component focusable = FocusHelper.getFocusable(state);
+                    if (focusable != null) {
+                        ApplicationInstance.getActive().setFocusedComponent(
+                                focusable);
+                    }
+                }
+            }
         }
     }
 }
