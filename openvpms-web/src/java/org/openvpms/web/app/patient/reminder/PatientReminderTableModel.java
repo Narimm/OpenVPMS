@@ -79,16 +79,6 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      */
     private int actionIndex;
 
-    /**
-     * The last retrieved patient.
-     */
-    private Party lastPatient;
-
-    /**
-     * The last retrieved patient owner.
-     */
-    private Party lastOwner;
-
 
     /**
      * Creates a new <tt>PatientReminderTableModel</tt>.
@@ -290,18 +280,12 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     private Party getPatientOwner(Act act) {
         ActBean bean = new ActBean(act);
         IMObjectReference ref = bean.getParticipantRef("participation.patient");
-        if (ref != null) {
-            if (lastPatient == null
-                    || !lastPatient.getObjectReference().equals(ref)) {
-                lastPatient = (Party) IMObjectHelper.getObject(ref);
-                if (lastPatient != null) {
-                    lastOwner = patientRules.getOwner(lastPatient);
-                } else {
-                    lastOwner = null;
-                }
-            }
+        Party patient = (Party) IMObjectHelper.getObject(ref);
+        if (patient != null) {
+            IMObjectReference owner = patientRules.getOwnerReference(patient);
+            return (Party) IMObjectHelper.getObject(owner);
         }
-        return lastOwner;
+        return null;
     }
 
 }
