@@ -96,7 +96,6 @@ public class PatientRules {
         EntityRelationship relationship
                 = (EntityRelationship) service.create(PATIENT_OWNER);
         relationship.setActiveStartTime(new Date());
-        relationship.setSequence(1);
         relationship.setSource(new IMObjectReference(customer));
         relationship.setTarget(new IMObjectReference(patient));
         customer.addEntityRelationship(relationship);
@@ -132,6 +131,24 @@ public class PatientRules {
     public Party getOwner(Party patient) {
         EntityBean bean = new EntityBean(patient, service);
         return (Party) bean.getSourceEntity(PATIENT_OWNER);
+    }
+
+    /**
+     * Returns a reference to the owner of a patient.
+     *
+     * @param patient the patient
+     * @return a reference to the owner, or <tt>null</tt> if none can be found
+     */
+    public IMObjectReference getOwnerReference(Party patient) {
+        for (EntityRelationship relationship
+                : patient.getEntityRelationships()) {
+            if (TypeHelper.isA(relationship, PATIENT_OWNER)
+                    && relationship.getSource() != null
+                    && relationship.isActive()) {
+                return relationship.getSource();
+            }
+        }
+        return null;
     }
 
     /**
