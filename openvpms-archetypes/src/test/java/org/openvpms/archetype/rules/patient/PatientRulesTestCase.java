@@ -48,19 +48,24 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
 
 
     /**
-     * Tests the {@link PatientRules#getOwner} method.
+     * Tests the {@link PatientRules#getOwner}
+     * and {@link PatientRules#getOwnerReference} methods.
      */
     public void testGetOwner() {
         Party patient1 = TestHelper.createPatient();
         assertNull(rules.getOwner(patient1));
+        assertNull(rules.getOwnerReference(patient1));
 
         Party customer = TestHelper.createCustomer();
         Party patient2 = TestHelper.createPatient();
         rules.addPatientOwnerRelationship(customer, patient2);
         assertEquals(customer, rules.getOwner(patient2));
+        assertEquals(customer.getObjectReference(),
+                     rules.getOwnerReference(patient2));
 
         deactivateOwnerRelationship(patient2);
         assertNull(rules.getOwner(patient2));
+        assertNull(rules.getOwnerReference(patient2));
     }
 
     /**
