@@ -18,8 +18,6 @@
 
 package org.openvpms.archetype.component.processor;
 
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-
 import java.util.Iterator;
 
 
@@ -33,28 +31,12 @@ import java.util.Iterator;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class AsynchronousBatchProcessor<Action, Type, Event>
-        implements BatchProcessor {
-
-    /**
-     * The iterator.
-     */
-    private Iterator<Type> iterator;
+        extends AbstractAsynchronousBatchProcessor<Type> {
 
     /**
      * The processor.
      */
     private Processor<Action, Type, Event> processor;
-
-    /**
-     * The listener for events.
-     */
-    private BatchProcessorListener listener;
-
-
-    /**
-     * Indicates if processing should suspend, so the client can be updated.
-     */
-    private boolean suspend;
 
 
     /**
@@ -78,12 +60,12 @@ public class AsynchronousBatchProcessor<Action, Type, Event>
     }
 
     /**
-     * Sets a listener to notify of batch processor events.
+     * Processes an object.
      *
-     * @param listener the listener. May be <tt>null</tt>
+     * @param object the object to process
      */
-    public void setListener(BatchProcessorListener listener) {
-        this.listener = listener;
+    protected void process(Type object) {
+        processor.process(object);
     }
 
     /**
@@ -93,80 +75,6 @@ public class AsynchronousBatchProcessor<Action, Type, Event>
      */
     protected void setProcessor(Processor<Action, Type, Event> processor) {
         this.processor = processor;
-    }
-
-    /**
-     * Sets the iterator.
-     *
-     * @param iterator the iterator over the batch to process
-     */
-    protected void setIterator(Iterator<Type> iterator) {
-        this.iterator = iterator;
-    }
-
-    /**
-     * Process the batch.
-     */
-    public void process() {
-        try {
-            setSuspend(false);
-            while (!isSuspended() && iterator.hasNext()) {
-                processor.process(iterator.next());
-            }
-            if (!isSuspended()) {
-                // processing completed.
-                processingCompleted();
-            }
-        } catch (OpenVPMSException exception) {
-            processingError(exception);
-        }
-    }
-
-    /**
-     * Sets the suspend state
-     *
-     * @param suspend if <tt>true</tt> suspend processing
-     */
-    public void setSuspend(boolean suspend) {
-        this.suspend = suspend;
-    }
-
-    /**
-     * Determines if processing has been suspended.
-     *
-     * @return <tt>true</tt> if processing has been suspended
-     */
-    public boolean isSuspended() {
-        return suspend;
-    }
-
-    /**
-     * Invoked when batch processing has completed.
-     * This implementation delegates to {@link #notifyCompleted()}.
-     */
-    protected void processingCompleted() {
-        notifyCompleted();
-    }
-
-    /**
-     * Notifies the listener (if any) of processing completion.
-     */
-    protected void notifyCompleted() {
-        if (listener != null) {
-            listener.completed();
-        }
-    }
-
-    /**
-     * Invoked if an error occurs processing the batch.
-     * Notifies any listener.
-     *
-     * @param exception the cause
-     */
-    protected void processingError(OpenVPMSException exception) {
-        if (listener != null) {
-            listener.error(exception);
-        }
     }
 
 }
