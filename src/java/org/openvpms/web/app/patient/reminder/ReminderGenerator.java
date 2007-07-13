@@ -39,7 +39,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -316,6 +315,21 @@ class ReminderGenerator extends BasicBatchProcessor {
         }
 
         /**
+         * Invoked when a button is pressed.
+         *
+         * @param button the button identifier
+         */
+        @Override
+        protected void onButton(String button) {
+            if (UPDATE_REMINDERS_ID.equals(button)) {
+                update();
+                close();
+            } else {
+                super.onButton(button);
+            }
+        }
+
+        /**
          * Invoked when the 'cancel' button is pressed. This prompts for
          * confirmation.
          */
@@ -385,19 +399,8 @@ class ReminderGenerator extends BasicBatchProcessor {
          * Displays statistics.
          */
         private void onGenerationComplete() {
-            ButtonSet set = getButtons();
-            set.remove(set.getButton(CANCEL_ID));
-            addButton(UPDATE_REMINDERS_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    update();
-                    close();
-                }
-            });
-            addButton(CANCEL_ID, false);
             showStatistics();
-            for (Button button : restartButtons) {
-                button.setEnabled(true);
-            }
+            enableButtons(true);
         }
 
         /**
