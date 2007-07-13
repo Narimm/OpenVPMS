@@ -18,56 +18,46 @@
 
 package org.openvpms.web.app.patient.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.AbstractReminderProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 /**
- * Listener for {@link ReminderEvent.Action.PHONE} events.
- * Collects all of the relevant acts for later processing into a report.
+ * Cancels reminders.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderPhoneListener extends AbstractReminderProcessorListener {
+public class ReminderCancelProcessor
+        extends ProgressBarProcessor<ReminderEvent> {
 
     /**
-     * Reminders that need to be listed to phone.
+     * The reminder rules.
      */
-    private final List<Act> phoneReminders = new ArrayList<Act>();
+    private final ReminderRules rules;
 
+
+    /**
+     * Constructs a new <tt>ReminderCancelProcessor</tt>.
+     *
+     * @param reminders the reminders to cancel
+     */
+    public ReminderCancelProcessor(List<ReminderEvent> reminders) {
+        super(reminders, "Cancel");
+        rules = new ReminderRules();
+    }
 
     /**
      * Invoked to process a reminder.
      *
      * @param event the event
-     */
-    public void process(ReminderEvent event) {
-        phoneReminders.add(event.getReminder());
-    }
-
-    /**
-     * Returns the phone reminders.
-     *
-     * @return the phone reminders
-     */
-    public List<Act> getPhoneReminders() {
-        return phoneReminders;
-    }
-
-    /**
-     * Updates all phone reminders.
-     *
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void updateAll() {
-        for (Act reminder : phoneReminders) {
-            update(reminder);
-        }
+    protected void process(ReminderEvent event) {
+        rules.cancelReminder(event.getReminder());
+        processCompleted(event);
     }
 }

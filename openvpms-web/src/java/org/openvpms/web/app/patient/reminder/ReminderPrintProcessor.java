@@ -18,9 +18,6 @@
 
 package org.openvpms.web.app.patient.reminder;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
-import org.openvpms.archetype.rules.patient.reminder.AbstractReminderProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -33,6 +30,8 @@ import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.ErrorHelper;
 
+import java.util.List;
+
 
 /**
  * Prints reminders.
@@ -40,21 +39,15 @@ import org.openvpms.web.component.util.ErrorHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderPrintProcessor extends AbstractReminderProcessorListener {
-
-    /**
-     * The generator.
-     */
-    private final ReminderGenerator generator;
-
+class ReminderPrintProcessor extends ProgressBarProcessor<ReminderEvent> {
 
     /**
      * Constructs a new <tt>ReminderPrintProcessor</tt>.
      *
-     * @param generator the reminder generator
+     * @param reminders the reminders to print
      */
-    public ReminderPrintProcessor(ReminderGenerator generator) {
-        this.generator = generator;
+    public ReminderPrintProcessor(List<ReminderEvent> reminders) {
+        super(reminders, "Print");
     }
 
     /**
@@ -64,37 +57,35 @@ class ReminderPrintProcessor extends AbstractReminderProcessorListener {
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the event cannot be processed
      */
-    public void process(final ReminderEvent event) {
-        generator.setSuspend(true);
+    protected void process(final ReminderEvent event) {
+        setSuspend(true);
         Entity documentTemplate = event.getDocumentTemplate();
         IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(
                 event.getReminder(), documentTemplate);
-        InteractiveIMPrinter<Act> iPrinter
+        final InteractiveIMPrinter<Act> iPrinter
                 = new InteractiveIMPrinter<Act>(printer);
         iPrinter.setListener(new PrinterListener() {
             public void printed() {
                 try {
-                    update(event.getReminder());
-                    generator.process();
+                    setSuspend(false);
+                    processCompleted(event);
                 } catch (OpenVPMSException exception) {
                     ErrorHelper.show(exception);
                 }
             }
 
             public void cancelled() {
+                notifyCompleted();
             }
 
             public void skipped() {
             }
 
             public void failed(Throwable cause) {
-                ErrorHelper.show(cause, new WindowPaneListener() {
-                    public void windowPaneClosing(
-                            WindowPaneEvent event) {
-                    }
-                });
+                notifyError(cause);
             }
         });
+
         iPrinter.print();
     }
 

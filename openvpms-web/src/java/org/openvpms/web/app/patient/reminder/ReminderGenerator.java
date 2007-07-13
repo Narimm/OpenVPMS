@@ -18,39 +18,36 @@
 
 package org.openvpms.web.app.patient.reminder;
 
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.component.processor.AsynchronousBatchProcessor;
-import org.openvpms.archetype.component.processor.Processor;
+import org.openvpms.archetype.component.processor.BasicBatchProcessor;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
-import org.openvpms.archetype.rules.patient.reminder.ReminderCancelProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
-import org.openvpms.archetype.rules.patient.reminder.ReminderStatisticsListener;
-import org.openvpms.archetype.rules.patient.reminder.Statistics;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.workflow.AbstractTask;
-import org.openvpms.web.component.workflow.PrintIMObjectsTask;
-import org.openvpms.web.component.workflow.SynchronousTask;
-import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
-import org.openvpms.web.component.workflow.Tasks;
-import org.openvpms.web.component.workflow.Workflow;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -58,9 +55,10 @@ import org.openvpms.web.system.ServiceHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -69,18 +67,10 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderGenerator extends AsynchronousBatchProcessor<ReminderEvent.Action,
-        Act, ReminderEvent> {
+class ReminderGenerator extends BasicBatchProcessor {
 
-    /**
-     * Phone listener.
-     */
-    private ReminderPhoneListener phone;
-
-    /**
-     * Statistics listener.
-     */
-    private ReminderStatisticsListener stats;
+    private Map<BatchProcessorComponent, List<ReminderEvent>> processors
+            = new LinkedHashMap<BatchProcessorComponent, List<ReminderEvent>>();
 
 
     /**
@@ -90,51 +80,44 @@ class ReminderGenerator extends AsynchronousBatchProcessor<ReminderEvent.Action,
      * @param from     only process reminder if its next due date &gt;= from
      * @param to       only process reminder if its next due date &lt;= to
      * @param context  the context
-     * @throws ReminderProcessorException for any error
+     * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReminderProcessorException for any reminder error
      */
     public ReminderGenerator(Act reminder, Date from, Date to,
                              Context context) {
-        Iterator<Act> iterator = Arrays.asList(reminder).iterator();
-        init(from, to, iterator, context);
+        this(Arrays.asList(reminder).iterator(), from, to, context);
     }
 
     /**
      * Constructs a new <tt>ReminderGenerator</tt> for reminders returned by a
      * query.
      *
-     * @param query the query
+     * @param query   the query
+     * @param context the context
+     * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException for any error
      */
     public ReminderGenerator(DueReminderQuery query, Context context) {
-        List<Act> reminders = new ArrayList<Act>();
-        for (Act reminder : query.query()) {
-            reminders.add(reminder);
-        }
-        init(query.getFrom(), query.getTo(), reminders.iterator(), context);
+        this(getReminders(query), query.getFrom(), query.getTo(), context);
+        // NOTE: all of the reminders are cached in memory, as the reminder
+        // processing affects the paging of the reminder query. A better
+        // approach to reduce memory requirements would be
+        // to cache the reminder IMObjectReferences
     }
 
     /**
-     * Invoked when batch processing has completed.
-     * Notifies any listener.
-     */
-    @Override
-    protected void processingCompleted() {
-        onGenerationComplete();
-    }
-
-    /**
-     * Initialises this.
+     * Creates a new <tt>ReminderGenerator</tt>.
      *
-     * @param context the context
+     * @param reminders
+     * @param from      only process reminder if its next due date &gt;= from
+     * @param to        only process reminder if its next due date &lt;= to
+     * @param context
+     * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException for any error
      */
-    private void init(Date from, Date to, Iterator<Act> iterator,
-                      Context context) {
-        Processor<ReminderEvent.Action, Act, ReminderEvent> processor
-                = new ReminderProcessor(from, to);
-        phone = new ReminderPhoneListener();
-        stats = new ReminderStatisticsListener();
-        processor.addListener(stats);
+    public ReminderGenerator(Iterator<Act> reminders, Date from, Date to,
+                             Context context) {
+        ReminderProcessor processor = new ReminderProcessor(from, to);
 
         Party practice = context.getPractice();
         if (practice == null) {
@@ -152,7 +135,6 @@ class ReminderGenerator extends AsynchronousBatchProcessor<ReminderEvent.Action,
         }
         IMObjectBean bean = new IMObjectBean(email);
         String address = bean.getString("emailAddress");
-        String name = practice.getName();
         if (StringUtils.isEmpty(address)) {
             throw new ReminderProcessorException(
                     ReminderProcessorException.ErrorCode.InvalidConfiguration,
@@ -160,119 +142,294 @@ class ReminderGenerator extends AsynchronousBatchProcessor<ReminderEvent.Action,
                             + " email contact address is empty");
         }
 
-        ReminderCancelProcessor canceller = new ReminderCancelProcessor();
-        ReminderEmailProcessor emailer
-                = new ReminderEmailProcessor(ServiceHelper.getMailSender(),
-                                             address, name);
-        ReminderPrintProcessor printer = new ReminderPrintProcessor(this);
+        ReminderCollector cancelCollector = new ReminderCollector();
+        ReminderCollector phoneCollector = new ReminderCollector();
+        ReminderCollector emailCollector = new ReminderCollector();
+        ReminderCollector printCollector = new ReminderCollector();
 
-        processor.addListener(ReminderEvent.Action.CANCEL, canceller);
-        processor.addListener(ReminderEvent.Action.EMAIL, emailer);
-        processor.addListener(ReminderEvent.Action.PHONE, phone);
-        processor.addListener(ReminderEvent.Action.PRINT, printer);
-        setProcessor(processor);
-        setIterator(iterator);
+        processor.addListener(ReminderEvent.Action.CANCEL, cancelCollector);
+        processor.addListener(ReminderEvent.Action.EMAIL, emailCollector);
+        processor.addListener(ReminderEvent.Action.PHONE, phoneCollector);
+        processor.addListener(ReminderEvent.Action.PRINT, printCollector);
+        while (reminders.hasNext()) {
+            processor.process(reminders.next());
+        }
+
+        List<ReminderEvent> cancelReminders = cancelCollector.getReminders();
+        List<ReminderEvent> emailReminders = emailCollector.getReminders();
+        List<ReminderEvent> phoneReminders = phoneCollector.getReminders();
+        List<ReminderEvent> printReminders = printCollector.getReminders();
+
+        if (!cancelReminders.isEmpty()) {
+            processors.put(new ReminderCancelProcessor(cancelReminders),
+                           cancelReminders);
+        }
+        if (!phoneReminders.isEmpty()) {
+            processors.put(new ReminderPhoneProcessor(phoneReminders),
+                           phoneReminders);
+        }
+
+        if (!printReminders.isEmpty()) {
+            processors.put(new ReminderPrintProcessor(printReminders),
+                           printReminders);
+        }
+        if (!emailReminders.isEmpty()) {
+            processors.put(new ReminderEmailProcessor(
+                    emailReminders, ServiceHelper.getMailSender(),
+                    practice.getName(), address),
+                           emailReminders);
+        }
     }
 
     /**
-     * Invoked when generation is complete.
-     * Prints any phone reminders and displays statistics.
+     * Processes the reminders.
      */
-    private void onGenerationComplete() {
-        Workflow workflow = new WorkflowImpl();
-        Tasks printTasks = new Tasks();
+    public void process() {
+        GenerationDialog dialog = new GenerationDialog();
+        dialog.show();
+    }
 
-        PrintIMObjectsTask<Act> printTask = new PrintIMObjectsTask<Act>(
-                phone.getPhoneReminders(), "act.patientReminder");
-        printTask.setRequired(false);
-        printTasks.addTask(printTask);
-        printTasks.addTask(new SynchronousTask() {
-            public void execute(TaskContext context) {
-                phone.updateAll();
-            }
-        });
-        workflow.addTask(printTasks);
-        workflow.addTask(new AbstractTask() {
-            public void start(TaskContext context) {
-                SummaryDialog summary = new SummaryDialog(
-                        stats.getStatistics());
-                summary.show();
-                summary.addWindowPaneListener(new WindowPaneListener() {
-                    public void windowPaneClosing(WindowPaneEvent e) {
-                        notifyCompleted();
+    /**
+     * Updates all those reminders that have been processed.
+     */
+    private void update() {
+        try {
+            ReminderRules rules = new ReminderRules();
+            Date date = new Date();
+            for (Map.Entry<BatchProcessorComponent, List<ReminderEvent>> entry
+                    : processors.entrySet()) {
+                BatchProcessorComponent processor = entry.getKey();
+                if (!(processor instanceof ReminderCancelProcessor)) {
+                    List<ReminderEvent> reminders = entry.getValue();
+                    int processed = processor.getProcessed();
+                    for (int i = 0; i < processed; ++i) {
+                        ReminderEvent event = reminders.get(i);
+                        rules.updateReminder(event.getReminder(), date);
                     }
-                });
+                }
             }
-        });
-        workflow.addTaskListener(new TaskListener() {
-            public void taskEvent(TaskEvent event) {
-                notifyCompleted();
-            }
-        });
-        workflow.start();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**
-     * Displays summary statistics in a popup window.
-     *
-     * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
-     * @version $LastChangedDate: 2006-04-11 04:09:07Z $
+     * Displays reminder generation statistics.
      */
-    private static class SummaryDialog extends PopupDialog {
+    private void showStatistics() {
+        Statistics statistics = new Statistics();
+        for (Map.Entry<BatchProcessorComponent, List<ReminderEvent>> entry
+                : processors.entrySet()) {
+            BatchProcessorComponent processor = entry.getKey();
+            List<ReminderEvent> reminders = entry.getValue();
+            int processed = processor.getProcessed();
+            for (int i = 0; i < processed; ++i) {
+                ReminderEvent event = reminders.get(i);
+                statistics.increment(event.getReminderType(),
+                                     event.getAction());
+            }
+        }
+        SummaryDialog dialog = new SummaryDialog(statistics);
+        dialog.show();
+    }
+
+    /**
+     * Helper to return an iterator over the reminders.
+     *
+     * @param query the query
+     * @return an iterator over the reminders
+     */
+    private static Iterator<Act> getReminders(DueReminderQuery query) {
+        List<Act> reminders = new ArrayList<Act>();
+        for (Act reminder : query.query()) {
+            reminders.add(reminder);
+        }
+        return reminders.iterator();
+    }
+
+    private class GenerationDialog extends PopupDialog {
+        /**
+         * The workflow.
+         */
+        private WorkflowImpl workflow;
 
         /**
-         * Constructs a new <tt>SummaryDialog</tt>.
-         *
-         * @param stats the statistics to display
+         * The restart buttons.
          */
-        public SummaryDialog(Statistics stats) {
-            super(Messages.get("patient.reminder.summary.title"), OK);
+        private List<Button> restartButtons = new ArrayList<Button>();
+
+        /**
+         * The update reminders button identifier.
+         */
+        private static final String UPDATE_REMINDERS_ID = "updateReminders";
+
+
+        /**
+         * Creates a new <tt>GenerationDialog</tt>.
+         */
+        public GenerationDialog() {
+            super(Messages.get("patient.reminder.run.title"),
+                  new String[]{UPDATE_REMINDERS_ID, CANCEL_ID});
             setModal(true);
-            EnumSet<ReminderEvent.Action> actions = EnumSet.range(
-                    ReminderEvent.Action.EMAIL, ReminderEvent.Action.PRINT);
-
-            Grid grid = GridFactory.create(2);
-            add(grid, ReminderEvent.Action.CANCEL, stats);
-
-            for (Entity reminderType : stats.getReminderTypes()) {
-                String text = reminderType.getName();
-                add(grid, text, stats.getCount(reminderType, actions));
+            workflow = new WorkflowImpl();
+            workflow.setBreakOnCancel(false);
+            Grid grid = GridFactory.create(3);
+            for (BatchProcessorComponent processor : processors.keySet()) {
+                BatchProcessorTask task = new BatchProcessorTask(processor);
+                workflow.addTask(task);
+                Label title = LabelFactory.create();
+                title.setText(processor.getTitle());
+                grid.add(title);
+                grid.add(processor.getComponent());
+                if (processor instanceof ReminderPhoneProcessor
+                        || processor instanceof ReminderPrintProcessor) {
+                    Button button = addRestartButton(processor, "reprint");
+                    grid.add(button);
+                } else if (processor instanceof ReminderEmailProcessor) {
+                    Button button = addRestartButton(processor, "resend");
+                    grid.add(button);
+                } else {
+                    grid.add(LabelFactory.create());
+                }
             }
-
-            for (ReminderEvent.Action action : actions) {
-                add(grid, action, stats);
-            }
-            getLayout().add(ColumnFactory.create("Inset", grid));
+            getLayout().add(grid);
+            workflow.addTaskListener(new TaskListener() {
+                public void taskEvent(TaskEvent event) {
+                    switch (event.getType()) {
+                        case COMPLETED:
+                            onGenerationComplete();
+                            break;
+                        default:
+                            close();
+                    }
+                }
+            });
+            getButtons().getButton(UPDATE_REMINDERS_ID).setEnabled(false);
         }
 
         /**
-         * Adds a summary line item to a grid.
-         *
-         * @param grid   the grid
-         * @param action the reminder action
-         * @param stats  the reminder statistics
+         * Shows the dialog, and starts the reminder generation workflow.
          */
-        private void add(Grid grid, ReminderEvent.Action action,
-                         Statistics stats) {
-            String text = Messages.get("patient.reminder.summary."
-                    + action.name());
-            add(grid, text, stats.getCount(action));
+        public void show() {
+            super.show();
+            workflow.start();
         }
 
         /**
-         * Adds a summary line item to a grid.
-         *
-         * @param grid  the grid
-         * @param text  the item text
-         * @param count the statistics count
+         * Invoked when the 'cancel' button is pressed. This prompts for
+         * confirmation.
          */
-        private void add(Grid grid, String text, int count) {
-            Label label = LabelFactory.create();
-            label.setText(text);
-            Label value = LabelFactory.create();
-            value.setText(Integer.toString(count));
-            grid.add(label);
-            grid.add(value);
+        @Override
+        protected void onCancel() {
+            String title = Messages.get("patient.reminders.run.cancel.title");
+            String msg = Messages.get("patient.reminders.run.cancel.message");
+            final ConfirmationDialog dialog = new ConfirmationDialog(title,
+                                                                     msg);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent e) {
+                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                        workflow.cancel();
+                        GenerationDialog.this.close(CANCEL_ID);
+                    } else {
+                        BatchProcessorComponent processor = getCurrent();
+                        if (processor instanceof ProgressBarProcessor) {
+                            processor.process();
+                        }
+                    }
+                }
+            });
+            BatchProcessorComponent processor = getCurrent();
+            if (processor instanceof ProgressBarProcessor) {
+                ((ProgressBarProcessor) processor).setSuspend(true);
+            }
+            dialog.show();
+        }
+
+        /**
+         * Add a button to restart a processor.
+         *
+         * @param processor the processor
+         * @param buttonId  the button identifier
+         * @return a new button
+         */
+        private Button addRestartButton(final BatchProcessorComponent processor,
+                                        String buttonId) {
+            Button button = ButtonFactory.create(
+                    buttonId, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    restart(processor);
+                }
+            });
+            button.setEnabled(false);
+            restartButtons.add(button);
+            return button;
+        }
+
+        /**
+         * Returns the current batch processor.
+         *
+         * @return the current batch processor, or <tt>null</tt> if there
+         *         is none
+         */
+        private BatchProcessorComponent getCurrent() {
+            BatchProcessorTask task
+                    = (BatchProcessorTask) workflow.getCurrent();
+            if (task != null) {
+                return (BatchProcessorComponent) task.getProcessor();
+            }
+            return null;
+        }
+
+        /**
+         * Invoked when generation is complete.
+         * Displays statistics.
+         */
+        private void onGenerationComplete() {
+            ButtonSet set = getButtons();
+            set.remove(set.getButton(CANCEL_ID));
+            addButton(UPDATE_REMINDERS_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    update();
+                    close();
+                }
+            });
+            addButton(CANCEL_ID, false);
+            showStatistics();
+            for (Button button : restartButtons) {
+                button.setEnabled(true);
+            }
+        }
+
+        /**
+         * Restarts a batch processor.
+         *
+         * @param processor the processor to restart
+         */
+        private void restart(BatchProcessorComponent processor) {
+            enableButtons(false);
+            workflow = new WorkflowImpl();
+            workflow.addTask(new BatchProcessorTask(processor));
+            workflow.addTaskListener(new TaskListener() {
+                public void taskEvent(TaskEvent event) {
+                    enableButtons(true);
+                }
+            });
+            workflow.start();
+        }
+
+        /**
+         * Enables/disables the update and restart buttons.
+         *
+         * @param enable if <tt>true</tt> enable the buttons; otherwise disable
+         *               them
+         */
+        private void enableButtons(boolean enable) {
+            for (Button button : restartButtons) {
+                button.setEnabled(enable);
+            }
+            Button button = getButtons().getButton(UPDATE_REMINDERS_ID);
+            button.setEnabled(enable);
         }
     }
+
 }
