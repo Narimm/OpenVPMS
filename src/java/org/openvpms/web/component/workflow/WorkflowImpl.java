@@ -54,7 +54,12 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
     private boolean cancel;
 
     /**
-     * Determines if the skipping a task terminates the workflow.
+     * Determines if cancelling a task terminates the workflow.
+     */
+    private boolean breakOnCancel = true;
+
+    /**
+     * Determines if skipping a task terminates the workflow.
      */
     private boolean breakOnSkip;
 
@@ -62,6 +67,11 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
      * The listener to handle task events.
      */
     private final TaskListener taskListener;
+
+    /**
+     * The current task.
+     */
+    private Task current;
 
 
     /**
@@ -82,6 +92,17 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
      */
     public void addTask(Task task) {
         tasks.add(task);
+    }
+
+    /**
+     * Determines if cancelling a task should cause the workflow to terminate.
+     * This only applies to tasks that have been successfully started.
+     *
+     * @param breakOnCancel if <tt>true</tt> terminate the workflow if a task
+     *                      is cancelled. Defaults to <tt>true</tt>
+     */
+    public void setBreakOnCancel(boolean breakOnCancel) {
+        this.breakOnCancel = breakOnCancel;
     }
 
     /**
@@ -117,22 +138,39 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
     }
 
     /**
+     * Cancels the workflow.
+     */
+    public void cancel() {
+        this.cancel = true;
+    }
+
+    /**
+     * Returns the current task.
+     *
+     * @return the current task, or <tt>null</tt> if there is none
+     */
+    public Task getCurrent() {
+        return current;
+    }
+
+    /**
      * Executes the next task.
      */
     protected void next() {
         if (cancel) {
+            current = null;
             notifyCancelled();
         } else if (taskIterator.hasNext()) {
-            Task task = taskIterator.next();
-
+            current = taskIterator.next();
             try {
-                task.addTaskListener(taskListener);
-                task.start(initial);
+                current.addTaskListener(taskListener);
+                current.start(initial);
             } catch (Throwable throwable) {
                 cancel = true;
                 ErrorHelper.show(throwable);
             }
         } else {
+            current = null;
             notifyCompleted();
         }
     }
@@ -156,7 +194,11 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
                 }
                 break;
             case CANCELLED:
-                notifyCancelled();
+                if (breakOnCancel) {
+                    notifyCancelled();
+                } else {
+                    next();
+                }
                 break;
             case COMPLETED:
                 next();

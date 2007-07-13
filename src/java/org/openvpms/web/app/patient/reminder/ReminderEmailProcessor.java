@@ -21,7 +21,6 @@ package org.openvpms.web.app.patient.reminder;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.archetype.rules.patient.reminder.AbstractReminderProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.FailedToProcessReminder;
@@ -39,6 +38,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 
 import javax.mail.internet.MimeMessage;
 import java.io.InputStream;
+import java.util.List;
 
 
 /**
@@ -47,7 +47,7 @@ import java.io.InputStream;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ReminderEmailProcessor extends AbstractReminderProcessorListener {
+class ReminderEmailProcessor extends ProgressBarProcessor<ReminderEvent> {
 
     /**
      * The mail sender.
@@ -64,7 +64,6 @@ public class ReminderEmailProcessor extends AbstractReminderProcessorListener {
      */
     private final String emailName;
 
-
     /**
      * The document handlers.
      */
@@ -74,12 +73,15 @@ public class ReminderEmailProcessor extends AbstractReminderProcessorListener {
     /**
      * Constructs a new <tt>ReminderEmailProcessor</tt>.
      *
+     * @param reminders    the reminders
      * @param sender       the mail sender
      * @param emailAddress the email address
      * @param emailName    the email name
      */
-    public ReminderEmailProcessor(JavaMailSender sender,
+    public ReminderEmailProcessor(List<ReminderEvent> reminders,
+                                  JavaMailSender sender,
                                   String emailAddress, String emailName) {
+        super(reminders, "Email");
         this.sender = sender;
         this.emailAddress = emailAddress;
         this.emailName = emailName;
@@ -93,7 +95,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessorListener {
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the event cannot be processed
      */
-    public void process(ReminderEvent event) {
+    protected void process(ReminderEvent event) {
         try {
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -133,7 +135,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessorListener {
                 }
             });
             sender.send(message);
-            update(event.getReminder());
+            processCompleted(event);
         } catch (ArchetypeServiceException exception) {
             throw exception;
         } catch (ReminderProcessorException exception) {
