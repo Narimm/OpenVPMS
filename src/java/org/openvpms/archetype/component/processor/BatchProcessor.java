@@ -35,7 +35,15 @@ public interface BatchProcessor {
     void setListener(BatchProcessorListener listener);
 
     /**
-     * Process the batch.
+     * Processes the batch.
      */
     void process();
+
+    /**
+     * Returns the no. of objects processed.
+     *
+     * @return the no. of objects processed
+     */
+    int getProcessed();
+
 }
