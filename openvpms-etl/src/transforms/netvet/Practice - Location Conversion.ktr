@@ -42,26 +42,6 @@
     </info>
   <notepads>
     </notepads>
-  <connection>
-    <name>openvpms</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
   <hop> <from>Transform Clinic Fields</from><to>OpenVPMS Location Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select Clinic Fields</from><to>Transform Clinic Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Generate Rows</from><to>Select Clinic Fields</to><enabled>Y</enabled> </hop>  </order>
 
@@ -84,7 +64,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>Swanbourne Veterinary Hospital</nullif>
+        <nullif>Main Clinic</nullif>
         <length>-1</length>
         <precision>-1</precision>
         </field>
@@ -95,7 +75,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>2 Devon Road</nullif>
+        <nullif>Street</nullif>
         <length>-1</length>
         <precision>-1</precision>
         </field>
@@ -106,7 +86,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>Swanbourne</nullif>
+        <nullif>Suburb</nullif>
         <length>-1</length>
         <precision>-1</precision>
         </field>
@@ -117,7 +97,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>WA</nullif>
+        <nullif>VIC</nullif>
         <length>-1</length>
         <precision>-1</precision>
         </field>
@@ -128,7 +108,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>6034</nullif>
+        <nullif>9999</nullif>
         <length>-1</length>
         <precision>-1</precision>
         </field>
@@ -139,7 +119,7 @@
         <currency/>
         <decimal/>
         <group/>
-        <nullif>93842644</nullif>
+        <nullif>99999</nullif>
         <length>-1</length>
         <precision>-1</precision>
         </field>
@@ -164,7 +144,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>OpenVPMS</connection><idColumn>CLINIC</idColumn><mapping><source>LOCATIONNAME</source><target>&lt;party.organisationLocation>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>address</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>address</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>suburb</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>suburb</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>state</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>state</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>postcode</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>postcode</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>phone</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;entityRelationship.practiceLocation>target</target><excludeNull>true</excludeNull><value>&lt;party.organisationLocation>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;entityRelationship.practiceLocation>source</target><excludeNull>true</excludeNull><value>&lt;party.organisationPractice>1</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>OpenVPMS</connection><idColumn>CLINIC</idColumn><mapping><source>LOCATIONNAME</source><target>&lt;party.organisationLocation>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>LOCATIONNAME</source><target>&lt;party.organisationLocation>currency</target><excludeNull>false</excludeNull><value>AUD</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>address</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>address</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>suburb</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>suburb</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>state</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>state</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>postcode</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>postcode</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>phone</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;entityRelationship.practiceLocation>target</target><excludeNull>true</excludeNull><value>&lt;party.organisationLocation>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;entityRelationship.practiceLocation>source</target><excludeNull>true</excludeNull><value>&lt;party.organisationPractice>1</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>674</xloc>
       <yloc>243</yloc>
