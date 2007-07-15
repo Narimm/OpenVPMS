@@ -40,37 +40,37 @@
               minCardinality="0" maxCardinality="1"
               filter="participation.clinician"/>
         <node name="quantity" path="/quantity" type="java.math.BigDecimal" defaultValue="1.0">
-            <assertion name="nonNegative">
+            <!-- assertion name="nonNegative">
                 <errorMessage>Value must be >= 0.0</errorMessage>
-            </assertion>
+            </assertion-->
         </node>
         <node name="fixedPrice" path="/fixedAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0">
-            <assertion name="nonNegative">
+            <!-- assertion name="nonNegative">
                 <errorMessage>Value must be >= 0.0</errorMessage>
-            </assertion>
+            </assertion-->
         </node>
         <node name="unitPrice" path="/unitAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0">
-            <assertion name="nonNegative">
+            <!-- assertion name="nonNegative">
                 <errorMessage>Value must be >= 0.0</errorMessage>
-            </assertion>
+            </assertion-->
         </node>
         <node name="discount" path="/details/discount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0">
-            <assertion name="nonNegative">
+            <!-- assertion name="nonNegative">
                 <errorMessage>Value must be >= 0.0</errorMessage>
-            </assertion>
+            </assertion-->
         </node>
         <node name="tax" path="/taxAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" readOnly="true">
-            <assertion name="nonNegative">
+            <!-- assertion name="nonNegative">
                 <errorMessage>Value must be >= 0.0</errorMessage>
-            </assertion>
+            </assertion-->
         </node>
         <node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               derived="true" derivedValue="/fixedAmount - /details/discount + /quantity * /unitAmount">
-            <assertion name="nonNegative">
+            <!-- assertion name="nonNegative">
                 <errorMessage>Value must be >= 0.0</errorMessage>
-            </assertion>
+            </assertion-->
         </node>
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="false()" readOnly="true" hidden="true"/>
