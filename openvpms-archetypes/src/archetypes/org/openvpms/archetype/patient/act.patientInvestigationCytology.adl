@@ -52,7 +52,7 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="fileName" type="java.lang.String" path="/fileName" readOnly="true" hidden="true" />
+        <node name="fileName" type="java.lang.String" path="/fileName" hidden="true" />
         <node name="mimeType" type="java.lang.String" path="/mimeType" readOnly="true" hidden="true" />
     </archetype>
 </archetypes>
