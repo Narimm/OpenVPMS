@@ -56,6 +56,9 @@
                     <propertyMap name="archetype">
                         <property name="shortName" value="act.patientInvestigation*"/>
                     </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.patientDocument*"/>
+                    </propertyMap>
                 </propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
