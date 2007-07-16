@@ -63,7 +63,7 @@ public interface DocumentHandler {
     /**
      * Creates a new {@link Document} from a stream.
      *
-     * @param name     the document name
+     * @param name     the document name. Any path information is removed.
      * @param stream   a stream representing the document content
      * @param mimeType the mime type of the document. May be <code>null</code>
      * @param size     the size of stream

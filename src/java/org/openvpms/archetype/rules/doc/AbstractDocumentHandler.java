@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.DeflaterOutputStream;
@@ -98,7 +99,7 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
     /**
      * Creates a new {@link Document} from a stream.
      *
-     * @param name     the document name
+     * @param name     the document name. Any path information is removed.
      * @param stream   a stream representing the document content
      * @param mimeType the mime type of the content. May be <code>null</code>
      * @param size     the size of stream
@@ -156,16 +157,21 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
     /**
      * Creates a new {@link Document}.
      *
-     * @param name     the document name
+     * @param name     the document name. Any path information is removed.
      * @param content  the serialized content
      * @param mimeType the mime type of the content. May be <code>null</code>
-     * @param size the uncompressed document size
+     * @param size     the uncompressed document size
      * @return a new document
      * @throws DocumentException         if the document can't be created
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document create(String name, byte[] content, String mimeType,
                            int size) {
+        if (name != null) {
+            // strip path information
+            File file = new File(name);
+            name = file.getName();
+        }
         Document document = (Document) service.create(shortName);
         document.setName(name);
         document.setMimeType(mimeType);
