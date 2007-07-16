@@ -25,6 +25,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
@@ -39,6 +40,7 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.OrConstraint;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -162,8 +164,9 @@ public class CustomerBalanceGenerator {
         int acts = 0;
         int processed = 0;
         CustomerAccountRules rules = new CustomerAccountRules(service);
+        String[] shortNames = CustomerAccountActTypes.DEBIT_CREDIT_SHORT_NAMES;
         ArchetypeQuery query = new ArchetypeQuery(
-                CustomerAccountActTypes.DEBIT_CREDIT_SHORT_NAMES, true, true);
+                shortNames, true, true);
         query.add(new NodeConstraint("status", ActStatus.POSTED));
         CollectionNodeConstraint constraint = new CollectionNodeConstraint(
                 "customer", "participation.customer", true, true);
@@ -171,6 +174,17 @@ public class CustomerBalanceGenerator {
                 "entity", customer.getObjectReference()));
         query.add(constraint);
         query.add(new NodeSortConstraint("startTime", true));
+        OrConstraint or = new OrConstraint();
+        for (String shortName : shortNames) {
+            // duplicate the act short names onto the participation act
+            // references, to force utilisation of the (faster) participation
+            // index. Ideally would only need to specify the act short names
+            // on participations, but this isn't supported by ArchetypeQuery.
+            ObjectRefNodeConstraint ref = new ObjectRefNodeConstraint(
+                    "act", new ArchetypeId(shortName));
+            or.add(ref);
+        }
+        constraint.add(or);
         query.setMaxResults(1000);
 
         Iterator<FinancialAct> iterator

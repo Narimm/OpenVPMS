@@ -21,6 +21,7 @@ package org.openvpms.archetype.rules.finance.account;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -585,6 +586,12 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
             CollectionNodeConstraint constraint
                     = new CollectionNodeConstraint("customer");
             constraint.add(new ObjectRefNodeConstraint("entity", customer));
+            constraint.add(new ObjectRefNodeConstraint(
+                    "act", new ArchetypeId(shortName)));
+            // re-specify the act short name. to force utilisation of the
+            // (faster) participation index. Ideally would only need to specify
+            // the act short name on participations, but this isn't supported
+            // by ArchetypeQuery.
             query.add(constraint);
             query.add(new NodeSortConstraint("startTime", false));
             query.add(new NodeSelectConstraint("act.startTime"));
