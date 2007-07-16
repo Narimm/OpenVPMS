@@ -30,7 +30,7 @@ select count(act)
 where p.entity.linkId = :patientId
       and p.archetypeId.shortName = 'participation.patient'
       and p.act.linkId = act.linkId
-      and act.archetypeId.shortName='act.patientReminder'
+      and p.act.archetypeId.shortName='act.patientReminder'
       and act.status = 'IN_PROGRESS'
       ]]>
     </query>
@@ -43,7 +43,7 @@ select count(act)
 where p.entity.linkId = :patientId
       and p.archetypeId.shortName = 'participation.patient'
       and p.act.linkId = act.linkId
-      and act.archetypeId.shortName='act.patientAlert'
+      and p.act.archetypeId.shortName='act.patientAlert'
       and act.status = 'IN_PROGRESS'
       and (act.activityEndTime > :date or act.activityEndTime is null)
       ]]>
