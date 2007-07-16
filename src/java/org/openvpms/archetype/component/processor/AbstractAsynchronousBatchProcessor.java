@@ -67,7 +67,6 @@ public abstract class AbstractAsynchronousBatchProcessor<Type>
             Iterator<Type> iterator = getIterator();
             while (!isSuspended() && iterator.hasNext()) {
                 process(iterator.next());
-                incProcessed();
             }
             if (!isSuspended()) {
                 // processing completed.
