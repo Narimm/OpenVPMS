@@ -66,6 +66,7 @@ public class AsynchronousBatchProcessor<Action, Type, Event>
      */
     protected void process(Type object) {
         processor.process(object);
+        incProcessed();
     }
 
     /**
