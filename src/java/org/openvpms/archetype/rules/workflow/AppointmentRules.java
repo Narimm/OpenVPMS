@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.workflow;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -58,6 +59,12 @@ public class AppointmentRules {
      * The archetype service.
      */
     private IArchetypeService service;
+
+    /**
+     * Appointment act short name.
+     */
+    private static final String APPOINTMENT = "act.customerAppointment";
+
 
     /**
      * Creates a new <tt>AppointmentRules</tt>.
@@ -176,8 +183,7 @@ public class AppointmentRules {
                                                Date endTime,
                                                IMObjectReference schedule) {
         ShortNameConstraint shortName
-                = new ShortNameConstraint("act", "act.customerAppointment",
-                                          true);
+                = new ShortNameConstraint("act", APPOINTMENT, true);
         ArchetypeQuery query = new ArchetypeQuery(shortName);
         query.setFirstResult(0);
         query.setMaxResults(1);
@@ -191,7 +197,13 @@ public class AppointmentRules {
         query.add(new NodeConstraint("uid", RelationalOp.NE, uid));
         CollectionNodeConstraint participations = new CollectionNodeConstraint(
                 "schedule", "participation.schedule", false, true)
-                .add(new ObjectRefNodeConstraint("entity", schedule));
+                .add(new ObjectRefNodeConstraint("entity", schedule))
+                .add(new ObjectRefNodeConstraint("act", new ArchetypeId(
+                        APPOINTMENT)));
+        // re-specify the act short name. to force utilisation of the
+        // (faster) participation index. Ideally would only need to specify
+        // the act short name on participations, but this isn't supported
+        // by ArchetypeQuery.        query.add(participations);
         query.add(participations);
         OrConstraint or = new OrConstraint();
         IConstraint overlapStart = createOverlapConstraint(startTime);
