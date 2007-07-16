@@ -23,6 +23,7 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TaskQueueHandle;
+import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProcessor;
 
 import java.util.List;
@@ -62,6 +63,17 @@ public abstract class ProgressBarProcessor<T>
      * The task queue, in order to asynchronously trigger processing.
      */
     private TaskQueueHandle taskQueue;
+
+    /**
+     * The last time a refresh occurred.
+     */
+    private long lastRefresh = 0;
+
+    /**
+     * Determines how often to re-schedule the processor, to force a refresh.
+     */
+    private long refreshInterval = DateUtils.MILLIS_IN_SECOND * 2;
+
 
     /**
      * Constructs a new <tt>ProgressBarProcessor</tt>.
@@ -106,6 +118,7 @@ public abstract class ProgressBarProcessor<T>
      */
     public void restart() {
         setIterator(items.iterator());
+        lastRefresh = 0;
     }
 
     /**
@@ -134,17 +147,21 @@ public abstract class ProgressBarProcessor<T>
      * @param object the processed object
      */
     protected void processCompleted(T object) {
+        incProcessed();
+        long time = System.currentTimeMillis();
         if (getProcessed() % step == 0) {
             bar.setValue(getProcessed());
-            if (!isSuspended()) {
-                setSuspend(true);
-                final ApplicationInstance app = ApplicationInstance.getActive();
-                app.enqueueTask(getTaskQueue(), new Runnable() {
-                    public void run() {
-                        process();
-                    }
-                });
-            }
+        }
+        if (!isSuspended() && (lastRefresh == 0
+                || ((lastRefresh - time) > refreshInterval))) {
+            setSuspend(true);
+            final ApplicationInstance app = ApplicationInstance.getActive();
+            app.enqueueTask(getTaskQueue(), new Runnable() {
+                public void run() {
+                    process();
+                }
+            });
+            lastRefresh = time;
         }
     }
 

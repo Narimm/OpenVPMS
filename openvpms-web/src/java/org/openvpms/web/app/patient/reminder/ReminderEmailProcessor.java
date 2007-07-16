@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.im.doc.ReportGenerator;
+import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -81,7 +82,7 @@ class ReminderEmailProcessor extends ProgressBarProcessor<ReminderEvent> {
     public ReminderEmailProcessor(List<ReminderEvent> reminders,
                                   JavaMailSender sender,
                                   String emailAddress, String emailName) {
-        super(reminders, "Email");
+        super(reminders, Messages.get("patient.reminder.run.email"));
         this.sender = sender;
         this.emailAddress = emailAddress;
         this.emailName = emailName;

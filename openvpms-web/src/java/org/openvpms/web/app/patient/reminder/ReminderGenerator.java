@@ -335,8 +335,8 @@ class ReminderGenerator extends BasicBatchProcessor {
          */
         @Override
         protected void onCancel() {
-            String title = Messages.get("patient.reminders.run.cancel.title");
-            String msg = Messages.get("patient.reminders.run.cancel.message");
+            String title = Messages.get("patient.reminder.run.cancel.title");
+            String msg = Messages.get("patient.reminder.run.cancel.message");
             final ConfirmationDialog dialog = new ConfirmationDialog(title,
                                                                      msg);
             dialog.addWindowPaneListener(new WindowPaneListener() {

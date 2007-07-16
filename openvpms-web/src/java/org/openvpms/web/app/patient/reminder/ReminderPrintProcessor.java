@@ -29,6 +29,7 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
@@ -47,7 +48,7 @@ class ReminderPrintProcessor extends ProgressBarProcessor<ReminderEvent> {
      * @param reminders the reminders to print
      */
     public ReminderPrintProcessor(List<ReminderEvent> reminders) {
-        super(reminders, "Print");
+        super(reminders, Messages.get("patient.reminder.run.print"));
     }
 
     /**
