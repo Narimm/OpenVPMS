@@ -30,6 +30,7 @@ import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,27 +66,38 @@ class ReminderPhoneProcessor extends BasicBatchProcessor
         row = RowFactory.create();
     }
 
+    /**
+     * The component.
+     *
+     * @return the component
+     */
     public Component getComponent() {
         return row;
     }
 
+    /**
+     * The processor title.
+     *
+     * @return the processor title
+     */
     public String getTitle() {
-        return "Phone";
+        return Messages.get("patient.reminder.run.list");
     }
 
     /**
      * Processes the batch.
      */
     public void process() {
-        setStatus("Printing phone list");
+        setStatus(Messages.get("patient.reminder.list.status.begin"));
         if (!reminders.isEmpty()) {
             try {
                 IMObjectReportPrinter<Act> printer
                         = new IMObjectReportPrinter<Act>(reminders,
                                                          "act.patientReminder");
                 final InteractiveIMPrinter<Act> iPrinter
-                        = new InteractiveIMPrinter<Act>("Print phone listing",
-                                                        printer, true);
+                        = new InteractiveIMPrinter<Act>(
+                        Messages.get("patient.reminder.list.print.title"),
+                        printer, true);
 
                 iPrinter.setListener(new PrinterListener() {
                     public void printed() {
@@ -123,7 +135,7 @@ class ReminderPhoneProcessor extends BasicBatchProcessor
      */
     @Override
     protected void notifyCompleted() {
-        setStatus("Done");
+        setStatus(Messages.get("patient.reminder.list.status.end"));
         super.notifyCompleted();
     }
 
@@ -135,7 +147,7 @@ class ReminderPhoneProcessor extends BasicBatchProcessor
      */
     @Override
     protected void notifyError(Throwable exception) {
-        setStatus("Failed");
+        setStatus(Messages.get("patient.reminder.list.status.failed"));
         super.notifyError(exception);
     }
 

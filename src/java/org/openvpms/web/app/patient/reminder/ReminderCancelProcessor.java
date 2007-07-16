@@ -21,6 +21,7 @@ package org.openvpms.web.app.patient.reminder;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class ReminderCancelProcessor
      * @param reminders the reminders to cancel
      */
     public ReminderCancelProcessor(List<ReminderEvent> reminders) {
-        super(reminders, "Cancel");
+        super(reminders, Messages.get("patient.reminder.run.cancel"));
         rules = new ReminderRules();
     }
 
