@@ -145,14 +145,17 @@ public class CustomerAccountRules {
      *         fully allocated
      */
     public boolean inBalance(FinancialAct act) {
-        Money allocated = act.getAllocatedAmount();
-        Money total = act.getTotal();
-        if (allocated != null && total != null) {
-            if (allocated.compareTo(total) == 0) {
-                return true;
+        boolean result = hasBalanceParticipation(act);
+        if (!result) {
+            Money allocated = act.getAllocatedAmount();
+            Money total = act.getTotal();
+            if (allocated != null && total != null) {
+                if (allocated.compareTo(total) == 0) {
+                    result = true;
+                }
             }
         }
-        return false;
+        return result;
     }
 
     /**

@@ -203,7 +203,7 @@ public class AppointmentRules {
         // re-specify the act short name. to force utilisation of the
         // (faster) participation index. Ideally would only need to specify
         // the act short name on participations, but this isn't supported
-        // by ArchetypeQuery.        query.add(participations);
+        // by ArchetypeQuery.
         query.add(participations);
         OrConstraint or = new OrConstraint();
         IConstraint overlapStart = createOverlapConstraint(startTime);
