@@ -19,8 +19,8 @@
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 import java.util.Date;
@@ -45,7 +45,7 @@ public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
      * @param pageSize    the maximum no. of results per page
      * @param sort        the sort criteria. May be <tt>null</tt>
      */
-    public ActResultSet(BaseArchetypeConstraint archetypes,
+    public ActResultSet(ShortNameConstraint archetypes,
                         ParticipantConstraint participant,
                         Date from, Date to,
                         String[] statuses, int pageSize,
@@ -69,7 +69,7 @@ public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
      * @param pageSize    the maximum no. of results per page
      * @param sort        the sort criteria. May be <tt>null</tt>
      */
-    public ActResultSet(BaseArchetypeConstraint archetypes,
+    public ActResultSet(ShortNameConstraint archetypes,
                         ParticipantConstraint participant,
                         Date from, Date to,
                         String[] statuses, boolean exclude,
@@ -94,7 +94,7 @@ public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
      * @param pageSize     the maximum no. of results per page
      * @param sort         the sort criteria. May be <tt>null</tt>
      */
-    public ActResultSet(BaseArchetypeConstraint archetypes,
+    public ActResultSet(ShortNameConstraint archetypes,
                         ParticipantConstraint[] participants,
                         Date from, Date to,
                         String[] statuses, boolean exclude,
@@ -117,7 +117,7 @@ public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
      * @param pageSize     the maximum no. of results per page
      * @param sort         the sort criteria. May be <tt>null</tt>
      */
-    public ActResultSet(BaseArchetypeConstraint archetypes,
+    public ActResultSet(ShortNameConstraint archetypes,
                         ParticipantConstraint[] participants,
                         IConstraint times, String[] statuses, boolean exclude,
                         IConstraint constraints, int pageSize,

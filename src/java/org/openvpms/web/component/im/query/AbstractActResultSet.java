@@ -18,15 +18,19 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IConstraintContainer;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 import java.util.Date;
@@ -44,7 +48,7 @@ public abstract class AbstractActResultSet<T>
     /**
      * The act archetype criteria.
      */
-    private final BaseArchetypeConstraint archetypes;
+    private final ShortNameConstraint archetypes;
 
     /**
      * The participant constraints.
@@ -69,7 +73,7 @@ public abstract class AbstractActResultSet<T>
      * @param pageSize   the maximum no. of results per page
      * @param sort       the sort criteria. May be <tt>null</tt>
      */
-    public AbstractActResultSet(BaseArchetypeConstraint archetypes,
+    public AbstractActResultSet(ShortNameConstraint archetypes,
                                 int pageSize, SortConstraint[] sort) {
         this(archetypes, null, null, null, null, pageSize, sort);
     }
@@ -85,7 +89,7 @@ public abstract class AbstractActResultSet<T>
      * @param pageSize    the maximum no. of results per page
      * @param sort        the sort criteria. May be <tt>null</tt>
      */
-    public AbstractActResultSet(BaseArchetypeConstraint archetypes,
+    public AbstractActResultSet(ShortNameConstraint archetypes,
                                 ParticipantConstraint participant,
                                 Date from,
                                 Date to,
@@ -110,7 +114,7 @@ public abstract class AbstractActResultSet<T>
      * @param pageSize    the maximum no. of results per page
      * @param sort        the sort criteria. May be <tt>null</tt>
      */
-    public AbstractActResultSet(BaseArchetypeConstraint archetypes,
+    public AbstractActResultSet(ShortNameConstraint archetypes,
                                 ParticipantConstraint participant,
                                 Date from,
                                 Date to,
@@ -137,7 +141,7 @@ public abstract class AbstractActResultSet<T>
      * @param pageSize     the maximum no. of results per page
      * @param sort         the sort criteria. May be <tt>null</tt>
      */
-    public AbstractActResultSet(BaseArchetypeConstraint archetypes,
+    public AbstractActResultSet(ShortNameConstraint archetypes,
                                 ParticipantConstraint[] participants,
                                 Date from,
                                 Date to,
@@ -162,7 +166,7 @@ public abstract class AbstractActResultSet<T>
      * @param pageSize     the maximum no. of results per page
      * @param sort         the sort criteria. May be <tt>null</tt>
      */
-    public AbstractActResultSet(BaseArchetypeConstraint archetypes,
+    public AbstractActResultSet(ShortNameConstraint archetypes,
                                 ParticipantConstraint[] participants,
                                 IConstraint times, String[] statuses,
                                 boolean exclude, IConstraint constraints,
@@ -212,8 +216,24 @@ public abstract class AbstractActResultSet<T>
         }
 
         if (participants != null) {
-            for (ParticipantConstraint participant : participants) {
-                query.add(participant);
+            String[] shortNames = DescriptorHelper.getShortNames(
+                    archetypes.getShortNames());
+            try {
+                for (ParticipantConstraint participant : participants) {
+                    ParticipantConstraint p
+                            = (ParticipantConstraint) participant.clone();
+                    OrConstraint or = new OrConstraint();
+                    for (String shortName : shortNames) {
+                        ArchetypeId id = new ArchetypeId(shortName);
+                        or.add(new ObjectRefNodeConstraint("act", id));
+                    }
+                    p.add(or);
+                    query.add(p);
+                }
+            } catch (CloneNotSupportedException exception) {
+                throw new ArchetypeQueryException(
+                        ArchetypeQueryException.ErrorCode.CloneNotSupported,
+                        exception);
             }
         }
 
