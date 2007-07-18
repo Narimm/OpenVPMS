@@ -28,7 +28,6 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
@@ -178,7 +177,7 @@ public class PatientSummary {
     private ActResultSet<Act> getAlerts(Party patient) {
         String[] shortNames = {"act.patientAlert"};
         String[] statuses = {ActStatus.IN_PROGRESS};
-        BaseArchetypeConstraint archetypes = new ShortNameConstraint(
+        ShortNameConstraint archetypes = new ShortNameConstraint(
                 shortNames, true, true);
         ParticipantConstraint[] participants = {
                 new ParticipantConstraint("patient", "participation.patient",
@@ -224,7 +223,7 @@ public class PatientSummary {
     private ResultSet<Act> getReminders(Party patient) {
         String[] shortNames = {"act.patientReminder"};
         String[] statuses = {ActStatus.IN_PROGRESS};
-        BaseArchetypeConstraint archetypes = new ShortNameConstraint(
+        ShortNameConstraint archetypes = new ShortNameConstraint(
                 shortNames, true, true);
         ParticipantConstraint[] participants = {
                 new ParticipantConstraint("patient", "participation.patient",

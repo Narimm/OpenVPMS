@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -80,7 +79,7 @@ public class ActHelper {
                                                String openingBalanceName,
                                                String closingBalanceName) {
         String[] statuses = {FinancialActStatus.POSTED};
-        BaseArchetypeConstraint archetypes = new ShortNameConstraint(
+        ShortNameConstraint archetypes = new ShortNameConstraint(
                 shortNames, true, true);
         ParticipantConstraint constraint = new ParticipantConstraint(
                 participant, participation, entity);

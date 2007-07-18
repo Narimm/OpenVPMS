@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -62,7 +61,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
         Party party = TestHelper.createCustomer();
         SaveHelper.save(party);
 
-        BaseArchetypeConstraint archetypes = new ShortNameConstraint(
+        ShortNameConstraint archetypes = new ShortNameConstraint(
                 "act.customerEstimation", true, true);
         Date from = null;       // query all dates
         Date to = null;
@@ -109,7 +108,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
             ++expectedPages;
         }
 
-        BaseArchetypeConstraint archetypes = new ShortNameConstraint(
+        ShortNameConstraint archetypes = new ShortNameConstraint(
                 "act.customerEstimation", true, true);
         Date from = null;       // query all dates
         Date to = null;
@@ -146,7 +145,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
         final int total = _acts.length;
         int expectedPages = getPages(rowsPerPage, total);
 
-        BaseArchetypeConstraint archetypes = new ShortNameConstraint(
+        ShortNameConstraint archetypes = new ShortNameConstraint(
                 "act.customerEstimation", true, true);
         Date from = null;       // query all dates
         Date to = null;
