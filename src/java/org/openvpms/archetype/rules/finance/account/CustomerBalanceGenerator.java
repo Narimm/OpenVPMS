@@ -48,10 +48,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 
@@ -269,6 +271,12 @@ public class CustomerBalanceGenerator {
         private final Iterator<FinancialAct> iterator;
 
         /**
+         * The unallocated acts.
+         */
+        private final List<FinancialAct> unallocated
+                = new ArrayList<FinancialAct>();
+
+        /**
          * The modified acts, with associated versions, to determine if
          * they need to be saved.
          */
@@ -334,12 +342,13 @@ public class CustomerBalanceGenerator {
                         modified(act);
                     }
                 }
-                if (!rules.inBalance(act) || act.getTotal().compareTo(
-                        act.getAllocatedAmount()) != 0) {
-                    // if the act is unallocated/partially allocated, need
-                    // to update the balance
+                if (!rules.inBalance(act)) {
                     rules.addToBalance(act);
                     modified(act);
+                } else if (act.getTotal().compareTo(
+                        act.getAllocatedAmount()) != 0) {
+                    // act partially allocated
+                    unallocated.add(act);
                 }
             }
             save();
@@ -372,7 +381,7 @@ public class CustomerBalanceGenerator {
                 }
                 if (!rules.inBalance(act)) { // false for 0 totals
                     rules.addToBalance(act);
-                    modified(act);
+                    unallocated.add(act);
                 }
             }
             save();
@@ -392,23 +401,27 @@ public class CustomerBalanceGenerator {
         }
 
         /**
-         * Marks an act as being modified.
+         * Marks an act as being modified, and adds to the list of unallocated
+         * acts.
          *
          * @param act the act
          */
         private void modified(FinancialAct act) {
-            modified.put(act, act.getVersion());
+            if (modified.put(act, act.getVersion()) == null) {
+                unallocated.add(act);
+            }
         }
 
         /**
          * Saves unallocated acts.
          */
         private void save() {
-            if (!modified.isEmpty()) {
-                // Update the customer balance. This will save any acts that it
-                // changes. Need to check versions to determine if the acts
-                // that this method has changed also need to be saved
-                rules.updateBalance(null, modified.keySet().iterator());
+            if (!unallocated.isEmpty()) {
+                // Update the customer balance. This will save any acts
+                // that it changes. Need to check versions to determine if
+                // the acts that this method has changed also need to be
+                // saved
+                rules.updateBalance(null, unallocated.iterator());
                 for (Map.Entry<FinancialAct, Long> entry
                         : modified.entrySet()) {
                     FinancialAct act = entry.getKey();
