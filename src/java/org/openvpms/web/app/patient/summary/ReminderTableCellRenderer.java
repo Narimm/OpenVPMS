@@ -106,21 +106,24 @@ public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
                         "participation.reminderType");
                 if (reminderType != null) {
                     EntityBean bean = new EntityBean(reminderType);
-                    int interval = bean.getInt("sensitivityInterval");
-                    DateUnits units = DateUnits.valueOf(
-                            bean.getString("sensitivityUnits"));
-                    Date now = new Date();
-                    Date from = DateRules.getDate(now, -interval, units);
-                    Date to = DateRules.getDate(now, interval, units);
-                    Date dueDate = act.getAct().getActivityEndTime();
-                    if (dueDate != null) {
-                        if (dueDate instanceof Timestamp) {
-                            dueDate = new Date(dueDate.getTime());
-                        }
-                        if (dueDate.compareTo(from) < 0) {
-                            style = OVERDUE_STYLE;
-                        } else if (dueDate.compareTo(to) < 0) {
-                            style = REMIND_STYLE;
+                    String sensitivityUnits
+                            = bean.getString("sensitivityUnits");
+                    if (sensitivityUnits != null) {
+                        int interval = bean.getInt("sensitivityInterval");
+                        DateUnits units = DateUnits.valueOf(sensitivityUnits);
+                        Date now = new Date();
+                        Date from = DateRules.getDate(now, -interval, units);
+                        Date to = DateRules.getDate(now, interval, units);
+                        Date dueDate = act.getAct().getActivityEndTime();
+                        if (dueDate != null) {
+                            if (dueDate instanceof Timestamp) {
+                                dueDate = new Date(dueDate.getTime());
+                            }
+                            if (dueDate.compareTo(from) < 0) {
+                                style = OVERDUE_STYLE;
+                            } else if (dueDate.compareTo(to) < 0) {
+                                style = REMIND_STYLE;
+                            }
                         }
                     }
                 }
