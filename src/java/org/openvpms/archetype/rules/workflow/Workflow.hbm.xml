@@ -230,4 +230,21 @@ order by act.activityStartTime, act.linkId
       ]]>
     </query>
 
+    <query name="act.customerAppointment-overlap">
+        <![CDATA[
+select act.uid
+from  org.openvpms.component.business.domain.im.act.Act as act,
+      org.openvpms.component.business.domain.im.common.Participation as p
+where act.archetypeId.shortName = 'act.customerAppointment'
+      and act.uid <> :actId
+      and act.linkId = p.act.linkId
+      and p.entity.linkId = :scheduleId
+      and p.act.archetypeId.shortName = 'act.customerAppointment'
+      and act.active = 1
+      and ((act.activityStartTime < :startTime and act.activityEndTime > :startTime)
+           or (act.activityStartTime < :endTime and  act.activityEndTime > :endTime)
+           or (act.activityStartTime >= :startTime and act.activityEndTime <= :endTime))
+      ]]>
+    </query>
+
 </hibernate-mapping>
