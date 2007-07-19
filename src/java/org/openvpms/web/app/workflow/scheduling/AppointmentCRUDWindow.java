@@ -130,7 +130,8 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
         String status = act.getStatus();
         return AppointmentStatus.CHECKED_IN.equals(status)
                 || AppointmentStatus.IN_PROGRESS.equals(status)
-                || AppointmentStatus.COMPLETED.equals(status);
+                || AppointmentStatus.COMPLETED.equals(status)
+                || AppointmentStatus.BILLED.equals(status);
     }
 
     /**
