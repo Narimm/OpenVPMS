@@ -19,7 +19,6 @@
 package org.openvpms.archetype.rules.workflow;
 
 import org.apache.commons.lang.time.DateUtils;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -31,17 +30,8 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.AndConstraint;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.OrConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.Date;
 import java.util.List;
@@ -59,11 +49,6 @@ public class AppointmentRules {
      * The archetype service.
      */
     private IArchetypeService service;
-
-    /**
-     * Appointment act short name.
-     */
-    private static final String APPOINTMENT = "act.customerAppointment";
 
 
     /**
@@ -182,6 +167,19 @@ public class AppointmentRules {
     private boolean hasOverlappingAppointments(long uid, Date startTime,
                                                Date endTime,
                                                IMObjectReference schedule) {
+        NamedQuery query = new NamedQuery("act.customerAppointment-overlap");
+        query.setParameter("startTime", startTime);
+        query.setParameter("endTime", endTime);
+        query.setParameter("scheduleId", schedule.getLinkId());
+        query.setParameter("actId", uid);
+        List<ObjectSet> overlaps = service.getObjects(query).getResults();
+        return !overlaps.isEmpty();
+/*
+        // Commented out as under the 1.0-rc1 schema, mysql doesn't select the
+        // fastest index. Re-implemented as a named query in order to avoid
+        // specifying participation.schedule in the where clause which
+        // causes mysql to perform a slow index-merge
+
         ShortNameConstraint shortName
                 = new ShortNameConstraint("act", APPOINTMENT, true);
         ArchetypeQuery query = new ArchetypeQuery(shortName);
@@ -221,6 +219,7 @@ public class AppointmentRules {
         query.add(new NodeSelectConstraint("act.uid"));
         List<ObjectSet> overlaps = service.getObjects(query).getResults();
         return !overlaps.isEmpty();
+*/
     }
 
     /**
@@ -230,12 +229,13 @@ public class AppointmentRules {
      * @param time the time
      * @return a new constraint
      */
-    private IConstraint createOverlapConstraint(Date time) {
-        AndConstraint and = new AndConstraint();
-        and.add(new NodeConstraint("startTime", RelationalOp.LT, time));
-        and.add(new NodeConstraint("endTime", RelationalOp.GT, time));
-        return and;
-    }
+    /*   private IConstraint createOverlapConstraint(Date time) {
+            AndConstraint and = new AndConstraint();
+            and.add(new NodeConstraint("startTime", RelationalOp.LT, time));
+            and.add(new NodeConstraint("endTime", RelationalOp.GT, time));
+            return and;
+        }
+    */
 
     /**
      * Returns the schedule slot size in minutes.
