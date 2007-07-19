@@ -92,17 +92,6 @@ public class AppointmentEditDialog extends EditDialog {
     }
 
     /**
-     * No-op at the moment, until overlapping appointment checks can be
-     * done more efficiently.
-     *
-     * @param close parameter ignored
-     * @return <tt>falks</tt>
-     */
-    private boolean checkForOverlappingAppointment(final boolean close) {
-        return false;
-    }
-
-    /**
      * Determines if the appointment overlaps an existing appointment.
      * If so, and double scheduling is allowed, a confirmation dialog is shown
      * prompting to save or continue editing. If double scheduling is not
@@ -113,7 +102,7 @@ public class AppointmentEditDialog extends EditDialog {
      * @return <code>true</code> if there are overlapping appointments, otherwise
      *         <code>false</code>
      */
-    private boolean checkForOverlappingAppointmentX(final boolean close) {
+    private boolean checkForOverlappingAppointment(final boolean close) {
         final IMObjectEditor editor = getEditor();
         IMObject object = editor.getObject();
         boolean overlap = false;
