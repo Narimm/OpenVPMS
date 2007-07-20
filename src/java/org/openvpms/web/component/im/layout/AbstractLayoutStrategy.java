@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.layout;
 
 import echopointng.TabbedPane;
+import echopointng.tabbedpane.TabModel;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
@@ -172,31 +173,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                    PropertySet properties, Component container,
                                    LayoutContext context) {
         if (!descriptors.isEmpty()) {
-            TabPaneModel model;
-            boolean shortcuts = false;
-            if (context.getLayoutDepth() == 0 && descriptors.size() > 1) {
-                model = new TabPaneModel(container);
-                shortcuts = true;
-            } else {
-                model = new TabPaneModel();
-            }
-            int shortcut = 1;
-            for (NodeDescriptor nodeDesc : descriptors) {
-                Property property = properties.get(nodeDesc);
-                ComponentState child = createComponent(property, object,
-                                                       context);
-                Component inset = ColumnFactory.create("Inset",
-                                                       child.getComponent());
-                setFocusTraversal(child);
-                String text;
-                if (shortcuts && shortcut <= 10) {
-                    text = getShortcut(nodeDesc.getDisplayName(), shortcut);
-                    ++shortcut;
-                } else {
-                    text = nodeDesc.getDisplayName();
-                }
-                model.addTab(text, inset);
-            }
+            TabModel model = doTabLayout(object, descriptors, properties,
+                                         container, context);
             TabbedPane pane = TabbedPaneFactory.create(model);
 
             pane.setSelectedIndex(0);
@@ -309,6 +287,48 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                 add(grid, labels[j], components[j]);
             }
         }
+    }
+
+    /**
+     * Lays out child components in a tab model.
+     *
+     * @param object      the parent object
+     * @param descriptors the property descriptors
+     * @param properties  the properties
+     * @param context     the layout context
+     * @return the tab model
+     */
+    protected TabPaneModel doTabLayout(IMObject object,
+                                       List<NodeDescriptor> descriptors,
+                                       PropertySet properties,
+                                       Component container,
+                                       LayoutContext context) {
+        TabPaneModel model;
+        boolean shortcuts = false;
+        if (context.getLayoutDepth() == 0 && descriptors.size() > 1) {
+            model = new TabPaneModel(container);
+            shortcuts = true;
+        } else {
+            model = new TabPaneModel();
+        }
+        int shortcut = 1;
+        for (NodeDescriptor nodeDesc : descriptors) {
+            Property property = properties.get(nodeDesc);
+            ComponentState child = createComponent(property, object,
+                                                   context);
+            Component inset = ColumnFactory.create("Inset",
+                                                   child.getComponent());
+            setFocusTraversal(child);
+            String text;
+            if (shortcuts && shortcut <= 10) {
+                text = getShortcut(nodeDesc.getDisplayName(), shortcut);
+                ++shortcut;
+            } else {
+                text = nodeDesc.getDisplayName();
+            }
+            model.addTab(text, inset);
+        }
+        return model;
     }
 
     /**
