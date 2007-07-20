@@ -46,8 +46,8 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-		<node name="sensitivityInterval" displayName="Sensitivity Interval" path="/details/attributes/sensitivityInterval" type="java.lang.Integer" minCardinality="0" />			
-		<node name="sensitivityUnits" displayName="Sensitivity Units" path="/details/attributes/sensitivityUnits" type="java.lang.String" minCardinality="0" defaultValue="'DAYS'" >
+		<node name="sensitivityInterval" displayName="Sensitivity Interval" path="/details/sensitivityInterval" type="java.lang.Integer" minCardinality="0" />
+		<node name="sensitivityUnits" displayName="Sensitivity Units" path="/details/sensitivityUnits" type="java.lang.String" minCardinality="0" defaultValue="'DAYS'" >
 			<assertion name="lookup.local">
 				<propertyList name="entries">
 					<property name="DAYS" value="days" />
