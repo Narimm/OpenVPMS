@@ -84,7 +84,8 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      */
     public void testSaveInvoiceItem() {
         ActBean item = createInvoiceItem();
-        item.addParticipation("participation.product", createProduct(true));
+        Product product = createProduct(true);
+        item.addParticipation("participation.product", product);
         item.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
@@ -119,6 +120,8 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
                      reminderBean.getParticipant("participation.patient"));
         assertEquals(this.reminder,
                      reminderBean.getParticipant("participation.reminderType"));
+        assertEquals(product,
+                     reminderBean.getParticipant("participation.product"));
 
         // check document participations
         ActBean docBean = new ActBean(document);
@@ -402,7 +405,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      * Creates and saves a new desexing product, with associated
      * <em>lookup.demographicUpdate</em> to perform the desexing update.
      */
-    private  Product createDesexingProduct() {
+    private Product createDesexingProduct() {
         Product product = TestHelper.createProduct();
         Lookup lookup = (Lookup) create("lookup.demographicUpdate");
         lookup.setCode("XDESEXING_" + System.currentTimeMillis());

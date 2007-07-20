@@ -208,7 +208,11 @@ public class InvoiceRules {
             if (!actReminders.contains(reminderRef)) {
                 Entity reminderType = (Entity) getObject(reminderRef);
                 if (reminderType != null) {
-                    addReminder(item, reminderType);
+                    if (product != null) {
+                        addReminder(item, reminderType, product.getEntity());
+                    } else {
+                        addReminder(item, reminderType, null);
+                    }
                     save = true;
                 }
             }
@@ -323,8 +327,10 @@ public class InvoiceRules {
      *
      * @param item         the invoice item
      * @param reminderType the reminder type
+     * @param product      the product. May be <tt>null</tt>
      */
-    private void addReminder(ActBean item, Entity reminderType) {
+    private void addReminder(ActBean item, Entity reminderType,
+                             Entity product) {
         Act act = (Act) service.create("act.patientReminder");
         Date startTime = item.getAct().getActivityStartTime();
         Date endTime = null;
@@ -340,6 +346,9 @@ public class InvoiceRules {
                 "participation.patient");
         bean.addParticipation("participation.patient", patient);
         bean.addParticipation("participation.reminderType", reminderType);
+        if (product != null) {
+            bean.addParticipation("participation.product", product);
+        }
         bean.save();
 
         item.addRelationship("actRelationship.invoiceItemReminder", act);
@@ -369,11 +378,12 @@ public class InvoiceRules {
             documentAct.addParticipation("participation.documentTemplate",
                                          document);
             IMObjectReference clinician = item.getParticipantRef(
-            "participation.clinician");
+                    "participation.clinician");
             if (clinician != null) {
-            	documentAct.addParticipation("participation.clinician", clinician);
+                documentAct.addParticipation("participation.clinician",
+                                             clinician);
             }
-            
+
             if (TypeHelper.isA(act, "act.patientDocumentForm")) {
 
                 IMObjectReference product = item.getParticipantRef(
