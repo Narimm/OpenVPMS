@@ -18,6 +18,17 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import nextapp.echo2.app.table.TableColumn;
+import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.DescriptorTableColumn;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Table model for <em>act.patientReminder</em> and <em>act.patientAlert</em>
  * acts.
@@ -57,4 +68,34 @@ public class ReminderActTableModel extends PatientRecordActTableModel {
         return 2;
     }
 
+    /**
+     * Creates a column model for a set of archetypes.
+     * This implementation adds the act.patientReminder product node.
+     *
+     * @param shortNames the archetype short names
+     * @param context    the layout context
+     * @return a new column model
+     */
+    @Override
+    protected TableColumnModel createColumnModel(String[] shortNames,
+                                                 LayoutContext context) {
+        TableColumnModel model = super.createColumnModel(shortNames, context);
+        String shortName = "act.patientReminder";
+        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
+                shortName);
+        if (archetype != null) {
+            NodeDescriptor descriptor = archetype.getNodeDescriptor("product");
+            if (descriptor != null) {
+                Map<String, NodeDescriptor> descriptors
+                        = new HashMap<String, NodeDescriptor>();
+                descriptors.put(shortName, descriptor);
+                int index = getNextModelIndex(model);
+                TableColumn column = new DescriptorTableColumn(index,
+                                                               descriptors);
+                column.setHeaderValue(descriptor.getDisplayName());
+                model.addColumn(column);
+            }
+        }
+        return model;
+    }
 }

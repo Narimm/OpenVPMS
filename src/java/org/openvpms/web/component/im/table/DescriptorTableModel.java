@@ -241,7 +241,9 @@ public abstract class DescriptorTableModel<T extends IMObject>
             addColumns(archetypes, names, columns);
             int index = getArchetypeColumnIndex();
             if (index != -1) {
-                columns.addColumn(new TableColumn(ARCHETYPE_INDEX));
+                TableColumn column = createTableColumn(
+                        ARCHETYPE_INDEX, "table.imobject.archetype");
+                columns.addColumn(column);
                 columns.moveColumn(columns.getColumnCount() - 1, index);
             }
         } else {

@@ -80,7 +80,8 @@ public class DescriptorTableColumn extends TableColumn {
      * @return the value of the cell
      */
     public Object getValue(IMObject context) {
-        return getDescriptor(context).getValue(context);
+        NodeDescriptor descriptor = getDescriptor(context);
+        return (descriptor != null) ? descriptor.getValue(context) : null;
     }
 
     /**

@@ -307,7 +307,7 @@ public class PatientSummary {
          */
         @Override
         protected String[] getDescriptorNames() {
-            return new String[]{"reminderType", "endTime"};
+            return new String[]{"reminderType", "endTime", "product"};
         }
 
     }
