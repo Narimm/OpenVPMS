@@ -115,6 +115,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         initial.setPatient(patient);
         initial.setClinician(clinician);
         initial.setUser(GlobalContext.getInstance().getUser());
+        initial.setTill(GlobalContext.getInstance().getTill());
 
         // get/create the invoice, and edit it
         addTask(new InvoiceTask());
