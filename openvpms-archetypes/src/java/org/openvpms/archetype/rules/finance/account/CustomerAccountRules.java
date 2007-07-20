@@ -483,8 +483,14 @@ public class CustomerAccountRules {
             }
         }
         if (!modified.isEmpty()) {
+/*
+           Commented out as a workaround to OBF-163
             // save all modified acts in the one transaction
             service.save(modified);
+*/
+            for (IMObject object : modified) {
+                service.save(object);
+            }
         }
     }
 
