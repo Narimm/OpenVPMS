@@ -18,6 +18,10 @@
 
 package org.openvpms.web.app.reporting;
 
+import org.openvpms.web.app.reporting.deposit.DepositWorkspace;
+import org.openvpms.web.app.reporting.reminder.ReminderWorkspace;
+import org.openvpms.web.app.reporting.statement.StatementWorkspace;
+import org.openvpms.web.app.reporting.till.TillWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
@@ -34,6 +38,10 @@ public class ReportingSubsystem extends AbstractSubsystem {
      */
     public ReportingSubsystem() {
         super("reporting");
+        addWorkspace(new TillWorkspace());
+        addWorkspace(new DepositWorkspace());
+        addWorkspace(new StatementWorkspace());
+        addWorkspace(new ReminderWorkspace());
         addWorkspace(new ReportingWorkspace());
     }
 
