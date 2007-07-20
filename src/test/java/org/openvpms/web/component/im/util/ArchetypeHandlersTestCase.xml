@@ -27,4 +27,12 @@
             </entry>
         </properties>
     </handler>
+    <handler>
+        <shortName>party.customer*</shortName>
+        <type>org.openvpms.web.component.im.query.EntityQuery</type>
+    </handler>
+    <handler>
+        <shortName>party.organisationOTC</shortName>
+        <type>org.openvpms.web.component.im.query.EntityQuery</type>
+    </handler>
 </handlers>
