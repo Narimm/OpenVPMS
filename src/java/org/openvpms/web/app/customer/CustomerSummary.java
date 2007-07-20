@@ -156,11 +156,16 @@ public class CustomerSummary {
      */
     private static AccountType getAccountType(Party customer) {
         IMObjectBean bean = new IMObjectBean(customer);
-        List<Lookup> types = bean.getValues("type", Lookup.class);
-        if (!types.isEmpty()) {
-            return new AccountType(types.get(0));
+        if (bean.hasNode("type")) {
+        	List<Lookup> types = bean.getValues("type", Lookup.class);
+	        if (!types.isEmpty()) {
+	            return new AccountType(types.get(0));
+	        }
+	        return null;
         }
-        return null;
+        else {
+        	return null;
+        }
     }
 
     /**

@@ -16,28 +16,26 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient;
+package org.openvpms.web.app.reporting.till;
 
-import org.openvpms.web.app.patient.info.InformationWorkspace;
-import org.openvpms.web.app.patient.mr.PatientRecordWorkspace;
-import org.openvpms.web.app.reporting.reminder.ReminderWorkspace;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel;
 
 
 /**
- * Patient sybsystem.
+ * Table model for <em>actRelationship.tillBalanceItems</em>.
+ * This displays all related acts in a {@link TillActTableModel}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientSubsystem extends AbstractSubsystem {
+public class TillBalanceActRelationshipTableModel
+        extends AbstractActRelationshipTableModel<FinancialAct> {
 
     /**
-     * Construct a new <code>PatientSubsystem</code>.
+     * Constructs a new <code>TillBalanceActRelationshipTableModel</code>
      */
-    public PatientSubsystem() {
-        super("patient");
-        addWorkspace(new InformationWorkspace());
-        addWorkspace(new PatientRecordWorkspace());
+    public TillBalanceActRelationshipTableModel() {
+        setModel(new TillActTableModel());
     }
 }
