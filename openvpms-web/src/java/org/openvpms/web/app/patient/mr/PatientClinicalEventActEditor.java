@@ -18,16 +18,26 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import nextapp.echo2.app.Component;
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
+import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.TabPaneModel;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -70,6 +80,49 @@ public class PatientClinicalEventActEditor extends AbstractActEditor {
         String value = (String) status.getValue();
         Date time = COMPLETED.equals(value) ? new Date() : null;
         setEndTime(time, false);
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new LayoutStrategy();
+    }
+
+    class LayoutStrategy extends AbstractLayoutStrategy {
+
+        /**
+         * Lays out child components in a tab model.
+         *
+         * @param object      the parent object
+         * @param descriptors the property descriptors
+         * @param properties  the properties
+         * @param context     the layout context
+         * @return the tab model
+         */
+        @Override
+        protected TabPaneModel doTabLayout(IMObject object,
+                                           List<NodeDescriptor> descriptors,
+                                           PropertySet properties,
+                                           Component container,
+                                           LayoutContext context) {
+            TabPaneModel model = super.doTabLayout(object, descriptors,
+                                                   properties, container,
+                                                   context);
+            Party patient = (Party) getParticipant("patient");
+            if (patient != null) {
+                PatientSummaryQuery query = new PatientSummaryQuery(patient);
+                SummaryTableBrowser browser = new SummaryTableBrowser(query);
+                String title = Messages.get("button.summary");
+                Component inset = ColumnFactory.create("Inset",
+                                                       browser.getComponent());
+                model.addTab(title, inset);
+            }
+            return model;
+        }
     }
 
 }
