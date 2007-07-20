@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.util;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.query.AutoQuery;
+import org.openvpms.web.component.im.query.EntityQuery;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.test.AbstractAppTest;
@@ -205,6 +206,13 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
                 new String[]{"party.organisation*"});
         assertNotNull(org);
         assertEquals(org.getType(), AutoQuery.class);
+
+        // make sure the EntityQuery class is returned for party.customer*,
+        // party.organisationOTC
+        ArchetypeHandler entity = handlers.getHandler(
+                new String[]{"party.organisationOTC", "party.customer*"});
+        assertNotNull(entity);
+        assertEquals(entity.getType(), EntityQuery.class);
 
         // make sure no handleris returned for lookup.*, security.*,
         // party.organisation* as the party.organisation* line has a different

@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
@@ -58,10 +59,19 @@ public class QueryFactoryTestCase extends AbstractAppTest {
 
     /**
      * Verifies that a {@link AutoQuery} is returned for
-     * <em>party.organisation*</em> short names.
+     * <em>party.organisation*</em> short names, except
+     * <em>party.organisationOTC</em> which returns {@link EntityQuery}.
      */
-    public void testOrganisationAutoQuery() {
-        checkCreate("party.organisation*", AutoQuery.class);
+    public void testOrganisationQuery() {
+        String[] shortNames
+                = DescriptorHelper.getShortNames("party.organisation*");
+        for (String shortName : shortNames) {
+            if (shortName.equals("party.organisationOTC")) {
+                checkCreate(shortName, EntityQuery.class);
+            } else {
+                checkCreate(shortName, AutoQuery.class);
+            }
+        }
     }
 
     /**

@@ -120,12 +120,9 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
                     String match = matches.get(shortName);
                     if (match == null) {
                         matches.put(shortName, wildcard);
-                    } else {
-                        if (moreSpecific(wildcard, match)) {
-                            matches.put(shortName, wildcard);
-                        }
+                    } else if (moreSpecific(wildcard, match)) {
+                        matches.put(shortName, wildcard);
                     }
-                    matches.put(shortName, wildcard);
                 }
             }
         }
