@@ -78,6 +78,9 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
     int getResults();
 
     /**
+     * Det
+     */
+    /**
      * Determines if the node is sorted ascending or descending.
      *
      * @return <code>true</code> if the node is sorted ascending or no sort

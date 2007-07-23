@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.table;
 
+import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -25,32 +26,55 @@ import org.openvpms.web.component.table.PageableTableModel;
 import org.openvpms.web.component.table.SortableTableModel;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
+
 /**
- * Add description here.
+ * Paged table model.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
         implements PageableTableModel, SortableTableModel {
+
     /**
      * The result set.
      */
-    private ResultSet<T> _set;
+    private ResultSet<T> set;
+
     /**
      * The current page.
      */
-    private int _page;
+    private int page;
+
     /**
      * The sort column.
      */
-    private int _sortColumn;
+    private int sortColumn;
+
+    /**
+     * The default sort column, or <tt>-1</tt> if no column is sortable.
+     */
+    private int defaultSortColumn;
 
 
+    /**
+     * Creates a new <tt>PagedIMTableModel</tt>.
+     *
+     * @param model the underlying model
+     */
     public PagedIMTableModel(IMTableModel<T> model) {
         super(model);
+        Iterator iter = model.getColumnModel().getColumns();
+        while (iter.hasNext()) {
+            TableColumn column = (TableColumn) iter.next();
+            if (isSortable(column.getModelIndex())) {
+                defaultSortColumn = column.getModelIndex();
+                break;
+            }
+        }
     }
 
     /**
@@ -59,8 +83,33 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      * @param set the result set
      */
     public void setResultSet(ResultSet<T> set) {
-        _set = set;
-        _sortColumn = -1;
+        this.set = set;
+        sortColumn = -1;
+        SortConstraint[] sorted = set.getSortConstraints();
+        Iterator iter = getModel().getColumnModel().getColumns();
+        if (sorted.length != 0) {
+            while (iter.hasNext()) {
+                TableColumn column = (TableColumn) iter.next();
+                SortConstraint[] columnConstraint =
+                        getModel().getSortConstraints(column.getModelIndex(),
+                                                      set.isSortedAscending());
+                boolean match = true;
+                if (columnConstraint != null
+                        && sorted.length == columnConstraint.length) {
+                    for (int i = 0; i < sorted.length; ++i) {
+                        if (!sorted[i].equals(columnConstraint[i])) {
+                            match = false;
+                            break;
+
+                        }
+                    }
+                }
+                if (match) {
+                    sortColumn = column.getModelIndex();
+                    break;
+                }
+            }
+        }
         setPage(0);
     }
 
@@ -71,14 +120,14 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      */
     public void setPage(int page) {
         List<T> objects = Collections.emptyList();
-        IPage<T> result = _set.getPage(page);
+        IPage<T> result = set.getPage(page);
         if (result != null) {
             int rows = result.getTotalResults();
             if (rows > 0) {
                 objects = result.getResults();
             }
         }
-        _page = page;
+        this.page = page;
         setPage(objects);
     }
 
@@ -88,7 +137,7 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      * @return the current page
      */
     public int getPage() {
-        return _page;
+        return page;
     }
 
     /**
@@ -97,8 +146,8 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      * @return the total number of pages
      */
     public int getPages() {
-        if (_set.getPage(_page) != null) {
-            return _set.getPages();
+        if (set.getPage(page) != null) {
+            return set.getPages();
         }
         return 0;
     }
@@ -109,7 +158,7 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      * @return the number. of rows per page
      */
     public int getRowsPerPage() {
-        return _set.getPageSize();
+        return set.getPageSize();
     }
 
     /**
@@ -119,8 +168,8 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      * @return the total number of rows
      */
     public int getResults() {
-        if (_set.getPage(_page) != null) {
-            return _set.getResults();
+        if (set.getPage(page) != null) {
+            return set.getResults();
         }
         return 0;
     }
@@ -138,13 +187,13 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      * Sort the table rows.
      *
      * @param column    the column to sort on
-     * @param ascending if <code>true</code> sort the column ascending order;
-     *                  otherwise sort it in <code>descebding</code> order
+     * @param ascending if <tt>true</tt> sort the column ascending order;
+     *                  otherwise sort it in <tt>descending</tt> order
      */
     public void sort(int column, boolean ascending) {
         SortConstraint[] criteria = getSortConstraints(column, ascending);
-        _sortColumn = column;
-        _set.sort(criteria);
+        sortColumn = column;
+        set.sort(criteria);
         setPage(0);
     }
 
@@ -154,15 +203,24 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      * @return the sort column
      */
     public int getSortColumn() {
-        return _sortColumn;
+        return sortColumn;
+    }
+
+    /**
+     * Returns the default sort column.
+     *
+     * @return the default sort column, or <tt>-1</tt> if no column is sortable.
+     */
+    public int getDefaultSortColumn() {
+        return defaultSortColumn;
     }
 
     /**
      * Determines if a column is sortable.
      *
      * @param column the column
-     * @return <code>true</code> if the column is sortable; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the column is sortable; otherwise
+     *         <tt>false</tt>
      */
     public boolean isSortable(int column) {
         SortConstraint[] sort = getModel().getSortConstraints(column, true);
@@ -170,13 +228,22 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
     }
 
     /**
+     * Determines if the table is sorted.
+     *
+     * @return <tt>true</tt> if the table is sorted, otherwise false
+     */
+    public boolean isSorted() {
+        return set.getSortConstraints().length != 0;
+    }
+
+    /**
      * Determines if the sort column is sorted ascending or descending.
      *
-     * @return <code>true</code> if the column is sorted ascending;
-     *         <code>false</code> if it is sorted descending
+     * @return <tt>true</tt> if the column is sorted ascending;
+     *         <tt>false</tt> if it is sorted descending
      */
     public boolean isSortedAscending() {
-        return _set.isSortedAscending();
+        return set.isSortedAscending();
     }
 
     /**

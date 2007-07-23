@@ -26,11 +26,17 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.IMObjectListResultSet;
+import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.util.NodeResolverTransformer;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.List;
 
 
 /**
@@ -49,7 +55,7 @@ public class EntityRelationshipCollectionEditor
 
 
     /**
-     * Constructs a new <code>EntityRelationshipCollectionEditor</code>.
+     * Constructs a new <tt>EntityRelationshipCollectionEditor</tt>.
      *
      * @param property the collection property
      * @param object   the object being edited
@@ -63,7 +69,7 @@ public class EntityRelationshipCollectionEditor
     }
 
     /**
-     * Construct a new <code>EntityRelationshipCollectionEditor</code>.
+     * Construct a new <tt>EntityRelationshipCollectionEditor</tt>.
      *
      * @param editor  the collection property editor
      * @param object  the object being edited
@@ -74,6 +80,19 @@ public class EntityRelationshipCollectionEditor
             IMObject object,
             LayoutContext context) {
         super(editor, object, context);
+    }
+
+    /**
+     * Creates a new result set for display.
+     *
+     * @return a new result set
+     */
+    @Override
+    protected ResultSet<IMObject> createResultSet() {
+        CollectionPropertyEditor editor = getCollectionPropertyEditor();
+        List<IMObject> objects = editor.getObjects();
+        return new IMObjectListResultSet<IMObject>(
+                objects, ROWS, new NodeResolverTransformer("target"));
     }
 
     /**

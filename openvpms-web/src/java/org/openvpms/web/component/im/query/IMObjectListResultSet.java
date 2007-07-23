@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.apache.commons.collections.Transformer;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.util.IMObjectSorter;
@@ -44,6 +45,11 @@ public class IMObjectListResultSet<T extends IMObject>
      */
     private boolean sortAscending = true;
 
+    /**
+     * Optional transformer to apply to objects when sorting.
+     */
+    private final Transformer transformer;
+
 
     /**
      * Construct a new <tt>IMObjectListResultSet</tt>.
@@ -52,17 +58,35 @@ public class IMObjectListResultSet<T extends IMObject>
      * @param pageSize the maximum no. of results per page
      */
     public IMObjectListResultSet(List<T> objects, int pageSize) {
+        this(objects, pageSize, null);
+    }
+
+    /**
+     * Constructs a new <tt>IMObjectListResultSet</tt>.
+     *
+     * @param objects     the objects
+     * @param pageSize    the maximum no. of results per page
+     * @param transformer a transformer to apply to objects when sorting.
+     *                    May be <tt>null</tt>
+     */
+    public IMObjectListResultSet(List<T> objects, int pageSize,
+                                 Transformer transformer) {
         super(objects, pageSize);
+        this.transformer = transformer;
     }
 
     /**
      * Sorts the set. This resets the iterator.
      *
-     * @param sort the sort criteria. May be <code>null</code>
+     * @param sort the sort criteria. May be <tt>null</tt>
      */
     public void sort(SortConstraint[] sort) {
         if (sort != null && !getObjects().isEmpty()) {
-            IMObjectSorter.sort(getObjects(), sort);
+            if (transformer != null) {
+                IMObjectSorter.sort(getObjects(), sort, transformer);
+            } else {
+                IMObjectSorter.sort(getObjects(), sort);
+            }
             sortAscending = sort[0].isAscending();
             this.sort = sort;
         }

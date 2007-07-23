@@ -22,7 +22,10 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.IMObjectListResultSet;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.NodeResolverTransformer;
 import org.openvpms.web.component.im.view.AbstractIMObjectCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 
@@ -70,5 +73,16 @@ public class ActRelationshipCollectionViewer
      */
     protected void browse(Act act) {
         super.browse(act);
+    }
+
+    /**
+     * Creates a new result set for display.
+     *
+     * @return a new result set
+     */
+    @Override
+    protected ResultSet<IMObject> createResultSet() {
+        return new IMObjectListResultSet<IMObject>(
+                getObjects(), ROWS, new NodeResolverTransformer("target"));
     }
 }

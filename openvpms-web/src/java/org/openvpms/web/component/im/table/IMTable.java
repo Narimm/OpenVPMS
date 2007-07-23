@@ -36,20 +36,14 @@ import java.util.List;
 public class IMTable<T> extends KeyTable {
 
     /**
-     * The table model.
-     */
-    private final IMTableModel<T> model;
-
-
-    /**
-     * Constructs a new <code>IMTable</code>.
+     * Constructs a new <tt>IMTable</tt>.
      *
      * @param model the table model
      */
     public IMTable(IMTableModel<T> model) {
-        this.model = model;
         setStyleName("default");
         setAutoCreateColumnsFromModel(false);
+        setModel(model);
         initialise(model);
     }
 
@@ -59,7 +53,7 @@ public class IMTable<T> extends KeyTable {
      * @param objects the objects to display
      */
     public void setObjects(List<T> objects) {
-        model.setObjects(objects);
+        getModel().setObjects(objects);
     }
 
     /**
@@ -68,20 +62,19 @@ public class IMTable<T> extends KeyTable {
      * @return the object being displayed.
      */
     public List<T> getObjects() {
-        return model.getObjects();
+        return getModel().getObjects();
     }
 
     /**
      * Returns the selected object.
      *
-     * @return the selected object, or <code>null</code> if no object is
-     *         selected
+     * @return the selected object, or <tt>null</tt> if no object is selected
      */
     public T getSelected() {
         T result = null;
         int index = getSelectionModel().getMinSelectedIndex();
         if (index != -1) {
-            List<T> objects = model.getObjects();
+            List<T> objects = getModel().getObjects();
             if (index < objects.size()) {
                 result = objects.get(index);
             }
@@ -99,6 +92,25 @@ public class IMTable<T> extends KeyTable {
         if (index != -1) {
             getSelectionModel().setSelectedIndex(index, true);
         }
+    }
+
+    /**
+     * Returns the model.
+     *
+     * @return the model
+     */
+    @SuppressWarnings("unchecked")
+    public IMTableModel<T> getModel() {
+        return (IMTableModel<T>) super.getModel();
+    }
+
+    /**
+     * Sets the <tt>TableModel</tt> being visualized.
+     *
+     * @param model the new model (may not be null)
+     */
+    public void setModel(IMTableModel<T> model) {
+        super.setModel(model);
     }
 
     /**
@@ -121,7 +133,7 @@ public class IMTable<T> extends KeyTable {
             model.addTableModelListener(new TableModelListener() {
                 public void tableChanged(TableModelEvent event) {
                     if (event.getType() == TableModelEvent.STRUCTURE_CHANGED) {
-                        initialise(((IMTableModel<T>) getModel()));
+                        initialise(getModel());
                     }
                 }
             });
