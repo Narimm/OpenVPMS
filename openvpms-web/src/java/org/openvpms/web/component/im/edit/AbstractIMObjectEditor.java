@@ -47,8 +47,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Editor;
@@ -190,11 +188,6 @@ public abstract class AbstractIMObjectEditor
         if (strategyFactory == null
                 || strategyFactory instanceof ViewLayoutStrategyFactory) {
             context.setLayoutStrategyFactory(new EditLayoutStrategyFactory());
-        }
-
-        // establish a local context if one not already present
-        if (context.getContext() == GlobalContext.getInstance()) {
-            context.setContext(new LocalContext());
         }
 
         archetype = DescriptorHelper.getArchetypeDescriptor(object);

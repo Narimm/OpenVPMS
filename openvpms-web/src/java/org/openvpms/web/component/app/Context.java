@@ -36,6 +36,66 @@ import java.util.Date;
 public interface Context {
 
     /**
+     * Practice short name.
+     */
+    public static final String PRACTICE_SHORTNAME
+            = "party.organisationPractice";
+
+    /**
+     * Location short name.
+     */
+    public static final String LOCATION_SHORTNAME
+            = "party.organisationLocation";
+
+    /**
+     * Customer short name.
+     */
+    public static final String CUSTOMER_SHORTNAME = "party.customer*";
+
+    /**
+     * Patient short name.
+     */
+    public static final String PATIENT_SHORTNAME = "party.patient*";
+
+    /**
+     * Supplier short name.
+     */
+    public static final String SUPPLIER_SHORTNAME = "party.supplier*";
+
+    /**
+     * Product short name.
+     */
+    public static final String PRODUCT_SHORTNAME = "product.*";
+
+    /**
+     * Till short name.
+     */
+    public static final String TILL_SHORTNAME = "party.organisationTill";
+
+    /**
+     * Bank Deposit short name.
+     */
+    public static final String DEPOSIT_SHORTNAME = "party.organisationDeposit";
+
+    /**
+     * Clinician short name.
+     */
+    public static final String CLINICIAN_SHORTNAME = "security.user";
+
+    /**
+     * Schedule short name.
+     */
+    public static final String SCHEDULE_SHORTNAME
+            = "party.organisationSchedule";
+
+    /**
+     * Work list short name.
+     */
+    public static final String WORKLIST_SHORTNAME
+            = "party.organisationWorkList";
+
+
+    /**
      * Sets the current object being viewed/edited.
      *
      * @param object the current object being viewed/edited. May be

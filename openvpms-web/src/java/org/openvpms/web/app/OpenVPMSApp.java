@@ -28,7 +28,11 @@ import nextapp.echo2.webrender.ClientConfiguration;
 import nextapp.echo2.webrender.Connection;
 import nextapp.echo2.webrender.WebRenderServlet;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.component.app.ContextListener;
+import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.resource.util.Styles;
 
 import javax.servlet.http.HttpServletRequest;
@@ -62,8 +66,15 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         configureSessionExpirationURL();
         setStyleSheet(Styles.DEFAULT_STYLE_SHEET);
         window = new Window();
-        window.setTitle("OpenVPMS");
+        window.setTitle(Messages.get("app.title.default"));
         window.setContent(new ApplicationContentPane());
+        getContext().addListener(new ContextListener() {
+            public void changed(String key, IMObject value) {
+                if (Context.CUSTOMER_SHORTNAME.equals(key)) {
+                    updateTitle(value);
+                }
+            }
+        });
         return window;
     }
 
@@ -145,4 +156,21 @@ public class OpenVPMSApp extends ContextApplicationInstance {
             context.setClientConfiguration(config);
         }
     }
+
+    /**
+     * Updates the window title with the customer name.
+     *
+     * @param customer the customer. May be <tt>null</tt>
+     */
+    private void updateTitle(IMObject customer) {
+        String title;
+        if (customer == null) {
+            title = Messages.get("app.title.noCustomer");
+        } else {
+            IMObjectBean bean = new IMObjectBean(customer);
+            title = Messages.get("app.title.customer", bean.getString("name"));
+        }
+        window.setTitle(title);
+    }
+
 }
