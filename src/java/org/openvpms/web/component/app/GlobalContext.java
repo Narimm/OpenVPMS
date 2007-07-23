@@ -18,6 +18,11 @@
 
 package org.openvpms.web.component.app;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Application context information.
@@ -27,11 +32,34 @@ package org.openvpms.web.component.app;
  */
 public class GlobalContext extends AbstractContext {
 
+    /**
+     * The context listeners.
+     */
+    private List<ContextListener> listeners = new ArrayList<ContextListener>();
+
 
     /**
      * Restrict construction.
      */
     protected GlobalContext() {
+    }
+
+    /**
+     * Adds a listener.
+     *
+     * @param listener the listener to add
+     */
+    public void addListener(ContextListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeListener(ContextListener listener) {
+        listeners.remove(listener);
     }
 
     /**
@@ -45,4 +73,28 @@ public class GlobalContext extends AbstractContext {
         return (instance != null) ? instance.getContext() : null;
     }
 
+    /**
+     * Sets a context object.
+     *
+     * @param key    the context key
+     * @param object the object
+     */
+    @Override
+    public void setObject(String key, IMObject object) {
+        super.setObject(key, object);
+        notifyListeners(key, object);
+    }
+
+    /**
+     * Notifies listeners of a change of objects.
+     *
+     * @param key   the context key
+     * @param value the context value
+     */
+    private void notifyListeners(String key, IMObject value) {
+        ContextListener[] list = listeners.toArray(new ContextListener[0]);
+        for (ContextListener listener : list) {
+            listener.changed(key, value);
+        }
+    }
 }

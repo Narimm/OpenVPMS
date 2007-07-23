@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.app;
 
-import nextapp.echo2.app.ApplicationInstance;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -26,7 +25,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
@@ -61,72 +59,13 @@ public abstract class AbstractContext implements Context {
             = new HashMap<String, IMObject>();
 
     /**
-     * Practice short name.
-     */
-    private static final String PRACTICE_SHORTNAME
-            = "party.organisationPractice";
-
-    /**
-     * Location short name.
-     */
-    private static final String LOCATION_SHORTNAME
-            = "party.organisationLocation";
-
-    /**
-     * Customer short name.
-     */
-    private static final String CUSTOMER_SHORTNAME = "party.customer*";
-
-    /**
-     * Patient short name.
-     */
-    private static final String PATIENT_SHORT_NAME = "party.patient*";
-
-    /**
-     * Supplier short name.
-     */
-    private static final String SUPPLIER_SHORT_NAME = "party.supplier*";
-
-    /**
-     * Product short name.
-     */
-    private static final String PRODUCT_SHORT_NAME = "product.*";
-
-    /**
-     * Till short name.
-     */
-    private static final String TILL_SHORT_NAME = "party.organisationTill";
-
-    /**
-     * Bank Deposit short name.
-     */
-    private static final String DEPOSIT_SHORT_NAME = "party.organisationDeposit";
-
-    /**
-     * Clinician short name.
-     */
-    private static final String CLINICIAN_SHORT_NAME = "security.user";
-
-    /**
-     * Schedule short name.
-     */
-    private static final String SCHEDULE_SHORT_NAME
-            = "party.organisationSchedule";
-
-    /**
-     * Work list short name.
-     */
-    private static final String WORKLIST_SHORT_NAME
-            = "party.organisationWorkList";
-
-    /**
      * Set of recognised short names.
      */
     private static final String[] SHORT_NAMES = {
-            CUSTOMER_SHORTNAME, PATIENT_SHORT_NAME, SUPPLIER_SHORT_NAME,
-            PRODUCT_SHORT_NAME, TILL_SHORT_NAME, CLINICIAN_SHORT_NAME,
-            SCHEDULE_SHORT_NAME, WORKLIST_SHORT_NAME, LOCATION_SHORTNAME,
-            DEPOSIT_SHORT_NAME};
+            CUSTOMER_SHORTNAME, PATIENT_SHORTNAME, SUPPLIER_SHORTNAME,
+            PRODUCT_SHORTNAME, TILL_SHORTNAME, CLINICIAN_SHORTNAME,
+            SCHEDULE_SHORTNAME, WORKLIST_SHORTNAME, LOCATION_SHORTNAME,
+            DEPOSIT_SHORTNAME};
 
     /**
      * The current schedule date.
@@ -221,15 +160,6 @@ public abstract class AbstractContext implements Context {
      */
     public void setCustomer(Party customer) {
         setObject(CUSTOMER_SHORTNAME, customer);
-        // todo - should be implemented using notification in GlobalContext
-        if (customer == null)
-            ApplicationInstance.getActive().getDefaultWindow().setTitle(
-                    "OpenVPMS - No Customer");
-        else {
-            EntityBean bean = new EntityBean(customer);
-            ApplicationInstance.getActive().getDefaultWindow().setTitle(
-                    "OpenVPMS - " + bean.getString("name"));
-        }
     }
 
     /**
@@ -248,7 +178,7 @@ public abstract class AbstractContext implements Context {
      * @param patient the current patient. May be <code>null</code>
      */
     public void setPatient(Party patient) {
-        setObject(PATIENT_SHORT_NAME, patient);
+        setObject(PATIENT_SHORTNAME, patient);
     }
 
     /**
@@ -258,7 +188,7 @@ public abstract class AbstractContext implements Context {
      *         patient
      */
     public Party getPatient() {
-        return (Party) getObject(PATIENT_SHORT_NAME);
+        return (Party) getObject(PATIENT_SHORTNAME);
     }
 
     /**
@@ -267,7 +197,7 @@ public abstract class AbstractContext implements Context {
      * @param supplier the current supplier. May be <code>null</code>
      */
     public void setSupplier(Party supplier) {
-        setObject(SUPPLIER_SHORT_NAME, supplier);
+        setObject(SUPPLIER_SHORTNAME, supplier);
     }
 
     /**
@@ -277,7 +207,7 @@ public abstract class AbstractContext implements Context {
      *         supplier
      */
     public Party getSupplier() {
-        return (Party) getObject(SUPPLIER_SHORT_NAME);
+        return (Party) getObject(SUPPLIER_SHORTNAME);
     }
 
     /**
@@ -286,7 +216,7 @@ public abstract class AbstractContext implements Context {
      * @param product the current product.
      */
     public void setProduct(Product product) {
-        setObject(PRODUCT_SHORT_NAME, product);
+        setObject(PRODUCT_SHORTNAME, product);
     }
 
     /**
@@ -296,7 +226,7 @@ public abstract class AbstractContext implements Context {
      *         product
      */
     public Product getProduct() {
-        return (Product) getObject(PRODUCT_SHORT_NAME);
+        return (Product) getObject(PRODUCT_SHORTNAME);
     }
 
     /**
@@ -305,7 +235,7 @@ public abstract class AbstractContext implements Context {
      * @param till the current till.
      */
     public void setTill(Party till) {
-        setObject(TILL_SHORT_NAME, till);
+        setObject(TILL_SHORTNAME, till);
     }
 
     /**
@@ -315,7 +245,7 @@ public abstract class AbstractContext implements Context {
      *         till
      */
     public Party getTill() {
-        return (Party) getObject(TILL_SHORT_NAME);
+        return (Party) getObject(TILL_SHORTNAME);
     }
 
     /**
@@ -324,7 +254,7 @@ public abstract class AbstractContext implements Context {
      * @param deposit the current deposit account.
      */
     public void setDeposit(Party deposit) {
-        setObject(DEPOSIT_SHORT_NAME, deposit);
+        setObject(DEPOSIT_SHORTNAME, deposit);
     }
 
     /**
@@ -334,7 +264,7 @@ public abstract class AbstractContext implements Context {
      *         deposit
      */
     public Party getDeposit() {
-        return (Party) getObject(DEPOSIT_SHORT_NAME);
+        return (Party) getObject(DEPOSIT_SHORTNAME);
     }
 
     /**
@@ -343,7 +273,7 @@ public abstract class AbstractContext implements Context {
      * @param clinician the current clinician.
      */
     public void setClinician(User clinician) {
-        setObject(CLINICIAN_SHORT_NAME, clinician);
+        setObject(CLINICIAN_SHORTNAME, clinician);
     }
 
     /**
@@ -353,7 +283,7 @@ public abstract class AbstractContext implements Context {
      *         clinician
      */
     public User getClinician() {
-        return (User) getObject(CLINICIAN_SHORT_NAME);
+        return (User) getObject(CLINICIAN_SHORTNAME);
     }
 
     /**
@@ -362,7 +292,7 @@ public abstract class AbstractContext implements Context {
      * @param schedule the current schedule
      */
     public void setSchedule(Party schedule) {
-        setObject(SCHEDULE_SHORT_NAME, schedule);
+        setObject(SCHEDULE_SHORTNAME, schedule);
     }
 
     /**
@@ -371,7 +301,7 @@ public abstract class AbstractContext implements Context {
      * @return the current schedule
      */
     public Party getSchedule() {
-        return (Party) getObject(SCHEDULE_SHORT_NAME);
+        return (Party) getObject(SCHEDULE_SHORTNAME);
     }
 
     /**
@@ -398,7 +328,7 @@ public abstract class AbstractContext implements Context {
      * @param workList the current work list
      */
     public void setWorkList(Party workList) {
-        setObject(WORKLIST_SHORT_NAME, workList);
+        setObject(WORKLIST_SHORTNAME, workList);
     }
 
     /**
@@ -407,7 +337,7 @@ public abstract class AbstractContext implements Context {
      * @return the current work list
      */
     public Party getWorkList() {
-        return (Party) getObject(WORKLIST_SHORT_NAME);
+        return (Party) getObject(WORKLIST_SHORTNAME);
     }
 
     /**

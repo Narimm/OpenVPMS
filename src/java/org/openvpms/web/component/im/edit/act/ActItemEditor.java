@@ -48,17 +48,17 @@ import java.math.BigDecimal;
 public abstract class ActItemEditor extends AbstractActEditor {
 
     /**
-     * Current node filter. May be <code>null</code>
+     * Current node filter. May be <tt>null</tt>
      */
     private NodeFilter _filter;
 
 
     /**
-     * Construct a new <code>ActItemEditor</code>.
+     * Construct a new <tt>ActItemEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent act.
-     * @param context the layout context. May be <code>null</code>
+     * @param context the layout context. May be <tt>null</tt>
      */
     public ActItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
@@ -67,7 +67,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns a reference to the customer, obtained from the parent act.
      *
-     * @return a reference to the customer or <code>null</code> if the act
+     * @return a reference to the customer or <tt>null</tt> if the act
      *         has no parent
      */
     public IMObjectReference getCustomer() {
@@ -79,7 +79,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns a reference to the product.
      *
-     * @return a reference to the product, or <code>null</code> if the act has
+     * @return a reference to the product, or <tt>null</tt> if the act has
      *         no product
      */
     public IMObjectReference getProduct() {
@@ -102,11 +102,21 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns a reference to the patient.
      *
-     * @return a reference to the patient, or <code>null</code> if the act
+     * @return a reference to the patient, or <tt>null</tt> if the act
      *         has no patient
      */
     public IMObjectReference getPatient() {
         return getParticipantRef("patient");
+    }
+
+    /**
+     * Returns a reference to the clinician.
+     *
+     * @return a reference to the clinician, or <tt>null</tt> if the act has
+     *         no clinician
+     */
+    public IMObjectReference getClinician() {
+        return getParticipantRef("clinician");
     }
 
     /**
@@ -128,8 +138,8 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *
      * @param shortName the price short name
      * @param product   the product
-     * @return the price corresponding to  <code>shortName</code> or
-     *         <code>null</code> if none exists
+     * @return the price corresponding to  <tt>shortName</tt> or
+     *         <tt>null</tt> if none exists
      */
     protected ProductPrice getPrice(String shortName, Product product) {
         return IMObjectHelper.getObject(shortName, product.getProductPrices());
@@ -138,7 +148,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns the product editor.
      *
-     * @return the product editor, or <code>null</code> if none exists
+     * @return the product editor, or <tt>null</tt> if none exists
      */
     protected ProductParticipationEditor getProductEditor() {
         Editor product = getEditor("product");
@@ -151,12 +161,25 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns the patient editor.
      *
-     * @return the patient editor, or <code>null</code>  if none exists
+     * @return the patient editor, or <tt>null</tt>  if none exists
      */
     protected PatientParticipationEditor getPatientEditor() {
         Editor patient = getEditor("patient");
         if (patient instanceof PatientParticipationEditor) {
             return (PatientParticipationEditor) patient;
+        }
+        return null;
+    }
+
+    /**
+     * Returns the clinician editor.
+     *
+     * @return the clinician editor, or <tt>null</tt>  if none exists
+     */
+    protected ClinicianParticipationEditor getClinicianEditor() {
+        Editor clinician = getEditor("clinician");
+        if (clinician instanceof ClinicianParticipationEditor) {
+            return (ClinicianParticipationEditor) clinician;
         }
         return null;
     }
@@ -184,7 +207,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Sets the node filter, used to lay out the act.
      *
-     * @param filter the node filter. May be <code>null</code>
+     * @param filter the node filter. May be <tt>null</tt>
      */
     protected void setFilter(NodeFilter filter) {
         _filter = filter;
@@ -193,7 +216,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns the current node filter, used to lay out the act.
      *
-     * @return the current node filter. May be <code>null</code>
+     * @return the current node filter. May be <tt>null</tt>
      */
     protected NodeFilter getFilter() {
         return _filter;
@@ -228,7 +251,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
          * Returns a node filter to filter nodes.
          *
          * @param context the context
-         * @return a node filter to filter nodes, or <code>null</code> if no
+         * @return a node filter to filter nodes, or <tt>null</tt> if no
          *         filterering is required
          */
         @Override

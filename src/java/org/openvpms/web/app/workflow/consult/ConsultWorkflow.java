@@ -72,8 +72,10 @@ public class ConsultWorkflow extends WorkflowImpl {
         ActBean bean = new ActBean(act);
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
-        final User clinician
-                = (User) bean.getParticipant("participation.clinician");
+        User clinician = (User) bean.getParticipant("participation.clinician");
+        if (clinician == null) {
+            clinician = GlobalContext.getInstance().getClinician();
+        }
 
         initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);

@@ -37,6 +37,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.edit.act.ClinicianParticipationEditor;
 import org.openvpms.web.component.im.edit.act.PatientMedicationActEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -83,7 +84,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
 
     /**
      * The no. of medication dialogs currently popped up. The invoice item
-     * is invalid until this is <code>0</code>
+     * is invalid until this is <code>0</tt>
      */
     private int medicationPopups = 0;
 
@@ -104,7 +105,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
 
 
     /**
-     * Construct a new <code>CustomerInvoiceItemEditor</code>.
+     * Construct a new <code>CustomerInvoiceItemEditor</tt>.
      * This recalculates the tax amount.
      *
      * @param act     the act to edit
@@ -174,8 +175,8 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
+     * @return <code>true</tt> if the object and its descendents are valid
+     *         otherwise <code>false</tt>
      */
     @Override
     public boolean validate(Validator validator) {
@@ -185,7 +186,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
     /**
      * Sets the medication manager.
      *
-     * @param manager the medication manager. May be <code>null</code>
+     * @param manager the medication manager. May be <code>null</tt>
      */
     public void setMedicationManager(MedicationManager manager) {
         medicationMgr = manager;
@@ -195,7 +196,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
     /**
      * Save any edits.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <code>true</tt> if the save was successful
      */
     @Override
     protected boolean doSave() {
@@ -234,6 +235,17 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
         final ActRelationshipCollectionEditor editors = getMedicationEditors();
         if (editors != null) {
             editors.addModifiableListener(medicationQuantityListener);
+        }
+
+        // add a listener to update the dispensing acts when the clinician
+        // changes if there is a clinician participation.
+        ClinicianParticipationEditor clinician = getClinicianEditor();
+        if (clinician != null) {
+            clinician.addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    updateMedicationClinician();
+                }
+            });
         }
     }
 
@@ -479,10 +491,33 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
     }
 
     /**
+     * Updates any medication acts with the clinician.
+     */
+    private void updateMedicationClinician() {
+        ActRelationshipCollectionEditor editors = getMedicationEditors();
+        if (editors != null) {
+            for (Act act : editors.getActs()) {
+                PatientMedicationActEditor editor
+                        = (PatientMedicationActEditor) editors.getEditor(act);
+                editor.setClinician(getClinician());
+            }
+
+            // update any current editor as well. If this refers to a new
+            // object, it may not be in the list of 'committed' acts
+            // returned by the above.
+            PatientMedicationActEditor current
+                    = (PatientMedicationActEditor) editors.getCurrentEditor();
+            if (current != null) {
+                current.setClinician(getClinician());
+            }
+        }
+    }
+
+    /**
      * Determines if a product requires a dispensing label.
      *
      * @param product the product
-     * @return <code>true</code> if the product requires a dispensing label
+     * @return <tt>true</tt> if the product requires a dispensing label
      */
     private boolean hasDispensingLabel(Product product) {
         IMObjectBean bean = new IMObjectBean(product);
@@ -495,7 +530,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
     /**
      * Returns the dispensing items collection editor.
      *
-     * @return the dispensing items collection editor, or <code>null</code>
+     * @return the dispensing items collection editor, or <tt>null</tt>
      *         if none is found
      */
     private ActRelationshipCollectionEditor getMedicationEditors() {

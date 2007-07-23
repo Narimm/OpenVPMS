@@ -40,11 +40,11 @@ import java.math.BigDecimal;
 public class PatientMedicationActEditor extends AbstractActEditor {
 
     /**
-     * Construct a new <code>PatientMedicationActEditor</code>.
+     * Construct a new <tt>PatientMedicationActEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent act. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>
+     * @param parent  the parent act. May be <tt>null</tt>
+     * @param context the layout context. May be <tt>null</tt>
      */
     public PatientMedicationActEditor(Act act, Act parent,
                                       LayoutContext context) {
@@ -77,7 +77,7 @@ public class PatientMedicationActEditor extends AbstractActEditor {
      * Sets the product, updating the dispensing label from the product's
      * dispensing instructions, if available.
      *
-     * @param product the product reference. May be <code>null</code>
+     * @param product the product reference. May be <tt>null</tt>
      */
     public void setProduct(IMObjectReference product) {
         setParticipant("product", product);
@@ -94,7 +94,7 @@ public class PatientMedicationActEditor extends AbstractActEditor {
     /**
      * Returns the product.
      *
-     * @return the product refereence. May be <code>null</code>
+     * @return the product refereence. May be <tt>null</tt>
      */
     public IMObjectReference getProduct() {
         return getParticipantRef("product");
@@ -103,7 +103,7 @@ public class PatientMedicationActEditor extends AbstractActEditor {
     /**
      * Sets the patient.
      *
-     * @param patient the patient reference. May be <code>null</code>
+     * @param patient the patient reference. May be <tt>null</tt>
      */
     public void setPatient(IMObjectReference patient) {
         setParticipant("patient", patient);
@@ -112,10 +112,19 @@ public class PatientMedicationActEditor extends AbstractActEditor {
     /**
      * Returns the patient.
      *
-     * @return the patient reference. May be <code>null</code>
+     * @return the patient reference. May be <tt>null</tt>
      */
     public IMObjectReference getPatient() {
         return getParticipantRef("patient");
+    }
+
+    /**
+     * Sets the clinician.
+     *
+     * @param clinician the clinician reference. May be <tt>null</tt>.
+     */
+    public void setClinician(IMObjectReference clinician) {
+        setParticipant("clinician", clinician);
     }
 
     /**
@@ -126,6 +135,5 @@ public class PatientMedicationActEditor extends AbstractActEditor {
     public void setQuantity(BigDecimal quantity) {
         getProperty("quantity").setValue(quantity);
     }
-
 
 }
