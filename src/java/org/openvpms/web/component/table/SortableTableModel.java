@@ -46,6 +46,13 @@ public interface SortableTableModel extends TableModel {
     int getSortColumn();
 
     /**
+     * Returns the default sort column.
+     *
+     * @return the default sort column, or <tt>-1</tt> if no column is sortable.
+     */
+    int getDefaultSortColumn();
+
+    /**
      * Determines if a column is sortable.
      *
      * @param column the column
@@ -53,6 +60,13 @@ public interface SortableTableModel extends TableModel {
      *         <code>false</code>
      */
     boolean isSortable(int column);
+
+    /**
+     * Determines if the table is sorted.
+     *
+     * @return <tt>true</tt> if the table is sorted, otherwise false
+     */
+    boolean isSorted();
 
     /**
      * Determines if the sort column is sorted ascending or descending.

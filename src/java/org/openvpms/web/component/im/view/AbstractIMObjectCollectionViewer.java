@@ -34,8 +34,10 @@ import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
+import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.table.SortableTableModel;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
 
@@ -86,7 +88,7 @@ public class AbstractIMObjectCollectionViewer
     /**
      * No. of rows to display.
      */
-    private int ROWS = 15;
+    protected static final int ROWS = 15;
 
 
     /**
@@ -251,10 +253,26 @@ public class AbstractIMObjectCollectionViewer
      * Populates the table.
      */
     protected void populateTable() {
-        List<IMObject> objects = getObjects();
-        ResultSet<IMObject> set
-                = new IMObjectListResultSet<IMObject>(objects, ROWS);
+        ResultSet<IMObject> set = createResultSet();
         table.setResultSet(set);
+        IMTableModel<IMObject> model = table.getTable().getModel();
+        if (model instanceof SortableTableModel) {
+            // if no column is currently sorted, sort on the default (if any)
+            SortableTableModel sortable = ((SortableTableModel) model);
+            if (sortable.getSortColumn() == -1
+                    && sortable.getDefaultSortColumn() != -1) {
+                sortable.sort(sortable.getDefaultSortColumn(), true);
+            }
+        }
+    }
+
+    /**
+     * Creates a new result set for display.
+     *
+     * @return a new result set
+     */
+    protected ResultSet<IMObject> createResultSet() {
+        return new IMObjectListResultSet<IMObject>(getObjects(), ROWS);
     }
 
 }
