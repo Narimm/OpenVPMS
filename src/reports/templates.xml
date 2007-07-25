@@ -146,4 +146,10 @@
               mimeType="text/xml"
               docType="document.other"/>
 
+    <template name="Patient Clinical Event Template"
+              archetype="act.patientClinicalEvent"
+              path="patientClinicalEvent.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
 </templates>
