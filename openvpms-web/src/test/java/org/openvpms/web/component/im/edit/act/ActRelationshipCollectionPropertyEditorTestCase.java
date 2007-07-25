@@ -27,7 +27,9 @@ package org.openvpms.web.component.im.edit.act;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditorTest;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -75,11 +77,10 @@ public class ActRelationshipCollectionPropertyEditorTestCase
      */
     protected IMObject createParent() {
         Act act = (Act) TestHelper.create("act.customerEstimation");
-        IMObject customer = TestHelper.createCustomer();
-        Participation participation
-                = TestHelper.createParticipation("participation.customer",
-                                                 customer, act);
-        act.addParticipation(participation);
+        ActBean bean = new ActBean(act);
+
+        Party customer = TestHelper.createCustomer();
+        bean.addParticipation("participation.customer", customer);
         act.setStatus(FinancialActStatus.IN_PROGRESS);
         return act;
     }
@@ -115,17 +116,11 @@ public class ActRelationshipCollectionPropertyEditorTestCase
         Act act = (Act) TestHelper.create("act.customerEstimationItem");
         assertNotNull(act);
 
-        IMObject product = TestHelper.createProduct();
-        IMObject patient = TestHelper.createPatient();
-        Participation patientParticipation
-                = TestHelper.createParticipation("participation.patient",
-                                                 patient, act);
-
-        Participation productParticipation
-                = TestHelper.createParticipation("participation.product",
-                                                 product, act);
-        act.addParticipation(patientParticipation);
-        act.addParticipation(productParticipation);
+        Product product = TestHelper.createProduct();
+        Party patient = TestHelper.createPatient();
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+        bean.addParticipation("participation.product", product);
         act.setStatus(FinancialActStatus.IN_PROGRESS);
         return act;
     }

@@ -46,7 +46,8 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
     private final Query<T> query;
 
     /**
-     * The sort criteria. May be <code>null</code>
+     * The sort criteria. If <tt>null</tt>, the query's default sort criteria
+     * is used.
      */
     private SortConstraint[] sort;
 
@@ -78,11 +79,11 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
 
 
     /**
-     * Construct a new <code>AbstractBrowser</code> that queries IMObjects using
+     * Construct a new <tt>AbstractBrowser</tt> that queries IMObjects using
      * the specified query.
      *
      * @param query the query
-     * @param sort  the sort criteria. May be <code>null</code>
+     * @param sort  the sort criteria. May be <tt>null</tt>
      */
     public AbstractBrowser(Query<T> query, SortConstraint[] sort) {
         this.query = query;
@@ -158,15 +159,15 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
     /**
      * Performs the query.
      *
-     * @return the query result set. May be <code>null</code>
+     * @return the query result set
      */
     protected ResultSet<T> doQuery() {
         try {
-            return query.query(sort);
+            return (sort != null) ? query.query(sort) : query.query();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
-        return null;
+        return new EmptyResultSet<T>(query.getMaxResults());
     }
 
     /**

@@ -18,18 +18,12 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.test.TestHelper;
 
 import java.util.Date;
@@ -41,25 +35,24 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActResultSetTestCase extends AbstractAppTest {
-
-    /**
-     * The customer.
-     */
-    private Party _customer;
+public class ActResultSetTestCase extends AbstractResultSetTest {
 
     /**
      * The acts created during {@link #onSetUp}.
      */
-    private Act[] _acts;
+    private Act[] acts;
+
+    /**
+     * The customer.
+     */
+    private Party customer;
 
 
     /**
      * Tests behaviour of iterating using an empty result set.
      */
     public void testEmpty() {
-        Party party = TestHelper.createCustomer();
-        SaveHelper.save(party);
+        Party party = TestHelper.createCustomer(true);
 
         ShortNameConstraint archetypes = new ShortNameConstraint(
                 "act.customerEstimation", true, true);
@@ -102,7 +95,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
      */
     public void testIteration() {
         final int rowsPerPage = 5;
-        final int total = _acts.length;
+        final int total = acts.length;
         int expectedPages = (total / rowsPerPage);
         if (total % rowsPerPage > 0) {
             ++expectedPages;
@@ -116,7 +109,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
         SortConstraint[] sort = null;
         ParticipantConstraint participant = new ParticipantConstraint(
                 "customer", "participation.customer",
-                _customer.getObjectReference());
+                customer.getObjectReference());
         ActResultSet<Act> set = new ActResultSet<Act>(archetypes, participant,
                                                       from, to, statuses,
                                                       rowsPerPage, sort);
@@ -142,7 +135,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
      */
     public void testRandomAccess() {
         final int rowsPerPage = 2;
-        final int total = _acts.length;
+        final int total = acts.length;
         int expectedPages = getPages(rowsPerPage, total);
 
         ShortNameConstraint archetypes = new ShortNameConstraint(
@@ -153,7 +146,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
         SortConstraint[] sort = null;
         ParticipantConstraint participant = new ParticipantConstraint(
                 "customer", "participation.customer",
-                _customer.getObjectReference());
+                customer.getObjectReference());
         ResultSet<Act> set = new ActResultSet<Act>(archetypes, participant,
                                                    from, to, statuses,
                                                    rowsPerPage, sort);
@@ -175,18 +168,14 @@ public class ActResultSetTestCase extends AbstractAppTest {
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        _customer = TestHelper.createCustomer();
-        Party patient = TestHelper.createPatient();
-        Product product = TestHelper.createProduct();
-        SaveHelper.save(_customer);
-        SaveHelper.save(patient);
-        SaveHelper.save(product);
+        customer = TestHelper.createCustomer(true);
+        Party patient = TestHelper.createPatient(true);
+        Product product = TestHelper.createProduct(true);
 
         final int count = 12;
-
-        _acts = new Act[count];
+        acts = new Act[count];
         for (int i = 0; i < count; ++i) {
-            _acts[i] = createEstimation(_customer, patient, product);
+            acts[i] = createEstimation(customer, patient, product);
         }
     }
 
@@ -250,77 +239,5 @@ public class ActResultSetTestCase extends AbstractAppTest {
         return count;
     }
 
-
-    /**
-     * Helper to create a new <code>act.customerEstimation</code>, and save it.
-     *
-     * @param customer the customer
-     * @param patient  the patient
-     * @param product  the product
-     * @return a new act
-     */
-    protected Act createEstimation(Party customer, Party patient,
-                                   Product product) {
-        Act act = createAct("act.customerEstimation");
-        act.setStatus(FinancialActStatus.IN_PROGRESS);
-        addParticipation(act, customer, "participation.customer");
-
-        Act child = createAct("act.customerEstimationItem");
-        child.setStatus(FinancialActStatus.IN_PROGRESS);
-
-        addParticipation(child, patient, "participation.patient");
-        addParticipation(child, product, "participation.product");
-        addActRelationship(act, child,
-                           "actRelationship.customerEstimationItem");
-        assertTrue(SaveHelper.save(act));
-        assertTrue(SaveHelper.save(child));
-        return act;
-    }
-
-    /**
-     * Helper to create a new act.
-     *
-     * @param shortName the act short name
-     * @return a new act
-     */
-    protected Act createAct(String shortName) {
-        Act act = (Act) TestHelper.create(shortName);
-        assertNotNull(act);
-        return act;
-    }
-
-    /**
-     * Adds a participation.
-     *
-     * @param act           the act to add to
-     * @param entity        the participation entity
-     * @param participation the participation short name
-     */
-    protected void addParticipation(Act act, Entity entity,
-                                    String participation) {
-        Participation p = (Participation) TestHelper.create(participation);
-        assertNotNull(p);
-        p.setAct(act.getObjectReference());
-        p.setEntity(entity.getObjectReference());
-        act.addParticipation(p);
-    }
-
-    /**
-     * Helper to add a relationship between two acts.
-     *
-     * @param source    the source act
-     * @param target    the target act
-     * @param shortName the act relationship short name
-     */
-    protected void addActRelationship(Act source, Act target,
-                                      String shortName) {
-        ActRelationship relationship
-                = (ActRelationship) TestHelper.create(shortName);
-        assertNotNull(relationship);
-        relationship.setSource(source.getObjectReference());
-        relationship.setTarget(target.getObjectReference());
-        source.addActRelationship(relationship);
-        target.addActRelationship(relationship);
-    }
 
 }

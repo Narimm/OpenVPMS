@@ -40,7 +40,7 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
     /**
      * Sorts the set. This resets the iterator.
      *
-     * @param sort the sort criteria. May be <code>null</code>
+     * @param sort the sort criteria. May be <tt>null</tt>
      */
     void sort(SortConstraint[] sort);
 
@@ -48,8 +48,7 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
      * Returns the specified page.
      *
      * @param page the page no.
-     * @return the page corresponding to <code>page</code>.
-     *         May be <code>null</code>
+     * @return the page corresponding to <tt>page</tt>. May be <tt>null</tt>
      */
     IPage<T> getPage(int page);
 
@@ -78,13 +77,10 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
     int getResults();
 
     /**
-     * Det
-     */
-    /**
      * Determines if the node is sorted ascending or descending.
      *
-     * @return <code>true</code> if the node is sorted ascending or no sort
-     *         constraint was specified; <code>false</code> if it is sorted
+     * @return <tt>true</tt> if the node is sorted ascending or no sort
+     *         constraint was specified; <tt>false</tt> if it is sorted
      *         descending
      */
     boolean isSortedAscending();
@@ -106,8 +102,8 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
     /**
      * Determines if duplicate results should be filtered.
      *
-     * @return <code>true</code> if duplicate results should be removed;
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if duplicate results should be removed;
+     *         otherwise <tt>false</tt>
      */
     boolean isDistinct();
 

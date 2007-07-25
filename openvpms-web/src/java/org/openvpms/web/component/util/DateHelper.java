@@ -73,7 +73,7 @@ public class DateHelper {
      * @param d2 the second date/time
      * @return the <tt>0</tt> if <tt>d1</tt> is equal to this <tt>d2</tt>;
      *         a value less than <tt>0</tt> if <tt>d1</tt>  is before the
-     *         <tt>d2</tt>; and a value greater than <code>0</code> if
+     *         <tt>d2</tt>; and a value greater than <tt>0</tt> if
      *         <tt>d1</tt> is after <tt>d2</tt>.
      */
     public static int compareDates(Date d1, Date d2) {

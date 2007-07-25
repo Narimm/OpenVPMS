@@ -24,6 +24,8 @@ import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
 
+import java.util.Iterator;
+
 
 /**
  * Queries objects for display by an {@link Browser}.
@@ -31,7 +33,7 @@ import org.openvpms.web.component.focus.FocusGroup;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface Query<T> {
+public interface Query<T> extends Iterable<T> {
 
     /**
      * Returns the query component.
@@ -55,13 +57,54 @@ public interface Query<T> {
     int getMaxResults();
 
     /**
+     * Sets the default sort constraint.
+     *
+     * @param sort the default sort cosntraint. May be <tt>null</tt>
+     */
+    void setDefaultSortConstraint(SortConstraint[] sort);
+
+    /**
+     * Returns the default sort constraint
+     *
+     * @return the default sort constraint. May be <tt>null</tt>
+     */
+    SortConstraint[] getDefaultSortConstraint();
+
+    /**
+     * Performs the query using the default sort constraint (if any).
+     *
+     * @return the query result set
+     * @throws ArchetypeServiceException for any error
+     */
+    ResultSet<T> query();
+
+    /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <code>null</code>
-     * @return the query result set. May be <code>null</code>
+     * @param sort the sort constraint. May be <tt>null</tt>
+     * @return the query result set
      * @throws ArchetypeServiceException if the query fails
      */
     ResultSet<T> query(SortConstraint[] sort);
+
+    /**
+     * Performs the query using the default sort constraint (if any), and
+     * adapts the results to an iterator.
+     *
+     * @return an iterator over the results.
+     * @throws ArchetypeServiceException if the query fails
+     */
+    Iterator<T> iterator();
+
+    /**
+     * Performs the query using the default sort constraint, and adapts the
+     * results to an iterator.
+     *
+     * @param sort the sort constraint. May be <tt>null</tt>
+     * @return an iterator over the results.
+     * @throws ArchetypeServiceException if the query fails
+     */
+    Iterator<T> iterator(SortConstraint[] sort);
 
     /**
      * The archetype short names being queried.
@@ -73,14 +116,14 @@ public interface Query<T> {
     /**
      * Sets the name to query on.
      *
-     * @param name the name. May contain wildcards, or be <code>null</code>
+     * @param name the name. May contain wildcards, or be <tt>null</tt>
      */
     void setName(String name);
 
     /**
      * Returns the name being queried on.
      *
-     * @return the name. May contain wildcards, or be <code>null</code>
+     * @return the name. May contain wildcards, or be <tt>null</tt>
      */
     String getName();
 
@@ -101,15 +144,15 @@ public interface Query<T> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @param auto if <code>true</code> run the query automatically
+     * @param auto if <tt>true</tt> run the query automatically
      */
     void setAuto(boolean auto);
 
     /**
      * Determines if the query should be run automatically.
      *
-     * @return <code>true</code> if the query should be run automaticaly;
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the query should be run automaticaly;
+     *         otherwise <tt>false</tt>
      */
     boolean isAuto();
 
@@ -123,8 +166,8 @@ public interface Query<T> {
     /**
      * Determines if dusplicate rows should be filtered.
      *
-     * @return <code>true</code> if duplicate rows should be removed;
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if duplicate rows should be removed;
+     *         otherwise <tt>false</tt>
      */
     boolean isDistinct();
 

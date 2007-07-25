@@ -40,9 +40,9 @@ public class ContextHelper {
 
     /**
      * Sets the current global customer. If the current patient doesn't have a
-     * relationship to it, sets it to <tt>null</code>.
+     * relationship to it, sets it to <tt>null</tt>.
      *
-     * @param customer the customer. May be <tt>null</code>
+     * @param customer the customer. May be <tt>null</tt>
      */
     public static void setCustomer(Party customer) {
         setCustomer(GlobalContext.getInstance(), customer);

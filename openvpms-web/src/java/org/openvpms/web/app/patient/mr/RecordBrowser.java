@@ -23,7 +23,6 @@ import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
@@ -113,13 +112,11 @@ public class RecordBrowser implements Browser<Act> {
      * @param problems      query for problems
      * @param reminderAlert query for reminders/alerts
      * @param document      query for documents
-     * @param sort          the sort criteria. May be <code>null</code>
      */
     public RecordBrowser(PatientSummaryQuery summary, Query<Act> problems,
-                         Query<Act> reminderAlert, Query<Act> document,
-                         SortConstraint[] sort) {
+                         Query<Act> reminderAlert, Query<Act> document) {
         this.summary = new SummaryTableBrowser(summary);
-        this.problems = IMObjectTableBrowserFactory.create(problems, sort);
+        this.problems = IMObjectTableBrowserFactory.create(problems, null);
 
         // todo - should be able to register ReminderActTableModel in
         // IMObjectTableFactory.properties for act.patientReminder and
@@ -127,10 +124,10 @@ public class RecordBrowser implements Browser<Act> {
         IMObjectTableModel<Act> model = new ReminderActTableModel(
                 reminderAlert.getShortNames());
         this.reminderAlert = new DefaultIMObjectTableBrowser<Act>(reminderAlert,
-                                                                  sort, model);
+                                                                  model);
         IMObjectTableModel<Act> docModel
                 = new ActAmountTableModel<Act>(true, false);
-        this.document = new DefaultIMObjectTableBrowser<Act>(document, sort,
+        this.document = new DefaultIMObjectTableBrowser<Act>(document,
                                                              docModel);
     }
 

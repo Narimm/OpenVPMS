@@ -69,6 +69,12 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
             "act.patientDocumentImage"};
 
     /**
+     * The default sort constraint.
+     */
+    private static final SortConstraint[] DEFAULT_SORT
+            = new SortConstraint[]{new NodeSortConstraint("startTime", false)};
+
+    /**
      * Constructs a new <tt>PatientRecordWorkspace</tt>.
      */
     public PatientRecordWorkspace() {
@@ -197,7 +203,9 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        return new SummaryCRUDWindow();
+        SummaryCRUDWindow window = new SummaryCRUDWindow();
+        window.setQuery((PatientSummaryQuery) getQuery());
+        return window;
     }
 
     /**
@@ -207,7 +215,9 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery(Party party) {
-        return new PatientSummaryQuery(party);
+        PatientSummaryQuery query = new PatientSummaryQuery(party);
+        query.setDefaultSortConstraint(DEFAULT_SORT);
+        return query;
     }
 
     /**
@@ -218,12 +228,10 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      */
     @Override
     protected Browser<Act> createBrowser(ActQuery<Act> query) {
-        SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
         RecordBrowser browser = new RecordBrowser((PatientSummaryQuery) query,
                                                   createProblemsQuery(),
                                                   createReminderAlertQuery(),
-                                                  createDocumentQuery(),
-                                                  sort);
+                                                  createDocumentQuery());
         browser.setListener(new RecordBrowserListener() {
             public void onViewChanged() {
                 changeCRUDWindow();
@@ -258,7 +266,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
                 || view == RecordBrowser.View.PROBLEMS) {
             PatientRecordCRUDWindow w;
             if (view == RecordBrowser.View.SUMMARY) {
-                w = new SummaryCRUDWindow();
+                w = (PatientRecordCRUDWindow) createCRUDWindow();
             } else {
                 w = new ProblemRecordCRUDWindow();
             }
@@ -287,9 +295,11 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
     private DefaultActQuery<Act> createProblemsQuery() {
         String[] shortNames = {CLINICAL_PROBLEM};
         String[] statuses = {};
-        return new DefaultActQuery<Act>(getObject(), "patient",
-                                        "participation.patient", shortNames,
-                                        statuses);
+        DefaultActQuery<Act> query = new DefaultActQuery<Act>(
+                getObject(), "patient", "participation.patient", shortNames,
+                statuses);
+        query.setDefaultSortConstraint(DEFAULT_SORT);
+        return query;
     }
 
     /**
@@ -305,6 +315,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
                 getObject(), "patient", "participation.patient", shortNames,
                 lookups, null);
         query.setStatus(ActStatus.IN_PROGRESS);
+        query.setDefaultSortConstraint(DEFAULT_SORT);
         return query;
     }
 
@@ -316,9 +327,11 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
     private Query<Act> createDocumentQuery() {
         List<Lookup> lookups = FastLookupHelper.getLookups(
                 "act.patientDocumentLetter", "status");
-        return new DefaultActQuery<Act>(getObject(), "patient",
-                                        "participation.patient",
-                                        DOCUMENT_SHORT_NAMES, lookups, null);
+        DefaultActQuery<Act> query = new DefaultActQuery<Act>(
+                getObject(), "patient", "participation.patient",
+                DOCUMENT_SHORT_NAMES, lookups, null);
+        query.setDefaultSortConstraint(DEFAULT_SORT);
+        return query;
     }
 
     /**
