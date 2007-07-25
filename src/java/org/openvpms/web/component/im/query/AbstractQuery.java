@@ -28,6 +28,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.CharSetUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IConstraint;
@@ -42,6 +43,7 @@ import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -125,6 +127,11 @@ public abstract class AbstractQuery<T> implements Query<T> {
     private int maxResults = 20;
 
     /**
+     * The default sort constraints. May be <tt>null</tt>
+     */
+    private SortConstraint[] sort;
+
+    /**
      * The focus group.
      */
     private FocusGroup focusGroup = new FocusGroup(getClass().getName());
@@ -196,6 +203,34 @@ public abstract class AbstractQuery<T> implements Query<T> {
     }
 
     /**
+     * Sets the default sort constraint.
+     *
+     * @param sort the default sort cosntraint. May be <tt>null</tt>
+     */
+    public void setDefaultSortConstraint(SortConstraint[] sort) {
+        this.sort = sort;
+    }
+
+    /**
+     * Returns the default sort constraint
+     *
+     * @return the default sort constraint. May be <tt>null</tt>
+     */
+    public SortConstraint[] getDefaultSortConstraint() {
+        return sort;
+    }
+
+    /**
+     * Performs the query using the default sort constraint (if any).
+     *
+     * @return the query result set
+     * @throws ArchetypeServiceException for any error
+     */
+    public ResultSet<T> query() {
+        return query(sort);
+    }
+
+    /**
      * Performs the query.
      *
      * @param sort the sort constraint. May be <code>null</code>
@@ -203,6 +238,29 @@ public abstract class AbstractQuery<T> implements Query<T> {
      */
     public ResultSet<T> query(SortConstraint[] sort) {
         return createResultSet(sort);
+    }
+
+    /**
+     * Performs the query using the default sort constraint, and adapts the
+     * results to an iterator.
+     *
+     * @param sort the sort constraint. May be <tt>null</tt>
+     * @return an iterator over the results.
+     * @throws ArchetypeServiceException if the query fails
+     */
+    public Iterator<T> iterator(SortConstraint[] sort) {
+        return new ResultSetIterator<T>(createResultSet(sort));
+    }
+
+    /**
+     * Performs the query using the default sort constraint, and adapts the
+     * results to an iterator.
+     *
+     * @return an iterator over the results.
+     * @throws ArchetypeServiceException if the query fails
+     */
+    public Iterator<T> iterator() {
+        return iterator(sort);
     }
 
     /**

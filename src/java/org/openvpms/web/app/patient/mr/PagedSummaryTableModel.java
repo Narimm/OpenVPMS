@@ -18,23 +18,12 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import org.apache.commons.collections.ComparatorUtils;
-import org.apache.commons.collections.Transformer;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTableModel;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -79,49 +68,12 @@ public class PagedSummaryTableModel extends PagedIMObjectTableModel<Act> {
      */
     @Override
     protected void setPage(List<Act> objects) {
+        IterableSummary summary = new IterableSummary(objects, shortNames);
         List<Act> acts = new ArrayList<Act>();
-        for (Act act : objects) {
+        for (Act act : summary) {
             acts.add(act);
-            List<Act> items = new ArrayList<Act>();
-            Set<ActRelationship> relationships
-                    = act.getSourceActRelationships();
-            for (ActRelationship relationship : relationships) {
-                for (String shortName : shortNames) {
-                    IMObjectReference target = relationship.getTarget();
-                    if (TypeHelper.isA(target, shortName)) {
-                        Act item = (Act) IMObjectHelper.getObject(
-                                target);
-                        if (item != null) {
-                            items.add(item);
-                        }
-                    }
-                }
-            }
-            sortItems(items);
-            acts.addAll(items);
         }
         getModel().setObjects(acts);
     }
 
-    /**
-     * Sorts act items on start time.
-     *
-     * @param items the items to sort
-     */
-    @SuppressWarnings("unchecked")
-    private void sortItems(List<Act> items) {
-        Transformer transformer = new Transformer() {
-            public Object transform(Object input) {
-                Date date = ((Act) input).getActivityStartTime();
-                if (date instanceof Timestamp) {
-                    // to avoid ClassCastException when doing compareTo
-                    date = new Date(date.getTime());
-                }
-                return date;
-            }
-        };
-        Comparator comparator = ComparatorUtils.transformedComparator(
-                ComparatorUtils.nullHighComparator(null), transformer);
-        Collections.sort(items, comparator);
-    }
 }

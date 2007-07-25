@@ -113,8 +113,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      */
     public void start(final TaskContext context) {
         Browser<T> browser = IMObjectTableBrowserFactory.create(query);
-        String title = Messages.get(
-                "imobject.select.title", type);
+        String title = Messages.get("imobject.select.title", type);
         String[] buttons = isRequired()
                 ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
         boolean addNew = (createTask != null);

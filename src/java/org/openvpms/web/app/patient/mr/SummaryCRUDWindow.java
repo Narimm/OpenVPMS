@@ -20,11 +20,15 @@ package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.print.IMObjectReportPrinter;
+import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -41,6 +45,12 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
      * The current act.patientClinicalEvent.
      */
     private Act event;
+
+    /**
+     * The current query.
+     */
+    private PatientSummaryQuery query;
+
 
     /**
      * Creates a new <tt>SummaryCRUDWindow</tt>.
@@ -68,6 +78,14 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
         return event;
     }
 
+    /**
+     * Sets the current query, for printing.
+     *
+     * @param query the query
+     */
+    public void setQuery(PatientSummaryQuery query) {
+        this.query = query;
+    }
 
     /**
      * Lays out the buttons.
@@ -98,6 +116,30 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
             buttons.add(getPrintButton());
         } else {
             buttons.add(getCreateButton());
+        }
+    }
+
+    /**
+     * Invoked when the 'print' button is pressed.
+     * This implementation prints the current summary list, rather than
+     * the selected item.
+     */
+    @Override
+    protected void onPrint() {
+        if (query != null) {
+            try {
+                IterableSummary summary = new IterableSummary(
+                        query, query.getActItemShortNames());
+                IMObjectReportPrinter<Act> printer
+                        = new IMObjectReportPrinter<Act>(
+                        summary, PatientRecordTypes.CLINICAL_EVENT);
+                String title = Messages.get("patient.record.summary.print");
+                InteractiveIMPrinter<Act> iPrinter
+                        = new InteractiveIMPrinter<Act>(title, printer);
+                iPrinter.print();
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
         }
     }
 

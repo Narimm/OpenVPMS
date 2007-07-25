@@ -42,7 +42,7 @@ public class DocumentViewer {
     private final IMObjectReference reference;
 
     /**
-     * The parent object. May be <tt>null</code>
+     * The parent object. May be <tt>null</tt>
      */
     private final IMObject parent;
 

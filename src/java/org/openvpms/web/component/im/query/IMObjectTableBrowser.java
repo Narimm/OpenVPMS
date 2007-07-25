@@ -38,32 +38,43 @@ public abstract class IMObjectTableBrowser<T extends IMObject>
         extends TableBrowser<T> {
 
     /**
-     * Construct a new <code>IMObjectTableBrowser</code> that queries IMObjects
+     * Construct a new <tt>IMObjectTableBrowser</tt> that queries IMObjects
      * using the specified query.
      *
      * @param query the query
      */
     public IMObjectTableBrowser(Query<T> query) {
-        this(query, null);
+        this(query, createTableModel(query));
     }
 
     /**
-     * Construct a new <code>IMObjectTableBrowser</code> that queries IMObjects
+     * Construct a new <tt>IMObjectTableBrowser</tt> that queries IMObjects
      * using the specified query, displaying them in the table.
      *
      * @param query the query
-     * @param sort  the sort criteria. May be <code>null</code>
+     * @param sort  the sort criteria. May be <tt>null</tt>
      */
     public IMObjectTableBrowser(Query<T> query, SortConstraint[] sort) {
         super(query, sort, createTableModel(query));
     }
 
     /**
-     * Construct a new <code>IMObjectTableBrowser</code> that queries IMObjects
+     * Construct a new <tt>IMObjectTableBrowser</tt> that queries IMObjects
      * using the specified query, displaying them in the table.
      *
      * @param query the query
-     * @param sort  the sort criteria. May be <code>null</code>
+     * @param model the table model
+     */
+    public IMObjectTableBrowser(Query<T> query, IMTableModel<T> model) {
+        super(query, null, model);
+    }
+
+    /**
+     * Construct a new <tt>IMObjectTableBrowser</tt> that queries IMObjects
+     * using the specified query, displaying them in the table.
+     *
+     * @param query the query
+     * @param sort  the sort criteria. May be <tt>null</tt>
      * @param model the table model
      */
     public IMObjectTableBrowser(Query<T> query, SortConstraint[] sort,

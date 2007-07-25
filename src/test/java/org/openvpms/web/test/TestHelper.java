@@ -24,12 +24,12 @@
  */
 package org.openvpms.web.test;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import junit.framework.Assert;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -40,17 +40,29 @@ import org.openvpms.web.system.ServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TestHelper {
+public class TestHelper extends Assert {
 
     /**
      * Creates a new object.
      *
      * @param shortName the archetype short name
-     * @return a new object, or <code>null</code> if the short name doesn't
-     *         correspond to a valid archetype
+     * @return a new object
      */
     public static IMObject create(String shortName) {
-        return ServiceHelper.getArchetypeService().create(shortName);
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        IMObject object = service.create(shortName);
+        assertNotNull(object);
+        return object;
+    }
+
+    /**
+     * Saves an object.
+     *
+     * @param object the object to save
+     */
+    public static void save(IMObject object) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        service.save(object);
     }
 
     /**
@@ -59,12 +71,25 @@ public class TestHelper {
      * @return a new customer
      */
     public static Party createCustomer() {
+        return createCustomer(false);
+    }
+
+    /**
+     * Creates a new customer.
+     *
+     * @param save if <tt>true</tt> save it
+     * @return a new customer
+     */
+    public static Party createCustomer(boolean save) {
         Party party = (Party) create("party.customerperson");
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("firstName", "foo");
         bean.setValue("lastName", "xyz");
         Contact contact = (Contact) create("contact.phoneNumber");
         party.addContact(contact);
+        if (save) {
+            bean.save();
+        }
         return party;
     }
 
@@ -74,10 +99,23 @@ public class TestHelper {
      * @return a new patient
      */
     public static Party createPatient() {
+        return createPatient(false);
+    }
+
+    /**
+     * Creates a new patient.
+     *
+     * @param save if <tt>true</tt> save it
+     * @return a new patient
+     */
+    public static Party createPatient(boolean save) {
         Party party = (Party) create("party.patientpet");
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("name", "Fido");
         bean.setValue("species", "Canine");
+        if (save) {
+            bean.save();
+        }
         return party;
     }
 
@@ -87,26 +125,21 @@ public class TestHelper {
      * @return a new product
      */
     public static Product createProduct() {
-        Product product = (Product) create("product.medication");
-        product.setName("Flea powder");
-        return product;
+        return createProduct(false);
     }
 
     /**
-     * Creates a new participation.
+     * Creates a new product.
      *
-     * @param shortName the participation short name
-     * @param entity    the entity
-     * @param act       the act
-     * @return a new participation
+     * @param save if <tt>true</tt> save it
+     * @return a new product
      */
-    public static Participation createParticipation(String shortName,
-                                                    IMObject entity,
-                                                    Act act) {
-        Participation participation = (Participation) create(shortName);
-        participation.setEntity(entity.getObjectReference());
-        participation.setAct(act.getObjectReference());
-        return participation;
+    public static Product createProduct(boolean save) {
+        Product product = (Product) create("product.medication");
+        product.setName("Flea powder");
+        if (save) {
+            save(product);
+        }
+        return product;
     }
-
 }
