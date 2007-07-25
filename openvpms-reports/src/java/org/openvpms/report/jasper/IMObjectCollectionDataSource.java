@@ -131,7 +131,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
     public Object getFieldValue(JRField field) throws JRException {
         Object result = null;
         if (current != null) {
-            if (field.getName().equals("displayName")) {
+            if (field.getName().equals("collectionDisplayName")) {
                 result = displayName;
             } else {
                 result = current.getFieldValue(field);

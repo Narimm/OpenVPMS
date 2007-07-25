@@ -85,7 +85,7 @@
 					<textElement>
 						<font/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{collectionDisplayName}]]></textFieldExpression>
 				</textField>
 			</band>
 		</title>
