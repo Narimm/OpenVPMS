@@ -116,7 +116,7 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
     }
 
     /**
-     * Invoked when the 'clear' button is pressed.
+     * Invoked when the 'deposit' button is pressed.
      */
     protected void onDeposit() {
         final FinancialAct act = getObject();
