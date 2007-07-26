@@ -31,5 +31,6 @@
               minCardinality="1"/>
         <node name="expression" type="java.lang.String" path="/details/expression"
               minCardinality="1"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
 </archetypes>

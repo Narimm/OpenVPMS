@@ -33,5 +33,6 @@
               path="/description" hidden="true" minCardinality="1" derived="true"
               derivedValue="concat(/name, ' Payment Type')"/>
         <node name="archetypeName" path="/details/archetypeName" type="java.lang.String" minCardinality="0"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
 </archetypes>

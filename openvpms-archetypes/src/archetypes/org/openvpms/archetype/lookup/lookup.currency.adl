@@ -59,5 +59,6 @@
         <node displayName="Minimum Cash Denomination" name="minDenomination"
               type="java.math.BigDecimal"
               path="/details/minimumCashDenomination" minCardinality="1"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
 </archetypes>

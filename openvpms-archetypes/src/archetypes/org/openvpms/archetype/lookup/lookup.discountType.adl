@@ -41,5 +41,6 @@
         </node>
         <node name="rate" displayName="Percentage %" path="/details/rate" type="java.math.BigDecimal" minCardinality="1"/>
         <node name="discountFixed" displayName="Include Fixed Amount" path="/details/discountFixed" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
 </archetypes>

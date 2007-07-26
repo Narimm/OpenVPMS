@@ -41,5 +41,6 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
+         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
 </archetypes>
