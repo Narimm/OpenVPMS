@@ -32,5 +32,6 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" minCardinality="1" derived="true"
 			derivedValue="concat(/name, ' Customer Type')" />
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
 	</archetype>
 </archetypes>

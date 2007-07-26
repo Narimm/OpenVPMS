@@ -34,5 +34,6 @@
               derivedValue="concat(/name, ' Demographic Update')"/>
         <node name="expression" path="/details/expression" type="java.lang.String" minCardinality="1"/>
         <node name="nodeName" path="/details/nodeName" type="java.lang.String" minCardinality="0"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
 </archetypes>

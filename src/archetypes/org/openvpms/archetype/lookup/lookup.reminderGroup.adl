@@ -30,5 +30,6 @@
         <node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />
 		<node name="description" type="java.lang.String" path="/description" minCardinality="0" />
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
 	</archetype>
 </archetypes>
