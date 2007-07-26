@@ -24,9 +24,12 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.app.workflow.InvoiceTask;
+import org.openvpms.web.app.workflow.GetClinicalEventTask;
+import org.openvpms.web.app.workflow.GetInvoiceTask;
+import static org.openvpms.web.app.workflow.GetInvoiceTask.INVOICE_SHORTNAME;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
@@ -83,18 +86,22 @@ public class ConsultWorkflow extends WorkflowImpl {
         initial.setClinician(clinician);
         initial.setUser(GlobalContext.getInstance().getUser());
 
-        // get/create the clinical event, and edit it
-        addTask(new PatientClinicalEventTask());
+        // get the latest clinical event, or create one if none is available
+        // and edit it.
+        addTask(new GetClinicalEventTask());
+        addTask(new ConditionalCreateTask(EVENT_SHORTNAME));
         addTask(new EditIMObjectTask(EVENT_SHORTNAME));
 
-        // get/create the invoice, and edit it
-        addTask(new InvoiceTask());
-        addTask(new EditIMObjectTask(InvoiceTask.INVOICE_SHORTNAME));
+        // get the latest invoice, or create one if none is available, and edit
+        // it
+        addTask(new GetInvoiceTask());
+        addTask(new ConditionalCreateTask(INVOICE_SHORTNAME));
+        addTask(new EditIMObjectTask(INVOICE_SHORTNAME));
 
         // update the task/appointment status to BILLED if the invoice
         // is COMPLETED
         NodeConditionTask<String> invoiceCompleted
-                = new NodeConditionTask<String>(InvoiceTask.INVOICE_SHORTNAME,
+                = new NodeConditionTask<String>(INVOICE_SHORTNAME,
                                                 "status", ActStatus.COMPLETED);
         TaskProperties billProps = new TaskProperties();
         billProps.add("status", WorkflowStatus.BILLED);
