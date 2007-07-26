@@ -18,8 +18,13 @@
 
 package org.openvpms.archetype.function.party;
 
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Set;
+
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.party.SupplierRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
@@ -30,9 +35,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-
-import java.util.Date;
-import java.util.Set;
 
 
 /**
@@ -64,6 +66,10 @@ public class PartyFunctions {
      */
     private SupplierRules supplierRules;
 
+    /**
+     * The customer Account rules.
+     */
+    private CustomerAccountRules customerAccountRules;
 
     /**
      * Constructs a new <tt>PartyFunctions</tt>.
@@ -444,6 +450,59 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns the current account Balance for a party or act.
+     *
+     * @param context the expression context. Expected to reference a party or
+     *                act
+     * @return the account balance
+     */
+
+    public BigDecimal getAccountBalance(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        Object value = pointer.getValue();
+        if (value instanceof Party) {
+            return getAccountBalance((Party) value);
+
+        } else if (value instanceof Act) {
+            return getAccountBalance((Act) value);
+        }
+        return BigDecimal.ZERO;
+    }
+
+    /**
+     * Returns the account balance for a party.
+     *
+     * @param party the party. May be <tt>null</tt>.
+     * @return the current account Balance
+     */
+    public BigDecimal getAccountBalance(Party party) {
+        if (party != null) {
+            return getCustomerAccountRules().getBalance(party);
+        }
+        return BigDecimal.ZERO;
+    }
+
+    /**
+     * Returns the current account balance for a customer associated with an
+     * act via an <em>participation.customer</em> or <em>participation.patient</em>
+     * participation.
+     *
+     * @param act the act
+     * @return the current accountbalance
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getAccountBalance(Act act) {
+        if (act != null) {
+            Party party = getPartyRules().getCustomer(act);
+            if (party == null) {
+                party = getPatientRules().getOwner(act);
+            }
+            return (party != null) ? getAccountBalance(party) : BigDecimal.ZERO;
+        }
+        return BigDecimal.ZERO;
+    }
+
+    /**
      * Returns the referral vet for a patient linked to an act.
      * This is the patient's associated party from the first matching
      * <em>entityRelationship.referredFrom</em> or
@@ -629,4 +688,16 @@ public class PartyFunctions {
         return supplierRules;
     }
 
+    /**
+     * Returns the customer account rules.
+     *
+     * @return the customer account rules
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected synchronized CustomerAccountRules getCustomerAccountRules() {
+        if (customerAccountRules == null) {
+            customerAccountRules = new CustomerAccountRules();
+        }
+        return customerAccountRules;
+    }
 }
