@@ -35,8 +35,10 @@ import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
+import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 
@@ -234,6 +236,10 @@ public class IMObjectSorter {
                     if (!(result instanceof Comparable)) {
                         // not comparable so null to avoid class cast exceptions
                         result = null;
+                    } else if (result instanceof Timestamp) {
+                        // convert all Timestamps to Dates to avoid class cast
+                        // exceptions comparing dates and timestamps
+                        result = new Date(((Timestamp) result).getTime());
                     }
                 } catch (DescriptorException exception) {
                     log.error(exception);

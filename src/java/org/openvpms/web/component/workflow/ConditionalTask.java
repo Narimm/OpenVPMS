@@ -20,7 +20,7 @@ package org.openvpms.web.component.workflow;
 
 
 /**
- * Tasks that executes a task if a condition evaluates true.
+ * Task that executes a task if a condition evaluates true.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

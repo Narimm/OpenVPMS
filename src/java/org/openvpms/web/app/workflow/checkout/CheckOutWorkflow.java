@@ -25,10 +25,15 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.app.workflow.InvoiceTask;
+import org.openvpms.web.app.workflow.GetClinicalEventTask;
+import static org.openvpms.web.app.workflow.GetClinicalEventTask.EVENT_SHORTNAME;
+import org.openvpms.web.app.workflow.GetInvoiceTask;
+import static org.openvpms.web.app.workflow.GetInvoiceTask.INVOICE_SHORTNAME;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
+import org.openvpms.web.component.workflow.ConditionalUpdateTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
@@ -107,27 +112,31 @@ public class CheckOutWorkflow extends WorkflowImpl {
         ActBean bean = new ActBean(act);
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
-        final User clinician
-                = (User) bean.getParticipant("participation.clinician");
+        User clinician = (User) bean.getParticipant("participation.clinician");
+        if (clinician == null) {
+            clinician = GlobalContext.getInstance().getClinician();
+        }
 
         initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);
         initial.setPatient(patient);
         initial.setClinician(clinician);
+
         initial.setUser(GlobalContext.getInstance().getUser());
         initial.setTill(GlobalContext.getInstance().getTill());
 
-        // get/create the invoice, and edit it
-        addTask(new InvoiceTask());
-        addTask(new EditIMObjectTask(InvoiceTask.INVOICE_SHORTNAME));
+        // get the latest invoice, or create one if none is available, and edit
+        // it
+        addTask(new GetInvoiceTask());
+        addTask(new ConditionalCreateTask(INVOICE_SHORTNAME));
+        addTask(new EditIMObjectTask(INVOICE_SHORTNAME));
 
         // on save, determine if the user wants to post the invoice
         Tasks postTasks = new Tasks();
         TaskProperties invoiceProps = new TaskProperties();
         invoiceProps.add("status", FinancialActStatus.POSTED);
         postTasks.addTask(
-                new UpdateIMObjectTask(InvoiceTask.INVOICE_SHORTNAME,
-                                       invoiceProps));
+                new UpdateIMObjectTask(INVOICE_SHORTNAME, invoiceProps));
 
         String payTitle = Messages.get("workflow.checkout.payaccount.title");
         String payMsg = Messages.get("workflow.checkout.payaccount.message");
@@ -148,6 +157,13 @@ public class CheckOutWorkflow extends WorkflowImpl {
         PrintDocumentsTask printDocs = new PrintDocumentsTask(startTime);
         printDocs.setRequired(false);
         addTask(printDocs);
+
+        // update the most recent act.patientClinicalEvent, setting it status
+        // to COMPLETED, if one is present
+        addTask(new GetClinicalEventTask());
+        TaskProperties eventProperties = new TaskProperties();
+        eventProperties.add("status", ActStatus.COMPLETED);
+        addTask(new ConditionalUpdateTask(EVENT_SHORTNAME, eventProperties));
     }
 
     /**
