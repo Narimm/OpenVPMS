@@ -209,6 +209,22 @@ public abstract class AbstractCustomerBalanceTest extends ArchetypeServiceTest {
     }
 
     /**
+     * Helper to create an <em>act.customerAccountPayment</em> containing an
+     * <em>act.customerAccountPaymentDiscount</em>.
+     */
+    protected FinancialAct createPaymentDiscount(Money amount) {
+        FinancialAct payment = createPayment(amount);
+        FinancialAct cheque = (FinancialAct) create(
+                "act.customerAccountPaymentDiscount");
+        cheque.setTotal(amount);
+        save(cheque);
+        ActBean bean = new ActBean(payment);
+        bean.addRelationship("actRelationship.customerAccountPaymentItem",
+                             cheque);
+        return payment;
+    }
+
+    /**
      * Helper to create an <em>act.customerAccountRefund</em>.
      *
      * @param amount the act total

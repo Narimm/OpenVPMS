@@ -439,8 +439,10 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerBalanceTest {
         checkReverse(createPaymentCheque(new Money(100)),
                      "act.customerAccountRefund");
 
-        checkReverse(createRefund(new Money(10)), "act.customerAccountPayment");
+        checkReverse(createPaymentDiscount(new Money(100)),
+                     "act.customerAccountRefund");
 
+        checkReverse(createRefund(new Money(10)), "act.customerAccountPayment");
 
         checkReverse(createDebitAdjust(new Money(5)),
                      "act.customerAccountCreditAdjust");

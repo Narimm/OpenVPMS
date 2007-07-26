@@ -116,6 +116,12 @@ class CustomerActReversalHandler extends AbstractActReversalHandler {
             = "act.customerAccountPaymentCredit";
 
     /**
+     * Discount payment type.
+     */
+    private static final String PAYMENT_DISCOUNT_TYPE
+            = "act.customerAccountPaymentDiscount";
+
+    /**
      * EFT payment type.
      */
     private static final String PAYMENT_EFT_TYPE
@@ -149,6 +155,12 @@ class CustomerActReversalHandler extends AbstractActReversalHandler {
      */
     private static final String REFUND_CREDIT_TYPE
             = "act.customerAccountRefundCredit";
+
+    /**
+     * Discount refund type.
+     */
+    private static final String REFUND_DISCOUNT_TYPE
+            = "act.customerAccountRefundDiscount";
 
     /**
      * EFT refund type.
@@ -195,6 +207,7 @@ class CustomerActReversalHandler extends AbstractActReversalHandler {
             {PAYMENT_CASH_TYPE, REFUND_CASH_TYPE},
             {PAYMENT_CHEQUE_TYPE, REFUND_CHEQUE_TYPE},
             {PAYMENT_CREDIT_TYPE, REFUND_CREDIT_TYPE},
+            {PAYMENT_DISCOUNT_TYPE, REFUND_DISCOUNT_TYPE},
             {PAYMENT_EFT_TYPE, REFUND_EFT_TYPE},
             {DEBIT_ADJUST_TYPE, CREDIT_ADJUST_TYPE},
             {DEBIT_ADJUST_TYPE, BADDEBT_ADJUST_TYPE},
