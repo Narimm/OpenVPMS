@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
@@ -96,6 +97,10 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
         } else {
             ArchetypeQuery query = new ArchetypeQuery("entity.documentTemplate",
                                                       false, true);
+            String name = getName();
+            if (!StringUtils.isEmpty(name)) {
+                query.add(new NodeConstraint("name", name));
+            }
             query.setFirstResult(0);
             query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
             IArchetypeService service
