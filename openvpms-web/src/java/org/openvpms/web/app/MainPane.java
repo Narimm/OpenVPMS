@@ -18,11 +18,7 @@
 
 package org.openvpms.web.app;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
-
+import echopointng.GroupBox;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
@@ -36,7 +32,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.layout.SplitPaneLayoutData;
-
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -57,7 +52,10 @@ import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Styles;
 
-import echopointng.GroupBox;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -167,12 +165,12 @@ public class MainPane extends SplitPane implements ContextChangeListener {
         //addSubsystem(new FinancialSubsystem());
         addSubsystem(new ProductSubsystem());
         addSubsystem(new ReportingSubsystem());
-        
+
         // If we are logged in as admin show the administration subsystem 
         Authentication auth
-        = SecurityContextHolder.getContext().getAuthentication();
+                = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && "admin".equals(auth.getName())) {
-        	addSubsystem(new AdminSubsystem());
+            addSubsystem(new AdminSubsystem());
         }
 
         menu.addButton("help", new ActionListener() {
@@ -208,6 +206,7 @@ public class MainPane extends SplitPane implements ContextChangeListener {
         for (Subsystem subsystem : subsystems) {
             Workspace workspace = subsystem.getWorkspaceForArchetype(shortName);
             if (workspace != null) {
+                workspace.getComponent();
                 workspace.setIMObject(context);
                 subsystem.setWorkspace(workspace);
                 select(subsystem);

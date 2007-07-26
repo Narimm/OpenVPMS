@@ -20,8 +20,8 @@ package org.openvpms.web.app.patient;
 
 import org.openvpms.web.app.patient.info.InformationWorkspace;
 import org.openvpms.web.app.patient.mr.PatientRecordWorkspace;
-import org.openvpms.web.app.reporting.reminder.ReminderWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.subsystem.Workspace;
 
 
 /**
@@ -39,5 +39,29 @@ public class PatientSubsystem extends AbstractSubsystem {
         super("patient");
         addWorkspace(new InformationWorkspace());
         addWorkspace(new PatientRecordWorkspace());
+    }
+
+    /**
+     * Returns the first workspace that can handle a particular archetype.
+     * This implementation returns the {@link PatientRecordWorkspace} in
+     * preference to the {@link InformationWorkspace}.
+     *
+     * @param shortName the archetype's short name.
+     * @return a workspace that supports the specified archetype or
+     *         <code>null</code> if no workspace supports it
+     */
+    @Override
+    public Workspace getWorkspaceForArchetype(String shortName) {
+        Workspace fallback = null;
+        for (Workspace workspace : getWorkspaces()) {
+            if (workspace.canHandle(shortName)) {
+                if (workspace instanceof PatientRecordWorkspace) {
+                    return workspace;
+                } else {
+                    fallback = workspace;
+                }
+            }
+        }
+        return fallback;
     }
 }
