@@ -80,7 +80,7 @@ class PrintDocumentsTask extends AbstractTask {
      *
      * @param context the task context
      */
-    public void start(TaskContext context) {
+    public void start(final TaskContext context) {
         List<IMObject> unprinted = new ArrayList<IMObject>();
         unprinted.addAll(getCustomerActs(context));
         unprinted.addAll(getPatientActs(context));
@@ -96,7 +96,7 @@ class PrintDocumentsTask extends AbstractTask {
                 public void windowPaneClosing(WindowPaneEvent event) {
                     String action = dialog.getAction();
                     if (action.equals(BatchPrintDialog.OK_ID)) {
-                        print(dialog.getSelected());
+                        print(dialog.getSelected(), context);
                     } else if (action.equals(BatchPrintDialog.SKIP_ID)) {
                         notifySkipped();
                     } else {
@@ -112,9 +112,10 @@ class PrintDocumentsTask extends AbstractTask {
      * Prints a list of objects.
      *
      * @param objects the objects to print
+     * @param context the task context
      */
-    private void print(List<IMObject> objects) {
-        BatchPrinter printer = new BatchPrinter(objects);
+    private void print(List<IMObject> objects, TaskContext context) {
+        BatchPrinter printer = new BatchPrinter(objects, context);
         printer.print();
     }
 
@@ -197,12 +198,19 @@ class PrintDocumentsTask extends AbstractTask {
         private IMObject object;
 
         /**
+         * The task context.
+         */
+        private final TaskContext context;
+
+
+        /**
          * Constructs a new <code>BatchPrinter</code>.
          *
          * @param objects the objects to print
          */
-        public BatchPrinter(List<IMObject> objects) {
+        public BatchPrinter(List<IMObject> objects, TaskContext context) {
             iterator = objects.iterator();
+            this.context = context;
         }
 
         /**
@@ -249,28 +257,28 @@ class PrintDocumentsTask extends AbstractTask {
         }
 
         /**
-         * Notifies that the print was cancelled.
+         * Invoked when a print is cancelled. This restarts the task.
          */
         public void cancelled() {
-            notifyCancelled();
+            start(context);
         }
 
         /**
-         * Notifies that the print was skipped.
+         * Notifies that the print was skipped. This restarts the task.
          */
         public void skipped() {
-            notifySkipped();
+            start(context);
         }
 
         /**
-         * Invoked when an object fails to print.
+         * Invoked when an object fails to print. This restarts the task.
          *
          * @param cause the reason for the failure
          */
         public void failed(Throwable cause) {
             ErrorHelper.show(cause, new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
-                    notifyCancelled();
+                    start(context);
                 }
             });
         }
