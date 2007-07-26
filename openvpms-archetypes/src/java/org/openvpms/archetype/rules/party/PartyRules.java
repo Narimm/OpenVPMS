@@ -409,7 +409,7 @@ public class PartyRules {
      * @param act the act
      * @return the customer, or <tt>null</tt> if none is present
      */
-    private Party getCustomer(Act act) {
+    public Party getCustomer(Act act) {
         ActBean bean = new ActBean(act, service);
         return (Party) bean.getParticipant("participation.customer");
     }
