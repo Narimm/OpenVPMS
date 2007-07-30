@@ -153,8 +153,8 @@ public class DepositQuery {
                 Comparator<String> compator = new NullComparator();
                 ActBean ab1 = new ActBean(a1);
                 ActBean ab2 = new ActBean(a2);
-                return compator.compare(ab1.getDisplayName(),
-                                        ab2.getDisplayName());
+                return compator.compare(ab1.getObject().getArchetypeId().getShortName(),
+                                        ab2.getObject().getArchetypeId().getShortName());
             }
         });
         return new Page<ObjectSet>(result, 0, result.size(), result.size());
