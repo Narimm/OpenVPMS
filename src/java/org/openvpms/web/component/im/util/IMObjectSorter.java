@@ -228,21 +228,24 @@ public class IMObjectSorter {
          */
         public Object transform(Object input) {
             Object result = null;
-            IMObject object = (IMObject) input;
-            NodeDescriptor descriptor = getDescriptor(object);
-            if (descriptor != null) {
-                try {
-                    result = descriptor.getValue(object);
-                    if (!(result instanceof Comparable)) {
-                        // not comparable so null to avoid class cast exceptions
-                        result = null;
-                    } else if (result instanceof Timestamp) {
-                        // convert all Timestamps to Dates to avoid class cast
-                        // exceptions comparing dates and timestamps
-                        result = new Date(((Timestamp) result).getTime());
+            if (input != null) {
+                IMObject object = (IMObject) input;
+                NodeDescriptor descriptor = getDescriptor(object);
+                if (descriptor != null) {
+                    try {
+                        result = descriptor.getValue(object);
+                        if (!(result instanceof Comparable)) {
+                            // not comparable so null to avoid class cast
+                            // exceptions
+                            result = null;
+                        } else if (result instanceof Timestamp) {
+                            // convert all Timestamps to Dates to avoid class
+                            // cast exceptions comparing dates and timestamps
+                            result = new Date(((Timestamp) result).getTime());
+                        }
+                    } catch (DescriptorException exception) {
+                        log.error(exception);
                     }
-                } catch (DescriptorException exception) {
-                    log.error(exception);
                 }
             }
             return result;
@@ -274,8 +277,11 @@ public class IMObjectSorter {
          *                                  completed
          */
         public Object transform(Object input) {
-            IMObject object = (IMObject) input;
-            return object.getArchetypeId().getShortName();
+            if (input != null) {
+                IMObject object = (IMObject) input;
+                return object.getArchetypeId().getShortName();
+            }
+            return null;
         }
     }
 
