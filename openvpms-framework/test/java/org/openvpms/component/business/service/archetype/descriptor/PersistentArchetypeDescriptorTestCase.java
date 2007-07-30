@@ -78,14 +78,17 @@ public class PersistentArchetypeDescriptorTestCase
 
         try {
 
+            ArchetypeDescriptor desc = createArchetypeDescriptor(
+                    "animal", "mypet", "1.0");
+
+            // delete any existing descriptor
+            deleteArchetypeDescriptorWithName(session, desc.getName());
+
             // get initial numbr of entries in address tabel
             int dcount = HibernateDescriptorUtil.getTableRowCount(session,
                                                                   "archetypeDescriptor");
             // execute the test
             tx = session.beginTransaction();
-            ArchetypeDescriptor desc = createArchetypeDescriptor(
-                    "animal", "mypet", "1.0");
-
             session.save(desc);
             tx.commit();
 
