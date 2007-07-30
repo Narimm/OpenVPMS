@@ -16,25 +16,6 @@
  *  $$Id$$
 -->
 <archetype>
-	<data id="CTY1" archetype="lookup.country" code="AU" name="Australia" defaultLookup="true"/>
-	<data id="ST1" archetype="lookup.state" code="VIC" name="Victoria" defaultLookup="true"/>
-	<data id="ST2" archetype="lookup.state" code="NSW" name="New South Wales" />
-	<data id="ST3" archetype="lookup.state" code="WA" name="Western Australia" />
-	<data id="ST4" archetype="lookup.state" code="SA" name="South Australia" />
-	<data id="ST5" archetype="lookup.state" code="NT" name="Northern Territory" />
-	<data id="ST6" archetype="lookup.state" code="TAS" name="Tasmania" />
-	<data id="ST7" archetype="lookup.state" code="ACT" name="Australian Capital Territory" />
-	<data id="ST8" archetype="lookup.state" code="QLD" name="Queensland" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST1" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST2" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST3" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST4" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST5" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST6" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST7" />
-	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST8" />
-    <data archetype="lookup.currency" code="AUD" name="Australian Dollar" defaultLookup="true" roundingMode="HALF_UP" minDenomination="0.05"/>
-    <data archetype="lookup.currency" code="NZD" name="New Zealand Dollar" roundingMode="HALF_UP" minDenomination="0.10"/>
 	<data archetype="lookup.appointmentReason" code="CHECKUP" defaultLookup="true" />
 	<data archetype="lookup.appointmentReason" code="VACCINATION" />
 	<data archetype="lookup.appointmentReason" code="OTHER" />
@@ -98,4 +79,17 @@
 	<data archetype="lookup.alertType" code="ALLLERGY" />
 	<data archetype="lookup.alertType" code="AGGRESSION" />
 	<data archetype="lookup.alertType" code="OTHER" defaultLookup="true"/>
+	<data archetype="lookup.personTitle" code="MR" defaultLookup="true"/>
+	<data archetype="lookup.personTitle" code="MRS" />
+	<data archetype="lookup.personTitle" code="MS" />
+	<data archetype="lookup.personTitle" code="DR" />
+	<data archetype="lookup.personTitle" code="LADY" />
+	<data archetype="lookup.reportType" code="CUSTOMER" />
+	<data archetype="lookup.reportType" code="PATIENT" />
+	<data archetype="lookup.reportType" code="SUPPLIER" />
+	<data archetype="lookup.reportType" code="PRODUCT" />
+	<data archetype="lookup.reportType" code="WORKFLOW" />
+	<data archetype="lookup.reportType" code="ADMINISTRATION" />
+	<data archetype="lookup.reportType" code="FINANCIAL" />
+	<data archetype="lookup.reportType" code="OTHER" defaultLookup="true"/>
 </archetype>
