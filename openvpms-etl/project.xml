@@ -589,12 +589,6 @@
                 </includes>
             </resource>
             <resource>
-                <directory>${basedir}/src/conf/spring</directory>
-                <includes>
-                    <include>applicationContext.xml</include>
-                </includes>
-            </resource>
-            <resource>
                 <directory>${basedir}/src/conf/ehcache</directory>
                 <includes>
                     <include>ehcache.xml</include>
