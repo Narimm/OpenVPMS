@@ -1,6 +1,8 @@
 package org.openvpms.component.business.service.archetype.query;
 
 import org.apache.commons.lang.WordUtils;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import static org.openvpms.component.business.service.archetype.query.QueryBuilderException.ErrorCode.OperatorNotSupported;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.JoinConstraint;
@@ -438,7 +440,9 @@ public class QueryContext {
     QueryContext addWhereConstraint(String property,
                                     NodeConstraint constraint) {
         String varName;
-        switch (constraint.getOperator()) {
+        RelationalOp op = constraint.getOperator();
+        String qname = getQualifiedPropertyName(property);
+        switch (op) {
             case BTW:
                 if (constraint.getParameters()[0] != null
                         || constraint.getParameters()[1] != null) {
@@ -447,7 +451,7 @@ public class QueryContext {
                     if (constraint.getParameters()[0] != null) {
                         appendLogicalOperator();
                         varName = paramNames.getName(property);
-                        whereClause.append(getQualifiedPropertyName(property))
+                        whereClause.append(qname)
                                 .append(getOperator(RelationalOp.GTE,
                                                     constraint.getParameters()[0]))
                                 .append(" :")
@@ -460,7 +464,7 @@ public class QueryContext {
                     if (constraint.getParameters()[1] != null) {
                         appendLogicalOperator();
                         varName = paramNames.getName(property);
-                        whereClause.append(getQualifiedPropertyName(property))
+                        whereClause.append(qname)
                                 .append(getOperator(RelationalOp.LTE,
                                                     constraint.getParameters()[1]))
                                 .append(" :")
@@ -481,26 +485,31 @@ public class QueryContext {
                 appendLogicalOperator();
 
                 varName = paramNames.getName(property);
-                whereClause.append(getQualifiedPropertyName(property))
+                whereClause.append(qname)
                         .append(" ")
-                        .append(getOperator(constraint.getOperator(),
-                                            constraint.getParameters()[0]))
+                        .append(getOperator(op, constraint.getParameters()[0]))
                         .append(" :")
                         .append(varName);
-                params.put(varName, getValue(constraint.getOperator(),
+                params.put(varName, getValue(op,
                                              constraint.getParameters()[0]));
                 break;
 
             case IsNULL:
                 appendLogicalOperator();
-                whereClause.append(getQualifiedPropertyName(property))
-                        .append(" ")
-                        .append(getOperator(constraint.getOperator(), null));
+                String isNull = " " + getOperator(op, null);
+                if (isReference(property)) {
+                    whereClause.append("(").append(qname).append(".archetypeId")
+                            .append(isNull).append(" and ")
+                            .append(qname).append(".linkId")
+                            .append(isNull).append(")");
+
+                } else {
+                    whereClause.append(qname).append(isNull);
+                }
                 break;
 
             default:
-                throw new QueryBuilderException(
-                        OperatorNotSupported, constraint.getOperator());
+                throw new QueryBuilderException(OperatorNotSupported, op);
         }
 
         return this;
@@ -629,6 +638,30 @@ public class QueryContext {
         }
         typesets.put(types.getAlias(), types);
         return alias;
+    }
+
+    private boolean isReference(String property) {
+        int index = property.indexOf('.');
+        String node;
+        String alias;
+        if (index == -1) {
+            alias = varStack.peek();
+            node = property;
+        } else {
+            alias = property.substring(0, index);
+            node = property.substring(index + 1);
+        }
+        TypeSet set = getTypeSet(alias);
+        if (set == null) {
+            return false;
+        }
+        for (ArchetypeDescriptor archetype : set.getDescriptors()) {
+            NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
+            if (descriptor == null || !descriptor.isObjectReference()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
