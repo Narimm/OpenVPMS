@@ -2,7 +2,7 @@
 <!-- Created with iReport - A designer for JasperReports -->
 <!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
 <jasperReport
-		 name="invoiceItems"
+		 name="countersaleItemsA5"
 		 columnCount="1"
 		 printOrder="Vertical"
 		 orientation="Portrait"
@@ -32,7 +32,7 @@
 	<field name="target.product.entity.name" class="java.lang.String"/>
 	<field name="target.product.entity.displayName" class="java.lang.String"/>
 
-	<variable name="SUM_target.total" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
+	<variable name="SUM_target.total" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
 		<variableExpression><![CDATA[$F{target.total}]]></variableExpression>
 	</variable>
 		<background>

@@ -41,6 +41,7 @@
 	<field name="act.startTime" class="java.util.Date"/>
 	<field name="bankDeposit.depositAccount.entity.accountName" class="java.lang.String"/>
 	<field name="bankDeposit.depositAccount.entity.accountNumber" class="java.lang.String"/>
+	<field name="item.shortName" class="java.lang.String"/>
 
 	<variable name="isCash" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
 		<variableExpression><![CDATA[new Boolean($F{item.displayName}.equals("Cash"))]]></variableExpression>
@@ -71,10 +72,9 @@
 	</variable>
 
 		<group  name="ActItem" isStartNewPage="true" isReprintHeaderOnEachPage="true" >
-			<groupExpression><![CDATA[$F{item.displayName}]]></groupExpression>
+			<groupExpression><![CDATA[$F{item.shortName}]]></groupExpression>
 			<groupHeader>
 			<band height="36"  isSplitAllowed="true" >
-				<printWhenExpression><![CDATA[$V{isNotCash}]]></printWhenExpression>
 				<line direction="BottomUp">
 					<reportElement
 						x="0"
@@ -97,7 +97,6 @@
 			</groupHeader>
 			<groupFooter>
 			<band height="32"  isSplitAllowed="false" >
-				<printWhenExpression><![CDATA[$V{isNotCash}]]></printWhenExpression>
 				<line direction="BottomUp">
 					<reportElement
 						x="0"
@@ -128,7 +127,7 @@
 			</band>
 		</background>
 		<title>
-			<band height="8"  isSplitAllowed="true" >
+			<band height="0"  isSplitAllowed="true" >
 			</band>
 		</title>
 		<pageHeader>
@@ -193,19 +192,18 @@
 		</columnHeader>
 		<detail>
 			<band height="26"  isSplitAllowed="true" >
-				<printWhenExpression><![CDATA[$V{isNotCash}]]></printWhenExpression>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="5"
 						y="3"
-						width="132"
+						width="135"
 						height="14"
 						key="textField"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
 						<font/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{item.displayName}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{item.shortName}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
@@ -240,13 +238,9 @@
 			</band>
 		</columnFooter>
 		<pageFooter>
-			<band height="3"  isSplitAllowed="true" >
+			<band height="0"  isSplitAllowed="true" >
 			</band>
 		</pageFooter>
-		<lastPageFooter>
-			<band height="2"  isSplitAllowed="true" >
-			</band>
-		</lastPageFooter>
 		<summary>
 			<band height="237"  isSplitAllowed="true" >
 				<staticText>

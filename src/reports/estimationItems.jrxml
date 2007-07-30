@@ -34,10 +34,10 @@
 	<field name="target.lowTotal" class="java.math.BigDecimal"/>
 	<field name="target.highTotal" class="java.math.BigDecimal"/>
 
-	<variable name="SUM_target.lowTotal" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
+	<variable name="SUM_target.lowTotal" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
 		<variableExpression><![CDATA[$F{target.lowTotal}]]></variableExpression>
 	</variable>
-	<variable name="SUM_target.highTotal" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
+	<variable name="SUM_target.highTotal" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
 		<variableExpression><![CDATA[$F{target.highTotal}]]></variableExpression>
 	</variable>
 
@@ -70,7 +70,7 @@
 			</band>
 		</background>
 		<title>
-			<band height="21"  isSplitAllowed="true" >
+			<band height="0"  isSplitAllowed="true" >
 			</band>
 		</title>
 		<pageHeader>
@@ -325,15 +325,11 @@
 			</band>
 		</columnFooter>
 		<pageFooter>
-			<band height="40"  isSplitAllowed="true" >
+			<band height="0"  isSplitAllowed="true" >
 			</band>
 		</pageFooter>
-		<lastPageFooter>
-			<band height="50"  isSplitAllowed="true" >
-			</band>
-		</lastPageFooter>
 		<summary>
-			<band height="50"  isSplitAllowed="true" >
+			<band height="0"  isSplitAllowed="true" >
 			</band>
 		</summary>
 </jasperReport>

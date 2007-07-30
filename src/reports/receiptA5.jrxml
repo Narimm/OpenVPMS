@@ -2,7 +2,7 @@
 <!-- Created with iReport - A designer for JasperReports -->
 <!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
 <jasperReport
-		 name="receipt"
+		 name="receiptA5"
 		 columnCount="1"
 		 printOrder="Vertical"
 		 orientation="Portrait"
@@ -12,7 +12,7 @@
 		 columnSpacing="0"
 		 leftMargin="30"
 		 rightMargin="30"
-		 topMargin="20"
+		 topMargin="82"
 		 bottomMargin="20"
 		 whenNoDataType="NoPages"
 		 isTitleNewPage="false"
@@ -33,13 +33,14 @@
 	<field name="startTime" class="java.util.Date"/>
 	<field name="uid" class="java.lang.Long"/>
 	<field name="[party:getBillingAddress(openvpms:get(.,'customer.entity'))]" class="java.lang.String"/>
+	<field name="[party:getAccountBalance(.)]" class="java.math.BigDecimal"/>
 
 		<background>
 			<band height="0"  isSplitAllowed="true" >
 			</band>
 		</background>
 		<title>
-			<band height="99"  isSplitAllowed="true" >
+			<band height="0"  isSplitAllowed="true" >
 			</band>
 		</title>
 		<pageHeader>
@@ -199,19 +200,15 @@
 			</band>
 		</columnFooter>
 		<pageFooter>
-			<band height="9"  isSplitAllowed="true" >
+			<band height="0"  isSplitAllowed="true" >
 			</band>
 		</pageFooter>
-		<lastPageFooter>
-			<band height="5"  isSplitAllowed="true" >
-			</band>
-		</lastPageFooter>
 		<summary>
 			<band height="89"  isSplitAllowed="true" >
 				<staticText>
 					<reportElement
 						x="14"
-						y="8"
+						y="24"
 						width="332"
 						height="16"
 						key="staticText-5"/>
@@ -221,6 +218,32 @@
 					</textElement>
 				<text><![CDATA[Thank you for your payment.   ]]></text>
 				</staticText>
+				<staticText>
+					<reportElement
+						x="3"
+						y="2"
+						width="112"
+						height="14"
+						key="staticText-11"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[CURRENT BALANCE]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="285"
+						y="2"
+						width="69"
+						height="14"
+						key="textField-13"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{[party:getAccountBalance(.)]}]]></textFieldExpression>
+				</textField>
 			</band>
 		</summary>
 </jasperReport>
