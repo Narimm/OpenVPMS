@@ -214,6 +214,9 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
 
         if (TypeHelper.isA(act, "act.patientInvestigation*")) {
             detail = getInvestigationDetail((DocumentAct) act);
+        }
+        else if (TypeHelper.isA(act, "act.patientDocument*")) {
+            detail = getDocumentDetail((DocumentAct) act);
         } else {
             detail = getDetail(act);
         }
@@ -273,6 +276,19 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      * @return a new component
      */
     private Component getInvestigationDetail(DocumentAct act) {
+        Component component = getDetail(act);
+        DocumentViewer viewer = new DocumentViewer(act, true);
+        return RowFactory.create("CellSpacing", component,
+                                 viewer.getComponent());
+    }
+
+    /**
+     * Returns a component for the detail of an act.patientDocument*.
+     *
+     * @param act the act
+     * @return a new component
+     */
+    private Component getDocumentDetail(DocumentAct act) {
         Component component = getDetail(act);
         DocumentViewer viewer = new DocumentViewer(act, true);
         return RowFactory.create("CellSpacing", component,
