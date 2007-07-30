@@ -80,8 +80,8 @@ class DateBinder extends Binder {
      *
      * @return the value of the field
      */
-    protected Object getFieldValue() {
-        return field.getDateChooser().getSelectedDate();
+    protected Date getFieldValue() {
+        return field.getDateChooser().getSelectedDate().getTime();
     }
 
     /**
