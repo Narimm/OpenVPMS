@@ -29,10 +29,12 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -83,7 +85,9 @@ public class ArchetypeServiceDescriptorTestCase
                 "descriptor.archetype");
         assertTrue(desc != null);
 
-        desc.setName("openvpms-test-archetype.dummy.1.0");
+        String name = "archetype.dummy.1.0";
+        removeDescriptor(name);
+        desc.setName(name);
         desc.setClassName(this.getClass().getName());
         desc.setDisplayName("archetype.dummy");
         desc.setDescription("Archetype Dummy v1.0");
@@ -105,9 +109,11 @@ public class ArchetypeServiceDescriptorTestCase
             throws Exception {
         ArchetypeDescriptor desc = (ArchetypeDescriptor) service.create(
                 "descriptor.archetype");
-        assertTrue(desc != null);
+        assertNotNull(desc);
 
-        desc.setName("openvpms-test-archetype.dummy.1.0");
+        String name = "archetype.dummy.1.0";
+        removeDescriptor(name);
+        desc.setName(name);
         desc.setDisplayName("archetype.dummy");
         desc.setDescription("Archetype Dummy v1.0");
         desc.setLatest(true);
@@ -126,8 +132,10 @@ public class ArchetypeServiceDescriptorTestCase
      */
     public void testCreateArhetypeWithNodeDescriptor()
             throws Exception {
+        String name = "archetype.dummy.1.0";
+        removeDescriptor(name);
         ArchetypeDescriptor desc = createArchetypeDescriptor(
-                "openvpms-test-archetype.dummy.1.0", "thisClass",
+                name, "thisClass",
                 "archetype.dummy", true);
 
         NodeDescriptor ndesc = createNodeDescriptor("name", "/name",
@@ -157,12 +165,15 @@ public class ArchetypeServiceDescriptorTestCase
     }
 
     /**
-     * Test that we can clone and save the cloned object in to the database
+     * Test that we can clone and save the cloned object in to the database.
+     * Commented out for OBF-167.
      */
-    public void testCloneOnCreateArchetypeWithNodeDescriptor()
+    public void XtestCloneOnCreateArchetypeWithNodeDescriptor()
             throws Exception {
+        removeDescriptor("archetype.dummy.1.0");
+        removeDescriptor("archetype.dummy.2.0");
         ArchetypeDescriptor desc = createArchetypeDescriptor(
-                "openvpms-test-archetype.dummy.1.0", "thisClass",
+                "archetype.dummy.1.0", "thisClass",
                 "archetype.dummy", true);
 
         NodeDescriptor ndesc = createNodeDescriptor("name", "/name",
@@ -178,7 +189,7 @@ public class ArchetypeServiceDescriptorTestCase
 
         // clone the object and resave it
         ArchetypeDescriptor copy = (ArchetypeDescriptor) desc.clone();
-        copy.setName("openvpms-test-archetype.dummy.2.0");
+        copy.setName("archetype.dummy.2.0");
         copy.setClassName("thisClassAgain");
         assertFalse(copy.getName().equals(desc.getName()));
         assertFalse(copy.getClassName().equals(desc.getClassName()));
@@ -336,6 +347,22 @@ public class ArchetypeServiceDescriptorTestCase
         desc.setLatest(latest);
 
         return desc;
+    }
+
+    /**
+     * Removes any archetype descriptor with the specified qualified name.
+     *
+     * @param qName the qualified name
+     */
+    private void removeDescriptor(String qName) {
+        ArchetypeQuery query = new ArchetypeQuery("descriptor.archetype", false,
+                                                  true);
+        query.add(new NodeConstraint("type", qName));
+        Iterator<IMObject> iter
+                = new IMObjectQueryIterator<IMObject>(service, query);
+        while (iter.hasNext()) {
+            service.remove(iter.next());
+        }
     }
 
     /**
