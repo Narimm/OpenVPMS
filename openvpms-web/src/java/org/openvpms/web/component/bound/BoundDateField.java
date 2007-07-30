@@ -79,8 +79,8 @@ public class BoundDateField extends DateFieldImpl {
     protected DateBinder createBinder(Property property) {
         return new DateBinder(this, property) {
             @Override
-            protected Object getFieldValue() {
-                Date date = getField().getSelectedDate().getTime();
+            protected Date getFieldValue() {
+                Date date = super.getFieldValue();
                 if (includeTimeForToday) {
                     return DateHelper.getDatetimeIfToday(date);
                 }

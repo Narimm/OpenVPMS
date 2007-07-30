@@ -108,8 +108,7 @@ public class BoundDateTimeField extends Row {
                  */
                 @Override
                 protected void setProperty(Property property) {
-                    Object fieldValue = getFieldValue();
-                    Date date = (Date) fieldValue;
+                    Date date = getFieldValue();
                     Date currentDate = (Date) property.getValue();
                     if (currentDate != null) {
                         Calendar current = new GregorianCalendar();
