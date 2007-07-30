@@ -12,7 +12,7 @@
 		 columnSpacing="0"
 		 leftMargin="30"
 		 rightMargin="30"
-		 topMargin="20"
+		 topMargin="76"
 		 bottomMargin="20"
 		 whenNoDataType="NoPages"
 		 isTitleNewPage="false"
@@ -43,7 +43,7 @@
 			</band>
 		</background>
 		<title>
-			<band height="120"  isSplitAllowed="true" >
+			<band height="0"  isSplitAllowed="true" >
 			</band>
 		</title>
 		<pageHeader>

@@ -2,7 +2,7 @@
 <!-- Created with iReport - A designer for JasperReports -->
 <!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
 <jasperReport
-		 name="label"
+		 name="label Dymo"
 		 columnCount="1"
 		 printOrder="Vertical"
 		 orientation="Landscape"
@@ -32,7 +32,12 @@
 	<field name="label" class="java.lang.String"/>
 	<field name="clinician.entity.name" class="java.lang.String"/>
 	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'lastName')]" class="java.lang.String"/>
+	<field name="quantity" class="java.math.BigDecimal"/>
+	<field name="product.entity.printedName" class="java.lang.String"/>
 
+	<variable name="patientFullName" class="java.lang.String" resetType="Report" calculation="Nothing">
+		<variableExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'lastName')]} + "," + $F{patient.entity.name}]]></variableExpression>
+	</variable>
 		<background>
 			<band height="1"  isSplitAllowed="true" >
 			</band>
@@ -53,18 +58,18 @@
 			<band height="151"  isSplitAllowed="true" >
 				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="27"
+						x="15"
 						y="36"
-						width="139"
+						width="125"
 						height="14"
 						key="textField"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Center">
+					<textElement textAlignment="Left">
 						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{product.entity.name}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{product.entity.printedName}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="15"
 						y="52"
@@ -76,20 +81,6 @@
 						<font size="8"/>
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA[$F{label}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="100"
-						y="93"
-						width="52"
-						height="10"
-						key="textField"
-						isPrintWhenDetailOverflows="true"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{patient.entity.name}]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement
@@ -109,7 +100,7 @@
 					<reportElement
 						x="48"
 						y="114"
-						width="64"
+						width="85"
 						height="11"
 						key="textField"
 						isPrintWhenDetailOverflows="true"/>
@@ -186,7 +177,7 @@
 					<textElement textAlignment="Center">
 						<font pdfFontName="Helvetica-Oblique" size="8" isBold="false" isItalic="true"/>
 					</textElement>
-				<text><![CDATA[Turramurra Veterinary Clinic]]></text>
+				<text><![CDATA[A Veterinary Practice]]></text>
 				</staticText>
 				<staticText>
 					<reportElement
@@ -199,7 +190,7 @@
 					<textElement textAlignment="Center">
 						<font pdfFontName="Helvetica-BoldOblique" size="8" isBold="false" isItalic="true"/>
 					</textElement>
-				<text><![CDATA[2 Princess Street, Turramurra NSW 2074]]></text>
+				<text><![CDATA[999 A Road A suburb ]]></text>
 				</staticText>
 				<staticText>
 					<reportElement
@@ -215,19 +206,6 @@
 					</textElement>
 				<text><![CDATA[ Patient:]]></text>
 				</staticText>
-				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="47"
-						y="93"
-						width="45"
-						height="10"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'lastName')]}]]></textFieldExpression>
-				</textField>
 				<staticText>
 					<reportElement
 						x="1"
@@ -239,22 +217,34 @@
 					<textElement textAlignment="Center">
 						<font pdfFontName="Helvetica-BoldOblique" size="8" isBold="false" isItalic="true"/>
 					</textElement>
-				<text><![CDATA[(02)99880198]]></text>
+				<text><![CDATA[(99) 9999-9999]]></text>
 				</staticText>
-				<staticText>
+				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="92"
+						x="141"
+						y="36"
+						width="25"
+						height="14"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{quantity}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="47"
 						y="92"
-						width="6"
+						width="143"
 						height="11"
-						key="staticText-10"
-						isPrintWhenDetailOverflows="true"/>
+						key="textField"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
-				<text><![CDATA[ , ]]></text>
-				</staticText>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{patientFullName}]]></textFieldExpression>
+				</textField>
 			</band>
 		</detail>
 		<columnFooter>

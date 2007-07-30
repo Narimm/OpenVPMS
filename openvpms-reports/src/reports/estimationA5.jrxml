@@ -2,7 +2,7 @@
 <!-- Created with iReport - A designer for JasperReports -->
 <!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
 <jasperReport
-		 name="estimation"
+		 name="estimationA5"
 		 columnCount="1"
 		 printOrder="Vertical"
 		 orientation="Portrait"
@@ -12,7 +12,7 @@
 		 columnSpacing="0"
 		 leftMargin="14"
 		 rightMargin="14"
-		 topMargin="20"
+		 topMargin="76"
 		 bottomMargin="20"
 		 whenNoDataType="NoPages"
 		 isTitleNewPage="false"
@@ -43,7 +43,7 @@
 			</band>
 		</background>
 		<title>
-			<band height="97"  isSplitAllowed="true" >
+			<band height="0"  isSplitAllowed="true" >
 			</band>
 		</title>
 		<pageHeader>
