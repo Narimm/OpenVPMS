@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.archetype.query;
 import org.hibernate.HibernateException;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -417,6 +418,21 @@ public class QueryBuilderTestCase
         checkQuery(query, expected);
     }
 
+
+    /**
+     * Tests queries where an {@link IMObjectReference} node is null.
+     */
+    public void testNullReference() {
+        final String expected = "select documentAct0 from "
+                + DocumentAct.class.getName() + " as documentAct0 "
+                + "where (documentAct0.archetypeId.shortName = :shortName0 and "
+                + "(documentAct0.docReference.archetypeId is NULL and "
+                + "documentAct0.docReference.linkId is NULL))";
+        ArchetypeQuery query = new ArchetypeQuery("document.act", false, false);
+        query.add(new NodeConstraint("docReference", RelationalOp.IsNULL));
+
+        checkQuery(query, expected);
+    }
 
     /*
     * (non-Javadoc)
