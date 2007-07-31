@@ -44,6 +44,7 @@ public class IMTable<T> extends KeyTable {
         setStyleName("default");
         setAutoCreateColumnsFromModel(false);
         setModel(model);
+        addListener(model);
         initialise(model);
     }
 
@@ -128,16 +129,27 @@ public class IMTable<T> extends KeyTable {
         if (getDefaultRenderer(Object.class) == null) {
             setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
         }
-        // need to add a listener to the model to be notified of column changes
         if (current != model) {
-            model.addTableModelListener(new TableModelListener() {
-                public void tableChanged(TableModelEvent event) {
-                    if (event.getType() == TableModelEvent.STRUCTURE_CHANGED) {
-                        initialise(getModel());
-                    }
-                }
-            });
+            // need to add a listener to the model to be notified of column
+            // changes
+            addListener(model);
         }
+    }
+
+    /**
+     * Adds a listener to the table model to re-initialise this on column
+     * changes.
+     *
+     * @param model the model to register the listener for
+     */
+    private void addListener(final IMTableModel<T> model) {
+        model.addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent event) {
+                if (event.getType() == TableModelEvent.STRUCTURE_CHANGED) {
+                    initialise(model);
+                }
+            }
+        });
     }
 
 }
