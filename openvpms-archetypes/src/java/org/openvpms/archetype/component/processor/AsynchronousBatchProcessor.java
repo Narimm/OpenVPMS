@@ -30,13 +30,13 @@ import java.util.Iterator;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AsynchronousBatchProcessor<Action, Type, Event>
+public class AsynchronousBatchProcessor<Type>
         extends AbstractAsynchronousBatchProcessor<Type> {
 
     /**
      * The processor.
      */
-    private Processor<Action, Type, Event> processor;
+    private Processor<Type> processor;
 
 
     /**
@@ -45,7 +45,7 @@ public class AsynchronousBatchProcessor<Action, Type, Event>
      * @param processor the processor
      * @param iterator  an iterator over the batch to process
      */
-    public AsynchronousBatchProcessor(Processor<Action, Type, Event> processor,
+    public AsynchronousBatchProcessor(Processor<Type> processor,
                                       Iterator<Type> iterator) {
         setProcessor(processor);
         setIterator(iterator);
@@ -74,7 +74,7 @@ public class AsynchronousBatchProcessor<Action, Type, Event>
      *
      * @param processor the processor
      */
-    protected void setProcessor(Processor<Action, Type, Event> processor) {
+    protected void setProcessor(Processor<Type> processor) {
         this.processor = processor;
     }
 

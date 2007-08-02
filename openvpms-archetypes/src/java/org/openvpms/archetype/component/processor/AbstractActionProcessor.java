@@ -25,49 +25,31 @@ import java.util.Map;
 
 
 /**
- * Abstract implementation of the {@link Processor} interface.
+ * Abstract implementation of the {@link ActionProcessor} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractProcessor<Action, Type, Event>
-        implements Processor<Action, Type, Event> {
-
-    /**
-     * The listeners. Listen to all events.
-     */
-    private final List<ProcessorListener<Event>> listeners;
+public abstract class AbstractActionProcessor<Action, Type, Event>
+        implements ActionProcessor<Action, Type, Event> {
 
     /**
      * The listeners, keyed on action type.
      */
     private final Map<Action, List<ProcessorListener<Event>>> actionListeners;
 
+    /**
+     * The listeners. Listen to all events.
+     */
+    private final List<ProcessorListener<Event>> listeners;
+
 
     /**
      * Creates a new <tt>AbstractProcessor</tt>.
      */
-    public AbstractProcessor() {
+    public AbstractActionProcessor() {
         listeners = new ArrayList<ProcessorListener<Event>>();
         actionListeners = new HashMap<Action, List<ProcessorListener<Event>>>();
-    }
-
-    /**
-     * Registers a listener for all events.
-     *
-     * @param listener the listener to add
-     */
-    public void addListener(ProcessorListener<Event> listener) {
-        listeners.add(listener);
-    }
-
-    /**
-     * Removes a listener.
-     *
-     * @param listener the listener to remove
-     */
-    public void removeListener(ProcessorListener<Event> listener) {
-        listeners.remove(listener);
     }
 
     /**
@@ -100,17 +82,30 @@ public abstract class AbstractProcessor<Action, Type, Event>
     }
 
     /**
+     * Registers a listener for all events.
+     *
+     * @param listener the listener to add
+     */
+    public void addListener(ProcessorListener<Event> listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeListener(ProcessorListener<Event> listener) {
+        listeners.remove(listener);
+    }
+
+    /**
      * Notifies listeners of an event.
      *
-     * @param action the action
-     * @param event  the event
+     * @param event the event
      */
-    protected void notifyListeners(Action action, Event event) {
+    protected void notifyListeners(Event event) {
         notifyListeners(listeners, event);
-        List<ProcessorListener<Event>> list = actionListeners.get(action);
-        if (list != null) {
-            notifyListeners(list, event);
-        }
     }
 
     /**
@@ -119,10 +114,24 @@ public abstract class AbstractProcessor<Action, Type, Event>
      * @param list  the listeners to notify
      * @param event the event
      */
-    private void notifyListeners(List<ProcessorListener<Event>> list,
-                                 Event event) {
+    protected void notifyListeners(List<ProcessorListener<Event>> list,
+                                   Event event) {
         for (ProcessorListener<Event> listener : list) {
             listener.process(event);
+        }
+    }
+
+    /**
+     * Notifies listeners of an event.
+     *
+     * @param action the action
+     * @param event  the event
+     */
+    protected void notifyListeners(Action action, Event event) {
+        notifyListeners(event);
+        List<ProcessorListener<Event>> list = actionListeners.get(action);
+        if (list != null) {
+            notifyListeners(list, event);
         }
     }
 

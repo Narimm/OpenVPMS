@@ -66,7 +66,8 @@ public interface DocumentHandler {
      * @param name     the document name. Any path information is removed.
      * @param stream   a stream representing the document content
      * @param mimeType the mime type of the document. May be <code>null</code>
-     * @param size     the size of stream
+     * @param size     the size of stream, or <tt>-1</tt> if the size is not
+     *                 known
      * @return a new document
      * @throws DocumentException         if the document can't be created
      * @throws ArchetypeServiceException for any archetype service error

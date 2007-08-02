@@ -109,7 +109,23 @@ class BalanceCalculator {
         Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service,
                                                                   query);
         return calculateBalance(iterator);
+    }
 
+    /**
+     * Returns the unbilled amount for a customer.
+     *
+     * @param customer the customer
+     * @return the unbilled amount
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getUnbilledAmount(Party customer) {
+        String[] shortNames = {CHARGES_INVOICE, CHARGES_COUNTER,
+                               CHARGES_CREDIT};
+        ArchetypeQuery query = QueryFactory.createUnbilledObjectSetQuery(customer,
+                                                                         shortNames);
+        Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service,
+                                                                  query);
+        return calculateBalance(iterator);
     }
 
     /**

@@ -102,7 +102,8 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
      * @param name     the document name. Any path information is removed.
      * @param stream   a stream representing the document content
      * @param mimeType the mime type of the content. May be <code>null</code>
-     * @param size     the size of stream
+     * @param size     the size of stream, or <tt>-1</tt> if the size is not
+     *                 known
      * @return a new document
      * @throws DocumentException         if the document can't be created
      * @throws ArchetypeServiceException for any archetype service error
@@ -119,7 +120,7 @@ public abstract class AbstractDocumentHandler implements DocumentHandler {
                 output.write(buffer, 0, length);
                 read += length;
             }
-            if (read != size) {
+            if (size != -1 && read != size) {
                 throw new DocumentException(ReadError, name);
             }
             output.close();

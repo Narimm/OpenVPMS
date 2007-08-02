@@ -18,8 +18,6 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
-import org.openvpms.archetype.rules.act.ActCalculator;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.*;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountRuleException.ErrorCode.MissingCustomer;
@@ -102,15 +100,14 @@ public class CustomerAccountRules {
      *                                      no customer
      */
     public void addToBalance(FinancialAct act) {
-        if (FinancialActStatus.POSTED.equals(act.getStatus())
-                && !inBalance(act)) {
-            ActBean bean = new ActBean(act, service);
-            Party customer = (Party) bean.getParticipant(
-                    "participation.customer");
-            if (customer == null) {
-                throw new CustomerAccountRuleException(MissingCustomer, act);
+        String status = act.getStatus();
+        ActBean bean = new ActBean(act, service);
+        if (FinancialActStatus.POSTED.equals(status)) {
+            if (!inBalance(act)) {
+                addBalanceParticipation(bean);
             }
-            bean.addParticipation(ACCOUNT_BALANCE_SHORTNAME, customer);
+        } else if (!hasBalanceParticipation(bean)) {
+            addBalanceParticipation(bean);
         }
     }
 
@@ -140,7 +137,7 @@ public class CustomerAccountRules {
      * Determines if an act is already in the customer account balance.
      *
      * @param act the act
-     * @return <code>true</code> if the act has no
+     * @return <tt>true</tt> if the act has no
      *         <em>act.customerAccountBalance</em> participation and has been
      *         fully allocated
      */
@@ -224,9 +221,9 @@ public class CustomerAccountRules {
      * @param customer the customer
      * @param date     the date
      * @param from     the from day range
-     * @param to       the to day range. Use <code>&lt;= 0</code> to indicate
+     * @param to       the to day range. Use <tt>&lt;= 0</tt> to indicate
      *                 all dates
-     * @return <code>true</code> if the customer has an overdue balance within
+     * @return <tt>true</tt> if the customer has an overdue balance within
      *         the day range past their standard terms.
      */
     public boolean hasOverdueBalance(Party customer, Date date, int from,
@@ -314,28 +311,7 @@ public class CustomerAccountRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getUnbilledAmount(Party customer) {
-        String[] shortNames = {CHARGES_INVOICE, CHARGES_COUNTER,
-                               CHARGES_CREDIT};
-        ArchetypeQuery query = QueryFactory.createQuery(customer, shortNames);
-
-        query.add(new NodeSelectConstraint("a.amount"));
-        query.add(new NodeSelectConstraint("a.credit"));
-        query.add(new NodeConstraint("status", RelationalOp.NE,
-                                     ActStatus.POSTED));
-        Iterator<ObjectSet> iterator
-                = new ObjectSetQueryIterator(service, query);
-
-        ActCalculator calculator = new ActCalculator(service);
-        BigDecimal result = BigDecimal.ZERO;
-        while (iterator.hasNext()) {
-            ObjectSet set = iterator.next();
-            BigDecimal amount = (BigDecimal) set.get("a.amount");
-            if (amount != null) {
-                boolean credit = (Boolean) set.get("a.credit");
-                result = calculator.addAmount(result, amount, credit);
-            }
-        }
-        return result;
+        return calculator.getUnbilledAmount(customer);
     }
 
     /**
@@ -361,10 +337,11 @@ public class CustomerAccountRules {
      * <em>act.customerAccountOpeningBalance</em> for the specified customer,
      * using their account balance for the total of each act.
      *
-     * @param customer the customer
+     * @param customer  the customer
+     * @param timestamp the date-time of the end-of-period
      * @throws ArchetypeServiceException for any error
      */
-    public void createPeriodEnd(Party customer) {
+    public void createPeriodEnd(Party customer, Date timestamp) {
         BigDecimal total = getBalance(customer);
         FinancialAct close = createAct("act.customerAccountClosingBalance",
                                        customer, total);
@@ -372,6 +349,7 @@ public class CustomerAccountRules {
                                       customer, total);
         // ensure the acts are ordered correctly, ie. close before open
         Calendar calendar = Calendar.getInstance();
+        calendar.setTime(timestamp);
         close.setActivityStartTime(calendar.getTime());
         calendar.add(Calendar.MINUTE, 1);
         open.setActivityStartTime(calendar.getTime());
@@ -495,14 +473,38 @@ public class CustomerAccountRules {
     }
 
     /**
+     * Adds an <em>participation.customerAccountBalance</em> to an act.
+     *
+     * @param act the act
+     */
+    private void addBalanceParticipation(ActBean act) {
+        Party customer = (Party) act.getParticipant("participation.customer");
+        if (customer == null) {
+            throw new CustomerAccountRuleException(MissingCustomer,
+                                                   act.getAct());
+        }
+        act.addParticipation(ACCOUNT_BALANCE_SHORTNAME, customer);
+    }
+
+    /**
      * Determines if an act has an <em>participation.customerAccountBalance<em>.
      *
      * @param act the act
-     * @return <code>true</code> if the participation is present
+     * @return <tt>true</tt> if the participation is present
      */
     private boolean hasBalanceParticipation(FinancialAct act) {
         ActBean bean = new ActBean(act, service);
-        return bean.getParticipantRef(ACCOUNT_BALANCE_SHORTNAME) != null;
+        return hasBalanceParticipation(bean);
+    }
+
+    /**
+     * Determines if an act has an <em>participation.customerAccountBalance<em>.
+     *
+     * @param act the act
+     * @return <tt>true</tt> if the participation is present
+     */
+    private boolean hasBalanceParticipation(ActBean act) {
+        return act.getParticipantRef(ACCOUNT_BALANCE_SHORTNAME) != null;
     }
 
     /**
@@ -630,7 +632,7 @@ public class CustomerAccountRules {
         /**
          * Determines if the act has been fully allocated.
          *
-         * @return <code>true</code> if the act has been full allocated
+         * @return <tt>true</tt> if the act has been full allocated
          */
         public boolean isAllocated() {
             return getAllocatable().compareTo(BigDecimal.ZERO) <= 0;
@@ -671,7 +673,7 @@ public class CustomerAccountRules {
         /**
          * Determines if the act is a credit or debit.
          *
-         * @return <code>true</code> if the act is a credit, <code>false</code>
+         * @return <tt>true</tt> if the act is a credit, <tt>false</tt>
          *         if it is a debit
          */
         public boolean isCredit() {
@@ -690,7 +692,7 @@ public class CustomerAccountRules {
         /**
          * Determines if the act has been modified.
          *
-         * @return <code>true</code> if the act has been modified
+         * @return <tt>true</tt> if the act has been modified
          */
         public boolean isDirty() {
             return dirty;

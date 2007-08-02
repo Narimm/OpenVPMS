@@ -23,7 +23,7 @@
 
     <query name="getBalances">
         <![CDATA[
-select e.name, p.entity, p.act, a.activityStartTime, a.total, a.allocatedAmount, a.credit, c.code
+select e.name, p.entity, p.act, a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
 from  org.openvpms.component.business.domain.im.common.Participation as p,
       org.openvpms.component.business.domain.im.act.FinancialAct as a,
       org.openvpms.component.business.domain.im.party.Party as e
@@ -37,7 +37,7 @@ order by e.name, a.activityStartTime
 
     <query name="getBalancesForAccountType">
         <![CDATA[
-select e.name, p.entity, p.act, a.activityStartTime, a.total, a.allocatedAmount, a.credit, c.code
+select e.name, p.entity, p.act, a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
 from  org.openvpms.component.business.domain.im.common.Participation as p,
       org.openvpms.component.business.domain.im.act.FinancialAct as a,
       org.openvpms.component.business.domain.im.party.Party as e
