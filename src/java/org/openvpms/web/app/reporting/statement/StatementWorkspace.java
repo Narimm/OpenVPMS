@@ -154,19 +154,24 @@ public class StatementWorkspace extends AbstractWorkspace {
         doLayout(content, group);
         root.add(content);
 
-        buttons.addButton("processAll", new ActionListener() {
+        buttons.addButton("printAll", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                onProcessAll();
+                onPrintAll();
             }
         });
-        buttons.addButton("process", new ActionListener() {
+        buttons.addButton("print", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                onProcess();
+                onPrint();
             }
         });
         buttons.addButton("report", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onReport();
+            }
+        });
+        buttons.addButton("endPeriod", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onEndPeriod();
             }
         });
         return root;
@@ -189,7 +194,7 @@ public class StatementWorkspace extends AbstractWorkspace {
     /**
      * Invoked when the 'process all' button is pressed.
      */
-    private void onProcessAll() {
+    private void onPrintAll() {
         String title = Messages.get("reporting.statements.run.title");
         String message = Messages.get("reporting.statements.run.message");
         final ConfirmationDialog dialog
@@ -197,7 +202,7 @@ public class StatementWorkspace extends AbstractWorkspace {
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    doProcessAll();
+                    doPrintAll();
                 }
             }
         });
@@ -207,7 +212,7 @@ public class StatementWorkspace extends AbstractWorkspace {
     /**
      * Processes all customers matching the criteria.
      */
-    private void doProcessAll() {
+    private void doPrintAll() {
         try {
             GlobalContext context = GlobalContext.getInstance();
             StatementGenerator generator = new StatementGenerator(query,
@@ -221,7 +226,7 @@ public class StatementWorkspace extends AbstractWorkspace {
     /**
      * Invoked when the 'process' button is pressed.
      */
-    private void onProcess() {
+    private void onPrint() {
         try {
             ObjectSet selected = browser.getSelected();
             if (selected != null) {
@@ -229,11 +234,30 @@ public class StatementWorkspace extends AbstractWorkspace {
                         CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
                 if (ref != null) {
                     GlobalContext context = GlobalContext.getInstance();
-                    StatementGenerator generator
-                            = new StatementGenerator(ref, context);
+                    StatementGenerator generator = new StatementGenerator(
+                            ref, query.getDate(), context);
                     generateStatements(generator);
                 }
             }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    private void onEndPeriod() {
+        try {
+            EndOfPeriodGenerator generator = new EndOfPeriodGenerator(
+                    query.getDate());
+            generator.setListener(new BatchProcessorListener() {
+                public void completed() {
+                    browser.query();
+                }
+
+                public void error(Throwable exception) {
+                    ErrorHelper.show(exception);
+                }
+            });
+            generator.process();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }

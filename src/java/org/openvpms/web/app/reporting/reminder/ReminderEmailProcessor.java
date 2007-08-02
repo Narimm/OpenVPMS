@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.im.doc.ReportGenerator;
+import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.core.io.InputStreamSource;

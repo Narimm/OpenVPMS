@@ -70,19 +70,24 @@ public class CustomerBalanceSummaryTableModel
     private static final int CREDIT_BALANCE_INDEX = 3;
 
     /**
+     * The unbilled amount index.
+     */
+    private static final int UNBILLED_AMOUNT_INDEX = 4;
+
+    /**
      * The last payment date index.
      */
-    private static final int LAST_PAYMENT_DATE_INDEX = 4;
+    private static final int LAST_PAYMENT_DATE_INDEX = 5;
 
     /**
      * The last payment amount index.
      */
-    private static final int LAST_PAYMENT_AMOUNT_INDEX = 5;
+    private static final int LAST_PAYMENT_AMOUNT_INDEX = 6;
 
     /**
      * The last invoice date index.
      */
-    private static final int LAST_INVOICE_DATE_INDEX = 6;
+    private static final int LAST_INVOICE_DATE_INDEX = 7;
 
     /**
      * The columns. A 2 dimensional array of the the ObjectSet key and
@@ -97,6 +102,8 @@ public class CustomerBalanceSummaryTableModel
              Messages.get("customerbalancetablemodel.overdueBalance")},
             {CustomerBalanceSummaryQuery.CREDIT_BALANCE, Messages.get(
                     "customerbalancetablemodel.creditBalance")},
+            {CustomerBalanceSummaryQuery.UNBILLED_AMOUNT, Messages.get(
+                    "customerbalancetablemodel.unbilledAmount")},
             {CustomerBalanceSummaryQuery.LAST_PAYMENT_DATE, Messages.get(
                     "customerbalancetablemodel.lastPaymentDate")},
             {CustomerBalanceSummaryQuery.LAST_PAYMENT_AMOUNT, Messages.get(
@@ -153,9 +160,9 @@ public class CustomerBalanceSummaryTableModel
         Object value = set.get(columns[index][0]);
         switch (index) {
             case CUSTOMER_INDEX:
-                result = getViewer((IMObjectReference) value,
-                                   (String) set.get(
-                                           CustomerBalanceSummaryQuery.CUSTOMER_NAME));
+                String name = (String) set.get(
+                        CustomerBalanceSummaryQuery.CUSTOMER_NAME);
+                result = getViewer((IMObjectReference) value, name);
                 break;
             case BALANCE_INDEX:
                 result = getAmount((BigDecimal) value);
@@ -164,6 +171,9 @@ public class CustomerBalanceSummaryTableModel
                 result = getAmount((BigDecimal) value);
                 break;
             case CREDIT_BALANCE_INDEX:
+                result = getAmount((BigDecimal) value);
+                break;
+            case UNBILLED_AMOUNT_INDEX:
                 result = getAmount((BigDecimal) value);
                 break;
             case LAST_PAYMENT_DATE_INDEX:
@@ -191,7 +201,6 @@ public class CustomerBalanceSummaryTableModel
                 party, name, true);
         return viewer.getComponent();
     }
-
 
     /**
      * Helper to return a component to display a date.

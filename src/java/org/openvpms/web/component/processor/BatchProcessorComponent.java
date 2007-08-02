@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.reporting.reminder;
+package org.openvpms.web.component.processor;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.component.processor.BatchProcessor;

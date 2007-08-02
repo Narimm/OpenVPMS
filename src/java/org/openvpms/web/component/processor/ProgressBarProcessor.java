@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.reporting.reminder;
+package org.openvpms.web.component.processor;
 
 import echopointng.ProgressBar;
 import nextapp.echo2.app.ApplicationInstance;
@@ -42,7 +42,7 @@ public abstract class ProgressBarProcessor<T>
     /**
      * The items to process.
      */
-    private final List<T> items;
+    private Iterable<T> items;
 
     /**
      * Determines how often the progress bar is updated.
@@ -82,15 +82,30 @@ public abstract class ProgressBarProcessor<T>
      * @param title the processor title
      */
     public ProgressBarProcessor(List<T> items, String title) {
-        super(items.iterator());
-        this.items = items;
+        this(items, items.size(), title);
+    }
+
+    /**
+     * Constructs a new <tt>ProgressBarProcessor</tt>.
+     *
+     * @param items the items
+     * @param size  the expected no. of items. This need not be exact
+     * @param title the progress bar title
+     */
+    public ProgressBarProcessor(Iterable<T> items, int size, String title) {
+        this(title);
+        setItems(items, size);
+    }
+
+    /**
+     * Constructs a new <tt>ProgressBarProcessor</tt>.
+     * The {@link #setItems} method must be invoked prior to starting
+     * processing.
+     *
+     * @param title the progress bar title
+     */
+    public ProgressBarProcessor(String title) {
         bar = new ProgressBar();
-        int count = items.size();
-        bar.setMaximum(count);
-        step = count / 10;
-        if (step == 0) {
-            step = 1;
-        }
         bar.setCompletedColor(Color.GREEN);
         this.title = title;
     }
@@ -122,6 +137,22 @@ public abstract class ProgressBarProcessor<T>
     }
 
     /**
+     * Sets the items to iterate.
+     *
+     * @param items the items.
+     * @param size  the expected no. of items. This need not be exact
+     */
+    protected void setItems(Iterable<T> items, int size) {
+        this.items = items;
+        setIterator(items.iterator());
+        bar.setMaximum(size);
+        step = size / 10;
+        if (step == 0) {
+            step = 1;
+        }
+    }
+
+    /**
      * Invoked when batch processing has completed.
      */
     @Override
@@ -149,11 +180,17 @@ public abstract class ProgressBarProcessor<T>
     protected void processCompleted(T object) {
         incProcessed();
         long time = System.currentTimeMillis();
-        if (getProcessed() % step == 0) {
-            bar.setValue(getProcessed());
+        int processed = getProcessed();
+        if (processed > bar.getMaximum()) {
+            // processed more than expected, so update the maximum
+            bar.setMaximum(processed);
+        }
+        if (processed % step == 0) {
+            bar.setValue(processed);
         }
         if (!isSuspended() && (lastRefresh == 0
                 || ((lastRefresh - time) > refreshInterval))) {
+            // enable a refresh of the progress bar
             setSuspend(true);
             final ApplicationInstance app = ApplicationInstance.getActive();
             app.enqueueTask(getTaskQueue(), new Runnable() {

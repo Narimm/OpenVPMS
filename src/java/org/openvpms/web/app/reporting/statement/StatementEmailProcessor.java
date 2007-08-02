@@ -25,10 +25,10 @@ import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
 import org.openvpms.archetype.rules.finance.statement.AbstractStatementProcessorListener;
 import org.openvpms.archetype.rules.finance.statement.StatementEvent;
-import org.openvpms.archetype.rules.finance.statement.StatementProcessor;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.FailedToProcessStatement;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidConfiguration;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -37,8 +37,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportFactory;
@@ -49,7 +47,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 
 import javax.mail.internet.MimeMessage;
 import java.io.InputStream;
-import java.util.Iterator;
 
 
 /**
@@ -161,13 +158,12 @@ public class StatementEmailProcessor
             IMReport<IMObject> report = ReportFactory.createIMObjectReport(
                     template, ArchetypeServiceHelper.getArchetypeService(),
                     handlers);
-            ArchetypeQuery query = createQuery(event.getCustomer(),
-                                               event.getDate());
-            Iterator<IMObject> iter = new IMObjectQueryIterator<IMObject>(
-                    query);
-
+            Iterable<Act> acts = getActsWithAccountFees(event.getCustomer(),
+                                                        event.getDate());
+            Iterable objects = acts;
             final Document statement
-                    = report.generate(iter, new String[]{DocFormats.PDF_TYPE});
+                    = report.generate(objects.iterator(),
+                                      new String[]{DocFormats.PDF_TYPE});
 
             final DocumentHandler handler = handlers.get(
                     statement.getName(),
@@ -181,8 +177,6 @@ public class StatementEmailProcessor
                 }
             });
             sender.send(message);
-            StatementProcessor processor = event.getProcessor();
-            processor.end(event.getCustomer());
         } catch (ArchetypeServiceException exception) {
             throw exception;
         } catch (StatementProcessorException exception) {

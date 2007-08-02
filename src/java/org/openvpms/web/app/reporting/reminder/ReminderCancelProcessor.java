@@ -21,6 +21,7 @@ package org.openvpms.web.app.reporting.reminder;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
