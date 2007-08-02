@@ -35,10 +35,9 @@ public class TypeHelper {
     /**
      * Determines if an object is an instance of a particular archetype.
      *
-     * @param object    the object. May be <code>null</code>
+     * @param object    the object. May be <tt>null</tt>
      * @param shortName the archetype short name. May contain wildcards
-     * @return <code>true</code> if object is an instance of
-     *         <code>shortName</code>
+     * @return <tt>true</tt> if object is an instance of <tt>shortName</tt>
      */
     public static boolean isA(IMObject object, String shortName) {
         if (object != null) {
@@ -50,9 +49,9 @@ public class TypeHelper {
     /**
      * Determines if an object is one of a set of archetypes.
      *
-     * @param object     the object. May be <code>null</code>
+     * @param object     the object. May be <tt>null</tt>
      * @param shortNames the archetype short names. May contain wildcards
-     * @return <code>true</code> if object is one of <code>shortNames</code>
+     * @return <tt>true</tt> if object is one of <tt>shortNames</tt>
      */
     public static boolean isA(IMObject object, String ... shortNames) {
         if (object != null) {
@@ -66,17 +65,54 @@ public class TypeHelper {
     }
 
     /**
+     * Determines if a reference is one of a set of archetypes.
+     *
+     * @param reference  the reference. May be <tt>null</tt>
+     * @param shortNames the archetype short names. May contain wildcards
+     * @return <tt>true</tt> if object is one of <tt>shortNames</tt>
+     */
+    public static boolean isA(IMObjectReference reference,
+                              String ... shortNames) {
+        if (reference != null) {
+            for (String shortName : shortNames) {
+                if (isA(reference, shortName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Determines if an object reference refers to an instance of a particular
      * archetype.
      *
-     * @param reference the object. May be <code>null</code>
+     * @param reference the object. May be <tt>null</tt>
      * @param shortName the archetype short name. May contain wildcards
-     * @return <code>true</code> if the reference refers to an instance of
-     *         <code>shortName</code>
+     * @return <tt>true</tt> if the reference refers to an instance of
+     *         <tt>shortName</tt>
      */
     public static boolean isA(IMObjectReference reference, String shortName) {
         if (reference != null) {
             return matches(reference.getArchetypeId(), shortName);
+        }
+        return false;
+    }
+
+    /**
+     * Determines if a reference is one of a set of archetypes.
+     *
+     * @param id         the archetype identifier
+     * @param shortNames the archetype short names. May contain wildcards
+     * @return <tt>true</tt> if object is one of <tt>shortNames</tt>
+     */
+    public static boolean isA(ArchetypeId id, String ... shortNames) {
+        if (id != null) {
+            for (String shortName : shortNames) {
+                if (matches(id, shortName)) {
+                    return true;
+                }
+            }
         }
         return false;
     }

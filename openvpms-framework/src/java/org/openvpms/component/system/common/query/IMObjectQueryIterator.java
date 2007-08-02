@@ -36,7 +36,7 @@ public class IMObjectQueryIterator<T extends IMObject>
         extends QueryIterator<T> {
 
     /**
-     * The nodes to query.If <code>null</code> query all rows
+     * The nodes to query.If <code>null</code> query all nodes.
      */
     private final Collection<String> nodes;
 

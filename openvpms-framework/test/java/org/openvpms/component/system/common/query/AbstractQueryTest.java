@@ -11,40 +11,30 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.component.business.service.archetype;
+package org.openvpms.component.system.common.query;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.NodeSet;
-import org.openvpms.component.system.common.query.NodeSetQueryIterator;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
-import org.openvpms.component.system.common.query.QueryIterator;
-import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 
 
 /**
- * Tests the {@link QueryIterator} classes.
+ * Abstract base class for query tests.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-12-04 06:59:40Z $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class QueryIteratorTestCase
+public class AbstractQueryTest
         extends AbstractDependencyInjectionSpringContextTests {
 
     /**
@@ -59,64 +49,10 @@ public class QueryIteratorTestCase
 
 
     /**
-     * Tests the {@link IMObjectQueryIterator}.
+     * (non-Javadoc)
+     *
+     * @see AbstractDependencyInjectionSpringContextTests#getConfigLocations()
      */
-    public void testIMObjectQueryIterator() {
-        ArchetypeQuery query = createQuery();
-
-        Check<Act> check = new Check<Act>() {
-            public void check(Act object) {
-                // no-op
-            }
-        };
-        query.setMaxResults(1);
-        QueryIterator<Act> iterator = new IMObjectQueryIterator<Act>(query);
-        checkIterator(iterator, check);
-
-        query.setFirstResult(0); // reset
-        query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
-        iterator = new IMObjectQueryIterator<Act>(query);
-        checkIterator(iterator, check);
-    }
-
-    /**
-     * Tests the {@link NodeSetQueryIterator}.
-     */
-    public void testNodeSetQueryIterator() {
-        ArchetypeQuery query = createQuery();
-        Check<NodeSet> check = new Check<NodeSet>() {
-            public void check(NodeSet set) {
-                Date startTime = (Date) set.get("startTime");
-                assertNotNull(startTime);
-            }
-        };
-        QueryIterator<NodeSet> iterator
-                = new NodeSetQueryIterator(query, Arrays.asList("startTime"));
-        checkIterator(iterator, check);
-    }
-
-    /**
-     * Tests the {@link ObjectSetQueryIterator}.
-     */
-    public void testObjectSetQueryIterator() {
-        ArchetypeQuery query = createQuery();
-        query.add(new NodeSelectConstraint("act.startTime"));
-
-        Check<ObjectSet> check = new Check<ObjectSet>() {
-            public void check(ObjectSet set) {
-                Date startTime = (Date) set.get("act.startTime");
-                assertNotNull(startTime);
-            }
-        };
-        QueryIterator<ObjectSet> iterator = new ObjectSetQueryIterator(query);
-        checkIterator(iterator, check);
-    }
-
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-    */
     @Override
     protected String[] getConfigLocations() {
         return new String[]{
@@ -135,10 +71,10 @@ public class QueryIteratorTestCase
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        IArchetypeService service
+        IArchetypeService service 
                 = ArchetypeServiceHelper.getArchetypeService();
         if (name == null) {
-            name = "QueryIteratorTestCase" + System.currentTimeMillis();
+            name = "QueryTest" + System.currentTimeMillis();
             for (int i = 0; i < actCount; ++i) {
                 Act act = (Act) service.create("act.simple");
                 assertNotNull(act);
@@ -155,7 +91,7 @@ public class QueryIteratorTestCase
      *
      * @return a new query
      */
-    private ArchetypeQuery createQuery() {
+    protected ArchetypeQuery createQuery() {
         ShortNameConstraint constraint = new ShortNameConstraint("act",
                                                                  "act.simple");
         ArchetypeQuery query = new ArchetypeQuery(constraint);
@@ -171,7 +107,7 @@ public class QueryIteratorTestCase
      * @param iterator the iterator
      * @param check    the check
      */
-    private <T> void checkIterator(Iterator<T> iterator, Check<T> check) {
+    protected <T> void checkIterator(Iterator<T> iterator, Check<T> check) {
         int count = 0;
         while (iterator.hasNext()) {
             T object = iterator.next();
@@ -182,9 +118,7 @@ public class QueryIteratorTestCase
         assertEquals(actCount, count);
     }
 
-
     interface Check<T> {
         void check(T object);
     }
-
 }
