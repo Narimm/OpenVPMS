@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -74,19 +75,23 @@ public class PatientMedicationActEditor extends AbstractActEditor {
     }
 
     /**
-     * Sets the product, updating the dispensing label from the product's
-     * dispensing instructions, if available.
+     * Updates the product, if it not the same as the existing product.
+     * On update, the label will be set to the dispensing label from the
+     * product's dispensing instructions, if available.
      *
      * @param product the product reference. May be <tt>null</tt>
      */
     public void setProduct(IMObjectReference product) {
-        setParticipant("product", product);
-        IMObject prod = IMObjectHelper.getObject(product);
-        if (prod != null) {
-            IMObjectBean bean = new IMObjectBean(prod);
-            if (bean.hasNode("dispInstructions")) {
-                Property label = getProperty("label");
-                label.setValue(bean.getValue("dispInstructions"));
+        IMObjectReference current = getParticipantRef("product");
+        if (!ObjectUtils.equals(current, product)) {
+            setParticipant("product", product);
+            IMObject prod = IMObjectHelper.getObject(product);
+            if (prod != null) {
+                IMObjectBean bean = new IMObjectBean(prod);
+                if (bean.hasNode("dispInstructions")) {
+                    Property label = getProperty("label");
+                    label.setValue(bean.getValue("dispInstructions"));
+                }
             }
         }
     }
