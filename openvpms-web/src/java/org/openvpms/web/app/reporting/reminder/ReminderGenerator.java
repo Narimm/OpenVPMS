@@ -41,6 +41,8 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.processor.BatchProcessorComponent;
+import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GridFactory;

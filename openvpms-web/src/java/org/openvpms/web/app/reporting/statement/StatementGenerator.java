@@ -21,7 +21,6 @@ package org.openvpms.web.app.reporting.statement;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.component.processor.AsynchronousBatchProcessor;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
-import org.openvpms.archetype.rules.finance.statement.DefaultStatementProcessor;
 import org.openvpms.archetype.rules.finance.statement.StatementEvent;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessor;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
@@ -38,6 +37,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -47,9 +47,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class StatementGenerator
-        extends AsynchronousBatchProcessor<StatementEvent.Action, Party,
-        StatementEvent> {
+class StatementGenerator extends AsynchronousBatchProcessor<Party> {
 
     /**
      * Constructs a new <tt>StatementGenerator</tt> for a single customer.
@@ -57,13 +55,14 @@ class StatementGenerator
      * @param customer the customer reference
      * @param context  the context
      */
-    public StatementGenerator(IMObjectReference customer, Context context) {
+    public StatementGenerator(IMObjectReference customer, Date date,
+                              Context context) {
         List<Party> customers = new ArrayList<Party>();
         Party party = (Party) IMObjectHelper.getObject(customer);
         if (party != null) {
             customers.add(party);
         }
-        init(customers, context);
+        init(customers, date, context);
     }
 
     /**
@@ -83,7 +82,7 @@ class StatementGenerator
             if (customer != null) {
                 customers.add(customer);
             }
-            init(customers, context);
+            init(customers, query.getDate(), context);
         }
     }
 
@@ -94,8 +93,8 @@ class StatementGenerator
      * @throws ArchetypeServiceException   for any archetype service error
      * @throws StatementProcessorException for any statement processor exception
      */
-    private void init(List<Party> customers, Context context) {
-        StatementProcessor processor = new DefaultStatementProcessor();
+    private void init(List<Party> customers, Date date, Context context) {
+        StatementProcessor processor = new StatementProcessor(date);
         StatementPrintProcessor printer = new StatementPrintProcessor(this);
         processor.addListener(StatementEvent.Action.PRINT, printer);
         Party practice = context.getPractice();

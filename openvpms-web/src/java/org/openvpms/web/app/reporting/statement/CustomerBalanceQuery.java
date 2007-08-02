@@ -237,6 +237,15 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
     }
 
     /**
+     * Returns the statement date.
+     *
+     * @return the statement date
+     */
+    public Date getDate() {
+        return date.getSelectedDate().getTime();
+    }
+
+    /**
      * Creates the result set.
      *
      * @param sort the sort criteria. May be <code>null</code>
@@ -260,15 +269,6 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
             return (LookupListModel.ALL == lookup) ? null : lookup;
         }
         return null;
-    }
-
-    /**
-     * Returns the statement date.
-     *
-     * @return the statement date
-     */
-    private Date getDate() {
-        return date.getSelectedDate().getTime();
     }
 
     /**
