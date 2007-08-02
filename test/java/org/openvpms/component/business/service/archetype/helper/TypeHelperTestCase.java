@@ -71,7 +71,8 @@ public class TypeHelperTestCase
         assertFalse(TypeHelper.isA(object, nomatches));
 
         // test wildcards
-        String[] wildmatch = {"act.customerEstimation*", "act.customerAccount*"};
+        String[] wildmatch = {"act.customerEstimation*",
+                              "act.customerAccount*"};
         assertTrue(TypeHelper.isA(object, wildmatch));
 
         String[] wildnomatch = {"act.customerEstimation*",
@@ -94,6 +95,58 @@ public class TypeHelperTestCase
         assertTrue(TypeHelper.isA(ref, "party.*"));
         assertTrue(TypeHelper.isA(ref, "party.customer*"));
         assertFalse(TypeHelper.isA(ref, "party.patient*"));
+    }
+
+    /**
+     * Tests the {@link TypeHelper#isA(IMObjectReference, String...)} method.
+     */
+    public void testIsARefMultiple() {
+        IMObject object = service.create("act.customerAccountPayment");
+        IMObjectReference ref = object.getObjectReference();
+        assertNotNull(ref);
+        String[] matches = {"act.customerAccountPaymentCash",
+                            "act.customerAccountPayment"};
+        assertTrue(TypeHelper.isA(ref, matches));
+
+        String[] nomatches = {"act.customerAccountPaymentCash",
+                              "act.customerAccountPaymentCredit",
+                              "act.customerAccountPaymentEFT"};
+        assertFalse(TypeHelper.isA(ref, nomatches));
+
+        // test wildcards
+        String[] wildmatch = {"act.customerEstimation*",
+                              "act.customerAccount*"};
+        assertTrue(TypeHelper.isA(ref, wildmatch));
+
+        String[] wildnomatch = {"act.customerEstimation*",
+                                "act.customerInvoice*"};
+        assertFalse(TypeHelper.isA(ref, wildnomatch));
+    }
+
+    /**
+     * Tests the {@link TypeHelper#isA(ArchetypeId, String...)} method.
+     */
+    public void testIsAIdMultiple() {
+        IMObject object = service.create("act.customerAccountPayment");
+        ArchetypeId id = object.getArchetypeId();
+        assertNotNull(id);
+        String[] matches = {"act.customerAccountPaymentCash",
+                            "act.customerAccountPayment"};
+        assertTrue(TypeHelper.isA(id, matches));
+
+        String[] nomatches = {"act.customerAccountPaymentCash",
+                              "act.customerAccountPaymentCredit",
+                              "act.customerAccountPaymentEFT"};
+        assertFalse(TypeHelper.isA(id, nomatches));
+
+        // test wildcards
+        String[] wildmatch = {"act.customerEstimation*",
+                              "act.customerAccount*"};
+        assertTrue(TypeHelper.isA(id, wildmatch));
+
+        String[] wildnomatch = {"act.customerEstimation*",
+                                "act.customerInvoice*"};
+        assertFalse(TypeHelper.isA(id, wildnomatch));
     }
 
     /**
