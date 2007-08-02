@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -27,6 +28,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.IdConstraint;
+import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSelectConstraint;
@@ -115,6 +117,7 @@ public class OutstandingBalanceQuery {
         ShortNameConstraint customer = new ShortNameConstraint(
                 "customer", "party.customer*", true, true);
         ArchetypeQuery query = new ArchetypeQuery(acts);
+        query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
         query.add(new ObjectSelectConstraint("customer"));
         query.add(new CollectionNodeConstraint("accountBalance", balance));
         query.add(customer);

@@ -18,7 +18,7 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import org.openvpms.archetype.component.processor.AbstractProcessor;
+import org.openvpms.archetype.component.processor.AbstractActionProcessor;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderEvent.Action;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.*;
@@ -45,7 +45,7 @@ import java.util.Date;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ReminderProcessor
-        extends AbstractProcessor<ReminderEvent.Action, Act, ReminderEvent> {
+        extends AbstractActionProcessor<Action, Act, ReminderEvent> {
 
     /**
      * The processing date, used to determine when reminders should be

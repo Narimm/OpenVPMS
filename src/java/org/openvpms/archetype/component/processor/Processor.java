@@ -22,14 +22,12 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
- * A processor that takes an object, performs operations on it, and
- * notifies any interested listeners.
+ * A processor that takes an object, and performs operations on it.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- * @see BatchProcessor
  */
-public interface Processor<Action, Type, Event> {
+public interface Processor<Type> {
 
     /**
      * Process an object.
@@ -39,33 +37,4 @@ public interface Processor<Action, Type, Event> {
      */
     public void process(Type object);
 
-    /**
-     * Registers a listener for all events.
-     *
-     * @param listener the listener to add
-     */
-    void addListener(ProcessorListener<Event> listener);
-
-    /**
-     * Removes a listener.
-     *
-     * @param listener the listener to remove
-     */
-    void removeListener(ProcessorListener<Event> listener);
-
-    /**
-     * Registers a listener for a specific action.
-     *
-     * @param action   the action to register the listener for
-     * @param listener the listener to add
-     */
-    void addListener(Action action, ProcessorListener<Event> listener);
-
-    /**
-     * Removes a listener for a specific action.
-     *
-     * @param action   the action to remove the listener for
-     * @param listener the listener to remove
-     */
-    void removeListener(Action action, ProcessorListener<Event> listener);
 }

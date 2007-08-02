@@ -33,13 +33,8 @@ import java.util.Date;
 public class StatementEvent {
 
     public enum Action {
-        EMAIL, PRINT
+        EMAIL, PRINT, SKIP
     }
-
-    /**
-     * The statement processor that generated the event.
-     */
-    private final StatementProcessor processor;
 
     /**
      * The statement action.
@@ -65,28 +60,28 @@ public class StatementEvent {
     /**
      * Constructs a new <tt>StatementEvent</tt>.
      *
-     * @param processor the processor
+     * @param action    the statement action
+     * @param customer  the customer
+     * @param date      the processing date
+     */
+    public StatementEvent(Action action, Party customer, Date date) {
+        this(action, customer, null, date);
+    }
+
+    /**
+     * Constructs a new <tt>StatementEvent</tt>.
+     *
      * @param action    the statement action
      * @param customer  the customer
      * @param contact   the customer contact
      * @param date      the processing date
      */
-    public StatementEvent(StatementProcessor processor, Action action,
-                          Party customer, Contact contact, Date date) {
-        this.processor = processor;
+    public StatementEvent(Action action, Party customer, Contact contact,
+                          Date date) {
         this.action = action;
         this.customer = customer;
         this.contact = contact;
         this.date = date;
-    }
-
-    /**
-     * Returns the processor that generated the event.
-     *
-     * @return the processor that generated the event
-     */
-    public StatementProcessor getProcessor() {
-        return processor;
     }
 
     /**

@@ -123,23 +123,39 @@ public class StatementRules {
     }
 
     /**
-     * Applies an accounting fee to a customer account.
-     * This saves an <em>act.customerAccountDebitAdjust</em> for the customer
+     * Creates an <em>act.customerAccountDebitAdjust</em> for the customer
      * with the specified fee.
-     *
-     * @param customer the customer
-     * @param fee      the accounting fee
-     * @throws ArchetypeServiceException for any archetype service error
      */
-    public void applyAccountingFee(Party customer, BigDecimal fee) {
+    public FinancialAct createAccountingFeeAdjustment(Party customer,
+                                                      BigDecimal fee,
+                                                      Date startTime) {
         FinancialAct act = (FinancialAct) service.create(
                 "act.customerAccountDebitAdjust");
         ActBean bean = new ActBean(act, service);
         bean.addParticipation("participation.customer", customer);
         act.setTotal(new Money(fee));
+        act.setActivityStartTime(startTime);
         tax.calculateTax(act, customer);
         bean.setValue("note", "Accounting Fee"); // TODO - localise
-        bean.save();
+        return act;
+    }
+
+    /**
+     * Applies an accounting fee to a customer account.
+     * This saves an <em>act.customerAccountDebitAdjust</em> for the customer
+     * with the specified fee.
+     *
+     * @param customer  the customer
+     * @param fee       the accounting fee
+     * @param startTime the fee start time
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void applyAccountingFee(Party customer, BigDecimal fee,
+                                   Date startTime
+    ) {
+        FinancialAct act = createAccountingFeeAdjustment(customer, fee,
+                                                         startTime);
+        service.save(act);
     }
 
     /**

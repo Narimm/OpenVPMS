@@ -19,6 +19,8 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.ActCalculator;
+import org.openvpms.archetype.rules.act.FinancialActStatus;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.*;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -26,6 +28,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -106,6 +109,11 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     public static final String LAST_INVOICE_AMOUNT = "lastInvoiceAmount";
 
     /**
+     * The customer's unbilled amount.
+     */
+    public static final String UNBILLED_AMOUNT = "unbilledAmount";
+
+    /**
      * The date.
      */
     private final Date date;
@@ -181,6 +189,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         NAMES.add(LAST_PAYMENT_AMOUNT);
         NAMES.add(LAST_INVOICE_DATE);
         NAMES.add(LAST_INVOICE_AMOUNT);
+        NAMES.add(UNBILLED_AMOUNT);
     }
 
 
@@ -247,7 +256,8 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         rules = new CustomerAccountRules(service);
         Collection<String> names = Arrays.asList("e.name", "p.entity", "p.act",
                                                  "a.activityStartTime",
-                                                 "a.total", "a.allocatedAmount",
+                                                 "a.status", "a.total",
+                                                 "a.allocatedAmount",
                                                  "a.credit", "c.code");
         NamedQuery query;
         if (accountType == null) {
@@ -342,6 +352,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         BigDecimal balance = BigDecimal.ZERO;
         BigDecimal overdueBalance = BigDecimal.ZERO;
         BigDecimal creditBalance = BigDecimal.ZERO;
+        BigDecimal unbilled = BigDecimal.ZERO;
         Date overdueDate = null;
         Date overdueFrom = null;
         Date overdueTo = null;
@@ -353,41 +364,51 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
             if (startTime instanceof Timestamp) {
                 startTime = new Date(startTime.getTime());
             }
+            String status = (String) set.get("a.status");
             BigDecimal amount = (BigDecimal) set.get("a.total");
             BigDecimal allocated = (BigDecimal) set.get("a.allocatedAmount");
             boolean credit = (Boolean) set.get("a.credit");
-            BigDecimal unallocated
-                    = balanceCalc.getAllocatable(amount, allocated);
-            balance = calculator.addAmount(balance, unallocated, credit);
-            code = (String) set.get("c.code");
-            if (code != null && lookup == null) {
-                lookup = getLookup(code);
-            }
-            if (overdueDate == null) {
-                if (lookup == null) {
-                    overdueDate = date;
-                } else {
-                    overdueDate = rules.getOverdueDate(lookup, date);
+            if (FinancialActStatus.POSTED.equals(status)) {
+                BigDecimal unallocated
+                        = balanceCalc.getAllocatable(amount, allocated);
+                balance = calculator.addAmount(balance, unallocated, credit);
+                code = (String) set.get("c.code");
+                if (code != null && lookup == null) {
+                    lookup = getLookup(code);
                 }
-                overdueFrom = overdueDate;
-                if (from > 0) {
-                    overdueFrom = DateRules.getDate(overdueFrom, -from,
-                                                    DateUnits.DAYS);
+                if (overdueDate == null) {
+                    if (lookup == null) {
+                        overdueDate = date;
+                    } else {
+                        overdueDate = rules.getOverdueDate(lookup, date);
+                    }
+                    overdueFrom = overdueDate;
+                    if (from > 0) {
+                        overdueFrom = DateRules.getDate(overdueFrom, -from,
+                                                        DateUnits.DAYS);
+                    }
+                    if (to > 0) {
+                        overdueTo = DateRules.getDate(overdueDate, -to,
+                                                      DateUnits.DAYS);
+                    }
                 }
-                if (to > 0) {
-                    overdueTo = DateRules.getDate(overdueDate, -to,
-                                                  DateUnits.DAYS);
+                if (!credit && startTime.compareTo(overdueFrom) < 0
+                        && (overdueTo == null || (overdueTo != null
+                        && startTime.compareTo(overdueTo) > 0))) {
+                    overdueBalance = calculator.addAmount(overdueBalance,
+                                                          unallocated, credit);
                 }
-            }
-            if (!credit && startTime.compareTo(overdueFrom) < 0
-                    && (overdueTo == null || (overdueTo != null
-                    && startTime.compareTo(overdueTo) > 0))) {
-                overdueBalance = calculator.addAmount(overdueBalance,
-                                                      unallocated, credit);
-            }
-            if (credit) {
-                creditBalance = calculator.addAmount(creditBalance, unallocated,
-                                                     credit);
+                if (credit) {
+                    creditBalance = calculator.addAmount(creditBalance,
+                                                         unallocated,
+                                                         credit);
+                }
+            } else {
+                IMObjectReference act = (IMObjectReference) set.get("p.act");
+                if (TypeHelper.isA(act, CHARGES_INVOICE, CHARGES_COUNTER,
+                                   CHARGES_CREDIT)) {
+                    unbilled = calculator.addAmount(unbilled, amount, credit);
+                }
             }
         }
         if (overdueBalance.signum() < 0) {
@@ -402,6 +423,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         result.add(BALANCE, balance);
         result.add(OVERDUE_BALANCE, overdueBalance);
         result.add(CREDIT_BALANCE, creditBalance);
+        result.add(UNBILLED_AMOUNT, unbilled);
         return result;
     }
 

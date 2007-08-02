@@ -18,12 +18,14 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_BALANCE_SHORTNAME;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
@@ -71,6 +73,15 @@ class QueryFactory {
     public static ArchetypeQuery createUnallocatedQuery(Party customer,
                                                         String[] shortNames,
                                                         Act exclude) {
+        ArchetypeQuery query = createBalanceParticipationQuery(shortNames,
+                                                               customer,
+                                                               exclude);
+        query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
+        return query;
+    }
+
+    private static ArchetypeQuery createBalanceParticipationQuery(
+            String[] shortNames, Party customer, Act exclude) {
         ShortNameConstraint archetypes
                 = new ShortNameConstraint("a", shortNames, false, false);
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
@@ -84,6 +95,25 @@ class QueryFactory {
         }
         query.add(constraint);
         query.add(new NodeSortConstraint("startTime", false));
+        return query;
+    }
+
+    /**
+     * Creates a query for unbilled acts for the specified customer.
+     *
+     * @param customer   the customer
+     * @param shortNames the act short names
+     * @return a new query
+     */
+    public static ArchetypeQuery createUnbilledObjectSetQuery(
+            Party customer, String[] shortNames) {
+        ArchetypeQuery query = createBalanceParticipationQuery(
+                shortNames, customer, null);
+        query.add(new NodeConstraint("status", RelationalOp.NE,
+                                     FinancialActStatus.POSTED));
+        query.add(new NodeSelectConstraint("a.amount"));
+        query.add(new NodeSelectConstraint("a.allocatedAmount"));
+        query.add(new NodeSelectConstraint("a.credit"));
         return query;
     }
 
