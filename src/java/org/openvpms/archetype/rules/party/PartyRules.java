@@ -586,7 +586,12 @@ public class PartyRules {
                             setMatch(1, contact);
                         }
                     } else if (!exact) {
-                        setMatch(2, contact);
+                    	if (preferred) {
+                    		setMatch(2, contact);
+                    	}
+                    	else {
+                            setMatch(3, contact);                    		
+                    	}
                     }
                 } else {
                     if (preferred) {
