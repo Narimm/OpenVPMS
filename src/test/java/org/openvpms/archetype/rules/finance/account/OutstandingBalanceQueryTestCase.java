@@ -36,7 +36,7 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class OutstandingBalanceQueryTestCase
-        extends AbstractCustomerBalanceTest {
+        extends AbstractCustomerAccountTest {
 
     /**
      * Tests the {@link OutstandingBalanceQuery#query} method.
@@ -110,7 +110,6 @@ public class OutstandingBalanceQueryTestCase
 
     /**
      * Returns all customers with outstanding balances.
-     * \
      *
      * @return a list of all customers with outstanding balances
      */

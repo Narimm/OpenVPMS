@@ -31,16 +31,17 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Random;
 
 
 /**
- * Base class for customer balance test cases.
+ * Base class for customer account test cases.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractCustomerBalanceTest extends ArchetypeServiceTest {
+public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
 
     /**
      * The customer.
@@ -137,6 +138,21 @@ public abstract class AbstractCustomerBalanceTest extends ArchetypeServiceTest {
                              "actRelationship.customerAccountInvoiceItem",
                              amount);
     }
+
+    /**
+     * Helper to create an <em>act.customerAccountChargesInvoice</em>.
+     *
+     * @param amount the act total
+     * @param startTime the act start time
+     * @return a new act
+     */
+    protected FinancialAct createChargesInvoice(Money amount,
+                                                Date startTime) {
+        FinancialAct invoice = createChargesInvoice(amount);
+        invoice.setActivityStartTime(startTime);
+        return invoice;
+    }
+
 
     /**
      * Helper to create an <em>act.customerAccountChargesCounter</em>.
@@ -276,19 +292,34 @@ public abstract class AbstractCustomerBalanceTest extends ArchetypeServiceTest {
 
     /**
      * Helper to create and save a new <em>lookup.customerAccountType</em>
-     * classification with a 30 day accountFeedDays value.
+     * classification.
      *
      * @param paymentTerms the payment terms
      * @param paymentUom   the payment units
      * @return a new classification
      */
     protected Lookup createAccountType(int paymentTerms, DateUnits paymentUom) {
+        return createAccountType(paymentTerms, paymentUom, BigDecimal.ZERO);
+    }
+
+    /**
+     * Helper to create and save a new <em>lookup.customerAccountType</em>
+     * classification.
+     *
+     * @param paymentTerms     the payment terms
+     * @param paymentUom       the payment units
+     * @param accountFeeAmount the account fee
+     * @return a new classification
+     */
+    protected Lookup createAccountType(int paymentTerms, DateUnits paymentUom,
+                                       BigDecimal accountFeeAmount) {
         Lookup lookup = (Lookup) create("lookup.customerAccountType");
         IMObjectBean bean = new IMObjectBean(lookup);
-        bean.setValue("code", "XCUSTOMER_BALANCE_RULES_TESTCASE_"
+        bean.setValue("code", "XCUSTOMER_ACCOUNT_TYPE"
                 + Math.abs(new Random().nextInt()));
         bean.setValue("paymentTerms", paymentTerms);
         bean.setValue("paymentUom", paymentUom.toString());
+        bean.setValue("accountFeeAmount", accountFeeAmount);
         save(lookup);
         return lookup;
     }

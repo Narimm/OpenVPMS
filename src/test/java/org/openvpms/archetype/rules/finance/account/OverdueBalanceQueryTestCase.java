@@ -36,7 +36,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class OverdueBalanceQueryTestCase extends AbstractCustomerBalanceTest {
+public class OverdueBalanceQueryTestCase extends AbstractCustomerAccountTest {
 
     /**
      * Tests the {@link OverdueBalanceQuery#query} method.

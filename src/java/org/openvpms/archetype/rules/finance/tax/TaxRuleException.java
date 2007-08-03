@@ -49,7 +49,7 @@ public class TaxRuleException extends OpenVPMSException {
      */
     private static Messages MESSAGES
             = Messages.getMessages(
-            "org.openvpms.archetype.rules.financial.tax."
+            "org.openvpms.archetype.rules.finance.tax."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
@@ -58,7 +58,7 @@ public class TaxRuleException extends OpenVPMSException {
      * @param errorCode the error code
      */
     public TaxRuleException(ErrorCode errorCode, Object ... args) {
-        super(TaxRuleException.MESSAGES.getMessage(errorCode.toString(), args));
+        super(MESSAGES.getMessage(errorCode.toString(), args));
         _errorCode = errorCode;
     }
 

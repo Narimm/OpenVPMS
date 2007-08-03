@@ -38,7 +38,7 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class CustomerBalanceGeneratorTestCase
-        extends AbstractCustomerBalanceTest {
+        extends AbstractCustomerAccountTest {
 
     /**
      * Verifies that an <em>act.customerAccountChargesInvoice</em> is

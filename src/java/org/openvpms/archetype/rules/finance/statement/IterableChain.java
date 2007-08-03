@@ -50,9 +50,6 @@ class IterableChain<T> implements Iterable<T> {
         private Iterator<T> iter;
 
         public ChainedIterator() {
-            if (iterables.length != 0) {
-                iter = iterables[index].iterator();
-            }
         }
 
         /**

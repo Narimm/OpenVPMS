@@ -335,14 +335,15 @@ public class CustomerAccountRules {
     /**
      * Generates an <em>act.customerAccountClosingBalance</em> and
      * <em>act.customerAccountOpeningBalance</em> for the specified customer,
-     * using their account balance for the total of each act.
+     * using their account balance for the total of each act. The account
+     * balance only includes those acts prior to the timestamp.
      *
      * @param customer  the customer
      * @param timestamp the date-time of the end-of-period
      * @throws ArchetypeServiceException for any error
      */
     public void createPeriodEnd(Party customer, Date timestamp) {
-        BigDecimal total = getBalance(customer);
+        BigDecimal total = calculator.getBalance(customer, timestamp);
         FinancialAct close = createAct("act.customerAccountClosingBalance",
                                        customer, total);
         FinancialAct open = createAct("act.customerAccountOpeningBalance",
@@ -351,58 +352,58 @@ public class CustomerAccountRules {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(timestamp);
         close.setActivityStartTime(calendar.getTime());
-        calendar.add(Calendar.MINUTE, 1);
+        calendar.add(Calendar.SECOND, 1);
         open.setActivityStartTime(calendar.getTime());
-        service.save(open);   // TODO - should be saved in 1 transaction
         service.save(close); // see OBF-114
+        service.save(open);   // TODO - should be saved in 1 transaction
     }
 
     /**
      * Returns the startTime of the first
-     * <tt>act.customerAccountOpeningBalance</tt> for a customer, before the
-     * specified date.
+     * <tt>act.customerAccountOpeningBalance</tt> for a customer prior to
+     * the specified timestamp.
      *
-     * @param customer the customer
-     * @param date     the date
+     * @param customer  the customer
+     * @param timestamp the timestamp
      * @return the opening balance act startTime, or <tt>null</tt> if none is
      *         found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Date getOpeningBalanceDateBefore(Party customer, Date date) {
-        return getActStartTime(OPENING_BALANCE, customer, date, RelationalOp.LT,
-                               false);
+    public Date getOpeningBalanceDateBefore(Party customer, Date timestamp) {
+        return getActStartTime(OPENING_BALANCE, customer, timestamp,
+                               RelationalOp.LT, false);
     }
 
     /**
      * Returns the startTime of the first
      * <tt>act.customerAccountClosingBalance</tt> for a customer, before the
-     * specified date.
+     * specified timetamp.
      *
-     * @param customer the customer
-     * @param date     the date
+     * @param customer  the customer
+     * @param timestamp the timestamp
      * @return the closing balance act startTime, or <tt>null</tt> if none is
      *         found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Date getClosingBalanceDateBefore(Party customer, Date date) {
-        return getActStartTime(CLOSING_BALANCE, customer, date, RelationalOp.LT,
-                               false);
+    public Date getClosingBalanceDateBefore(Party customer, Date timestamp) {
+        return getActStartTime(CLOSING_BALANCE, customer, timestamp,
+                               RelationalOp.LT, false);
     }
 
     /**
      * Returns the startTime of the first
-     * <tt>act.customerAccountClosingBalance</tt> for a customer, after the
-     * specified date.
+     * <tt>act.customerAccountClosingBalance</tt> for a customer, on or after
+     * the specified timestamp.
      *
      * @param customer the customer
-     * @param date     the date
+     * @param timetamp     the timestamp
      * @return the closing balance act startTime, or <tt>null</tt> if none is
      *         found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Date getClosingBalanceDateAfter(Party customer, Date date) {
-        return getActStartTime(CLOSING_BALANCE, customer, date, RelationalOp.GT,
-                               true);
+    public Date getClosingBalanceDateAfter(Party customer, Date timetamp) {
+        return getActStartTime(CLOSING_BALANCE, customer, timetamp,
+                               RelationalOp.GTE, true);
     }
 
     /**

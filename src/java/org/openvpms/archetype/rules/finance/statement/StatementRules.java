@@ -32,6 +32,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -79,6 +80,35 @@ public class StatementRules {
     }
 
     /**
+     * Returns the timestamp for statement processing.
+     *
+     * @param statementDate the statement date
+     * @return the date
+     */
+    public Date getStatementTimestamp(Date statementDate) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(statementDate);
+        calendar.add(Calendar.DATE, -1);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
+    /**
+     * Determines if a customer has had end-of-period run for a statement
+     * date.
+     *
+     * @param statementDate the statement date
+     */
+    public boolean hasStatement(Party customer, Date statementDate) {
+        Date timestamp = getStatementTimestamp(statementDate);
+        Date d = account.getClosingBalanceDateAfter(customer, timestamp);
+        return (d != null);
+    }
+
+    /**
      * Returns the account fee for a customer, based on the customer's
      * account type.
      * A non-zero account fee will be returned if:
@@ -100,7 +130,7 @@ public class StatementRules {
      * </ul>
      *
      * @param customer the customer
-     * @param date     the processing date
+     * @param date     the statement date
      * @return the account fee, or <tt>BigDecimal.ZERO</tt> if there is no fee
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -135,8 +165,8 @@ public class StatementRules {
         bean.addParticipation("participation.customer", customer);
         act.setTotal(new Money(fee));
         act.setActivityStartTime(startTime);
-        tax.calculateTax(act, customer);
-        bean.setValue("note", "Accounting Fee"); // TODO - localise
+        tax.calculateTax(act);
+        bean.setValue("notes", "Accounting Fee"); // TODO - localise
         return act;
     }
 
@@ -151,8 +181,7 @@ public class StatementRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void applyAccountingFee(Party customer, BigDecimal fee,
-                                   Date startTime
-    ) {
+                                   Date startTime) {
         FinancialAct act = createAccountingFeeAdjustment(customer, fee,
                                                          startTime);
         service.save(act);
