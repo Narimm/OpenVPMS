@@ -19,16 +19,15 @@
 package org.openvpms.web.app.reporting.statement;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
-import org.openvpms.archetype.rules.finance.statement.AbstractStatementProcessorListener;
 import org.openvpms.archetype.rules.finance.statement.StatementEvent;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.FailedToProcessStatement;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidConfiguration;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -56,7 +55,7 @@ import java.io.InputStream;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class StatementEmailProcessor
-        extends AbstractStatementProcessorListener {
+        implements ProcessorListener<StatementEvent> {
 
     /**
      * The mail sender.
@@ -105,7 +104,6 @@ public class StatementEmailProcessor
      */
     public StatementEmailProcessor(JavaMailSender sender,
                                    String emailAddress, String emailName) {
-        super(ArchetypeServiceHelper.getArchetypeService());
         this.sender = sender;
         this.emailAddress = emailAddress;
         this.emailName = emailName;
@@ -158,9 +156,7 @@ public class StatementEmailProcessor
             IMReport<IMObject> report = ReportFactory.createIMObjectReport(
                     template, ArchetypeServiceHelper.getArchetypeService(),
                     handlers);
-            Iterable<Act> acts = getActsWithAccountFees(event.getCustomer(),
-                                                        event.getDate());
-            Iterable objects = acts;
+            Iterable<IMObject> objects = getActs(event);
             final Document statement
                     = report.generate(objects.iterator(),
                                       new String[]{DocFormats.PDF_TYPE});
@@ -185,6 +181,17 @@ public class StatementEmailProcessor
             throw new StatementProcessorException(
                     FailedToProcessStatement, exception.getMessage());
         }
+    }
+
+    /**
+     * Helper to return the statement acts as an Iterable<IMObject>.
+     *
+     * @param event the statement event
+     * @return the statement acts
+     */
+    @SuppressWarnings("unchecked")
+    private Iterable<IMObject> getActs(StatementEvent event) {
+        return (Iterable) event.getActs();
     }
 
 }
