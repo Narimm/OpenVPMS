@@ -19,9 +19,9 @@
 package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.component.processor.AbstractActionProcessor;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import static org.openvpms.archetype.rules.finance.statement.StatementEvent.Action.*;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.NoContact;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -45,7 +44,7 @@ import java.util.List;
  */
 public class StatementProcessor
         extends AbstractActionProcessor<StatementEvent.Action, Party,
-                StatementEvent> {
+        StatementEvent> {
 
     /**
      * The archetype service.
@@ -53,14 +52,19 @@ public class StatementProcessor
     private final IArchetypeService service;
 
     /**
-     * The customer account business rules.
+     * The statement rules.
      */
-    private final CustomerAccountRules accountRules;
+    private final StatementRules statementRules;
 
     /**
      * The statement date.
      */
     private final Date statementDate;
+
+    /**
+     * Statement act helper.
+     */
+    private final StatementActHelper actHelper;
 
 
     /**
@@ -80,8 +84,9 @@ public class StatementProcessor
      */
     public StatementProcessor(Date statementDate, IArchetypeService service) {
         this.service = service;
-        accountRules = new CustomerAccountRules(service);
         this.statementDate = statementDate;
+        statementRules = new StatementRules(service);
+        actHelper = new StatementActHelper(service);
     }
 
     /**
@@ -92,15 +97,16 @@ public class StatementProcessor
      */
     public void process(Party customer) {
         StatementEvent event;
-        if (accountRules.getClosingBalanceDateAfter(customer,
-                                                    statementDate) == null) {
+        if (!statementRules.hasStatement(customer, statementDate)) {
             Contact contact = getContact(customer);
+            Iterable<Act> acts = actHelper.getActsWithAccountFees(
+                    customer, statementDate);
             if (TypeHelper.isA(contact, "contact.email")) {
                 event = new StatementEvent(EMAIL, customer, contact,
-                                           statementDate);
+                                           statementDate, acts);
             } else {
                 event = new StatementEvent(PRINT, customer, contact,
-                                           statementDate);
+                                           statementDate, acts);
             }
         } else {
             // customer already has had a statement generated for the statement
@@ -108,23 +114,6 @@ public class StatementProcessor
             event = new StatementEvent(SKIP, customer, statementDate);
         }
         notifyListeners(event.getAction(), event);
-    }
-
-    /**
-     * Finish processing a customer.
-     * The first invocation for a customer will generate account period-end
-     * acts, i.e an <em>act.customerAccountClosingBalance</em>
-     * and <em>act.customerAccountOpeningBalance</em>.
-     *
-     * @param customer the customer
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public void end(Party customer) {
-        // create period-end acts with startTimes after any accounting fee act
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(statementDate);
-        calendar.add(Calendar.MINUTE, 1);
-        accountRules.createPeriodEnd(customer, calendar.getTime());
     }
 
     /**

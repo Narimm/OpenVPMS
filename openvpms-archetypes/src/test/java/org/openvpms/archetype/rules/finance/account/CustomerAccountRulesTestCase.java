@@ -61,7 +61,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerAccountRulesTestCase extends AbstractCustomerBalanceTest {
+public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
     /**
      * The rules.
@@ -327,7 +327,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerBalanceTest {
         // add a 30 day payment term for accounts to the customer
         Party customer = getCustomer();
         customer.addClassification(createAccountType(30, DateUnits.DAYS));
-        save(getCustomer());
+        save(customer);
 
         // create and save a new invoice
         final Money amount = new Money(100);

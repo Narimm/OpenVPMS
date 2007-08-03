@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.finance.statement;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 
@@ -52,36 +53,45 @@ public class StatementEvent {
     private final Contact contact;
 
     /**
-     * The processing date.
+     * The statement date.
      */
     private final Date date;
+
+    /**
+     * The statement acts. This represents all acts after the last statement
+     * period, and prior to the statement date. May be <tt>null</tt>
+     */
+    private final Iterable<Act> acts;
 
 
     /**
      * Constructs a new <tt>StatementEvent</tt>.
      *
-     * @param action    the statement action
-     * @param customer  the customer
-     * @param date      the processing date
+     * @param action   the statement action
+     * @param customer the customer
+     * @param date     the processing date
      */
     public StatementEvent(Action action, Party customer, Date date) {
-        this(action, customer, null, date);
+        this(action, customer, null, date, null);
     }
 
     /**
      * Constructs a new <tt>StatementEvent</tt>.
      *
-     * @param action    the statement action
-     * @param customer  the customer
-     * @param contact   the customer contact
-     * @param date      the processing date
+     * @param action   the statement action
+     * @param customer the customer
+     * @param contact  the customer contact
+     * @param date     the statement date
+     * @param acts     all statement acts after the last statement period, and
+     *                 prior to the statement date. May be <tt>null</tt>
      */
     public StatementEvent(Action action, Party customer, Contact contact,
-                          Date date) {
+                          Date date, Iterable<Act> acts) {
         this.action = action;
         this.customer = customer;
         this.contact = contact;
         this.date = date;
+        this.acts = acts;
     }
 
     /**
@@ -112,12 +122,24 @@ public class StatementEvent {
     }
 
     /**
-     * Returns the processing date.
+     * Returns the statement date.
      *
-     * @return the processing date
+     * @return the statement date
      */
     public Date getDate() {
         return date;
+    }
+
+    /**
+     * Returns the statement acts.
+     * This represents all acts after the last statement period, and prior to
+     * the statement date.
+     *
+     * @return the statement acts, or <tt>null</tt> if the action is
+     *         {@link Action#SKIP}.
+     */
+    public Iterable<Act> getActs() {
+        return acts;
     }
 
 }

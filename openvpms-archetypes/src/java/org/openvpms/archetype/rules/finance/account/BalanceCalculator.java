@@ -72,6 +72,23 @@ class BalanceCalculator {
     }
 
     /**
+     * Calculates the outstanding balance for a customer, incorporating acts
+     * up to the specified date.
+     *
+     * @param customer the customer
+     * @param date the date
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getBalance(Party customer, Date date) {
+        ArchetypeQuery query = QueryFactory.createUnallocatedObjectSetQuery(
+                customer, DEBIT_CREDIT_SHORT_NAMES);
+        Iterator<ObjectSet> iterator
+                = new ObjectSetQueryIterator(service, query);
+        query.add(new NodeConstraint("startTime", RelationalOp.LT, date));
+        return calculateBalance(iterator);
+    }
+
+    /**
      * Calculates the overdue balance for a customer.
      * This is the sum of unallocated amounts in associated debits that have a
      * date less than the specified overdue date.

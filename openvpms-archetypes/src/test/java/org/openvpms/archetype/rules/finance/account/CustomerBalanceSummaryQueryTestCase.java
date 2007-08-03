@@ -41,7 +41,7 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class CustomerBalanceSummaryQueryTestCase
-        extends AbstractCustomerBalanceTest {
+        extends AbstractCustomerAccountTest {
 
     /**
      * Tests the {@link CustomerBalanceSummaryQuery} class.
@@ -139,7 +139,7 @@ public class CustomerBalanceSummaryQueryTestCase
                 = new CustomerBalanceSummaryQuery(new Date(), accountType1);
         checkSummaries(1, query);
 
-        // verify there is 0 acts for accountType1
+        // verify there is 0 acts for accountType2
         CustomerBalanceSummaryQuery query2
                 = new CustomerBalanceSummaryQuery(new Date(), accountType2);
         checkSummaries(0, query2);

@@ -30,6 +30,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IterableIMObjectQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -160,6 +161,9 @@ class StatementActHelper {
         Date close;
         if (open == null) {
             close = account.getClosingBalanceDateBefore(customer, date);
+            if (close == null) {
+                close = account.getClosingBalanceDateAfter(customer, date);
+            }
         } else {
             close = account.getClosingBalanceDateAfter(customer, date);
         }
@@ -177,6 +181,7 @@ class StatementActHelper {
             query.add(new NodeConstraint("startTime", RelationalOp.LTE, close));
         }
         query.add(constraint);
+        query.add(new NodeSortConstraint("startTime"));
         return query;
     }
 
