@@ -20,12 +20,11 @@ package org.openvpms.web.app.reporting.statement;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
-import org.openvpms.archetype.rules.finance.statement.AbstractStatementProcessorListener;
 import org.openvpms.archetype.rules.finance.statement.StatementEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -40,7 +39,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class StatementPrintProcessor extends AbstractStatementProcessorListener {
+class StatementPrintProcessor implements ProcessorListener<StatementEvent> {
 
     /**
      * The generator.
@@ -54,7 +53,6 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      * @param generator the statement generator
      */
     public StatementPrintProcessor(StatementGenerator generator) {
-        super(ArchetypeServiceHelper.getArchetypeService());
         this.generator = generator;
     }
 
@@ -64,10 +62,8 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      * @param event the event
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void process(final StatementEvent event) {
-        Iterable<Act> acts = getActsWithAccountFees(event.getCustomer(),
-                                                    event.getDate());
-        print(acts);
+    public void process(StatementEvent event) {
+        print(event.getActs());
     }
 
     /**
