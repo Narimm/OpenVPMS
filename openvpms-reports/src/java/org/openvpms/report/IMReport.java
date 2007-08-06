@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
 import java.util.Iterator;
+import java.util.Map;
 
 
 /**
@@ -39,21 +40,50 @@ public interface IMReport<T> extends Report {
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
      * @return a document containing the report
-     * @throws ReportException             for any report error
+     * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
     Document generate(Iterator<T> objects, String[] mimeTypes);
 
     /**
+     * Generates a report for a collection of objects.
+     *
+     * @param objects    the objects to report on
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report. May be <tt>null</tt>
+     * @param mimeTypes  a list of mime-types, used to select the preferred
+     *                   output format of the report
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    Document generate(Iterator<T> objects, Map<String, Object> parameters,
+                      String[] mimeTypes);
+
+    /**
      * Prints a report directly to a printer.
      *
      * @param objects    the objects to report on
      * @param properties the print properties
-     * @throws ReportException             for any report error
+     * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
     void print(Iterator<T> objects, PrintProperties properties);
 
+    /**
+     * Prints a report directly to a printer.
+     *
+     * @param objects    the objects to report on
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report. May be <tt>null</tt>
+     * @param properties the print properties
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    void print(Iterator<T> objects, Map<String, Object> parameters,
+               PrintProperties properties);
 }
