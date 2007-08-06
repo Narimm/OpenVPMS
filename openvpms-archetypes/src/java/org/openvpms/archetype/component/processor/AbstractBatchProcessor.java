@@ -18,100 +18,89 @@
 
 package org.openvpms.archetype.component.processor;
 
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-import java.util.Iterator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
- * Abstract implementation of the {@link BatchProcessor} interface that
- * provides synchronous processing of a batch.
+ * Basic abstract implementation of the {@link BatchProcessor} interface,
+ * that provides event notification support.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractBatchProcessor<Type> extends BasicBatchProcessor {
+public abstract class AbstractBatchProcessor implements BatchProcessor {
 
     /**
-     * The iterator.
+     * The listener for events.
      */
-    private Iterator<Type> iterator;
+    private BatchProcessorListener listener;
+
+    /**
+     * The no. of objects processed.
+     */
+    private int processed;
+
+    /**
+     * The logger.
+     */
+    private final Log log = LogFactory.getLog(AbstractBatchProcessor.class);
 
 
     /**
-     * Creates a new <tt>AbstractBatchProcessor</tt>.
+     * Sets a listener to notify of batch processor events.
      *
-     * @param iterator the iterator
+     * @param listener the listener. May be <tt>null</tt>
      */
-    public AbstractBatchProcessor(Iterator<Type> iterator) {
-        setIterator(iterator);
+    public void setListener(BatchProcessorListener listener) {
+        this.listener = listener;
     }
 
     /**
-     * Creates a new <tt>AbstractBatchProcessor</tt>.
-     * The iterator must be set using {@link #setIterator}.
+     * Returns the no. of objects processed.
+     *
+     * @return the no. of objects processed
      */
-    public AbstractBatchProcessor() {
+    public int getProcessed() {
+        return processed;
     }
 
     /**
-     * Processes the batch.
+     * Sets the processed counter.
+     *
+     * @param processed the processed counter
      */
-    public void process() {
-        try {
-            while (iterator.hasNext()) {
-                Type object = iterator.next();
-                process(object);
-                incProcessed();
-            }
-            // processing completed.
-            processingCompleted();
-        } catch (OpenVPMSException exception) {
-            processingError(exception);
+    protected void setProcessed(int processed) {
+        this.processed = processed;
+    }
+
+    /**
+     * Increments the processed counter.
+     */
+    protected void incProcessed() {
+        ++processed;
+    }
+
+    /**
+     * Notifies the listener (if any) of processing completion.
+     */
+    protected void notifyCompleted() {
+        if (listener != null) {
+            listener.completed();
         }
     }
 
     /**
-     * Processes an object.
+     * Invoked if an error occurs processing the batch.
+     * Notifies any listener.
      *
-     * @param object the object to process
+     * @param exception the cause
      */
-    protected abstract void process(Type object);
-
-    /**
-     * Invoked when batch processing has completed.
-     * This implementation delegates to {@link #notifyCompleted()}.
-     */
-    protected void processingCompleted() {
-        notifyCompleted();
+    protected void notifyError(Throwable exception) {
+        if (listener != null) {
+            listener.error(exception);
+        } else {
+            log.error(exception);
+        }
     }
-
-    /**
-     * Invoked when batch processing has terminated due to error.
-     * This implementation delegates to {@link #notifyError}.
-     */
-    protected void processingError(Throwable exception) {
-        notifyError(exception);
-    }
-
-    /**
-     * Sets the iterator.
-     * This resets the processed count.
-     *
-     * @param iterator the iterator over the batch to process
-     */
-    protected void setIterator(Iterator<Type> iterator) {
-        setProcessed(0);
-        this.iterator = iterator;
-    }
-
-    /**
-     * Returns the iterator.
-     *
-     * @return the iterator
-     */
-    protected Iterator<Type> getIterator() {
-        return iterator;
-    }
-
 }

@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.component.processor.AbstractActionProcessor;
 import static org.openvpms.archetype.rules.finance.statement.StatementEvent.Action.*;
+import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.NoContact;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -32,6 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -70,7 +72,8 @@ public class StatementProcessor
     /**
      * Creates a new <tt>DefaultStatementProcessor</tt>.
      *
-     * @param statementDate the statement date
+     * @param statementDate the statement date. Must be a date prior to today.
+     * @throws StatementProcessorException if the statement date is invalid
      */
     public StatementProcessor(Date statementDate) {
         this(statementDate, ArchetypeServiceHelper.getArchetypeService());
@@ -79,11 +82,18 @@ public class StatementProcessor
     /**
      * Creates a new <tt>DefaultStatementProcessor</tt>.
      *
-     * @param statementDate the statement date
+     * @param statementDate the statement date. Must be a date prior to today.
      * @param service       the archetype service
+     * @throws StatementProcessorException if the statement date is invalid
      */
     public StatementProcessor(Date statementDate, IArchetypeService service) {
         this.service = service;
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, -1);
+        if (calendar.getTime().compareTo(statementDate) < 0) {
+            throw new StatementProcessorException(InvalidStatementDate,
+                                                  statementDate);
+        }
         this.statementDate = statementDate;
         statementRules = new StatementRules(service);
         actHelper = new StatementActHelper(service);

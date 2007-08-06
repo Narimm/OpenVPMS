@@ -344,8 +344,11 @@ public class CustomerAccountRules {
      */
     public void createPeriodEnd(Party customer, Date timestamp) {
         BigDecimal total = calculator.getBalance(customer, timestamp);
+        BigDecimal overdue = calculator.getOverdueBalance(customer, timestamp);
         FinancialAct close = createAct("act.customerAccountClosingBalance",
                                        customer, total);
+        ActBean bean = new ActBean(close, service);
+        bean.setValue("overdueBalance", overdue);
         FinancialAct open = createAct("act.customerAccountOpeningBalance",
                                       customer, total);
         // ensure the acts are ordered correctly, ie. close before open

@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -41,7 +42,34 @@ import java.util.List;
  */
 public class StatementProcessorTestCase extends AbstractCustomerAccountTest {
 
-    public void test() {
+    /**
+     * Verifies that the statement processor cannot be constructed with
+     * an invalid date.
+     */
+    public void testStatementDate() {
+        Date now = new Date();
+        try {
+            new StatementProcessor(now);
+            fail("Expected StatementProcessorException to be thrown");
+        } catch (StatementProcessorException expected) {
+            assertEquals(
+                    StatementProcessorException.ErrorCode.InvalidStatementDate,
+                    expected.getErrorCode());
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, -1);
+        try {
+            new StatementProcessor(calendar.getTime());
+        } catch (StatementProcessorException exception) {
+            fail("Construction failed with exception: " + exception);
+        }
+    }
+
+    /**
+     * Tests the {@link StatementProcessor#process(Party)} method.
+     */
+    public void testProcess() {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
         customer.addClassification(createAccountType(30, DateUnits.DAYS,
@@ -73,6 +101,13 @@ public class StatementProcessorTestCase extends AbstractCustomerAccountTest {
         assertEquals(feeAmount, fee.getTotal());
     }
 
+    /**
+     * Helper to process a statement for a customer.
+     *
+     * @param statementDate the statement date
+     * @param customer      the customer
+     * @return the acts included in the statement
+     */
     private List<Act> processStatement(Date statementDate, Party customer) {
         StatementProcessor processor = new StatementProcessor(statementDate);
         Listener listener = new Listener();

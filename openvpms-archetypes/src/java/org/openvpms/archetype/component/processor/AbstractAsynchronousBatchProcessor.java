@@ -33,7 +33,8 @@ import java.util.Iterator;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class AbstractAsynchronousBatchProcessor<Type>
-        extends AbstractBatchProcessor<Type> {
+        extends IteratingBatchProcessor<Type>
+        implements AsynchronousBatchProcessor {
 
     /**
      * Indicates if processing should suspend, so the client can be updated.
@@ -59,6 +60,13 @@ public abstract class AbstractAsynchronousBatchProcessor<Type>
 
     /**
      * Processes the batch.
+     * This sets the suspend state to <tt>false</tt> and processes the
+     * next available item. This repeats until there are no items left to
+     * process, or processing is suspended. If suspended, the method returns;
+     * processing may be resumed by invoking {@link #process()} again.
+     * <p/>
+     * On completion of the last item in the batch, notifies the listener
+     * (if any).
      */
     @Override
     public void process() {

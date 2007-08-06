@@ -18,8 +18,6 @@
 
 package org.openvpms.archetype.component.processor;
 
-import java.util.Iterator;
-
 
 /**
  * A {@link BatchProcessor} that may be suspended and resumed.
@@ -30,52 +28,31 @@ import java.util.Iterator;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AsynchronousBatchProcessor<Type>
-        extends AbstractAsynchronousBatchProcessor<Type> {
+public interface AsynchronousBatchProcessor extends BatchProcessor {
 
     /**
-     * The processor.
+     * Processes the batch.
+     * This sets the suspend state to <tt>false</tt> and processes the
+     * next available item. This repeats until there are no items left to
+     * process, or processing is suspended. If suspended, the method returns;
+     * processing may be resumed by invoking {@link #process()} again.
+     * <p/>
+     * On completion of the last item in the batch, notifies the listener
+     * (if any).
      */
-    private Processor<Type> processor;
-
+    void process();
 
     /**
-     * Creates a new <tt>AsynchronousBatchProcessor</tt>.
+     * Sets the suspend state
      *
-     * @param processor the processor
-     * @param iterator  an iterator over the batch to process
+     * @param suspend if <tt>true</tt> suspend processing
      */
-    public AsynchronousBatchProcessor(Processor<Type> processor,
-                                      Iterator<Type> iterator) {
-        setProcessor(processor);
-        setIterator(iterator);
-    }
+    void setSuspend(boolean suspend);
 
     /**
-     * Creates a new <tt>AsynchronousBatchProcessor</tt>.
-     * The processor and iterator must be set using {@link #setProcessor} and
-     * {@link #setIterator} respectively.
-     */
-    protected AsynchronousBatchProcessor() {
-    }
-
-    /**
-     * Processes an object.
+     * Determines if processing has been suspended.
      *
-     * @param object the object to process
+     * @return <tt>true</tt> if processing has been suspended
      */
-    protected void process(Type object) {
-        processor.process(object);
-        incProcessed();
-    }
-
-    /**
-     * Sets the processor.
-     *
-     * @param processor the processor
-     */
-    protected void setProcessor(Processor<Type> processor) {
-        this.processor = processor;
-    }
-
+    boolean isSuspended();
 }
