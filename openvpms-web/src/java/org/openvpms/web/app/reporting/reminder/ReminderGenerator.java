@@ -26,7 +26,7 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.component.processor.BasicBatchProcessor;
+import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
@@ -42,6 +42,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.processor.BatchProcessorComponent;
+import org.openvpms.web.component.processor.BatchProcessorTask;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -68,8 +69,11 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderGenerator extends BasicBatchProcessor {
+class ReminderGenerator extends AbstractBatchProcessor {
 
+    /**
+     * The reminder processors.
+     */
     private Map<BatchProcessorComponent, List<ReminderEvent>> processors
             = new LinkedHashMap<BatchProcessorComponent, List<ReminderEvent>>();
 
@@ -187,6 +191,11 @@ class ReminderGenerator extends BasicBatchProcessor {
      */
     public void process() {
         GenerationDialog dialog = new GenerationDialog();
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                notifyCompleted();
+            }
+        });
         dialog.show();
     }
 

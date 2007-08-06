@@ -79,7 +79,7 @@ public abstract class ProgressBarProcessor<T>
      * Constructs a new <tt>ProgressBarProcessor</tt>.
      *
      * @param items the items to process
-     * @param title the processor title
+     * @param title the processor title. May be <tt>null</tt>
      */
     public ProgressBarProcessor(List<T> items, String title) {
         this(items, items.size(), title);
@@ -102,7 +102,7 @@ public abstract class ProgressBarProcessor<T>
      * The {@link #setItems} method must be invoked prior to starting
      * processing.
      *
-     * @param title the progress bar title
+     * @param title the progress bar title. May be <tt>null</tt>
      */
     public ProgressBarProcessor(String title) {
         bar = new ProgressBar();
@@ -111,16 +111,16 @@ public abstract class ProgressBarProcessor<T>
     }
 
     /**
-     * The processor title.
+     * Returns the processor title.
      *
-     * @return the processor title
+     * @return the processor title. May be <tt>null</tt>
      */
     public String getTitle() {
         return title;
     }
 
     /**
-     * The component.
+     * Returns the component.
      *
      * @return the component
      */
@@ -200,6 +200,15 @@ public abstract class ProgressBarProcessor<T>
             });
             lastRefresh = time;
         }
+    }
+
+    /**
+     * Returns the progress bar.
+     *
+     * @return the progress bar
+     */
+    protected ProgressBar getProgressBar() {
+        return bar;
     }
 
     /**

@@ -21,7 +21,7 @@ package org.openvpms.web.app.reporting.reminder;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
-import org.openvpms.archetype.component.processor.BasicBatchProcessor;
+import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -44,7 +44,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderPhoneProcessor extends BasicBatchProcessor
+class ReminderPhoneProcessor extends AbstractBatchProcessor
         implements BatchProcessorComponent {
 
     /**

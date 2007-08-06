@@ -18,19 +18,21 @@
 
 package org.openvpms.web.app.reporting.statement;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
 import org.openvpms.archetype.rules.finance.statement.StatementEvent;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.print.PrinterListener;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -42,18 +44,20 @@ import org.openvpms.web.resource.util.Messages;
 class StatementPrintProcessor implements ProcessorListener<StatementEvent> {
 
     /**
-     * The generator.
+     * The batch processor to invoke to process the next statement, when
+     * printing interactively
      */
-    private final StatementGenerator generator;
+    private final StatementProgressBarProcessor processor;
 
 
     /**
      * Constructs a new <tt>StatementPrintProcessor</tt>.
      *
-     * @param generator the statement generator
+     * @param processor the batch processor to invoke to process the next
+     *                  statement, when printing interactively.
      */
-    public StatementPrintProcessor(StatementGenerator generator) {
-        this.generator = generator;
+    public StatementPrintProcessor(StatementProgressBarProcessor processor) {
+        this.processor = processor;
     }
 
     /**
@@ -63,43 +67,50 @@ class StatementPrintProcessor implements ProcessorListener<StatementEvent> {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void process(StatementEvent event) {
-        print(event.getActs());
+        print(event.getCustomer(), event.getDate(), event.getActs());
     }
 
     /**
      * Prints a statement.
      *
-     * @param acts the acts to print
+     * @param customer      the customer
+     * @param statementDate the statement date
+     * @param acts          the acts to print
      */
-    private void print(Iterable<Act> acts) {
+    private void print(final Party customer, Date statementDate,
+                       Iterable<Act> acts) {
         IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(
                 acts, CustomerAccountActTypes.OPENING_BALANCE);
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("statementDate", statementDate);
+        printer.setParameters(params);
+
         String title = Messages.get("reporting.statements.print.customer");
         InteractiveIMPrinter<Act> iPrinter
                 = new InteractiveIMPrinter<Act>(title, printer);
         iPrinter.setListener(new PrinterListener() {
             public void printed() {
                 try {
-                    generator.process(); // process the next statement
+                    processor.processCompleted(customer);
+                    processor.process(); // process the next statement
                 } catch (OpenVPMSException exception) {
-                    ErrorHelper.show(exception);
+                    processor.notifyError(exception);
                 }
             }
 
             public void cancelled() {
+                processor.setStatus(null);
             }
 
             public void skipped() {
             }
 
             public void failed(Throwable cause) {
-                ErrorHelper.show(cause, new WindowPaneListener() {
-                    public void windowPaneClosing(WindowPaneEvent event) {
-                    }
-                });
+                processor.notifyError(cause);
             }
         });
-        generator.setSuspend(true); // suspend generation while printing
+        processor.setSuspend(true); // suspend generation while printing
         iPrinter.print();
     }
 

@@ -27,7 +27,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.IterableIMObjectQuery;
-import org.openvpms.web.component.processor.ProgressBarProcessor;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
 
@@ -38,12 +38,23 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class EndOfPeriodGenerator extends ProgressBarProcessor<Party> {
+class EndOfPeriodGenerator extends AbstractStatementGenerator {
 
-    private Processor<Party> processor;
+    /**
+     * The statement processor progress bar.
+     */
+    private StatementProgressBarProcessor progressBarProcessor;
 
+
+    /**
+     * Creates a new <tt>EndOfPeriodGenerator</tt>.
+     *
+     * @param date the statement date
+     */
     public EndOfPeriodGenerator(Date date) {
-        super("EndOfPeriod");
+        super(Messages.get("reporting.statements.eop.title"),
+              Messages.get("reporting.statements.eop.cancel.title"),
+              Messages.get("reporting.statements.eop.cancel.message"));
         ArchetypeQuery query
                 = new ArchetypeQuery("party.customer*", false, false);
         int size = countCustomers(query);
@@ -51,21 +62,28 @@ class EndOfPeriodGenerator extends ProgressBarProcessor<Party> {
 
         IterableIMObjectQuery<Party> customers
                 = new IterableIMObjectQuery<Party>(query);
-        setItems(customers, size);
-        processor = new EndOfPeriodProcessor(
+        Processor<Party> processor = new EndOfPeriodProcessor(
                 date, ArchetypeServiceHelper.getArchetypeService());
+        progressBarProcessor = new StatementProgressBarProcessor(processor,
+                                                                 customers,
+                                                                 size);
     }
 
     /**
-     * Processes an object.
+     * Returns the processor.
      *
-     * @param object the object to process
+     * @return the processor
      */
-    protected void process(Party object) {
-        processor.process(object);
-        incProcessed();
+    protected StatementProgressBarProcessor getProcessor() {
+        return progressBarProcessor;
     }
 
+    /**
+     * Counts the available customers matching a query.
+     *
+     * @param query the query
+     * @return the no. of customers
+     */
     private int countCustomers(ArchetypeQuery query) {
         query.setMaxResults(0);
         IArchetypeService service

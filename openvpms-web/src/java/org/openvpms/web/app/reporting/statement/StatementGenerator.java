@@ -19,7 +19,6 @@
 package org.openvpms.web.app.reporting.statement;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.component.processor.AsynchronousBatchProcessor;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.archetype.rules.finance.statement.StatementEvent;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessor;
@@ -34,6 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
@@ -47,16 +47,26 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class StatementGenerator extends AsynchronousBatchProcessor<Party> {
+class StatementGenerator extends AbstractStatementGenerator {
+
+    /**
+     * The statement processor progress bar.
+     */
+    private StatementProgressBarProcessor progressBarProcessor;
+
 
     /**
      * Constructs a new <tt>StatementGenerator</tt> for a single customer.
      *
      * @param customer the customer reference
+     * @param date     the statement date
      * @param context  the context
      */
     public StatementGenerator(IMObjectReference customer, Date date,
                               Context context) {
+        super(Messages.get("reporting.statements.run.title"),
+              Messages.get("reporting.statements.run.cancel.title"),
+              Messages.get("reporting.statements.run.cancel.message"));
         List<Party> customers = new ArrayList<Party>();
         Party party = (Party) IMObjectHelper.getObject(customer);
         if (party != null) {
@@ -73,6 +83,9 @@ class StatementGenerator extends AsynchronousBatchProcessor<Party> {
      * @param context the context
      */
     public StatementGenerator(CustomerBalanceQuery query, Context context) {
+        super(Messages.get("reporting.statements.run.title"),
+              Messages.get("reporting.statements.run.cancel.title"),
+              Messages.get("reporting.statements.run.cancel.message"));
         List<ObjectSet> balances = query.getObjects();
         List<Party> customers = new ArrayList<Party>();
         for (ObjectSet set : balances) {
@@ -87,16 +100,24 @@ class StatementGenerator extends AsynchronousBatchProcessor<Party> {
     }
 
     /**
+     * Returns the processor.
+     *
+     * @return the processor
+     */
+    protected StatementProgressBarProcessor getProcessor() {
+        return progressBarProcessor;
+    }
+
+    /**
      * Initialises this.
      *
-     * @param context the context
+     * @param customers the customers to generate statements for
+     * @param date      the statement date
+     * @param context   the context
      * @throws ArchetypeServiceException   for any archetype service error
      * @throws StatementProcessorException for any statement processor exception
      */
     private void init(List<Party> customers, Date date, Context context) {
-        StatementProcessor processor = new StatementProcessor(date);
-        StatementPrintProcessor printer = new StatementPrintProcessor(this);
-        processor.addListener(StatementEvent.Action.PRINT, printer);
         Party practice = context.getPractice();
         if (practice == null) {
             throw new StatementProcessorException(
@@ -119,11 +140,19 @@ class StatementGenerator extends AsynchronousBatchProcessor<Party> {
                     "Practice " + practice.getName()
                             + " email contact address is empty");
         }
+
+        StatementProcessor processor = new StatementProcessor(date);
+        progressBarProcessor = new StatementProgressBarProcessor(
+                processor, customers);
+
+        StatementPrintProcessor printer
+                = new StatementPrintProcessor(progressBarProcessor);
+
         StatementEmailProcessor emailer = new StatementEmailProcessor(
                 ServiceHelper.getMailSender(), address, name);
+
+        processor.addListener(StatementEvent.Action.PRINT, printer);
         processor.addListener(StatementEvent.Action.EMAIL, emailer);
-        setIterator(customers.iterator());
-        setProcessor(processor);
     }
 
     /**

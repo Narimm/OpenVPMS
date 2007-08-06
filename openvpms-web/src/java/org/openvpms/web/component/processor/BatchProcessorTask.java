@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.reporting.reminder;
+package org.openvpms.web.component.processor;
 
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
@@ -28,7 +28,7 @@ import org.openvpms.web.component.workflow.TaskListener;
 
 
 /**
- * Adapts an {@link BatchProcessor} to the {@link Task} interface.
+ * Adapts a {@link BatchProcessor} to the {@link Task} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
