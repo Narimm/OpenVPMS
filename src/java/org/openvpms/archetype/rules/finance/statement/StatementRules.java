@@ -88,7 +88,6 @@ public class StatementRules {
     public Date getStatementTimestamp(Date statementDate) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(statementDate);
-        calendar.add(Calendar.DATE, -1);
         calendar.set(Calendar.HOUR_OF_DAY, 23);
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 0);

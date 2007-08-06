@@ -35,7 +35,7 @@ public interface BatchProcessor {
     void setListener(BatchProcessorListener listener);
 
     /**
-     * Processes the batch.
+     * Processes the batch, and notifies the listener (if any) on completion.
      */
     void process();
 

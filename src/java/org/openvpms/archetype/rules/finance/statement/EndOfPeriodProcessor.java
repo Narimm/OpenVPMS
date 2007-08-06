@@ -21,6 +21,7 @@ package org.openvpms.archetype.rules.finance.statement;
 import org.openvpms.archetype.component.processor.Processor;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -74,7 +75,8 @@ public class EndOfPeriodProcessor implements Processor<Party> {
     /**
      * Creates a new <tt>EndOfPeriodProcessor</tt>.
      *
-     * @param statementDate the statement date
+     * @param statementDate the statement date. Must be a date prior to today.
+     * @throws StatementProcessorException if the statement date is invalid
      */
     public EndOfPeriodProcessor(Date statementDate) {
         this(statementDate, ArchetypeServiceHelper.getArchetypeService());
@@ -83,11 +85,18 @@ public class EndOfPeriodProcessor implements Processor<Party> {
     /**
      * Creates a new <tt>EndOfPeriodProcessor</tt>.
      *
-     * @param statementDate the statement date
+     * @param statementDate the statement date. Must be a date prior to today.
      * @param service       the archetype service
+     * @throws StatementProcessorException if the statement date is invalid
      */
     public EndOfPeriodProcessor(Date statementDate, IArchetypeService service) {
         this.service = service;
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, -1);
+        if (calendar.getTime().compareTo(statementDate) < 0) {
+            throw new StatementProcessorException(InvalidStatementDate,
+                                                  statementDate);
+        }
         acts = new StatementActHelper(service);
         account = new CustomerAccountRules(service);
         statement = new StatementRules(service);

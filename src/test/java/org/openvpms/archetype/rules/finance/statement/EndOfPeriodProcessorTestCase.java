@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -39,13 +40,35 @@ import java.util.List;
  */
 public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
+     /**
+     * Verifies that the processor cannot be constructed with an invalid date.
+     */
+    public void testStatementDate() {
+        Date now = new Date();
+        try {
+            new EndOfPeriodProcessor(now);
+            fail("Expected StatementProcessorException to be thrown");
+        } catch (StatementProcessorException expected) {
+            assertEquals(
+                    StatementProcessorException.ErrorCode.InvalidStatementDate,
+                    expected.getErrorCode());
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, -1);
+        try {
+            new EndOfPeriodProcessor(calendar.getTime());
+        } catch (StatementProcessorException exception) {
+            fail("Construction failed with exception: " + exception);
+        }
+    }
     /**
      * Tests end of period.
      */
     public void testEndOfPeriod() {
         StatementRules rules = new StatementRules();
         Party customer = getCustomer();
-        Date statementDate = getDate("2007-01-02");
+        Date statementDate = getDate("2007-01-01");
 
         assertFalse(rules.hasStatement(customer, statementDate));
         List<Act> acts = getActs(customer, statementDate);
@@ -84,7 +107,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         acts = getActs(customer, statementDate);
         assertEquals(2, acts.size());
 
-        statementDate = getDate("2007-01-03");
+        statementDate = getDate("2007-01-02");
         assertFalse(rules.hasStatement(customer, statementDate));
 
         acts = getActs(customer, statementDate);
@@ -117,10 +140,10 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         save(invoice3);
 
         FinancialAct invoice4 = createChargesInvoice(      // already posted
-                amount, getDatetime("2007-01-01 11:00:00"));
+                                                           amount, getDatetime("2007-01-01 11:00:00"));
         save(invoice4);
 
-        Date statementDate = getDate("2007-02-02");    // perform end-of-period
+        Date statementDate = getDate("2007-02-01");    // perform end-of-period
         EndOfPeriodProcessor processor
                 = new EndOfPeriodProcessor(statementDate);
         processor.process(customer);

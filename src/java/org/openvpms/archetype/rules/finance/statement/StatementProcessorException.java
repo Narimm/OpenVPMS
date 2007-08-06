@@ -34,6 +34,7 @@ public class StatementProcessorException extends OpenVPMSException {
      * An enumeration of error codes.
      */
     public enum ErrorCode {
+        InvalidStatementDate,
         NoContact,
         InvalidConfiguration,
         FailedToProcessStatement
