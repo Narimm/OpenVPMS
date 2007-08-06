@@ -25,6 +25,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -123,8 +125,15 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
         LayoutContext context = super.createLayoutContext();
 
         // create a local context - don't want customer and patient changes
-        // to propagate to the global context
-        context.setContext(new LocalContext());
+        // to propagate to the global context, and don't want to pick up
+        // the current clinician
+        Context global = GlobalContext.getInstance();
+        LocalContext local = new LocalContext(null);
+        local.setSchedule(global.getSchedule());
+        local.setScheduleDate(global.getScheduleDate());
+        local.setCustomer(global.getCustomer());
+        local.setPatient(global.getPatient());
+        context.setContext(local);
         return context;
     }
 
