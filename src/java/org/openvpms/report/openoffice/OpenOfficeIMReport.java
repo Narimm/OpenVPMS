@@ -28,10 +28,10 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.ExpressionEvaluator;
 import org.openvpms.report.ExpressionEvaluatorFactory;
 import org.openvpms.report.IMReport;
-import org.openvpms.report.ReportException;
-import static org.openvpms.report.ReportException.ErrorCode.*;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.PrintProperties;
+import org.openvpms.report.ReportException;
+import static org.openvpms.report.ReportException.ErrorCode.*;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -123,7 +123,6 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             throw new ReportException(UnsupportedMimeTypes);
         }
 
-
         OpenOfficeDocument doc = null;
         OOConnection connection = null;
         try {
@@ -140,11 +139,30 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     }
 
     /**
+     * Generates a report for a collection of objects.
+     *
+     * @param objects    the objects to report on
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report. May be <tt>null</tt>
+     * @param mimeTypes  a list of mime-types, used to select the preferred
+     *                   output format of the report
+     * @return a document containing the report
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    public Document generate(Iterator<T> objects,
+                             Map<String, Object> parameters,
+                             String[] mimeTypes) {
+        return generate(objects, mimeTypes);
+    }
+
+    /**
      * Prints a report directly to a printer.
      *
      * @param objects    the objects to report on
      * @param properties the print properties
-     * @throws ReportException         for any report error
+     * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void print(Iterator<T> objects, PrintProperties properties) {
@@ -164,13 +182,29 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     }
 
     /**
+     * Prints a report directly to a printer.
+     *
+     * @param objects    the objects to report on
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report. May be <tt>null</tt>
+     * @param properties the print properties
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    public void print(Iterator<T> objects, Map<String, Object> parameters,
+                      PrintProperties properties) {
+        print(objects, properties);
+    }
+
+    /**
      * Creates an openoffice document from a collection of objects.
      * Note that the collection is limited to a single object.
      *
      * @param objects    the objects to generate the document from
      * @param connection a connection to the OpenOffice service
      * @return a new openoffice document
-     * @throws ReportException         for any report error
+     * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     private OpenOfficeDocument create(Iterator<T> objects,

@@ -26,7 +26,7 @@ import java.util.Set;
 
 
 /**
- * Add description here.
+ * Generates a report.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
