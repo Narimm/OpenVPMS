@@ -126,19 +126,19 @@ public class ReminderWorkspace extends AbstractWorkspace {
         FocusGroup group = new FocusGroup("ReminderWorkspace");
         ButtonRow buttons = new ButtonRow(group, "ControlRow",
                                           ButtonRow.BUTTON_STYLE);
-        buttons.addButton("process", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onProcess();
-            }
-        });
-        buttons.addButton("processAll", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onProcessAll();
-            }
-        });
         buttons.addButton("print", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onPrint();
+            }
+        });
+        buttons.addButton("printAll", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onPrintAll();
+            }
+        });
+        buttons.addButton("report", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onReport();
             }
         });
         SplitPane content = SplitPaneFactory.create(
@@ -164,9 +164,10 @@ public class ReminderWorkspace extends AbstractWorkspace {
     }
 
     /**
-     * Invoked when the 'Process' button is pressed.
+     * Invoked when the 'Print' button is pressed. Runs the reminder generator
+     * for the selected reminder.
      */
-    private void onProcess() {
+    private void onPrint() {
         try {
             Act selected = browser.getSelected();
             if (selected != null) {
@@ -183,27 +184,10 @@ public class ReminderWorkspace extends AbstractWorkspace {
     }
 
     /**
-     * Invoked when the 'Print' button is pressed.
+     * Invoked when the 'Print All' button is pressed. Runs the reminder
+     * generator for all reminders.
      */
-    private void onPrint() {
-        Iterable<Act> objects = query.createReminderQuery().query();
-        IMPrinter<Act> printer
-                = new IMObjectReportPrinter<Act>(objects,
-                                                 "act.patientReminder");
-        String title = Messages.get("reporting.reminder.print.title");
-        try {
-            InteractiveIMPrinter<Act> iPrinter
-                    = new InteractiveIMPrinter<Act>(title, printer);
-            iPrinter.print();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    /**
-     * Invoked when the 'Process All' button is pressed.
-     */
-    private void onProcessAll() {
+    private void onPrintAll() {
         String title = Messages.get("reporting.reminder.run.title");
         String message = Messages.get("reporting.reminder.run.message");
         final ConfirmationDialog dialog
@@ -217,6 +201,24 @@ public class ReminderWorkspace extends AbstractWorkspace {
 
         });
         dialog.show();
+    }
+
+    /**
+     * Invoked when the 'Print' button is pressed.
+     */
+    private void onReport() {
+        Iterable<Act> objects = query.createReminderQuery().query();
+        IMPrinter<Act> printer
+                = new IMObjectReportPrinter<Act>(objects,
+                                                 "act.patientReminder");
+        String title = Messages.get("reporting.reminder.print.title");
+        try {
+            InteractiveIMPrinter<Act> iPrinter
+                    = new InteractiveIMPrinter<Act>(title, printer);
+            iPrinter.print();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**

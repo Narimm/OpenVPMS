@@ -31,14 +31,14 @@ import org.openvpms.archetype.component.processor.BatchProcessor;
 public interface BatchProcessorComponent extends BatchProcessor {
 
     /**
-     * The processor title.
+     * Returns the processor title.
      *
-     * @return the processor title
+     * @return the processor title. May be <tt>null</tt>
      */
     String getTitle();
 
     /**
-     * The component.
+     * Returns the component.
      *
      * @return the component
      */

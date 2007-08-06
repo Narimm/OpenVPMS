@@ -64,7 +64,8 @@ public abstract class AbstractIMReportPrinter<T>
     public Document getDocument() {
         IMReport<T> report = createReport();
         String[] mimeTypes = {DocFormats.PDF_TYPE};
-        return report.generate(getObjects().iterator(), mimeTypes);
+        return report.generate(getObjects().iterator(), getParameters(),
+                               mimeTypes);
     }
 
 }

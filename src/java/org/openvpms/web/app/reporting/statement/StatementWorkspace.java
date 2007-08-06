@@ -192,7 +192,7 @@ public class StatementWorkspace extends AbstractWorkspace {
     }
 
     /**
-     * Invoked when the 'process all' button is pressed.
+     * Invoked when the 'print all' button is pressed.
      */
     private void onPrintAll() {
         String title = Messages.get("reporting.statements.run.title");
@@ -244,7 +244,28 @@ public class StatementWorkspace extends AbstractWorkspace {
         }
     }
 
+    /**
+     * Invoked when the 'end period' button is pressed.
+     */
     private void onEndPeriod() {
+        String title = Messages.get("reporting.statements.eop.title");
+        String message = Messages.get("reporting.statements.eop.message");
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    doEndPeriod();
+                }
+            }
+        });
+        dialog.show();
+    }
+
+    /**
+     * Runs end period.
+     */
+    private void doEndPeriod() {
         try {
             EndOfPeriodGenerator generator = new EndOfPeriodGenerator(
                     query.getDate());

@@ -29,7 +29,6 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -72,7 +71,7 @@ class ReminderPrintProcessor extends ProgressBarProcessor<ReminderEvent> {
                     setSuspend(false);
                     processCompleted(event);
                 } catch (OpenVPMSException exception) {
-                    ErrorHelper.show(exception);
+                    notifyError(exception);
                 }
             }
 

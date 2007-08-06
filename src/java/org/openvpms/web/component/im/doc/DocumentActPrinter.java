@@ -90,7 +90,8 @@ public class DocumentActPrinter extends AbstractIMPrinter<IMObject> {
             IMReport<IMObject> report = createReport();
             List<IMObject> objects = new ArrayList<IMObject>();
             objects.add(act);
-            report.print(objects.iterator(), getProperties(printer));
+            report.print(objects.iterator(), getParameters(),
+                         getProperties(printer));
         } else if (DocFormats.ODT_TYPE.equals(doc.getMimeType())) {
             OpenOfficeHelper.getPrintService().print(doc, printer);
         } else {
@@ -111,7 +112,7 @@ public class DocumentActPrinter extends AbstractIMPrinter<IMObject> {
                 object.getDocReference());
         if (doc == null) {
             ReportGenerator gen = new ReportGenerator(object);
-            doc = gen.generate(object, DocFormats.PDF_TYPE);
+            doc = gen.generate(object, getParameters(), DocFormats.PDF_TYPE);
         }
         return doc;
     }

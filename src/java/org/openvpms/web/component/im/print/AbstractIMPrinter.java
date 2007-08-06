@@ -25,6 +25,8 @@ import org.openvpms.report.ReportException;
 import org.openvpms.web.component.print.AbstractPrinter;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -45,6 +47,11 @@ public abstract class AbstractIMPrinter<T>
      * The object to print.
      */
     private final T object;
+
+    /**
+     * The parameters to pass to the report.
+     */
+    private Map<String, Object> parameters = new HashMap<String, Object>();
 
 
     /**
@@ -85,7 +92,28 @@ public abstract class AbstractIMPrinter<T>
      */
     public void print(String printer) {
         IMReport<T> report = createReport();
-        report.print(getObjects().iterator(), getProperties(printer));
+        report.print(getObjects().iterator(), getParameters(),
+                     getProperties(printer));
+    }
+
+    /**
+     * Sets parameters to pass to the report.
+     *
+     * @param parameters a map of parameter names and their values, to pass to
+     *                   the report. May be <tt>null</tt>
+     */
+    public void setParameters(Map<String, Object> parameters) {
+        this.parameters = parameters;
+    }
+
+    /**
+     * Returns a map of parameters names and their values, to pass to the
+     * report.
+     *
+     * @return a map of parameter names and their values. May be <tt>null</tt>
+     */
+    public Map<String, Object> getParameters() {
+        return parameters;
     }
 
     /**
