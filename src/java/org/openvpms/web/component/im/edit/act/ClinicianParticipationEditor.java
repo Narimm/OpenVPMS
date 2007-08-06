@@ -51,7 +51,7 @@ public class ClinicianParticipationEditor
         extends AbstractParticipationEditor<User> {
 
     /**
-     * Constructs a new <tt>PatientParticipationEditor</tt>.
+     * Constructs a new <tt>ClinicianParticipationEditor</tt>.
      *
      * @param participation the object to edit
      * @param parent        the parent object
@@ -91,6 +91,7 @@ public class ClinicianParticipationEditor
                 return query;
             }
 
+            @Override
             public void setObject(User object) {
                 super.setObject(object);
                 getLayoutContext().getContext().setClinician(object);
