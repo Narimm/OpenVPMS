@@ -19,7 +19,8 @@
 package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.component.processor.AbstractActionProcessor;
-import static org.openvpms.archetype.rules.finance.statement.StatementEvent.Action.*;
+import static org.openvpms.archetype.rules.finance.statement.StatementEvent.Action.EMAIL;
+import static org.openvpms.archetype.rules.finance.statement.StatementEvent.Action.PRINT;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.NoContact;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -54,11 +55,6 @@ public class StatementProcessor
     private final IArchetypeService service;
 
     /**
-     * The statement rules.
-     */
-    private final StatementRules statementRules;
-
-    /**
      * The statement date.
      */
     private final Date statementDate;
@@ -68,9 +64,8 @@ public class StatementProcessor
      */
     private final StatementActHelper actHelper;
 
-
     /**
-     * Creates a new <tt>DefaultStatementProcessor</tt>.
+     * Creates a new <tt>StatementProcessor</tt>.
      *
      * @param statementDate the statement date. Must be a date prior to today.
      * @throws StatementProcessorException if the statement date is invalid
@@ -80,7 +75,7 @@ public class StatementProcessor
     }
 
     /**
-     * Creates a new <tt>DefaultStatementProcessor</tt>.
+     * Creates a new <tt>StatementProcessor</tt>.
      *
      * @param statementDate the statement date. Must be a date prior to today.
      * @param service       the archetype service
@@ -95,7 +90,6 @@ public class StatementProcessor
                                                   statementDate);
         }
         this.statementDate = statementDate;
-        statementRules = new StatementRules(service);
         actHelper = new StatementActHelper(service);
     }
 
@@ -107,21 +101,15 @@ public class StatementProcessor
      */
     public void process(Party customer) {
         StatementEvent event;
-        if (!statementRules.hasStatement(customer, statementDate)) {
-            Contact contact = getContact(customer);
-            Iterable<Act> acts = actHelper.getActsWithAccountFees(
-                    customer, statementDate);
-            if (TypeHelper.isA(contact, "contact.email")) {
-                event = new StatementEvent(EMAIL, customer, contact,
-                                           statementDate, acts);
-            } else {
-                event = new StatementEvent(PRINT, customer, contact,
-                                           statementDate, acts);
-            }
+        Contact contact = getContact(customer);
+        Iterable<Act> acts = actHelper.getActsWithAccountFees(
+                customer, statementDate);
+        if (TypeHelper.isA(contact, "contact.email")) {
+            event = new StatementEvent(EMAIL, customer, contact,
+                                       statementDate, acts);
         } else {
-            // customer already has had a statement generated for the statement
-            // period.
-            event = new StatementEvent(SKIP, customer, statementDate);
+            event = new StatementEvent(PRINT, customer, contact,
+                                       statementDate, acts);
         }
         notifyListeners(event.getAction(), event);
     }
