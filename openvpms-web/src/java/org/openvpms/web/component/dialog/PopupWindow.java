@@ -135,7 +135,9 @@ public abstract class PopupWindow extends WindowPane {
      * Close the window.
      */
     public void close() {
-        userClose();
+        if (getParent() != null) {
+            userClose();
+        }
     }
 
     /**

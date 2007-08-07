@@ -193,7 +193,7 @@ public abstract class ActCRUDWindow<T extends Act>
         InteractiveIMPrinter<T> printer
                 = (InteractiveIMPrinter<T>) super.createPrinter(object);
         printer.setListener(new PrinterListener() {
-            public void printed() {
+            public void printed(String printer) {
                 ActCRUDWindow.this.printed(object);
             }
 

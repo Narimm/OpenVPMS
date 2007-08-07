@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
@@ -47,6 +48,11 @@ public class InteractivePrinter implements Printer {
      * The print listener. May be <tt>null</tt>.
      */
     private PrinterListener listener;
+
+    /**
+     * The cancel listener. May be <tt>null</tt>.
+     */
+    private VetoListener cancelListener;
 
     /**
      * The dialog title.
@@ -198,6 +204,15 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
+     * Sets a listener to veto cancel events.
+     *
+     * @param listener the listener. May be <tt>null</tt>
+     */
+    public void setCancelListener(VetoListener listener) {
+        cancelListener = listener;
+    }
+
+    /**
      * Returns the underlying printer.
      *
      * @return the printer
@@ -245,6 +260,7 @@ public class InteractivePrinter implements Printer {
             printer = getDefaultPrinter();
         }
         dialog.setDefaultPrinter(printer);
+        dialog.setCancelListener(cancelListener);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 String action = dialog.getAction();
@@ -286,7 +302,7 @@ public class InteractivePrinter implements Printer {
     protected void doPrint(String printerName) {
         try {
             printer.print(printerName);
-            printed();
+            printed(printerName);
         } catch (OpenVPMSException exception) {
             failed(exception);
         }
@@ -307,10 +323,13 @@ public class InteractivePrinter implements Printer {
     /**
      * Invoked when the object has been successfully printed.
      * Notifies any registered listener.
+     *
+     * @param printer the printer that was used to print the object.
+     *                May be <tt>null</tt>
      */
-    protected void printed() {
+    protected void printed(String printer) {
         if (listener != null) {
-            listener.printed();
+            listener.printed(printer);
         }
     }
 

@@ -19,7 +19,6 @@
 package org.openvpms.web.app.reporting.statement;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
@@ -55,7 +54,7 @@ import java.io.InputStream;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class StatementEmailProcessor
-        implements ProcessorListener<StatementEvent> {
+        extends AbstractStatementProcessorListener {
 
     /**
      * The mail sender.
@@ -158,7 +157,7 @@ public class StatementEmailProcessor
                     handlers);
             Iterable<IMObject> objects = getActs(event);
             final Document statement
-                    = report.generate(objects.iterator(),
+                    = report.generate(objects.iterator(), getParameters(event),
                                       new String[]{DocFormats.PDF_TYPE});
 
             final DocumentHandler handler = handlers.get(

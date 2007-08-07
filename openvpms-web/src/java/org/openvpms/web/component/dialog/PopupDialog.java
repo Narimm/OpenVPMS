@@ -22,6 +22,8 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.util.VetoListener;
+import org.openvpms.web.component.util.Vetoable;
 
 
 /**
@@ -100,13 +102,18 @@ public abstract class PopupDialog extends PopupWindow {
             = {APPLY_ID, OK_ID, CANCEL_ID};
 
     /**
-     * The dialog action.
+     * The dialog action. May be <tt>null</tt>
      */
     private String action;
 
+    /**
+     * The listener to veto cancel events. May be <tt>null</tt>
+     */
+    private VetoListener cancelListener;
+
 
     /**
-     * Construct a new <code>PopupDialog</code>.
+     * Construct a new <tt>PopupDialog</tt>.
      *
      * @param title   the window title
      * @param buttons the buttons to display
@@ -116,10 +123,10 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Construct a new <code>PopupDialog</code>.
+     * Construct a new <tt>PopupDialog</tt>.
      *
      * @param title   the window title
-     * @param style   the window style. May be <code>null</code>
+     * @param style   the window style. May be <tt>null</tt>
      * @param buttons the buttons to display
      */
     public PopupDialog(String title, String style, String[] buttons) {
@@ -127,12 +134,12 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Construct a new <code>PopupDialog</code>.
+     * Construct a new <tt>PopupDialog</tt>.
      *
-     * @param title   the window title. May be <code>null</code>
-     * @param style   the window style. May be <code>null</code>
+     * @param title   the window title. May be <tt>null</tt>
+     * @param style   the window style. May be <tt>null</tt>
      * @param buttons the buttons to display
-     * @param focus   the focus group. May be <code>null</code>
+     * @param focus   the focus group. May be <tt>null</tt>
      */
     public PopupDialog(String title, String style, String[] buttons,
                        FocusGroup focus) {
@@ -150,6 +157,15 @@ public abstract class PopupDialog extends PopupWindow {
      */
     public String getAction() {
         return action;
+    }
+
+    /**
+     * Sets a listener to veto cancel events.
+     *
+     * @param listener the listener. May be <tt>null</tt>
+     */
+    public void setCancelListener(VetoListener listener) {
+        cancelListener = listener;
     }
 
     /**
@@ -196,11 +212,22 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Invoked when the 'cancel' button is pressed. This sets the action and
-     * closes the window.
+     * Invoked when the 'cancel' button is pressed. If a {@link VetoListener}
+     * has been registered, this will be notified, otherwise the action will
+     * be set and the window closed.
      */
     protected void onCancel() {
-        close(CANCEL_ID);
+        if (cancelListener != null) {
+            cancelListener.onVeto(new Vetoable() {
+                public void veto(boolean veto) {
+                    if (!veto) {
+                        close(CANCEL_ID);
+                    }
+                }
+            });
+        } else {
+            close(CANCEL_ID);
+        }
     }
 
     /**
@@ -249,7 +276,7 @@ public abstract class PopupDialog extends PopupWindow {
      * Adds a new button.
      *
      * @param id              the button identifier
-     * @param disableShortcut if <code>true</code> disable any keyboard shortcut
+     * @param disableShortcut if <tt>true</tt> disable any keyboard shortcut
      * @return the new button
      */
     protected Button addButton(final String id, boolean disableShortcut) {

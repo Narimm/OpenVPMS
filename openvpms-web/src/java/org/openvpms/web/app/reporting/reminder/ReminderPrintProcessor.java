@@ -66,7 +66,7 @@ class ReminderPrintProcessor extends ProgressBarProcessor<ReminderEvent> {
         final InteractiveIMPrinter<Act> iPrinter
                 = new InteractiveIMPrinter<Act>(printer);
         iPrinter.setListener(new PrinterListener() {
-            public void printed() {
+            public void printed(String printer) {
                 try {
                     setSuspend(false);
                     processCompleted(event);

@@ -18,21 +18,16 @@
 
 package org.openvpms.web.app.reporting.statement;
 
-import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
 import org.openvpms.archetype.rules.finance.statement.StatementEvent;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.print.PrinterListener;
+import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -41,7 +36,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class StatementPrintProcessor implements ProcessorListener<StatementEvent> {
+class StatementPrintProcessor extends AbstractStatementProcessorListener {
 
     /**
      * The batch processor to invoke to process the next statement, when
@@ -49,15 +44,29 @@ class StatementPrintProcessor implements ProcessorListener<StatementEvent> {
      */
     private final StatementProgressBarProcessor processor;
 
+    /**
+     * The listener to cancel processing.
+     */
+    private final VetoListener cancelListener;
+
+    /**
+     * The name of the selected printer. Once a printer has been selected,
+     * printing will occur in the background.
+     */
+    private String printerName;
+
 
     /**
      * Constructs a new <tt>StatementPrintProcessor</tt>.
      *
-     * @param processor the batch processor to invoke to process the next
-     *                  statement, when printing interactively.
+     * @param processor      the batch processor to invoke to process the next
+     *                       statement, when printing interactively.
+     * @param cancelListener the listener to cancel processing
      */
-    public StatementPrintProcessor(StatementProgressBarProcessor processor) {
+    public StatementPrintProcessor(StatementProgressBarProcessor processor,
+                                   VetoListener cancelListener) {
         this.processor = processor;
+        this.cancelListener = cancelListener;
     }
 
     /**
@@ -66,33 +75,23 @@ class StatementPrintProcessor implements ProcessorListener<StatementEvent> {
      * @param event the event
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void process(StatementEvent event) {
-        print(event.getCustomer(), event.getDate(), event.getActs());
-    }
-
-    /**
-     * Prints a statement.
-     *
-     * @param customer      the customer
-     * @param statementDate the statement date
-     * @param acts          the acts to print
-     */
-    private void print(final Party customer, Date statementDate,
-                       Iterable<Act> acts) {
+    public void process(final StatementEvent event) {
         IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(
-                acts, CustomerAccountActTypes.OPENING_BALANCE);
-
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("statementDate", statementDate);
-        printer.setParameters(params);
+                event.getActs(), CustomerAccountActTypes.OPENING_BALANCE);
+        printer.setParameters(getParameters(event));
 
         String title = Messages.get("reporting.statements.print.customer");
         InteractiveIMPrinter<Act> iPrinter
                 = new InteractiveIMPrinter<Act>(title, printer);
+        if (printerName != null) {
+            iPrinter.setInteractive(false);
+        }
+        iPrinter.setCancelListener(cancelListener);
         iPrinter.setListener(new PrinterListener() {
-            public void printed() {
+            public void printed(String printer) {
                 try {
-                    processor.processCompleted(customer);
+                    printerName = printer;
+                    processor.processCompleted(event.getCustomer());
                     processor.process(); // process the next statement
                 } catch (OpenVPMSException exception) {
                     processor.notifyError(exception);
@@ -111,7 +110,7 @@ class StatementPrintProcessor implements ProcessorListener<StatementEvent> {
             }
         });
         processor.setSuspend(true); // suspend generation while printing
-        iPrinter.print();
+        iPrinter.print(printerName);
     }
 
 }

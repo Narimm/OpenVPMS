@@ -101,7 +101,7 @@ class ReminderPhoneProcessor extends AbstractBatchProcessor
                         printer, true);
 
                 iPrinter.setListener(new PrinterListener() {
-                    public void printed() {
+                    public void printed(String printer) {
                         setProcessed(reminders.size());
                         notifyCompleted();
                     }

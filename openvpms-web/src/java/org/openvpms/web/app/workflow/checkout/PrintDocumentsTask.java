@@ -237,8 +237,10 @@ class PrintDocumentsTask extends AbstractTask {
 
         /**
          * Invoked when an object has been successfully printed.
+         *
+         * @param printer
          */
-        public void printed() {
+        public void printed(String printer) {
             boolean next = false;
             try {
                 // update the print flag, if it exists
