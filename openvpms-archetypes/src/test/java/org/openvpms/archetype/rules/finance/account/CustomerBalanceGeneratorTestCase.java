@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_BALANCE_SHORTNAME;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -39,6 +40,12 @@ import java.util.List;
  */
 public class CustomerBalanceGeneratorTestCase
         extends AbstractCustomerAccountTest {
+
+    /**
+     * The account rules.
+     */
+    private CustomerAccountRules rules;
+
 
     /**
      * Verifies that an <em>act.customerAccountChargesInvoice</em> is
@@ -111,7 +118,6 @@ public class CustomerBalanceGeneratorTestCase
      * Tests generation given a customer id.
      */
     public void testGenerateForCustomerId() {
-        CustomerAccountRules rules = new CustomerAccountRules();
         Party customer = getCustomer();
         long id = customer.getUid();
         Money amount = new Money(100);
@@ -130,11 +136,10 @@ public class CustomerBalanceGeneratorTestCase
         checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
     }
 
-     /**
+    /**
      * Tests generation given a customer name.
      */
     public void testGenerateForCustomerName() {
-        CustomerAccountRules rules = new CustomerAccountRules();
         Party customer = getCustomer();
         String name = customer.getName();
         Money amount = new Money(100);
@@ -154,12 +159,39 @@ public class CustomerBalanceGeneratorTestCase
     }
 
     /**
+     * Verifies that an <em>participation.customerAccountBalance</tt> is
+     * added for acts that don't have <tt>POSTED</tt> status.
+     */
+    public void testAddParticipationForNonPostedActs() {
+        FinancialAct invoice1 = createChargesInvoice(new Money(100));
+        checkAddParticipationForNonPostedAct(invoice1,
+                                             FinancialActStatus.IN_PROGRESS);
+        FinancialAct invoice2 = createChargesInvoice(new Money(100));
+        checkAddParticipationForNonPostedAct(invoice2,
+                                             FinancialActStatus.ON_HOLD);
+        FinancialAct invoice3 = createChargesInvoice(new Money(100));
+        checkAddParticipationForNonPostedAct(invoice3,
+                                             FinancialActStatus.COMPLETED);
+    }
+
+    /**
      * Returns the location of the spring config files.
      *
      * @return an array of config locations
      */
     protected String[] getConfigLocations() {
         return new String[]{"application-context.xml"};
+    }
+
+    /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        rules = new CustomerAccountRules();
     }
 
     /**
@@ -173,7 +205,6 @@ public class CustomerBalanceGeneratorTestCase
         CustomerBalanceGenerator generator
                 = new CustomerBalanceGenerator(applicationContext);
         Party customer = getCustomer();
-        CustomerAccountRules rules = new CustomerAccountRules();
 
         // initial balance is zero
         checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
@@ -261,6 +292,42 @@ public class CustomerBalanceGeneratorTestCase
         assertEquals(relationship.getTarget(), target.getObjectReference());
         IMObjectBean bean = new IMObjectBean(relationship);
         checkEquals(allocated, bean.getBigDecimal("allocatedAmount"));
+    }
+
+    /**
+     * Verifies that an <em>participation.customerAccountBalance</tt> is
+     * added for acts that don't have <tt>POSTED</tt> status.
+     *
+     * @param act    the act
+     * @param status the act status
+     */
+    private void checkAddParticipationForNonPostedAct(FinancialAct act,
+                                                      String status) {
+        assertFalse(FinancialActStatus.POSTED.equals(status));
+        CustomerBalanceGenerator generator
+                = new CustomerBalanceGenerator(applicationContext,
+                                               false, true);
+        Party customer = getCustomer();
+
+        act.setStatus(status);
+        save(act);
+
+        generator.generate(customer);
+        act = (FinancialAct) get(act);
+
+        // verify the act hasn't affected the balance
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
+
+        // verify a participation.customerAccountBalance has been added,
+        // linked to the customer
+        ActBean bean = new ActBean(act);
+        assertEquals(customer, bean.getParticipant(ACCOUNT_BALANCE_SHORTNAME));
+
+        // verify that there is no account allocation relationship
+        assertNull(getAccountAllocationRelationship(act));
+
+        // verify the allocated amount is zero
+        checkEquals(BigDecimal.ZERO, act.getAllocatedAmount());
     }
 
     /**
