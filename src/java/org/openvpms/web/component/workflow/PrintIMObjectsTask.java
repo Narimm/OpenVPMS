@@ -76,7 +76,7 @@ public class PrintIMObjectsTask<T extends IMObject> extends AbstractTask {
                         = new InteractiveIMPrinter<T>(printer, skip);
 
                 iPrinter.setListener(new PrinterListener() {
-                    public void printed() {
+                    public void printed(String printer) {
                         notifyCompleted();
                     }
 

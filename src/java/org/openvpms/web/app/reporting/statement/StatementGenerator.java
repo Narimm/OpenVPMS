@@ -146,7 +146,8 @@ class StatementGenerator extends AbstractStatementGenerator {
                 processor, customers);
 
         StatementPrintProcessor printer
-                = new StatementPrintProcessor(progressBarProcessor);
+                = new StatementPrintProcessor(progressBarProcessor,
+                                              getCancelListener());
 
         StatementEmailProcessor emailer = new StatementEmailProcessor(
                 ServiceHelper.getMailSender(), address, name);

@@ -27,7 +27,8 @@ import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.VetoListener;
+import org.openvpms.web.component.util.Vetoable;
 
 
 /**
@@ -55,6 +56,16 @@ public abstract class AbstractStatementGenerator
      */
     private final String cancelMessage;
 
+    /**
+     * The listener to veto cancel requests.
+     */
+    private final VetoListener cancelListener;
+
+    /**
+     * The current generation dialog.
+     */
+    private GenerationDialog dialog;
+
 
     /**
      * Creates a new <tt>AbstractStatementGenerator</tt>.
@@ -67,19 +78,36 @@ public abstract class AbstractStatementGenerator
         this.title = title;
         this.cancelTitle = cancelTitle;
         this.cancelMessage = cancelMessage;
+        cancelListener = new VetoListener() {
+            public void onVeto(Vetoable source) {
+                onCancel(source);
+            }
+        };
     }
 
     /**
      * Processes the batch.
      */
     public void process() {
-        GenerationDialog dialog = new GenerationDialog(getProcessor());
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                notifyCompleted();
+        final StatementProgressBarProcessor processor = getProcessor();
+        processor.setListener(new BatchProcessorListener() {
+            public void completed() {
+                onCompletion();
+            }
+
+            public void error(Throwable exception) {
+                onError(exception);
             }
         });
-        dialog.show();
+        if (processor.getCount() > 1) {
+            // open a dialog to give the user the opportunity to cancel
+            dialog = new GenerationDialog(processor);
+            dialog.setCancelListener(cancelListener);
+            dialog.show();
+        } else {
+            // process in the background
+            processor.process();
+        }
     }
 
     /**
@@ -89,6 +117,61 @@ public abstract class AbstractStatementGenerator
      */
     protected abstract StatementProgressBarProcessor getProcessor();
 
+    /**
+     * Returns the listener to veto cancel requests.
+     *
+     * @return the listener
+     */
+    protected VetoListener getCancelListener() {
+        return cancelListener;
+    }
+
+    /**
+     * Invoked when generation is complete.
+     * Closes the dialog and notifies any listener.
+     */
+    private void onCompletion() {
+        if (dialog != null) {
+            dialog.close();
+            dialog = null;
+        }
+        setProcessed(getProcessor().getProcessed());
+        notifyCompleted();
+    }
+
+    /**
+     * Invoked if an error occurs processing the batch.
+     * Notifies any listener.
+     *
+     * @param exception the cause
+     */
+    private void onError(Throwable exception) {
+        setProcessed(getProcessor().getProcessed());
+        notifyError(exception);
+    }
+
+    /**
+     * Invoked when the 'cancel' button is pressed. This prompts for
+     * confirmation.
+     */
+    private void onCancel(final Vetoable source) {
+        final StatementProgressBarProcessor processor = getProcessor();
+        processor.setSuspend(true);
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(cancelTitle, cancelMessage);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    source.veto(false);
+                    onCompletion();
+                } else {
+                    source.veto(true);
+                    processor.process();
+                }
+            }
+        });
+        dialog.show();
+    }
 
     private class GenerationDialog extends PopupDialog {
 
@@ -107,16 +190,6 @@ public abstract class AbstractStatementGenerator
             Column column = ColumnFactory.create(
                     "Inset", processor.getComponent());
             getLayout().add(column);
-            processor.setListener(new BatchProcessorListener() {
-                public void completed() {
-                    close();
-                    notifyCompleted();
-                }
-
-                public void error(Throwable exception) {
-                    ErrorHelper.show(title, exception);
-                }
-            });
             this.processor = processor;
         }
 
@@ -128,25 +201,5 @@ public abstract class AbstractStatementGenerator
             processor.process();
         }
 
-        /**
-         * Invoked when the 'cancel' button is pressed. This prompts for
-         * confirmation.
-         */
-        @Override
-        protected void onCancel() {
-            final ConfirmationDialog dialog
-                    = new ConfirmationDialog(cancelTitle, cancelMessage);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent e) {
-                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                        GenerationDialog.this.close(CANCEL_ID);
-                    } else {
-                        processor.process();
-                    }
-                }
-            });
-            processor.setSuspend(true);
-            dialog.show();
-        }
     }
 }

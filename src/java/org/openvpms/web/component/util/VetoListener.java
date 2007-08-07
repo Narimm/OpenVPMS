@@ -11,45 +11,28 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.web.component.print;
-
-import java.util.EventListener;
+package org.openvpms.web.component.util;
 
 
 /**
- * Listener for {@link Printer} events.
+ * A VetoListener event gets fired whenever a vetoable action is performed.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @see Vetoable
  */
-public interface PrinterListener extends EventListener {
+public interface VetoListener extends java.util.EventListener {
 
     /**
-     * Notifies of a successful print.
+     * Invoked when a vetoable action is performed.
      *
-     * @param printer the printer that was used. May be <tt>null</tt>
+     * @param action the action to veto or allow
      */
-    void printed(String printer);
+    void onVeto(Vetoable action);
 
-    /**
-     * Notifies that the print was cancelled.
-     */
-    void cancelled();
-
-    /**
-     * Notifies that the print was skipped.
-     */
-    void skipped();
-
-    /**
-     * Invoked when a print fails.
-     *
-     * @param cause the reason for the failure
-     */
-    void failed(Throwable cause);
 }

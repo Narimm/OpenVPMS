@@ -137,6 +137,15 @@ public abstract class ProgressBarProcessor<T>
     }
 
     /**
+     * Returns the expected no. of items to process.
+     *
+     * @return the expected no. of items to process
+     */
+    public int getCount() {
+        return bar.getMaximum();
+    }
+
+    /**
      * Sets the items to iterate.
      *
      * @param items the items.

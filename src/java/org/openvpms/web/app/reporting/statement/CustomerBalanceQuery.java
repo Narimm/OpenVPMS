@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.reporting.statement;
 
+import echopointng.DateChooser;
 import echopointng.DateField;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
@@ -54,6 +55,7 @@ import org.openvpms.web.component.util.TextComponentFactory;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -234,6 +236,21 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
             ErrorHelper.show(exception);
         }
         return sets;
+    }
+
+    /**
+     * Sets the statement date.
+     *
+     * @param date the statement date
+     */
+    public void setDate(Date date) {
+        DateChooser chooser = this.date.getDateChooser();
+        Calendar calendar = null;
+        if (date != null) {
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+        }
+        chooser.setSelectedDate(calendar);
     }
 
     /**

@@ -33,6 +33,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -44,6 +45,9 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.Calendar;
+import java.util.Date;
 
 
 /**
@@ -185,6 +189,8 @@ public class StatementWorkspace extends AbstractWorkspace {
      */
     private void doLayout(Component container, FocusGroup group) {
         query = new CustomerBalanceQuery();
+        query.getComponent();
+        query.setDate(getYesterday()); // default statement date to yesterday
         browser = new CustomerBalanceBrowser(query);
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
@@ -195,18 +201,20 @@ public class StatementWorkspace extends AbstractWorkspace {
      * Invoked when the 'print all' button is pressed.
      */
     private void onPrintAll() {
-        String title = Messages.get("reporting.statements.run.title");
-        String message = Messages.get("reporting.statements.run.message");
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    doPrintAll();
+        if (checkStatementDate("reporting.statements.run.invalidDate")) {
+            String title = Messages.get("reporting.statements.run.title");
+            String message = Messages.get("reporting.statements.run.message");
+            final ConfirmationDialog dialog
+                    = new ConfirmationDialog(title, message);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent event) {
+                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                        doPrintAll();
+                    }
                 }
-            }
-        });
-        dialog.show();
+            });
+            dialog.show();
+        }
     }
 
     /**
@@ -224,23 +232,25 @@ public class StatementWorkspace extends AbstractWorkspace {
     }
 
     /**
-     * Invoked when the 'process' button is pressed.
+     * Invoked when the 'print' button is pressed.
      */
     private void onPrint() {
-        try {
-            ObjectSet selected = browser.getSelected();
-            if (selected != null) {
-                IMObjectReference ref = (IMObjectReference) selected.get(
-                        CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
-                if (ref != null) {
-                    GlobalContext context = GlobalContext.getInstance();
-                    StatementGenerator generator = new StatementGenerator(
-                            ref, query.getDate(), context);
-                    generateStatements(generator);
+        if (checkStatementDate("reporting.statements.run.invalidDate")) {
+            try {
+                ObjectSet selected = browser.getSelected();
+                if (selected != null) {
+                    IMObjectReference ref = (IMObjectReference) selected.get(
+                            CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
+                    if (ref != null) {
+                        GlobalContext context = GlobalContext.getInstance();
+                        StatementGenerator generator = new StatementGenerator(
+                                ref, query.getDate(), context);
+                        generateStatements(generator);
+                    }
                 }
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
             }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
         }
     }
 
@@ -248,18 +258,20 @@ public class StatementWorkspace extends AbstractWorkspace {
      * Invoked when the 'end period' button is pressed.
      */
     private void onEndPeriod() {
-        String title = Messages.get("reporting.statements.eop.title");
-        String message = Messages.get("reporting.statements.eop.message");
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    doEndPeriod();
+        if (checkStatementDate("reporting.statements.eop.invalidDate")) {
+            String title = Messages.get("reporting.statements.eop.title");
+            String message = Messages.get("reporting.statements.eop.message");
+            final ConfirmationDialog dialog
+                    = new ConfirmationDialog(title, message);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent event) {
+                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                        doEndPeriod();
+                    }
                 }
-            }
-        });
-        dialog.show();
+            });
+            dialog.show();
+        }
     }
 
     /**
@@ -300,6 +312,34 @@ public class StatementWorkspace extends AbstractWorkspace {
             }
         });
         generator.process();
+    }
+
+    /**
+     * Verfies that the statement date is at least a day prior to the current
+     * date.
+     *
+     * @param errorKey the error message key, if the date is invalid
+     * @return <tt>true</tt> if the statement date is less than today
+     */
+    private boolean checkStatementDate(String errorKey) {
+        Date statementDate = query.getDate();
+        Date date = getYesterday();
+        if (date.compareTo(statementDate) < 0) {
+            ErrorDialog.show(Messages.get(errorKey));
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Returns yesterday's date.
+     *
+     * @return yesterday's date
+     */
+    private Date getYesterday() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, -1);
+        return calendar.getTime();
     }
 
     /**
