@@ -25,7 +25,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_ALLOCATION_SHORTNAME;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_BALANCE_SHORTNAME;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -43,6 +43,7 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
+import org.openvpms.component.system.common.query.RelationalOp;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -89,6 +90,16 @@ public class CustomerBalanceGenerator {
     private final CustomerAccountRules rules;
 
     /**
+     * Determines if posted acts should be processed.
+     */
+    private final boolean posted;
+
+    /**
+     * Determines if unposted acts should be processed.
+     */
+    private final boolean unposted;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(
@@ -101,11 +112,24 @@ public class CustomerBalanceGenerator {
 
 
     /**
-     * Constructs a new <tt>CustomerBalanceGenerator</tt>.
+     * Constructs a new <tt>CustomerBalanceGenerator</tt>, including
+     * both posted and unposted acts.
      *
      * @param context the spring application context
      */
     public CustomerBalanceGenerator(ApplicationContext context) {
+        this(context, true, true);
+    }
+
+    /**
+     * Constructs a new <tt>CustomerBalanceGenerator</tt>.
+     *
+     * @param context  the spring application context
+     * @param posted   if <tt>true</tt> include posted acts
+     * @param unposted if <tt>true</tt> include unposted acts
+     */
+    public CustomerBalanceGenerator(ApplicationContext context,
+                                    boolean posted, boolean unposted) {
         if (context.containsBean("ruleEngineProxyCreator")) {
             throw new IllegalStateException(
                     "Rules must be disabled to run "
@@ -113,6 +137,8 @@ public class CustomerBalanceGenerator {
         }
         service = (IArchetypeService) context.getBean("archetypeService");
         rules = new CustomerAccountRules(service);
+        this.posted = posted;
+        this.unposted = unposted;
     }
 
     /**
@@ -161,7 +187,7 @@ public class CustomerBalanceGenerator {
      */
     public void generate(Party customer) {
         log.info("Generating account balance for " + customer.getName());
-        Generator generator = new Generator(customer);
+        Generator generator = new Generator(customer, posted, unposted);
         generator.apply();
     }
 
@@ -181,6 +207,8 @@ public class CustomerBalanceGenerator {
                 String name = config.getString("name");
                 long id = config.getLong("id");
                 boolean regenerate = config.getBoolean("regenerate");
+                boolean posted = config.getBoolean("posted");
+                boolean unposted = config.getBoolean("unposted");
 
                 ApplicationContext context;
                 if (!new File(contextPath).exists()) {
@@ -189,7 +217,8 @@ public class CustomerBalanceGenerator {
                     context = new FileSystemXmlApplicationContext(contextPath);
                 }
                 CustomerBalanceGenerator generator
-                        = new CustomerBalanceGenerator(context);
+                        = new CustomerBalanceGenerator(context, posted,
+                                                       unposted);
                 generator.setRegenerate(regenerate);
                 if (id == -1) {
                     generator.generate(name);
@@ -237,6 +266,14 @@ public class CustomerBalanceGenerator {
                 .setLongFlag("id")
                 .setStringParser(JSAP.LONG_PARSER).setDefault("-1")
                 .setHelp("Customer identifier."));
+        parser.registerParameter(new FlaggedOption("posted").setShortFlag('p')
+                .setLongFlag("posted")
+                .setStringParser(JSAP.BOOLEAN_PARSER).setDefault("true")
+                .setHelp("Process POSTED acts."));
+        parser.registerParameter(new FlaggedOption("unposted").setShortFlag('u')
+                .setLongFlag("unposted")
+                .setStringParser(JSAP.BOOLEAN_PARSER).setDefault("true")
+                .setHelp("Process acts that aren't POSTED."));
         parser.registerParameter(new Switch("regenerate").setShortFlag('r')
                 .setLongFlag("regenerate").setDefault("false")
                 .setHelp("Regenerate account balances."));
@@ -298,9 +335,11 @@ public class CustomerBalanceGenerator {
          * Constructs a new <tt>Generator</tt> for a customer.
          *
          * @param customer the customer
+         * @param posted   if <tt>true</tt> include posted acts
+         * @param unposted if <tt>true</tt> include unposted acts
          */
-        public Generator(Party customer) {
-            iterator = getActs(customer);
+        public Generator(Party customer, boolean posted, boolean unposted) {
+            iterator = getActs(customer, posted, unposted);
         }
 
         /**
@@ -437,13 +476,20 @@ public class CustomerBalanceGenerator {
          * Returns an iterator over the debit/credit acts for a customer.
          *
          * @param customer the customer
+         * @param posted   if <tt>true</tt> include posted acts
+         * @param unposted if <tt>true</tt> include unposted acts
          * @return an iterator of debit/credit acts
          */
-        private Iterator<FinancialAct> getActs(Party customer) {
+        private Iterator<FinancialAct> getActs(Party customer, boolean posted,
+                                               boolean unposted) {
             String[] shortNames
                     = CustomerAccountActTypes.DEBIT_CREDIT_SHORT_NAMES;
             ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
-            query.add(new NodeConstraint("status", ActStatus.POSTED));
+            if (!(posted && unposted)) {
+                RelationalOp op = (posted) ? RelationalOp.EQ : RelationalOp.NE;
+                query.add(new NodeConstraint("status", op,
+                                             FinancialActStatus.POSTED));
+            }
             CollectionNodeConstraint constraint = new CollectionNodeConstraint(
                     "customer", "participation.customer", true, true);
             constraint.add(new ObjectRefNodeConstraint(
