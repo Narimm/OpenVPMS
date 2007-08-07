@@ -399,7 +399,7 @@ public class CustomerAccountRules {
      * the specified timestamp.
      *
      * @param customer the customer
-     * @param timetamp     the timestamp
+     * @param timetamp the timestamp
      * @return the closing balance act startTime, or <tt>null</tt> if none is
      *         found
      * @throws ArchetypeServiceException for any archetype service error

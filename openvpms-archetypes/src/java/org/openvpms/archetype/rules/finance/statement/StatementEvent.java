@@ -34,7 +34,7 @@ import java.util.Date;
 public class StatementEvent {
 
     public enum Action {
-        EMAIL, PRINT, SKIP
+        EMAIL, PRINT
     }
 
     /**
@@ -63,17 +63,6 @@ public class StatementEvent {
      */
     private final Iterable<Act> acts;
 
-
-    /**
-     * Constructs a new <tt>StatementEvent</tt>.
-     *
-     * @param action   the statement action
-     * @param customer the customer
-     * @param date     the processing date
-     */
-    public StatementEvent(Action action, Party customer, Date date) {
-        this(action, customer, null, date, null);
-    }
 
     /**
      * Constructs a new <tt>StatementEvent</tt>.
@@ -135,8 +124,7 @@ public class StatementEvent {
      * This represents all acts after the last statement period, and prior to
      * the statement date.
      *
-     * @return the statement acts, or <tt>null</tt> if the action is
-     *         {@link Action#SKIP}.
+     * @return the statement acts.
      */
     public Iterable<Act> getActs() {
         return acts;

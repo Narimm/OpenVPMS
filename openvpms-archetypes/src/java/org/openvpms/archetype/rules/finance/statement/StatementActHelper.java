@@ -103,8 +103,8 @@ class StatementActHelper {
      * @throws ArchetypeQueryException   for any archetype query error
      */
     public Iterable<Act> getActs(Party customer, Date date) {
-        return new IterableIMObjectQuery<Act>(service,
-                                              createQuery(customer, date));
+        Query query = createQuery(customer, date);
+        return new IterableIMObjectQuery<Act>(service, query.query);
     }
 
     /**
@@ -119,7 +119,7 @@ class StatementActHelper {
      * @throws ArchetypeQueryException   for any archetype query error
      */
     public Iterable<Act> getCompletedActs(Party customer, Date date) {
-        ArchetypeQuery query = createQuery(customer, date);
+        ArchetypeQuery query = createQuery(customer, date).query;
         query.add(new NodeConstraint("status", ActStatus.COMPLETED));
         return new IterableIMObjectQuery<Act>(service, query);
     }
@@ -136,14 +136,21 @@ class StatementActHelper {
      * @throws ArchetypeQueryException   for any archetype query error
      */
     public Iterable<Act> getActsWithAccountFees(Party customer, Date date) {
-        BigDecimal fee = statement.getAccountFee(customer, date);
-        if (fee.compareTo(BigDecimal.ZERO) != 0) {
-            Act act = statement.createAccountingFeeAdjustment(customer,
-                                                              fee, date);
-            List<Act> acts = Arrays.asList(act);
-            return new IterableChain<Act>(getActs(customer, date), acts);
+        Query query = createQuery(customer, date);
+        Iterable<Act> result = new IterableIMObjectQuery<Act>(service,
+                                                              query.query);
+        if (query.closeStartTime == null) {
+            // no closing balance, so calculate any account fees
+            BigDecimal fee = statement.getAccountFee(customer, date);
+            if (fee.compareTo(BigDecimal.ZERO) != 0) {
+                Act feeAct = statement.createAccountingFeeAdjustment(customer,
+                                                                     fee, date);
+                List<Act> toAdd = new ArrayList<Act>();
+                toAdd.add(feeAct);
+                result = new IterableChain<Act>(result, toAdd);
+            }
         }
-        return getActs(customer, date);
+        return result;
     }
 
     /**
@@ -156,7 +163,7 @@ class StatementActHelper {
      * @return a new query
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected ArchetypeQuery createQuery(Party customer, Date date) {
+    protected Query createQuery(Party customer, Date date) {
         Date open = account.getOpeningBalanceDateBefore(customer, date);
         Date close;
         if (open == null) {
@@ -182,7 +189,24 @@ class StatementActHelper {
         }
         query.add(constraint);
         query.add(new NodeSortConstraint("startTime"));
-        return query;
+
+        return new Query(query, open, close);
+    }
+
+    private static class Query {
+
+        public final ArchetypeQuery query;
+
+        public final Date openStartTime;
+
+        public final Date closeStartTime;
+
+        public Query(ArchetypeQuery query, Date openStartTime,
+                     Date closeStartTime) {
+            this.query = query;
+            this.openStartTime = openStartTime;
+            this.closeStartTime = closeStartTime;
+        }
     }
 
 }

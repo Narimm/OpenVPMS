@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.finance.statement;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
@@ -154,6 +155,10 @@ public class StatementRules {
     /**
      * Creates an <em>act.customerAccountDebitAdjust</em> for the customer
      * with the specified fee.
+     *
+     * @param customer  the customer
+     * @param fee       the accounting fee
+     * @param startTime the act start time
      */
     public FinancialAct createAccountingFeeAdjustment(Party customer,
                                                       BigDecimal fee,
@@ -164,6 +169,7 @@ public class StatementRules {
         bean.addParticipation("participation.customer", customer);
         act.setTotal(new Money(fee));
         act.setActivityStartTime(startTime);
+        act.setStatus(ActStatus.POSTED);
         tax.calculateTax(act);
         bean.setValue("notes", "Accounting Fee"); // TODO - localise
         return act;

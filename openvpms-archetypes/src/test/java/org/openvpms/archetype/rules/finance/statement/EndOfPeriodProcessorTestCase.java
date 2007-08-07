@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
@@ -40,7 +39,7 @@ import java.util.List;
  */
 public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
-     /**
+    /**
      * Verifies that the processor cannot be constructed with an invalid date.
      */
     public void testStatementDate() {
@@ -62,6 +61,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
             fail("Construction failed with exception: " + exception);
         }
     }
+
     /**
      * Tests end of period.
      */
@@ -140,7 +140,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         save(invoice3);
 
         FinancialAct invoice4 = createChargesInvoice(      // already posted
-                                                           amount, getDatetime("2007-01-01 11:00:00"));
+                                                           amount, getDatetime(
+                "2007-01-01 11:00:00"));
         save(invoice4);
 
         Date statementDate = getDate("2007-02-01");    // perform end-of-period
@@ -151,10 +152,10 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // verify the acts for the period match that expected
         List<Act> acts = getActs(customer, statementDate);
         assertEquals(5, acts.size());
-        checkAct(acts.get(0), invoice1,  FinancialActStatus.POSTED);
-        checkAct(acts.get(1), invoice2,  FinancialActStatus.IN_PROGRESS);
-        checkAct(acts.get(2), invoice3,  FinancialActStatus.ON_HOLD);
-        checkAct(acts.get(3), invoice4,  FinancialActStatus.POSTED);
+        checkAct(acts.get(0), invoice1, FinancialActStatus.POSTED);
+        checkAct(acts.get(1), invoice2, FinancialActStatus.IN_PROGRESS);
+        checkAct(acts.get(2), invoice3, FinancialActStatus.ON_HOLD);
+        checkAct(acts.get(3), invoice4, FinancialActStatus.POSTED);
         checkAct(acts.get(4), "act.customerAccountClosingBalance",
                  new BigDecimal("200"));
     }
@@ -188,43 +189,4 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
                  amount.add(feeAmount));
     }
 
-    /**
-     * Verfies an act matches the expected act and status.
-     *
-     * @param act      the act to verify
-     * @param expected the expected act
-     * @param status   the expected status
-     */
-    private void checkAct(Act act, FinancialAct expected, String status) {
-        assertEquals(expected, act);
-        checkAct(act, expected.getArchetypeId().getShortName(),
-                 expected.getTotal(), status);
-    }
-
-    /**
-     * Verifies that an act matches the expected short name and amount, and
-     * is POSTED.
-     *
-     * @param act       the act to verify
-     * @param shortName the expected archetype short name
-     * @param amount    the expected amount
-     */
-    private void checkAct(Act act, String shortName, BigDecimal amount) {
-        checkAct(act, shortName, amount, FinancialActStatus.POSTED);
-    }
-
-    /**
-     * Verifies that an act matches the expected short name and amount, and
-     * status.
-     *
-     * @param act       the act to verify
-     * @param shortName the expected archetype short name
-     * @param amount    the expected amount
-     */
-    private void checkAct(Act act, String shortName, BigDecimal amount,
-                          String status) {
-        assertTrue(TypeHelper.isA(act, shortName));
-        assertEquals(status, act.getStatus());
-        checkEquals(amount, ((FinancialAct) act).getTotal());
-    }
 }

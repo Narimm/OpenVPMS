@@ -19,7 +19,7 @@
 package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.component.processor.ProcessorListener;
-import org.openvpms.archetype.rules.finance.account.AbstractCustomerAccountTest;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -40,7 +40,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class StatementProcessorTestCase extends AbstractCustomerAccountTest {
+public class StatementProcessorTestCase extends AbstractStatementTest {
 
     /**
      * Verifies that the statement processor cannot be constructed with
@@ -85,20 +85,16 @@ public class StatementProcessorTestCase extends AbstractCustomerAccountTest {
         // acts
         List<Act> acts = processStatement(statementDate, customer);
         assertEquals(1, acts.size());
-        Act act = acts.get(0);
-        assertEquals(invoice, act);
+        checkAct(acts.get(0), invoice, ActStatus.POSTED);
 
         // process the customer's statement for 5/2. Amounts should be overdue
         // and a fee generated.
         statementDate = Timestamp.valueOf("2007-02-05 12:00:00");
         acts = processStatement(statementDate, customer);
         assertEquals(2, acts.size());
-        act = acts.get(0);
-        assertEquals(invoice, act);
+        checkAct(acts.get(0), invoice, ActStatus.POSTED);
         FinancialAct fee = (FinancialAct) acts.get(1);
-        assertEquals("act.customerAccountDebitAdjust",
-                     fee.getArchetypeId().getShortName());
-        assertEquals(feeAmount, fee.getTotal());
+        checkAct(fee, "act.customerAccountDebitAdjust", feeAmount);
     }
 
     /**
