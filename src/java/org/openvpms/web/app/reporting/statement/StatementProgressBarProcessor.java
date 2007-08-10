@@ -124,7 +124,7 @@ class StatementProgressBarProcessor extends ProgressBarProcessor<Party> {
     }
 
     /**
-     * Processes an customer.
+     * Processes a customer.
      *
      * @param customer the customer to process
      */

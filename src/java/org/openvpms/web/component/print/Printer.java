@@ -56,8 +56,7 @@ public interface Printer {
     String getDefaultPrinter();
 
     /**
-     * Returns a document for the object, corresponding to that which would be
-     * printed.
+     * Returns a document corresponding to that which would be printed.
      *
      * @return a document
      * @throws OpenVPMSException for any error

@@ -19,7 +19,7 @@
 package org.openvpms.web.app.reporting.statement;
 
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
-import org.openvpms.archetype.rules.finance.statement.StatementEvent;
+import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -72,13 +72,13 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
     /**
      * Process a statement.
      *
-     * @param event the event
+     * @param statement the event
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void process(final StatementEvent event) {
+    public void process(final Statement statement) {
         IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(
-                event.getActs(), CustomerAccountActTypes.OPENING_BALANCE);
-        printer.setParameters(getParameters(event));
+                statement.getActs(), CustomerAccountActTypes.OPENING_BALANCE);
+        printer.setParameters(getParameters(statement));
 
         String title = Messages.get("reporting.statements.print.customer");
         InteractiveIMPrinter<Act> iPrinter
@@ -91,7 +91,7 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
             public void printed(String printer) {
                 try {
                     printerName = printer;
-                    processor.processCompleted(event.getCustomer());
+                    processor.processCompleted(statement.getCustomer());
                     processor.process(); // process the next statement
                 } catch (OpenVPMSException exception) {
                     processor.notifyError(exception);

@@ -27,6 +27,8 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
+import org.openvpms.archetype.component.processor.BatchProcessor;
+import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
@@ -45,7 +47,6 @@ import org.openvpms.web.component.processor.BatchProcessorComponent;
 import org.openvpms.web.component.processor.BatchProcessorTask;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
@@ -55,7 +56,6 @@ import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -77,20 +77,35 @@ class ReminderGenerator extends AbstractBatchProcessor {
     private Map<BatchProcessorComponent, List<ReminderEvent>> processors
             = new LinkedHashMap<BatchProcessorComponent, List<ReminderEvent>>();
 
+    private boolean printOnly;
 
     /**
-     * Constructs a new <tt>ReminderGenerator</tt> for a single reminder.
+     * The current generation dialog.
+     */
+    private GenerationDialog dialog;
+
+
+    /**
+     * Constructs a new <tt>ReminderGenerator</tt> to print a single reminder.
      *
      * @param reminder the reminder
      * @param from     only process reminder if its next due date &gt;= from
      * @param to       only process reminder if its next due date &lt;= to
-     * @param context  the context
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException for any reminder error
      */
-    public ReminderGenerator(Act reminder, Date from, Date to,
-                             Context context) {
-        this(Arrays.asList(reminder).iterator(), from, to, context);
+    public ReminderGenerator(Act reminder, Date from, Date to) {
+        ReminderProcessor processor = new ReminderProcessor(from, to);
+        ReminderCollector collector = new ReminderCollector();
+
+        processor.addListener(collector);
+        processor.process(reminder);
+        List<ReminderEvent> reminders = collector.getReminders();
+        if (!reminders.isEmpty()) {
+            processors.put(new ReminderPrintProcessor(reminders),
+                           reminders);
+        }
+        printOnly = true;
     }
 
     /**
@@ -122,8 +137,6 @@ class ReminderGenerator extends AbstractBatchProcessor {
      */
     public ReminderGenerator(Iterator<Act> reminders, Date from, Date to,
                              Context context) {
-        ReminderProcessor processor = new ReminderProcessor(from, to);
-
         Party practice = context.getPractice();
         if (practice == null) {
             throw new ReminderProcessorException(
@@ -146,6 +159,8 @@ class ReminderGenerator extends AbstractBatchProcessor {
                     "Practice " + practice.getName()
                             + " email contact address is empty");
         }
+
+        ReminderProcessor processor = new ReminderProcessor(from, to);
 
         ReminderCollector cancelCollector = new ReminderCollector();
         ReminderCollector phoneCollector = new ReminderCollector();
@@ -190,17 +205,45 @@ class ReminderGenerator extends AbstractBatchProcessor {
      * Processes the reminders.
      */
     public void process() {
-        GenerationDialog dialog = new GenerationDialog();
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                notifyCompleted();
+        if (!printOnly) {
+            GenerationDialog dialog = new GenerationDialog();
+            dialog.show();
+        } else {
+            // should only contain the print processor
+            for (BatchProcessor processor : processors.keySet()) {
+                processor.setListener(new BatchProcessorListener() {
+                    public void completed() {
+                        confirmUpdate();
+                    }
+
+                    public void error(Throwable exception) {
+                        onError(exception);
+                    }
+                });
+
             }
-        });
-        dialog.show();
+        }
     }
 
     /**
-     * Updates all those reminders that have been processed.
+     *
+     */
+    private void confirmUpdate() {
+        final ConfirmationDialog dialog = new ConfirmationDialog(
+                Messages.get("reporting.reminder.update.title"),
+                Messages.get("reporting.reminder.update.message"));
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    update();
+                }
+            }
+        });
+    }
+
+    /**
+     * Updates all those reminders that have been processed, and notifies
+     * completion.
      */
     private void update() {
         try {
@@ -218,8 +261,9 @@ class ReminderGenerator extends AbstractBatchProcessor {
                     }
                 }
             }
+            onCompletion();
         } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+            onError(exception);
         }
     }
 
@@ -241,6 +285,38 @@ class ReminderGenerator extends AbstractBatchProcessor {
         }
         SummaryDialog dialog = new SummaryDialog(statistics);
         dialog.show();
+    }
+
+    /**
+     * Invoked when generation is complete.
+     * Closes the dialog and notifies any listener.
+     */
+    private void onCompletion() {
+        if (dialog != null) {
+            dialog.close();
+            dialog = null;
+        }
+        updateProcessed();
+        notifyCompleted();
+    }
+
+    /**
+     * Invoked if an error occurs processing the batch.
+     * Notifies any listener.
+     *
+     * @param exception the cause
+     */
+    private void onError(Throwable exception) {
+        updateProcessed();
+        notifyError(exception);
+    }
+
+    private void updateProcessed() {
+        int processed = 0;
+        for (BatchProcessor processor : processors.keySet()) {
+            processed += processor.getProcessed();
+        }
+        setProcessed(processed);
     }
 
     /**
@@ -335,6 +411,7 @@ class ReminderGenerator extends AbstractBatchProcessor {
             if (UPDATE_REMINDERS_ID.equals(button)) {
                 update();
                 close();
+                onCompletion();
             } else {
                 super.onButton(button);
             }

@@ -33,6 +33,11 @@ import org.openvpms.web.component.util.RowFactory;
 public abstract class MessageDialog extends PopupDialog {
 
     /**
+     * The message.
+     */
+    private final String message;
+
+    /**
      * Dialog style name.
      */
     private static final String STYLE = "MessageDialog";
@@ -60,12 +65,28 @@ public abstract class MessageDialog extends PopupDialog {
     public MessageDialog(String title, String message, String style,
                          String[] buttons) {
         super(title, style, buttons);
+        this.message = message;
         setModal(true);
+    }
 
+    /**
+     * Lays out the component prior to display.
+     */
+    @Override
+    protected void doLayout() {
         Label content = LabelFactory.create();
         content.setText(message);
         Row row = RowFactory.create("Inset", content);
         getLayout().add(row);
+    }
+
+    /**
+     * Returns the message.
+     *
+     * @return the message
+     */
+    protected String getMessage() {
+        return message;
     }
 
 }

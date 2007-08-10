@@ -112,12 +112,12 @@ public abstract class AbstractPrinter implements Printer {
     }
 
     /**
-     * Generates a document and downloads it to the client.
+     * Downloads a document to the client.
      *
+     * @param document the document to download
      * @throws OpenVPMSException for any error
      */
-    protected void download() {
-        Document document = getDocument();
+    protected void download(Document document) {
         DownloadServlet.startDownload(document);
     }
 
@@ -232,7 +232,7 @@ public abstract class AbstractPrinter implements Printer {
      * particular document template, printer and the current practice.
      * If no relationship is defined, defaults to <tt>true</tt>.
      *
-     * @param template an <em>entity.documentTemplate</em>
+     * @param template an <em>entity.documentTemplate</em>. May be <tt>null</tt>
      * @param printer  the printer name
      * @return <tt>true</tt> if printing should occur interactively
      */

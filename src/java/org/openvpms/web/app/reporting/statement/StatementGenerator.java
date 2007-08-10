@@ -19,8 +19,9 @@
 package org.openvpms.web.app.reporting.statement;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
-import org.openvpms.archetype.rules.finance.statement.StatementEvent;
+import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessor;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -30,6 +31,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -58,12 +60,13 @@ class StatementGenerator extends AbstractStatementGenerator {
     /**
      * Constructs a new <tt>StatementGenerator</tt> for a single customer.
      *
-     * @param customer the customer reference
-     * @param date     the statement date
-     * @param context  the context
+     * @param customer  the customer reference
+     * @param date      the statement date
+     * @param printOnly if <tt>true</tt> only print statements
+     * @param context   the context
      */
     public StatementGenerator(IMObjectReference customer, Date date,
-                              Context context) {
+                              boolean printOnly, Context context) {
         super(Messages.get("reporting.statements.run.title"),
               Messages.get("reporting.statements.run.cancel.title"),
               Messages.get("reporting.statements.run.cancel.message"));
@@ -72,7 +75,7 @@ class StatementGenerator extends AbstractStatementGenerator {
         if (party != null) {
             customers.add(party);
         }
-        init(customers, date, context);
+        init(customers, date, printOnly, context);
     }
 
     /**
@@ -95,7 +98,7 @@ class StatementGenerator extends AbstractStatementGenerator {
             if (customer != null) {
                 customers.add(customer);
             }
-            init(customers, query.getDate(), context);
+            init(customers, query.getDate(), false, context);
         }
     }
 
@@ -113,11 +116,13 @@ class StatementGenerator extends AbstractStatementGenerator {
      *
      * @param customers the customers to generate statements for
      * @param date      the statement date
+     * @param printOnly if <tt>true</tt>, only print statements
      * @param context   the context
      * @throws ArchetypeServiceException   for any archetype service error
      * @throws StatementProcessorException for any statement processor exception
      */
-    private void init(List<Party> customers, Date date, Context context) {
+    private void init(List<Party> customers, Date date, boolean printOnly,
+                      Context context) {
         Party practice = context.getPractice();
         if (practice == null) {
             throw new StatementProcessorException(
@@ -148,12 +153,13 @@ class StatementGenerator extends AbstractStatementGenerator {
         StatementPrintProcessor printer
                 = new StatementPrintProcessor(progressBarProcessor,
                                               getCancelListener());
-
-        StatementEmailProcessor emailer = new StatementEmailProcessor(
-                ServiceHelper.getMailSender(), address, name);
-
-        processor.addListener(StatementEvent.Action.PRINT, printer);
-        processor.addListener(StatementEvent.Action.EMAIL, emailer);
+        if (printOnly) {
+            processor.addListener(printer);
+        } else {
+            StatementEmailProcessor mailer = new StatementEmailProcessor(
+                    ServiceHelper.getMailSender(), address, name);
+            processor.addListener(new StatementDelegator(printer, mailer));
+        }
     }
 
     /**
@@ -185,6 +191,36 @@ class StatementGenerator extends AbstractStatementGenerator {
         }
         return (preferred != null) ?
                 preferred : (fallback != null) ? fallback : null;
+    }
+
+    private class StatementDelegator implements ProcessorListener<Statement> {
+
+        private ProcessorListener<Statement> printer;
+        private ProcessorListener<Statement> mailer;
+
+        public StatementDelegator(ProcessorListener<Statement> printer,
+                                  ProcessorListener<Statement> mailer) {
+            this.printer = printer;
+            this.mailer = mailer;
+        }
+
+        /**
+         * Process a statement.
+         *
+         * @param statement the statement to process
+         * @throws OpenVPMSException for any error
+         */
+        public void process(Statement statement) {
+            ProcessorListener<Statement> listener = printer;
+            List<Contact> contacts = statement.getContacts();
+            if (contacts.size() >= 1) {
+                Contact contact = contacts.get(0);
+                if (TypeHelper.isA(contact, "contact.email")) {
+                    listener = mailer;
+                }
+            }
+            listener.process(statement);
+        }
     }
 
 }

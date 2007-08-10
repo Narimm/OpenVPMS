@@ -19,7 +19,11 @@
 package org.openvpms.web.app.reporting.statement;
 
 import echopointng.GroupBox;
+import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
@@ -41,8 +45,12 @@ import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 import org.openvpms.web.component.util.ButtonRow;
+import org.openvpms.web.component.util.CheckBoxFactory;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GroupBoxFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -158,9 +166,9 @@ public class StatementWorkspace extends AbstractWorkspace {
         doLayout(content, group);
         root.add(content);
 
-        buttons.addButton("printAll", new ActionListener() {
+        buttons.addButton("sendAll", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                onPrintAll();
+                onSendAll();
             }
         });
         buttons.addButton("print", new ActionListener() {
@@ -198,9 +206,9 @@ public class StatementWorkspace extends AbstractWorkspace {
     }
 
     /**
-     * Invoked when the 'print all' button is pressed.
+     * Invoked when the 'send all' button is pressed.
      */
-    private void onPrintAll() {
+    private void onSendAll() {
         if (checkStatementDate("reporting.statements.run.invalidDate")) {
             String title = Messages.get("reporting.statements.run.title");
             String message = Messages.get("reporting.statements.run.message");
@@ -209,7 +217,7 @@ public class StatementWorkspace extends AbstractWorkspace {
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
                     if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                        doPrintAll();
+                        doSendAll();
                     }
                 }
             });
@@ -220,7 +228,7 @@ public class StatementWorkspace extends AbstractWorkspace {
     /**
      * Processes all customers matching the criteria.
      */
-    private void doPrintAll() {
+    private void doSendAll() {
         try {
             GlobalContext context = GlobalContext.getInstance();
             StatementGenerator generator = new StatementGenerator(query,
@@ -244,7 +252,7 @@ public class StatementWorkspace extends AbstractWorkspace {
                     if (ref != null) {
                         GlobalContext context = GlobalContext.getInstance();
                         StatementGenerator generator = new StatementGenerator(
-                                ref, query.getDate(), context);
+                                ref, query.getDate(), true, context);
                         generateStatements(generator);
                     }
                 }
@@ -261,12 +269,12 @@ public class StatementWorkspace extends AbstractWorkspace {
         if (checkStatementDate("reporting.statements.eop.invalidDate")) {
             String title = Messages.get("reporting.statements.eop.title");
             String message = Messages.get("reporting.statements.eop.message");
-            final ConfirmationDialog dialog
-                    = new ConfirmationDialog(title, message);
+            final EndOfPeriodDialog dialog
+                    = new EndOfPeriodDialog(title, message);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
                     if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                        doEndPeriod();
+                        doEndPeriod(dialog.postCompletedInvoices());
                     }
                 }
             });
@@ -276,11 +284,13 @@ public class StatementWorkspace extends AbstractWorkspace {
 
     /**
      * Runs end period.
+     *
+     * @param postCompletedInvoices if <tt>true</tt>, post completed invoices
      */
-    private void doEndPeriod() {
+    private void doEndPeriod(boolean postCompletedInvoices) {
         try {
             EndOfPeriodGenerator generator = new EndOfPeriodGenerator(
-                    query.getDate());
+                    query.getDate(), postCompletedInvoices);
             generator.setListener(new BatchProcessorListener() {
                 public void completed() {
                     browser.query();
@@ -364,4 +374,45 @@ public class StatementWorkspace extends AbstractWorkspace {
         }
     }
 
+    private class EndOfPeriodDialog extends ConfirmationDialog {
+
+        /**
+         * Determines if completed invoices should be posted.
+         */
+        private final CheckBox postCompleted;
+
+        /**
+         * Constructs a new <code>EndOfPeriodDialog</code>.
+         *
+         * @param title   the window title
+         * @param message the message
+         */
+        public EndOfPeriodDialog(String title, String message) {
+            super(title, message, OK_CANCEL);
+            postCompleted = CheckBoxFactory.create(
+                    "reporting.statements.eop.postCompleted", true);
+        }
+
+        /**
+         * Determines if completed invoices should be posted.
+         *
+         * @return <tt>true</tt> if completed invoices should be posted
+         */
+        public boolean postCompletedInvoices() {
+            return postCompleted.isSelected();
+        }
+
+        /**
+         * Lays out the component prior to display.
+         */
+        @Override
+        protected void doLayout() {
+            Label message = LabelFactory.create();
+            message.setText(getMessage());
+            Column column = ColumnFactory.create("WideCellSpacing",
+                                                 message, postCompleted);
+            Row row = RowFactory.create("Inset", column);
+            getLayout().add(row);
+        }
+    }
 }
