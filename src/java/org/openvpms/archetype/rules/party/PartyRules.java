@@ -306,7 +306,12 @@ public class PartyRules {
             IMObjectBean bean = new IMObjectBean(contact, service);
             String areaCode = bean.getString("areaCode");
             String faxNumber = bean.getString("faxNumber");
-            return "(" + areaCode + ")" + faxNumber;
+            if (areaCode == null || areaCode == "") {
+            	return faxNumber;
+            }
+            else {
+                return "(" + areaCode + ")" + faxNumber;            	
+            }
         }
         return "";
     }
@@ -443,7 +448,12 @@ public class PartyRules {
             areaCode = "";
         }
         String phone = bean.getString("telephoneNumber");
-        return "(" + areaCode + ") " + phone;
+        if (areaCode == "") {
+        	return phone;
+        }
+        else {
+            return "(" + areaCode + ") " + phone;        	
+        }
     }
 
     /**
