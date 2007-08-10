@@ -49,9 +49,10 @@ class EndOfPeriodGenerator extends AbstractStatementGenerator {
     /**
      * Creates a new <tt>EndOfPeriodGenerator</tt>.
      *
-     * @param date the statement date
+     * @param date                 the statement date
+     * @param postCompletedCharges if <tt>true</tt> post completed charge acts
      */
-    public EndOfPeriodGenerator(Date date) {
+    public EndOfPeriodGenerator(Date date, boolean postCompletedCharges) {
         super(Messages.get("reporting.statements.eop.title"),
               Messages.get("reporting.statements.eop.cancel.title"),
               Messages.get("reporting.statements.eop.cancel.message"));
@@ -63,10 +64,9 @@ class EndOfPeriodGenerator extends AbstractStatementGenerator {
         IterableIMObjectQuery<Party> customers
                 = new IterableIMObjectQuery<Party>(query);
         Processor<Party> processor = new EndOfPeriodProcessor(
-                date, ArchetypeServiceHelper.getArchetypeService());
-        progressBarProcessor = new StatementProgressBarProcessor(processor,
-                                                                 customers,
-                                                                 size);
+                date, postCompletedCharges);
+        progressBarProcessor
+                = new StatementProgressBarProcessor(processor, customers, size);
     }
 
     /**

@@ -19,20 +19,10 @@
 package org.openvpms.web.component.im.print;
 
 import org.openvpms.archetype.rules.doc.DocumentException;
-import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
-import org.openvpms.archetype.rules.doc.TemplateHelper;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.IMReport;
-import org.openvpms.report.PrintProperties;
-import org.openvpms.report.ReportException;
-import org.openvpms.report.ReportFactory;
-import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.component.im.report.ObjectSetReporter;
 
 
 /**
@@ -41,27 +31,10 @@ import org.openvpms.web.system.ServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ObjectSetReportPrinter
-        extends AbstractIMReportPrinter<ObjectSet> {
+public class ObjectSetReportPrinter extends TemplatedIMPrinter<ObjectSet> {
 
     /**
-     * The document template entity.
-     */
-    private final Entity template;
-
-    /**
-     * The document template.
-     */
-    private Document document;
-
-    /**
-     * The archetype short name.
-     */
-    private final String shortName;
-
-
-    /**
-     * Constructs a new <code>ObjectSetReportPrinter</code>.
+     * Constructs a new <tt>ObjectSetReportPrinter</tt>.
      *
      * @param set       the set to print
      * @param shortName the archetype short name
@@ -69,62 +42,7 @@ public class ObjectSetReportPrinter
      * @throws ArchetypeServiceException for any archetype service error
      */
     public ObjectSetReportPrinter(Iterable<ObjectSet> set, String shortName) {
-        super(set);
-        TemplateHelper helper = new TemplateHelper();
-        template = helper.getTemplateForArchetype(shortName);
-        if (template == null) {
-            throw new DocumentException(NotFound);
-        }
-        document = helper.getDocumentFromTemplate(template);
-        if (document == null) {
-            throw new DocumentException(NotFound);
-        }
-        this.shortName = shortName;
-        setInteractive(getInteractive(template, getDefaultPrinter()));
-    }
-
-    /**
-     * Returns a display name for the objects being printed.
-     *
-     * @return a display name for the objects being printed
-     */
-    public String getDisplayName() {
-        return DescriptorHelper.getDisplayName(shortName);
-    }
-
-    /**
-     * Returns the default printer for an object.
-     *
-     * @return the default printer, or <code>null</code> if there is
-     *         none defined
-     */
-    public String getDefaultPrinter() {
-        return getDefaultPrinter(template);
-    }
-
-    /**
-     * Creates a new report.
-     *
-     * @return a new report
-     * @throws ReportException           for any report error
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    protected IMReport<ObjectSet> createReport() {
-        return ReportFactory.createObjectSetReport(
-                document, ArchetypeServiceHelper.getArchetypeService(),
-                ServiceHelper.getDocumentHandlers());
-    }
-
-    /**
-     * Returns the print properties for an object.
-     *
-     * @param printer the printer
-     * @return the print properties
-     * @throws OpenVPMSException for any error
-     */
-    @Override
-    protected PrintProperties getProperties(String printer) {
-        return super.getProperties(printer, template);
+        super(new ObjectSetReporter(set, shortName));
     }
 
 }

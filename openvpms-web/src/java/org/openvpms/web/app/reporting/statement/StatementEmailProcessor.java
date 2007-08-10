@@ -23,10 +23,9 @@ import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
-import org.openvpms.archetype.rules.finance.statement.StatementEvent;
+import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
-import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.FailedToProcessStatement;
-import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidConfiguration;
+import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.*;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -45,6 +44,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 
 import javax.mail.internet.MimeMessage;
 import java.io.InputStream;
+import java.util.List;
 
 
 /**
@@ -138,15 +138,24 @@ public class StatementEmailProcessor
     /**
      * Processes a statement.
      *
-     * @param event the event to process
+     * @param statement the event to process
      * @throws OpenVPMSException for any error
      */
-    public void process(StatementEvent event) {
+    public void process(Statement statement) {
         try {
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            Contact contact = event.getContact();
+            List<Contact> contacts = statement.getContacts();
+            if (contacts.isEmpty()) {
+                throw new StatementProcessorException(NoContact,
+                                                      statement.getCustomer());
+            }
+            Contact contact = contacts.get(0);
             IMObjectBean bean = new IMObjectBean(contact);
+            if (!bean.isA("contact.email")) {
+                throw new StatementProcessorException(NoContact,
+                                                      statement.getCustomer());
+            }
             String to = bean.getString("emailAddress");
             helper.setFrom(emailAddress, emailName);
             helper.setTo(to);
@@ -155,20 +164,21 @@ public class StatementEmailProcessor
             IMReport<IMObject> report = ReportFactory.createIMObjectReport(
                     template, ArchetypeServiceHelper.getArchetypeService(),
                     handlers);
-            Iterable<IMObject> objects = getActs(event);
-            final Document statement
-                    = report.generate(objects.iterator(), getParameters(event),
+            Iterable<IMObject> objects = getActs(statement);
+            final Document doc
+                    = report.generate(objects.iterator(),
+                                      getParameters(statement),
                                       new String[]{DocFormats.PDF_TYPE});
 
             final DocumentHandler handler = handlers.get(
-                    statement.getName(),
-                    statement.getArchetypeId().getShortName(),
-                    statement.getMimeType());
+                    doc.getName(),
+                    doc.getArchetypeId().getShortName(),
+                    doc.getMimeType());
 
             helper.addAttachment(
-                    statement.getName(), new InputStreamSource() {
+                    doc.getName(), new InputStreamSource() {
                 public InputStream getInputStream() {
-                    return handler.getContent(statement);
+                    return handler.getContent(doc);
                 }
             });
             sender.send(message);
@@ -189,7 +199,7 @@ public class StatementEmailProcessor
      * @return the statement acts
      */
     @SuppressWarnings("unchecked")
-    private Iterable<IMObject> getActs(StatementEvent event) {
+    private Iterable<IMObject> getActs(Statement event) {
         return (Iterable) event.getActs();
     }
 

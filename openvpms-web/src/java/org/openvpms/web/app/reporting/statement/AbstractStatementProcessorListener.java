@@ -20,7 +20,7 @@ package org.openvpms.web.app.reporting.statement;
 
 import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
-import org.openvpms.archetype.rules.finance.statement.StatementEvent;
+import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
 import java.math.BigDecimal;
@@ -37,7 +37,7 @@ import java.util.Map;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class AbstractStatementProcessorListener
-        implements ProcessorListener<StatementEvent> {
+        implements ProcessorListener<Statement> {
 
     /**
      * The account rules.
@@ -56,17 +56,18 @@ public abstract class AbstractStatementProcessorListener
      * Returns the parameters to pass to the statement report
      * This includes the statement date and overdue balance.
      *
-     * @param event the statement event
+     * @param statement the statement
      * @return a map of parameters
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected Map<String, Object> getParameters(StatementEvent event) {
+    protected Map<String, Object> getParameters(Statement statement) {
         Map<String, Object> result = new HashMap<String, Object>();
-        Date date = event.getDate();
+        Date date = statement.getStatementDate();
         BigDecimal overdueBalance
-                = rules.getOverdueBalance(event.getCustomer(), date);
+                = rules.getOverdueBalance(statement.getCustomer(), date);
         result.put("statementDate", date);
         result.put("overdueBalance", overdueBalance);
+        result.put("preview", statement.isPreview());
         return result;
     }
 }

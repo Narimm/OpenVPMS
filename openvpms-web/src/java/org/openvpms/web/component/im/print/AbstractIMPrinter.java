@@ -18,14 +18,12 @@
 
 package org.openvpms.web.component.im.print;
 
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMReport;
-import org.openvpms.report.ReportException;
+import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.print.AbstractPrinter;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -39,40 +37,17 @@ public abstract class AbstractIMPrinter<T>
         extends AbstractPrinter implements IMPrinter<T> {
 
     /**
-     * The objects to print.
+     * The reporter.
      */
-    private final Iterable<T> objects;
+    private final Reporter<T> reporter;
 
     /**
-     * The object to print.
-     */
-    private final T object;
-
-    /**
-     * The parameters to pass to the report.
-     */
-    private Map<String, Object> parameters = new HashMap<String, Object>();
-
-
-    /**
-     * Constructs a new <tt>AbstractIMPrinter</tt> to print a single object.
+     * Constructs a new <tt>AbstractIMPrinter</tt>.
      *
-     * @param object the object to print
+     * @param reporter the reporter
      */
-    public AbstractIMPrinter(T object) {
-        objects = Arrays.asList(object);
-        this.object = object;
-    }
-
-    /**
-     * Constructs a new <tt>AbstractIMPrinter</tt> to print a collection
-     * of objects.
-     *
-     * @param objects the objects to print
-     */
-    public AbstractIMPrinter(Iterable<T> objects) {
-        this.objects = objects;
-        object = null;
+    public AbstractIMPrinter(Reporter<T> reporter) {
+        this.reporter = reporter;
     }
 
     /**
@@ -81,7 +56,7 @@ public abstract class AbstractIMPrinter<T>
      * @return the objects being printed
      */
     public Iterable<T> getObjects() {
-        return objects;
+        return reporter.getObjects();
     }
 
     /**
@@ -91,7 +66,7 @@ public abstract class AbstractIMPrinter<T>
      * @throws OpenVPMSException for any error
      */
     public void print(String printer) {
-        IMReport<T> report = createReport();
+        IMReport<T> report = reporter.getReport();
         report.print(getObjects().iterator(), getParameters(),
                      getProperties(printer));
     }
@@ -103,7 +78,7 @@ public abstract class AbstractIMPrinter<T>
      *                   the report. May be <tt>null</tt>
      */
     public void setParameters(Map<String, Object> parameters) {
-        this.parameters = parameters;
+        reporter.setParameters(parameters);
     }
 
     /**
@@ -113,7 +88,17 @@ public abstract class AbstractIMPrinter<T>
      * @return a map of parameter names and their values. May be <tt>null</tt>
      */
     public Map<String, Object> getParameters() {
-        return parameters;
+        return reporter.getParameters();
+    }
+
+    /**
+     * Returns a document corresponding to that which would be printed.
+     *
+     * @return a document
+     * @throws OpenVPMSException for any error
+     */
+    public Document getDocument() {
+        return reporter.getDocument();
     }
 
     /**
@@ -123,16 +108,15 @@ public abstract class AbstractIMPrinter<T>
      *         is being printed
      */
     protected T getObject() {
-        return object;
+        return reporter.getObject();
     }
 
     /**
-     * Creates a new report.
+     * Returns the reporter.
      *
-     * @return a new report
-     * @throws ReportException           for any report error
-     * @throws ArchetypeServiceException for any archetype service error
+     * @return the reporter
      */
-    protected abstract IMReport<T> createReport();
-
+    protected Reporter<T> getReporter() {
+        return reporter;
+    }
 }
