@@ -372,7 +372,8 @@ public class CustomerAccountRules {
      *         found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Date getOpeningBalanceDateBefore(Party customer, Date timestamp) {
+    public Date getOpeningBalanceTimestampBefore(Party customer,
+                                                 Date timestamp) {
         return getActStartTime(OPENING_BALANCE, customer, timestamp,
                                RelationalOp.LT, false);
     }
@@ -388,7 +389,8 @@ public class CustomerAccountRules {
      *         found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Date getClosingBalanceDateBefore(Party customer, Date timestamp) {
+    public Date getClosingBalanceTimestampBefore(Party customer,
+                                                 Date timestamp) {
         return getActStartTime(CLOSING_BALANCE, customer, timestamp,
                                RelationalOp.LT, false);
     }

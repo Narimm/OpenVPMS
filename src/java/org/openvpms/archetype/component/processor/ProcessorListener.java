@@ -22,7 +22,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
- * A listener for {@link ActionProcessor} events.
+ * A listener for {@link NotifyingProcessor} events.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

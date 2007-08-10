@@ -45,7 +45,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
     public void testStatementDate() {
         Date now = new Date();
         try {
-            new EndOfPeriodProcessor(now);
+            new EndOfPeriodProcessor(now, true);
             fail("Expected StatementProcessorException to be thrown");
         } catch (StatementProcessorException expected) {
             assertEquals(
@@ -56,7 +56,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
         try {
-            new EndOfPeriodProcessor(calendar.getTime());
+            new EndOfPeriodProcessor(calendar.getTime(), true);
         } catch (StatementProcessorException exception) {
             fail("Construction failed with exception: " + exception);
         }
@@ -83,7 +83,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         checkAct(acts.get(0), invoice1, FinancialActStatus.POSTED);
 
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate);
+                = new EndOfPeriodProcessor(statementDate, true);
         processor.process(customer);
 
         assertTrue(rules.hasStatement(customer, statementDate));
@@ -118,7 +118,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
     }
 
     /**
-     * Verifies that any COMPLETED acts are posted on end-of-period.
+     * Verifies that any COMPLETED charge acts are posted on end-of-period.
      */
     public void testPostCompleted() {
         Party customer = getCustomer();
@@ -139,25 +139,61 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         invoice3.setStatus(FinancialActStatus.ON_HOLD);    // won't be posted
         save(invoice3);
 
-        FinancialAct invoice4 = createChargesInvoice(      // already posted
-                                                           amount, getDatetime(
-                "2007-01-01 11:00:00"));
+        FinancialAct invoice4 = createChargesInvoice(
+                amount, getDatetime("2007-01-01 11:00:00")); // already posted
         save(invoice4);
 
         Date statementDate = getDate("2007-02-01");    // perform end-of-period
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate);
+                = new EndOfPeriodProcessor(statementDate, true);
         processor.process(customer);
 
         // verify the acts for the period match that expected
-        List<Act> acts = getActs(customer, statementDate);
-        assertEquals(5, acts.size());
-        checkAct(acts.get(0), invoice1, FinancialActStatus.POSTED);
-        checkAct(acts.get(1), invoice2, FinancialActStatus.IN_PROGRESS);
-        checkAct(acts.get(2), invoice3, FinancialActStatus.ON_HOLD);
-        checkAct(acts.get(3), invoice4, FinancialActStatus.POSTED);
-        checkAct(acts.get(4), "act.customerAccountClosingBalance",
+        List<Act> acts = getPostedActs(customer, statementDate);
+        assertEquals(3, acts.size());
+        checkAct(acts, invoice1, FinancialActStatus.POSTED); // first 2 acts
+        checkAct(acts, invoice4, FinancialActStatus.POSTED); // in any order
+        checkAct(acts.get(2), "act.customerAccountClosingBalance",
                  new BigDecimal("200"));
+    }
+
+    /**
+     * Verifies that any COMPLETED charge acts are not posted when
+     * <tt>postCompletedCharges</tt> is false.
+     */
+    public void testNoPostCompleted() {
+        Party customer = getCustomer();
+
+        final Money amount = new Money(100);
+        FinancialAct invoice1 = createChargesInvoice(
+                amount, getDatetime("2007-01-01 10:00:00"));
+        invoice1.setStatus(FinancialActStatus.COMPLETED);  // won't be posted
+        save(invoice1);
+
+        FinancialAct invoice2 = createChargesInvoice(
+                amount, getDatetime("2007-01-01 11:00:00"));
+        invoice2.setStatus(FinancialActStatus.IN_PROGRESS);  // won't be posted
+        save(invoice2);
+
+        FinancialAct invoice3 = createChargesInvoice(
+                amount, getDatetime("2007-01-01 11:00:00"));
+        invoice3.setStatus(FinancialActStatus.ON_HOLD);    // won't be posted
+        save(invoice3);
+
+        FinancialAct invoice4 = createChargesInvoice(
+                amount, getDatetime("2007-01-01 11:00:00"));
+        save(invoice4);
+
+        Date statementDate = getDate("2007-02-01");    // perform end-of-period
+        EndOfPeriodProcessor processor
+                = new EndOfPeriodProcessor(statementDate, false);
+        processor.process(customer);
+
+        // verify the acts for the period match that expected
+        List<Act> acts = getPostedActs(customer, statementDate);
+        assertEquals(2, acts.size());
+        checkAct(acts.get(0), invoice4, FinancialActStatus.POSTED);
+        checkAct(acts.get(1), "act.customerAccountClosingBalance", amount);
     }
 
     /**
@@ -177,7 +213,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Date statementDate = getDate("2007-05-02");
 
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate);
+                = new EndOfPeriodProcessor(statementDate, true);
         processor.process(customer);
 
         List<Act> acts = getActs(customer, statementDate);
@@ -189,4 +225,14 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
                  amount.add(feeAmount));
     }
 
+    private void checkAct(List<Act> acts, FinancialAct expected,
+                          String status) {
+        for (Act act : acts) {
+            if (act.equals(expected)) {
+                checkAct(act, expected, status);
+                return;
+            }
+        }
+        fail("Expected act " + expected + " not found in acts");
+    }
 }
