@@ -134,27 +134,32 @@ public class DepositQuery {
 	                set.add(AMOUNT, actAmount.negate());
 	                result.add(set);
 	            } else {
-	                for (Act item : tillBalanceItemBean.getActs()) { //Till Balance Item Items loop
+	                for (Act item : tillBalanceItemBean.getActsForNode("items")) { //Till Balance Item Items loop
+	                	// Skip any discounts
+	                	String shortName = item.getArchetypeId().getShortName();
+	                	if (shortName.endsWith("Discount")) {
+	                		continue;
+	                	}
 	                    ObjectSet set = new ObjectSet();
 		                set.add(BANK_DEPOSIT, bankDeposit);
 	                    set.add(ACT, tillBalanceItem);
 	                    set.add(ACT_ITEM, item);
 	                    set.add(AMOUNT, getAmount(item).negate());
 	                    result.add(set);
+	                   
 	                }
 	            }
 	        }
     	}
-        // sort on item displayName (Deposit Type)
+        // sort on item payment type
         Collections.sort(result, new Comparator<ObjectSet>() {
             public int compare(ObjectSet o1, ObjectSet o2) {
                 Act a1 = (Act) o1.get(ACT_ITEM);
                 Act a2 = (Act) o2.get(ACT_ITEM);
-                Comparator<String> compator = new NullComparator();
                 ActBean ab1 = new ActBean(a1);
                 ActBean ab2 = new ActBean(a2);
-                return compator.compare(ab1.getObject().getArchetypeId().getShortName(),
-                                        ab2.getObject().getArchetypeId().getShortName());
+                return getPaymentTypeNumber(ab1.getObject().getArchetypeId().getShortName()) -
+                                        getPaymentTypeNumber(ab2.getObject().getArchetypeId().getShortName());
             }
         });
         return new Page<ObjectSet>(result, 0, result.size(), result.size());
@@ -170,5 +175,30 @@ public class DepositQuery {
     private BigDecimal getAmount(Act act) {
         return calculator.getAmount(act, "amount");
     }
-
+    
+    /**
+     * Returns a number based on the payment type extracted from the shortname
+     * 
+     * @param shortName the archetype shortname
+     * @return a number corresponding to the payment type
+     */
+    
+    private Integer getPaymentTypeNumber(String shortName) {
+    	if (shortName.endsWith("Cheque")){
+    		return 0;
+    	}
+    	else if (shortName.endsWith("Cash")) {
+    		return 1;
+    	}
+    	else if (shortName.endsWith("Credit")) {
+    		return 2;
+    	}
+    	else if (shortName.endsWith("EFT")) {
+    		return 3;
+    	}
+    	else {
+    		return 4;
+    	}
+    }
+     
 }
