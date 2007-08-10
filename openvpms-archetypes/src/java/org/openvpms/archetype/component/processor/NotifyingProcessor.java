@@ -20,30 +20,25 @@ package org.openvpms.archetype.component.processor;
 
 
 /**
- * A processor that takes an object, performs operations on it, and
- * notifies any interested listeners on specific actions.
+ * A {@link Processor} that notifies registered listeners.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- * @see BatchProcessor
  */
-public interface ActionProcessor<Action, Type, Event>
-        extends Processor<Type> {
+public interface NotifyingProcessor<Type, Event> extends Processor<Type> {
 
     /**
-     * Registers a listener for a specific action.
+     * Registers a listener.
      *
-     * @param action   the action to register the listener for
      * @param listener the listener to add
      */
-    void addListener(Action action, ProcessorListener<Event> listener);
+    void addListener(ProcessorListener<Event> listener);
 
     /**
-     * Removes a listener for a specific action.
+     * Removes a listener.
      *
-     * @param action   the action to remove the listener for
      * @param listener the listener to remove
      */
-    void removeListener(Action action, ProcessorListener<Event> listener);
+    void removeListener(ProcessorListener<Event> listener);
 
 }

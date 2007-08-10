@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -45,6 +46,11 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      * The statement date.
      */
     private final Date statementDate;
+
+    /**
+     * If <tt>true</tt>, post completed charges.
+     */
+    private final boolean postCompletedCharges;
 
     /**
      * The statement timestamp.
@@ -75,21 +81,29 @@ public class EndOfPeriodProcessor implements Processor<Party> {
     /**
      * Creates a new <tt>EndOfPeriodProcessor</tt>.
      *
-     * @param statementDate the statement date. Must be a date prior to today.
+     * @param statementDate        the statement date. Must be a date prior to
+     *                             today.
+     * @param postCompletedCharges if <tt>true</tt>, post completed charges
      * @throws StatementProcessorException if the statement date is invalid
      */
-    public EndOfPeriodProcessor(Date statementDate) {
-        this(statementDate, ArchetypeServiceHelper.getArchetypeService());
+    public EndOfPeriodProcessor(Date statementDate,
+                                boolean postCompletedCharges) {
+        this(statementDate, postCompletedCharges,
+             ArchetypeServiceHelper.getArchetypeService());
     }
 
     /**
      * Creates a new <tt>EndOfPeriodProcessor</tt>.
      *
-     * @param statementDate the statement date. Must be a date prior to today.
-     * @param service       the archetype service
+     * @param statementDate        the statement date. Must be a date prior to
+     *                             today.
+     * @param postCompletedCharges if <tt>true</tt>, post completed charges
+     * @param service              the archetype service
      * @throws StatementProcessorException if the statement date is invalid
      */
-    public EndOfPeriodProcessor(Date statementDate, IArchetypeService service) {
+    public EndOfPeriodProcessor(Date statementDate,
+                                boolean postCompletedCharges,
+                                IArchetypeService service) {
         this.service = service;
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
@@ -101,6 +115,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
         account = new CustomerAccountRules(service);
         statement = new StatementRules(service);
         this.statementDate = statementDate;
+        this.postCompletedCharges = postCompletedCharges;
         timetamp = statement.getStatementTimestamp(statementDate);
     }
 
@@ -112,9 +127,10 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      */
     public void process(Party customer) {
         if (!statement.hasStatement(customer, statementDate)) {
-            for (Act act : acts.getCompletedActs(customer, timetamp)) {
-                act.setStatus(ActStatus.POSTED);
-                service.save(act);
+            if (postCompletedCharges) {
+                for (Act act : acts.getCompletedCharges(customer, timetamp)) {
+                    post(act);
+                }
             }
             BigDecimal fee = statement.getAccountFee(customer, timetamp);
             if (fee.compareTo(BigDecimal.ZERO) != 0) {
@@ -124,6 +140,19 @@ public class EndOfPeriodProcessor implements Processor<Party> {
             Date endTimestamp = getTimestamp(2);
             account.createPeriodEnd(customer, endTimestamp);
         }
+    }
+
+    /**
+     * Posts a completed charge act. This sets the status to <tt>POSTED<tt>,
+     * and the startTime to 1 second less than the statement timestamp.
+     *
+     * @param act the act to post
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private void post(Act act) {
+        act.setActivityStartTime(getTimestamp(-1));
+        act.setStatus(ActStatus.POSTED);
+        service.save(act);
     }
 
     /**

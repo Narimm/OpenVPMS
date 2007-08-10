@@ -62,7 +62,7 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
     }
 
     /**
-     * Returns all acts for a particular statement date.
+     * Returns all acts for a statement date.
      *
      * @param customer      the customer
      * @param statementDate the statement date
@@ -74,6 +74,27 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
         StatementActHelper helper
                 = new StatementActHelper(getArchetypeService());
         Iterable<Act> acts = helper.getActs(customer, timestamp);
+        List<Act> result = new ArrayList<Act>();
+        for (Act act : acts) {
+            result.add(act);
+        }
+        return result;
+    }
+
+    /**
+     * Returns all posted acts for a statement date.
+     *
+     * @param customer      the customer
+     * @param statementDate the statement date
+     * @return the posted acts for the statement date
+     */
+    protected List<Act> getPostedActs(Party customer, Date statementDate) {
+        StatementActHelper helper
+                = new StatementActHelper(getArchetypeService());
+        Date open = helper.getOpeningBalanceTimestamp(customer, statementDate);
+        Date close = helper.getClosingBalanceTimestamp(customer, statementDate,
+                                                       open);
+        Iterable<Act> acts = helper.getPostedActs(customer, open, close);
         List<Act> result = new ArrayList<Act>();
         for (Act act : acts) {
             result.add(act);

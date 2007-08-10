@@ -18,9 +18,7 @@
 
 package org.openvpms.archetype.rules.finance.statement;
 
-import org.openvpms.archetype.component.processor.AbstractActionProcessor;
-import static org.openvpms.archetype.rules.finance.statement.StatementEvent.Action.EMAIL;
-import static org.openvpms.archetype.rules.finance.statement.StatementEvent.Action.PRINT;
+import org.openvpms.archetype.component.processor.AbstractProcessor;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.NoContact;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -34,6 +32,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -45,9 +44,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class StatementProcessor
-        extends AbstractActionProcessor<StatementEvent.Action, Party,
-        StatementEvent> {
+public class StatementProcessor extends AbstractProcessor<Party, Statement> {
 
     /**
      * The archetype service.
@@ -63,6 +60,7 @@ public class StatementProcessor
      * Statement act helper.
      */
     private final StatementActHelper actHelper;
+
 
     /**
      * Creates a new <tt>StatementProcessor</tt>.
@@ -100,59 +98,60 @@ public class StatementProcessor
      * @throws OpenVPMSException for any error
      */
     public void process(Party customer) {
-        StatementEvent event;
-        Contact contact = getContact(customer);
-        Iterable<Act> acts = actHelper.getActsWithAccountFees(
+        Date open = actHelper.getOpeningBalanceTimestamp(
                 customer, statementDate);
-        if (TypeHelper.isA(contact, "contact.email")) {
-            event = new StatementEvent(EMAIL, customer, contact,
-                                       statementDate, acts);
+        Date close = actHelper.getClosingBalanceTimestamp(
+                customer, statementDate, open);
+        Iterable<Act> acts;
+        if (close == null) {
+            acts = actHelper.getPreviewActs(customer, statementDate, open);
         } else {
-            event = new StatementEvent(PRINT, customer, contact,
-                                       statementDate, acts);
+            acts = actHelper.getPostedActs(customer, open, close);
         }
-        notifyListeners(event.getAction(), event);
+        List<Contact> contacts = getContacts(customer);
+        Statement statement = new Statement(customer, contacts, statementDate,
+                                            open, close, acts);
+        notifyListeners(statement);
     }
 
     /**
-     * Returns a contact for the specified customer.
+     * Returns the preferred statement contacts for the customer.
      *
      * @param customer the customer
-     * @return the contact for <tt>customer</tt>
+     * @return the preferred contacts for <tt>customer</tt>
      * @throws StatementProcessorException if there is no contact for the
      *                                     customer
      * @throws ArchetypeServiceException   for any archetype service error
      */
-    private Contact getContact(Party customer) {
-        Contact result = getContact(customer, "contact.email");
-        if (result == null) {
-            result = getContact(customer, "contact.location");
-        }
-        if (result == null) {
+    private List<Contact> getContacts(Party customer) {
+        List<Contact> result = new ArrayList<Contact>();
+        addBillingContacts(result, customer, "contact.email");
+        addBillingContacts(result, customer, "contact.location");
+        if (result.isEmpty()) {
             for (Contact contact : customer.getContacts()) {
                 if (TypeHelper.isA(contact, "contact.location")) {
-                    result = contact;
+                    result.add(contact);
                 }
             }
-        }
-        if (result == null) {
-            throw new StatementProcessorException(NoContact, customer.getName(),
-                                                  customer.getDescription());
+            if (result.isEmpty()) {
+                throw new StatementProcessorException(
+                        NoContact, customer.getName(),
+                        customer.getDescription());
+            }
         }
         return result;
     }
 
     /**
-     * Returns the first contact for the customer with the specified archetype
-     * short name and <em>BILLING</em> purpose.
+     * Adds contacts with the specified archetype short name and
+     * <em>BILLING</em> purpose.
      *
      * @param customer  the customer
-     * @param shortName the congtact archetype short name
-     * @return the matching contact or <tt>null</tt> if none is found
+     * @param shortName the contact archetype short name
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private Contact getContact(Party customer, String shortName) {
-        Contact result = null;
+    private void addBillingContacts(List<Contact> list, Party customer,
+                                    String shortName) {
         for (Contact contact : customer.getContacts()) {
             if (TypeHelper.isA(contact, shortName)) {
                 IMObjectBean bean = new IMObjectBean(contact, service);
@@ -160,13 +159,12 @@ public class StatementProcessor
                         = bean.getValues("purposes", Lookup.class);
                 for (Lookup purpose : purposes) {
                     if ("BILLING".equals(purpose.getCode())) {
-                        result = contact;
+                        list.add(contact);
                         break;
                     }
                 }
             }
         }
-        return result;
     }
 
 }

@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -67,34 +66,114 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
     }
 
     /**
-     * Tests the {@link StatementProcessor#process(Party)} method.
+     * Tests the {@link StatementProcessor#process(Party)} method a
+     * statement date where end-of-period has not yet been run.
+     * The statement should be a preview and include COMPLETED charges and
+     * POSTED acts.
      */
-    public void testProcess() {
+    public void testProcessPreview() {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
         customer.addClassification(createAccountType(30, DateUnits.DAYS,
                                                      feeAmount));
         save(customer);
 
-        FinancialAct invoice = createChargesInvoice(new Money(100));
-        invoice.setActivityStartTime(Timestamp.valueOf("2007-01-01 10:00:00"));
-        save(invoice);
-        Date statementDate = Timestamp.valueOf("2007-01-02 10:00:00");
+        FinancialAct invoice1 = createChargesInvoice(new Money(100));
+        invoice1.setActivityStartTime(getDatetime("2007-01-01 10:00:00"));
+        save(invoice1);
 
-        // process the customer's statement. Should just return the invoice
-        // acts
+        FinancialAct invoice2 = createChargesInvoice(new Money(100));
+        invoice2.setActivityStartTime(getDatetime("2007-01-01 10:30:00"));
+        invoice2.setStatus(ActStatus.COMPLETED);
+        save(invoice2);
+
+        FinancialAct invoice3 = createChargesInvoice(new Money(10));
+        invoice3.setActivityStartTime(getDatetime("2007-01-01 11:00:00"));
+        invoice3.setStatus(ActStatus.IN_PROGRESS);
+        save(invoice3);
+
+        Date statementDate = getDate("2007-01-02");
+
+        // process the customer's statement. Should just return the POSTED
+        // and COMPLETED invoice acts
         List<Act> acts = processStatement(statementDate, customer);
-        assertEquals(1, acts.size());
-        checkAct(acts.get(0), invoice, ActStatus.POSTED);
+        assertEquals(2, acts.size());
+        checkAct(acts.get(0), invoice1, ActStatus.POSTED);
+        checkAct(acts.get(1), invoice2, ActStatus.COMPLETED);
 
         // process the customer's statement for 5/2. Amounts should be overdue
         // and a fee generated.
-        statementDate = Timestamp.valueOf("2007-02-05 12:00:00");
+        statementDate = getDate("2007-02-05");
+        acts = processStatement(statementDate, customer);
+        assertEquals(3, acts.size());
+
+        // check the 2 invoices. These can be in any order
+        checkAct(acts.get(0), invoice1, ActStatus.POSTED);
+        checkAct(acts.get(1), invoice2, ActStatus.COMPLETED);
+        FinancialAct fee = (FinancialAct) acts.get(2);
+
+        // check the fee. This should not have been saved
+        checkAct(fee, "act.customerAccountDebitAdjust", feeAmount);
+        assertTrue(fee.isNew());
+    }
+
+    /**
+     * Tests the {@link StatementProcessor#process(Party)} method for a
+     * statement date where end-of-period has been run.
+     */
+    public void testProcessEndOfPeriod() {
+        Party customer = getCustomer();
+        BigDecimal feeAmount = new BigDecimal("25.00");
+        customer.addClassification(createAccountType(30, DateUnits.DAYS,
+                                                     feeAmount));
+        save(customer);
+
+        FinancialAct invoice1 = createChargesInvoice(new Money(100));
+        invoice1.setActivityStartTime(getDatetime("2007-01-01 10:00:00"));
+        save(invoice1);
+
+        FinancialAct invoice2 = createChargesInvoice(new Money(100));
+        invoice2.setActivityStartTime(getDatetime("2007-01-01 10:30:00"));
+        invoice2.setStatus(ActStatus.COMPLETED);
+        save(invoice2);
+
+        FinancialAct invoice3 = createChargesInvoice(new Money(10));
+        invoice3.setActivityStartTime(getDatetime("2007-01-01 11:00:00"));
+        invoice3.setStatus(ActStatus.IN_PROGRESS);
+        save(invoice3);
+
+        Date statementDate = getDate("2007-02-05");
+
+        // process the customer's statement for 5/2. Amounts should be overdue
+        // and a fee generated. COMPLETED acts should be posted.
+        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate,
+                                                            true);
+        eop.process(customer);
+
+        List<Act> acts = processStatement(statementDate, customer);
+        assertEquals(4, acts.size());
+
+        // check the 2 invoices. These can be in any order
+        checkAct(acts.get(0), invoice1, ActStatus.POSTED);
+        checkAct(acts.get(1), invoice2, ActStatus.POSTED);
+
+        // check the fee. This should have been saved
+        FinancialAct fee = (FinancialAct) acts.get(2);
+        checkAct(fee, "act.customerAccountDebitAdjust", feeAmount);
+        assertFalse(fee.isNew());
+
+        // check the closing balance
+        FinancialAct close = (FinancialAct) acts.get(3);
+        checkAct(close, "act.customerAccountClosingBalance",
+                 new BigDecimal("225.00"));
+
+        // preview the next statement date
+        statementDate = getDate("2007-02-06");
         acts = processStatement(statementDate, customer);
         assertEquals(2, acts.size());
-        checkAct(acts.get(0), invoice, ActStatus.POSTED);
-        FinancialAct fee = (FinancialAct) acts.get(1);
-        checkAct(fee, "act.customerAccountDebitAdjust", feeAmount);
+        checkAct(acts.get(0), "act.customerAccountOpeningBalance",
+                 new BigDecimal("225.00"));
+        checkAct(acts.get(1), "act.customerAccountDebitAdjust", feeAmount);
     }
 
     /**
@@ -109,26 +188,26 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         Listener listener = new Listener();
         processor.addListener(listener);
         processor.process(customer);
-        List<StatementEvent> events = listener.getEvents();
+        List<Statement> events = listener.getEvents();
         assertEquals(1, events.size());
-        StatementEvent event = events.get(0);
+        Statement event = events.get(0);
         assertEquals(customer, event.getCustomer());
         return getActs(event);
     }
 
-    private class Listener implements ProcessorListener<StatementEvent> {
-        private List<StatementEvent> events = new ArrayList<StatementEvent>();
+    private class Listener implements ProcessorListener<Statement> {
+        private List<Statement> events = new ArrayList<Statement>();
 
-        private List<StatementEvent> getEvents() {
+        private List<Statement> getEvents() {
             return events;
         }
 
-        public void process(StatementEvent event) {
+        public void process(Statement event) {
             events.add(event);
         }
     }
 
-    private List<Act> getActs(StatementEvent event) {
+    private List<Act> getActs(Statement event) {
         List<Act> result = new ArrayList<Act>();
         for (Act act : event.getActs()) {
             result.add(act);

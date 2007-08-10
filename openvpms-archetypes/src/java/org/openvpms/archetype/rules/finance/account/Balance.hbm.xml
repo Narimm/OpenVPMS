@@ -31,6 +31,7 @@ left outer join e.classifications c with c.archetypeId.shortName='lookup.custome
 where a.linkId = p.act.linkId
       and p.entity.linkId = e.linkId
       and p.archetypeId.shortName='participation.customerAccountBalance'
+      and (a.status = 'POSTED' or a.status='COMPLETED')
 order by e.name, a.activityStartTime
       ]]>
     </query>
@@ -46,6 +47,7 @@ where a.linkId = p.act.linkId
       and p.entity.linkId = e.linkId
       and p.archetypeId.shortName='participation.customerAccountBalance'
       and c.linkId = :accountType
+      and (a.status = 'POSTED' or a.status='COMPLETED')
 order by e.name, a.activityStartTime
       ]]>
     </query>
