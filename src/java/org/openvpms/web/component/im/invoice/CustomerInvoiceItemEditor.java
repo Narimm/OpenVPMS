@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.invoice;
+package org.openvpms.web.component.im.invoice;
 
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;

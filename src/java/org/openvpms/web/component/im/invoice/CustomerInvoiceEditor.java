@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.invoice;
+package org.openvpms.web.component.im.invoice;
 
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.act.Act;
