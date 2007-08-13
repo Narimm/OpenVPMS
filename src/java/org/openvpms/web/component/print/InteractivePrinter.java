@@ -168,19 +168,13 @@ public class InteractivePrinter implements Printer {
 
     /**
      * Determines if printing should occur interactively or be performed
-     * without user intervention. If the printer doesn't support non-interactive
-     * printing, requests to do non-interactive printing are ignored.
+     * without user intervention.
      *
      * @param interactive if <tt>true</tt> print interactively
      * @throws OpenVPMSException for any error
      */
     public void setInteractive(boolean interactive) {
-        if (printer.getInteractive()) {
-            // must print interactively.
-            this.interactive = true;
-        } else {
-            this.interactive = interactive;
-        }
+        this.interactive = interactive;
     }
 
     /**
@@ -191,7 +185,7 @@ public class InteractivePrinter implements Printer {
      * @throws OpenVPMSException for any error
      */
     public boolean getInteractive() {
-        return printer.getInteractive();
+        return interactive;
     }
 
     /**

@@ -49,6 +49,13 @@ class StatementProgressBarProcessor extends ProgressBarProcessor<Party> {
     private Label status;
 
     /**
+     * Determines if a cancel prompt is in progress. If <tt>true</tt>,
+     * processing is suspended, independent of the state of the
+     * {@link #isSuspended()} flag.
+     */
+    private boolean cancel;
+
+    /**
      * The component representing this.
      */
     private Component component;
@@ -124,6 +131,25 @@ class StatementProgressBarProcessor extends ProgressBarProcessor<Party> {
     }
 
     /**
+     * Determines if processing has been suspended.
+     *
+     * @return <tt>true</tt> if processing has been suspended
+     */
+    @Override
+    public boolean isSuspended() {
+        return super.isSuspended() || cancel;
+    }
+
+    /**
+     * Determines if a cancel prompt is currently in progress. If <tt>true</tt>,
+     * processing is suspended, independent of the state of the
+     * {@link #isSuspended()} flag.
+     */
+    public void setCancel(boolean cancel) {
+        this.cancel = cancel;
+    }
+
+    /**
      * Processes a customer.
      *
      * @param customer the customer to process
@@ -137,4 +163,5 @@ class StatementProgressBarProcessor extends ProgressBarProcessor<Party> {
             processCompleted(customer);
         }
     }
+
 }

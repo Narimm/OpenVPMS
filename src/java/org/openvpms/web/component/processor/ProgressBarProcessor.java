@@ -198,7 +198,7 @@ public abstract class ProgressBarProcessor<T>
             bar.setValue(processed);
         }
         if (!isSuspended() && (lastRefresh == 0
-                || ((lastRefresh - time) > refreshInterval))) {
+                || ((time - lastRefresh) > refreshInterval))) {
             // enable a refresh of the progress bar
             setSuspend(true);
             final ApplicationInstance app = ApplicationInstance.getActive();
