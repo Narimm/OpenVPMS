@@ -141,4 +141,22 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
         checkAct(act, expected.getArchetypeId().getShortName(),
                  expected.getTotal(), status);
     }
+
+    /**
+     * Verifies an act appears in a list of acts with the expected status.
+     *
+     * @param acts     the acts
+     * @param expected the expected act
+     * @param status   the expected status
+     */
+    protected void checkAct(List<Act> acts, FinancialAct expected,
+                            String status) {
+        for (Act act : acts) {
+            if (act.equals(expected)) {
+                checkAct(act, expected, status);
+                return;
+            }
+        }
+        fail("Expected act " + expected + " not found in acts");
+    }
 }
