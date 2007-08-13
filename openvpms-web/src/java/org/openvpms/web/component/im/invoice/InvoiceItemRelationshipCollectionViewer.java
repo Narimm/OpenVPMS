@@ -11,66 +11,57 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.invoice;
+package org.openvpms.web.component.im.invoice;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**
- * Editor for <em>actRelationship.customerAccountInvoiceItem</em> and
+ * Viewer for <em>actRelationship.customerAccountInvoiceItem</em> and
  * <em>actRelationship.customerAccountCreditItem</em> act relationships.
- * Sets an {@link MedicationManager} on {@link CustomerInvoiceItemEditor}
- * instances.
+ * Sorts the items on descending start time.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class InvoiceItemRelationshipCollectionEditor
-        extends ActRelationshipCollectionEditor {
+public class InvoiceItemRelationshipCollectionViewer
+        extends ActRelationshipCollectionViewer {
 
     /**
-     * The medication manager.
-     */
-    private final MedicationManager medicationMgr = new MedicationManager();
-
-
-    /**
-     * Constructs a new <code>InvoiceItemRelationshipCollectionEditor</code>.
+     * Constructs a new <tt>InvoiceItemRelationshipCollectionViewer</tt>.
      *
      * @param property the collection property
      * @param act      the parent act
      * @param context  the layout context
      */
-    public InvoiceItemRelationshipCollectionEditor(CollectionProperty property,
+    public InvoiceItemRelationshipCollectionViewer(CollectionProperty property,
                                                    Act act,
                                                    LayoutContext context) {
         super(property, act, context);
     }
 
     /**
-     * Creates a new editor.
+     * Creates a new result set for display.
      *
-     * @param object  the object to edit
-     * @param context the layout context
-     * @return an editor to edit <code>object</code>
+     * @return a new result set
      */
     @Override
-    public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        IMObjectEditor editor = super.createEditor(object, context);
-        if (editor instanceof CustomerInvoiceItemEditor) {
-            ((CustomerInvoiceItemEditor) editor).setMedicationManager(
-                    medicationMgr);
-        }
-        return editor;
+    protected ResultSet<IMObject> createResultSet() {
+        ResultSet<IMObject> set = super.createResultSet();
+        set.sort(new SortConstraint[]{new NodeSortConstraint("startTime",
+                                                             false)});
+        return set;
     }
 }
