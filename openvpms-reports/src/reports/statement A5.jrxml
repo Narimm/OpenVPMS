@@ -42,6 +42,7 @@
 	<field name="credit" class="java.lang.Boolean"/>
 	<field name="status" class="java.lang.String"/>
 	<field name="shortName" class="java.lang.String"/>
+	<field name="printed" class="java.lang.Boolean"/>
 
 	<variable name="statementFromTime" class="java.util.Date" resetType="None" calculation="First">
 		<variableExpression><![CDATA[$F{startTime}]]></variableExpression>
