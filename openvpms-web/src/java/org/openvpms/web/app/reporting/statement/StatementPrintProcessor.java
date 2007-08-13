@@ -81,7 +81,7 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
         printer.setParameters(getParameters(statement));
 
         String title = Messages.get("reporting.statements.print.customer");
-        InteractiveIMPrinter<Act> iPrinter
+        final InteractiveIMPrinter<Act> iPrinter
                 = new InteractiveIMPrinter<Act>(title, printer);
         if (printerName != null) {
             iPrinter.setInteractive(false);
@@ -92,7 +92,12 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
                 try {
                     printerName = printer;
                     processor.processCompleted(statement.getCustomer());
-                    processor.process(); // process the next statement
+                    if (iPrinter.getInteractive()) {
+                        // Need to process the next statement. If
+                        // non-interactive, the next statement will be processed
+                        // automatically
+                        processor.process();
+                    }
                 } catch (OpenVPMSException exception) {
                     processor.notifyError(exception);
                 }
@@ -109,7 +114,9 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
                 processor.notifyError(cause);
             }
         });
-        processor.setSuspend(true); // suspend generation while printing
+        if (iPrinter.getInteractive()) {
+            processor.setSuspend(true); // suspend generation while printing
+        }
         iPrinter.print(printerName);
     }
 

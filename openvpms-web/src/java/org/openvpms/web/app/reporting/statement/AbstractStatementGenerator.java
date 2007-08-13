@@ -156,13 +156,14 @@ public abstract class AbstractStatementGenerator
      */
     private void onCancel(final Vetoable source) {
         final StatementProgressBarProcessor processor = getProcessor();
-        processor.setSuspend(true);
+        processor.setCancel(true);
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(cancelTitle, cancelMessage);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent e) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
                     source.veto(false);
+                    processor.setCancel(false);
                     onCompletion();
                 } else {
                     source.veto(true);
