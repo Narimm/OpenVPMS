@@ -163,7 +163,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         eop.process(customer);
 
         List<Act> acts = processStatement(statementDate, customer);
-        assertEquals(4, acts.size());
+        assertEquals(3, acts.size());
 
         // check the 2 invoices. These can be in any order
         checkAct(acts.get(0), invoice1, ActStatus.POSTED);
@@ -173,11 +173,6 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         FinancialAct fee = (FinancialAct) acts.get(2);
         checkAct(fee, "act.customerAccountDebitAdjust", feeAmount);
         assertFalse(fee.isNew());
-
-        // check the closing balance
-        FinancialAct close = (FinancialAct) acts.get(3);
-        checkAct(close, "act.customerAccountClosingBalance",
-                 new BigDecimal("225.00"));
 
         // preview the next statement date
         statementDate = getDate("2007-02-06");

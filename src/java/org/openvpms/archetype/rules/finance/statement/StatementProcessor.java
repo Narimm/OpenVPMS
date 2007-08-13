@@ -106,10 +106,11 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
         if (close == null) {
             acts = actHelper.getPreviewActs(customer, statementDate, open);
         } else {
-            acts = actHelper.getPostedActs(customer, open, close);
+            acts = actHelper.getPostedActs(customer, open, close, false);
         }
         List<Contact> contacts = getContacts(customer);
-        Statement statement = new Statement(customer, contacts, statementDate,
+        Date date = (close == null) ? statementDate : close;
+        Statement statement = new Statement(customer, contacts, date,
                                             open, close, acts);
         notifyListeners(statement);
     }
