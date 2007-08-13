@@ -328,7 +328,7 @@
 						key="subreport-1"
 						stretchType="RelativeToBandHeight"
 						isPrintWhenDetailOverflows="true">
-							<printWhenExpression><![CDATA[new Boolean($F{status}.equals("Completed"))]]></printWhenExpression>
+							<printWhenExpression><![CDATA[new Boolean(!$F{printed}.booleanValue() && $F{shortName}.contains("customerAccountCharges"))]]></printWhenExpression>
 						</reportElement>
 					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.product.entity.displayName", "target.product.entity.name"})]]></dataSourceExpression>
 					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA["statementItems.jrxml"]]></subreportExpression>

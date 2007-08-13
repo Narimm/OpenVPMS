@@ -42,83 +42,51 @@
 	<field name="bankDeposit.depositAccount.entity.accountName" class="java.lang.String"/>
 	<field name="bankDeposit.depositAccount.entity.accountNumber" class="java.lang.String"/>
 	<field name="item.shortName" class="java.lang.String"/>
+	<field name="item.drawer" class="java.lang.String"/>
+	<field name="item.bsb" class="java.lang.String"/>
+	<field name="item.bank" class="java.lang.String"/>
+	<field name="item.creditCard" class="java.lang.String"/>
 
-	<variable name="isCash" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
-		<variableExpression><![CDATA[new Boolean($F{item.displayName}.equals("Cash"))]]></variableExpression>
-		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	<variable name="SHORTNAME" class="java.lang.String" resetType="Report" calculation="Nothing">
+		<variableExpression><![CDATA[$F{item.shortName}.replaceFirst(".*Payment|.*Refund", "")]]></variableExpression>
 	</variable>
-	<variable name="isPayment" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
-		<variableExpression><![CDATA[new Boolean($F{act.displayName}.equals("Payment"))]]></variableExpression>
-		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	<variable name="IS_CHEQUE" class="java.lang.Boolean" resetType="None" calculation="Nothing">
+		<variableExpression><![CDATA[new Boolean($V{SHORTNAME}.equalsIgnoreCase("Cheque"))]]></variableExpression>
 	</variable>
-	<variable name="isRefund" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
-		<variableExpression><![CDATA[new Boolean($F{act.displayName}.equals("Refund"))]]></variableExpression>
-		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	<variable name="IS_CASH" class="java.lang.Boolean" resetType="None" calculation="Nothing">
+		<variableExpression><![CDATA[new Boolean($V{SHORTNAME}.equalsIgnoreCase("Cash"))]]></variableExpression>
 	</variable>
-	<variable name="isCheque" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
-		<variableExpression><![CDATA[new Boolean($F{item.displayName}.equals("Cheque"))]]></variableExpression>
-		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	<variable name="IS_NOT_CASH" class="java.lang.Boolean" resetType="None" calculation="Nothing">
+		<variableExpression><![CDATA[new Boolean(!$V{IS_CASH}.booleanValue())]]></variableExpression>
 	</variable>
-	<variable name="isEFT" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
-		<variableExpression><![CDATA[new Boolean($F{item.displayName}.equals("EFT"))]]></variableExpression>
-		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	<variable name="IS_NOT_CHEQUE" class="java.lang.Boolean" resetType="None" calculation="Nothing">
+		<variableExpression><![CDATA[new Boolean(!$V{IS_CHEQUE}.booleanValue())]]></variableExpression>
 	</variable>
-	<variable name="isCreditCard" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem" calculation="Nothing">
-		<variableExpression><![CDATA[new Boolean($F{item.displayName}.equals("Credit Card"))]]></variableExpression>
-		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
-	</variable>
-	<variable name="isNotCash" class="java.lang.Boolean" resetType="Report" calculation="Nothing">
-		<variableExpression><![CDATA[new Boolean(!($F{item.displayName}.equals("Cash")))]]></variableExpression>
+	<variable name="IS_CREDIT" class="java.lang.Boolean" resetType="None" calculation="Nothing">
+		<variableExpression><![CDATA[new Boolean($V{SHORTNAME}.equalsIgnoreCase("Credit"))]]></variableExpression>
 	</variable>
 
-		<group  name="ActItem" isStartNewPage="true" isReprintHeaderOnEachPage="true" >
-			<groupExpression><![CDATA[$F{item.shortName}]]></groupExpression>
+		<group  name="depositType" isStartNewPage="true" isReprintHeaderOnEachPage="true" >
+			<groupExpression><![CDATA[$V{SHORTNAME}]]></groupExpression>
 			<groupHeader>
-			<band height="36"  isSplitAllowed="true" >
-				<line direction="BottomUp">
+			<band height="20"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="0"
-						y="4"
-						width="535"
-						height="1"
-						key="line-1"/>
-					<graphicElement stretchType="NoStretch"/>
-				</line>
-				<line direction="BottomUp">
-					<reportElement
-						x="0"
-						y="30"
-						width="535"
-						height="1"
-						key="line-2"/>
-					<graphicElement stretchType="NoStretch"/>
-				</line>
-			</band>
-			</groupHeader>
-			<groupFooter>
-			<band height="32"  isSplitAllowed="false" >
-				<line direction="BottomUp">
-					<reportElement
-						x="0"
-						y="8"
-						width="535"
-						height="0"
-						key="line-3"/>
-					<graphicElement stretchType="NoStretch"/>
-				</line>
-				<staticText>
-					<reportElement
-						x="213"
-						y="12"
-						width="105"
-						height="16"
-						key="staticText-17"/>
+						x="14"
+						y="0"
+						width="100"
+						height="18"
+						key="textField"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
 						<font/>
 					</textElement>
-				<text><![CDATA[Total]]></text>
-				</staticText>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$V{SHORTNAME}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="0"  isSplitAllowed="true" >
 			</band>
 			</groupFooter>
 		</group>
@@ -184,31 +152,10 @@
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA[$F{bankDeposit.depositAccount.entity.accountNumber}]]></textFieldExpression>
 				</textField>
-			</band>
-		</pageHeader>
-		<columnHeader>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</columnHeader>
-		<detail>
-			<band height="26"  isSplitAllowed="true" >
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="5"
-						y="3"
-						width="135"
-						height="14"
-						key="textField"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{item.shortName}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="150"
-						y="0"
+						x="398"
+						y="35"
 						width="100"
 						height="18"
 						key="textField"/>
@@ -216,25 +163,178 @@
 					<textElement>
 						<font/>
 					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{amount}]]></textFieldExpression>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="262"
-						y="1"
-						width="127"
+						x="398"
+						y="52"
+						width="71"
+						height="18"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="458"
+						y="52"
+						width="36"
 						height="18"
 						key="textField"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
 						<font/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{item.description}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="20"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="14"
+						y="18"
+						width="495"
+						height="0"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="9"
+						y="5"
+						width="117"
+						height="13"
+						key="staticText-21"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="180"
+						y="5"
+						width="117"
+						height="13"
+						key="staticText-22"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Details]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="19"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="407"
+						y="3"
+						width="100"
+						height="12"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Left">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{amount}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="9"
+						y="1"
+						width="159"
+						height="18"
+						key="textField">
+							<printWhenExpression><![CDATA[$V{IS_CHEQUE}]]></printWhenExpression>
+						</reportElement>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[($F{item.drawer} == null) ? $F{act.customer.entity.name}: $F{item.drawer}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="180"
+						y="1"
+						width="100"
+						height="18"
+						key="textField">
+							<printWhenExpression><![CDATA[$V{IS_CHEQUE}]]></printWhenExpression>
+						</reportElement>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{item.bsb}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="280"
+						y="1"
+						width="100"
+						height="18"
+						key="textField">
+							<printWhenExpression><![CDATA[$V{IS_CHEQUE}]]></printWhenExpression>
+						</reportElement>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{item.bank}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="9"
+						y="1"
+						width="159"
+						height="18"
+						key="textField">
+							<printWhenExpression><![CDATA[$V{IS_NOT_CHEQUE}]]></printWhenExpression>
+						</reportElement>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{act.customer.entity.name}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="182"
+						y="1"
+						width="100"
+						height="18"
+						key="textField">
+							<printWhenExpression><![CDATA[$V{IS_CREDIT}]]></printWhenExpression>
+						</reportElement>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{item.creditCard}]]></textFieldExpression>
 				</textField>
 			</band>
 		</detail>
 		<columnFooter>
-			<band height="0"  isSplitAllowed="true" >
+			<band height="20"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="14"
+						y="6"
+						width="495"
+						height="0"
+						key="line-3"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
 			</band>
 		</columnFooter>
 		<pageFooter>
