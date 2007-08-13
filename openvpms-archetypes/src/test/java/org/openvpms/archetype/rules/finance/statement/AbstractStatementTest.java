@@ -94,7 +94,7 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
         Date open = helper.getOpeningBalanceTimestamp(customer, statementDate);
         Date close = helper.getClosingBalanceTimestamp(customer, statementDate,
                                                        open);
-        Iterable<Act> acts = helper.getPostedActs(customer, open, close);
+        Iterable<Act> acts = helper.getPostedActs(customer, open, close, true);
         List<Act> result = new ArrayList<Act>();
         for (Act act : acts) {
             result.add(act);

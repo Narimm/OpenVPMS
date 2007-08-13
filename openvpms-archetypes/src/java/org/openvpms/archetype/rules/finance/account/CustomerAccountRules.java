@@ -166,6 +166,18 @@ public class CustomerAccountRules {
     }
 
     /**
+     * Calculates the outstanding balance for a customer, incorporating acts
+     * up to the specified date.
+     *
+     * @param customer the customer
+     * @param date     the date
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getBalance(Party customer, Date date) {
+        return calculator.getBalance(customer, date);
+    }
+
+    /**
      * Calculates a new balance for a customer from the current outstanding
      * balance and a running total.
      * If the new balance is:

@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -223,6 +224,53 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         checkAct(acts.get(1), "act.customerAccountDebitAdjust", feeAmount);
         checkAct(acts.get(2), "act.customerAccountClosingBalance",
                  amount.add(feeAmount));
+    }
+
+    /**
+     * Verifies that end of period is not performed if there is no account
+     * activity.
+     */
+    public void testEndOfPeriodForNoActivity() {
+        Party customer = getCustomer();
+        Date statementDate = getDate("2007-05-02");
+        EndOfPeriodProcessor processor
+                = new EndOfPeriodProcessor(statementDate, true);
+        processor.process(customer);
+        List<Act> acts = getActs(customer, statementDate);
+        assertEquals(0, acts.size());
+    }
+
+    /**
+     * Verifies that end of period is performed if there is a account activity
+     * with a zero account balance.
+     */
+    public void testEndOfPeriodForZeroBalance() {
+        Party customer = getCustomer();
+
+        Money amount = new Money(100);
+        FinancialAct invoice = createChargesInvoice(
+                amount, getDatetime("2007-01-01 10:00:00"));
+        save(invoice);
+        FinancialAct payment = createPayment(
+                amount, getDatetime("2007-01-01 11:00:00"));
+        save(payment);
+
+        // should be a zero balance
+        CustomerAccountRules rules = new CustomerAccountRules();
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
+
+        // now run end-of-period
+        Date statementDate = getDate("2007-05-02");
+
+        EndOfPeriodProcessor processor
+                = new EndOfPeriodProcessor(statementDate, true);
+        processor.process(customer);
+        List<Act> acts = getActs(customer, statementDate);
+        assertEquals(3, acts.size());
+        checkAct(acts.get(0), invoice, FinancialActStatus.POSTED);
+        checkAct(acts.get(1), payment, FinancialActStatus.POSTED);
+        checkAct(acts.get(2), "act.customerAccountClosingBalance",
+                 BigDecimal.ZERO);
     }
 
 }

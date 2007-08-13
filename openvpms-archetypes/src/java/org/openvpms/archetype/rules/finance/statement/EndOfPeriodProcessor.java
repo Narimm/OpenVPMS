@@ -36,6 +36,23 @@ import java.util.Date;
 
 /**
  * End-of-period statement processor.
+ * <p/>
+ * This performs end-of-period for a customer. End-of-period processing
+ * includes:
+ * <ul>
+ * <li>the addition of accounting fees, if the customer has overdue balances
+ * that incur a fee; and
+ * <li>the creation of closing and opening balance acts</li>
+ * </ul>
+ * <p/>
+ * End-of-period processing only occurs if the customer has no statement
+ * on or after the specified statement date and:
+ * <ul>
+ * <li>there are COMPLETED invoices to be POSTED; or
+ * <li>there is a non-zero balance; or
+ * <li>there is a zero balance but there has been account activity since
+ * the last opening balance</li>
+ * </ul>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -127,18 +144,37 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      */
     public void process(Party customer) {
         if (!statement.hasStatement(customer, statementDate)) {
+            Period period = new Period(customer);
+            boolean needStatement = false;
             if (postCompletedCharges) {
-                for (Act act : acts.getCompletedCharges(customer, timetamp)) {
+                for (Act act : acts.getCompletedCharges(customer, statementDate,
+                                                        period.getOpen(),
+                                                        period.getClose())) {
                     post(act);
+                    needStatement = true;
                 }
             }
-            BigDecimal fee = statement.getAccountFee(customer, timetamp);
-            if (fee.compareTo(BigDecimal.ZERO) != 0) {
-                Date feeStartTime = getTimestamp(1);
-                statement.applyAccountingFee(customer, fee, feeStartTime);
+            if (!needStatement) {
+                BigDecimal balance = account.getBalance(customer, timetamp);
+                if (balance.compareTo(BigDecimal.ZERO) == 0) {
+                    if (acts.hasAccountActivity(customer, period.getOpen(),
+                                                period.getClose())) {
+                        needStatement = true;
+                    }
+
+                } else {
+                    needStatement = true;
+                }
             }
-            Date endTimestamp = getTimestamp(2);
-            account.createPeriodEnd(customer, endTimestamp);
+            if (needStatement) {
+                BigDecimal fee = statement.getAccountFee(customer, timetamp);
+                if (fee.compareTo(BigDecimal.ZERO) != 0) {
+                    Date feeStartTime = getTimestamp(1);
+                    statement.applyAccountingFee(customer, fee, feeStartTime);
+                }
+                Date endTimestamp = getTimestamp(2);
+                account.createPeriodEnd(customer, endTimestamp);
+            }
         }
     }
 
@@ -166,5 +202,37 @@ public class EndOfPeriodProcessor implements Processor<Party> {
         calendar.setTime(timetamp);
         calendar.add(Calendar.SECOND, addSeconds);
         return calendar.getTime();
+    }
+
+    private class Period {
+        private Date open;
+        private Date close;
+        private final Party customer;
+        private boolean init;
+
+        public Period(Party customer) {
+            this.customer = customer;
+        }
+
+        public Date getOpen() {
+            if (!init) {
+                init();
+            }
+            return open;
+        }
+
+        public Date getClose() {
+            if (!init) {
+                init();
+            }
+            return close;
+        }
+
+        private void init() {
+            open = acts.getOpeningBalanceTimestamp(customer, statementDate);
+            close = acts.getClosingBalanceTimestamp(customer, statementDate,
+                                                    open);
+            init = true;
+        }
     }
 }

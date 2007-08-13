@@ -153,7 +153,6 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
         return invoice;
     }
 
-
     /**
      * Helper to create an <em>act.customerAccountChargesCounter</em>.
      *
@@ -188,6 +187,19 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      */
     protected FinancialAct createPayment(Money amount) {
         return createPaymentRefund("act.customerAccountPayment", amount);
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountPayment</em>.
+     *
+     * @param amount the act total
+     * @param startTime the act start time
+     * @return a new act
+     */
+    protected FinancialAct createPayment(Money amount, Date startTime) {
+        FinancialAct payment = createPayment(amount);
+        payment.setActivityStartTime(startTime);
+        return payment;
     }
 
     /**
