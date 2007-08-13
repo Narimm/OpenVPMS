@@ -187,13 +187,13 @@ public class DepositQuery {
     	if (shortName.endsWith("Cheque")){
     		return 0;
     	}
-    	else if (shortName.endsWith("Cash")) {
+    	else if (shortName.endsWith("Credit")) {
     		return 1;
     	}
-    	else if (shortName.endsWith("Credit")) {
+    	else if (shortName.endsWith("EFT")) {
     		return 2;
     	}
-    	else if (shortName.endsWith("EFT")) {
+    	else if (shortName.endsWith("Cash")) {
     		return 3;
     	}
     	else {
