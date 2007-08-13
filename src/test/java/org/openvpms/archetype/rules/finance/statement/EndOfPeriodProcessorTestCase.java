@@ -225,14 +225,4 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
                  amount.add(feeAmount));
     }
 
-    private void checkAct(List<Act> acts, FinancialAct expected,
-                          String status) {
-        for (Act act : acts) {
-            if (act.equals(expected)) {
-                checkAct(act, expected, status);
-                return;
-            }
-        }
-        fail("Expected act " + expected + " not found in acts");
-    }
 }

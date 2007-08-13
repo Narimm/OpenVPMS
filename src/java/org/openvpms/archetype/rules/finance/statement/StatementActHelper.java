@@ -145,7 +145,8 @@ class StatementActHelper {
     /**
      * Returns all COMPLETED charge act for a customer, between the
      * opening balance prior to the specified date, and the corresponding
-     * closing balance.
+     * closing balance. If there is no closing balance, returns up to the
+     * statement date timestamp.
      *
      * @param customer      the customer
      * @param statementDate the statement date
@@ -160,6 +161,9 @@ class StatementActHelper {
         Date closeTimestamp = getClosingBalanceTimestamp(customer,
                                                          openTimestamp,
                                                          statementDate);
+        if (closeTimestamp == null) {
+            closeTimestamp = statement.getStatementTimestamp(statementDate);
+        }
         ArchetypeQuery query = createQuery(customer, CHARGE_SHORT_NAMES,
                                            openTimestamp, closeTimestamp,
                                            ActStatus.COMPLETED);
@@ -168,10 +172,11 @@ class StatementActHelper {
 
     /**
      * Returns all POSTED statement acts and COMPLETED charge acts for a
-     * customer from the opening balance timestamp.
-     * This adds (but does not save) an accounting fee act if there is no
-     * closing balance, an an accounting fee is required.
-     * This is intended to be used to preview acts prior to end-of-period
+     * customer from the opening balance timestamp to the end of the statement
+     * date. <p/>
+     * This adds (but does not save) an accounting fee act if an accounting fee
+     * is required.
+     * This is intended to be used to preview acts prior to end-of-period.
      *
      * @param customer                the customer
      * @param statementDate           the date
@@ -184,8 +189,9 @@ class StatementActHelper {
     public Iterable<Act> getPreviewActs(Party customer,
                                         Date statementDate,
                                         Date openingBalanceTimestamp) {
+        Date close = statement.getStatementTimestamp(statementDate);
         ArchetypeQuery query = createQuery(customer, openingBalanceTimestamp,
-                                           null, null);
+                                           close, null);
         query.add(new OrConstraint()
                 .add(new NodeConstraint("status", ActStatus.POSTED))
                 .add(new NodeConstraint("status", ActStatus.COMPLETED)));

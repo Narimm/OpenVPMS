@@ -92,10 +92,15 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         invoice3.setStatus(ActStatus.IN_PROGRESS);
         save(invoice3);
 
+        FinancialAct invoice4 = createChargesInvoice(new Money(10));
+        invoice4.setActivityStartTime(getDatetime("2007-01-03 11:00:00"));
+        invoice4.setStatus(ActStatus.POSTED);
+        save(invoice4);
+
         Date statementDate = getDate("2007-01-02");
 
         // process the customer's statement. Should just return the POSTED
-        // and COMPLETED invoice acts
+        // and COMPLETED invoice acts. The invoice4 invoice won't be included
         List<Act> acts = processStatement(statementDate, customer);
         assertEquals(2, acts.size());
         checkAct(acts.get(0), invoice1, ActStatus.POSTED);
@@ -105,12 +110,13 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         // and a fee generated.
         statementDate = getDate("2007-02-05");
         acts = processStatement(statementDate, customer);
-        assertEquals(3, acts.size());
+        assertEquals(4, acts.size());
 
-        // check the 2 invoices. These can be in any order
+        // check the 3 invoices.
         checkAct(acts.get(0), invoice1, ActStatus.POSTED);
         checkAct(acts.get(1), invoice2, ActStatus.COMPLETED);
-        FinancialAct fee = (FinancialAct) acts.get(2);
+        checkAct(acts.get(2), invoice4, ActStatus.POSTED);
+        FinancialAct fee = (FinancialAct) acts.get(3);
 
         // check the fee. This should not have been saved
         checkAct(fee, "act.customerAccountDebitAdjust", feeAmount);
@@ -142,10 +148,16 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         invoice3.setStatus(ActStatus.IN_PROGRESS);
         save(invoice3);
 
+        FinancialAct invoice4 = createChargesInvoice(new Money(10));
+        invoice4.setActivityStartTime(getDatetime("2007-02-06 11:00:00"));
+        invoice4.setStatus(ActStatus.COMPLETED);
+        save(invoice4);
+
         Date statementDate = getDate("2007-02-05");
 
         // process the customer's statement for 5/2. Amounts should be overdue
         // and a fee generated. COMPLETED acts should be posted.
+        // The invoice4 invoice won't be included.
         EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate,
                                                             true);
         eop.process(customer);
@@ -170,10 +182,11 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         // preview the next statement date
         statementDate = getDate("2007-02-06");
         acts = processStatement(statementDate, customer);
-        assertEquals(2, acts.size());
+        assertEquals(3, acts.size());
         checkAct(acts.get(0), "act.customerAccountOpeningBalance",
                  new BigDecimal("225.00"));
-        checkAct(acts.get(1), "act.customerAccountDebitAdjust", feeAmount);
+        checkAct(acts.get(1), invoice4, ActStatus.COMPLETED);
+        checkAct(acts.get(2), "act.customerAccountDebitAdjust", feeAmount);
     }
 
     /**
