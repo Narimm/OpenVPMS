@@ -215,9 +215,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery(Party party) {
-        PatientSummaryQuery query = new PatientSummaryQuery(party);
-        query.setDefaultSortConstraint(DEFAULT_SORT);
-        return query;
+        return new PatientSummaryQuery(party);
     }
 
     /**
