@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -103,9 +104,13 @@ public class ReportFactory {
         TemplateHelper helper = new TemplateHelper(service);
         Document doc = helper.getDocumentForArchetype(shortName);
         if (doc == null) {
-            return new DynamicJasperReport(
-                    service.getArchetypeDescriptor(shortName), service,
-                    handlers);
+            ArchetypeDescriptor archetype
+                    = service.getArchetypeDescriptor(shortName);
+            if (archetype == null) {
+                throw new ReportException(FailedToCreateReport,
+                                          "Invalid archetype: " + shortName);
+            }
+            return new DynamicJasperReport(archetype, service, handlers);
         }
         return createIMObjectReport(doc, service, handlers);
     }
