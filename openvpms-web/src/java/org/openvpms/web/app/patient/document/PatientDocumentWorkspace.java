@@ -79,7 +79,7 @@ public class PatientDocumentWorkspace extends PatientActWorkspace<Act> {
                 "act.patientDocumentLetter", "status");
         return new DefaultActQuery<Act>(patient, "patient",
                                         "participation.patient", SHORT_NAMES,
-                                        lookups, null);
+                                        lookups);
     }
 
     /**

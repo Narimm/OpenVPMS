@@ -31,6 +31,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.IMObjectProperty;
@@ -74,33 +75,23 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * @param shortNames the archetype short names
      */
     public DescriptorTableModel(String[] shortNames) {
-        context = new DefaultLayoutContext();
-        TableComponentFactory factory = new TableComponentFactory(context);
-        context.setComponentFactory(factory);
-        setTableColumnModel(createColumnModel(shortNames, context));
+        this(shortNames, null);
     }
 
     /**
      * Creates a new <code>DescriptorTableModel</code>.
      *
      * @param shortNames the archetype short names
-     * @param context    the layout context
+     * @param context    the layout context. May be <tt>null</tt>
      */
     public DescriptorTableModel(String[] shortNames, LayoutContext context) {
+        if (context == null) {
+            context = new DefaultLayoutContext();
+            TableComponentFactory factory = new TableComponentFactory(context);
+            context.setComponentFactory(factory);
+        }
         this.context = context;
         setTableColumnModel(createColumnModel(shortNames, context));
-    }
-
-    /**
-     * Construct a <code>DescriptorTableModel</code>.
-     *
-     * @param model   the table column model. May be <code>null</code>
-     * @param context the layout context
-     */
-    public DescriptorTableModel(TableColumnModel model,
-                                LayoutContext context) {
-        super(model);
-        this.context = context;
     }
 
     /**
@@ -136,9 +127,10 @@ public abstract class DescriptorTableModel<T extends IMObject>
         if (col instanceof DescriptorTableColumn) {
             NodeDescriptor descriptor
                     = ((DescriptorTableColumn) col).getDescriptor();
-            if (!descriptor.isCollection() &&
-                    descriptor.getPath().lastIndexOf("/") <= 0) {
-                // can only sort on top level nodes
+            if ((!descriptor.isCollection() &&
+                    descriptor.getPath().lastIndexOf("/") <= 0)
+                    || QueryHelper.isParticipationNode(descriptor)) {
+                // can only sort on top level or participation nodes
                 result = new SortConstraint[]{
                         new NodeSortConstraint(descriptor.getName(), ascending)
                 };

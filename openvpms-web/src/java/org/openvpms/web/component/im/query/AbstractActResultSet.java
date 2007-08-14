@@ -20,13 +20,17 @@ package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IConstraintContainer;
+import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
@@ -34,6 +38,8 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -64,6 +70,11 @@ public abstract class AbstractActResultSet<T>
      * The time criteria. May be <tt>null</tt>.
      */
     private final IConstraint times;
+
+    /**
+     * Used to generate unique aliases for entity constraints.
+     */
+    private int entitySeed;
 
 
     /**
@@ -238,6 +249,112 @@ public abstract class AbstractActResultSet<T>
         }
 
         return query;
+    }
+
+    /**
+     * Returns a new archetype query.
+     * This implementation delegates creation to {@link #createQuery},
+     * before adding any {@link #getConstraints()} and
+     * {@link #getSortConstraints()}.
+     *
+     * @param firstResult the first result of the page to retrieve
+     * @param maxResults  the maximun no of results in the page
+     * @return a new query
+     */
+    protected ArchetypeQuery createQuery(int firstResult, int maxResults) {
+        ArchetypeQuery query = createQuery();
+        query.setFirstResult(firstResult);
+        query.setMaxResults(maxResults);
+        query.setDistinct(isDistinct());
+        query.setCountResults(true);
+        IConstraint constraints = getConstraints();
+        if (constraints != null) {
+            query.add(constraints);
+        }
+        for (SortConstraint sort : getSortConstraints()) {
+            if (sort instanceof NodeSortConstraint) {
+                NodeSortConstraint node = (NodeSortConstraint) sort;
+                NodeDescriptor descriptor = getDescriptor(node);
+                if (descriptor != null
+                        && QueryHelper.isParticipationNode(descriptor)) {
+                    addSortOnParticipation(query, descriptor,
+                                           node.isAscending());
+                } else {
+                    query.add(sort);
+                }
+            } else {
+                query.add(sort);
+            }
+        }
+        return query;
+    }
+
+    /**
+     * Helper to return the descriptor referred to by a sort constraint.
+     *
+     * @param node the sort constraint
+     * @return the corresponding descriptor or <tt>null</tt>
+     */
+    private NodeDescriptor getDescriptor(NodeSortConstraint node) {
+        String[] shortNames = archetypes.getShortNames();
+        if (shortNames.length > 0) {
+            ArchetypeDescriptor archetype
+                    = DescriptorHelper.getArchetypeDescriptor(shortNames[0]);
+            if (archetype != null) {
+                return archetype.getNodeDescriptor(node.getNodeName());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Adds a sort constraint on a participation node.
+     *
+     * @param query      the query
+     * @param descriptor the participation node descriptor
+     * @param ascending  if <tt>true</tt> sort ascending
+     */
+    private void addSortOnParticipation(ArchetypeQuery query,
+                                        NodeDescriptor descriptor,
+                                        boolean ascending) {
+        String[] particShortNames = DescriptorHelper.getShortNames(descriptor);
+        String particAlias = descriptor.getName();
+        ShortNameConstraint participation = new ShortNameConstraint(
+                particAlias, particShortNames, true, true);
+        ShortNameConstraint entity = new ShortNameConstraint(
+                getEntityAlias(), getEntityShortNames(particShortNames), true,
+                true);
+        query.add(participation);
+        query.add(entity);
+        query.add(
+                new IdConstraint(archetypes.getAlias(), particAlias + ".act"));
+        query.add(new IdConstraint(entity.getAlias(), particAlias + ".entity"));
+        query.add(new NodeSortConstraint(entity.getAlias(), "name", ascending));
+    }
+
+    /**
+     * Returns a unique alias for an entity constraint.
+     *
+     * @return the alias
+     */
+    private String getEntityAlias() {
+        return "entity" + (++entitySeed);
+    }
+
+
+    private String[] getEntityShortNames(String[] shortNames) {
+        Set<String> result = new HashSet<String>();
+        for (String shortName : shortNames) {
+            ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
+                    shortName);
+            NodeDescriptor node = archetype.getNodeDescriptor("entity");
+            if (node != null) {
+                for (String nShortname : DescriptorHelper.getShortNames(node)) {
+                    result.add(nShortname);
+                }
+            }
+        }
+        return result.toArray(new String[0]);
     }
 
     /**

@@ -42,7 +42,6 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
-import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
@@ -158,7 +157,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         ActBean bean = new ActBean(act);
         String started = null;
         String completed = null;
-        String clinician = null;
+        String clinician;
         String reason = getValue(bean, "reason");
         String status = ArchetypeServiceFunctions.lookup(act, "status");
 
@@ -175,10 +174,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         IMObjectReference clinicianRef
                 = bean.getParticipantRef("participation.clinician");
 
-        NodeSet name = IMObjectHelper.getNodes(clinicianRef, "name");
-        if (name != null) {
-            clinician = (String) name.get("name");
-        }
+        clinician = IMObjectHelper.getName(clinicianRef);
         clinician = getValue(clinician, bean, "clinician");
 
         String text;
@@ -214,8 +210,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
 
         if (TypeHelper.isA(act, "act.patientInvestigation*")) {
             detail = getInvestigationDetail((DocumentAct) act);
-        }
-        else if (TypeHelper.isA(act, "act.patientDocument*")) {
+        } else if (TypeHelper.isA(act, "act.patientDocument*")) {
             detail = getDocumentDetail((DocumentAct) act);
         } else {
             detail = getDetail(act);

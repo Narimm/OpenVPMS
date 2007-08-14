@@ -76,7 +76,7 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
                 "act.customerDocumentLetter", "status");
         return new DefaultActQuery<Act>(customer, "customer",
                                         "participation.customer",
-                                        SHORT_NAMES, lookups, null);
+                                        SHORT_NAMES, lookups);
     }
 
     /**

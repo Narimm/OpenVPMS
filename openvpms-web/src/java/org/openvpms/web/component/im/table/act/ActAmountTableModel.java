@@ -132,7 +132,8 @@ public class ActAmountTableModel<T extends Act>
                 };
                 break;
             case AMOUNT_INDEX:
-                result = null; // can only sort on top level nodes
+                result = new SortConstraint[]{
+                        new NodeSortConstraint("amount", ascending)};
                 break;
             default:
                 result = super.getSortConstraints(column, ascending);

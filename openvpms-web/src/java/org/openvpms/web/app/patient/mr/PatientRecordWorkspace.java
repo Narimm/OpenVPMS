@@ -311,7 +311,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
                 "act.patientReminder", "status");
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
                 getObject(), "patient", "participation.patient", shortNames,
-                lookups, null);
+                lookups);
         query.setStatus(ActStatus.IN_PROGRESS);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         return query;
@@ -327,7 +327,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
                 "act.patientDocumentLetter", "status");
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
                 getObject(), "patient", "participation.patient",
-                DOCUMENT_SHORT_NAMES, lookups, null);
+                DOCUMENT_SHORT_NAMES, lookups);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         return query;
     }

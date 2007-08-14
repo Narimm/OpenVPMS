@@ -33,7 +33,11 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSet;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.util.StringUtilities;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
@@ -41,6 +45,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
@@ -131,6 +136,32 @@ public class IMObjectHelper {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the name of an object, given its reference.
+     *
+     * @param reference the object reference. May be <tt>null</tt>
+     * @return the name or <tt>null</tt> if none exists
+     */
+    public static String getName(IMObjectReference reference) {
+        if (reference != null) {
+            try {
+                ObjectRefConstraint constraint
+                        = new ObjectRefConstraint("o", reference);
+                ArchetypeQuery query = new ArchetypeQuery(constraint);
+                query.add(new NodeSelectConstraint("o.name"));
+                query.setMaxResults(1);
+                Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
+                if (iter.hasNext()) {
+                    ObjectSet set = iter.next();
+                    return (String) set.get("o.name");
+                }
+            } catch (OpenVPMSException error) {
+                log.error(error, error);
+            }
+        }
+        return null;
     }
 
     /**

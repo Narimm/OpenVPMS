@@ -20,7 +20,6 @@ package org.openvpms.web.app.reporting.reminder;
 
 import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
@@ -28,20 +27,18 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.subsystem.AbstractWorkspace;
-import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GroupBoxFactory;
-import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -51,7 +48,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ReminderWorkspace extends AbstractWorkspace {
+public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
 
     /**
      * The query.
@@ -65,88 +62,10 @@ public class ReminderWorkspace extends AbstractWorkspace {
 
 
     /**
-     * Construct a new <code>ReminderWorkspace</code>.
+     * Construct a new <tt>ReminderWorkspace</tt>.
      */
     public ReminderWorkspace() {
-        super("reporting", "reminder");
-    }
-
-    /**
-     * Determines if the workspace supports an archetype.
-     *
-     * @param shortName the archetype's short name
-     * @return <code>true</code> if the workspace can handle the archetype;
-     *         otherwise <code>false</code>
-     */
-    public boolean canHandle(String shortName) {
-        return false;
-    }
-
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object
-     */
-    public void setIMObject(IMObject object) {
-        setObject(object);
-    }
-
-    /**
-     * Sets the object to be viewed/edited by the workspace.
-     *
-     * @param object the object. May be <code>null</code>
-     */
-    public void setObject(IMObject object) {
-        // no-op. This workspace doesn't work on individual objects
-    }
-
-    /**
-     * Returns the object to to be viewed/edited by the workspace.
-     *
-     * @return the the object. May be <oode>null</code>
-     */
-    public IMObject getObject() {
-        return null;
-    }
-
-    /**
-     * Lays out the component.
-     *
-     * @return the component
-     */
-    @Override
-    protected Component doLayout() {
-        SplitPane root = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL,
-                "ReminderWorkspace.Layout");
-        Component heading = super.doLayout();
-        root.add(heading);
-        FocusGroup group = new FocusGroup("ReminderWorkspace");
-        ButtonRow buttons = new ButtonRow(group, "ControlRow",
-                                          ButtonRow.BUTTON_STYLE);
-        buttons.addButton("print", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onPrint();
-            }
-        });
-        buttons.addButton("printAll", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onPrintAll();
-            }
-        });
-        buttons.addButton("report", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onReport();
-            }
-        });
-        SplitPane content = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                "ReminderWorkspace.Layout", buttons);
-        doLayout(content, group);
-        root.add(content);
-        return root;
+        super("reporting", "reminder", Act.class);
     }
 
     /**
@@ -155,12 +74,35 @@ public class ReminderWorkspace extends AbstractWorkspace {
      * @param container the container
      * @param group     the focus group
      */
-    private void doLayout(Component container, FocusGroup group) {
+    protected void doLayout(Component container, FocusGroup group) {
         query = new PatientReminderQuery();
         browser = new PatientReminderBrowser(query);
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
         group.add(browser.getFocusGroup());
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button set
+     */
+    protected void layoutButtons(ButtonSet buttons) {
+        buttons.add("print", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onPrint();
+            }
+        });
+        buttons.add("printAll", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onPrintAll();
+            }
+        });
+        buttons.add("report", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onReport();
+            }
+        });
     }
 
     /**
