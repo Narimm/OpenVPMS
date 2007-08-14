@@ -128,16 +128,16 @@ public class InteractivePrinter implements Printer {
 
     /**
      * Initiates printing of an object.
-     * If the underlying printer requires interactive support, pops up a
-     * {@link PrintDialog} prompting if printing of an object should
-     * proceed, invoking {@link #doPrint} if 'OK' is selected, or
+     * If the underlying printer requires interactive support or no printer
+     * is specified, pops up a {@link PrintDialog} prompting if printing of an
+     * object should proceed, invoking {@link #doPrint} if 'OK' is selected, or
      * {@link #doPrintPreview} if 'preview' is selected.
      *
      * @param printer the printer name. May be <tt>null</tt>
      * @throws OpenVPMSException for any error
      */
     public void print(String printer) {
-        if (interactive) {
+        if (interactive || printer == null) {
             printInteractive(printer);
         } else {
             printDirect(printer);
@@ -282,16 +282,13 @@ public class InteractivePrinter implements Printer {
      * @throws OpenVPMSException for any error
      */
     protected void printDirect(String printer) {
-        if (printer == null) {
-            printer = getDefaultPrinter();
-        }
         doPrint(printer);
     }
 
     /**
      * Prints the object.
      *
-     * @param printerName the printer name. May be <tt>null</tt>
+     * @param printerName the printer name
      */
     protected void doPrint(String printerName) {
         try {

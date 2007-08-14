@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
+import org.openvpms.web.component.im.print.PrintException;
 import org.openvpms.web.component.im.print.TemplatedIMPrinter;
 import org.openvpms.web.component.im.report.DocumentActReporter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -53,11 +54,20 @@ public class DocumentActPrinter extends TemplatedIMPrinter<IMObject> {
     /**
      * Prints the object.
      *
-     * @param printer the printer name. May be <code>null</code>
+     * @param printer the printer name. May be <tt>null</tt>
+     * @throws PrintException    if <tt>printer</tt> is null and
+     *                           {@link #getDefaultPrinter()} also returns
+     *                           <tt>null</tt>
      * @throws OpenVPMSException for any error
      */
     @Override
     public void print(String printer) {
+        if (printer == null) {
+            printer = getDefaultPrinter();
+        }
+        if (printer == null) {
+            throw new PrintException(PrintException.ErrorCode.NoPrinter);
+        }
         DocumentAct act = (DocumentAct) getObject();
         Document doc = (Document) IMObjectHelper.getObject(
                 act.getDocReference());
