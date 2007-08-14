@@ -44,6 +44,7 @@
                     <property name="act.bankDeposit" value="Bank Deposit"/>
                     <property name="act.customerAccountOpeningBalance" value="Customer Statement"/>
                     <property name="CUSTOMER_BALANCE" value="Customer Account Balance"/>
+                    <property name="WORK_IN_PROGRESS_CHARGES" value="Work in Progress Charges"/>
                     <property name="REPORT" value="Report"/>
                     <property name="SUBREPORT" value="Sub Report"/>
                 </propertyList>
