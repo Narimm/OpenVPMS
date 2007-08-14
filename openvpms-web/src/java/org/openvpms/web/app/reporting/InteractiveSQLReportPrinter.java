@@ -71,16 +71,6 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
     }
 
     /**
-     * Prints the object.
-     *
-     * @param printerName the printer name. May be <tt>null</tt>
-     */
-    @Override
-    protected void doPrint(String printerName) {
-        super.doPrint(printerName);
-    }
-
-    /**
      * Returns the underlying printer.
      *
      * @return the printer

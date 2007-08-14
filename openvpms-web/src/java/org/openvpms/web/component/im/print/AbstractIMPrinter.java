@@ -63,9 +63,18 @@ public abstract class AbstractIMPrinter<T>
      * Prints the object.
      *
      * @param printer the printer name. May be <tt>null</tt>
+     * @throws PrintException    if <tt>printer</tt> is null and
+     *                           {@link #getDefaultPrinter()} also returns
+     *                           <tt>null</tt>
      * @throws OpenVPMSException for any error
      */
     public void print(String printer) {
+        if (printer == null) {
+            printer = getDefaultPrinter();
+        }
+        if (printer == null) {
+            throw new PrintException(PrintException.ErrorCode.NoPrinter);
+        }
         IMReport<T> report = reporter.getReport();
         report.print(getObjects().iterator(), getParameters(),
                      getProperties(printer));
