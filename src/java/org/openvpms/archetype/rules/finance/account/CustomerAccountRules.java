@@ -409,7 +409,7 @@ public class CustomerAccountRules {
 
     /**
      * Returns the startTime of the first
-     * <tt>act.customerAccountClosingBalance</tt> for a customer, on or after
+     * <tt>act.customerAccountClosingBalance</tt> for a customer, after
      * the specified timestamp.
      *
      * @param customer the customer
@@ -420,7 +420,7 @@ public class CustomerAccountRules {
      */
     public Date getClosingBalanceDateAfter(Party customer, Date timetamp) {
         return getActStartTime(CLOSING_BALANCE, customer, timetamp,
-                               RelationalOp.GTE, true);
+                               RelationalOp.GT, true);
     }
 
     /**
