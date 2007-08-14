@@ -464,14 +464,6 @@
         </properties>
     </style>
 
-    <style name="ReminderWorkspace.Layout"
-           type="nextapp.echo2.app.SplitPane">
-        <properties>
-            <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="32px"/>
-        </properties>
-    </style>
-
     <style name="WorkflowWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>
@@ -562,7 +554,7 @@
         </properties>
     </style>
 
-    <style name="ReportingWorkspace.Layout"
+    <style name="AbstractReportingWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
@@ -580,14 +572,6 @@
 
     <style name="SelectUserDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
-    </style>
-
-    <style name="StatementWorkspace.Layout"
-           type="nextapp.echo2.app.SplitPane">
-        <properties>
-            <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="32px"/>
-        </properties>
     </style>
 
     <style name="AbstractViewWorkspace.Layout"

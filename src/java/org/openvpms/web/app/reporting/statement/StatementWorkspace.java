@@ -24,18 +24,19 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -43,15 +44,12 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.subsystem.AbstractWorkspace;
-import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Calendar;
@@ -64,7 +62,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class StatementWorkspace extends AbstractWorkspace {
+public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
 
     /**
      * The query.
@@ -83,50 +81,10 @@ public class StatementWorkspace extends AbstractWorkspace {
 
 
     /**
-     * Construct a new <code>StatementWorkspace</code>.
+     * Construct a new <tt>StatementWorkspace</tt>.
      */
     public StatementWorkspace() {
-        super("reporting", "statement");
-    }
-
-    /**
-     * Determines if the workspace supports an archetype.
-     *
-     * @param shortName the archetype's short name
-     * @return <code>true</code> if the workspace can handle the archetype;
-     *         otherwise <code>false</code>
-     */
-    public boolean canHandle(String shortName) {
-        return false;
-    }
-
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object
-     */
-    public void setIMObject(IMObject object) {
-        setObject(object);
-    }
-
-    /**
-     * Sets the object to be viewed/edited by the workspace.
-     *
-     * @param object the object. May be <code>null</code>
-     */
-    public void setObject(IMObject object) {
-        // no-op. This workspace doesn't work on individual objects
-    }
-
-    /**
-     * Returns the object to to be viewed/edited by the workspace.
-     *
-     * @return the the object. May be <oode>null</code>
-     */
-    public IMObject getObject() {
-        return null;
+        super("reporting", "statement", Act.class);
     }
 
     /**
@@ -147,55 +105,13 @@ public class StatementWorkspace extends AbstractWorkspace {
     }
 
     /**
-     * Lays out the component.
-     *
-     * @return the component
-     */
-    @Override
-    protected Component doLayout() {
-        SplitPane root = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL,
-                "StatementWorkspace.Layout");
-        Component heading = super.doLayout();
-        root.add(heading);
-        FocusGroup group = new FocusGroup("StatementWorkspace");
-        ButtonRow buttons = new ButtonRow(group, "ControlRow", "default");
-        SplitPane content = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                "StatementWorkspace.Layout", buttons);
-        doLayout(content, group);
-        root.add(content);
-
-        buttons.addButton("sendAll", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onSendAll();
-            }
-        });
-        buttons.addButton("print", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onPrint();
-            }
-        });
-        buttons.addButton("report", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onReport();
-            }
-        });
-        buttons.addButton("endPeriod", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onEndPeriod();
-            }
-        });
-        return root;
-    }
-
-    /**
      * Lays out the components.
      *
      * @param container the container
      * @param group     the focus group
      */
-    private void doLayout(Component container, FocusGroup group) {
+    @Override
+    protected void doLayout(Component container, FocusGroup group) {
         query = new CustomerBalanceQuery();
         query.getComponent();
         query.setDate(getYesterday()); // default statement date to yesterday
@@ -203,6 +119,35 @@ public class StatementWorkspace extends AbstractWorkspace {
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
         group.add(browser.getFocusGroup());
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button set
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        buttons.add("sendAll", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onSendAll();
+            }
+        });
+        buttons.add("print", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onPrint();
+            }
+        });
+        buttons.add("report", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onReport();
+            }
+        });
+        buttons.add("endPeriod", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onEndPeriod();
+            }
+        });
     }
 
     /**

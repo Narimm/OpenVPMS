@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -233,8 +234,20 @@ public class IMObjectSorter {
                 NodeDescriptor descriptor = getDescriptor(object);
                 if (descriptor != null) {
                     try {
-                        result = descriptor.getValue(object);
-                        if (!(result instanceof Comparable)) {
+                        if (descriptor.isCollection()) {
+                            List<IMObject> objects
+                                    = descriptor.getChildren(object);
+                            if (objects.size() == 1) {
+                                result = objects.get(0);
+                            }
+                        } else {
+                            result = descriptor.getValue(object);
+                        }
+                        if (result instanceof Participation) {
+                            // sort on participation entity name
+                            Participation p = (Participation) result;
+                            result = IMObjectHelper.getName(p.getEntity());
+                        } else if (!(result instanceof Comparable)) {
                             // not comparable so null to avoid class cast
                             // exceptions
                             result = null;

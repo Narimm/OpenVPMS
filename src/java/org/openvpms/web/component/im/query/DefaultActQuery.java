@@ -37,6 +37,18 @@ public class DefaultActQuery<T extends Act> extends DateRangeActQuery<T> {
     /**
      * Constructs a new <tt>DefaultActQuery</tt>.
      *
+     * @param shortNames    the act short names to query
+     * @param statusLookups the act status lookups
+     * @param excludeStatus to exclude. May be <tt>null</tt>
+     */
+    public DefaultActQuery(String[] shortNames, List<Lookup> statusLookups,
+                           String excludeStatus) {
+        this(null, null, null, shortNames, statusLookups, excludeStatus);
+    }
+
+    /**
+     * Constructs a new <tt>DefaultActQuery</tt>.
+     *
      * @param entity        the entity to search for
      * @param participant   the partcipant node name
      * @param participation the entity participation short name

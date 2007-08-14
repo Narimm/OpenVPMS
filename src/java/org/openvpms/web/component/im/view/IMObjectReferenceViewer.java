@@ -25,7 +25,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -92,9 +91,9 @@ public class IMObjectReferenceViewer {
         Component result;
         String text = name;
         if (text == null) {
-            final NodeSet nodes = IMObjectHelper.getNodes(reference, "name");
-            if (nodes != null) {
-                text = Messages.get("imobject.name", nodes.get("name"));
+            text = IMObjectHelper.getName(reference);
+            if (text != null) {
+                text = Messages.get("imobject.name", text);
             } else {
                 text = Messages.get("imobject.none");
             }

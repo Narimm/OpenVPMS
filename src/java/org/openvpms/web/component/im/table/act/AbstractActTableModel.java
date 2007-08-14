@@ -44,14 +44,14 @@ public abstract class AbstractActTableModel extends DescriptorTableModel<Act> {
      * @param shortNames the act archetype short names
      */
     public AbstractActTableModel(String[] shortNames) {
-        super(shortNames);
+        this(shortNames, null);
     }
 
     /**
      * Creates a new <code>AbstractActTableModel</code>.
      *
      * @param shortNames the act archetype short names
-     * @param context    the layout context
+     * @param context    the layout context. May be <tt>null</tt>
      */
     public AbstractActTableModel(String[] shortNames, LayoutContext context) {
         super(shortNames, context);

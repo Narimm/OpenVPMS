@@ -76,7 +76,7 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace<Act> {
                 "act.supplierDocumentLetter", "status");
         return new DefaultActQuery<Act>(supplier, "supplier",
                                         "participation.supplier",
-                                        SHORT_NAMES, lookups, null);
+                                        SHORT_NAMES, lookups);
     }
 
     /**

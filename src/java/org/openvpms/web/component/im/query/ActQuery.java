@@ -340,11 +340,9 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      * @return the act statuses to query
      */
     protected String[] getStatuses() {
-        String[] statuses;
-        if (excludeStatus != null) {
+        String[] statuses = this.statuses;
+        if (statuses.length == 0 && excludeStatus != null) {
             statuses = new String[]{excludeStatus};
-        } else {
-            statuses = this.statuses;
         }
         return statuses;
     }
@@ -353,10 +351,11 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      * Determines if act statuses are being excluded.
      *
      * @return <tt>true</tt> to exclude acts with status in
-     *         {@link #getStatuses()} ; otherwise include them.
+     *         {@link #getStatuses()}; otherwise include them.
      */
     protected boolean excludeStatuses() {
-        return excludeStatus != null;
+        String[] statuses = getStatuses();
+        return (statuses.length == 1 && statuses[0].equals(excludeStatus));
     }
 
     /**

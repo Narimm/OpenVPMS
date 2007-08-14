@@ -32,10 +32,19 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 public class DefaultActTableModel extends AbstractActTableModel {
 
     /**
-     * Construct a <code>DefaultActTableModel</code>.
+     * Construct a <tt>DefaultActTableModel</tt>.
      *
      * @param shortNames the act archetype short names
-     * @param context    the layout context
+     */
+    public DefaultActTableModel(String[] shortNames) {
+        this(shortNames, null);
+    }
+
+    /**
+     * Constructs a <tt>DefaultActTableModel</tt>.
+     *
+     * @param shortNames the act archetype short names
+     * @param context    the layout context. May be <tt>null</tt>
      */
     public DefaultActTableModel(String[] shortNames, LayoutContext context) {
         super(shortNames, context);
