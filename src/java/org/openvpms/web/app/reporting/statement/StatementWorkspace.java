@@ -233,7 +233,7 @@ public class StatementWorkspace extends AbstractWorkspace {
             GlobalContext context = GlobalContext.getInstance();
             StatementGenerator generator = new StatementGenerator(query,
                                                                   context);
-            generateStatements(generator);
+            generateStatements(generator, true);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -253,7 +253,7 @@ public class StatementWorkspace extends AbstractWorkspace {
                         GlobalContext context = GlobalContext.getInstance();
                         StatementGenerator generator = new StatementGenerator(
                                 ref, query.getDate(), true, context);
-                        generateStatements(generator);
+                        generateStatements(generator, false);
                     }
                 }
             } catch (OpenVPMSException exception) {
@@ -310,11 +310,15 @@ public class StatementWorkspace extends AbstractWorkspace {
      * Generates statements.
      *
      * @param generator the statement generator
+     * @param refresh   if <tt>true</tt>, refresh the browser on completion
      */
-    private void generateStatements(StatementGenerator generator) {
+    private void generateStatements(StatementGenerator generator,
+                                    final boolean refresh) {
         generator.setListener(new BatchProcessorListener() {
             public void completed() {
-                browser.query();
+                if (refresh) {
+                    browser.query();
+                }
             }
 
             public void error(Throwable exception) {
