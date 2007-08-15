@@ -98,6 +98,14 @@ public class PatientSummary {
                                                      "Patient.Deceased");
                 result.add(RowFactory.create("Inset.Small", deceased));
             }
+            Label species = LabelFactory.create();
+            species.setText(getPatientSpecies(patient));
+            result.add(RowFactory.create("Inset.Small", species));
+            
+            Label breed = LabelFactory.create();
+            breed.setText(getPatientBreed(patient));
+            result.add(RowFactory.create("Inset.Small", breed));
+
             Label alertTitle = LabelFactory.create("patient.alerts");
             int alerts = reminderRules.countAlerts(patient, new Date());
             Component alertCount;
@@ -134,7 +142,7 @@ public class PatientSummary {
             Label weightTitle = LabelFactory.create("patient.weight");
             Label weight = LabelFactory.create();
             weight.setText(getPatientWeight(patient));
-            Grid grid = GridFactory.create(2, alertTitle, alertCount,
+            Grid grid = GridFactory.create(2,alertTitle, alertCount,
                                            reminderTitle, reminderCount,
                                            ageTitle, age, weightTitle, weight);
             result.add(grid);
@@ -190,6 +198,26 @@ public class PatientSummary {
 
         return new ActResultSet<Act>(archetypes, participants, time, statuses,
                                      false, null, 5, sort);
+    }
+
+    /**
+     * Returns the species for a patient.
+     *
+     * @param patient the patient
+     * @return a string representing the patient species
+     */
+    private String getPatientSpecies(Party patient) {
+        return rules.getPatientSpecies(patient);
+    }
+
+    /**
+     * Returns the breed for a patient.
+     *
+     * @param patient the patient
+     * @return a string representing the patient breed
+     */
+    private String getPatientBreed(Party patient) {
+        return rules.getPatientBreed(patient);
     }
 
     /**
