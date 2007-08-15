@@ -125,6 +125,9 @@ public class CheckOutWorkflow extends WorkflowImpl {
         initial.setUser(GlobalContext.getInstance().getUser());
         initial.setTill(GlobalContext.getInstance().getTill());
 
+        // need to set location for cash rounding purposes during payments
+        initial.setLocation(GlobalContext.getInstance().getLocation());
+
         // get the latest invoice, or create one if none is available, and edit
         // it
         addTask(new GetInvoiceTask());
