@@ -151,7 +151,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         // create a new act.patientClinicalEvent
         TaskProperties eventProps = new TaskProperties();
         eventProps.add("reason", "Appointment");
-        addTask(new EditIMObjectTask(CLINICAL_EVENT, eventProps, false));
+        addTask(new EditIMObjectTask(CLINICAL_EVENT, eventProps, true));
 
         // prompt for a patient weight.
         addTask(new PatientWeightTask());
