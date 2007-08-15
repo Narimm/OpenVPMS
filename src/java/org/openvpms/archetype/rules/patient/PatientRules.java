@@ -18,6 +18,11 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -25,6 +30,7 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -38,11 +44,6 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
 
 
 /**
@@ -266,6 +267,28 @@ public class PatientRules {
             result = "No Birthdate";
         }
         return result;
+    }
+
+    /**
+     * Returns the species of the patient.
+     *
+     * @param patient the patient
+     * @return the species in string format
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getPatientSpecies(Party patient) {
+    	return ArchetypeServiceFunctions.lookup(patient, "species");
+    }
+
+    /**
+     * Returns the breed of the patient.
+     *
+     * @param patient the patient
+     * @return the species in string format
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getPatientBreed(Party patient) {
+    	return ArchetypeServiceFunctions.lookup(patient, "breed");
     }
 
     /**
