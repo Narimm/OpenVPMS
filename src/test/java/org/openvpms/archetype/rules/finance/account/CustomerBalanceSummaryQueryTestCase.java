@@ -21,6 +21,7 @@ package org.openvpms.archetype.rules.finance.account;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
@@ -31,7 +32,9 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -60,9 +63,7 @@ public class CustomerBalanceSummaryQueryTestCase
 
         // create and save a new invoice
         final Money hundred = new Money(100);
-        FinancialAct invoice = createChargesInvoice(hundred);
-        invoice.setActivityStartTime(startTime);
-        invoice.setStatus(ActStatus.POSTED);
+        FinancialAct invoice = createChargesInvoice(hundred, startTime);
         save(invoice);
 
         // pay half the invoice
@@ -145,7 +146,6 @@ public class CustomerBalanceSummaryQueryTestCase
         checkSummaries(0, query2);
     }
 
-
     /**
      * Tests the balance summary query for customers with overdue balances.
      */
@@ -183,8 +183,7 @@ public class CustomerBalanceSummaryQueryTestCase
 
         // create and save a new invoice
         final Money amount = new Money(100);
-        FinancialAct invoice = createChargesInvoice(amount);
-        invoice.setActivityStartTime(startTime);
+        FinancialAct invoice = createChargesInvoice(amount, startTime);
         save(invoice);
 
         // get all customers with overdue balances. Should include the customer
@@ -229,6 +228,83 @@ public class CustomerBalanceSummaryQueryTestCase
     }
 
     /**
+     * Verifies that balances are returned for customer ranges.
+     */
+    public void testQueryByCustomerRange() {
+        // create some customers with names starting with A, B and Z
+        Party customerA = TestHelper.createCustomer(
+                "Foo", "A" + System.currentTimeMillis(), true);
+        Lookup accountType = createAccountType(30, DateUnits.DAYS);
+        customerA.addClassification(accountType);
+        save(customerA);
+
+        Party customerB = TestHelper.createCustomer(
+                "Foo", "B" + System.currentTimeMillis(), true);
+        Party customerZ = TestHelper.createCustomer(
+                "Foo", "Z" + System.currentTimeMillis(), true);
+
+        Set<Party> customers = new HashSet<Party>();
+        customers.add(customerA);
+        customers.add(customerB);
+        customers.add(customerZ);
+
+        // save invoices for each of the customers
+        FinancialAct invoice1 = createChargesInvoice(new Money(100), customerA);
+        FinancialAct invoice2 = createChargesInvoice(new Money(100), customerB);
+        FinancialAct invoice3 = createChargesInvoice(new Money(100), customerZ);
+        save(invoice1);
+        save(invoice2);
+        save(invoice3);
+
+        // check queries
+        CustomerBalanceSummaryQuery query1 = new CustomerBalanceSummaryQuery(
+                new Date(), null, customerA.getName(), null);
+        CustomerBalanceSummaryQuery query2 = new CustomerBalanceSummaryQuery(
+                new Date(), null, customerA.getName(), customerZ.getName());
+        CustomerBalanceSummaryQuery query3 = new CustomerBalanceSummaryQuery(
+                new Date(), null, customerB.getName(), customerZ.getName());
+        CustomerBalanceSummaryQuery query4 = new CustomerBalanceSummaryQuery(
+                new Date(), accountType, customerA.getName(), null);
+        CustomerBalanceSummaryQuery query5 = new CustomerBalanceSummaryQuery(
+                new Date(), accountType, customerA.getName(),
+                customerZ.getName());
+        CustomerBalanceSummaryQuery query6 = new CustomerBalanceSummaryQuery(
+                new Date(), accountType, customerB.getName(),
+                customerZ.getName());
+
+        checkCustomers(query1, customers, customerA, customerB, customerZ);
+        checkCustomers(query2, customers, customerA, customerB, customerZ);
+        checkCustomers(query3, customers, customerB, customerZ);
+        checkCustomers(query4, customers, customerA);
+        checkCustomers(query5, customers, customerA);
+        checkCustomers(query6, customers);
+
+        // check wildcard queries
+        // NOTE: for reasons not immediately clear, the <= operator for
+        // values containing % appears to operate as a <. E.g, compare query2
+        // with wildcard2.
+        CustomerBalanceSummaryQuery wildcard1 = new CustomerBalanceSummaryQuery(
+                new Date(), null, "A*", null);
+        CustomerBalanceSummaryQuery wildcard2 = new CustomerBalanceSummaryQuery(
+                new Date(), null, "A*", "Z*");
+        CustomerBalanceSummaryQuery wildcard3 = new CustomerBalanceSummaryQuery(
+                new Date(), null, "B*", "Z*");
+        CustomerBalanceSummaryQuery wildcard4 = new CustomerBalanceSummaryQuery(
+                new Date(), accountType, "A*", null);
+        CustomerBalanceSummaryQuery wildcard5 = new CustomerBalanceSummaryQuery(
+                new Date(), accountType, "A*", "Z*");
+        CustomerBalanceSummaryQuery wildcard6 = new CustomerBalanceSummaryQuery(
+                new Date(), accountType, "B*", "Z*");
+
+        checkCustomers(wildcard1, customers, customerA, customerB, customerZ);
+        checkCustomers(wildcard2, customers, customerA, customerB);
+        checkCustomers(wildcard3, customers, customerB);
+        checkCustomers(wildcard4, customers, customerA);
+        checkCustomers(wildcard5, customers, customerA);
+        checkCustomers(wildcard6, customers);
+    }
+
+    /**
      * Checks the no. of summaries for a query.
      *
      * @param expected the expected count
@@ -268,5 +344,35 @@ public class CustomerBalanceSummaryQueryTestCase
         return result;
     }
 
+    /**
+     * Verifies that customers appear in the query results.
+     *
+     * @param query     the query to check
+     * @param customers the customers
+     * @param expected  the expected customers
+     */
+    private void checkCustomers(CustomerBalanceSummaryQuery query,
+                                Set<Party> customers, Party ... expected) {
+        Set<IMObjectReference> customerSet = new HashSet<IMObjectReference>();
+        Set<IMObjectReference> expectedSet = new HashSet<IMObjectReference>();
+        Set<IMObjectReference> found = new HashSet<IMObjectReference>();
+        for (Party customer : customers) {
+            customerSet.add(customer.getObjectReference());
+        }
+        for (Party customer : expected) {
+            expectedSet.add(customer.getObjectReference());
+        }
+        while (query.hasNext()) {
+            ObjectSet set = query.next();
+            IMObjectReference ref = (IMObjectReference) set.get(
+                    CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
+            if (expectedSet.contains(ref)) {
+                found.add(ref);
+            } else if (customerSet.contains(ref)) {
+                fail("Found customer not expected in balance results");
+            }
+        }
+        assertEquals(expected.length, found.size());
+    }
 
 }

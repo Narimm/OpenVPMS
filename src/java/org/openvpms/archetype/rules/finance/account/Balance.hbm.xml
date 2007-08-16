@@ -36,6 +36,38 @@ order by e.name, a.activityStartTime
       ]]>
     </query>
 
+    <query name="getBalancesForCustomersFrom">
+        <![CDATA[
+select e.name, p.entity, p.act, a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
+from  org.openvpms.component.business.domain.im.common.Participation as p,
+      org.openvpms.component.business.domain.im.act.FinancialAct as a,
+      org.openvpms.component.business.domain.im.party.Party as e
+left outer join e.classifications c with c.archetypeId.shortName='lookup.customerAccountType'
+where a.linkId = p.act.linkId
+      and p.entity.linkId = e.linkId
+      and p.archetypeId.shortName='participation.customerAccountBalance'
+      and (a.status = 'POSTED' or a.status='COMPLETED')
+      and e.name >= :from
+order by e.name, a.activityStartTime
+      ]]>
+    </query>
+
+    <query name="getBalancesForCustomersBetween">
+        <![CDATA[
+select e.name, p.entity, p.act, a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
+from  org.openvpms.component.business.domain.im.common.Participation as p,
+      org.openvpms.component.business.domain.im.act.FinancialAct as a,
+      org.openvpms.component.business.domain.im.party.Party as e
+left outer join e.classifications c with c.archetypeId.shortName='lookup.customerAccountType'
+where a.linkId = p.act.linkId
+      and p.entity.linkId = e.linkId
+      and p.archetypeId.shortName='participation.customerAccountBalance'
+      and (a.status = 'POSTED' or a.status='COMPLETED')
+      and e.name >= :from and e.name <= :to
+order by e.name, a.activityStartTime
+      ]]>
+    </query>
+
     <query name="getBalancesForAccountType">
         <![CDATA[
 select e.name, p.entity, p.act, a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
@@ -48,6 +80,40 @@ where a.linkId = p.act.linkId
       and p.archetypeId.shortName='participation.customerAccountBalance'
       and c.linkId = :accountType
       and (a.status = 'POSTED' or a.status='COMPLETED')
+order by e.name, a.activityStartTime
+      ]]>
+    </query>
+
+    <query name="getBalancesForAccountTypeAndCustomerFrom">
+        <![CDATA[
+select e.name, p.entity, p.act, a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
+from  org.openvpms.component.business.domain.im.common.Participation as p,
+      org.openvpms.component.business.domain.im.act.FinancialAct as a,
+      org.openvpms.component.business.domain.im.party.Party as e
+left outer join e.classifications c with c.archetypeId.shortName='lookup.customerAccountType'
+where a.linkId = p.act.linkId
+      and p.entity.linkId = e.linkId
+      and p.archetypeId.shortName='participation.customerAccountBalance'
+      and c.linkId = :accountType
+      and (a.status = 'POSTED' or a.status='COMPLETED')
+      and e.name >= :from
+order by e.name, a.activityStartTime
+      ]]>
+    </query>
+
+    <query name="getBalancesForAccountTypeAndCustomerBetween">
+        <![CDATA[
+select e.name, p.entity, p.act, a.activityStartTime, a.status, a.total, a.allocatedAmount, a.credit, c.code
+from  org.openvpms.component.business.domain.im.common.Participation as p,
+      org.openvpms.component.business.domain.im.act.FinancialAct as a,
+      org.openvpms.component.business.domain.im.party.Party as e
+left outer join e.classifications c with c.archetypeId.shortName='lookup.customerAccountType'
+where a.linkId = p.act.linkId
+      and p.entity.linkId = e.linkId
+      and p.archetypeId.shortName='participation.customerAccountBalance'
+      and c.linkId = :accountType
+      and (a.status = 'POSTED' or a.status='COMPLETED')
+      and e.name >= :from and e.name <= :to
 order by e.name, a.activityStartTime
       ]]>
     </query>

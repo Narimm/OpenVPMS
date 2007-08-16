@@ -133,7 +133,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
         statement = new StatementRules(service);
         this.statementDate = statementDate;
         this.postCompletedCharges = postCompletedCharges;
-        timetamp = statement.getStatementTimestamp(statementDate);
+        timetamp = acts.getStatementTimestamp(statementDate);
     }
 
     /**
@@ -143,7 +143,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      * @throws OpenVPMSException for any error
      */
     public void process(Party customer) {
-        if (!statement.hasStatement(customer, statementDate)) {
+        if (!acts.hasStatement(customer, statementDate)) {
             Period period = new Period(customer);
             boolean needStatement = false;
             if (postCompletedCharges) {

@@ -133,16 +133,27 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a new act
      */
     protected FinancialAct createChargesInvoice(Money amount) {
-        return createCharges("act.customerAccountChargesInvoice",
-                             "act.customerAccountInvoiceItem",
-                             "actRelationship.customerAccountInvoiceItem",
-                             amount);
+        return createChargesInvoice(amount, getCustomer());
     }
 
     /**
      * Helper to create an <em>act.customerAccountChargesInvoice</em>.
      *
-     * @param amount the act total
+     * @param amount   the act total
+     * @param customer the customer
+     * @return a new act
+     */
+    protected FinancialAct createChargesInvoice(Money amount, Party customer) {
+        return createCharges("act.customerAccountChargesInvoice",
+                             "act.customerAccountInvoiceItem",
+                             "actRelationship.customerAccountInvoiceItem",
+                             amount, customer);
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountChargesInvoice</em>.
+     *
+     * @param amount    the act total
      * @param startTime the act start time
      * @return a new act
      */
@@ -163,7 +174,7 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
         return createCharges("act.customerAccountChargesCounter",
                              "act.customerAccountCounterItem",
                              "actRelationship.customerAccountCounterItem",
-                             amount);
+                             amount, getCustomer());
     }
 
     /**
@@ -176,7 +187,7 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
         return createCharges("act.customerAccountChargesCredit",
                              "act.customerAccountCreditItem",
                              "actRelationship.customerAccountCreditItem",
-                             amount);
+                             amount, getCustomer());
     }
 
     /**
@@ -192,7 +203,7 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
     /**
      * Helper to create an <em>act.customerAccountPayment</em>.
      *
-     * @param amount the act total
+     * @param amount    the act total
      * @param startTime the act start time
      * @return a new act
      */
@@ -341,13 +352,14 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      *
      * @param shortName the act short name
      * @param amount    the act total
+     * @param customer  the customer
      * @return a new act
      */
     private FinancialAct createCharges(String shortName,
                                        String itemShortName,
                                        String relationshipShortName,
-                                       Money amount) {
-        FinancialAct act = createAct(shortName, amount);
+                                       Money amount, Party customer) {
+        FinancialAct act = createAct(shortName, amount, customer);
         ActBean bean = new ActBean(act);
         FinancialAct item = (FinancialAct) create(itemShortName);
         item.setTotal(amount);
@@ -383,11 +395,25 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a new act
      */
     private FinancialAct createAct(String shortName, Money amount) {
+        return createAct(shortName, amount, getCustomer());
+    }
+
+    /**
+     * Helper to create a new act, setting the total, adding a customer
+     * participation and setting the status to 'POSTED'.
+     *
+     * @param shortName the act short name
+     * @param amount    the act total
+     * @param customer  the customer
+     * @return a new act
+     */
+    private FinancialAct createAct(String shortName, Money amount,
+                                   Party customer) {
         FinancialAct act = (FinancialAct) create(shortName);
         act.setStatus(FinancialActStatus.POSTED);
         act.setTotal(amount);
         ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.customer", getCustomer());
+        bean.addParticipation("participation.customer", customer);
         return act;
     }
 

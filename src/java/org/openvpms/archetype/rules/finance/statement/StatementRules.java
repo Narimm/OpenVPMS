@@ -33,7 +33,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -54,12 +53,17 @@ public class StatementRules {
     /**
      * Customer account rules.
      */
-    private CustomerAccountRules account;
+    private final CustomerAccountRules account;
+
+    /**
+     * Statement act helper.
+     */
+    private final StatementActHelper acts;
 
     /**
      * Tax rules.
      */
-    private TaxRules tax;
+    private final TaxRules tax;
 
 
     /**
@@ -77,35 +81,34 @@ public class StatementRules {
     public StatementRules(IArchetypeService service) {
         this.service = service;
         account = new CustomerAccountRules(service);
+        acts = new StatementActHelper(service);
         tax = new TaxRules(service);
     }
 
     /**
-     * Returns the timestamp for statement processing.
+     * Determines if a customer has had end-of-period run on or after a
+     * particular date.
      *
-     * @param statementDate the statement date
-     * @return the date
+     * @param date the date
+     * @return <tt>true</tt> if end-of-period has been run on or after the date
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    public Date getStatementTimestamp(Date statementDate) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(statementDate);
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        return calendar.getTime();
+    public boolean hasStatement(Party customer, Date date) {
+        return acts.hasStatement(customer, date);
     }
 
     /**
-     * Determines if a customer has had end-of-period run for a statement
-     * date.
+     * Marks a statement as being printed.
      *
      * @param statementDate the statement date
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    public boolean hasStatement(Party customer, Date statementDate) {
-        Date timestamp = getStatementTimestamp(statementDate);
-        Date d = account.getClosingBalanceDateAfter(customer, timestamp);
-        return (d != null);
+    public void setPrinted(Party customer, Date statementDate) {
+        FinancialAct act = acts.getClosingBalance(customer, statementDate);
+        if (act != null) {
+            act.setPrinted(true);
+            service.save(act);
+        }
     }
 
     /**

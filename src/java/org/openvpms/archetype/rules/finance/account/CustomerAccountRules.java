@@ -40,9 +40,6 @@ import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
 
@@ -251,7 +248,7 @@ public class CustomerAccountRules {
         }
 
         // query all overdue debit acts
-        ArchetypeQuery query = QueryFactory.createUnallocatedObjectSetQuery(
+        ArchetypeQuery query = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(
                 customer, DEBIT_SHORT_NAMES);
 
         NodeConstraint fromStartTime
@@ -374,56 +371,6 @@ public class CustomerAccountRules {
     }
 
     /**
-     * Returns the startTime of the first
-     * <tt>act.customerAccountOpeningBalance</tt> for a customer prior to
-     * the specified timestamp.
-     *
-     * @param customer  the customer
-     * @param timestamp the timestamp
-     * @return the opening balance act startTime, or <tt>null</tt> if none is
-     *         found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Date getOpeningBalanceTimestampBefore(Party customer,
-                                                 Date timestamp) {
-        return getActStartTime(OPENING_BALANCE, customer, timestamp,
-                               RelationalOp.LT, false);
-    }
-
-    /**
-     * Returns the startTime of the first
-     * <tt>act.customerAccountClosingBalance</tt> for a customer, before the
-     * specified timetamp.
-     *
-     * @param customer  the customer
-     * @param timestamp the timestamp
-     * @return the closing balance act startTime, or <tt>null</tt> if none is
-     *         found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Date getClosingBalanceTimestampBefore(Party customer,
-                                                 Date timestamp) {
-        return getActStartTime(CLOSING_BALANCE, customer, timestamp,
-                               RelationalOp.LT, false);
-    }
-
-    /**
-     * Returns the startTime of the first
-     * <tt>act.customerAccountClosingBalance</tt> for a customer, after
-     * the specified timestamp.
-     *
-     * @param customer the customer
-     * @param timetamp the timestamp
-     * @return the closing balance act startTime, or <tt>null</tt> if none is
-     *         found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Date getClosingBalanceDateAfter(Party customer, Date timetamp) {
-        return getActStartTime(CLOSING_BALANCE, customer, timetamp,
-                               RelationalOp.GT, true);
-    }
-
-    /**
      * Calculates the balance for the supplied customer.
      *
      * @param act      the act that triggered the update.
@@ -535,7 +482,7 @@ public class CustomerAccountRules {
      */
     private Iterator<FinancialAct> getUnallocatedActs(Party customer,
                                                       Act exclude) {
-        ArchetypeQuery query = QueryFactory.createUnallocatedQuery(
+        ArchetypeQuery query = CustomerAccountQueryFactory.createUnallocatedQuery(
                 customer, DEBIT_CREDIT_SHORT_NAMES, exclude);
         return new IMObjectQueryIterator<FinancialAct>(service, query);
     }
@@ -563,39 +510,6 @@ public class CustomerAccountRules {
                 credit.addAllocated(debitToAlloc);
             }
         }
-    }
-
-    /**
-     * Returns the startTime of a customer act whose startTime is before/after
-     * the specified date, depending on the supplied operator.
-     *
-     * @param shortName     the act short name
-     * @param customer      the customer
-     * @param date          the date
-     * @param operator      the operator
-     * @param sortAscending if <tt>true</tt> sort acts on ascending startTime;
-     *                      otherwise sort them on descending startTime
-     * @return the startTime, or <tt>null</tt> if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private Date getActStartTime(String shortName, Party customer, Date date,
-                                 RelationalOp operator,
-                                 boolean sortAscending) {
-        ArchetypeQuery query = QueryFactory.createQuery(
-                customer, new String[]{shortName});
-        if (date != null) {
-            query.add(new NodeConstraint("a.startTime", operator, date));
-        }
-        query.add(new NodeSelectConstraint("a.startTime"));
-        query.add(new NodeSortConstraint("startTime", sortAscending));
-        query.setMaxResults(1);
-        ObjectSetQueryIterator iter = new ObjectSetQueryIterator(service,
-                                                                 query);
-        if (iter.hasNext()) {
-            ObjectSet set = iter.next();
-            return (Date) set.get("a.startTime");
-        }
-        return null;
     }
 
     /**

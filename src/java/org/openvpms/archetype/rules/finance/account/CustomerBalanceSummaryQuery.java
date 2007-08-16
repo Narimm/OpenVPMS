@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.*;
@@ -200,7 +201,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      * @param date the date
      */
     public CustomerBalanceSummaryQuery(Date date) {
-        this(date, -1, -1, null);
+        this(date, -1, -1, null, null, null);
     }
 
     /**
@@ -211,7 +212,25 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      * @param accountType the account type
      */
     public CustomerBalanceSummaryQuery(Date date, Lookup accountType) {
-        this(date, -1, -1, accountType);
+        this(date, accountType, null, null);
+    }
+
+    /**
+     * Constructs a new <tt>CustomerAccountBalanceSummaryQuery</tt> for a
+     * particular account type.
+     *
+     * @param date         the date
+     * @param accountType  the account type
+     * @param customerFrom the customer name to start from. May contain
+     *                     wildcards or be <tt>null</tt>
+     *                     If <tt>null</tt> indicates all customers
+     * @param customerTo   the customer name to end on. May contain wildcards.
+     *                     If <tt>null</tt> indicates all customers from
+     *                     <tt>customerFrom</tt>
+     */
+    public CustomerBalanceSummaryQuery(Date date, Lookup accountType,
+                                       String customerFrom, String customerTo) {
+        this(date, -1, -1, accountType, customerFrom, customerTo);
     }
 
     /**
@@ -228,25 +247,56 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      */
     public CustomerBalanceSummaryQuery(Date date, int overdueFrom,
                                        int overdueTo, Lookup accountType) {
-        this(date, overdueFrom, overdueTo, accountType,
-             ArchetypeServiceHelper.getArchetypeService());
+        this(date, overdueFrom, overdueTo, accountType, null, null);
     }
 
     /**
      * Constructs a new <tt>CustomerBalanceSummaryQuery</tt> that returns
      * overdue balances within the specified date range.
      *
-     * @param date        the date
-     * @param overdueFrom the overdue-from date. Use <code>&lt;= 0</code> to
-     *                    indicate all dates
-     * @param overdueTo   the overdue-to date. Use <code>&lt;= 0</code> to
-     *                    indicate all dates
-     * @param accountType the account type. May be <tt>null</tt> to indicate
-     *                    all account types
-     * @param service     the archetype service
+     * @param date         the date
+     * @param overdueFrom  the overdue-from date. Use <code>&lt;= 0</code> to
+     *                     indicate all dates
+     * @param overdueTo    the overdue-to date. Use <code>&lt;= 0</code> to
+     *                     indicate all dates
+     * @param accountType  the account type. May be <tt>null</tt> to indicate
+     *                     all account types
+     * @param customerFrom the customer name to start from. May contain
+     *                     wildcards or be <tt>null</tt>
+     *                     If <tt>null</tt> indicates all customers
+     * @param customerTo   the customer name to end on. May contain wildcards.
+     *                     If <tt>null</tt> indicates all customers from
+     *                     <tt>customerFrom</tt>
      */
     public CustomerBalanceSummaryQuery(Date date, int overdueFrom,
                                        int overdueTo, Lookup accountType,
+                                       String customerFrom, String customerTo) {
+        this(date, overdueFrom, overdueTo, accountType, customerFrom,
+             customerTo, ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Constructs a new <tt>CustomerBalanceSummaryQuery</tt> that returns
+     * overdue balances within the specified date range.
+     *
+     * @param date         the date
+     * @param overdueFrom  the overdue-from date. Use <code>&lt;= 0</code> to
+     *                     indicate all dates
+     * @param overdueTo    the overdue-to date. Use <code>&lt;= 0</code> to
+     *                     indicate all dates
+     * @param accountType  the account type. May be <tt>null</tt> to indicate
+     *                     all account types
+     * @param customerFrom the customer name to start from. May contain
+     *                     wildcards or be <tt>null</tt>
+     *                     If <tt>null</tt> indicates all customers
+     * @param customerTo   the customer name to end on. May contain wildcards.
+     *                     If <tt>null</tt> indicates all customers from
+     *                     <tt>customerFrom</tt>
+     * @param service      the archetype service
+     */
+    public CustomerBalanceSummaryQuery(Date date, int overdueFrom,
+                                       int overdueTo, Lookup accountType,
+                                       String customerFrom, String customerTo,
                                        IArchetypeService service) {
         this.date = date;
         this.service = service;
@@ -261,9 +311,36 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
                                                  "a.credit", "c.code");
         NamedQuery query;
         if (accountType == null) {
-            query = new NamedQuery("getBalances", names);
+            if (StringUtils.isEmpty(customerFrom)) {
+                query = new NamedQuery("getBalances", names);
+            } else {
+                if (StringUtils.isEmpty(customerTo)) {
+                    query = new NamedQuery("getBalancesForCustomersFrom",
+                                           names);
+                    query.setParameter("from", customerFrom.replace('*', '%'));
+                } else {
+                    query = new NamedQuery("getBalancesForCustomersBetween",
+                                           names);
+                    query.setParameter("from", customerFrom.replace('*', '%'));
+                    query.setParameter("to", customerTo.replace('*', '%'));
+                }
+            }
         } else {
-            query = new NamedQuery("getBalancesForAccountType", names);
+            if (StringUtils.isEmpty(customerFrom)) {
+                query = new NamedQuery("getBalancesForAccountType", names);
+            } else {
+                if (StringUtils.isEmpty(customerTo)) {
+                    query = new NamedQuery(
+                            "getBalancesForAccountTypeAndCustomerFrom", names);
+                    query.setParameter("from", customerFrom.replace('*', '%'));
+                } else {
+                    query = new NamedQuery(
+                            "getBalancesForAccountTypeAndCustomerBetween",
+                            names);
+                    query.setParameter("from", customerFrom.replace('*', '%'));
+                    query.setParameter("to", customerTo.replace('*', '%'));
+                }
+            }
             query.setParameter("accountType", accountType.getLinkId());
         }
         query.setMaxResults(1000);

@@ -65,28 +65,37 @@ public class Statement {
      */
     private final Date closingBalanceTimestamp;
 
+    /**
+     * Determines if the statement has been printed.
+     */
+    private final boolean printed;
+
 
     /**
      * Constructs a new <tt>Statement</tt>.
      *
      * @param customer                the customer
-     * @param contacts                 the preferred contacts
+     * @param contacts                the preferred contacts
      * @param statementDate           the statement date
      * @param openingBalanceTimestamp the opening balance timestamp.
      *                                May be <tt>null</tt>
      * @param closingBalanceTimestamp the closing balance timestamp.
      *                                May be <tt>null</tt>
      * @param acts                    all statement for the statement period
+     * @param printed                 determines if the statement has already
+     *                                been printed
      */
     public Statement(Party customer, List<Contact> contacts,
                      Date statementDate, Date openingBalanceTimestamp,
-                     Date closingBalanceTimestamp, Iterable<Act> acts) {
+                     Date closingBalanceTimestamp, Iterable<Act> acts,
+                     boolean printed) {
         this.customer = customer;
         this.contacts = contacts;
         this.statementDate = statementDate;
         this.openingBalanceTimestamp = openingBalanceTimestamp;
         this.closingBalanceTimestamp = closingBalanceTimestamp;
         this.acts = acts;
+        this.printed = printed;
     }
 
     /**
@@ -101,7 +110,7 @@ public class Statement {
     /**
      * Returns the preferred customer contacts for the statement.
      *
-     * @return the contacts
+     * @return the contacts. May be empty if the customer has no contacts
      */
     public List<Contact> getContacts() {
         return contacts;
@@ -152,6 +161,15 @@ public class Statement {
      */
     public boolean isPreview() {
         return (closingBalanceTimestamp == null);
+    }
+
+    /**
+     * Determines if the statement has been printed previously.
+     *
+     * @return <tt>true</tt> if the statement has been printed
+     */
+    public boolean isPrinted() {
+        return printed;
     }
 
     /**
