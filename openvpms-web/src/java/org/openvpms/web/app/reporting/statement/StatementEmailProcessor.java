@@ -182,6 +182,9 @@ public class StatementEmailProcessor
                 }
             });
             sender.send(message);
+            if (!statement.isPreview() && !statement.isPrinted()) {
+                setPrinted(statement);
+            }
         } catch (ArchetypeServiceException exception) {
             throw exception;
         } catch (StatementProcessorException exception) {

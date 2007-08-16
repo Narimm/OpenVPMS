@@ -56,6 +56,11 @@ class StatementGenerator extends AbstractStatementGenerator {
      */
     private StatementProgressBarProcessor progressBarProcessor;
 
+    /**
+     * The processor.
+     */
+    private StatementProcessor processor;
+
 
     /**
      * Constructs a new <tt>StatementGenerator</tt> for a single customer.
@@ -76,6 +81,19 @@ class StatementGenerator extends AbstractStatementGenerator {
             customers.add(party);
         }
         init(customers, date, printOnly, context);
+    }
+
+    /**
+     * Determines if statements that have been printed should be reprinted.
+     * A statement is printed if the printed flag of its
+     * <em>act.customerAccountOpeningBalance</em> is <tt>true</tt>.
+     * Defaults to <tt>false</tt>.
+     *
+     * @param reprint if <tt>true</tt>, process statements that have been
+     *                printed.
+     */
+    public void setReprint(boolean reprint) {
+        processor.setReprint(reprint);
     }
 
     /**
@@ -146,7 +164,7 @@ class StatementGenerator extends AbstractStatementGenerator {
                             + " email contact address is empty");
         }
 
-        StatementProcessor processor = new StatementProcessor(date);
+        processor = new StatementProcessor(date);
         progressBarProcessor = new StatementProgressBarProcessor(
                 processor, customers);
 
@@ -155,6 +173,7 @@ class StatementGenerator extends AbstractStatementGenerator {
                                               getCancelListener());
         if (printOnly) {
             processor.addListener(printer);
+            printer.setUpdatePrinted(false);
         } else {
             StatementEmailProcessor mailer = new StatementEmailProcessor(
                     ServiceHelper.getMailSender(), address, name);
