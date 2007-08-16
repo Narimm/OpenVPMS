@@ -22,6 +22,7 @@ import echopointng.DateChooser;
 import echopointng.DateField;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
@@ -44,6 +45,7 @@ import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ComponentHelper;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -102,6 +104,16 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
      * The 'overdue period to' days.
      */
     private TextField periodTo;
+
+    /**
+     * The 'customer from' field.
+     */
+    private TextField customerFrom;
+
+    /**
+     * The 'customer to' field.
+     */
+    private TextField customerTo;
 
 
     /**
@@ -197,9 +209,37 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
         Row overdueRow = createRow("ControlRow", accountTypeRow, overdue,
                                    periodRange);
 
-        container.add(accountTypeRow);
-        container.add(statementDateRow);
-        container.add(overdueRow);
+        Label customerLabel = LabelFactory.create(
+                "reporting.statements.customer");
+
+        Label customerFromLabel = LabelFactory.create(
+                "reporting.statements.customerFrom");
+        customerFrom = TextComponentFactory.create();
+        customerFrom.addPropertyChangeListener(
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent event) {
+                    }
+                });
+
+        Label customerToLabel = LabelFactory.create(
+                "reporting.statements.customerTo");
+        customerTo = TextComponentFactory.create();
+        customerTo.addPropertyChangeListener(
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent event) {
+                    }
+                });
+
+        Row firstRow = createRow("CellSpacing", accountTypeRow,
+                                 statementDateRow, overdueRow);
+        Row secondRow = createRow("CellSpacing", customerLabel,
+                                  customerFromLabel, customerFrom,
+                                  customerToLabel, customerTo);
+
+
+        Column column = ColumnFactory.create("CellSpacing", firstRow,
+                                             secondRow);
+        container.add(column);
 
         FocusGroup group = getFocusGroup();
         group.add(accountType);
@@ -207,6 +247,8 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
         group.add(overdue);
         group.add(periodFrom);
         group.add(periodTo);
+        group.add(customerFrom);
+        group.add(customerTo);
 
         ApplicationInstance.getActive().setFocusedComponent(getInstanceName());
     }
@@ -224,10 +266,14 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
                 query = new CustomerBalanceSummaryQuery(getDate(),
                                                         getNumber(periodFrom),
                                                         getNumber(periodTo),
-                                                        getAccountType());
+                                                        getAccountType(),
+                                                        getName(customerFrom),
+                                                        getName(customerTo));
             } else {
                 query = new CustomerBalanceSummaryQuery(getDate(),
-                                                        getAccountType());
+                                                        getAccountType(),
+                                                        getName(customerFrom),
+                                                        getName(customerTo));
             }
             while (query.hasNext()) {
                 sets.add(query.next());
@@ -305,6 +351,23 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
             }
         }
         return from;
+    }
+
+    /**
+     * Helper to return a customer name with wildcard appended from a text
+     * field, if the content is not empty.
+     *
+     * @param field the text field
+     * @return the customer name with wildcard, or <tt>null</tt>
+     */
+    private String getName(TextField field) {
+        String result = field.getText();
+        if (!StringUtils.isEmpty(result)) {
+            result = result + "*";
+        } else {
+            result = null;
+        }
+        return result;
     }
 
     /**

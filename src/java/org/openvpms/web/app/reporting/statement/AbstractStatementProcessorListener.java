@@ -21,6 +21,7 @@ package org.openvpms.web.app.reporting.statement;
 import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.statement.Statement;
+import org.openvpms.archetype.rules.finance.statement.StatementRules;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
 import java.math.BigDecimal;
@@ -40,16 +41,22 @@ public abstract class AbstractStatementProcessorListener
         implements ProcessorListener<Statement> {
 
     /**
+     * The statement rules.
+     */
+    private final StatementRules rules;
+
+    /**
      * The account rules.
      */
-    private final CustomerAccountRules rules;
+    private final CustomerAccountRules account;
 
 
     /**
      * Creates a new <tt>AbstractStatementProcessorListener</tt>.
      */
     public AbstractStatementProcessorListener() {
-        rules = new CustomerAccountRules();
+        account = new CustomerAccountRules();
+        rules = new StatementRules();
     }
 
     /**
@@ -64,10 +71,21 @@ public abstract class AbstractStatementProcessorListener
         Map<String, Object> result = new HashMap<String, Object>();
         Date date = statement.getStatementDate();
         BigDecimal overdueBalance
-                = rules.getOverdueBalance(statement.getCustomer(), date);
+                = account.getOverdueBalance(statement.getCustomer(), date);
         result.put("statementDate", date);
         result.put("overdueBalance", overdueBalance);
         result.put("preview", statement.isPreview());
         return result;
     }
+
+    /**
+     * Marks a statement as being printed.
+     *
+     * @param statement the statement
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected void setPrinted(Statement statement) {
+        rules.setPrinted(statement.getCustomer(), statement.getStatementDate());
+    }
+
 }

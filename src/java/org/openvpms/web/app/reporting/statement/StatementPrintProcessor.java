@@ -55,6 +55,12 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      */
     private String printerName;
 
+    /**
+     * Determines if statements should have their print flag updated.
+     * Only applies to non-preview statements.
+     */
+    private boolean updatePrinted = true;
+
 
     /**
      * Constructs a new <tt>StatementPrintProcessor</tt>.
@@ -67,6 +73,16 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
                                    VetoListener cancelListener) {
         this.processor = processor;
         this.cancelListener = cancelListener;
+    }
+
+    /**
+     * Determines if statements should have their print flag updated.
+     * Only applies to non-preview statements. Defaults to <tt>true</tt>.
+     *
+     * @param update if <tt>true</tt> update the statements print flag
+     */
+    public void setUpdatePrinted(boolean update) {
+        updatePrinted = update;
     }
 
     /**
@@ -90,6 +106,10 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
         iPrinter.setListener(new PrinterListener() {
             public void printed(String printer) {
                 try {
+                    if (updatePrinted && !statement.isPreview()
+                            && !statement.isPrinted()) {
+                        setPrinted(statement);
+                    }
                     printerName = printer;
                     processor.processCompleted(statement.getCustomer());
                     if (iPrinter.getInteractive()) {

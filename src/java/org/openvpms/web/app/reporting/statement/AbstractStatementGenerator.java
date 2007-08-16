@@ -163,10 +163,10 @@ public abstract class AbstractStatementGenerator
             public void windowPaneClosing(WindowPaneEvent e) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
                     source.veto(false);
-                    processor.setCancel(false);
                     onCompletion();
                 } else {
                     source.veto(true);
+                    processor.setCancel(false);
                     processor.process();
                 }
             }
