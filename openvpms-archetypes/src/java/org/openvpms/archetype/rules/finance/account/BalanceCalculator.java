@@ -64,7 +64,7 @@ class BalanceCalculator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getBalance(Party customer) {
-        ArchetypeQuery query = QueryFactory.createUnallocatedObjectSetQuery(
+        ArchetypeQuery query = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(
                 customer, DEBIT_CREDIT_SHORT_NAMES);
         Iterator<ObjectSet> iterator
                 = new ObjectSetQueryIterator(service, query);
@@ -80,7 +80,7 @@ class BalanceCalculator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getBalance(Party customer, Date date) {
-        ArchetypeQuery query = QueryFactory.createUnallocatedObjectSetQuery(
+        ArchetypeQuery query = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(
                 customer, DEBIT_CREDIT_SHORT_NAMES);
         Iterator<ObjectSet> iterator
                 = new ObjectSetQueryIterator(service, query);
@@ -100,7 +100,7 @@ class BalanceCalculator {
      */
     public BigDecimal getOverdueBalance(Party customer, Date date) {
         // query all overdue debit acts
-        ArchetypeQuery query = QueryFactory.createUnallocatedObjectSetQuery(
+        ArchetypeQuery query = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(
                 customer, DEBIT_SHORT_NAMES);
         query.add(new NodeConstraint("startTime", RelationalOp.LT, date));
         Iterator<ObjectSet> iterator
@@ -121,7 +121,7 @@ class BalanceCalculator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getCreditBalance(Party customer) {
-        ArchetypeQuery query = QueryFactory.createUnallocatedObjectSetQuery(
+        ArchetypeQuery query = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(
                 customer, CREDIT_SHORT_NAMES);
         Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service,
                                                                   query);
@@ -138,7 +138,7 @@ class BalanceCalculator {
     public BigDecimal getUnbilledAmount(Party customer) {
         String[] shortNames = {CHARGES_INVOICE, CHARGES_COUNTER,
                                CHARGES_CREDIT};
-        ArchetypeQuery query = QueryFactory.createUnbilledObjectSetQuery(customer,
+        ArchetypeQuery query = CustomerAccountQueryFactory.createUnbilledObjectSetQuery(customer,
                                                                          shortNames);
         Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service,
                                                                   query);

@@ -40,7 +40,7 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class QueryFactory {
+public class CustomerAccountQueryFactory {
 
     /**
      * Creates an object set query for unallocated acts for the specified
@@ -73,28 +73,10 @@ class QueryFactory {
     public static ArchetypeQuery createUnallocatedQuery(Party customer,
                                                         String[] shortNames,
                                                         Act exclude) {
-        ArchetypeQuery query = createBalanceParticipationQuery(shortNames,
-                                                               customer,
+        ArchetypeQuery query = createBalanceParticipationQuery(customer,
+                                                               shortNames,
                                                                exclude);
         query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
-        return query;
-    }
-
-    private static ArchetypeQuery createBalanceParticipationQuery(
-            String[] shortNames, Party customer, Act exclude) {
-        ShortNameConstraint archetypes
-                = new ShortNameConstraint("a", shortNames, false, false);
-        ArchetypeQuery query = new ArchetypeQuery(archetypes);
-        CollectionNodeConstraint constraint = new CollectionNodeConstraint(
-                "accountBalance", ACCOUNT_BALANCE_SHORTNAME, false, false);
-        constraint.add(new ObjectRefNodeConstraint(
-                "entity", customer.getObjectReference()));
-        if (exclude != null) {
-            constraint.add(new ObjectRefNodeConstraint(
-                    "act", RelationalOp.NE, exclude.getObjectReference()));
-        }
-        query.add(constraint);
-        query.add(new NodeSortConstraint("startTime", false));
         return query;
     }
 
@@ -108,7 +90,7 @@ class QueryFactory {
     public static ArchetypeQuery createUnbilledObjectSetQuery(
             Party customer, String[] shortNames) {
         ArchetypeQuery query = createBalanceParticipationQuery(
-                shortNames, customer, null);
+                customer, shortNames, null);
         query.add(new NodeConstraint("status", RelationalOp.NE,
                                      FinancialActStatus.POSTED));
         query.add(new NodeSelectConstraint("a.amount"));
@@ -157,6 +139,32 @@ class QueryFactory {
         }
         query.add(constraint);
         query.add(or);
+        return query;
+    }
+
+    /**
+     * Creates a account balance participation query.
+     *
+     * @param customer   the customer
+     * @param shortNames the act archetype short names
+     * @param exclude    the act to exclude fromj the result. May be <tt>null</tt>
+     * @return the corresponding query
+     */
+    private static ArchetypeQuery createBalanceParticipationQuery(
+            Party customer, String[] shortNames, Act exclude) {
+        ShortNameConstraint archetypes
+                = new ShortNameConstraint("a", shortNames, false, false);
+        ArchetypeQuery query = new ArchetypeQuery(archetypes);
+        CollectionNodeConstraint constraint = new CollectionNodeConstraint(
+                "accountBalance", ACCOUNT_BALANCE_SHORTNAME, false, false);
+        constraint.add(new ObjectRefNodeConstraint(
+                "entity", customer.getObjectReference()));
+        if (exclude != null) {
+            constraint.add(new ObjectRefNodeConstraint(
+                    "act", RelationalOp.NE, exclude.getObjectReference()));
+        }
+        query.add(constraint);
+        query.add(new NodeSortConstraint("startTime", false));
         return query;
     }
 

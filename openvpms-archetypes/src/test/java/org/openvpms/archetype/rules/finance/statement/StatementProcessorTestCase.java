@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -174,6 +175,15 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         checkAct(fee, "act.customerAccountDebitAdjust", feeAmount);
         assertFalse(fee.isNew());
 
+        // re-run the statement process for the same date. As the statement
+        // has been printed, it should be skipped.
+        acts = processStatement(statementDate, customer, false, false);
+        assertEquals(0, acts.size());
+
+        // re-run, but this time reprocess printed statements
+        acts = processStatement(statementDate, customer, true, true);
+        assertEquals(3, acts.size());
+
         // preview the next statement date
         statementDate = getDate("2007-02-06");
         acts = processStatement(statementDate, customer);
@@ -192,26 +202,54 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
      * @return the acts included in the statement
      */
     private List<Act> processStatement(Date statementDate, Party customer) {
+        return processStatement(statementDate, customer, false, true);
+    }
+
+    /**
+     * Helper to process a statement for a customer.
+     *
+     * @param statementDate   the statement date
+     * @param customer        the customer
+     * @param reprint         if <tt>true</tt> reprocess printed statements
+     * @param expectStatement if <tt>true</tt> expect a {@link Statement}
+     * @return the acts included in the statement. An empty list if
+     *         no statement was expected
+     */
+    private List<Act> processStatement(Date statementDate, Party customer,
+                                       boolean reprint,
+                                       boolean expectStatement) {
+        List<Act> acts;
+        StatementRules rules = new StatementRules();
         StatementProcessor processor = new StatementProcessor(statementDate);
+        processor.setReprint(reprint);
         Listener listener = new Listener();
         processor.addListener(listener);
         processor.process(customer);
-        List<Statement> events = listener.getEvents();
-        assertEquals(1, events.size());
-        Statement event = events.get(0);
-        assertEquals(customer, event.getCustomer());
-        return getActs(event);
+        List<Statement> statements = listener.getStatements();
+        if (expectStatement) {
+            assertEquals(1, statements.size());
+            Statement statement = statements.get(0);
+            assertEquals(customer, statement.getCustomer());
+            if (!statement.isPreview()) {
+                rules.setPrinted(customer, statement.getStatementDate());
+            }
+            acts = getActs(statement);
+        } else {
+            assertEquals(0, statements.size());
+            acts = Collections.emptyList();
+        }
+        return acts;
     }
 
     private class Listener implements ProcessorListener<Statement> {
-        private List<Statement> events = new ArrayList<Statement>();
+        private List<Statement> statements = new ArrayList<Statement>();
 
-        private List<Statement> getEvents() {
-            return events;
+        private List<Statement> getStatements() {
+            return statements;
         }
 
-        public void process(Statement event) {
-            events.add(event);
+        public void process(Statement statement) {
+            statements.add(statement);
         }
     }
 

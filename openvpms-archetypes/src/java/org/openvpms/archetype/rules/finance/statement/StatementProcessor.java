@@ -20,7 +20,6 @@ package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.component.processor.AbstractProcessor;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
-import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.NoContact;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -31,7 +30,9 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -57,9 +58,19 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
     private final Date statementDate;
 
     /**
+     * Statement rules.
+     */
+    private final StatementRules rules;
+
+    /**
      * Statement act helper.
      */
     private final StatementActHelper actHelper;
+
+    /**
+     * Determines if statements that have been printed should be procesed.
+     */
+    private boolean reprint;
 
 
     /**
@@ -88,7 +99,21 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
                                                   statementDate);
         }
         this.statementDate = statementDate;
+        rules = new StatementRules(service);
         actHelper = new StatementActHelper(service);
+    }
+
+    /**
+     * Determines if statements that have been printed should be reprinted.
+     * A statement is printed if the printed flag of its
+     * <em>act.customerAccountOpeningBalance</em> is <tt>true</tt>.
+     * Defaults to <tt>false</tt>.
+     *
+     * @param reprint if <tt>true</tt>, process statements that have been
+     *                printed.
+     */
+    public void setReprint(boolean reprint) {
+        this.reprint = reprint;
     }
 
     /**
@@ -100,29 +125,67 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
     public void process(Party customer) {
         Date open = actHelper.getOpeningBalanceTimestamp(
                 customer, statementDate);
-        Date close = actHelper.getClosingBalanceTimestamp(
-                customer, statementDate, open);
-        Iterable<Act> acts;
-        if (close == null) {
-            acts = actHelper.getPreviewActs(customer, statementDate, open);
-        } else {
-            acts = actHelper.getPostedActs(customer, open, close, false);
+        StatementActHelper.ActState closeState
+                = actHelper.getClosingBalanceState(customer, statementDate, 
+                                                   open);
+        Date close = null;
+        boolean printed = false;
+        if (closeState != null) {
+            close = closeState.getStartTime();
+            printed = closeState.isPrinted();
         }
-        List<Contact> contacts = getContacts(customer);
-        Date date = (close == null) ? statementDate : close;
-        Statement statement = new Statement(customer, contacts, date,
-                                            open, close, acts);
-        notifyListeners(statement);
+        if (!printed || reprint) {
+            Iterable<Act> acts;
+            if (close == null) {
+                acts = getPreviewActs(customer, open);
+            } else {
+                acts = actHelper.getPostedActs(customer, open, close, false);
+            }
+            List<Contact> contacts = getContacts(customer);
+            Date date = (close == null) ? statementDate : close;
+            Statement statement = new Statement(customer, contacts, date,
+                                                open, close, acts, printed);
+            notifyListeners(statement);
+        }
+    }
+
+    /**
+     * Returns all POSTED statement acts and COMPLETED charge acts for a
+     * customer from the opening balance timestamp to the end of the statement
+     * date. <p/>
+     * This adds (but does not save) an accounting fee act if an accounting fee
+     * is required.
+     *
+     * @param customer                the customer
+     * @param openingBalanceTimestamp the opening balance timestamp. May be
+     *                                <tt>null</tt>
+     * @return the statement acts
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws ArchetypeQueryException   for any archetype query error
+     */
+    private Iterable<Act> getPreviewActs(Party customer,
+                                         Date openingBalanceTimestamp) {
+        Iterable<Act> result = actHelper.getPostedAndCompletedActs(
+                customer, statementDate, openingBalanceTimestamp);
+
+        BigDecimal fee = rules.getAccountFee(customer, statementDate);
+        if (fee.compareTo(BigDecimal.ZERO) != 0) {
+            Act feeAct = rules.createAccountingFeeAdjustment(
+                    customer, fee, statementDate);
+            List<Act> toAdd = new ArrayList<Act>();
+            toAdd.add(feeAct);
+            result = new IterableChain<Act>(result, toAdd);
+        }
+        return result;
     }
 
     /**
      * Returns the preferred statement contacts for the customer.
      *
      * @param customer the customer
-     * @return the preferred contacts for <tt>customer</tt>
-     * @throws StatementProcessorException if there is no contact for the
-     *                                     customer
-     * @throws ArchetypeServiceException   for any archetype service error
+     * @return the preferred contacts for <tt>customer</tt>, or an empty list
+     *         if the customer has no contacts
+     * @throws ArchetypeServiceException for any archetype service error
      */
     private List<Contact> getContacts(Party customer) {
         List<Contact> result = new ArrayList<Contact>();
@@ -133,11 +196,6 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
                 if (TypeHelper.isA(contact, "contact.location")) {
                     result.add(contact);
                 }
-            }
-            if (result.isEmpty()) {
-                throw new StatementProcessorException(
-                        NoContact, customer.getName(),
-                        customer.getDescription());
             }
         }
         return result;

@@ -20,14 +20,18 @@ package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.CLOSING_BALANCE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.OPENING_BALANCE;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountQueryFactory;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.IterableIMObjectQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -39,9 +43,9 @@ import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -55,20 +59,30 @@ import java.util.List;
  */
 class StatementActHelper {
 
+
+    public class ActState {
+        private final Date startTime;
+        private final boolean printed;
+
+        public ActState(Date startTime, boolean printed) {
+            this.startTime = startTime;
+            this.printed = printed;
+        }
+
+        public Date getStartTime() {
+            return startTime;
+        }
+
+        public boolean isPrinted() {
+            return printed;
+        }
+    }
+
+
     /**
      * The archetype service.
      */
     private final IArchetypeService service;
-
-    /**
-     * Customer account rules.
-     */
-    private final CustomerAccountRules account;
-
-    /**
-     * Statement rules
-     */
-    private final StatementRules statement;
 
     /**
      * The short names to query. This contains all debit/credit parent acts,
@@ -102,8 +116,64 @@ class StatementActHelper {
      */
     public StatementActHelper(IArchetypeService service) {
         this.service = service;
-        account = new CustomerAccountRules(service);
-        statement = new StatementRules(service);
+    }
+
+    /**
+     * Returns the timestamp for statement processing.
+     *
+     * @param statementDate the statement date
+     * @return the date
+     */
+    public Date getStatementTimestamp(Date statementDate) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(statementDate);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
+    /**
+     * Determines if a customer has had end-of-period run on or after a
+     * particular date.
+     *
+     * @param date the date
+     * @return <tt>true</tt> if end-of-period has been run on or after the date
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public boolean hasStatement(Party customer, Date date) {
+        ActState state = getClosingBalanceAfter(customer, date);
+        return (state != null);
+    }
+
+    /**
+     * Returns the closing balance act for the specified statement date.
+     *
+     * @param customer      the customer
+     * @param statementDate the statement date
+     * @return the closing balance for the statement date, or <tt>null</tt> if
+     *         none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public FinancialAct getClosingBalance(Party customer, Date statementDate) {
+        ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(
+                customer, new String[]{CLOSING_BALANCE});
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(statementDate);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        query.add(new NodeConstraint("a.startTime", RelationalOp.GTE,
+                                     calendar.getTime()));
+        calendar.add(Calendar.DATE, 1);
+        query.add(new NodeConstraint("a.startTime", RelationalOp.LT,
+                                     calendar.getTime()));
+        query.setMaxResults(1);
+        Iterator<FinancialAct> iter = new IMObjectQueryIterator<FinancialAct>(
+                service, query);
+        return (iter.hasNext()) ? iter.next() : null;
     }
 
     /**
@@ -195,8 +265,7 @@ class StatementActHelper {
                                              Date openingBalanceTimestamp,
                                              Date closingBalanceTimestamp) {
         if (closingBalanceTimestamp == null) {
-            closingBalanceTimestamp = statement.getStatementTimestamp(
-                    statementDate);
+            closingBalanceTimestamp = getStatementTimestamp(statementDate);
         }
         ArchetypeQuery query = createQuery(customer, CHARGE_SHORT_NAMES,
                                            openingBalanceTimestamp, false,
@@ -209,9 +278,6 @@ class StatementActHelper {
      * Returns all POSTED statement acts and COMPLETED charge acts for a
      * customer from the opening balance timestamp to the end of the statement
      * date. <p/>
-     * This adds (but does not save) an accounting fee act if an accounting fee
-     * is required.
-     * This is intended to be used to preview acts prior to end-of-period.
      *
      * @param customer                the customer
      * @param statementDate           the date
@@ -221,27 +287,15 @@ class StatementActHelper {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws ArchetypeQueryException   for any archetype query error
      */
-    public Iterable<Act> getPreviewActs(Party customer,
-                                        Date statementDate,
-                                        Date openingBalanceTimestamp) {
-        Date close = statement.getStatementTimestamp(statementDate);
+    public Iterable<Act> getPostedAndCompletedActs(
+            Party customer, Date statementDate, Date openingBalanceTimestamp) {
+        Date close = getStatementTimestamp(statementDate);
         ArchetypeQuery query = createQuery(customer, openingBalanceTimestamp,
                                            close, false, null);
         query.add(new OrConstraint()
                 .add(new NodeConstraint("status", ActStatus.POSTED))
                 .add(new NodeConstraint("status", ActStatus.COMPLETED)));
-        Iterable<Act> result = new IterableIMObjectQuery<Act>(service, query);
-
-        // no closing balance, so calculate any account fees
-        BigDecimal fee = statement.getAccountFee(customer, statementDate);
-        if (fee.compareTo(BigDecimal.ZERO) != 0) {
-            Act feeAct = statement.createAccountingFeeAdjustment(
-                    customer, fee, statementDate);
-            List<Act> toAdd = new ArrayList<Act>();
-            toAdd.add(feeAct);
-            result = new IterableChain<Act>(result, toAdd);
-        }
-        return result;
+        return new IterableIMObjectQuery<Act>(service, query);
     }
 
     /**
@@ -252,8 +306,7 @@ class StatementActHelper {
      * @return the opening balance, or <tt>null</tt> if none is found
      */
     public Date getOpeningBalanceTimestamp(Party customer, Date statementDate) {
-        return account.getOpeningBalanceTimestampBefore(customer,
-                                                        statementDate);
+        return getOpeningBalanceTimestampBefore(customer, statementDate);
     }
 
     /**
@@ -268,17 +321,31 @@ class StatementActHelper {
      */
     public Date getClosingBalanceTimestamp(Party customer, Date statementDate,
                                            Date openingBalanceTimestamp) {
-        Date result;
+        ActState state = getClosingBalanceState(customer, statementDate,
+                                                openingBalanceTimestamp);
+        return (state != null) ? state.getStartTime() : null;
+    }
+
+    /**
+     * Returns the closing balance act state for a customer relative to a
+     * statement date and opening balance timestamp.
+     *
+     * @param customer                the customer
+     * @param statementDate           the statement date
+     * @param openingBalanceTimestamp the opening balance timestamp. May be
+     *                                <tt>null</tt>
+     * @return the closing balance state, or <tt>null</tt> if none is found
+     */
+    public ActState getClosingBalanceState(Party customer, Date statementDate,
+                                           Date openingBalanceTimestamp) {
+        ActState result;
         if (openingBalanceTimestamp == null) {
-            result = account.getClosingBalanceTimestampBefore(customer,
-                                                              statementDate);
+            result = getClosingBalanceBefore(customer, statementDate);
             if (result == null) {
-                result = account.getClosingBalanceDateAfter(customer,
-                                                            statementDate);
+                result = getClosingBalanceAfter(customer, statementDate);
             }
         } else {
-            result = account.getClosingBalanceDateAfter(
-                    customer, openingBalanceTimestamp);
+            result = getClosingBalanceAfter(customer, openingBalanceTimestamp);
         }
         return result;
     }
@@ -309,6 +376,112 @@ class StatementActHelper {
     }
 
     /**
+     * Returns the state of a customer act whose startTime is before/after
+     * the specified date, depending on the supplied operator.
+     *
+     * @param shortName     the act short name
+     * @param customer      the customer
+     * @param date          the date
+     * @param operator      the operator
+     * @param sortAscending if <tt>true</tt> sort acts on ascending startTime;
+     *                      otherwise sort them on descending startTime
+     * @return the state, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public ActState getActState(String shortName, Party customer,
+                                Date date, RelationalOp operator,
+                                boolean sortAscending) {
+        ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(
+                customer, new String[]{shortName});
+        if (date != null) {
+            query.add(new NodeConstraint("a.startTime", operator, date));
+        }
+        query.add(new NodeSelectConstraint("a.startTime"));
+        query.add(new NodeSelectConstraint("a.printed"));
+        query.add(new NodeSortConstraint("startTime", sortAscending));
+        query.setMaxResults(1);
+        ObjectSetQueryIterator iter = new ObjectSetQueryIterator(service,
+                                                                 query);
+        if (iter.hasNext()) {
+            ObjectSet set = iter.next();
+            Date startTime = (Date) set.get("a.startTime");
+            boolean printed = (Boolean) set.get("a.printed");
+            return new ActState(startTime, printed);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the startTime of the first
+     * <tt>act.customerAccountOpeningBalance</tt> for a customer prior to
+     * the specified timestamp.
+     *
+     * @param customer  the customer
+     * @param timestamp the timestamp
+     * @return the opening balance act startTime, or <tt>null</tt> if none is
+     *         found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private Date getOpeningBalanceTimestampBefore(Party customer,
+                                                  Date timestamp) {
+        return getActStartTime(OPENING_BALANCE, customer, timestamp,
+                               RelationalOp.LT, false);
+    }
+
+    /**
+     * Returns the state of the first
+     * <tt>act.customerAccountClosingBalance</tt> for a customer, before the
+     * specified timetamp.
+     *
+     * @param customer  the customer
+     * @param timestamp the timestamp
+     * @return the closing balance act startTime, or <tt>null</tt> if none is
+     *         found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private ActState getClosingBalanceBefore(Party customer, Date timestamp) {
+        return getActState(CLOSING_BALANCE, customer, timestamp,
+                           RelationalOp.LT, false);
+    }
+
+    /**
+     * Returns the state of the first
+     * <tt>act.customerAccountClosingBalance</tt> for a customer, after
+     * the specified timestamp.
+     *
+     * @param customer the customer
+     * @param timetamp the timestamp
+     * @return the closing balance act state, or <tt>null</tt> if none is
+     *         found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private ActState getClosingBalanceAfter(Party customer, Date timetamp) {
+        return getActState(CLOSING_BALANCE, customer, timetamp,
+                           RelationalOp.GT, true);
+    }
+
+    /**
+     * Returns the startTime of a customer act whose startTime is before/after
+     * the specified date, depending on the supplied operator.
+     *
+     * @param shortName     the act short name
+     * @param customer      the customer
+     * @param date          the date
+     * @param operator      the operator
+     * @param sortAscending if <tt>true</tt> sort acts on ascending startTime;
+     *                      otherwise sort them on descending startTime
+     * @return the startTime, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private Date getActStartTime(String shortName, Party customer,
+                                 Date date, RelationalOp operator,
+                                 boolean sortAscending) {
+        ActState state = getActState(shortName, customer, date, operator,
+                                     sortAscending);
+        return (state != null) ? state.getStartTime() : null;
+    }
+
+    /**
      * Helper to create a query for all account act types between
      * the opening and closing balance timetamps. This includes the opening
      * balance act, and optionally the closing balance.
@@ -324,11 +497,11 @@ class StatementActHelper {
      * @return a new query
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected ArchetypeQuery createQuery(Party customer,
-                                         Date openingBalanceTimestamp,
-                                         Date closingBalanceTimestamp,
-                                         boolean includeClosingBalance,
-                                         String status) {
+    private ArchetypeQuery createQuery(Party customer,
+                                       Date openingBalanceTimestamp,
+                                       Date closingBalanceTimestamp,
+                                       boolean includeClosingBalance,
+                                       String status) {
         return createQuery(customer, SHORT_NAMES, openingBalanceTimestamp,
                            true, closingBalanceTimestamp,
                            includeClosingBalance, status);
@@ -352,15 +525,15 @@ class StatementActHelper {
      * @return a new query
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected ArchetypeQuery createQuery(Party customer,
-                                         String[] shortNames,
-                                         Date openingBalanceTimestamp,
-                                         boolean includeOpeningBalance,
-                                         Date closingBalanceTimestamp,
-                                         boolean includeClosingBalance,
-                                         String status) {
+    private ArchetypeQuery createQuery(Party customer,
+                                       String[] shortNames,
+                                       Date openingBalanceTimestamp,
+                                       boolean includeOpeningBalance,
+                                       Date closingBalanceTimestamp,
+                                       boolean includeClosingBalance,
+                                       String status) {
         ShortNameConstraint archetypes = new ShortNameConstraint(
-                "a", SHORT_NAMES, false, false);
+                "a", shortNames, false, false);
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
         CollectionNodeConstraint constraint = new CollectionNodeConstraint(
                 "customer", "participation.customer", false, false);

@@ -69,10 +69,9 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
      * @return the acts for the statement date
      */
     protected List<Act> getActs(Party customer, Date statementDate) {
-        Date timestamp = new StatementRules().getStatementTimestamp(
-                statementDate);
         StatementActHelper helper
                 = new StatementActHelper(getArchetypeService());
+        Date timestamp = helper.getStatementTimestamp(statementDate);
         Iterable<Act> acts = helper.getActs(customer, timestamp);
         List<Act> result = new ArrayList<Act>();
         for (Act act : acts) {
