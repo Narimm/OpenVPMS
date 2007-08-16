@@ -45,6 +45,7 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -298,7 +299,13 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
                                        int overdueTo, Lookup accountType,
                                        String customerFrom, String customerTo,
                                        IArchetypeService service) {
-        this.date = date;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        this.date = calendar.getTime();
         this.service = service;
         this.overdue = overdueFrom >= 0 && overdueTo >= 0;
         this.from = overdueFrom;
@@ -343,6 +350,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
             }
             query.setParameter("accountType", accountType.getLinkId());
         }
+        query.setParameter("startTime", date);
         query.setMaxResults(1000);
         iterator = new ObjectSetQueryIterator(service, query);
         balanceCalc = new BalanceCalculator(service);

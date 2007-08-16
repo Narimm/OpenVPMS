@@ -32,6 +32,7 @@ where a.linkId = p.act.linkId
       and p.entity.linkId = e.linkId
       and p.archetypeId.shortName='participation.customerAccountBalance'
       and (a.status = 'POSTED' or a.status='COMPLETED')
+      and a.activityStartTime <= :startTime
 order by e.name, a.activityStartTime
       ]]>
     </query>
@@ -48,6 +49,7 @@ where a.linkId = p.act.linkId
       and p.archetypeId.shortName='participation.customerAccountBalance'
       and (a.status = 'POSTED' or a.status='COMPLETED')
       and e.name >= :from
+      and a.activityStartTime <= :startTime
 order by e.name, a.activityStartTime
       ]]>
     </query>
@@ -64,6 +66,7 @@ where a.linkId = p.act.linkId
       and p.archetypeId.shortName='participation.customerAccountBalance'
       and (a.status = 'POSTED' or a.status='COMPLETED')
       and e.name >= :from and e.name <= :to
+      and a.activityStartTime <= :startTime
 order by e.name, a.activityStartTime
       ]]>
     </query>
@@ -80,6 +83,7 @@ where a.linkId = p.act.linkId
       and p.archetypeId.shortName='participation.customerAccountBalance'
       and c.linkId = :accountType
       and (a.status = 'POSTED' or a.status='COMPLETED')
+      and a.activityStartTime <= :startTime
 order by e.name, a.activityStartTime
       ]]>
     </query>
@@ -97,6 +101,7 @@ where a.linkId = p.act.linkId
       and c.linkId = :accountType
       and (a.status = 'POSTED' or a.status='COMPLETED')
       and e.name >= :from
+      and a.activityStartTime <= :startTime
 order by e.name, a.activityStartTime
       ]]>
     </query>
@@ -114,6 +119,7 @@ where a.linkId = p.act.linkId
       and c.linkId = :accountType
       and (a.status = 'POSTED' or a.status='COMPLETED')
       and e.name >= :from and e.name <= :to
+      and a.activityStartTime <= :startTime
 order by e.name, a.activityStartTime
       ]]>
     </query>
