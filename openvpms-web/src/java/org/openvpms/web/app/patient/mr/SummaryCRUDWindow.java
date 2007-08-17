@@ -110,8 +110,8 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.removeAll();
         if (enable) {
-            buttons.add(getEditButton());
             buttons.add(getCreateButton());
+            buttons.add(getEditButton());
             buttons.add(getDeleteButton());
             buttons.add(getPrintButton());
         } else {
