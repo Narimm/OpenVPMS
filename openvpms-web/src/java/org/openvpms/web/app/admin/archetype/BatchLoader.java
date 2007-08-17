@@ -92,7 +92,7 @@ public class BatchLoader {
     }
 
     /**
-     * Loads the next descriptor, not notifies the listener of completion if
+     * Loads the next descriptor, and notifies the listener of completion if
      * there is no next descriptor.
      */
     private void loadNext() {

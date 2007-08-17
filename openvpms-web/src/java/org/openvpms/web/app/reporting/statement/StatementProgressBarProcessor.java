@@ -23,6 +23,7 @@ import nextapp.echo2.app.Label;
 import org.openvpms.archetype.component.processor.Processor;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
+import org.openvpms.web.component.processor.RetryListener;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -111,14 +112,18 @@ class StatementProgressBarProcessor extends ProgressBarProcessor<Party> {
     }
 
     /**
-     * Invoked if an error occurs processing the batch.
-     * Notifies any listener.
+     * To be invoked when processing of an object fails.
+     * Suspends processing.
+     * If a {@link RetryListener} is registered, the listener is notified to
+     * handle retries, otherwise {@link #notifyError} will be invoked.
      *
-     * @param exception the cause
+     * @param object  the object that failed
+     * @param message formatted message indicating the reason for the failure
+     * @param cause   the cause of the failure
      */
     @Override
-    public void notifyError(Throwable exception) {
-        super.notifyError(exception);
+    public void processFailed(Party object, String message, Throwable cause) {
+        super.processFailed(object, message, cause);
     }
 
     /**

@@ -55,7 +55,8 @@ class EndOfPeriodGenerator extends AbstractStatementGenerator {
     public EndOfPeriodGenerator(Date date, boolean postCompletedCharges) {
         super(Messages.get("reporting.statements.eop.title"),
               Messages.get("reporting.statements.eop.cancel.title"),
-              Messages.get("reporting.statements.eop.cancel.message"));
+              Messages.get("reporting.statements.eop.cancel.message"),
+              Messages.get("reporting.statements.eop.retry.title"));
         ArchetypeQuery query
                 = new ArchetypeQuery("party.customer*", false, false);
         int size = countCustomers(query);

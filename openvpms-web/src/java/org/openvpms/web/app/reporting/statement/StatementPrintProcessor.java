@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.reporting.statement;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
 import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -60,6 +62,12 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      * Only applies to non-preview statements.
      */
     private boolean updatePrinted = true;
+
+    /**
+     * The logger.
+     */
+    private static final Log log
+            = LogFactory.getLog(StatementPrintProcessor.class);
 
 
     /**
@@ -119,7 +127,10 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
                         processor.process();
                     }
                 } catch (OpenVPMSException exception) {
-                    processor.notifyError(exception);
+                    log.error(exception, exception);
+                    processor.processFailed(statement.getCustomer(),
+                                            exception.getMessage(),
+                                            exception);
                 }
             }
 
@@ -131,7 +142,9 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
             }
 
             public void failed(Throwable cause) {
-                processor.notifyError(cause);
+                log.error(cause, cause);
+                processor.processFailed(statement.getCustomer(),
+                                        cause.getMessage(), cause);
             }
         });
         if (iPrinter.getInteractive()) {

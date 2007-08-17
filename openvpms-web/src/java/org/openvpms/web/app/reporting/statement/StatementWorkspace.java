@@ -251,7 +251,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      * @param generator the statement generator
      * @param refresh   if <tt>true</tt>, refresh the browser on completion
      */
-    private void generateStatements(StatementGenerator generator,
+    private void generateStatements(final StatementGenerator generator,
                                     final boolean refresh) {
         generator.setListener(new BatchProcessorListener() {
             public void completed() {
@@ -261,6 +261,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
             }
 
             public void error(Throwable exception) {
+                generator.getProcessor().setCancel(true);
                 ErrorHelper.show(exception);
             }
         });
