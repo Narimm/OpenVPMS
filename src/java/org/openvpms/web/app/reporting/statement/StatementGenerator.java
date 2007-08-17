@@ -74,7 +74,8 @@ class StatementGenerator extends AbstractStatementGenerator {
                               boolean printOnly, Context context) {
         super(Messages.get("reporting.statements.run.title"),
               Messages.get("reporting.statements.run.cancel.title"),
-              Messages.get("reporting.statements.run.cancel.message"));
+              Messages.get("reporting.statements.run.cancel.message"),
+              Messages.get("reporting.statements.run.retry.title"));
         List<Party> customers = new ArrayList<Party>();
         Party party = (Party) IMObjectHelper.getObject(customer);
         if (party != null) {
@@ -106,7 +107,8 @@ class StatementGenerator extends AbstractStatementGenerator {
     public StatementGenerator(CustomerBalanceQuery query, Context context) {
         super(Messages.get("reporting.statements.run.title"),
               Messages.get("reporting.statements.run.cancel.title"),
-              Messages.get("reporting.statements.run.cancel.message"));
+              Messages.get("reporting.statements.run.cancel.message"),
+              Messages.get("reporting.statements.run.retry.title"));
         List<ObjectSet> balances = query.getObjects();
         List<Party> customers = new ArrayList<Party>();
         for (ObjectSet set : balances) {

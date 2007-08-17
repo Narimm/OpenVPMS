@@ -65,6 +65,11 @@ public abstract class PopupDialog extends PopupWindow {
     public static final String SKIP_ID = "skip";
 
     /**
+     * Retry button identifier.
+     */
+    public static final String RETRY_ID = "retry";
+
+    /**
      * Helper to create a button row containing the OK button.
      */
     public static final String[] OK = {OK_ID};
@@ -100,6 +105,11 @@ public abstract class PopupDialog extends PopupWindow {
      */
     public static final String[] APPLY_OK_CANCEL
             = {APPLY_ID, OK_ID, CANCEL_ID};
+
+    /**
+     * Helper to craete a button row containing the RETRY and CANCEL buttons.
+     */
+    public static final String[] RETRY_CANCEL = {RETRY_ID, CANCEL_ID};
 
     /**
      * The dialog action. May be <tt>null</tt>
@@ -197,6 +207,8 @@ public abstract class PopupDialog extends PopupWindow {
             onSkip();
         } else if (APPLY_ID.equals(button)) {
             onApply();
+        } else if (RETRY_ID.equals(button)) {
+            onRetry();
         } else {
             setAction(button);
             close();
@@ -260,6 +272,14 @@ public abstract class PopupDialog extends PopupWindow {
      */
     protected void onApply() {
         close(APPLY_ID);
+    }
+
+    /**
+     * Invoked when the 'retry' button is pressed. This sets the action and
+     * closes the window.
+     */
+    protected void onRetry() {
+        close(RETRY_ID);
     }
 
     /**

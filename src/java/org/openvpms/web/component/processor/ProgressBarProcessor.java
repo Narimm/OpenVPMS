@@ -25,6 +25,8 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TaskQueueHandle;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProcessor;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.util.Vetoable;
 
 import java.util.List;
 
@@ -73,6 +75,11 @@ public abstract class ProgressBarProcessor<T>
      * Determines how often to re-schedule the processor, to force a refresh.
      */
     private long refreshInterval = DateUtils.MILLIS_IN_SECOND * 2;
+
+    /**
+     * The retry listener.
+     */
+    private RetryListener<T> retryListener;
 
 
     /**
@@ -146,6 +153,15 @@ public abstract class ProgressBarProcessor<T>
     }
 
     /**
+     * Sets a listener to handle retries.
+     *
+     * @param listener the retry listener
+     */
+    public void setRetryListener(RetryListener<T> listener) {
+        retryListener = listener;
+    }
+
+    /**
      * Sets the items to iterate.
      *
      * @param items the items.
@@ -208,6 +224,51 @@ public abstract class ProgressBarProcessor<T>
                 }
             });
             lastRefresh = time;
+        }
+    }
+
+    /**
+     * To be invoked when processing of an object fails.
+     * Suspends processing.
+     * If a {@link RetryListener} is registered, the listener is notified to
+     * handle retries, otherwise {@link #notifyError} will be invoked.
+     *
+     * @param object  the object that failed
+     * @param message formatted message indicating the reason for the failure
+     * @param cause   the cause of the failure
+     */
+    protected void processFailed(final T object, String message,
+                                 Throwable cause) {
+        setSuspend(true);
+        if (retryListener != null) {
+            Vetoable veto = new Vetoable() {
+                public void veto(boolean veto) {
+                    if (!veto) {
+                        retry(object);
+                    }
+                }
+            };
+
+            retryListener.retry(object, veto, message);
+        } else {
+            notifyError(cause);
+        }
+    }
+
+    /**
+     * Retries an object.
+     *
+     * @param object the object to retry
+     */
+    protected void retry(T object) {
+        try {
+            setSuspend(false);
+            process(object);
+            if (!isSuspended()) {
+                process();
+            }
+        } catch (OpenVPMSException exception) {
+            processFailed(object, exception.getMessage(), exception);
         }
     }
 

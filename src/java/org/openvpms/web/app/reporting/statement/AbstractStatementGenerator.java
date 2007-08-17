@@ -24,8 +24,10 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.processor.RetryListener;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.component.util.Vetoable;
@@ -62,6 +64,16 @@ public abstract class AbstractStatementGenerator
     private final VetoListener cancelListener;
 
     /**
+     * The retry dialog retry title.
+     */
+    private final String retryTitle;
+
+    /**
+     * The listener to veto retry requests.
+     */
+    private final RetryListener<Party> retryListener;
+
+    /**
      * The current generation dialog.
      */
     private GenerationDialog dialog;
@@ -70,17 +82,26 @@ public abstract class AbstractStatementGenerator
     /**
      * Creates a new <tt>AbstractStatementGenerator</tt>.
      *
-     * @param title       the generator title
-     * @param cancelTitle the generator message
+     * @param title       the generator cancel title
+     * @param cancelTitle the generator cancel message
+     * @param retryTitle  the generator retry title
      */
     public AbstractStatementGenerator(String title, String cancelTitle,
-                                      String cancelMessage) {
+                                      String cancelMessage,
+                                      String retryTitle) {
         this.title = title;
         this.cancelTitle = cancelTitle;
         this.cancelMessage = cancelMessage;
         cancelListener = new VetoListener() {
             public void onVeto(Vetoable source) {
                 onCancel(source);
+            }
+        };
+        this.retryTitle = retryTitle;
+        retryListener = new RetryListener<Party>() {
+            public void retry(Party customer, Vetoable action,
+                              String reason) {
+                onRetry(action, reason);
             }
         };
     }
@@ -99,6 +120,7 @@ public abstract class AbstractStatementGenerator
                 onError(exception);
             }
         });
+        processor.setRetryListener(retryListener);
         if (processor.getCount() > 1) {
             // open a dialog to give the user the opportunity to cancel
             dialog = new GenerationDialog(processor);
@@ -154,7 +176,7 @@ public abstract class AbstractStatementGenerator
      * Invoked when the 'cancel' button is pressed. This prompts for
      * confirmation.
      */
-    private void onCancel(final Vetoable source) {
+    private void onCancel(final Vetoable action) {
         final StatementProgressBarProcessor processor = getProcessor();
         processor.setCancel(true);
         final ConfirmationDialog dialog
@@ -162,12 +184,35 @@ public abstract class AbstractStatementGenerator
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent e) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    source.veto(false);
+                    action.veto(false);
                     onCompletion();
                 } else {
-                    source.veto(true);
+                    action.veto(true);
                     processor.setCancel(false);
                     processor.process();
+                }
+            }
+        });
+        dialog.show();
+    }
+
+    /**
+     * Retries a failed customer.
+     *
+     * @param action the action to veto or allow
+     * @param reason the reason for the failure
+     */
+    private void onRetry(final Vetoable action, String reason) {
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(retryTitle, reason,
+                                         ConfirmationDialog.RETRY_CANCEL);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                if (ConfirmationDialog.RETRY_ID.equals(dialog.getAction())) {
+                    action.veto(false);
+                } else {
+                    action.veto(true);
+                    onCompletion();
                 }
             }
         });
