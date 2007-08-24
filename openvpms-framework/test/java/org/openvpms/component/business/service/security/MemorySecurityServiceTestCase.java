@@ -59,15 +59,19 @@ public class MemorySecurityServiceTestCase
     /**
      * Create a secure context so that we can do some authorization testing
      *
-     * @param user      the user name
-     * @param password  the password
-     * @param authority the authority of the person
+     * @param user        the user name
+     * @param password    the password
+     * @param authorities the authorities of the person
      */
     protected void createSecurityContext(String user, String password,
-                                         String authority) {
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                user, password, new GrantedAuthority[]{
-                new ArchetypeAwareGrantedAuthority(authority)});
+                                         String ... authorities) {
+        GrantedAuthority[] granted = new GrantedAuthority[authorities.length];
+        for (int i = 0; i < granted.length; ++i) {
+            granted[i] = new ArchetypeAwareGrantedAuthority(authorities[i]);
+        }
+        UsernamePasswordAuthenticationToken token
+                = new UsernamePasswordAuthenticationToken(user, password,
+                                                          granted);
         SecurityContextHolder.getContext().setAuthentication(token);
     }
 }
