@@ -20,137 +20,102 @@ package org.openvpms.web.app.admin.archetype;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProcessor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 
 
 /**
- * Loads a batch of {@link ArchetypeDescriptor}, providing prompting to
+ * Loads a batch of {@link ArchetypeDescriptor}s, providing prompting to
  * replace duplicates, and error handling.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class BatchLoader {
+public class BatchArchetypeLoader
+        extends AbstractAsynchronousBatchProcessor<ArchetypeDescriptor> {
 
-    public interface Listener {
-
-        /**
-         * Invoked when the load successfully completes.
-         *
-         * @param descriptor the first successfully loaded descriptor.
-         *                   May be <tt>null</tt>
-         */
-        void completed(ArchetypeDescriptor descriptor);
-    }
 
     /**
-     * Iterator over the descriptors to load.
+     * Tracks the archetype changes.
      */
-    private Iterator<ArchetypeDescriptor> iterator;
-
-    /**
-     * The listener to notify on completion. May be <tt>null</tt>
-     */
-    private final Listener listener;
-
-    /**
-     * The first descriptor successfully loaded. May be <tt>null</tt>
-     */
-    private ArchetypeDescriptor first;
+    private List<Change> changes = new ArrayList<Change>();
 
 
     /**
      * Constructs a new <tt>BatchLoader</tt>.
      *
      * @param descriptors the descriptor to load
-     * @param listener    the listener to notify on completion.
-     *                    May be <tt>null</tt>
      */
-    public BatchLoader(ArchetypeDescriptors descriptors,
-                       Listener listener) {
-        iterator = descriptors.getArchetypeDescriptors().values().iterator();
-        this.listener = listener;
+    public BatchArchetypeLoader(ArchetypeDescriptors descriptors) {
+        super(descriptors.getArchetypeDescriptors().values().iterator());
     }
 
     /**
-     * Initiates loading of the descriptors.
-     */
-    public void load() {
-        loadNext();
-    }
-
-    /**
-     * Loads the next descriptor, and notifies the listener of completion if
-     * there is no next descriptor.
-     */
-    private void loadNext() {
-        if (iterator.hasNext()) {
-            ArchetypeDescriptor descriptor = iterator.next();
-            try {
-                load(descriptor);
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-        } else if (listener != null) {
-            listener.completed(first);
-        }
-    }
-
-    /**
-     * Loads an archetype descriptor.
+     * Returns the archetypes that have changed.
      *
-     * @param descriptor the descriptor to load
+     * @return the archetypes the have changed
      */
-    private void load(ArchetypeDescriptor descriptor) {
-        try {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            List<ValidatorError> errors = ValidationHelper.validate(descriptor,
-                                                                    service);
-            if (errors == null) {
-                String shortName = descriptor.getShortName();
-                ArchetypeDescriptor existing
-                        = service.getArchetypeDescriptor(shortName);
-                if (existing != null) {
-                    promptOnReplace(descriptor, existing);
-                } else {
-                    save(descriptor, service);
-                }
+    public List<Change> getChanges() {
+        return changes;
+    }
+
+    /**
+     * Processes an object.
+     *
+     * @param descriptor the object to process
+     */
+    protected void process(ArchetypeDescriptor descriptor) {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        List<ValidatorError> errors
+                = ValidationHelper.validate(descriptor, service);
+        if (errors == null) {
+            String shortName = descriptor.getShortName();
+            ArchetypeDescriptor existing
+                    = service.getArchetypeDescriptor(shortName);
+            if (existing != null) {
+                promptOnReplace(descriptor, existing);
+            } else {
+                save(descriptor, service);
             }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
         }
     }
 
     /**
-     * Saves an archetype descriptor, and triggers loading any others.
+     * Invoked if an error occurs processing the batch.
+     * Notifies any listener.
+     *
+     * @param exception the cause
+     */
+    @Override
+    protected void notifyError(Throwable exception) {
+        setSuspend(true);
+        super.notifyError(exception);
+    }
+
+    /**
+     * Saves an archetype descriptor.
      *
      * @param descriptor the descriptor to save
      * @param service    the archetype service
      */
     private void save(ArchetypeDescriptor descriptor,
                       IArchetypeService service) {
-        try {
-            service.save(descriptor);
-            if (first == null) {
-                first = descriptor;
-            }
-            loadNext();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
+        service.save(descriptor);
+        changes.add(new Change(descriptor));
     }
 
     /**
@@ -162,7 +127,7 @@ public class BatchLoader {
     private void promptOnReplace(final ArchetypeDescriptor descriptor,
                                  final ArchetypeDescriptor existing) {
         String[] buttons;
-        if (iterator.hasNext()) {
+        if (getIterator().hasNext()) {
             buttons = ConfirmationDialog.OK_SKIP_CANCEL;
         } else {
             buttons = ConfirmationDialog.OK_CANCEL;
@@ -172,13 +137,16 @@ public class BatchLoader {
                                       descriptor.getShortName());
         final ConfirmationDialog dialog = new ConfirmationDialog(title, message,
                                                                  buttons);
+        setSuspend(true);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 String action = dialog.getAction();
                 if (ConfirmationDialog.OK_ID.equals(action)) {
                     replace(descriptor, existing);
+                    process(); // process the next descriptor
                 } else if (ConfirmationDialog.SKIP_ID.equals(action)) {
-                    loadNext();
+                    // skip the descriptor and process the next
+                    process();
                 }
             }
         });
@@ -198,6 +166,7 @@ public class BatchLoader {
         try {
             service.remove(existing);
             save(descriptor, service);
+            changes.add(new Change(descriptor, existing));
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
