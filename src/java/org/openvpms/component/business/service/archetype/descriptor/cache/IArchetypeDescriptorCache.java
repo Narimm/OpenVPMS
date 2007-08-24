@@ -19,13 +19,12 @@
 
 package org.openvpms.component.business.service.archetype.descriptor.cache;
 
-// java core
-
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 
 import java.util.List;
+
 
 /**
  * This interface is used for accessing {@link ArchetypeDescriptor}.
@@ -45,7 +44,7 @@ public interface IArchetypeDescriptorCache {
      * @throws ArchetypeDescriptorCacheException
      *          if there is a problem completing the request.
      */
-    public ArchetypeDescriptor getArchetypeDescriptor(String name);
+    ArchetypeDescriptor getArchetypeDescriptor(String name);
 
     /**
      * Retrieve the {@link ArchetypeDescriptor} with the specified
@@ -58,7 +57,7 @@ public interface IArchetypeDescriptorCache {
      * @throws ArchetypeDescriptorCacheException
      *          if there is a problem completing the request.
      */
-    public ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id);
+    ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id);
 
     /**
      * Return all the {@link ArchetypeDescriptor} instances managed by this
@@ -68,7 +67,7 @@ public interface IArchetypeDescriptorCache {
      * @throws ArchetypeDescriptorCacheException
      *          if there is a problem completing the request.
      */
-    public List<ArchetypeDescriptor> getArchetypeDescriptors();
+    List<ArchetypeDescriptor> getArchetypeDescriptors();
 
     /**
      * Return all the {@link ArchetypeDescriptor} instances that match the
@@ -79,7 +78,7 @@ public interface IArchetypeDescriptorCache {
      * @throws ArchetypeDescriptorCacheException
      *          if there is a problem completing the request.
      */
-    public List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName);
+    List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName);
 
     /**
      * Return all the {@link ArchetypeDescriptor} instance with the specified
@@ -92,8 +91,7 @@ public interface IArchetypeDescriptorCache {
      * @deprecated no replacement
      */
     @Deprecated
-    public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(
-            String rmName);
+    List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(String rmName);
 
     /**
      * Return the {@link AssertionTypeDescriptor} with the specified name.
@@ -103,7 +101,7 @@ public interface IArchetypeDescriptorCache {
      * @throws ArchetypeDescriptorCacheException
      *          if there is a problem completing the request.
      */
-    public AssertionTypeDescriptor getAssertionTypeDescriptor(String name);
+    AssertionTypeDescriptor getAssertionTypeDescriptor(String name);
 
     /**
      * Return all the {@link AssertionTypeDescriptor} instances supported by
@@ -113,7 +111,7 @@ public interface IArchetypeDescriptorCache {
      * @throws ArchetypeDescriptorCacheException
      *          if there is a problem completing the request.
      */
-    public List<AssertionTypeDescriptor> getAssertionTypeDescriptors();
+    List<AssertionTypeDescriptor> getAssertionTypeDescriptors();
 
     /**
      * Return a list of archtype short names (i.e strings) given the
@@ -130,9 +128,9 @@ public interface IArchetypeDescriptorCache {
      *             boolean primaryOnly)}
      */
     @Deprecated
-    public List<String> getArchetypeShortNames(String rmName, String entityName,
-                                               String conceptName,
-                                               boolean primaryOnly);
+    List<String> getArchetypeShortNames(String rmName, String entityName,
+                                        String conceptName,
+                                        boolean primaryOnly);
 
     /**
      * Return a list of archtype short names (i.e strings) given the
@@ -144,9 +142,9 @@ public interface IArchetypeDescriptorCache {
      * @throws ArchetypeDescriptorCacheException
      *          if there is a problem completing the request.
      */
-    public List<String> getArchetypeShortNames(String entityName,
-                                               String conceptName,
-                                               boolean primaryOnly);
+    List<String> getArchetypeShortNames(String entityName,
+                                        String conceptName,
+                                        boolean primaryOnly);
 
     /**
      * Return all the archetypes which match the specified short name
@@ -157,8 +155,7 @@ public interface IArchetypeDescriptorCache {
      * @throws ArchetypeDescriptorCacheException
      *          a runtime exception if it cannot complete the call
      */
-    public List<String> getArchetypeShortNames(String shortName,
-                                               boolean primaryOnly);
+    List<String> getArchetypeShortNames(String shortName, boolean primaryOnly);
 
     /**
      * Add the specified archetype descriptor to the cache. If the replace
@@ -168,13 +165,23 @@ public interface IArchetypeDescriptorCache {
      * @param adesc   the archetype descriptor to add
      * @param replace indicates whether it should replace and existing version.
      */
-    public void addArchetypeDescriptor(ArchetypeDescriptor adesc,
-                                       boolean replace);
+    void addArchetypeDescriptor(ArchetypeDescriptor adesc, boolean replace);
+
+    /**
+     * Adds the specified assertion type descriptor to the cache. If the
+     * replace flag is specified, and the descriptor exists, then replace the
+     * existing descriptor with the new one.
+     *
+     * @param descriptor the assertion type descriptor to add
+     * @param replace    indicates whether it should replace and existing version
+     */
+    void addAssertionTypeDescriptor(AssertionTypeDescriptor descriptor,
+                                    boolean replace);
 
     /**
      * Return all the archetype short names
      *
      * @return List<String>
      */
-    public List<String> getArchetypeShortNames();
+    List<String> getArchetypeShortNames();
 }

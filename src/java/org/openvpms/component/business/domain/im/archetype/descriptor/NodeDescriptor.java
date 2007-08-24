@@ -249,13 +249,13 @@ public class NodeDescriptor extends Descriptor {
         if (context == null) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToAddChildElement,
-                    new Object[]{getName()});
+                    getName());
         }
 
         if (!isCollection()) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToAddChildElement,
-                    new Object[]{getName()});
+                    getName());
         }
 
         // retrieve the value at that node
@@ -274,7 +274,7 @@ public class NodeDescriptor extends Descriptor {
                 } else {
                     throw new DescriptorException(
                             DescriptorException.ErrorCode.FailedToAddChildElement,
-                            new Object[]{getName()});
+                            getName());
                 }
             } else {
                 // if a baseName has been specified then prepend 'add' to the
@@ -292,7 +292,7 @@ public class NodeDescriptor extends Descriptor {
         } catch (Exception exception) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToAddChildElement,
-                    new Object[]{getName()}, exception);
+                    exception, getName());
         }
     }
 
@@ -306,7 +306,7 @@ public class NodeDescriptor extends Descriptor {
         if (nodeDescriptors.containsKey(child.getName())) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.DuplicateNodeDescriptor,
-                    new Object[]{child.getName(), getName()});
+                    child.getName(), getName());
         }
         nodeDescriptors.put(child.getName(), child);
         child.setParent(this);
@@ -580,8 +580,7 @@ public class NodeDescriptor extends Descriptor {
             } catch (Exception exception) {
                 throw new DescriptorException(
                         DescriptorException.ErrorCode.FailedToGetChildren,
-                        new Object[]{target.getName(), getName(), getPath()},
-                        exception);
+                        exception, target.getName(), getName(), getPath());
             }
 
             return children;
@@ -632,7 +631,7 @@ public class NodeDescriptor extends Descriptor {
                 } catch (Exception exception) {
                     throw new DescriptorException(
                             DescriptorException.ErrorCode.InvalidType,
-                            new Object[]{type}, exception);
+                            exception, type);
                 }
             }
         }
@@ -734,7 +733,7 @@ public class NodeDescriptor extends Descriptor {
         } else {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.UnsupportedOperation,
-                    new Object[]{"getMaxValue", getType()});
+                    "getMaxValue", getType());
         }
 
         return number;
@@ -774,7 +773,7 @@ public class NodeDescriptor extends Descriptor {
         } else {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.UnsupportedOperation,
-                    new Object[]{"getMinValue", getType()});
+                    "getMinValue", getType());
         }
 
         return number;
@@ -832,7 +831,7 @@ public class NodeDescriptor extends Descriptor {
         } else {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.UnsupportedOperation,
-                    new Object[]{"getMinValue", getType()});
+                    "getMinValue", getType());
         }
 
         return expression;
@@ -936,8 +935,7 @@ public class NodeDescriptor extends Descriptor {
 
         if (object == null) {
             throw new DescriptorException(
-                    DescriptorException.ErrorCode.CannotCastToCollection,
-                    new Object[]{object.getClass().getName()});
+                    DescriptorException.ErrorCode.CannotCastToCollection);
         } else if (object instanceof Collection) {
             collection = (Collection) object;
         } else if (object instanceof PropertyCollection) {
@@ -1161,13 +1159,13 @@ public class NodeDescriptor extends Descriptor {
         if (context == null) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToRemoveChildElement,
-                    new Object[]{getName()});
+                    getName());
         }
 
         if (!isCollection()) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToRemoveChildElement,
-                    new Object[]{getName()});
+                    getName());
         }
 
         Object obj = JXPathHelper.newContext(context).getValue(getPath());
@@ -1184,7 +1182,7 @@ public class NodeDescriptor extends Descriptor {
                 } else {
                     throw new DescriptorException(
                             DescriptorException.ErrorCode.FailedToRemoveChildElement,
-                            new Object[]{getName()});
+                            getName());
                 }
             } else {
                 // if a baseName has been specified then prepend 'add' to the
@@ -1201,7 +1199,7 @@ public class NodeDescriptor extends Descriptor {
         } catch (Exception exception) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToRemoveChildElement,
-                    new Object[]{getName()}, exception);
+                    exception, getName());
         }
     }
 
@@ -1405,7 +1403,7 @@ public class NodeDescriptor extends Descriptor {
         if (context == null) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.NullContextForSetValue,
-                    new Object[]{getName()});
+                    getName());
         }
 
         try {
@@ -1418,7 +1416,7 @@ public class NodeDescriptor extends Descriptor {
         } catch (Exception exception) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToSetValue,
-                    new Object[]{getName()}, exception);
+                    exception, getName());
         }
     }
 
@@ -1472,7 +1470,7 @@ public class NodeDescriptor extends Descriptor {
         } catch (JXPathTypeConversionException exception) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToCoerceValue,
-                    new Object[]{value.getClass().getName(), getClazz().getName()});
+                    value.getClass().getName(), getClazz().getName());
         }
     }
 

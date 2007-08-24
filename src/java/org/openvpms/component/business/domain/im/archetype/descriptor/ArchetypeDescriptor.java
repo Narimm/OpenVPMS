@@ -197,7 +197,7 @@ public class ArchetypeDescriptor extends Descriptor {
         if (nodeDescriptors.containsKey(node.getName())) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.DuplicateNodeDescriptor,
-                    new Object[] {node.getName(), getName()});
+                    node.getName(), getName());
         }
         nodeDescriptors.put(node.getName(), node);
         node.setArchetypeDescriptor(this);

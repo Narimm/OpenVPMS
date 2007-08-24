@@ -19,67 +19,110 @@
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+
 /**
- * Holds the set of valid archetypeDescriptors 
+ * Archetype descriptors.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ArchetypeDescriptors implements Serializable {
 
     /**
-     * Default SUID
+     * Serialisation version identifier.
      */
     private static final long serialVersionUID = 1L;
-    
-    /**
-     * A map of valid archetypeDescriptors
-     */
-    private HashMap<String, ArchetypeDescriptor> archetypeDescriptors = 
-        new HashMap<String, ArchetypeDescriptor>();
 
     /**
-     * Default constructor
+     * A map of descriptors, keyed on name.
+     */
+    private HashMap<String, ArchetypeDescriptor> archetypeDescriptors =
+            new HashMap<String, ArchetypeDescriptor>();
+
+    /**
+     * The mapping resource path.
+     */
+    private static final String MAPPING
+            = "org/openvpms/component/business/domain/im/archetype/descriptor/"
+            + "archetype-mapping-file.xml";
+
+
+    /**
+     * Default constructor.
      */
     public ArchetypeDescriptors() {
     }
 
     /**
-     * Return the descriptors as a map
-     * 
-     * @return Returns the archetypeDescriptors.
+     * Returns the descriptors as a map, keyed on short name.
+     *
+     * @return the descriptors
      */
     public Map<String, ArchetypeDescriptor> getArchetypeDescriptors() {
         return archetypeDescriptors;
     }
 
     /**
-     * @return Returns the archetypeDescriptors.
+     * Returns the descriptors.
+     *
+     * @return the descriptors
      */
     public ArchetypeDescriptor[] getArchetypeDescriptorsAsArray() {
-        return (ArchetypeDescriptor[])archetypeDescriptors.values().toArray(
+        return archetypeDescriptors.values().toArray(
                 new ArchetypeDescriptor[archetypeDescriptors.size()]);
     }
-    
+
     /**
-     * @param archetypeDescriptors The archetypeDescriptors to set.
+     * Sets the descriptors.
+     *
+     * @param descriptors the descriptors to set
      */
-    public void setArchetypeDescriptorsAsArray(ArchetypeDescriptor[] archetypes) {
+    public void setArchetypeDescriptorsAsArray(
+            ArchetypeDescriptor[] descriptors) {
         archetypeDescriptors = new HashMap<String, ArchetypeDescriptor>();
-        for (ArchetypeDescriptor descriptor : archetypes) {
+        for (ArchetypeDescriptor descriptor : descriptors) {
             archetypeDescriptors.put(descriptor.getShortName(), descriptor);
         }
     }
 
     /**
-     * @param archetypeDescriptors The archetypeDescriptors to set.
+     * Sets the descriptors.
+     *
+     * @param descriptors the descriptors
      */
     public void setArchetypeDescriptors(
-            HashMap<String, ArchetypeDescriptor> archetypeDescriptors) {
-        this.archetypeDescriptors = archetypeDescriptors;
+            HashMap<String, ArchetypeDescriptor> descriptors) {
+        this.archetypeDescriptors = descriptors;
     }
+
+    /**
+     * Reads descriptors from a stream.
+     *
+     * @param stream the stream to read from
+     * @return the read descriptors
+     * @throws DescriptorException if the descriptors cannot be read
+     */
+    public static ArchetypeDescriptors read(InputStream stream) {
+        return (ArchetypeDescriptors) DescriptorIOHelper.read(stream, MAPPING);
+
+    }
+
+    /**
+     * Write descriptors to a stream.
+     *
+     * @param descriptors the descriptors to write
+     * @param stream      the stream to write to
+     * @throws DescriptorException if the descriptors cannot be written
+     */
+    public static void write(ArchetypeDescriptors descriptors,
+                             OutputStream stream) {
+        DescriptorIOHelper.write(descriptors, stream, MAPPING);
+    }
+
 }

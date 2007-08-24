@@ -85,9 +85,9 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
                         + imobj.getClass().getName());
                 continue;
             }
-            
+
             AssertionTypeDescriptor descriptor = (AssertionTypeDescriptor)imobj;
-            assertionTypes.put(descriptor.getName(), descriptor);
+            addAssertionTypeDescriptor(descriptor, true);
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Loaded assertion type " + descriptor.getName());

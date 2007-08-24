@@ -124,7 +124,7 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
             // authority string.
             ArchetypeAwareGrantedAuthority auth
                     = new ArchetypeAwareGrantedAuthority(authorities[i]);
-            auth.setArchetypeIdAsString("security.archetypeAuthority-1.0");
+            auth.setArchetypeIdAsString("security.archetypeAuthority.1.0");
             dao.save(auth);
             role.addAuthority(auth);
             granted[i] = auth;

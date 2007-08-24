@@ -19,45 +19,87 @@
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 
+
 /**
- * Holds the set of valid assertionTypeDescriptors 
+ * Assertion type descriptors.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class AssertionTypeDescriptors implements Serializable {
 
     /**
-     * Default SUID
+     * Serialisation version identifier.
      */
     private static final long serialVersionUID = 1L;
-    
-    /**
-     * A map of valid decriptors
-     */
-    private HashMap<String, AssertionTypeDescriptor> assertionTypeDescriptors = 
-        new HashMap<String, AssertionTypeDescriptor>();
 
     /**
-     * Default constructor
+     * The map of descriptors, keyed on name.
+     */
+    private HashMap<String, AssertionTypeDescriptor> assertionTypeDescriptors =
+            new HashMap<String, AssertionTypeDescriptor>();
+
+    /**
+     * The mapping resource path.
+     */
+    private static final String MAPPING
+            = "org/openvpms/component/business/domain/im/archetype/descriptor/"
+            + "assertion-type-mapping-file.xml";
+
+
+    /**
+     * Default constructor.
      */
     public AssertionTypeDescriptors() {
     }
 
     /**
-     * @return Returns the descriptors.
+     * Returns the descriptors.
+     *
+     * @return the descriptors
      */
-    public HashMap<String, AssertionTypeDescriptor> getAssertionTypeDescriptors() {
+    public HashMap<String, AssertionTypeDescriptor>
+            getAssertionTypeDescriptors() {
         return assertionTypeDescriptors;
     }
 
     /**
-     * @param descriptors The descriptors to set.
+     * Sets the descriptors.
+     *
+     * @param descriptors the descriptors to set
      */
-    public void setAssertionTypeDescriptors(HashMap<String, AssertionTypeDescriptor> descriptors) {
+    public void setAssertionTypeDescriptors(
+            HashMap<String, AssertionTypeDescriptor> descriptors) {
         this.assertionTypeDescriptors = descriptors;
     }
+
+    /**
+     * Reads descriptors from a stream.
+     *
+     * @param stream the stream to read from
+     * @return the read descriptors
+     * @throws DescriptorException if the descriptors cannot be read
+     */
+    public static AssertionTypeDescriptors read(InputStream stream) {
+        return (AssertionTypeDescriptors) DescriptorIOHelper.read(stream,
+                                                                  MAPPING);
+    }
+
+    /**
+     * Write descriptors to a stream.
+     *
+     * @param descriptors the descriptors to write
+     * @param stream      the stream to write to
+     * @throws DescriptorException if the descriptors cannot be written
+     */
+    public static void write(AssertionTypeDescriptors descriptors,
+                             OutputStream stream) {
+        DescriptorIOHelper.write(descriptors, stream, MAPPING);
+    }
+
 }
