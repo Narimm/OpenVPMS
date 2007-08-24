@@ -65,6 +65,7 @@
                 failonerror="true"
                 fork="true">
             <ant:classpath>
+                <ant:pathelement path="${maven.build.dest}"/>
                 <ant:pathelement path="${maven.build.dir}/hibernate"/>
                 <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
@@ -123,6 +124,24 @@
                 <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
             <arg line="-c application-context.xml"/>
+        </ant:java>
+    </goal>
+
+    <goal name="migrate:derived"
+          description="Updates derived nodes">
+        <attainGoal name="java:compile"/>
+        <attainGoal name="java:jar-resources"/>
+        <attainGoal name="generate-hibernate-properties"/>
+        <ant:java
+            classname="org.openvpms.tools.archetype.loader.DerivedNodeUpdater"
+            failonerror="true"
+            fork="true">
+            <ant:classpath>
+                <ant:pathelement path="${maven.build.dest}"/>
+                <ant:pathelement path="${maven.build.dir}/hibernate"/>
+                <ant:path refid="maven.dependency.classpath"/>
+            </ant:classpath>
+            <arg line="-v -a ${archetype} --context application-context.xml"/>
         </ant:java>
     </goal>
 
