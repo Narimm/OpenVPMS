@@ -202,6 +202,20 @@
         </property>
     </bean>
 
+    <!-- The archetype service, configured without rules -->
+    <bean id="archetypeService-norules"
+          class="org.openvpms.component.business.service.archetype.ArchetypeService">
+        <constructor-arg index="0">
+            <ref local="archetypeDescriptorCache"/>
+        </constructor-arg>
+        <property name="dao">
+            <ref local="imObjectDao"/>
+        </property>
+        <property name="entityInterceptor">
+            <ref local="entityInterceptor"/>
+        </property>
+    </bean>
+
     <!--  The Audit Service -->
     <bean id="auditService"
           class="org.openvpms.component.business.service.audit.AuditService">
@@ -339,6 +353,7 @@
         <property name="beanNames">
             <list>
                 <value>archetypeService</value>
+                <value>archetypeService-norules</value>
             </list>
         </property>
         <!-- property name="interceptorNames">
@@ -372,6 +387,7 @@
         <property name="beanNames">
             <list>
                 <value>archetypeService</value>
+                <value>archetypeService-norules</value>
             </list>
         </property>
         <property name="interceptorNames">

@@ -21,20 +21,21 @@ package org.openvpms.web.app.admin.archetype;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
-import org.exolab.castor.mapping.Mapping;
-import org.exolab.castor.mapping.MappingException;
-import org.exolab.castor.xml.Marshaller;
-import org.exolab.castor.xml.Unmarshaller;
+import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -42,18 +43,17 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 import org.openvpms.web.system.ServiceHelper;
-import org.xml.sax.InputSource;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
- * Add description here.
+ * Archetype CRUD window, providing facilties to import and export archetype
+ * descriptors.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -72,11 +72,6 @@ public class ArchetypeCRUDWindow
     private Button exportButton;
 
     /**
-     * Archetype descriptor mapping.
-     */
-    private Mapping mapping;
-
-    /**
      * The import button identifier.
      */
     private static final String IMPORT_ID = "import";
@@ -90,13 +85,6 @@ public class ArchetypeCRUDWindow
      * The export mime type.
      */
     private static final String MIME_TYPE = "text/xml";
-
-    /**
-     * The archetype descriptors castor mapping.
-     */
-    private static final String MAPPING
-            = "org/openvpms/component/business/domain/im/archetype/descriptor/"
-            + "archetype-mapping-file.xml";
 
 
     /**
@@ -207,12 +195,7 @@ public class ArchetypeCRUDWindow
             descriptors.setArchetypeDescriptorsAsArray(
                     new ArchetypeDescriptor[]{descriptor});
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            OutputStreamWriter writer = new OutputStreamWriter(stream);
-            Marshaller marshaller = new Marshaller(writer);
-            marshaller.setMapping(getMapping());
-            marshaller.setMarshalAsDocument(true);
-            marshaller.marshal(descriptors);
-            writer.close();
+            ArchetypeDescriptors.write(descriptors, stream);
             String name = descriptor.getShortName() + ".adl";
             DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
             DocumentHandler handler = handlers.get(name, MIME_TYPE);
@@ -233,39 +216,74 @@ public class ArchetypeCRUDWindow
      */
     private void upload(InputStream stream) {
         try {
-            Mapping mapping = getMapping();
-            ArchetypeDescriptors descriptors = (ArchetypeDescriptors)
-                    new Unmarshaller(mapping).unmarshal(
-                            new InputStreamReader(stream));
+            ArchetypeDescriptors descriptors
+                    = ArchetypeDescriptors.read(stream);
 
-            BatchLoader.Listener listener = new BatchLoader.Listener() {
-                public void completed(ArchetypeDescriptor descriptor) {
-                    if (descriptor != null) {
-                        onSaved(descriptor, true);
-                    }
+            final BatchArchetypeLoader loader
+                    = new BatchArchetypeLoader(descriptors);
+            loader.setListener(new BatchProcessorListener() {
+                public void completed() {
+                    uploaded(loader.getChanges());
                 }
-            };
-            BatchLoader loader = new BatchLoader(descriptors, listener);
-            loader.load();
+
+                public void error(Throwable exception) {
+                    ErrorHelper.show(exception);
+                }
+            });
+
+            loader.process();
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
     }
 
     /**
-     * Returns the {@link ArchetypeDescriptors} mapping.
+     * Invoked when uploading is completed.
      *
-     * @return the mapping
-     * @throws MappingException if the mapping can't be loaded
-     * @throws IOException      for any I/O error
+     * @param changes the changes
      */
-    private Mapping getMapping() throws MappingException, IOException {
-        if (mapping == null) {
-            mapping = new Mapping();
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            InputStream stream = loader.getResourceAsStream(MAPPING);
-            mapping.loadMapping(new InputSource(new InputStreamReader(stream)));
+    private void uploaded(List<Change> changes) {
+        if (!changes.isEmpty()) {
+            onSaved(changes.get(0).getNewVersion(), true);
+            final List<ArchetypeDescriptor> update
+                    = new ArrayList<ArchetypeDescriptor>();
+            for (Change change : changes) {
+                if (change.hasChangedDerivedNodes()) {
+                    update.add(change.getNewVersion());
+                }
+            }
+            if (!update.isEmpty()) {
+                StringBuffer names = new StringBuffer();
+                for (ArchetypeDescriptor descriptor : update) {
+                    if (names.length() != 0) {
+                        names.append(", ");
+                    }
+                    names.append(descriptor.getDisplayName());
+                }
+
+                String title = Messages.get("archetype.derived.update.title");
+                String message = Messages.get(
+                        "archetype.derived.update.message",
+                        names);
+                final ConfirmationDialog dialog
+                        = new ConfirmationDialog(title, message);
+                dialog.addWindowPaneListener(new WindowPaneListener() {
+                    public void windowPaneClosing(WindowPaneEvent event) {
+                        String action = dialog.getAction();
+                        if (ConfirmationDialog.OK_ID.equals(action)) {
+                            updateDerivedNodes(update);
+                        }
+                    }
+                });
+                dialog.show();
+
+            }
         }
-        return mapping;
     }
+
+    private void updateDerivedNodes(List<ArchetypeDescriptor> descriptors) {
+        BatchArchetypeUpdater updater = new BatchArchetypeUpdater(descriptors);
+        updater.process();
+    }
+
 }

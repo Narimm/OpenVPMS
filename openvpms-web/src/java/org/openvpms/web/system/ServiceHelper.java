@@ -48,6 +48,21 @@ public final class ServiceHelper {
     }
 
     /**
+     * Helper to get the archetype service.
+     *
+     * @param rules if <tt>true</tt> return an instance with business rules
+     *              enabled
+     * @return the archetype service
+     */
+    public static IArchetypeService getArchetypeService(boolean rules) {
+        if (rules) {
+            return getArchetypeService();
+        }
+        return (IArchetypeService) getContext().getBean(
+                "archetypeService-norules");
+    }
+
+    /**
      * Helper to return the data source.
      *
      * @return the data source
