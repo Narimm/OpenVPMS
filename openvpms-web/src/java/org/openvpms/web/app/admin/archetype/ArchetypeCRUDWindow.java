@@ -48,6 +48,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -126,6 +127,22 @@ public class ArchetypeCRUDWindow
         buttons.add(getImportButton());
         if (enable) {
             buttons.add(getExportButton());
+        }
+    }
+
+    /**
+     * Invoked when the object has been saved. If derived nodes have changed,
+     * this prompts to update associated objects.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(ArchetypeDescriptor object, boolean isNew) {
+        Change change = new Change(object, getObject());
+        super.onSaved(object, isNew);
+        if (change.hasChangedDerivedNodes()) {
+            confirmUpdateDerivedNodes(Arrays.asList(object));
         }
     }
 
@@ -244,8 +261,8 @@ public class ArchetypeCRUDWindow
      */
     private void uploaded(List<Change> changes) {
         if (!changes.isEmpty()) {
-            onSaved(changes.get(0).getNewVersion(), true);
-            final List<ArchetypeDescriptor> update
+            super.onSaved(changes.get(0).getNewVersion(), true);
+            List<ArchetypeDescriptor> update
                     = new ArrayList<ArchetypeDescriptor>();
             for (Change change : changes) {
                 if (change.hasChangedDerivedNodes()) {
@@ -253,34 +270,50 @@ public class ArchetypeCRUDWindow
                 }
             }
             if (!update.isEmpty()) {
-                StringBuffer names = new StringBuffer();
-                for (ArchetypeDescriptor descriptor : update) {
-                    if (names.length() != 0) {
-                        names.append(", ");
-                    }
-                    names.append(descriptor.getDisplayName());
-                }
-
-                String title = Messages.get("archetype.derived.update.title");
-                String message = Messages.get(
-                        "archetype.derived.update.message",
-                        names);
-                final ConfirmationDialog dialog
-                        = new ConfirmationDialog(title, message);
-                dialog.addWindowPaneListener(new WindowPaneListener() {
-                    public void windowPaneClosing(WindowPaneEvent event) {
-                        String action = dialog.getAction();
-                        if (ConfirmationDialog.OK_ID.equals(action)) {
-                            updateDerivedNodes(update);
-                        }
-                    }
-                });
-                dialog.show();
-
+                confirmUpdateDerivedNodes(update);
             }
         }
     }
 
+    /**
+     * Prompts to update derived nodes of objects associated with the supplied
+     * archetype descriptors.
+     *
+     * @param descriptors the archetype descriptors
+     */
+    private void confirmUpdateDerivedNodes(
+            final List<ArchetypeDescriptor> descriptors) {
+        StringBuffer names = new StringBuffer();
+        for (ArchetypeDescriptor descriptor : descriptors) {
+            if (names.length() != 0) {
+                names.append(", ");
+            }
+            names.append(descriptor.getDisplayName());
+        }
+
+        String title = Messages.get("archetype.derived.update.title");
+        String message = Messages.get(
+                "archetype.derived.update.message",
+                names);
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                String action = dialog.getAction();
+                if (ConfirmationDialog.OK_ID.equals(action)) {
+                    updateDerivedNodes(descriptors);
+                }
+            }
+        });
+        dialog.show();
+    }
+
+    /**
+     * Updates derived nodes of objects associated with the supplied archetype
+     * descriptors.
+     *
+     * @param descriptors the archetype descriptors
+     */
     private void updateDerivedNodes(List<ArchetypeDescriptor> descriptors) {
         BatchArchetypeUpdater updater = new BatchArchetypeUpdater(descriptors);
         updater.process();
