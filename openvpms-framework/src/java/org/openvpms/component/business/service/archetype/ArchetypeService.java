@@ -541,9 +541,16 @@ public class ArchetypeService implements IArchetypeService {
             // couldn't get the hibernate interceptors working
             // TODO Review the interceptors
             if (entity instanceof ArchetypeDescriptor) {
-                ArchetypeDescriptor adesc = (ArchetypeDescriptor) entity;
                 if (dCache != null) {
-                    dCache.addArchetypeDescriptor(adesc, true);
+                    ArchetypeDescriptor descriptor
+                            = (ArchetypeDescriptor) entity;
+                    dCache.addArchetypeDescriptor(descriptor, true);
+                }
+            } else if (entity instanceof AssertionTypeDescriptor) {
+                if (dCache != null) {
+                    AssertionTypeDescriptor descriptor
+                            = (AssertionTypeDescriptor) entity;
+                    dCache.addAssertionTypeDescriptor(descriptor, true);
                 }
             }
         } catch (IMObjectDAOException exception) {

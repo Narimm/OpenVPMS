@@ -280,7 +280,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
             types = loadAssertionTypeDescriptors(assertFile);
             for (AssertionTypeDescriptor descriptor
                     : types.getAssertionTypeDescriptors().values()) {
-                assertionTypes.put(descriptor.getName(), descriptor);
+                addAssertionTypeDescriptor(descriptor, true);
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("Loaded assertion type "

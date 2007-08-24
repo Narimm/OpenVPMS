@@ -19,611 +19,546 @@
 
 package org.openvpms.tools.archetype.loader;
 
-// java core
-import java.io.File;
-import java.io.FileReader; 
-import java.io.InputStreamReader;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
-//commons-lang
+import com.martiansoftware.jsap.FlaggedOption;
+import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPException;
+import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.Switch;
+import com.martiansoftware.jsap.stringparsers.BooleanStringParser;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-
-//log4j
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
-
-// castor
-import org.exolab.castor.mapping.Mapping;
-import org.exolab.castor.xml.Unmarshaller;
-
-// xml
-import org.xml.sax.InputSource;
-
-//jsap
-import com.martiansoftware.jsap.FlaggedOption;
-import com.martiansoftware.jsap.JSAPResult;
-import com.martiansoftware.jsap.JSAP;
-import com.martiansoftware.jsap.Switch;
-
-// hibernate
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
+import org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorValidationError;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import static org.openvpms.tools.archetype.loader.ArchetypeLoaderException.ErrorCode.*;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
 
 /**
- * This utility will load all the archetypes in the specified directory
- * and load them in to the database. By default all files, which are in the
- * specified directory and have an 'adl' extension are processed. The user has 
- * the option of overriding the extension.
- * <p>
- * Additionally, the utility will check whether the specified archetype is 
- * already stored in the database. If it is and the overwrite flag is specified
- * then the version of the archetype is updated.
+ * This utility will read all the archetypes from the specified directory
+ * or file and load them in to the archetype service.
+ * <p/>
+ * When loading from a directory, all files with a <em>.adl</em> extension
+ * will be processed.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ArchetypeLoader {
-    /**
-     * Define a logger for this class
-     */
-    private Logger logger;
 
     /**
-     * The directory to search
+     * The archetype service.
      */
-    private String dirName;
-    
+    private final IArchetypeService service;
+
     /**
-     * Indicates whether the directory search is recursive
-     */
-    private boolean subdir;
-    
-    /**
-     * Specifies the file extension to filter. Defaults to adl
+     * Specifies the file extension to filter. Defaults to adl.
      */
     private String extension = "adl";
-    
-    /**
-     * The file name to process. This option should not be used in 
-     * conjunction with the directory.
-     */
-    private String fileName;
-    
-    /**
-     * The location of the assertion type mapping file
-     */
-    private String mappingFile;
-    
-    /**
-     * Indicates whether to display verbose information while loading the 
-     * archetypes
-     */
-    private boolean verbose;
-    
+
     /**
      * Indicates whether an archetype should override an existing
      * archetype (i.e. one that is already stored in the databse
      */
     private boolean overwrite;
-    
+
     /**
-     * Indicate whether we should clean the tbles before loading
+     * Determines if the loader should fail when a validation error occurs.
      */
-    private boolean clean;
-    
+    private boolean failOnError = true;
+
     /**
-     * Used to process the command line
+     * The load state.
      */
-    private JSAP jsap = new JSAP();
-    
+    private Changes changes = new Changes();
+
     /**
-     * The results once the commnad line has been processed
+     * The default name of the application context file.
      */
-    private JSAPResult config;
-    
+    private final static String APPLICATION_CONTEXT
+            = "archetype-loader-context.xml";
+
     /**
-     * A reference to the hibernate session
+     * The logger.
      */
-    private Session session;
-    
-    
-    
-    
+    private static final Logger log = Logger.getLogger(ArchetypeLoader.class);
+
+
     /**
-     * @param args
+     * Creates a new <tt>ArchetypeLoader</tt>.
+     *
+     * @param service the archetype service
      */
-    public static void main(String[] args) 
-    throws Exception {
-        // create the loader
-        ArchetypeLoader loader = new ArchetypeLoader(args);
-        loader.load();
+    public ArchetypeLoader(IArchetypeService service) {
+        this.service = service;
     }
-    
+
     /**
-     * Construct an instance of this class with the specified command
-     * line arguments.
-     * 
-     * @param args
-     *            the command line
+     * Determines if existing descriptors should be overwritten.
+     *
+     * @param overwrite if <tt>true</tt>, overwrite existing descriptors
      */
-    protected ArchetypeLoader(String[] args) 
-    throws RuntimeException {
+    public void setOverwrite(boolean overwrite) {
+        this.overwrite = overwrite;
+    }
+
+    /**
+     * Determines if loading should fail when a validation error occurs.
+     *
+     * @param failOnError if <tt>true</tt> fail when a validation error occurs
+     */
+    public void setFailOnError(boolean failOnError) {
+        this.failOnError = failOnError;
+    }
+
+    /**
+     * Returns the changes that have been made.
+     *
+     * @return the changes
+     */
+    public Changes getChanges() {
+        return changes;
+    }
+
+    /**
+     * Deletes all the archetype and assertion type descriptors.
+     *
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void clean() {
+        removeAssertionTypeDescriptors();
+        removeArchetypeDescriptors();
+    }
+
+    /**
+     * Loads assertions from the specified file.
+     *
+     * @param fileName the file name
+     * @throws ArchetypeLoaderException if the assertions cannot be loaded
+     */
+    public void loadAssertions(String fileName) {
+        if (log.isInfoEnabled()) {
+            log.info("Processing assertion type descriptors from: " + fileName);
+        }
         try {
-            init();
-            config = jsap.parse(args);
+            loadAssertions(new FileInputStream(fileName));
+        } catch (FileNotFoundException exception) {
+            throw new ArchetypeLoaderException(FileNotFound, exception,
+                                               fileName);
+        }
+    }
+
+    /**
+     * Loads assertions from the specified stream.
+     *
+     * @param stream the stream to read
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws DescriptorException       if the assertions cannot be read
+     */
+    public void loadAssertions(InputStream stream) {
+        AssertionTypeDescriptors descriptors
+                = AssertionTypeDescriptors.read(stream);
+        for (AssertionTypeDescriptor descriptor :
+                descriptors.getAssertionTypeDescriptors().values()) {
+            loadAssertion(descriptor);
+        }
+    }
+
+    /**
+     * Loads all ADL files from the specified directory, optionally recursing
+     * sub-directories.
+     *
+     * @param dirName the directory
+     * @param recurse if <tt>true</tt>, scan sub-directories
+     * @throws ArchetypeLoaderException  if the directory cannot be found
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws DescriptorException       if a descriptor cannot be read
+     */
+    public void loadArchetypes(String dirName, boolean recurse) {
+        IOFileFilter filter = FileFilterUtils.suffixFileFilter(extension);
+        loadArchetypes(dirName, filter, recurse);
+    }
+
+    /**
+     * Loads archetypes from a file.
+     *
+     * @param fileName the file name
+     */
+    public void loadArchetypes(String fileName) {
+        loadArchetypes(new File(fileName));
+    }
+
+    /**
+     * Loads an assertion type descriptor.
+     *
+     * @param descriptor the descriptor to load
+     * @throws ArchetypeServiceException for any archetype service exception
+     */
+    public void loadAssertion(AssertionTypeDescriptor descriptor) {
+        if (log.isInfoEnabled()) {
+            log.info("Processing assertion type descriptor: "
+                    + descriptor.getName());
+        }
+
+        AssertionTypeDescriptor existing
+                = service.getAssertionTypeDescriptor(descriptor.getName());
+        save(descriptor, existing);
+    }
+
+    /**
+     * Loads an archetype descriptor.
+     *
+     * @param descriptor the archetype descriptor to load
+     * @throws ArchetypeServiceException for any archetype service exception
+     * @throws ArchetypeLoaderException  if the descriptor is invalid, and
+     *                                   failOnError is true
+     */
+    public void loadArchetype(ArchetypeDescriptor descriptor) {
+        loadArchetype(descriptor, null);
+    }
+
+    /**
+     * Main line.
+     *
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        BasicConfigurator.configure();
+
+        // set the root logger level to error
+        Logger root = Logger.getRootLogger();
+        root.setLevel(Level.ERROR);
+        root.removeAllAppenders();
+        root.addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
+
+        try {
+            JSAP parser = createParser();
+            JSAPResult config = parser.parse(args);
             if (!config.success()) {
-                displayUsage();
-            }
-        } catch (Exception exception) {
-            throw new RuntimeException("Error in instantiating ArchetypeLoader", 
-                    exception);
-        }
-    }
-    
-
-    /**
-     * Execute the load. If a filename has been specified then it 
-     * will simply load the specified file. If a directory is specified 
-     * then it will load all the files the the specified extension
-     * 
-     * @throws Exception
-     *            propagate to caller
-     */
-    protected void load() 
-    throws Exception {
-        verbose = config.getBoolean("verbose");
-        overwrite = config.getBoolean("overwrite");
-        clean = config.getBoolean("clean");
-
-        try {
-            if (clean) {
-                clean();
-            }
-            
-            if (config.getString("file") != null) {
-                loadArchetypesFromFile();
-            } else if (config.getString("dir") != null) {
-                loadArchetypesFromDirectory();
-            } else if (!clean){
-                displayUsage();
-            }
-        } catch (ArchetypeLoaderException exception) {
-            if (exception.getErrorCode() == 
-                ArchetypeLoaderException.ErrorCode.UsageError) {
-                System.err.println();
-                System.err.println(exception.getMessage());
-                displayUsage();
+                displayUsage(parser, config);
             } else {
-                throw exception;
-            }
-            
-        }
-    }
+                String contextPath = config.getString("context");
 
-    /**
-     * Delete all the archetype and assertion type descriptors
-     * 
-     * @throws Exception
-     *            propagate exception
-     */
-    private void clean() 
-    throws Exception {
-        deleteAllAssertionTypeDescriptors();
-        deleteAllArchetypeDescriptors();
-    }
-
-    /**
-     * Scan the directory and optionally any sub directory and process all
-     * ADL files
-     * 
-     * @throws Exception
-     *            propagate exception to caller
-     */
-    private void loadArchetypesFromDirectory() {
-        // process options
-        dirName = config.getString("dir");
-        subdir = config.getBoolean("subdir");
-        mappingFile  = config.getString("mappingFile");
-        
-        if (StringUtils.isEmpty(mappingFile)) {
-            throw new ArchetypeLoaderException(
-                    ArchetypeLoaderException.ErrorCode.UsageError, 
-                    new Object[] {"Mapping file has not been specified."});
-        }
-        
-        if (StringUtils.isEmpty(dirName)) {
-            throw new ArchetypeLoaderException(
-                    ArchetypeLoaderException.ErrorCode.UsageError, 
-                    new Object[] {"Directory has not been specified."});
-        }
-        
-        try {
-            loadAssertionTypesFromFile();
-            File dir = new File(dirName);  
-            if (dir.exists()) {
-                String[] extensions = {extension};
-                Collection collection = FileUtils.listFiles(dir, extensions, subdir);
-                Iterator files = collection.iterator();
-                while (files.hasNext()) {
-                    processFile((File) files.next());
+                ApplicationContext context;
+                if (!new File(contextPath).exists()) {
+                    context = new ClassPathXmlApplicationContext(contextPath);
+                } else {
+                    context = new FileSystemXmlApplicationContext(contextPath);
                 }
-            } else {
-                throw new RuntimeException("Directory " + dirName 
-                        + ", does not exist.");
-            }
-        } catch (Exception exception) {
-            throw new ArchetypeLoaderException(
-                    ArchetypeLoaderException.ErrorCode.RuntimeError, exception);
-        }
-    }
 
+                IArchetypeService service = (IArchetypeService) context.getBean(
+                        "archetypeService");
+                ArchetypeLoader loader = new ArchetypeLoader(service);
+                String file = config.getString("file");
+                String dir = config.getString("dir");
+                boolean recurse = config.getBoolean("subdir");
+                loader.setOverwrite(config.getBoolean("overwrite"));
+                loader.setFailOnError(config.getBoolean("failOnError"));
+                boolean clean = config.getBoolean("clean");
+                String mappingFile = config.getString("mappingFile");
+                int processed = 0;
 
-    /**
-     * Process the specified file and load all the defind archetypes
-     * 
-     */
-    private void loadArchetypesFromFile() {
-        // process options
-        fileName = config.getString("file");
-        mappingFile  = config.getString("mappingFile");
-        
-        if (StringUtils.isEmpty(mappingFile)) {
-            throw new ArchetypeLoaderException(
-                    ArchetypeLoaderException.ErrorCode.UsageError, 
-                    new Object[] {"Mapping file has not been specified."});
-        }
-        
-        if (StringUtils.isEmpty(fileName)) {
-            throw new ArchetypeLoaderException(
-                    ArchetypeLoaderException.ErrorCode.UsageError, 
-                    new Object[] {"File name has not been specified."});
-        }
-
-        try {
-            loadAssertionTypesFromFile();
-            File file = new File(fileName);
-            if (file.exists()) {
-                processFile(file);
-            } else {
-                throw new RuntimeException("File " + fileName + " does not exist.");
-            }
-        } catch (Exception exception) {
-            throw new ArchetypeLoaderException(
-                    ArchetypeLoaderException.ErrorCode.RuntimeError, exception);
-        }
-    }
-    
-    /**
-     * Process the assertion types defined in the mapping file
-     * 
-     * @throws Exception
-     *            propagate exeption to the client
-     */
-    private void loadAssertionTypesFromFile()
-    throws Exception {
-        if (verbose) {
-            logger.info("Processing Assertion Type Mapping File: " + mappingFile);
-        }
-        
-        Mapping mapping = new Mapping();
-        mapping.loadMapping(new InputSource(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                        "org/openvpms/component/business/domain/im/archetype/descriptor/assertion-type-mapping-file.xml"))));
-        
-        AssertionTypeDescriptors adescs = (AssertionTypeDescriptors)
-            new Unmarshaller(mapping).unmarshal(new FileReader(mappingFile));
-        for (AssertionTypeDescriptor adesc : 
-            adescs.getAssertionTypeDescriptors().values()) {
-            if (verbose) {
-                logger.info("Processing Assertion Type: " + adesc.getName());
-            }
-            
-            Transaction tx = session.beginTransaction();
-            try {
-                Query query = session.getNamedQuery("assertionTypeDescriptor.getByName");
-                query.setParameter("name", adesc.getName());
-                if (query.list().size() > 0) {
-                    // check if the overwtite flag has been specified
-                    if (!overwrite) {
-                        if (verbose) {
-                            logger.info("AssertionTypeDescriptor " + adesc.getName()
-                                    + " already exists. Not overwriting");
-                        }
-                        tx.commit();
-                        continue;
-                    }
-                    
-                    for (Object obj : query.list()) {
-                        if (verbose) {
-                            logger.info("Deleting Existing AssertionTypeDescriptor: " + 
-                                    ((AssertionTypeDescriptor)obj).getName());
-                        }
-                        session.delete(obj);
-                    }
-                } 
-                
-                if (verbose) {
-                    logger.info("Creating AssertionTypeDescriptor: " + adesc.getName());
+                if (config.getBoolean("verbose")) {
+                    log.setLevel(Level.INFO);
                 }
-                session.saveOrUpdate(adesc);
-                tx.commit();
-            } catch (Exception exception) {
-                // rollback before rethrowing the exceptin
-                tx.rollback();
-                throw exception;
+
+                if (clean) {
+                    loader.clean();
+                    ++processed;
+                }
+                if (mappingFile != null) {
+                    loader.loadAssertions(mappingFile);
+                    ++processed;
+                }
+                if (file != null) {
+                    loader.loadArchetypes(file);
+                    ++processed;
+                } else if (dir != null) {
+                    loader.loadArchetypes(dir, recurse);
+                    ++processed;
+                }
+                if (processed == 0) {
+                    displayUsage(parser, config);
+                }
             }
+        } catch (Throwable throwable) {
+            log.error(throwable, throwable);
         }
     }
-    
-    /**
-     * Process the specified file and load all the defined archetypes in
-     * the database.
-     * 
-     * @param file
-     *            the file to process
-     * @throws Exception
-     *  `         propagate to caller            
-     */
-    private void processFile(File file) 
-    throws Exception {
-        if (verbose) {
-            logger.info("Processing Archetype Descriptor File: " + file);
-        }
-        
-        // load the mapping file
-        Mapping mapping = new Mapping();
-        mapping.loadMapping(new InputSource(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                        "org/openvpms/component/business/domain/im/archetype/descriptor/archetype-mapping-file.xml"))));
 
-        ArchetypeDescriptors adescs = (ArchetypeDescriptors)
-            new Unmarshaller(mapping).unmarshal(new FileReader(file));
-        for (ArchetypeDescriptor adesc : adescs.getArchetypeDescriptorsAsArray()) {
-            if (verbose) {
-                logger.info("Processing Archetype: " + adesc.getName());
+    /**
+     * Loads archetype descriptors from a file.
+     *
+     * @param file     the file
+     * @throws ArchetypeLoaderException  if the file doesn't exist or a
+     *                                   descriptor is invalid and failOnError
+     *                                   is true
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws DescriptorException       if the file cannot be read
+     */
+    private void loadArchetypes(File file) {
+        if (log.isInfoEnabled()) {
+            log.info("Processing file: " + file.getName());
+        }
+
+        ArchetypeDescriptors descriptors;
+        try {
+            descriptors = ArchetypeDescriptors.read(new FileInputStream(file));
+        } catch (FileNotFoundException exception) {
+            throw new ArchetypeLoaderException(FileNotFound, exception,
+                                               file.getName());
+        }
+        for (ArchetypeDescriptor descriptor
+                : descriptors.getArchetypeDescriptorsAsArray()) {
+            loadArchetype(descriptor, file.getName());
+        }
+    }
+
+    /**
+     * Loads archetypes matching a file name filter, from the specified
+     * directory.
+     *
+     * @param dirName    the directory
+     * @param fileFilter the file name filter to match archetype file names
+     * @param recurse    if <tt>true</tt>, scan sub-directories
+     * @throws ArchetypeLoaderException  if the directory cannot be found
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws DescriptorException       if a descriptor cannot be read
+     */
+    private void loadArchetypes(String dirName, IOFileFilter fileFilter,
+                                boolean recurse) {
+        File dir = new File(dirName);
+        if (!dir.exists()) {
+            throw new ArchetypeLoaderException(DirNotFound, dirName);
+        }
+        IOFileFilter dirFilter = (recurse) ? TrueFileFilter.INSTANCE : null;
+        Collection files = FileUtils.listFiles(dir, fileFilter, dirFilter);
+        for (Object file : files) {
+            loadArchetypes((File) file);
+        }
+    }
+
+    /**
+     * Loads an archetype descriptor.
+     *
+     * @param descriptor the archetype descriptor
+     * @param fileName   the file name, for error reporting purposes.
+     *                   May be <tt>null</tt>
+     * @throws ArchetypeLoaderException  if the descriptor is invalid, and
+     *                                   failOnError is true
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws DescriptorException       if the file cannot be read
+     */
+    private void loadArchetype(ArchetypeDescriptor descriptor,
+                               String fileName) {
+        if (log.isInfoEnabled()) {
+            log.info("Processing archetype descriptor: "
+                    + descriptor.getName());
+        }
+
+        // attempt to validate the archetype descriptor.
+        List<DescriptorValidationError> validation = descriptor.validate();
+        if (!validation.isEmpty()) {
+            StringBuffer buf = new StringBuffer("[Validation Error] ");
+            if (fileName != null) {
+                buf.append("[").append(fileName).append("]");
             }
-            
-            // first attempt to validate the archetype descriptor. If the 
-            // validation fails then do not save the archetype but display
-            // the associated errors.
-            List<DescriptorValidationError> validation = adesc.validate();
-            if (validation.size() > 0) {
-                StringBuffer buf = new StringBuffer("[Validation Error] ");
-                buf.append("[")
-                    .append(fileName)
-                    .append("]")
-                    .append(" archetype ")
-                    .append(adesc.getName())
+            buf.append(" archetype ")
+                    .append(descriptor.getName())
                     .append(" had ")
                     .append(validation.size())
                     .append(" errors.\n");
-                for (DescriptorValidationError error : validation) {
-                    buf.append("\ttype:")
+            for (DescriptorValidationError error : validation) {
+                buf.append("\ttype:")
                         .append(error.getDescriptorType())
                         .append(" instance:")
                         .append(error.getInstanceName())
-                        .append(" attrubute:")
+                        .append(" attribute:")
                         .append(error.getAttributeName())
                         .append(" error:")
                         .append(error.getError());
-                }
-                
-                logger.error(buf.toString());
-                continue;
             }
-            
-            Transaction tx = session.beginTransaction();
-            try {
-                Query query = session.getNamedQuery("archetypeDescriptor.getByName");
-                query.setParameter("name", adesc.getName());
-                if (query.list().size() > 0) {
-                    // check if the overwtite flag has been specified
-                    if (!overwrite) {
-                        if (verbose) {
-                            logger.info("Archetype " + adesc.getName()
-                                    + " already exists. Not overwriting");
-                        }
-                        tx.commit();
-                        continue;
-                    }
-                    
-                    for (Object obj : query.list()) {
-                        if (verbose) {
-                            logger.info("Deleting Existing Archetype: " + 
-                                    ((ArchetypeDescriptor)obj).getName());
-                        }
-                        session.delete(obj);
-                    }
-                } 
-                
-                if (verbose) {
-                    logger.info("Creating Archetype: " + adesc.getName());
-                }
-                session.saveOrUpdate(adesc);
-                tx.commit();
-            } catch (Exception exception) {
-                // rollback before rethrowing the exceptin
-                tx.rollback();
-                throw exception;
+
+            if (failOnError) {
+                throw new ArchetypeLoaderException(ValidationError,
+                                                   buf.toString());
             }
+
+            log.error(buf);
+        } else {
+            ArchetypeDescriptor existing
+                    = service.getArchetypeDescriptor(descriptor.getShortName());
+            save(descriptor, existing);
         }
     }
 
     /**
-     * Initialize the loader 
-     * 
-     * @throws Exception
-     *            propagate exception to caller
+     * Saves a descriptor. If the descriptor already exists, it will be
+     * replaced if the <tt>overwrite</tt> flag is set.
+     *
+     * @param descriptor the new descriptor
+     * @param existing   the current descriptor. May be <tt>null</tt>
+     * @return <tt>true</tt> if the descriptor was saved
+     * @throws ArchetypeServiceException for any archetype service exception
      */
-    private void init() 
-    throws Exception {
-        createLogger();
-        createOptions();
-        createSession();
+    private boolean save(Descriptor descriptor, Descriptor existing) {
+        boolean save = true;
+        if (existing != null) {
+            // make sure using the latest version of the descriptor, rather
+            // than a cached one
+            existing = (Descriptor) ArchetypeQueryHelper.getByObjectReference(
+                    service, existing.getObjectReference());
+        }
+        if (existing != null) {
+            if (!overwrite) {
+                save = false;
+                if (log.isInfoEnabled()) {
+                    log.info(descriptor.getName()
+                            + " already exists. Not overwriting");
+                }
+            } else {
+                service.remove(existing);
+            }
+        }
+        if (save) {
+            if (log.isInfoEnabled()) {
+                log.info("Saving " + descriptor.getName());
+            }
+            // NOTE: ideally wouldn't use the deprecated save() method to
+            // disable validation, however there is a chicken and egg problem
+            // in that some descriptors must exist in order to validate those
+            // same descriptors. A better alternative may be able to selectively
+            // disable some forms of validation, using a
+            // custom archetype service implementation. TODO
+            service.save(descriptor, false);
+            return true;
+        }
+        return false;
     }
-    
+
     /**
-     * Configure the options for this applications
-     * 
-     * @throws Exception
-     *            let the caller handle the error
+     * Creates a new command line parser.
+     *
+     * @return a new parser
+     * @throws JSAPException if the parser can't be created
      */
-    private void createOptions() 
-    throws Exception {
-        jsap.registerParameter(new FlaggedOption("dir")
+    private static JSAP createParser() throws JSAPException {
+        JSAP parser = new JSAP();
+        parser.registerParameter(new FlaggedOption("dir")
                 .setShortFlag('d')
                 .setLongFlag("dir")
                 .setHelp("Directory where ADL files reside."));
-        jsap.registerParameter(new Switch("subdir")
+        parser.registerParameter(new Switch("subdir")
                 .setShortFlag('s')
                 .setLongFlag("subdir")
                 .setDefault("false")
                 .setHelp("Search the subdirectories as well."));
-        jsap.registerParameter(new FlaggedOption("file")
+        parser.registerParameter(new FlaggedOption("file")
                 .setShortFlag('f')
                 .setLongFlag("file")
                 .setHelp("Name of file containing archetypes"));
-        jsap.registerParameter(new Switch("verbose")
+        parser.registerParameter(new Switch("verbose")
                 .setShortFlag('v')
                 .setLongFlag("verbose")
                 .setDefault("false")
                 .setHelp("Displays verbose info to the console."));
-        jsap.registerParameter(new Switch("overwrite")
+        parser.registerParameter(new Switch("overwrite")
                 .setShortFlag('o')
                 .setLongFlag("overwrite")
                 .setDefault("false")
                 .setHelp("Overwrite archetype if it already exists"));
-        jsap.registerParameter(new Switch("clean")
+        parser.registerParameter(new Switch("clean")
                 .setShortFlag('c')
                 .setLongFlag("clean")
                 .setDefault("false")
                 .setHelp("Clean all the archetypes before loading"));
-        jsap.registerParameter(new FlaggedOption("mappingFile")
+        parser.registerParameter(new FlaggedOption("failOnError")
+                .setShortFlag('e')
+                .setLongFlag("failOnError")
+                .setDefault("true")
+                .setStringParser(BooleanStringParser.getParser())
+                .setHelp("Fail on validation error"));
+        parser.registerParameter(new FlaggedOption("context")
+                .setLongFlag("context")
+                .setDefault(APPLICATION_CONTEXT)
+                .setHelp("The application context path"));
+        parser.registerParameter(new FlaggedOption("mappingFile")
                 .setShortFlag('m')
                 .setLongFlag("mappingFile")
                 .setHelp("A location of the assertion type mapping file"));
-        
+        return parser;
     }
 
     /**
-     * Delete all archetype descriptors 
-     * 
-     * @throws Exception
-     *           propagate exception to caller
+     * Prints usage information and exits.
      */
-    private void deleteAllArchetypeDescriptors()
-    throws Exception {
-        Transaction tx = session.beginTransaction();
-        try {
-            Query query = session.getNamedQuery("archetypeDescriptor.getAll");
-            if (query.list().size() > 0) {
-                for (Object obj : query.list()) {
-                    if (verbose) {
-                        logger.info("Deleting " + ((ArchetypeDescriptor)obj).getName());
-                    }
-                    session.delete(obj);
-                }
-            }
-            tx.commit();
-        } catch (Exception exception) {
-            tx.rollback();
-            throw exception;
+    private static void displayUsage(JSAP parser, JSAPResult result) {
+        Iterator iter = result.getErrorMessageIterator();
+        while (iter.hasNext()) {
+            System.err.println(iter.next());
         }
-    }
-
-    /**
-     * Delete all assertion type descriptors 
-     * 
-     * @throws Exception
-     *           propagate exception to caller
-     */
-    private void deleteAllAssertionTypeDescriptors()
-    throws Exception {
-        Transaction tx = session.beginTransaction();
-        try {
-            Query query = session.getNamedQuery("assertionTypeDescriptor.getAll");
-            if (query.list().size() > 0) {
-                for (Object obj : query.list()) {
-                    if (verbose) {
-                        logger.info("Deleting " + ((AssertionTypeDescriptor)obj).getName());
-                    }
-                    session.delete(obj);
-                }
-            }
-            tx.commit();
-        } catch (Exception exception) {
-            tx.rollback();
-            throw exception;
-        }
-    }
-    
-    /**
-     * Create a hibernate session, which can be used to load the
-     * archetypes
-     * 
-     * @return Session
-     */
-    private void createSession() 
-    throws Exception {
-        // create the hibernate session factory
-        Configuration config = new Configuration();
-        config.addClass(ArchetypeDescriptor.class);
-        config.addClass(NodeDescriptor.class);
-        config.addClass(AssertionDescriptor.class);
-        config.addClass(ActionTypeDescriptor.class);
-        config.addClass(AssertionTypeDescriptor.class);
-        
-        session = config.buildSessionFactory().openSession();
-    }
-    
-    /**
-     * Creater the logger
-     *
-     * @throws Exception
-     */
-    private void createLogger() 
-    throws Exception {
-        BasicConfigurator.configure(); 
-
-        // set the root logger level to error
-        Logger.getRootLogger().setLevel(Level.ERROR);
-        Logger.getRootLogger().removeAllAppenders();
-        Logger.getRootLogger().addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
-        
-        logger = Logger.getLogger(ArchetypeLoader.class);
-        logger.setLevel(Level.INFO);
-    }
-    
-    /**
-     * Print usage information
-     */
-    private void displayUsage() {
         System.err.println();
-        System.err.println("Usage: java "
-                            + ArchetypeLoader.class.getName());
-        System.err.println("                "
-                            + jsap.getUsage());
+        System.err.println("Usage: java " + ArchetypeLoader.class.getName());
+        System.err.println("                " + parser.getUsage());
         System.err.println();
-        System.err.println(jsap.getHelp());
+        System.err.println(parser.getHelp());
         System.exit(1);
-        
+    }
+
+    /**
+     * Removes all archetype descriptors.
+     *
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private void removeArchetypeDescriptors() {
+        List<ArchetypeDescriptor> descriptors
+                = service.getArchetypeDescriptors();
+        for (ArchetypeDescriptor descriptor : descriptors) {
+            if (log.isInfoEnabled()) {
+                log.info("Deleting " + descriptor.getName());
+            }
+            service.remove(descriptor);
+            changes.addOldVersion(descriptor);
+        }
+    }
+
+    /**
+     * Removes all assertion type descriptors.
+     *
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private void removeAssertionTypeDescriptors() {
+        List<AssertionTypeDescriptor> descriptors
+                = service.getAssertionTypeDescriptors();
+        for (AssertionTypeDescriptor descriptor : descriptors) {
+            if (log.isInfoEnabled()) {
+                log.info("Deleting " + descriptor.getName());
+            }
+            service.remove(descriptor);
+        }
     }
 }

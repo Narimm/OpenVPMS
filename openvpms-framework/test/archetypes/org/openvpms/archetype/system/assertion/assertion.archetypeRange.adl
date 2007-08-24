@@ -11,7 +11,7 @@
 			type="org.openvpms.component.business.domain.im.datatypes.property.PropertyMap"
 			hidden="true">
 			<node name="properties" path="/propertyMap/properties"
-				type="java.util.LinkedHashMap" parentChild="true" hidden="true">
+				type="java.util.LinkedHashMap" parentChild="true" hidden="true" maxCardinality="*">
 				<node name="archetypes"
 					path="/propertyMap/properties/archetypes" display="Archetypes"
 					parentChild="true" baseName="property"
