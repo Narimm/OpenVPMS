@@ -20,29 +20,26 @@
 package org.openvpms.component.business.service.security;
 
 // java-lang
-import java.util.Iterator;
-import java.util.StringTokenizer;
-
-// acegi
 import org.acegisecurity.Authentication;
 import org.acegisecurity.ConfigAttribute;
 import org.acegisecurity.ConfigAttributeDefinition;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.vote.AccessDecisionVoter;
-
-// aop-alliance interface
 import org.aopalliance.intercept.MethodInvocation;
-
-// commons-lang
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.util.StringUtilities;
 import org.springframework.aop.framework.ReflectiveMethodInvocation;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * Votes if any configuration attribute begins with <code>archetype:</code>. If
@@ -50,7 +47,7 @@ import org.springframework.aop.framework.ReflectiveMethodInvocation;
  * <p>
  * It will vote to grant access if the user has a grant authority matching one
  * of the config attributes, otherwise a deny access will be returned.
- * 
+ *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
@@ -65,17 +62,23 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter {
     private final static String archetypePrefix = "archetypeService";
 
     /**
-     * Default constructor
+     * Empty array helper.
+     */
+    private static final String[] EMPTY = new String[0];
+
+
+    /**
+     * Default constructor.
      */
     public ArchetypeAwareVoter() {
         // do nothing
     }
-    
+
     /* (non-Javadoc)
      * @see org.acegisecurity.vote.AccessDecisionVoter#supports(org.acegisecurity.ConfigAttribute)
      */
     public boolean supports(ConfigAttribute attribute) {
-        if ((attribute.getAttribute() != null) && 
+        if ((attribute.getAttribute() != null) &&
             (attribute.getAttribute().startsWith(archetypePrefix))) {
                 return true;
             } else {
@@ -96,25 +99,18 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter {
     public int vote(Authentication authentication, Object object,
             ConfigAttributeDefinition config) {
         int result = ACCESS_ABSTAIN;
-        
+
         // make sure that we are dealing with an {@link IMObject}
         if (object instanceof ReflectiveMethodInvocation) {
-            ReflectiveMethodInvocation method = (ReflectiveMethodInvocation)object;
-            String shortName = getArchetypeShortNameForPrimaryObject(method);
+            ReflectiveMethodInvocation method
+                    = (ReflectiveMethodInvocation)object;
+            String[] shortNames = getArchetypeShortNames(method);
             Iterator iter = config.getConfigAttributes();
 
             while (iter.hasNext()) {
                 ConfigAttribute attribute = (ConfigAttribute)iter.next();
                 if (this.supports(attribute)) {
-                    result = ACCESS_DENIED;
-    
-                    // Attempt to find a matching granted authority
-                    for (GrantedAuthority authority : authentication.getAuthorities()) {
-                        if (isAccessGranted((ArchetypeAwareGrantedAuthority)authority, 
-                                attribute, shortName)) {
-                           return ACCESS_GRANTED;
-                        }
-                    }
+                    result = isAccessGranted(shortNames, authentication, attribute);
                 }
             }
         }
@@ -123,25 +119,55 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter {
     }
 
     /**
+     * Verifies that access is granted to each archetype.
+     *
+     * @param shortNames     the archetype short names
+     * @param authentication the authentication
+     * @param attribute      the config attribute
+     * @return <tt>ACCESS_GRANTED</tt> if access is granted;
+     *         otherwise <tt>ACCESS_DENIED</tt>.
+     */
+    private int isAccessGranted(String[] shortNames,
+                                Authentication authentication,
+                                ConfigAttribute attribute) {
+        boolean granted = false;
+        for (String shortName : shortNames) {
+            granted = false;
+            // Attempt to find a matching granted authority
+            for (GrantedAuthority authority : authentication.getAuthorities()) {
+                if (isAccessGranted((ArchetypeAwareGrantedAuthority) authority,
+                                    attribute, shortName)) {
+                    granted = true;
+                    break;
+                }
+            }
+            if (!granted) {
+                break;
+            }
+        }
+        return (granted) ? ACCESS_GRANTED : ACCESS_DENIED;
+    }
+
+    /**
      * Determine if the access will be granted for the specified service on the
      * specifed archetype given an authority
-     * 
+     *
      * @param authority
      *            the authority to test against
-     * @param attribute
+     * @param attr
      *            the associated contrib attributes
      * @param shortName
      *            the archetype shortName
      * @return boolean
-     *            true if access is granted                        
+     *            true if access is granted
      */
-    private boolean isAccessGranted(ArchetypeAwareGrantedAuthority authority, 
-            ConfigAttribute attr, String shortName) {
-        
+    private boolean isAccessGranted(ArchetypeAwareGrantedAuthority authority,
+                                    ConfigAttribute attr, String shortName) {
+
         // this is in the form of <serviceName>.<method>
         String value = attr.getAttribute();
         StringTokenizer tokens = new StringTokenizer(value, ".");
-        
+
         // the first token is the method name and it must match
         // exactly
         String service = tokens.nextToken();
@@ -158,36 +184,49 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter {
             (StringUtilities.matches(shortName, authShortName))) {
                 return true;
         }
-        
+
         return false;
     }
-    
+
     /**
-     * Examine the method and return the archetypeid for the primary objects
-     * 
-     * @param method
-     *            the method to examine.
-     * @return String
-     *          the archetype short name or null
+     * Examine the method and return the archetype short names.
+     *
+     * @param method the method to examine.
+     * @return the archetype short names or null
      */
-    private String getArchetypeShortNameForPrimaryObject(ReflectiveMethodInvocation method) {
-        String shortName = null;
-        
+    private String[] getArchetypeShortNames(ReflectiveMethodInvocation method) {
+        String[] result = EMPTY;
+
         if (method != null) {
             String methodName = method.getMethod().getName();
-            if (method.getMethod().getDeclaringClass().getName().equals(IArchetypeService.class.getName())) {
+            Class declaring = method.getMethod().getDeclaringClass();
+            if (declaring.getName().equals(IArchetypeService.class.getName())) {
+                Object arg = method.getArguments()[0];
                 if (methodName.equals("create")) {
-                    shortName = (String)method.getArguments()[0];
+                    result = new String[]{(String) arg};
                 } else if (methodName.equals("save")) {
-                    shortName = ((IMObject)method.getArguments()[0]).getArchetypeId().getShortName();
+                    if (arg instanceof IMObject) {
+                        ArchetypeId id = ((IMObject) arg).getArchetypeId();
+                        result = new String[]{id.getShortName()};
+                    } else {
+                        Collection<IMObject> objects
+                                = (Collection<IMObject>) arg;
+                        Set<String> shortNames = new HashSet<String>();
+                        for (IMObject object : objects) {
+                            ArchetypeId id = object.getArchetypeId();
+                            shortNames.add(id.getShortName());
+                        }
+                        result = shortNames.toArray(EMPTY);
+                    }
                 } else if (methodName.equals("remove")) {
-                    shortName = ((IMObject)method.getArguments()[0]).getArchetypeId().getShortName();
+                    ArchetypeId id = ((IMObject) arg).getArchetypeId();
+                    result = new String[]{id.getShortName()};
                 } else {
                     // we need to handle the other methods here
                 }
             }
         }
-        
-        return shortName;
+
+        return result;
     }
 }

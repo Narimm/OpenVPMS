@@ -18,10 +18,15 @@
 
 package org.openvpms.component.business.service.security;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * This base class contains all the security test cases
@@ -176,6 +181,36 @@ public abstract class SecurityServiceTests extends
     }
 
     /**
+     * Verifies that authorities are checked when collections of objects are
+     * saved via {@link IArchetypeService#save(Collection<IMObject>)}.
+     */
+    public void testSaveCollection() {
+        Party party1 = createPerson("MR", "Jim", "Alateras");
+        Party party2 = createPet("Fido");
+        List<IMObject> objects = new ArrayList<IMObject>();
+        objects.add(party1);
+        objects.add(party2);
+
+        checkSave(objects, false, "archetype:archetypeService.save:*.*");
+        checkSave(objects, false, "archetype:archetypeService.save:party.*");
+        checkSave(objects, false,
+                  "archetype:archetypeService.save:party.person",
+                  "archetype:archetypeService.save:party.animalpet");
+        checkSave(objects, true,
+                  "archetype:archetypeService.save:party.person");
+    }
+
+    /**
+     * Create a secure context for authorization testing.
+     *
+     * @param user        the user name
+     * @param password    the password
+     * @param authorities the authorities of the person
+     */
+    protected abstract void createSecurityContext(String user, String password,
+                                                  String ... authorities);
+
+    /**
      * Create a person
      *
      * @param title     the person's title
@@ -195,6 +230,19 @@ public abstract class SecurityServiceTests extends
     }
 
     /**
+     * Creates a pet.
+     *
+     * @param name the pet's name
+     * @return a new pet
+     */
+    private Party createPet(String name) {
+        Party pet = (Party) archetype.create("party.animalpet");
+        pet.setName(name);
+        pet.getDetails().put("species", "CANINE");
+        return pet;
+    }
+
+    /**
      * Create a phone contact
      *
      * @return Contact
@@ -209,12 +257,28 @@ public abstract class SecurityServiceTests extends
     }
 
     /**
-     * Create a secure context so that we can do some authorization testing
+     * Checks if a collection can be saved, given a set of authorities.
      *
-     * @param user      the user name
-     * @param password  the password
-     * @param authority the authority of the person
+     * @param objects     the collection to save
+     * @param fail        if <tt>true</tt> the save is expected to fail
+     * @param authorities the user's authorities
      */
-    protected abstract void createSecurityContext(String user, String password,
-                                                  String authority);
+    private void checkSave(Collection<IMObject> objects, boolean fail,
+                           String ... authorities) {
+        createSecurityContext("jima", "jima", authorities);
+        try {
+            archetype.save(objects);
+            if (fail) {
+                fail("Save of collection should have failed");
+            }
+        } catch (OpenVPMSAccessDeniedException exception) {
+            if (!fail) {
+                fail("Save of collection should not have failed: " + exception);
+            }
+            if (exception.getErrorCode()
+                    != OpenVPMSAccessDeniedException.ErrorCode.AccessDenied) {
+                fail("Incorrect error code was specified during the exception");
+            }
+        }
+    }
 }

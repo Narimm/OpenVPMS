@@ -22,17 +22,21 @@ package org.openvpms.component.business.service.security;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
+import java.util.Collection;
+
+
 /**
- * This class overrides the {@link org.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor}
+ * This class overrides the {@link MethodSecurityInterceptor}
  * and overrides the {@link #invoke} method to wrap the exception thrown.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class OpenVPMSMethodSecurityInterceptor extends
-        MethodSecurityInterceptor {
+public class OpenVPMSMethodSecurityInterceptor
+        extends MethodSecurityInterceptor {
 
     /**
      * Default constructor
@@ -49,10 +53,21 @@ public class OpenVPMSMethodSecurityInterceptor extends
         try {
             return super.invoke(mi);
         } catch (AccessDeniedException exception) {
+            Object arg = mi.getArguments()[0];
+            String shortName = null;
+            if (arg instanceof IMObject) {
+                shortName = ((IMObject) arg).getArchetypeId().getShortName();
+            } else if (arg instanceof Collection) {
+                Object[] values = ((Collection<Object>) arg).toArray(
+                        new Object[0]);
+                if (values.length != 0 && values[0] instanceof IMObject) {
+                    ArchetypeId id = ((IMObject) values[0]).getArchetypeId();
+                    shortName = id.getShortName();
+                }
+            }
             throw new OpenVPMSAccessDeniedException(
                     OpenVPMSAccessDeniedException.ErrorCode.AccessDenied,
-                    new Object[] {mi.getMethod().getName(), 
-                            ((IMObject)mi.getArguments()[0]).getArchetypeId().getShortName()}, exception);
+                    exception);
         }
     }
 
