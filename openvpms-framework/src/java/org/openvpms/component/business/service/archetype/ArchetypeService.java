@@ -496,7 +496,6 @@ public class ArchetypeService implements IArchetypeService {
                     new Object[]{});
         }
 
-        validateObject(entity);
         try {
             dao.delete(entity);
         } catch (IMObjectDAOException exception) {
