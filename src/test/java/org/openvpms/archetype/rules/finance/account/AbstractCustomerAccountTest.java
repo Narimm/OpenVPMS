@@ -197,7 +197,19 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a new payment
      */
     protected FinancialAct createPayment(Money amount) {
-        return createPaymentRefund("act.customerAccountPayment", amount);
+        return createPayment(amount, getCustomer());
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountPayment</em>.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @return a new payment
+     */
+    protected FinancialAct createPayment(Money amount, Party customer) {
+        return createPaymentRefund("act.customerAccountPayment", amount,
+                                   customer);
     }
 
     /**
@@ -270,7 +282,8 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a new payment
      */
     protected FinancialAct createRefund(Money amount) {
-        return createPaymentRefund("act.customerAccountRefund", amount);
+        return createPaymentRefund("act.customerAccountRefund", amount,
+                                   getCustomer());
     }
 
     /**
@@ -376,10 +389,12 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      *
      * @param shortName the act short name
      * @param amount    the act total
+     * @param customer  the customer
      * @return a new payment
      */
-    private FinancialAct createPaymentRefund(String shortName, Money amount) {
-        FinancialAct act = createAct(shortName, amount);
+    private FinancialAct createPaymentRefund(String shortName, Money amount,
+                                             Party customer) {
+        FinancialAct act = createAct(shortName, amount, customer);
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.till", getTill());
         bean.addParticipation("participation.patient", getPatient());
