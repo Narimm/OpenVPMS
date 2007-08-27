@@ -32,8 +32,10 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -305,6 +307,49 @@ public class CustomerBalanceSummaryQueryTestCase
     }
 
     /**
+     * Verifies that credit balances can be excluded.
+     */
+    public void testExcludeCreditBalance() {
+        Party customer1 = getCustomer();
+        Party customer2 = TestHelper.createCustomer();
+
+        Date startTime = java.sql.Date.valueOf("2007-1-1");
+
+        // create and save a new invoice for customer1
+        final Money hundred = new Money(100);
+        FinancialAct invoice = createChargesInvoice(hundred, customer1);
+        invoice.setActivityStartTime(startTime);
+        save(invoice);
+
+        // create and save a new payment for customer2. Will leave a credit
+        // balance.
+        FinancialAct payment = createPayment(hundred, customer2);
+        payment.setActivityStartTime(startTime);
+        save(payment);
+
+        Date now = new Date();
+
+        // verify the credit balance is included
+        CustomerBalanceSummaryQuery includeBalanceQuery
+                = new CustomerBalanceSummaryQuery(now, true, 0, 0, false,
+                                                  null, null, null);
+        Map<IMObjectReference, ObjectSet> sets = getSets(includeBalanceQuery);
+        Set<IMObjectReference> customers = sets.keySet();
+        assertTrue(customers.contains(customer1.getObjectReference()));
+        assertTrue(customers.contains(customer2.getObjectReference()));
+
+        // verify the credit balance is excluded
+        CustomerBalanceSummaryQuery excludeBalanceQuery
+                = new CustomerBalanceSummaryQuery(now, true, 0, 0, true,
+                                                  null, null, null);
+
+        sets = getSets(excludeBalanceQuery);
+        customers = sets.keySet();
+        assertTrue(customers.contains(customer1.getObjectReference()));
+        assertFalse(customers.contains(customer2.getObjectReference()));
+    }
+
+    /**
      * Checks the no. of summaries for a query.
      *
      * @param expected the expected count
@@ -362,10 +407,8 @@ public class CustomerBalanceSummaryQueryTestCase
         for (Party customer : expected) {
             expectedSet.add(customer.getObjectReference());
         }
-        while (query.hasNext()) {
-            ObjectSet set = query.next();
-            IMObjectReference ref = (IMObjectReference) set.get(
-                    CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
+        Map<IMObjectReference, ObjectSet> sets = getSets(query);
+        for (IMObjectReference ref : sets.keySet()) {
             if (expectedSet.contains(ref)) {
                 found.add(ref);
             } else if (customerSet.contains(ref)) {
@@ -373,6 +416,19 @@ public class CustomerBalanceSummaryQueryTestCase
             }
         }
         assertEquals(expected.length, found.size());
+    }
+
+    private Map<IMObjectReference, ObjectSet> getSets(
+            CustomerBalanceSummaryQuery query) {
+        Map<IMObjectReference, ObjectSet> result
+                = new HashMap<IMObjectReference, ObjectSet>();
+        while (query.hasNext()) {
+            ObjectSet set = query.next();
+            IMObjectReference ref = (IMObjectReference) set.get(
+                    CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
+            result.put(ref, set);
+        }
+        return result;
     }
 
 }
