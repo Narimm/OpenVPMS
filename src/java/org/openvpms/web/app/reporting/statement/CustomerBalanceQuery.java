@@ -38,6 +38,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.query.AbstractQuery;
@@ -53,6 +54,7 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -76,9 +78,19 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
     private SelectField accountType;
 
     /**
-     * Determines if only customers with overdue balances should be queried.
+     * The balance type list items.
      */
-    private CheckBox overdue;
+    private final String[] balanceTypeItems;
+
+    /**
+     * The balance type selector.
+     */
+    private SelectField balanceType;
+
+    /**
+     * Determines if credit balances should be excluded.
+     */
+    private CheckBox excludeCredit;
 
     /**
      * The processing date.
@@ -115,6 +127,21 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
      */
     private TextField customerTo;
 
+    /**
+     * Index of the all balances balance type.
+     */
+    private static final int ALL_BALANCE_INDEX = 0;
+
+    /**
+     * Index of the overdue balance type.
+     */
+    private static final int OVERDUE_INDEX = 1;
+
+    /**
+     * Index of the non-overdue balance type.
+     */
+    private static final int NON_OVERDUE_INDEX = 2;
+
 
     /**
      * Constructs a new <tt>CustomerBalanceQuery</tt> .
@@ -124,6 +151,11 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
      */
     public CustomerBalanceQuery() {
         super(new String[]{"party.customer*"});
+        balanceTypeItems = new String[]{
+                Messages.get("reporting.statements.balancetype.all"),
+                Messages.get("reporting.statements.balancetype.overdue"),
+                Messages.get("reporting.statements.balancetype.nonOverdue")
+        };
     }
 
     /**
@@ -142,14 +174,25 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
     }
 
     /**
+     * Determines if customers with both overdue and non-overdue balances
+     * are being queried.
+     *
+     * @return <tt>true</tt> if customers with both overdue and non-overdue
+     *         balances are being queried.
+     */
+    public boolean queryAllBalances() {
+        return balanceType.getSelectedIndex() == ALL_BALANCE_INDEX;
+    }
+
+    /**
      * Determines if customers with overdue balances are being queried.
      *
      * @return <tt>true</tt> if customers with overdue balances are being
      *         queried, <tt>false</tt> if customers with outstanding balances are being
      *         queried
      */
-    public boolean queryOverdue() {
-        return overdue.isSelected();
+    public boolean queryOverduebalances() {
+        return balanceType.getSelectedIndex() == OVERDUE_INDEX;
     }
 
     /**
@@ -180,12 +223,20 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
                 LabelFactory.create("reporting.statements.date"),
                 date);
 
-        overdue = CheckBoxFactory.create("reporting.statements.overdue", true);
-        overdue.addActionListener(new ActionListener() {
+        balanceType = SelectFieldFactory.create(balanceTypeItems);
+        balanceType.setCellRenderer(new BalanceTypeListCellRenderer());
+        balanceType.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onOverdueChanged();
+                onBalanceTypeChanged();
             }
         });
+        Row balanceTypeRow = createRow(
+                "CellSpacing",
+                LabelFactory.create("reporting.statements.balancetypes"),
+                balanceType);
+
+        excludeCredit = CheckBoxFactory.create(
+                "reporting.statements.excludeCredit", true);
 
         periodFromLabel = LabelFactory.create(
                 "reporting.statements.periodFrom");
@@ -206,11 +257,8 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
         Row periodRange = createRow("CellSpacing",
                                     periodFromLabel, periodFrom,
                                     periodToLabel, periodTo);
-        Row overdueRow = createRow("ControlRow", accountTypeRow, overdue,
-                                   periodRange);
-
-        Label customerLabel = LabelFactory.create(
-                "reporting.statements.customer");
+        Row balanceRow = createRow("ControlRow", accountTypeRow,
+                                   balanceTypeRow);
 
         Label customerFromLabel = LabelFactory.create(
                 "reporting.statements.customerFrom");
@@ -231,22 +279,22 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
                 });
 
         Row firstRow = createRow("CellSpacing", accountTypeRow,
-                                 statementDateRow, overdueRow);
-        Row secondRow = createRow("CellSpacing", customerLabel,
-                                  customerFromLabel, customerFrom,
-                                  customerToLabel, customerTo);
+                                 statementDateRow, balanceRow);
+        Row secondRow = createRow("CellSpacing", periodRange, excludeCredit);
+        Row thirdRow = createRow("CellSpacing", customerFromLabel, customerFrom,
+                                 customerToLabel, customerTo);
 
-
-        Column column = ColumnFactory.create("CellSpacing", firstRow,
-                                             secondRow);
+        Column column = ColumnFactory.create("CellSpacing", firstRow, secondRow,
+                                             thirdRow);
         container.add(column);
 
         FocusGroup group = getFocusGroup();
         group.add(accountType);
         group.add(date);
-        group.add(overdue);
+        group.add(balanceType);
         group.add(periodFrom);
         group.add(periodTo);
+        group.add(excludeCredit);
         group.add(customerFrom);
         group.add(customerTo);
 
@@ -262,19 +310,17 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
         List<ObjectSet> sets = new ArrayList<ObjectSet>();
         try {
             CustomerBalanceSummaryQuery query;
-            if (overdue.isSelected()) {
-                query = new CustomerBalanceSummaryQuery(getDate(),
-                                                        getNumber(periodFrom),
-                                                        getNumber(periodTo),
-                                                        getAccountType(),
-                                                        getName(customerFrom),
-                                                        getName(customerTo));
-            } else {
-                query = new CustomerBalanceSummaryQuery(getDate(),
-                                                        getAccountType(),
-                                                        getName(customerFrom),
-                                                        getName(customerTo));
-            }
+            int selected = balanceType.getSelectedIndex();
+            boolean nonOverdue = selected != OVERDUE_INDEX;
+            boolean overdue = selected != NON_OVERDUE_INDEX;
+            int from = overdue ? getNumber(periodFrom) : -1;
+            int to = overdue ? getNumber(periodTo) : -1;
+            boolean credit = excludeCredit.isSelected();
+            query = new CustomerBalanceSummaryQuery(getDate(), nonOverdue, from,
+                                                    to, credit,
+                                                    getAccountType(),
+                                                    getName(customerFrom),
+                                                    getName(customerTo));
             while (query.hasNext()) {
                 sets.add(query.next());
             }
@@ -371,10 +417,11 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
     }
 
     /**
-     * Invoked when the overdue check box changes.
+     * Invoked when the balance type changes. Enables/disables the overdue
+     * fields.
      */
-    private void onOverdueChanged() {
-        boolean enabled = overdue.isSelected();
+    private void onBalanceTypeChanged() {
+        boolean enabled = balanceType.getSelectedIndex() != NON_OVERDUE_INDEX;
         ComponentHelper.enable(periodFromLabel, enabled);
         ComponentHelper.enable(periodFrom, enabled);
         ComponentHelper.enable(periodToLabel, enabled);
@@ -401,6 +448,56 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
      */
     private Row createRow(String style, Component ... components) {
         return RowFactory.create(style, components);
+    }
+
+    /**
+     * Cell renderer that renders 'All' in bold.
+     */
+    class BalanceTypeListCellRenderer extends AbstractListCellRenderer<String> {
+
+        /**
+         * Constructs a new <tt>BalanceTypeListCellRenderer</tt>.
+         */
+        public BalanceTypeListCellRenderer() {
+            super(String.class);
+        }
+
+        /**
+         * Renders an object.
+         *
+         * @param list   the list component
+         * @param object the object to render. May be <tt>null</tt>
+         * @param index  the object index
+         * @return the rendered object
+         */
+        protected Object getComponent(Component list, String object,
+                                      int index) {
+            return balanceTypeItems[index];
+        }
+
+        /**
+         * Determines if an object represents 'All'.
+         *
+         * @param list   the list component
+         * @param object the object. May be <tt>null</tt>
+         * @param index  the object index
+         * @return <code>true</code> if the object represents 'All'.
+         */
+        protected boolean isAll(Component list, String object, int index) {
+            return index == ALL_BALANCE_INDEX;
+        }
+
+        /**
+         * Determines if an object represents 'None'.
+         *
+         * @param list   the list component
+         * @param object the object. May be <tt>null</tt>
+         * @param index  the object index
+         * @return <code>true</code> if the object represents 'None'.
+         */
+        protected boolean isNone(Component list, String object, int index) {
+            return false;
+        }
     }
 
 }

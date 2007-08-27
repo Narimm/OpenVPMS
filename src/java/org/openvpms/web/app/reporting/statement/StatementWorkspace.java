@@ -304,10 +304,12 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
             IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
                     query.getObjects(), "CUSTOMER_BALANCE");
             String type;
-            if (query.queryOverdue()) {
+            if (query.queryAllBalances()) {
+                type = Messages.get("reporting.statements.print.all");
+            } else if (query.queryOverduebalances()) {
                 type = Messages.get("reporting.statements.print.overdue");
             } else {
-                type = Messages.get("reporting.statements.print.outstanding");
+                type = Messages.get("reporting.statements.print.nonOverdue");
             }
             String title = Messages.get("imobject.print.title", type);
             InteractiveIMPrinter<ObjectSet> iPrinter
