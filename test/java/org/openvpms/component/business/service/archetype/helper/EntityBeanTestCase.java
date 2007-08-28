@@ -21,12 +21,14 @@ package org.openvpms.component.business.service.archetype.helper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -83,6 +85,13 @@ public class EntityBeanTestCase
         r.setActive(false);
         assertNull(person.getSourceEntity(OWNER));
         assertNull(pet.getTargetEntity(OWNER));
+
+        // mark the relationship active, and the patient inactive
+        r.setActive(true);
+        pet.getObject().setActive(false);
+        pet.save();
+        assertNull(person.getTargetEntity(OWNER));
+        assertEquals(person.getEntity(), pet.getSourceEntity(OWNER));
     }
 
     /**
@@ -147,44 +156,188 @@ public class EntityBeanTestCase
         r.setActive(false);
         assertNull(person.getNodeSourceEntity("patients"));
         assertNull(pet.getNodeTargetEntity("relationships"));
+
+        // mark the relationship active, and the pet inactive
+        r.setActive(true);
+        pet.getObject().setActive(false);
+        pet.save();
+        assertNull(person.getNodeTargetEntity("patients"));
+        assertEquals(person.getEntity(),
+                     person.getNodeSourceEntity("patients"));
     }
 
     /**
-      * Tests the {@link EntityBean#getNodeSourceEntity(String, Date)}
-      * and {@link EntityBean#getNodeTargetEntity(String, Date)} methods.
-      */
-     public void testGetNodeEntityByTime() {
-         EntityBean pet = createPet();
-         EntityBean person = createPerson();
+     * Tests the {@link EntityBean#getNodeSourceEntity(String, Date)}
+     * and {@link EntityBean#getNodeTargetEntity(String, Date)} methods.
+     */
+    public void testGetNodeEntityByTime() {
+        EntityBean pet = createPet();
+        EntityBean person = createPerson();
 
-         // add a relationship to the person and pet
-         EntityRelationship r = person.addRelationship(OWNER, pet.getEntity());
-         pet.getEntity().addEntityRelationship(r);
+        // add a relationship to the person and pet
+        EntityRelationship r = person.addRelationship(OWNER, pet.getEntity());
+        pet.getEntity().addEntityRelationship(r);
 
-         // verify the pet is returned for a time > the default start time
-         Entity pet2 = person.getNodeTargetEntity("patients", new Date());
-         assertEquals(pet.getEntity(), pet2);
+        // verify the pet is returned for a time > the default start time
+        Entity pet2 = person.getNodeTargetEntity("patients", new Date());
+        assertEquals(pet.getEntity(), pet2);
 
-         // ... same for person
-         Entity person2 = pet.getNodeSourceEntity("relationships", new Date());
-         assertEquals(person.getEntity(), person2);
+        // ... same for person
+        Entity person2 = pet.getNodeSourceEntity("relationships", new Date());
+        assertEquals(person.getEntity(), person2);
 
-         // verify no entity returned if the relationship has no start time
-         r.setActiveStartTime(null);
-         assertNull(person.getNodeTargetEntity("patients", new Date()));
-         assertNull(pet.getNodeSourceEntity("relationships", new Date()));
+        // verify no entity returned if the relationship has no start time
+        r.setActiveStartTime(null);
+        assertNull(person.getNodeTargetEntity("patients", new Date()));
+        assertNull(pet.getNodeSourceEntity("relationships", new Date()));
 
-         // now set the start and end time and verify that there is no entities
-         // for a later time (use time addition due to system clock granularity)
-         Date start = new Date();
-         Date end = new Date(start.getTime() + 1);
-         Date later = new Date(end.getTime() + 1);
-         r.setActiveStartTime(start);
-         r.setActiveEndTime(end);
-         assertNull(person.getNodeTargetEntity("patients", later));
-         assertNull(pet.getNodeSourceEntity("relationships", later));
-     }
+        // now set the start and end time and verify that there is no entities
+        // for a later time (use time addition due to system clock granularity)
+        Date start = new Date();
+        Date end = new Date(start.getTime() + 1);
+        Date later = new Date(end.getTime() + 1);
+        r.setActiveStartTime(start);
+        r.setActiveEndTime(end);
+        assertNull(person.getNodeTargetEntity("patients", later));
+        assertNull(pet.getNodeSourceEntity("relationships", later));
+    }
 
+    /**
+     * Tests the {@link EntityBean#getNodeSourceEntities},
+     * {@link EntityBean#getNodeSourceEntityRefs},
+     * {@link EntityBean#getNodeTargetEntities} and
+     * {@link EntityBean#getNodeTargetEntityRefs}  methods.
+     */
+    public void testGetNodeEntities() {
+        EntityBean pet1 = createPet();
+        EntityBean pet2 = createPet();
+        EntityBean person = createPerson();
+
+        // add a relationship to the person and pets
+        EntityRelationship r1 = person.addRelationship(OWNER, pet1.getEntity());
+        pet1.getEntity().addEntityRelationship(r1);
+        EntityRelationship r2 = person.addRelationship(OWNER, pet2.getEntity());
+        pet2.getEntity().addEntityRelationship(r2);
+
+        List<Entity> pets = person.getNodeTargetEntities("patients");
+        assertEquals(2, pets.size());
+        assertTrue(pets.contains(pet1.getEntity()));
+        assertTrue(pets.contains(pet2.getEntity()));
+
+        List<IMObjectReference> petRefs
+                = person.getNodeTargetEntityRefs("patients");
+        assertEquals(2, petRefs.size());
+        assertTrue(petRefs.contains(pet1.getReference()));
+        assertTrue(petRefs.contains(pet2.getReference()));
+
+        // now mark pet2 inactive. Will no longer be returned by
+        // getNodeTargetEntities(). but will still be returned by
+        // getNodeTargetEntityRefs()
+        pet2.getObject().setActive(false);
+        pet2.save();
+        pets = person.getNodeTargetEntities("patients");
+        assertEquals(1, pets.size());
+        assertFalse(pets.contains(pet2.getEntity()));
+
+        petRefs = person.getNodeTargetEntityRefs("patients");
+        assertEquals(2, petRefs.size());
+
+        // check sources
+        List<Entity> customers = pet1.getNodeSourceEntities("customers");
+        assertEquals(1, customers.size());
+        assertTrue(customers.contains(person.getEntity()));
+
+        List<IMObjectReference> custRefs
+                = pet2.getNodeSourceEntityRefs("customers");
+        assertEquals(1, custRefs.size());
+        assertTrue(custRefs.contains(person.getReference()));
+    }
+
+    /**
+     * Tests the {@link EntityBean#getNodeSourceEntities(String, Date)},
+     * {@link EntityBean#getNodeSourceEntityRefs(String, Date)},
+     * {@link EntityBean#getNodeTargetEntities(String, Date)} and
+     * {@link EntityBean#getNodeTargetEntityRefs(String, Date)} methods.
+     */
+    public void testGetNodeEntitiesByTime() {
+        EntityBean pet1 = createPet();
+        EntityBean pet2 = createPet();
+        EntityBean person = createPerson();
+
+        // add a relationship to the person and pets
+        EntityRelationship r1 = person.addRelationship(OWNER, pet1.getEntity());
+        pet1.getEntity().addEntityRelationship(r1);
+        EntityRelationship r2 = person.addRelationship(OWNER, pet2.getEntity());
+        pet2.getEntity().addEntityRelationship(r2);
+
+        // verify the pets are returned for a time > the default start time
+        List<Entity> pets = person.getNodeTargetEntities("patients",
+                                                         new Date());
+        assertEquals(2, pets.size());
+        assertTrue(pets.contains(pet1.getObject()));
+        assertTrue(pets.contains(pet2.getObject()));
+
+        List<IMObjectReference> petRefs
+                = person.getNodeTargetEntityRefs("patients", new Date());
+        assertEquals(2, petRefs.size());
+        assertTrue(petRefs.contains(pet1.getReference()));
+        assertTrue(petRefs.contains(pet2.getReference()));
+
+        // now mark pet2 inactive. Will no longer be returned by
+        // getNodeTargetEntities(). but will still be returned by
+        // getNodeTargetEntityRefs()
+        pet2.getObject().setActive(false);
+        pet2.save();
+        pets = person.getNodeTargetEntities("patients", new Date());
+        assertEquals(1, pets.size());
+        assertFalse(pets.contains(pet2.getEntity()));
+
+        petRefs = person.getNodeTargetEntityRefs("patients", new Date());
+        assertEquals(2, petRefs.size());
+
+        // verify the person is returned for a time > the default start time
+        List<Entity> people = pet1.getNodeSourceEntities("relationships",
+                                                          new Date());
+        assertEquals(1, people.size());
+        assertTrue(people.contains(person.getObject()));
+
+        List<IMObjectReference> peopleRefs
+                = pet2.getNodeSourceEntityRefs("relationships", new Date());
+        assertEquals(1, peopleRefs.size());
+        assertTrue(peopleRefs.contains(person.getReference()));
+
+        // verify no entity returned if the relationship has no start time
+        r1.setActiveStartTime(null);
+        r2.setActiveStartTime(null);
+        pets = person.getNodeTargetEntities("patients", new Date());
+        assertEquals(0, pets.size());
+        people = pet2.getNodeSourceEntities("relationships", new Date());
+        assertEquals(0, people.size());
+
+        petRefs = person.getNodeTargetEntityRefs("patients", new Date());
+        assertEquals(0, petRefs.size());
+        peopleRefs = pet2.getNodeSourceEntityRefs("relationships", new Date());
+        assertEquals(0, peopleRefs.size());
+
+        // now set the start and end time and verify that there is no entities
+        // for a later time (use time addition due to system clock granularity)
+        Date start = new Date();
+        Date end = new Date(start.getTime() + 1);
+        Date later = new Date(end.getTime() + 1);
+        r1.setActiveStartTime(start);
+        r1.setActiveEndTime(end);
+        r2.setActiveStartTime(start);
+        r2.setActiveEndTime(end);
+        pets = person.getNodeTargetEntities("patients", later);
+        assertEquals(0, pets.size());
+        people = pet2.getNodeSourceEntities("relationships", later);
+        assertEquals(0, people.size());
+
+        petRefs = person.getNodeTargetEntityRefs("patients", later);
+        assertEquals(0, petRefs.size());
+        peopleRefs = pet2.getNodeSourceEntityRefs("relationships", later);
+        assertEquals(0, peopleRefs.size());
+    }
 
     /**
      * Verifies that an entity relationship matches that expected.
