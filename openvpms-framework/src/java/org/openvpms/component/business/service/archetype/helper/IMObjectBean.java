@@ -22,6 +22,7 @@ import org.apache.commons.jxpath.util.TypeConverter;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -91,6 +92,15 @@ public class IMObjectBean {
      */
     public IMObject getObject() {
         return object;
+    }
+
+    /**
+     * Returns a reference to the underlying object.
+     *
+     * @return the reference
+     */
+    public IMObjectReference getReference() {
+        return object.getObjectReference();
     }
 
     /**
