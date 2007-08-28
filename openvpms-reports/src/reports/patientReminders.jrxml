@@ -23,19 +23,19 @@
 	<import value="net.sf.jasperreports.engine.*" />
 	<import value="net.sf.jasperreports.engine.data.*" />
 
-	<parameter name="dataSource" isForPrompting="false" class="org.openvpms.report.jasper.ObjectSetDataSource"/>
+	<parameter name="dataSource" isForPrompting="false" class="org.openvpms.report.jasper.IMObjectCollectionDataSource"/>
 
-	<field name="customer.name" class="java.lang.String"/>
+	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'name')]" class="java.lang.String"/>
 	<field name="balance" class="java.math.BigDecimal"/>
 	<field name="creditBalance" class="java.math.BigDecimal"/>
 	<field name="lastSent" class="java.util.Date"/>
-	<field name="patient.name" class="java.lang.String"/>
-	<field name="reminderType.name" class="java.lang.String"/>
+	<field name="patient.entity.name" class="java.lang.String"/>
+	<field name="reminderType.entity.name" class="java.lang.String"/>
 	<field name="reminderCount" class="java.lang.Integer"/>
 	<field name="endTime" class="java.util.Date"/>
 
 	<variable name="TOTAL_REMINDERS" class="java.lang.Integer" resetType="Report" calculation="Count">
-		<variableExpression><![CDATA[$F{customer.name}]]></variableExpression>
+		<variableExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'name')]}]]></variableExpression>
 	</variable>
 		<background>
 			<band height="0"  isSplitAllowed="true" >
@@ -151,7 +151,7 @@
 					<reportElement
 						x="325"
 						y="55"
-						width="49"
+						width="56"
 						height="13"
 						key="staticText-13"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
@@ -162,7 +162,7 @@
 				</staticText>
 				<staticText>
 					<reportElement
-						x="374"
+						x="381"
 						y="55"
 						width="53"
 						height="13"
@@ -205,11 +205,11 @@
 					<textElement>
 						<font/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{customer.name}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'name')]}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="374"
+						x="381"
 						y="2"
 						width="53"
 						height="13"
@@ -231,13 +231,13 @@
 					<textElement textAlignment="Left">
 						<font/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{reminderType.name}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{reminderType.entity.name}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="325"
 						y="2"
-						width="49"
+						width="56"
 						height="13"
 						key="textField-4"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
@@ -254,12 +254,12 @@
 						height="13"
 						key="textField-8"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Right">
+					<textElement textAlignment="Left">
 						<font/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{patient.name}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{patient.entity.name}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="438"
 						y="2"
