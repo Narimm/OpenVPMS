@@ -28,12 +28,6 @@
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/name, ' (', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')"/>
-        <node name="activeStartTime" path="/activeStartTime"
-              type="java.util.Date" minCardinality="1"
-              hidden="true" defaultValue="java.util.Date.new()"/>
-        <node name="activeEndTime" path="/activeEndTime"
-              type="java.util.Date" minCardinality="0"
-              hidden="true"/>
         <node name="source" displayName="Product Type" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
               minCardinality="1">
@@ -60,5 +54,10 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
+        <node displayName="From Date" name="activeStartTime"
+              path="/activeStartTime" type="java.util.Date" minCardinality="1"
+              defaultValue="java.util.Date.new()"/>
+        <node displayName="To Date" name="activeEndTime" path="/activeEndTime"
+              type="java.util.Date" minCardinality="0"/>
     </archetype>
 </archetypes>
