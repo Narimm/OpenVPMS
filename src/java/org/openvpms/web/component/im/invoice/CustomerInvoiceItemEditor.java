@@ -13,7 +13,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id:CustomerInvoiceItemEditor.java 2287 2007-08-13 07:56:33Z tanderson $
  */
 
 package org.openvpms.web.component.im.invoice;
@@ -352,7 +352,9 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                     quantity = BigDecimal.ZERO;
                 }
                 DiscountRules rules = new DiscountRules();
+                Act parent = (Act) getParent();
                 BigDecimal amount = rules.calculateDiscountAmount(
+                        parent.getActivityStartTime(),
                         customer, patient, product, fixedPrice, unitPrice,
                         quantity);
                 // If discount amount calculates to zero don't update any

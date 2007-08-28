@@ -159,7 +159,9 @@ public class EstimationItemEditor extends ActItemEditor {
                 BigDecimal quantity = bean.getBigDecimal("highQty",
                                                          BigDecimal.ZERO);
                 DiscountRules rules = new DiscountRules();
+                Act parent = (Act) getParent();
                 BigDecimal amount = rules.calculateDiscountAmount(
+                        parent.getActivityStartTime(),
                         customer, patient, product, fixedPrice, unitPrice,
                         quantity);
                 Property discount = getProperty("discount");
