@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -146,6 +147,24 @@ public class EntityBean extends IMObjectBean {
     }
 
     /**
+     * Returns all relationships with the specified short name.
+     *
+     * @param shortName the relationship short name
+     * @return all relationships with the specified short name
+     */
+    public List<EntityRelationship> getRelationships(String shortName) {
+        List<EntityRelationship> result = new ArrayList<EntityRelationship>();
+        Set<EntityRelationship> relationships
+                = getEntity().getEntityRelationships();
+        for (EntityRelationship relationship : relationships) {
+            if (TypeHelper.isA(relationship, shortName)) {
+                result.add(relationship);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Removes an entity relationship.
      *
      * @param relationship the relationship to remove
@@ -164,7 +183,7 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeSourceEntity(String node) {
-        return getEntity(node, ACTIVE_NOT_NULL, SOURCE);
+        return getEntity(node, ACTIVE_NOT_NULL, SOURCE, true);
     }
 
     /**
@@ -176,7 +195,7 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeTargetEntity(String node) {
-        return getEntity(node, ACTIVE_NOT_NULL, TARGET);
+        return getEntity(node, ACTIVE_NOT_NULL, TARGET, true);
     }
 
     /**
@@ -191,11 +210,27 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeSourceEntity(String node, Date time) {
-        return getEntity(node, getActiveNotNullTime(time), SOURCE);
+        return getNodeSourceEntity(node, time, true);
     }
 
     /**
-     * Returns the target entity in the first entity relationship for the
+     * Returns the source entity in the first entity relationship for the
+     * specified node that has a start and end times overlapping the specified
+     * time. The end time may be null, indicating an unbounded time.
+     *
+     * @param node the entity relationship node
+     * @param time the time
+     * @return the active entity, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Entity getNodeSourceEntity(String node, Date time, boolean active) {
+        return getEntity(node, getActiveNotNullTime(active, time), SOURCE,
+                         active);
+    }
+
+    /**
+     * Returns the target entity in the first active entity relationship for the
      * specified node that has start and end times overlapping the specified
      * time. The end time may be null, indicating an unbounded time.
      *
@@ -206,7 +241,24 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeTargetEntity(String node, Date time) {
-        return getEntity(node, getActiveNotNullTime(time), TARGET);
+        return getNodeTargetEntity(node, time, true);
+    }
+
+    /**
+     * Returns the target entity in the first entity relationship for the
+     * specified node that has start and end times overlapping the specified
+     * time. The end time may be null, indicating an unbounded time.
+     *
+     * @param node   the entity relationship node
+     * @param time   the time
+     * @param active determines if the relationship and entity must be active
+     * @return the first entity, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Entity getNodeTargetEntity(String node, Date time, boolean active) {
+        return getEntity(node, getActiveNotNullTime(active, time), TARGET,
+                         active);
     }
 
     /**
@@ -219,7 +271,7 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<Entity> getNodeSourceEntities(String node) {
-        return getEntities(node, ACTIVE_NOT_NULL, SOURCE);
+        return getEntities(node, ACTIVE_NOT_NULL, SOURCE, true);
     }
 
     /**
@@ -233,7 +285,24 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<Entity> getNodeSourceEntities(String node, Date time) {
-        return getEntities(node, getActiveNotNullTime(time), SOURCE);
+        return getNodeSourceEntities(node, time, true);
+    }
+
+    /**
+     * Returns the active source entities from each relationship for the
+     * specified node that has start and end times overlapping the specified
+     * time. The end time may be null, indicating an unbounded time.
+     *
+     * @param node   the entity relationship node
+     * @param time   the time
+     * @param active determines if the relationships and entities must be active
+     * @return a list of active source entities
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<Entity> getNodeSourceEntities(String node, Date time,
+                                              boolean active) {
+        return getEntities(node, getActiveNotNullTime(active, time), SOURCE,
+                           active);
     }
 
     /**
@@ -246,7 +315,7 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<Entity> getNodeTargetEntities(String node) {
-        return getEntities(node, ACTIVE_NOT_NULL, TARGET);
+        return getEntities(node, ACTIVE_NOT_NULL, TARGET, true);
     }
 
     /**
@@ -256,11 +325,28 @@ public class EntityBean extends IMObjectBean {
      *
      * @param node the entity relationship node
      * @param time the time
-     * @return a list of target entities
+     * @return a list of active target entities
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<Entity> getNodeTargetEntities(String node, Date time) {
-        return getEntities(node, getActiveNotNullTime(time), TARGET);
+        return getNodeTargetEntities(node, time, true);
+    }
+
+    /**
+     * Returns the target entities from each relationship for the specified node
+     * that has start and end times overlapping the specified
+     * time. The end time may be null, indicating an unbounded time.
+     *
+     * @param node   the entity relationship node
+     * @param time   the time
+     * @param active determines if the relationships and entities must be active
+     * @return a list of target entities
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<Entity> getNodeTargetEntities(String node, Date time,
+                                              boolean active) {
+        return getEntities(node, getActiveNotNullTime(active, time), TARGET,
+                           active);
     }
 
     /**
@@ -276,8 +362,8 @@ public class EntityBean extends IMObjectBean {
     }
 
     /**
-     * Returns the source entity references from each relationship for the
-     * specified node that has start and end times overlapping the specified
+     * Returns the source entity references from each active relationship for
+     * the specified node that has start and end times overlapping the specified
      * time. The end time may be null, indicating an unbounded time.
      *
      * @param node the entity relationship node
@@ -287,7 +373,24 @@ public class EntityBean extends IMObjectBean {
      */
     public List<IMObjectReference> getNodeSourceEntityRefs(String node,
                                                            Date time) {
-        return getEntityRefs(node, getActiveNotNullTime(time), SOURCE);
+        return getNodeSourceEntityRefs(node, time, true);
+    }
+
+    /**
+     * Returns the source entity references from each relationship for the
+     * specified node that has start and end times overlapping the specified
+     * time. The end time may be null, indicating an unbounded time.
+     *
+     * @param node   the entity relationship node
+     * @param time   the time
+     * @param active determines if the relationships must be active
+     * @return a list of source entity references. May contain references to
+     *         both active and inactive references
+     */
+    public List<IMObjectReference> getNodeSourceEntityRefs(String node,
+                                                           Date time,
+                                                           boolean active) {
+        return getEntityRefs(node, getActiveNotNullTime(active, time), SOURCE);
     }
 
     /**
@@ -303,8 +406,8 @@ public class EntityBean extends IMObjectBean {
     }
 
     /**
-     * Returns the target entity references from each relationship for the
-     * specified node that has start and end times overlapping the specified
+     * Returns the target entity references from each active relationship for
+     * the specified node that has start and end times overlapping the specified
      * time. The end time may be null, indicating an unbounded time.
      *
      * @param node the entity relationship node
@@ -314,7 +417,24 @@ public class EntityBean extends IMObjectBean {
      */
     public List<IMObjectReference> getNodeTargetEntityRefs(String node,
                                                            Date time) {
-        return getEntityRefs(node, getActiveNotNullTime(time), TARGET);
+        return getNodeTargetEntityRefs(node, time, true);
+    }
+
+    /**
+     * Returns the target entity references from each relationship for the
+     * specified node that has start and end times overlapping the specified
+     * time. The end time may be null, indicating an unbounded time.
+     *
+     * @param node   the entity relationship node
+     * @param time   the time
+     * @param active determines if the relationships must be active
+     * @return a list of target entity references. May contain references to
+     *         both active and inactive references
+     */
+    public List<IMObjectReference> getNodeTargetEntityRefs(String node,
+                                                           Date time,
+                                                           boolean active) {
+        return getEntityRefs(node, getActiveNotNullTime(active, time), TARGET);
     }
 
     /**
@@ -330,6 +450,19 @@ public class EntityBean extends IMObjectBean {
     }
 
     /**
+     * Returns the source entity in the first entity relationship
+     * matching the specified short name.
+     *
+     * @param shortName the entity relationship short name
+     * @param active    determines if the relationship and entity must be active
+     * @return the first entity, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Entity getSourceEntity(String shortName, boolean active) {
+        return getSourceEntity(new String[]{shortName}, active);
+    }
+
+    /**
      * Returns the source entity in the first active entity relationship
      * matching the specified short names that has an active entity.
      *
@@ -338,8 +471,23 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getSourceEntity(String[] shortNames) {
+        return getSourceEntity(shortNames, true);
+    }
+
+    /**
+     * Returns the source entity in the first entity relationship
+     * matching the specified short names.
+     *
+     * @param shortNames the entity relationship short names
+     * @param active     determines if the relationship and entity must be
+     *                   active
+     * @return the first entity, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Entity getSourceEntity(String[] shortNames, boolean active) {
         return getEntity(getEntity().getEntityRelationships(),
-                         getActiveNotNullIsA(shortNames), SOURCE);
+                         getActiveNotNullIsA(active, shortNames), SOURCE,
+                         active);
     }
 
     /**
@@ -355,6 +503,19 @@ public class EntityBean extends IMObjectBean {
     }
 
     /**
+     * Returns the target entity in the first entity relationship
+     * matching the specified short name.
+     *
+     * @param shortName the entity relationship short names
+     * @param active    determines if the relationship and entity must be active
+     * @return the first entity, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Entity getTargetEntity(String shortName, boolean active) {
+        return getTargetEntity(new String[]{shortName}, active);
+    }
+
+    /**
      * Returns the target entity in the first active entity relationship
      * matching the specified short names that has an active entity.
      *
@@ -363,8 +524,23 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getTargetEntity(String[] shortNames) {
+        return getTargetEntity(shortNames, true);
+    }
+
+    /**
+     * Returns the target entity in the first active entity relationship
+     * matching the specified short names that has an active entity.
+     *
+     * @param shortNames the entity relationship short names
+     * @param active     determines if the relationship and entity must be
+     *                   active
+     * @return the first entity, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Entity getTargetEntity(String[] shortNames, boolean active) {
         return getEntity(getEntity().getEntityRelationships(),
-                         getActiveNotNullIsA(shortNames), TARGET);
+                         getActiveNotNullIsA(active, shortNames), TARGET,
+                         active);
     }
 
     /**
@@ -379,7 +555,23 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getSourceEntity(String shortName, Date time) {
-        return getSourceEntity(new String[]{shortName}, time);
+        return getSourceEntity(shortName, time, true);
+    }
+
+    /**
+     * Returns the source entity in the first entity relationship matching
+     * the specified short name that has start and end times overlapping the
+     * specified time. The end time may be null, indicating an unbounded time.
+     *
+     * @param shortName the entity relationship short name
+     * @param time      the time
+     * @param active    determines if the relationship and entity must be active
+     * @return the first entity, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Entity getSourceEntity(String shortName, Date time, boolean active) {
+        return getSourceEntity(new String[]{shortName}, time, active);
     }
 
     /**
@@ -394,8 +586,33 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getSourceEntity(String[] shortNames, Date time) {
-        return getEntity(getEntity().getEntityRelationships(),
-                         getActiveNotNullIsATime(shortNames, time), SOURCE);
+        return getSourceEntity(shortNames, time, true);
+    }
+
+    /**
+     * Returns the source entity in the first entity relationship matching
+     * the specified short names that has start and end times overlapping the
+     * specified time. The end time may be null, indicating an unbounded time.
+     *
+     * @param shortNames the entity relationship short names
+     * @param time       the time
+     * @param active     determines if the relationship and entity must be
+     *                   active
+     * @return the first active entity, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Entity getSourceEntity(String[] shortNames, Date time,
+                                  boolean active) {
+        Entity entity = getEntity(getEntity().getEntityRelationships(),
+                                  getActiveNotNullIsATime(true, shortNames,
+                                                          time), SOURCE, true);
+        if (entity == null && !active) {
+            entity = getEntity(getEntity().getEntityRelationships(),
+                               getActiveNotNullIsATime(false, shortNames, time),
+                               SOURCE, false);
+        }
+        return entity;
     }
 
     /**
@@ -410,7 +627,22 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getTargetEntity(String shortName, Date time) {
-        return getTargetEntity(new String[]{shortName}, time);
+        return getTargetEntity(shortName, time, true);
+    }
+
+    /**
+     * Returns the target entity in the first entity relationship matching the
+     * specified short name that has start and end times overlapping the
+     * specified time. The end time may be null, indicating an unbounded time.
+     *
+     * @param shortName the entity relationship short name
+     * @param time      the time
+     * @return the first active entity, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Entity getTargetEntity(String shortName, Date time, boolean active) {
+        return getTargetEntity(new String[]{shortName}, time, active);
     }
 
     /**
@@ -425,45 +657,70 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getTargetEntity(String[] shortNames, Date time) {
-        return getEntity(getEntity().getEntityRelationships(),
-                         getActiveNotNullIsATime(shortNames, time), TARGET);
+        return getTargetEntity(shortNames, time, true);
+    }
+
+    /**
+     * Returns the target entity in the first entity relationship matching the
+     * specified short names that has start and end times overlapping the
+     * specified time. The end time may be null, indicating an unbounded time.
+     *
+     * @param shortNames the entity relationship short names
+     * @param time       the time
+     * @return the first entity, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Entity getTargetEntity(String[] shortNames, Date time,
+                                  boolean active) {
+        Entity entity = getEntity(getEntity().getEntityRelationships(),
+                                  getActiveNotNullIsATime(true, shortNames,
+                                                          time), TARGET, true);
+        if (entity == null && !active) {
+            entity = getEntity(getEntity().getEntityRelationships(),
+                               getActiveNotNullIsATime(false, shortNames, time),
+                               TARGET, false);
+        }
+        return entity;
     }
 
     /**
      * Returns the entity in the first entity relationship for the
-     * specified node that matches the specified criteria and has an active
-     * entity.
+     * specified node that matches the specified criteria.
      *
      * @param node     the entity relationship node
      * @param criteria the criteria
      * @param accessor the entity accessor
+     * @param active   determines if the entity must be active
      * @return the first active entity, or <tt>null</tt> if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
     private Entity getEntity(String node, Criteria criteria,
-                             RefAccessor accessor) {
+                             RefAccessor accessor, boolean active) {
         List<EntityRelationship> relationships
                 = getValues(node, EntityRelationship.class);
-        return getEntity(relationships, criteria, accessor);
+        return getEntity(relationships, criteria, accessor, active);
     }
 
     /**
      * Returns the entity from the first relationship matching the specified
-     * criteria that has an active entity.
+     * criteria.
      *
      * @param relationships the relationships
      * @param criteria      the criteria
      * @param accessor      the entity accessor
+     * @param active        determines if the entity must be active
      * @return the first active entity or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     private Entity getEntity(Collection<EntityRelationship> relationships,
-                             Criteria criteria, RefAccessor accessor) {
+                             Criteria criteria, RefAccessor accessor,
+                             boolean active) {
         for (EntityRelationship relationship : relationships) {
             if (criteria.matches(relationship, accessor)) {
                 Entity entity = getEntity(accessor.getRef(relationship));
-                if (entity.isActive()) {
+                if (entity != null && (!active || entity.isActive())) {
                     return entity;
                 }
             }
@@ -495,11 +752,12 @@ public class EntityBean extends IMObjectBean {
      * @param node     the entity relationship node
      * @param criteria the criteria
      * @param accessor the entity accessor
-     * @return a list of active entities
+     * @param active   determines if the entity must be active
+     * @return a list of entities
      * @throws ArchetypeServiceException for any archetype service error
      */
     private List<Entity> getEntities(String node, Criteria criteria,
-                                     RefAccessor accessor) {
+                                     RefAccessor accessor, boolean active) {
         List<IMObjectReference> refs = getEntityRefs(node, criteria, accessor);
         if (refs.isEmpty()) {
             return Collections.emptyList();
@@ -507,7 +765,7 @@ public class EntityBean extends IMObjectBean {
         List<Entity> result = new ArrayList<Entity>();
         for (IMObjectReference ref : refs) {
             Entity entity = getEntity(ref);
-            if (entity != null && entity.isActive()) {
+            if (entity != null && (!active || entity.isActive())) {
                 result.add(entity);
             }
         }
@@ -555,11 +813,13 @@ public class EntityBean extends IMObjectBean {
      * active, the reference is non-null, and that specified time is within
      * the relationship active start and end times.
      *
-     * @param time the time
+     * @param active determines if the relationship must be active
+     * @param time   the time
      * @return a new criteria
      */
-    private Criteria getActiveNotNullTime(Date time) {
-        return new And(ACTIVE_NOT_NULL, new TimeCriteria(time));
+    private Criteria getActiveNotNullTime(boolean active, Date time) {
+        Criteria criteria = (active) ? ACTIVE_NOT_NULL : NOT_NULL;
+        return new And(criteria, new TimeCriteria(time));
     }
 
     /**
@@ -567,26 +827,30 @@ public class EntityBean extends IMObjectBean {
      * active, the reference is non-null, and that the relationship is a
      * specified type.
      *
+     * @param active     determines if the relationship must be active
      * @param shortNames the relationship short names to match
      * @return a new criteria
      */
-    private Criteria getActiveNotNullIsA(String[] shortNames) {
-        return new And(ACTIVE_NOT_NULL, new IsA(shortNames));
+    private Criteria getActiveNotNullIsA(boolean active, String[] shortNames) {
+        Criteria criteria = (active) ? ACTIVE_NOT_NULL : NOT_NULL;
+        return new And(criteria, new IsA(shortNames));
     }
 
     /**
      * Helper to return a criteria that checks that a relationship is
-     * active, the reference is non-null, the relationship is a
-     * specified type, and that specified time is within the relationship
-     * active start and end times.
+     * active, the reference is non-null, the relationship is a specified type,
+     * and that specified time is within the relationship active start and end
+     * times.
      *
+     * @param active     determines if the relationship must be active
      * @param shortNames the relationship short names to match
      * @param time       the time
      * @return a new criteria
      */
-    private Criteria getActiveNotNullIsATime(String[] shortNames, Date time) {
-        return new And(ACTIVE_NOT_NULL, new IsA(shortNames),
-                       new TimeCriteria(time));
+    private Criteria getActiveNotNullIsATime(boolean active,
+                                             String[] shortNames, Date time) {
+        Criteria criteria = (active) ? ACTIVE_NOT_NULL : NOT_NULL;
+        return new And(criteria, new IsA(shortNames), new TimeCriteria(time));
     }
 
     /**
@@ -688,8 +952,7 @@ public class EntityBean extends IMObjectBean {
             if (start instanceof Timestamp) {
                 start = new Date(start.getTime());
             }
-            if (start != null && start.compareTo(time) <= 0
-                    && accessor.getRef(relationship) != null) {
+            if (start != null && start.compareTo(time) <= 0) {
                 Date end = relationship.getActiveEndTime();
                 if (end instanceof Timestamp) {
                     end = new Date(end.getTime());
