@@ -157,27 +157,16 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
 
     /**
      * Determines if one short name is more specific than another.
-     * A short name is more specific than another if it has:
-     * <ul>
-     * <li>more dots</li>
-     * <li>the same no of dots, but fewer wildcards</li>
-     * </ul>
+     * A short name is more specific than another if resolves fewer archetypes.
      *
      * @param shortName1 the first short name
      * @param shortName2 the second short name
      * @return <code>true</code> if shortName1 is more specific than shortName2
      */
     private boolean moreSpecific(String shortName1, String shortName2) {
-        boolean result = false;
-        int dotCount1 = StringUtils.countMatches(shortName1, ".");
-        int wildcardCount1 = StringUtils.countMatches(shortName1, "*");
-        int dotCount2 = StringUtils.countMatches(shortName2, ".");
-        int wildCardCount2 = StringUtils.countMatches(shortName2, "*");
-        if (dotCount1 > dotCount2 ||
-                (dotCount1 == dotCount2 && wildcardCount1 < wildCardCount2)) {
-            result = true;
-        }
-        return result;
+        String[] matches1 = DescriptorHelper.getShortNames(shortName1);
+        String[] matches2 = DescriptorHelper.getShortNames(shortName2);
+        return matches1.length < matches2.length;
     }
 
     /**

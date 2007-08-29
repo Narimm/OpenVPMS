@@ -31,7 +31,6 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.component.util.TabbedPaneFactory;
@@ -125,10 +124,7 @@ public class RecordBrowser implements Browser<Act> {
                 reminderAlert.getShortNames());
         this.reminderAlert = new DefaultIMObjectTableBrowser<Act>(reminderAlert,
                                                                   model);
-        IMObjectTableModel<Act> docModel
-                = new ActAmountTableModel<Act>(true, false);
-        this.document = new DefaultIMObjectTableBrowser<Act>(document,
-                                                             docModel);
+        this.document = IMObjectTableBrowserFactory.create(document, null);
     }
 
     /**
