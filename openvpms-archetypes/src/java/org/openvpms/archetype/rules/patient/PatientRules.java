@@ -18,11 +18,6 @@
 
 package org.openvpms.archetype.rules.patient;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -34,6 +29,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctio
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -45,6 +41,12 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
+
 
 /**
  * Patient rules.
@@ -55,15 +57,15 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 public class PatientRules {
 
     /**
+     * Patient owner relationship short name.
+     */
+    public static final String PATIENT_OWNER
+            = "entityRelationship.patientOwner";
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
-
-    /**
-     * Patient owner relationship short name.
-     */
-    private static final String PATIENT_OWNER
-            = "entityRelationship.patientOwner";
 
 
     /**
@@ -91,42 +93,74 @@ public class PatientRules {
      *
      * @param customer the customer
      * @param patient  the patient
+     * @return the relationship
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void addPatientOwnerRelationship(Party customer, Party patient) {
+    public EntityRelationship addPatientOwnerRelationship(Party customer,
+                                                          Party patient) {
         EntityRelationship relationship
                 = (EntityRelationship) service.create(PATIENT_OWNER);
         relationship.setActiveStartTime(new Date());
-        relationship.setSource(new IMObjectReference(customer));
-        relationship.setTarget(new IMObjectReference(patient));
+        relationship.setSource(customer.getObjectReference());
+        relationship.setTarget(patient.getObjectReference());
         customer.addEntityRelationship(relationship);
         patient.addEntityRelationship(relationship);
+        return relationship;
     }
 
     /**
      * Returns the owner of a patient associated with an act.
+     * If a patient has had multiple owners, then the returned owner will be
+     * that whose ownership period encompasses the act start time. If there is
+     * no such owner, the returned owner will be that whose ownership began
+     * closest to the act start time.
      *
      * @param act the act
      * @return the patient's owner, or <code>null</code> if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getOwner(Act act) {
+        Party owner = null;
         ActBean bean = new ActBean(act, service);
         Party patient = (Party) bean.getParticipant("participation.patient");
         Date startTime = act.getActivityStartTime();
         if (patient != null && startTime != null) {
             EntityBean patientBean = new EntityBean(patient, service);
-            return (Party) patientBean.getSourceEntity(PATIENT_OWNER,
-                                                       startTime);
+            owner = (Party) patientBean.getSourceEntity(
+                    PATIENT_OWNER, startTime, false);
+            if (owner == null) {
+                // no match for the start time, so try and find an owner close
+                // to the start time
+                EntityRelationship match = null;
+                List<EntityRelationship> relationships
+                        = patientBean.getRelationships(PATIENT_OWNER);
+
+                for (EntityRelationship relationship : relationships) {
+                    if (match == null) {
+                        owner = get(relationship.getSource());
+                        if (owner != null) {
+                            match = relationship;
+                        }
+                    } else {
+                        if (closerTime(startTime, relationship, match)) {
+                            Party party = get(relationship.getSource());
+                            if (party != null) {
+                                owner = party;
+                                match = relationship;
+                            }
+                        }
+                    }
+                }
+            }
         }
-        return null;
+        return owner;
     }
 
     /**
      * Returns the owner of a patient.
      *
      * @param patient the patient
-     * @return the patient's owner, or <code>null</code> if none can be found
+     * @return the patient's owner, or <tt>null</tt> if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getOwner(Party patient) {
@@ -277,7 +311,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getPatientSpecies(Party patient) {
-    	return ArchetypeServiceFunctions.lookup(patient, "species");
+        return ArchetypeServiceFunctions.lookup(patient, "species");
     }
 
     /**
@@ -288,7 +322,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getPatientBreed(Party patient) {
-    	return ArchetypeServiceFunctions.lookup(patient, "breed");
+        return ArchetypeServiceFunctions.lookup(patient, "breed");
     }
 
     /**
@@ -334,6 +368,48 @@ public class PatientRules {
             if (TypeHelper.isA(identity, "entityIdentity.microchip")) {
                 return identity.getIdentity();
             }
+        }
+        return null;
+    }
+
+    /**
+     * Determines if the first relationship has a closer start time than the
+     * second to the specified start time.
+     *
+     * @param startTime the start time
+     * @param r1        the first relationship
+     * @param r2        the second relationship
+     * @return <tt>true</tt> if the first relationship has a closer start time
+     */
+    private boolean closerTime(Date startTime, EntityRelationship r1,
+                               EntityRelationship r2) {
+        long time = getTime(startTime);
+        long diff1 = Math.abs(time - getTime(r1.getActiveStartTime()));
+        long diff2 = Math.abs(time - getTime(r2.getActiveStartTime()));
+        return diff1 < diff2;
+    }
+
+    /**
+     * Returns the time in milliseconds from a <tt>Date</tt>.
+     *
+     * @param date the date. May be <tt>null</tt>
+     * @return the time or <tt>0</tt> if the date is <tt>null</tt>
+     */
+    private long getTime(Date date) {
+        return (date != null) ? date.getTime() : 0;
+    }
+
+    /**
+     * Helper to return a party given its reference.
+     *
+     * @param ref the reference. May be <tt>null</tt>
+     * @return the corresponding party or <tt>null</tt> if none can be found
+     * @throws ArchetypeServiceException for any error
+     */
+    private Party get(IMObjectReference ref) {
+        if (ref != null) {
+            return (Party) ArchetypeQueryHelper.getByObjectReference(service,
+                                                                     ref);
         }
         return null;
     }
