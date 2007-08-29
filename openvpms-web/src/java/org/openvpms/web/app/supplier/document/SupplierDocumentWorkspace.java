@@ -27,11 +27,12 @@ import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
+
 
 /**
  * Supplier document workspace.
@@ -44,9 +45,9 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace<Act> {
     /**
      * Supplier Document shortnames supported by the workspace.
      */
-    private static final String[] SHORT_NAMES = {"act.supplierDocumentForm",
-                                                 "act.supplierDocumentLetter",
-                                                 "act.supplierDocumentAttachment"};
+    private static final String[] SHORT_NAMES = {
+            "act.supplierDocumentForm", "act.supplierDocumentLetter",
+            "act.supplierDocumentAttachment"};
 
     /**
      * Constructs a new <tt>SupplierDocumentWorkspace</tt>.
@@ -96,8 +97,7 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace<Act> {
      * @return a new table model.
      */
     protected IMObjectTableModel<Act> createTableModel() {
-        return new ActAmountTableModel<Act>(true, false);
+        return IMObjectTableModelFactory.create(SHORT_NAMES, null);
     }
-
 
 }

@@ -38,7 +38,7 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.select.Selector;
+import org.openvpms.web.component.im.select.BasicSelector;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
@@ -61,7 +61,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     /**
      * The upload selector.
      */
-    private Selector<DocumentAct> selector;
+    private BasicSelector<DocumentAct> selector;
 
     /**
      * The document act.
@@ -94,7 +94,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
             entity.setValue(parent.getObjectReference());
         }
         act = getDocumentAct();
-        selector = new Selector<DocumentAct>();
+        selector = new BasicSelector<DocumentAct>();
         selector.getSelect().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onSelect();

@@ -18,10 +18,7 @@
 
 package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadEvent;
@@ -30,25 +27,29 @@ import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.select.BasicSelector;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.io.InputStream;
+import java.util.Iterator;
 
 
 /**
@@ -61,19 +62,9 @@ public class DocumentEditor extends AbstractPropertyEditor
         implements Saveable, Cancellable, Deletable {
 
     /**
-     * The document type label.
+     * The upload selector.
      */
-    private final Label docType;
-
-    /**
-     * The component.
-     */
-    private final Row component;
-
-    /**
-     * The focus group.
-     */
-    private final FocusGroup focusGroup;
+    private BasicSelector<Document> selector;
 
     /**
      * Manages old document references to avoid orphaned documents.
@@ -90,21 +81,21 @@ public class DocumentEditor extends AbstractPropertyEditor
      * Construct a new <code>DocumentEditor</code>.
      *
      * @param property the property being edited
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public DocumentEditor(Property property) {
         super(property);
 
-        docType = LabelFactory.create();
-        Button upload = ButtonFactory.create("upload", new ActionListener() {
+        selector = new BasicSelector<Document>();
+        selector.getSelect().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                onUpload();
+                onSelect();
             }
         });
-        focusGroup = new FocusGroup("DocumentEditor");
-        focusGroup.add(upload);
-        component = RowFactory.create("CellSpacing", upload, docType);
-
         IMObjectReference original = (IMObjectReference) property.getValue();
+        if (original != null) {
+            initSelector(original);
+        }
         refMgr = new DocReferenceMgr(original);
     }
 
@@ -114,17 +105,16 @@ public class DocumentEditor extends AbstractPropertyEditor
      * @return the edit component
      */
     public Component getComponent() {
-        return component;
+        return selector.getComponent();
     }
 
     /**
      * Returns the focus group.
      *
-     * @return the focus group, or <code>null</code> if the editor hasn't been
-     *         rendered
+     * @return the focus group
      */
     public FocusGroup getFocusGroup() {
-        return focusGroup;
+        return selector.getFocusGroup();
     }
 
     /**
@@ -182,11 +172,10 @@ public class DocumentEditor extends AbstractPropertyEditor
         return result;
     }
 
-
     /**
-     * Invoked when the upload button is pressed.
+     * Invoked when the select button is pressed.
      */
-    private void onUpload() {
+    private void onSelect() {
         UploadListener listener = new UploadListener() {
             public void fileUpload(UploadEvent event) {
                 String fileName = event.getFileName();
@@ -223,8 +212,7 @@ public class DocumentEditor extends AbstractPropertyEditor
             Document doc = handler.create(fileName, stream, contentType, size);
             service.save(doc);
             replaceDocReference(doc);
-            String displayName = DescriptorHelper.getDisplayName(doc);
-            docType.setText(displayName);
+            selector.setObject(doc);
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
@@ -240,6 +228,26 @@ public class DocumentEditor extends AbstractPropertyEditor
         IMObjectReference ref = document.getObjectReference();
         getProperty().setValue(ref);
         refMgr.add(ref);
+    }
+
+    /**
+     * Initialise the selector, without loading the document content.
+     *
+     * @param reference the document reference
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private void initSelector(IMObjectReference reference) {
+        ArchetypeQuery query = new ArchetypeQuery(
+                new ObjectRefConstraint("doc", reference));
+        query.add(new NodeSelectConstraint("doc.name"));
+        query.add(new NodeSelectConstraint("doc.description"));
+        Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
+        if (iter.hasNext()) {
+            ObjectSet set = iter.next();
+            String name = (String) set.get("doc.name");
+            String description = (String) set.get("doc.description");
+            selector.setObject(name, description, true);
+        }
     }
 
 }

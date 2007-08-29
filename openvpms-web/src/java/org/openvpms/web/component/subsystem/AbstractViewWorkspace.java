@@ -38,6 +38,7 @@ import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.im.select.BasicSelector;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -92,7 +93,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
                                  ShortNames shortNames) {
         super(subsystemId, workspaceId);
         this.shortNames = shortNames;
-        selector = new Selector<T>();
+        selector = new BasicSelector<T>();
 
         String id = getSubsystemId() + "." + getWorkspaceId();
         type = Messages.get(id + ".type");
@@ -246,8 +247,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      */
     protected void onSelect() {
         try {
-            final Browser<T> browser = createBrowser(
-            );
+            final Browser<T> browser = createBrowser();
 
             String title = Messages.get("imobject.select.title", type);
             final BrowserDialog<T> popup = new BrowserDialog<T>(

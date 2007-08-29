@@ -27,7 +27,7 @@ import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.resource.util.Messages;
 
@@ -43,9 +43,9 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
     /**
      * Customer Document shortnames supported by the workspace.
      */
-    private static final String[] SHORT_NAMES = {"act.customerDocumentForm",
-                                                 "act.customerDocumentLetter",
-                                                 "act.customerDocumentAttachment"};
+    private static final String[] SHORT_NAMES = {
+            "act.customerDocumentForm", "act.customerDocumentLetter",
+            "act.customerDocumentAttachment"};
 
 
     /**
@@ -85,7 +85,7 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
      * @return a new table model.
      */
     protected IMObjectTableModel<Act> createTableModel() {
-        return new ActAmountTableModel<Act>(true, false);
+        return IMObjectTableModelFactory.create(SHORT_NAMES, null);
     }
 
 }

@@ -46,7 +46,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class Selector<T extends IMObject> {
+public abstract class Selector<T extends IMObject> {
 
     /**
      * Determines the layout of the 'select' button.
@@ -107,7 +107,7 @@ public class Selector<T extends IMObject> {
 
 
     /**
-     * Construct a new <code>Selector</code>.
+     * Construct a new <tt>Selector</tt>.
      */
     public Selector() {
         this(ButtonStyle.LEFT, false);
@@ -184,7 +184,8 @@ public class Selector<T extends IMObject> {
     /**
      * Returns the editable text field.
      *
-     * @return the editable text field. Null if this is not an editable selector
+     * @return the editable text field, or <tt>null</tt> if this is not an
+     *         editable selector
      */
     public TextField getText() {
         getObjectComponent();
@@ -194,32 +195,15 @@ public class Selector<T extends IMObject> {
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     public void setObject(T object) {
-        String text = null;
-        String deactivated = null;
         if (object != null) {
-            if (format == Format.NAME) {
-                text = Messages.get("imobject.name", object.getName());
-            } else if (format == Format.DESCRIPTION) {
-                text = Messages.get("imobject.description",
-                                    object.getDescription());
-            } else if (format == Format.SUMMARY) {
-                text = Messages.get("imobject.summary", object.getName(),
-                                    object.getDescription());
-            }
-
-            if (!object.isActive()) {
-                deactivated = Messages.get("imobject.deactivated");
-            }
+            setObject(object.getName(), object.getDescription(),
+                      object.isActive());
+        } else {
+            setObject(null, null, true);
         }
-        component.removeAll();
-        Component layout = doLayout(text, deactivated);
-        if (listener != null) {
-            component.add(listener);
-        }
-        component.add(layout);
     }
 
     /**
@@ -229,6 +213,37 @@ public class Selector<T extends IMObject> {
      */
     public void setFormat(Format format) {
         this.format = format;
+    }
+
+    /**
+     * Sets the current object details.
+     *
+     * @param name        the object name. May be <tt>null</tt>
+     * @param description the object description. May be <tt>null</tt>
+     * @param active      determines if the object is active
+     */
+    protected void setObject(String name, String description, boolean active) {
+        String text = null;
+        String deactivated = null;
+        if (name != null || description != null) {
+            if (format == Format.NAME) {
+                text = Messages.get("imobject.name", name);
+            } else if (format == Format.DESCRIPTION) {
+                text = Messages.get("imobject.description", description);
+            } else if (format == Format.SUMMARY) {
+                text = Messages.get("imobject.summary", name, description);
+            }
+
+            if (!active) {
+                deactivated = Messages.get("imobject.deactivated");
+            }
+        }
+        component.removeAll();
+        Component layout = doLayout(text, deactivated);
+        if (listener != null) {
+            component.add(listener);
+        }
+        component.add(layout);
     }
 
     /**
