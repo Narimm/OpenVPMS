@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -66,6 +65,39 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         deactivateOwnerRelationship(patient2);
         assertNull(rules.getOwner(patient2));
         assertNull(rules.getOwnerReference(patient2));
+    }
+
+    /**
+     * Tests the {@link PatientRules#getOwner(Act)} method.
+     */
+    public void testGetOwnerFromAct() {
+        Party patient = TestHelper.createPatient();
+        Party customer1 = TestHelper.createCustomer();
+        Party customer2 = TestHelper.createCustomer();
+
+
+        checkOwner(patient, "2006-12-10", null); // no owner
+
+        EntityRelationship r1 = rules.addPatientOwnerRelationship(customer1,
+                                                                  patient);
+        EntityRelationship r2 = rules.addPatientOwnerRelationship(customer2,
+                                                                  patient);
+
+        r1.setActiveStartTime(getDate("2007-01-01"));
+        r1.setActiveEndTime(getDate("2007-01-31"));
+        r2.setActiveStartTime(getDate("2007-02-02"));
+        r2.setActiveEndTime(null);
+
+        save(patient);
+        save(customer1);
+        save(customer2);
+
+        checkOwner(patient, "2006-12-10", customer1); // customer1 closest
+        checkOwner(patient, "2007-01-01", customer1); // exact match
+        checkOwner(patient, "2007-01-31", customer1); // exact match
+        checkOwner(patient, "2007-02-01", customer2); // customer2 closest
+        checkOwner(patient, "2007-02-02", customer2); // exact match
+        checkOwner(patient, "2008-01-01", customer2); // unbounded end time
     }
 
     /**
@@ -119,11 +151,11 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         Party patient = TestHelper.createPatient();
         assertNull(rules.getPatientWeight(patient));
 
-        Date date1 = java.sql.Date.valueOf("2006-12-22");
+        Date date1 = getDate("2006-12-22");
         createWeight(date1, patient, new BigDecimal("5.0"), "KILOGRAMS");
         assertEquals("5 Kilograms", rules.getPatientWeight(patient));
 
-        Date date2 = java.sql.Date.valueOf("2007-2-25");
+        Date date2 = getDate("2007-2-25");
         createWeight(date2, patient, new BigDecimal("13"), "POUNDS");
         assertEquals("13 Pounds", rules.getPatientWeight(patient));
     }
@@ -177,17 +209,30 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Checks the ownership of a patient for a given date.
+     *
+     * @param patient  the patient
+     * @param date     the date
+     * @param expected thhe expected owner
+     */
+    private void checkOwner(Party patient, String date, Party expected) {
+        Act act = new Act();
+        act.setActivityStartTime(getDate(date));
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+        assertEquals(expected, rules.getOwner(act));
+    }
+
+    /**
      * Marks the patient-owner relationship inactive.
      *
      * @param patient the patient
      */
     private void deactivateOwnerRelationship(Party patient) {
+        EntityBean bean = new EntityBean(patient);
         for (EntityRelationship relationship
-                : patient.getEntityRelationships()) {
-            if (TypeHelper.isA(relationship,
-                               "entityRelationship.patientOwner")) {
-                relationship.setActive(false);
-            }
+                : bean.getRelationships(PatientRules.PATIENT_OWNER)) {
+            relationship.setActive(false);
         }
     }
 
@@ -208,6 +253,15 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         bean.setValue("weight", weight);
         bean.setValue("units", units);
         save(act);
+    }
+
+    /**
+     * Helper to convert a string to a date.
+     *
+     * @param value the date string
+     */
+    private Date getDate(String value) {
+        return java.sql.Date.valueOf(value);
     }
 
 }
