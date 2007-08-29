@@ -131,6 +131,54 @@ public class EntityBeanTestCase
     }
 
     /**
+     * Tests the {@link EntityBean#getSourceEntity(String)},
+     * {@link EntityBean#getSourceEntity(String, boolean)},
+     * {@link EntityBean#getSourceEntity(String, Date)},
+     * {@link EntityBean#getSourceEntity(String, Date, boolean)},
+     * {@link EntityBean#getTargetEntity(String)},
+     * {@link EntityBean#getTargetEntity(String, boolean)},
+     * {@link EntityBean#getTargetEntity(String, Date)}
+     * and {@link EntityBean#getTargetEntity(String, Date, boolean)} methods
+     * for active/inactive relationships and entities.
+     */
+    public void testGetEntityWithActive() {
+        EntityBean petBean = createPet();
+        Entity pet = petBean.getEntity();
+        EntityBean personBean = createPerson();
+        Entity person = personBean.getEntity();
+
+        // add a relationship to the person and pet, and set inactive
+        EntityRelationship r = personBean.addRelationship(OWNER, pet);
+        pet.addEntityRelationship(r);
+        r.setActive(false);
+
+        assertNull(personBean.getTargetEntity(OWNER));
+        assertNull(personBean.getTargetEntity(OWNER, new Date()));
+        assertNull(petBean.getSourceEntity(OWNER));
+        assertNull(petBean.getSourceEntity(OWNER, new Date()));
+        assertEquals(pet, personBean.getTargetEntity(OWNER, false));
+        assertEquals(pet, personBean.getTargetEntity(OWNER, new Date(), false));
+        assertEquals(person, petBean.getSourceEntity(OWNER, false));
+        assertEquals(person, petBean.getSourceEntity(OWNER, new Date(), false));
+
+        // re-activate the relationship, but deactivate the entities
+        r.setActive(true);
+        pet.setActive(false);
+        person.setActive(false);
+        petBean.save();
+        personBean.save();
+
+        assertNull(personBean.getTargetEntity(OWNER));
+        assertNull(personBean.getTargetEntity(OWNER, new Date()));
+        assertNull(petBean.getSourceEntity(OWNER));
+        assertNull(petBean.getSourceEntity(OWNER, new Date()));
+        assertEquals(pet, personBean.getTargetEntity(OWNER, false));
+        assertEquals(pet, personBean.getTargetEntity(OWNER, new Date(), false));
+        assertEquals(person, petBean.getSourceEntity(OWNER, false));
+        assertEquals(person, petBean.getSourceEntity(OWNER, new Date(), false));
+    }
+
+    /**
      * Tests the {@link EntityBean#getNodeSourceEntity(String)}
      * and {@link EntityBean#getNodeTargetEntity(String)} methods.
      */
@@ -200,6 +248,50 @@ public class EntityBeanTestCase
         r.setActiveEndTime(end);
         assertNull(person.getNodeTargetEntity("patients", later));
         assertNull(pet.getNodeSourceEntity("relationships", later));
+    }
+
+    /**
+     * Tests the {@link EntityBean#getNodeSourceEntity(String, Date)},
+     * {@link EntityBean#getNodeSourceEntity(String, Date, boolean)},
+     * {@link EntityBean#getNodeTargetEntity(String, Date)}
+     * and {@link EntityBean#getNodeSourceEntity(String, Date, boolean)} methods
+     * for active/inactive relationships and entities.
+     */
+    public void testGetNodeEntityByTimeAndActive() {
+        EntityBean petBean = createPet();
+        Entity pet = petBean.getEntity();
+        EntityBean personBean = createPerson();
+        Entity person = personBean.getEntity();
+
+        // add a relationship to the person and pet, and set inactive
+        EntityRelationship r = personBean.addRelationship(OWNER, pet);
+        pet.addEntityRelationship(r);
+        r.setActive(false);
+
+        assertNull(personBean.getNodeTargetEntity("patients", new Date()));
+        assertNull(petBean.getNodeSourceEntity("relationships", new Date()));
+        assertEquals(pet,
+                     personBean.getNodeTargetEntity("patients", new Date(),
+                                                    false));
+        assertEquals(person,
+                     petBean.getNodeSourceEntity("relationships", new Date(),
+                                                 false));
+
+        // re-activate the relationship, but deactivate the entities
+        r.setActive(true);
+        pet.setActive(false);
+        person.setActive(false);
+        petBean.save();
+        personBean.save();
+
+        assertNull(personBean.getNodeTargetEntity("patients", new Date()));
+        assertNull(petBean.getNodeSourceEntity("relationships", new Date()));
+        assertEquals(pet,
+                     personBean.getNodeTargetEntity("patients", new Date(),
+                                                    false));
+        assertEquals(person,
+                     petBean.getNodeSourceEntity("relationships", new Date(),
+                                                 false));
     }
 
     /**
@@ -297,7 +389,7 @@ public class EntityBeanTestCase
 
         // verify the person is returned for a time > the default start time
         List<Entity> people = pet1.getNodeSourceEntities("relationships",
-                                                          new Date());
+                                                         new Date());
         assertEquals(1, people.size());
         assertTrue(people.contains(person.getObject()));
 
@@ -337,6 +429,95 @@ public class EntityBeanTestCase
         assertEquals(0, petRefs.size());
         peopleRefs = pet2.getNodeSourceEntityRefs("relationships", later);
         assertEquals(0, peopleRefs.size());
+    }
+
+    /**
+     * Tests the {@link EntityBean#getNodeSourceEntities(String, Date)},
+     * {@link EntityBean#getNodeSourceEntities(String, Date, boolean)},
+     * {@link EntityBean#getNodeSourceEntityRefs(String, Date)},
+     * {@link EntityBean#getNodeSourceEntityRefs(String, Date, boolean)},
+     * {@link EntityBean#getNodeTargetEntities(String, Date)} and
+     * {@link EntityBean#getNodeTargetEntities(String, Date, boolean)},
+     * {@link EntityBean#getNodeTargetEntityRefs(String, Date)} and
+     * {@link EntityBean#getNodeTargetEntityRefs(String, Date, boolean)} methods
+     * for active/inactive relationships and entities.
+     */
+    public void testGetNodeEntitiesByTimeAndActive() {
+        EntityBean pet1Bean = createPet();
+        EntityBean pet2Bean = createPet();
+        EntityBean personBean = createPerson();
+        Entity pet1 = pet1Bean.getEntity();
+        Entity pet2 = pet2Bean.getEntity();
+        Entity person = personBean.getEntity();
+
+        // add a relationship to the person and pets
+        EntityRelationship r1 = personBean.addRelationship(OWNER, pet1);
+        pet1Bean.getEntity().addEntityRelationship(r1);
+        r1.setActive(false);
+
+        EntityRelationship r2 = personBean.addRelationship(OWNER, pet2);
+        pet2Bean.getEntity().addEntityRelationship(r2);
+        r2.setActive(false);
+
+        Date now = new Date();
+        List<Entity> patients;
+        List<IMObjectReference> patientRefs;
+        List<Entity> relationships;
+        List<IMObjectReference> relationshipRefs;
+
+        patients = personBean.getNodeTargetEntities("patients", now);
+        patientRefs = personBean.getNodeTargetEntityRefs("patients", now);
+        relationships = pet1Bean.getNodeSourceEntities("relationships", now);
+        relationshipRefs = pet1Bean.getNodeSourceEntityRefs("relationships",
+                                                            now);
+        assertTrue(patientRefs.isEmpty());
+        assertTrue(patients.isEmpty());
+        assertTrue(relationships.isEmpty());
+        assertTrue(relationshipRefs.isEmpty());
+
+        patients = personBean.getNodeTargetEntities("patients", now, false);
+        patientRefs = personBean.getNodeTargetEntityRefs("patients", now,
+                                                         false);
+        relationships = pet1Bean.getNodeSourceEntities("relationships", now,
+                                                       false);
+        relationshipRefs = pet1Bean.getNodeSourceEntityRefs("relationships",
+                                                            now, false);
+        assertEquals(2, patients.size());
+        assertEquals(2, patientRefs.size());
+        assertEquals(1, relationships.size());
+        assertEquals(1, relationshipRefs.size());
+
+        // re-activate the relationship, but deactivate the entities
+        r1.setActive(true);
+        r2.setActive(true);
+        pet1.setActive(false);
+        pet2.setActive(false);
+        person.setActive(false);
+        pet1Bean.save();
+        pet2Bean.save();
+        personBean.save();
+
+        patients = personBean.getNodeTargetEntities("patients", now);
+        patientRefs = personBean.getNodeTargetEntityRefs("patients", now);
+        relationships = pet1Bean.getNodeSourceEntities("relationships", now);
+        relationshipRefs = pet1Bean.getNodeSourceEntityRefs("relationships",
+                                                            now);
+        assertTrue(patients.isEmpty());
+        assertEquals(2, patientRefs.size());
+        assertTrue(relationships.isEmpty());
+        assertEquals(1, relationshipRefs.size());
+
+        patients = personBean.getNodeTargetEntities("patients", now, false);
+        patientRefs = personBean.getNodeTargetEntityRefs("patients", now,
+                                                         false);
+        relationships = pet1Bean.getNodeSourceEntities("relationships", now,
+                                                       false);
+        relationshipRefs = pet1Bean.getNodeSourceEntityRefs("relationships",
+                                                            now, false);
+        assertEquals(2, patients.size());
+        assertEquals(2, patientRefs.size());
+        assertEquals(1, relationships.size());
+        assertEquals(1, relationshipRefs.size());
     }
 
     /**
