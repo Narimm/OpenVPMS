@@ -40,6 +40,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.reporting.ReportingException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -133,60 +134,62 @@ class ReminderGenerator extends AbstractBatchProcessor {
      * @param to        only process reminder if its next due date &lt;= to
      * @param context
      * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReportingException         for any configuration error
      * @throws ReminderProcessorException for any error
      */
     public ReminderGenerator(Iterator<Act> reminders, Date from, Date to,
                              Context context) {
         Party practice = context.getPractice();
         if (practice == null) {
-            throw new ReminderProcessorException(
-                    ReminderProcessorException.ErrorCode.InvalidConfiguration,
-                    "Context has no practice");
+            throw new ReportingException(
+                    ReportingException.ErrorCode.NoPractice);
         }
         ReminderRules rules = new ReminderRules();
         Contact email = rules.getEmailContact(practice.getContacts());
         if (email == null) {
-            throw new ReminderProcessorException(
-                    ReminderProcessorException.ErrorCode.InvalidConfiguration,
-                    "Practice " + practice.getName()
-                            + " has no email contact for reminders");
+            throw new ReportingException(
+                    ReportingException.ErrorCode.NoReminderContact,
+                    practice.getName());
         }
         IMObjectBean bean = new IMObjectBean(email);
         String address = bean.getString("emailAddress");
         if (StringUtils.isEmpty(address)) {
-            throw new ReminderProcessorException(
-                    ReminderProcessorException.ErrorCode.InvalidConfiguration,
-                    "Practice " + practice.getName()
-                            + " email contact address is empty");
+            throw new ReportingException(
+                    ReportingException.ErrorCode.InvalidEmailAddress,
+                    address, practice.getName());
         }
 
         ReminderProcessor processor = new ReminderProcessor(from, to);
 
         ReminderCollector cancelCollector = new ReminderCollector();
-        ReminderCollector phoneCollector = new ReminderCollector();
+        ReminderCollector listCollector = new ReminderCollector();
         ReminderCollector emailCollector = new ReminderCollector();
         ReminderCollector printCollector = new ReminderCollector();
 
         processor.addListener(ReminderEvent.Action.CANCEL, cancelCollector);
         processor.addListener(ReminderEvent.Action.EMAIL, emailCollector);
-        processor.addListener(ReminderEvent.Action.PHONE, phoneCollector);
         processor.addListener(ReminderEvent.Action.PRINT, printCollector);
+
+        processor.addListener(ReminderEvent.Action.PHONE, listCollector);
+        processor.addListener(ReminderEvent.Action.LIST, listCollector);
+        // phone and list reminders get sent to the same report
+
         while (reminders.hasNext()) {
             processor.process(reminders.next());
         }
 
         List<ReminderEvent> cancelReminders = cancelCollector.getReminders();
         List<ReminderEvent> emailReminders = emailCollector.getReminders();
-        List<ReminderEvent> phoneReminders = phoneCollector.getReminders();
+        List<ReminderEvent> listReminders = listCollector.getReminders();
         List<ReminderEvent> printReminders = printCollector.getReminders();
 
         if (!cancelReminders.isEmpty()) {
             processors.put(new ReminderCancelProcessor(cancelReminders),
                            cancelReminders);
         }
-        if (!phoneReminders.isEmpty()) {
-            processors.put(new ReminderPhoneProcessor(phoneReminders),
-                           phoneReminders);
+        if (!listReminders.isEmpty()) {
+            processors.put(new ReminderListProcessor(listReminders),
+                           listReminders);
         }
 
         if (!printReminders.isEmpty()) {
@@ -220,13 +223,13 @@ class ReminderGenerator extends AbstractBatchProcessor {
                         onError(exception);
                     }
                 });
-
+                processor.process();
             }
         }
     }
 
     /**
-     *
+     * Confirms if reminders should be updated.
      */
     private void confirmUpdate() {
         final ConfirmationDialog dialog = new ConfirmationDialog(
@@ -367,7 +370,7 @@ class ReminderGenerator extends AbstractBatchProcessor {
                 title.setText(processor.getTitle());
                 grid.add(title);
                 grid.add(processor.getComponent());
-                if (processor instanceof ReminderPhoneProcessor
+                if (processor instanceof ReminderListProcessor
                         || processor instanceof ReminderPrintProcessor) {
                     Button button = addRestartButton(processor, "reprint");
                     grid.add(button);
@@ -498,6 +501,7 @@ class ReminderGenerator extends AbstractBatchProcessor {
          */
         private void restart(BatchProcessorComponent processor) {
             enableButtons(false);
+            processor.restart();
             workflow = new WorkflowImpl();
             workflow.addTask(new BatchProcessorTask(processor));
             workflow.addTaskListener(new TaskListener() {

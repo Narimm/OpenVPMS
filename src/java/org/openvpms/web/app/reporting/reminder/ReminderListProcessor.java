@@ -38,17 +38,18 @@ import java.util.List;
 
 
 /**
- * Processor for {@link ReminderEvent.Action.PHONE} events.
+ * Processor for {@link ReminderEvent.Action.PHONE} and
+ * {@link ReminderEvent.Action.LIST} events.
  * Prints all of the reminders to a report.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ReminderPhoneProcessor extends AbstractBatchProcessor
+class ReminderListProcessor extends AbstractBatchProcessor
         implements BatchProcessorComponent {
 
     /**
-     * Reminders that need to be listed to phone.
+     * Reminders that need to be listed.
      */
     private final List<Act> reminders = new ArrayList<Act>();
 
@@ -56,11 +57,11 @@ class ReminderPhoneProcessor extends AbstractBatchProcessor
 
 
     /**
-     * Creates a new <tt>ReminderPhoneProcessor</tt>.
+     * Creates a new <tt>ReminderListProcessor</tt>.
      *
      * @param reminders the reminders
      */
-    public ReminderPhoneProcessor(List<ReminderEvent> reminders) {
+    public ReminderListProcessor(List<ReminderEvent> reminders) {
         for (ReminderEvent reminder : reminders) {
             this.reminders.add(reminder.getReminder());
         }

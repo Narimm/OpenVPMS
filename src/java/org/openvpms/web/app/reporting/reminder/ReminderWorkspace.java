@@ -93,9 +93,9 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
                 onPrint();
             }
         });
-        buttons.add("printAll", new ActionListener() {
+        buttons.add("sendAll", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                onPrintAll();
+                onSendAll();
             }
         });
         buttons.add("report", new ActionListener() {
@@ -125,10 +125,10 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
     }
 
     /**
-     * Invoked when the 'Print All' button is pressed. Runs the reminder
+     * Invoked when the 'Send All' button is pressed. Runs the reminder
      * generator for all reminders.
      */
-    private void onPrintAll() {
+    private void onSendAll() {
         String title = Messages.get("reporting.reminder.run.title");
         String message = Messages.get("reporting.reminder.run.message");
         final ConfirmationDialog dialog
