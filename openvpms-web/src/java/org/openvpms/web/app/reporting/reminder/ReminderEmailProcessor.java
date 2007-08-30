@@ -23,13 +23,15 @@ import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.FailedToProcessReminder;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.report.DocFormats;
+import org.openvpms.web.app.reporting.ReportingException;
+import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
+import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.TemplateMissingEmailText;
 import org.openvpms.web.component.im.doc.ReportGenerator;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.resource.util.Messages;
@@ -96,6 +98,7 @@ class ReminderEmailProcessor extends ProgressBarProcessor<ReminderEvent> {
      * @param event the event
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the event cannot be processed
+     * @throws ReportingException         for any other error
      */
     protected void process(ReminderEvent event) {
         try {
@@ -116,8 +119,8 @@ class ReminderEmailProcessor extends ProgressBarProcessor<ReminderEvent> {
             }
             String body = templateBean.getString("emailText");
             if (StringUtils.isEmpty(body)) {
-                throw new ReminderProcessorException(
-                        FailedToProcessReminder, "Template has no email text");
+                throw new ReportingException(TemplateMissingEmailText,
+                                             documentTemplate.getName());
             }
             helper.setText(body);
             ReportGenerator generator = new ReportGenerator(documentTemplate);
@@ -142,9 +145,11 @@ class ReminderEmailProcessor extends ProgressBarProcessor<ReminderEvent> {
             throw exception;
         } catch (ReminderProcessorException exception) {
             throw exception;
+        } catch (ReportingException exception) {
+            throw exception;
         } catch (Throwable exception) {
-            throw new ReminderProcessorException(FailedToProcessReminder,
-                                                 exception.getMessage());
+            throw new ReportingException(FailedToProcessReminder,
+                                         exception, exception.getMessage());
         }
     }
 }

@@ -43,6 +43,13 @@ import java.util.List;
 class ReminderPrintProcessor extends ProgressBarProcessor<ReminderEvent> {
 
     /**
+     * The name of the selected printer. Once a printer has been selected,
+     * printing will occur in the background.
+     */
+    private String printerName;
+
+
+    /**
      * Constructs a new <tt>ReminderPrintProcessor</tt>.
      *
      * @param reminders the reminders to print
@@ -65,11 +72,15 @@ class ReminderPrintProcessor extends ProgressBarProcessor<ReminderEvent> {
                 event.getReminder(), documentTemplate);
         final InteractiveIMPrinter<Act> iPrinter
                 = new InteractiveIMPrinter<Act>(printer);
+        if (printerName != null) {
+            iPrinter.setInteractive(false);
+        }
         iPrinter.setListener(new PrinterListener() {
             public void printed(String printer) {
                 try {
                     setSuspend(false);
                     processCompleted(event);
+                    printerName = printer;
                 } catch (OpenVPMSException exception) {
                     notifyError(exception);
                 }
@@ -87,7 +98,10 @@ class ReminderPrintProcessor extends ProgressBarProcessor<ReminderEvent> {
             }
         });
 
-        iPrinter.print();
+        if (iPrinter.getInteractive()) {
+            setSuspend(true); // suspend generation while printing
+        }
+        iPrinter.print(printerName);
     }
 
 }
