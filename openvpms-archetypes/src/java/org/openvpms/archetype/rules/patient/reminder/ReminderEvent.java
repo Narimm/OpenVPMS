@@ -32,7 +32,12 @@ import org.openvpms.component.business.domain.im.party.Contact;
 public class ReminderEvent {
 
     public enum Action {
-        SKIP, CANCEL, EMAIL, PHONE, PRINT
+        SKIP,        // indicates reminder should be skipped as it is not due
+        CANCEL,      // indicates reminder should be cancelled
+        EMAIL,       // indicates reminder should be emailed
+        PHONE,       // indicates reminder should be phoned
+        PRINT,       // indicates reminder should be printed
+        LIST         // indicates reminder has no or unrecognised contact
     }
 
     /**
