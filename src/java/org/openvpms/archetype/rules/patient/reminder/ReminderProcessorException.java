@@ -35,10 +35,7 @@ public class ReminderProcessorException extends OpenVPMSException {
      */
     public enum ErrorCode {
         NoReminderType,
-        NoPatient,
-        NoContact,
-        InvalidConfiguration,
-        FailedToProcessReminder
+        NoPatient
     }
 
     /**

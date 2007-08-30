@@ -21,7 +21,8 @@ package org.openvpms.archetype.rules.patient.reminder;
 import org.openvpms.archetype.component.processor.AbstractActionProcessor;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderEvent.Action;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.*;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoPatient;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -180,25 +181,17 @@ public class ReminderProcessor
             }
         }
 
+        Contact contact = null;
         Party owner = patientRules.getOwner(patient);
-        if (owner == null) {
-            throw new ReminderProcessorException(NoContact, patient.getName(),
-                                                 patient.getDescription());
+        if (owner != null) {
+            if (documentTemplate == null) {
+                // no document template, so can't send email or print. Use the
+                // customer's phone contact.
+                contact = rules.getPhoneContact(owner.getContacts());
+            } else {
+                contact = rules.getContact(owner.getContacts());
+            }
         }
-
-        Contact contact;
-        if (documentTemplate == null) {
-            // no document template, so can't send email or print. Use the
-            // customer's phone contact.
-            contact = rules.getPhoneContact(owner.getContacts());
-        } else {
-            contact = rules.getContact(owner.getContacts());
-        }
-        if (contact == null) {
-            throw new ReminderProcessorException(NoContact, patient.getName(),
-                                                 patient.getDescription());
-        }
-
         if (TypeHelper.isA(contact, "contact.location")) {
             print(reminder, reminderType, contact, documentTemplate);
         } else if (TypeHelper.isA(contact, "contact.phoneNumber")) {
@@ -206,9 +199,8 @@ public class ReminderProcessor
         } else if (TypeHelper.isA(contact, "contact.email")) {
             email(reminder, reminderType, contact, documentTemplate);
         } else {
-            // shouldn't occur
-            throw new ReminderProcessorException(NoContact, patient.getName(),
-                                                 patient.getDescription());
+            // no/unrecognised contact
+            list(reminder, reminderType, contact, documentTemplate);
         }
     }
 
@@ -289,6 +281,27 @@ public class ReminderProcessor
     protected void print(Act reminder, Entity reminderType, Contact contact,
                          Entity documentTemplate) {
         ReminderEvent event = new ReminderEvent(Action.PRINT, reminder,
+                                                reminderType, contact,
+                                                documentTemplate);
+        notifyListeners(event.getAction(), event);
+    }
+
+    /**
+     * Notifies listeners to list a reminder. This is for reminders that
+     * have no contact, or a contact that is not one of
+     * <em>contact.location<em>, <em>contact.phoneNumber</em>,
+     * or <em>contact.email</em>
+     *
+     * @param reminder         the reminder
+     * @param reminderType     the reminder type
+     * @param contact          the reminder contact. May be <tt>null</tt>
+     * @param documentTemplate the document template
+     * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReminderProcessorException if the reminder cannot be processed
+     */
+    protected void list(Act reminder, Entity reminderType, Contact contact,
+                        Entity documentTemplate) {
+        ReminderEvent event = new ReminderEvent(Action.LIST, reminder,
                                                 reminderType, contact,
                                                 documentTemplate);
         notifyListeners(event.getAction(), event);
