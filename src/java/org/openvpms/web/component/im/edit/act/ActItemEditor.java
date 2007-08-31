@@ -39,8 +39,8 @@ import java.math.BigDecimal;
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerEstimationItem</em>, <em>act.customerAccountInvoiceItem</em>,
- * or <em>act.supplierOrderItem</em>.
+ * <em>act.customerAccount*Item</em>, <em>act.customerEstimationItem</em>,
+ * <em><em>act.supplierAccount*Item</em> or <em>act.supplierOrderItem</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -62,6 +62,11 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     public ActItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
+
+        if (act.isNew()) {
+            // default the act start time to that of the parent
+            act.setActivityStartTime(parent.getActivityStartTime());
+        }
     }
 
     /**
