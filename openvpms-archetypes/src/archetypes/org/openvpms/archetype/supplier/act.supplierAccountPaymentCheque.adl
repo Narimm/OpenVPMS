@@ -22,6 +22,9 @@
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
               derivedValue="'Cheque Payment'"/>
+        <node name="startTime" displayName="Date" path="/activityStartTime"
+              type="java.util.Date" hidden="true" minCardinality="0"
+              defaultValue="java.util.Date.new()"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(' Amount : ', /total,' Details : ',/details/drawer,
