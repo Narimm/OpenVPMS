@@ -226,7 +226,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         FinancialAct closing = (FinancialAct) acts.get(2);
         checkAct(closing, CustomerAccountActTypes.CLOSING_BALANCE,
                  amount.add(feeAmount));
-        assertFalse(closing.isCredit());
+        assertTrue(closing.isCredit());
     }
 
     /**
@@ -275,7 +275,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         FinancialAct closing = (FinancialAct) acts.get(2);
         checkAct(closing, CustomerAccountActTypes.CLOSING_BALANCE,
                  BigDecimal.ZERO);
-        assertFalse(closing.isCredit());
+        assertTrue(closing.isCredit());
     }
 
 
@@ -307,7 +307,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         checkAct(acts.get(0), payment, FinancialActStatus.POSTED);
         FinancialAct closing = (FinancialAct) acts.get(1);
         checkAct(closing, CustomerAccountActTypes.CLOSING_BALANCE, amount);
-        assertTrue(closing.isCredit());
+        assertFalse(closing.isCredit());
 
         Date nextStatementDate = getDate("2007-03-01");
         acts = getActs(customer, nextStatementDate);
