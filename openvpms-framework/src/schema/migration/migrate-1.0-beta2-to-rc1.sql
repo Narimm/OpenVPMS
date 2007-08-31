@@ -398,3 +398,15 @@ alter table security_roles
     drop index security_role_id_idx,
     add unique key (linkId);
 
+# update child act start times, as per OVPMS-673
+
+update acts child,
+      acts parent,
+      act_relationships r
+set child.activity_start_time = parent.activity_start_time
+where parent.linkId = r.source_linkId
+      and child.linkId = r.target_linkId
+      and child.activity_start_time is null
+      and ((parent.arch_short_name like "act.%Account%" and child.arch_short_name like "act.%Account%")
+           or (parent.arch_short_name = "act.customerEstimation" and child.arch_short_name = "act.customerEstimationItem")
+           or (parent.arch_short_name = "act.supplierOrder" and child.arch_short_name = "act.supplierOrderItem"))
