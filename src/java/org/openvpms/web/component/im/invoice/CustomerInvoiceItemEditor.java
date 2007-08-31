@@ -52,6 +52,7 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -352,11 +353,14 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                     quantity = BigDecimal.ZERO;
                 }
                 DiscountRules rules = new DiscountRules();
-                Act parent = (Act) getParent();
+                Date startTime = act.getActivityStartTime();
+                if (startTime == null) {
+                    Act parent = (Act) getParent();
+                    startTime = parent.getActivityStartTime();
+                }
                 BigDecimal amount = rules.calculateDiscountAmount(
-                        parent.getActivityStartTime(),
-                        customer, patient, product, fixedPrice, unitPrice,
-                        quantity);
+                        startTime, customer, patient, product, fixedPrice,
+                        unitPrice, quantity);
                 // If discount amount calculates to zero don't update any
                 // existing value as may have been manually modified.
                 if (amount.compareTo(BigDecimal.ZERO) != 0) {
