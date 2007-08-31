@@ -30,7 +30,7 @@ import java.util.Iterator;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class IteratingBatchProcessor<Type> 
+public abstract class IteratingBatchProcessor<Type>
         extends AbstractBatchProcessor {
 
     /**
@@ -76,6 +76,7 @@ public abstract class IteratingBatchProcessor<Type>
      * Processes an object.
      *
      * @param object the object to process
+     * @throws OpenVPMSException if the object cannot be processed
      */
     protected abstract void process(Type object);
 
