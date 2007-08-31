@@ -40,6 +40,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -159,11 +160,14 @@ public class EstimationItemEditor extends ActItemEditor {
                 BigDecimal quantity = bean.getBigDecimal("highQty",
                                                          BigDecimal.ZERO);
                 DiscountRules rules = new DiscountRules();
-                Act parent = (Act) getParent();
+                Date startTime = act.getActivityStartTime();
+                if (startTime == null) {
+                    Act parent = (Act) getParent();
+                    startTime = parent.getActivityStartTime();
+                }
                 BigDecimal amount = rules.calculateDiscountAmount(
-                        parent.getActivityStartTime(),
-                        customer, patient, product, fixedPrice, unitPrice,
-                        quantity);
+                        startTime, customer, patient, product, fixedPrice,
+                        unitPrice, quantity);
                 Property discount = getProperty("discount");
                 discount.setValue(amount);
             }
