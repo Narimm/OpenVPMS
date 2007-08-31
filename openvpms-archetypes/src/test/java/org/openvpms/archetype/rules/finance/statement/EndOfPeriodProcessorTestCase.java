@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -91,7 +92,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         acts = getActs(customer, statementDate);
         assertEquals(2, acts.size());
         checkAct(acts.get(0), invoice1, FinancialActStatus.POSTED);
-        checkAct(acts.get(1), "act.customerAccountClosingBalance",
+        checkAct(acts.get(1), CustomerAccountActTypes.CLOSING_BALANCE,
                  new BigDecimal("100"));
 
         // verify more acts aren't generated for the same statement date
@@ -113,7 +114,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         acts = getActs(customer, statementDate);
         assertEquals(2, acts.size());
-        checkAct(acts.get(0), "act.customerAccountOpeningBalance",
+        checkAct(acts.get(0), CustomerAccountActTypes.OPENING_BALANCE,
                  new BigDecimal("100"));
         checkAct(acts.get(1), invoice2, FinancialActStatus.POSTED);
     }
@@ -154,7 +155,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertEquals(3, acts.size());
         checkAct(acts, invoice1, FinancialActStatus.POSTED); // first 2 acts
         checkAct(acts, invoice4, FinancialActStatus.POSTED); // in any order
-        checkAct(acts.get(2), "act.customerAccountClosingBalance",
+        checkAct(acts.get(2), CustomerAccountActTypes.CLOSING_BALANCE,
                  new BigDecimal("200"));
     }
 
@@ -194,7 +195,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         List<Act> acts = getPostedActs(customer, statementDate);
         assertEquals(2, acts.size());
         checkAct(acts.get(0), invoice4, FinancialActStatus.POSTED);
-        checkAct(acts.get(1), "act.customerAccountClosingBalance", amount);
+        checkAct(acts.get(1), CustomerAccountActTypes.CLOSING_BALANCE, amount);
     }
 
     /**
@@ -221,9 +222,11 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertEquals(3, acts.size());
 
         assertEquals(invoice, acts.get(0));
-        checkAct(acts.get(1), "act.customerAccountDebitAdjust", feeAmount);
-        checkAct(acts.get(2), "act.customerAccountClosingBalance",
+        checkAct(acts.get(1), CustomerAccountActTypes.DEBIT_ADJUST, feeAmount);
+        FinancialAct closing = (FinancialAct) acts.get(2);
+        checkAct(closing, CustomerAccountActTypes.CLOSING_BALANCE,
                  amount.add(feeAmount));
+        assertFalse(closing.isCredit());
     }
 
     /**
@@ -269,8 +272,49 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         assertEquals(3, acts.size());
         checkAct(acts.get(0), invoice, FinancialActStatus.POSTED);
         checkAct(acts.get(1), payment, FinancialActStatus.POSTED);
-        checkAct(acts.get(2), "act.customerAccountClosingBalance",
+        FinancialAct closing = (FinancialAct) acts.get(2);
+        checkAct(closing, CustomerAccountActTypes.CLOSING_BALANCE,
                  BigDecimal.ZERO);
+        assertFalse(closing.isCredit());
+    }
+
+
+    /**
+     * Verifies that the credit flag is set true and the total is positive for
+     * <em>act.customerAccountOpeningBalance</em>
+     * and <em>act.customerAccountClosingBalance</em>.
+     */
+    public void testEndOfPeriodForCreditBalance() {
+        Party customer = getCustomer();
+
+        Money amount = new Money(100);
+        FinancialAct payment = createPayment(
+                amount, getDatetime("2007-01-01 11:00:00"));
+        save(payment);
+
+        // should be a negative 100 balance
+        CustomerAccountRules rules = new CustomerAccountRules();
+        checkEquals(amount.negate(), rules.getBalance(customer));
+
+        // now run end-of-period
+        Date statementDate = getDate("2007-02-01");
+
+        EndOfPeriodProcessor processor
+                = new EndOfPeriodProcessor(statementDate, true);
+        processor.process(customer);
+        List<Act> acts = getActs(customer, statementDate);
+        assertEquals(2, acts.size());
+        checkAct(acts.get(0), payment, FinancialActStatus.POSTED);
+        FinancialAct closing = (FinancialAct) acts.get(1);
+        checkAct(closing, CustomerAccountActTypes.CLOSING_BALANCE, amount);
+        assertTrue(closing.isCredit());
+
+        Date nextStatementDate = getDate("2007-03-01");
+        acts = getActs(customer, nextStatementDate);
+        assertEquals(1, acts.size());
+        FinancialAct opening = (FinancialAct) acts.get(0);
+        checkAct(opening, CustomerAccountActTypes.OPENING_BALANCE, amount);
+        assertTrue(opening.isCredit());
     }
 
 }
