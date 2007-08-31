@@ -354,12 +354,10 @@ public class CustomerAccountRules {
     public void createPeriodEnd(Party customer, Date timestamp) {
         BigDecimal total = calculator.getBalance(customer, timestamp);
         BigDecimal overdue = calculator.getOverdueBalance(customer, timestamp);
-        FinancialAct close = createAct("act.customerAccountClosingBalance",
-                                       customer, total);
+        FinancialAct close = createAct(CLOSING_BALANCE, customer, total);
         ActBean bean = new ActBean(close, service);
         bean.setValue("overdueBalance", overdue);
-        FinancialAct open = createAct("act.customerAccountOpeningBalance",
-                                      customer, total);
+        FinancialAct open = createAct(OPENING_BALANCE, customer, total);
         // ensure the acts are ordered correctly, ie. close before open
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(timestamp);
@@ -513,7 +511,8 @@ public class CustomerAccountRules {
     }
 
     /**
-     * Helper to create an act for a customer.
+     * Helper to create an act for a customer. If the total is negative,
+     * the credit flag will be set <tt>true</tt> and the total negated.
      *
      * @param shortName the act short name
      * @param customer  the customer
@@ -527,6 +526,12 @@ public class CustomerAccountRules {
         act.setActivityStartTime(startTime);
         ActBean bean = new ActBean(act, service);
         bean.addParticipation("participation.customer", customer);
+        if (total.signum() == -1) {
+            total = total.negate();
+            act.setCredit(true);
+        } else {
+            act.setCredit(false);
+        }
         act.setTotal(new Money(total));
         return act;
     }
