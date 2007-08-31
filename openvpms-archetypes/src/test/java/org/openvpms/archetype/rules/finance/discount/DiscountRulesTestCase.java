@@ -397,9 +397,8 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         type.setName("DiscountRulesTestCase-entity" + type.hashCode());
         addDiscount(type, discount, null);
         EntityBean typeBean = new EntityBean(type);
-        EntityRelationship r = typeBean.addRelationship(
-                "entityRelationship.productTypeProduct", product);
-        product.addEntityRelationship(r);
+        typeBean.addRelationship("entityRelationship.productTypeProduct",
+                                 product);
         save(type);
         save(product);
         return product;

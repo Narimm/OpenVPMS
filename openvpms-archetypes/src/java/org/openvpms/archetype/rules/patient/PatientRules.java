@@ -133,7 +133,7 @@ public class PatientRules {
                 // to the start time
                 EntityRelationship match = null;
                 List<EntityRelationship> relationships
-                        = patientBean.getRelationships(PATIENT_OWNER);
+                        = patientBean.getRelationships(PATIENT_OWNER, false);
 
                 for (EntityRelationship relationship : relationships) {
                     if (match == null) {
@@ -175,15 +175,8 @@ public class PatientRules {
      * @return a reference to the owner, or <tt>null</tt> if none can be found
      */
     public IMObjectReference getOwnerReference(Party patient) {
-        for (EntityRelationship relationship
-                : patient.getEntityRelationships()) {
-            if (TypeHelper.isA(relationship, PATIENT_OWNER)
-                    && relationship.getSource() != null
-                    && relationship.isActive()) {
-                return relationship.getSource();
-            }
-        }
-        return null;
+        EntityBean bean = new EntityBean(patient, service);
+        return bean.getSourceEntityRef(PATIENT_OWNER);
     }
 
     /**
