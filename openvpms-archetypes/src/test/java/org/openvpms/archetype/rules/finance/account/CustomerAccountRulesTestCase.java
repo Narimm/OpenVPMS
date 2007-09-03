@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_BALANCE_SHORTNAME;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -523,6 +524,35 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkEquals(sixty, payment.getAllocatedAmount());
 
         checkBalance(amount);
+    }
+
+    /**
+     * Verifies that <em>participation.customerAccountBalance</em>
+     * participations are not present when an act has a zero total.
+     */
+    public void testZeroAct() {
+        // save an IN_PROGRESS invoice with a zero total, and verify it
+        // has no balance participation
+        FinancialAct invoice = createChargesInvoice(Money.ZERO);
+        invoice.setStatus(ActStatus.IN_PROGRESS);
+        save(invoice);
+        ActBean bean = new ActBean(invoice);
+        assertNull(bean.getParticipation(ACCOUNT_BALANCE_SHORTNAME));
+
+        // change to a non-zero total and save. Should now have a participation
+        invoice.setTotal(Money.TEN);
+        save(invoice);
+        assertNotNull(bean.getParticipation(ACCOUNT_BALANCE_SHORTNAME));
+
+        // revert to a zero total and save. The participation should be removed
+        invoice.setTotal(Money.ZERO);
+        save(invoice);
+        assertNull(bean.getParticipation(ACCOUNT_BALANCE_SHORTNAME));
+
+        // Post the invoice and verify no participation added
+        invoice.setStatus(ActStatus.POSTED);
+        save(invoice);
+        assertNull(bean.getParticipation(ACCOUNT_BALANCE_SHORTNAME));
     }
 
     /**

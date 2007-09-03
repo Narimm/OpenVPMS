@@ -97,13 +97,13 @@ public class CustomerAccountRules {
      *                                      no customer
      */
     public void addToBalance(FinancialAct act) {
-        String status = act.getStatus();
         ActBean bean = new ActBean(act, service);
-        if (FinancialActStatus.POSTED.equals(status)) {
-            if (!inBalance(act)) {
-                addBalanceParticipation(bean);
+        if (hasBalanceParticipation(bean)) {
+            if (calculator.isAllocated(act)) {
+                // will occur if a non-zero act is changed to a zero act
+                bean.removeParticipation(ACCOUNT_BALANCE_SHORTNAME);
             }
-        } else if (!hasBalanceParticipation(bean)) {
+        } else if (!calculator.isAllocated(act)) {
             addBalanceParticipation(bean);
         }
     }
@@ -141,13 +141,7 @@ public class CustomerAccountRules {
     public boolean inBalance(FinancialAct act) {
         boolean result = hasBalanceParticipation(act);
         if (!result) {
-            Money allocated = act.getAllocatedAmount();
-            Money total = act.getTotal();
-            if (allocated != null && total != null) {
-                if (allocated.compareTo(total) == 0) {
-                    result = true;
-                }
-            }
+            result = calculator.isAllocated(act);
         }
         return result;
     }
@@ -571,8 +565,7 @@ public class CustomerAccountRules {
          * @return the amount yet to be allocated
          */
         public BigDecimal getAllocatable() {
-            return calculator.getAllocatable(
-                    act.getTotal(), act.getAllocatedAmount());
+            return calculator.getAllocatable(act);
         }
 
         /**
@@ -581,7 +574,7 @@ public class CustomerAccountRules {
          * @return <tt>true</tt> if the act has been full allocated
          */
         public boolean isAllocated() {
-            return getAllocatable().compareTo(BigDecimal.ZERO) <= 0;
+            return calculator.isAllocated(act);
         }
 
         /**
