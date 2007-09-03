@@ -325,11 +325,6 @@ public class CustomerBalanceGenerator {
          */
         private int acts;
 
-        /**
-         * Zero helper. Should really be a constant of Money. @todo
-         */
-        private final Money ZERO = new Money(0);
-
 
         /**
          * Constructs a new <tt>Generator</tt> for a customer.
@@ -362,11 +357,11 @@ public class CustomerBalanceGenerator {
             FinancialAct act;
             while ((act = getNext()) != null) {
                 if (act.getAllocatedAmount() == null) {
-                    act.setAllocatedAmount(ZERO);
+                    act.setAllocatedAmount(Money.ZERO);
                     modified(act);
                 }
                 if (act.getTotal() == null) {
-                    act.setTotal(ZERO);
+                    act.setTotal(Money.ZERO);
                     modified(act);
                 }
                 ActBean bean = new ActBean(act, service);
@@ -377,7 +372,7 @@ public class CustomerBalanceGenerator {
                     IMObjectBean relBean = new IMObjectBean(relationship,
                                                             service);
                     if (relBean.getMoney("allocatedAmount") == null) {
-                        relBean.setValue("allocatedAmount", ZERO);
+                        relBean.setValue("allocatedAmount", Money.ZERO);
                         modified(act);
                     }
                 }
@@ -399,13 +394,13 @@ public class CustomerBalanceGenerator {
         private void regenerate() {
             FinancialAct act;
             while ((act = getNext()) != null) {
-                if (act.getAllocatedAmount() == null
-                        || act.getAllocatedAmount().compareTo(ZERO) != 0) {
-                    act.setAllocatedAmount(ZERO);
+                Money allocated = act.getAllocatedAmount();
+                if (allocated == null || allocated.compareTo(Money.ZERO) != 0) {
+                    act.setAllocatedAmount(Money.ZERO);
                     modified(act);
                 }
                 if (act.getTotal() == null) {
-                    act.setTotal(ZERO);
+                    act.setTotal(Money.ZERO);
                     modified(act);
                 }
                 ActBean bean = new ActBean(act, service);

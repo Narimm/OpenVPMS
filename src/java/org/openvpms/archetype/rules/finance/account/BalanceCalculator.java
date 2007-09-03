@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.ActCalculator;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.*;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -152,6 +153,16 @@ class BalanceCalculator {
     }
 
     /**
+     * Returns the amount of an act yet to be allocated.
+     *
+     * @param act the act
+     * @return the amount yet to be allocated
+     */
+    public BigDecimal getAllocatable(FinancialAct act) {
+        return getAllocatable(act.getTotal(), act.getAllocatedAmount());
+    }
+
+    /**
      * Helper to return the amount that may be allocated from a total.
      * If either value is <tt>null</tt> they are treated as being <tt>0.0</tt>.
      *
@@ -167,6 +178,15 @@ class BalanceCalculator {
             allocated = BigDecimal.ZERO;
         }
         return amount.subtract(allocated);
+    }
+
+    /**
+     * Determines if the act has been fully allocated.
+     *
+     * @return <tt>true</tt> if the act has been full allocated
+     */
+    public boolean isAllocated(FinancialAct act) {
+        return getAllocatable(act).compareTo(BigDecimal.ZERO) <= 0;
     }
 
     /**
