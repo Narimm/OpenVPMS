@@ -95,9 +95,9 @@ class PrintDocumentsTask extends AbstractTask {
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
                     String action = dialog.getAction();
-                    if (action.equals(BatchPrintDialog.OK_ID)) {
+                    if (BatchPrintDialog.OK_ID.equals(action)) {
                         print(dialog.getSelected(), context);
-                    } else if (action.equals(BatchPrintDialog.SKIP_ID)) {
+                    } else if (BatchPrintDialog.SKIP_ID.equals(action)) {
                         notifySkipped();
                     } else {
                         notifyCancelled();
