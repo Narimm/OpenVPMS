@@ -56,7 +56,7 @@ public class PaymentItemEditor extends AbstractIMObjectEditor {
     public PaymentItemEditor(FinancialAct act, FinancialAct parent,
                              LayoutContext context) {
         super(act, parent, context);
-        if (act.isNew()) {
+        if (act.isNew() && parent != null) {
             // default the act start time to that of the parent
             act.setActivityStartTime(parent.getActivityStartTime());
         }
