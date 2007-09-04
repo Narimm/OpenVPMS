@@ -409,4 +409,11 @@ where parent.linkId = r.source_linkId
       and child.activity_start_time is null
       and ((parent.arch_short_name like "act.%Account%" and child.arch_short_name like "act.%Account%")
            or (parent.arch_short_name = "act.customerEstimation" and child.arch_short_name = "act.customerEstimationItem")
-           or (parent.arch_short_name = "act.supplierOrder" and child.arch_short_name = "act.supplierOrderItem"))
+           or (parent.arch_short_name = "act.supplierOrder" and child.arch_short_name = "act.supplierOrderItem"));
+
+# add unique constraint on user_name, as per OBF-164
+
+alter table users
+    drop index user_name_idx,
+    add unique key (user_name);
+
