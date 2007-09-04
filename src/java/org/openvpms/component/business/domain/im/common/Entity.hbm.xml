@@ -82,7 +82,7 @@
       table="users">
       <key column="user_id" on-delete="cascade"/>
       <property name="username" access="property" column="user_name"
-           type="string" length="20" index="user_name_idx" not-null="true"/>
+           type="string" length="20" not-null="true" unique="true" />
       <property name="password" access="property" column="password"
            type="string" length="20"/>
       <set name="roles" access="property" table="user_roles"

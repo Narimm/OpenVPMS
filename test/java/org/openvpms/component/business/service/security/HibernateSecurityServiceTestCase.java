@@ -18,20 +18,15 @@
 
 package org.openvpms.component.business.service.security;
 
-// java core
-
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
 
-import java.util.List;
 
 /**
  * Exercises the security test cases using a hibernate user details service
@@ -85,7 +80,7 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
      */
     private User createUser(String name, String password) {
         User user = (User) archetype.create("security.user");
-        user.setUsername(name);
+        user.setUsername(name + System.currentTimeMillis()); // ensure unique
         user.setName(name);
         user.setPassword(password);
 
@@ -113,7 +108,6 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
     @Override
     protected void createSecurityContext(String name, String password,
                                          String ... authorities) {
-        deleteUser(name);
         User user = createUser(name, password);
 
         SecurityRole role = createSecurityRole("role1");
@@ -140,19 +134,4 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
         SecurityContextHolder.getContext().setAuthentication(token);
     }
 
-    /**
-     * Deletes the user with the specified name
-     *
-     * @param name the name of the user to delete
-     */
-    private void deleteUser(String name) {
-        List<IMObject> users = dao.get("security.user", name,
-                                       User.class.getName(), true, 0,
-                                       ArchetypeQuery.ALL_RESULTS).getResults();
-        if (users.size() > 0) {
-            for (IMObject im : users) {
-                dao.delete(im);
-            }
-        }
-    }
 }

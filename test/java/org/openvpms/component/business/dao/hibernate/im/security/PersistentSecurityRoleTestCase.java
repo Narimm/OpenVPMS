@@ -472,7 +472,7 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
     private User createUser(String name, String password) throws Exception {
         User user = new User();
         user.setArchetypeIdAsString("openvpms-security-security.user.1.0");
-        user.setUsername(name);
+        user.setUsername(name + System.currentTimeMillis()); // ensure unique
         user.setName(name);
         user.setPassword(password);
         
