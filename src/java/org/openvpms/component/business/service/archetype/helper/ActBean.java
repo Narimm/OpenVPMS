@@ -103,7 +103,7 @@ public class ActBean extends IMObjectBean {
         }
         r.setSource(act.getObjectReference());
         r.setTarget(target.getObjectReference());
-        act.addSourceActRelationship(r);
+        act.addActRelationship(r);
         return r;
     }
 

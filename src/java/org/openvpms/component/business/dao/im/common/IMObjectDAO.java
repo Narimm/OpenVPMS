@@ -29,42 +29,44 @@ import java.util.Map;
 /**
  * This interface provides data access object (DAO) support for objects of
  * type {@link IMObject}, which is the most generic type of object in the model.
- * This class should be able to save, delete and retrieve any type of object. It
- * will use the ArchetypeId and in particular the entity name to map the request
- * to the appropriate table. To achieve this there needs to be a one-to-one
- * mapping between entity name and the associated table name. (i.e if the
- * entity is address then it will look at the address table etc
- * <p/>
- * TODO Use annotation to derive this information.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public interface IMObjectDAO {
+
     /**
-     * This method can be used to do a insert or an update of the object.
+     * Saves an object.
      *
-     * @param object the imobject to save
-     * @throws IMObjectDAOException a runtime exception if the request cannot complete
+     * @param object the object to save
+     * @throws IMObjectDAOException if the request cannot complete
      */
     void save(IMObject object);
 
     /**
-     * This will save an array of {@link IMObject} instances in a single
-     * transaction. This is an all or nothing proposition.
+     * Saves a collection of objects in a single transaction.
      *
-     * @param objects a collection of objects
-     * @throws IMObjectDAOException a runtime exception if the request cannot complete
+     * @param objects the objects to save
+     * @throws IMObjectDAOException if the request cannot complete
      */
-    void save(Collection objects);
+    void save(Collection<IMObject> objects);
 
     /**
-     * Delete the specified {@link IMObject}
+     * Deletes an {@link IMObject}.
      *
-     * @param object the imobject to delete
-     * @throws IMObjectDAOException a runtime exception if the request cannot complete
+     * @param object the object to delete
+     * @throws IMObjectDAOException if the request cannot complete
      */
     void delete(IMObject object);
+
+    /**
+     * Deletes a collection of objects.
+     * Deletion is performed in a single transaction.
+     *
+     * @param objects the objects to delete
+     * @throws IMObjectDAOException if the request cannot complete
+     */
+    void delete(Collection<IMObject> objects);
 
     /**
      * Execute a get using the specified query string, the query
@@ -93,7 +95,7 @@ public interface IMObjectDAO {
     ResultCollectorFactory getResultCollectorFactory();
 
     /**
-     * Retrieve the objects that matches the specified search criteria.
+     * Retrieves the objects that match the specified search criteria.
      * This is a very generic method that provides a mechanism to return
      * objects based on, one or more criteria.
      * <p/>
@@ -153,7 +155,7 @@ public interface IMObjectDAO {
      * @param firstResult  the first result to retrieve
      * @param maxResults   the maximum number of results to return
      * @return a page of the results
-     * @throws IMObjectDAOException a runtime exception if the request cannot complete
+     * @throws IMObjectDAOException if the request cannot complete
      */
     IPage<IMObject> get(String shortName, String instanceName, String clazz,
                         boolean activeOnly, int firstResult, int maxResults);
@@ -165,23 +167,22 @@ public interface IMObjectDAO {
      * @param clazz the clazz of objects to search for
      * @param id    the uid of the object
      * @return IMObject
-     * @throws IMObjectDAOException a runtime exception if the request cannot complete
+     * @throws IMObjectDAOException if the request cannot complete
      */
     public IMObject getById(String clazz, long id);
 
     /**
-     * Return an object with the specified linkID for the nominated clazz and
-     * null if the associated object does not exist
+     * Returns an object with the specified linkID for the nominated class.
      *
      * @param clazz  the clazz of objects to search for
      * @param linkId the uid object linkId
-     * @return IMObject
-     * @throws IMObjectDAOException a runtime exception if the request cannot complete
+     * @return the corresponding object or <tt>null</tt> if none exists
+     * @throws IMObjectDAOException if the request cannot complete
      */
     public IMObject getByLinkId(String clazz, String linkId);
 
     /**
-     * Execute a get using the specified named query, the query
+     * Executes a get using the specified named query, the query
      * parameters and the result collector. The first result and the number of
      * results is used to control the paging of the result set.
      *

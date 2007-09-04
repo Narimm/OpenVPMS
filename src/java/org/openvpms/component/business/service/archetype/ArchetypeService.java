@@ -27,12 +27,16 @@ import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.dao.im.common.ResultCollectorFactory;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.query.QueryBuilder;
 import org.openvpms.component.business.service.archetype.query.QueryContext;
 import org.openvpms.component.business.service.ruleengine.IStatelessRuleEngineInvocation;
@@ -48,22 +52,14 @@ import org.openvpms.component.system.service.hibernate.EntityInterceptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 
 /**
- * This basic implementation of an archetype service, which reads in the
- * archetypes from the specified XML document and creates an in memory registry.
- * <p/>
- * This implementation has the following constraints 1. All archetype
- * definitions must be deployed in a single directory. The name of hte directory
- * is specified on construction 2. The archetype records must be stored in a
- * single XML document and the structure of the document must comply with XML
- * Schema defined in <b>archetype.xsd</b>.
- * <p/>
- * NOTE: The archetype service is currently supporting both styles of queries
- * but this will change to support a single query api for all queries once it
- * has been validated.
+ * Default implementation of the {@link IArchetypeService} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -497,7 +493,18 @@ public class ArchetypeService implements IArchetypeService {
         }
 
         try {
-            dao.delete(entity);
+            if (entity instanceof Act) {
+                Act parent = (Act) entity;
+                List<IMObject> acts = getChildren(parent);
+                if (!acts.isEmpty()) {
+                    acts.add(parent);
+                    dao.delete(acts);
+                } else {
+                    dao.delete(parent);
+                }
+            } else {
+                dao.delete(entity);
+            }
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToDeleteObject,
@@ -1033,6 +1040,53 @@ public class ArchetypeService implements IArchetypeService {
     private Object convertValue(Object value, Class clazz)
             throws Exception {
         return ConvertUtils.convert(ConvertUtils.convert(value), clazz);
+    }
+
+    /**
+     * Returns all dependent children of the specified act. These are target
+     * acts in relationships whose
+     * {@link ActRelationship#isParentChildRelationship()} is <tt>true</tt>.
+     *
+     * @param act the act
+     * @return a list of the child acts
+     * @throws ArchetypeServiceException for any error
+     */
+    private List<IMObject> getChildren(Act act) {
+        Set<IMObjectReference> references = new HashSet<IMObjectReference>();
+        List<IMObject> targets = new ArrayList<IMObject>();
+        references.add(act.getObjectReference());
+        getChildren(act, references, targets);
+        return targets;
+    }
+
+    /**
+     * Recursively finds all dependent children of the specified act. These are
+     * target acts in relationships whose
+     * {@link ActRelationship#isParentChildRelationship()} is <tt>true</tt>.
+     *
+     * @param act        the act
+     * @param references references to acts that have been retrieved/attempted
+     *                   to be retrieved
+     * @param acts       the acts the have been retrieved
+     * @throws ArchetypeServiceException for any error
+     */
+    private void getChildren(Act act, Set<IMObjectReference> references,
+                             List<IMObject> acts) {
+        Act target;
+        for (ActRelationship relationhip : act.getSourceActRelationships()) {
+            if (relationhip.isParentChildRelationship()) {
+                IMObjectReference targetRef = relationhip.getTarget();
+                if (targetRef != null && !references.contains(targetRef)) {
+                    references.add(targetRef);
+                    target = (Act) ArchetypeQueryHelper.getByObjectReference(
+                            this, targetRef);
+                    if (target != null) {
+                        getChildren(target, references, acts);
+                        acts.add(target);
+                    }
+                }
+            }
+        }
     }
 
     abstract class QueryDelegator {

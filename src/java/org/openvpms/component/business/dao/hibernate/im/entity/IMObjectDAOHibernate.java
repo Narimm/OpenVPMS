@@ -21,15 +21,18 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.FlushMode;
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.StaleObjectStateException;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.*;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.dao.im.common.ResultCollectorFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -52,8 +55,8 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class IMObjectDAOHibernate extends HibernateDaoSupport implements
-                                                              IMObjectDAO {
+public class IMObjectDAOHibernate extends HibernateDaoSupport
+        implements IMObjectDAO {
     /**
      * The result collector factory.
      */
@@ -66,7 +69,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             = Logger.getLogger(IMObjectDAOHibernate.class);
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public IMObjectDAOHibernate() {
         collectorFactory = new HibernateResultCollectorFactory();
@@ -105,29 +108,19 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 tx.rollback();
             }
 
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.FailedToSaveIMObject,
-                    exception);
+            throw new IMObjectDAOException(FailedToSaveIMObject, exception,
+                                           object.getUid());
 
         } finally {
             clearCache();
             session.close();
         }
-        /**
-         try {
-         getHibernateTemplate().saveOrUpdate(object);
-         } catch (Exception exception) {
-         throw new IMObjectDAOException(
-         IMObjectDAOException.ErrorCode.FailedToSaveIMObject,
-         new Object[] { new Long(object.getUid()) }, exception);
-         }
-         */
     }
 
     /* (non-Javadoc)
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#save(java.util.Collection)
      */
-    public void save(Collection objects) {
+    public void save(Collection<IMObject> objects) {
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         Transaction tx = session.beginTransaction();
         try {
@@ -140,9 +133,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 tx.rollback();
             }
 
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.FailedToSaveCollectionOfObjects,
-                    exception);
+            throw new IMObjectDAOException(FailedToSaveCollectionOfObjects,
+                                           exception);
 
         } finally {
             clearCache();
@@ -166,9 +158,45 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 tx.rollback();
             }
 
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.FailedToDeleteIMObject,
-                    object.getUid());
+            throw new IMObjectDAOException(FailedToDeleteIMObject, exception,
+                                           object.getUid());
+
+        } finally {
+            clearCache();
+            session.close();
+        }
+    }
+
+    /**
+     * Deletes a collection of objects.
+     * Deletion is performed in a single transaction.
+     *
+     * @param objects the objects to delete
+     * @throws IMObjectDAOException if the request cannot complete
+     */
+    public void delete(Collection<IMObject> objects) {
+        Session session = getHibernateTemplate().getSessionFactory().openSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            for (IMObject object : objects) {
+                if (!object.isNew()) {
+                    // detached objects must be reloaded into the current
+                    // session, in order to avoid NonUniqueObjectException
+                    // errors.
+                    object = reload(object, session);
+                }
+                if (object != null) {
+                    session.delete(object);
+                }
+            }
+            tx.commit();
+        } catch (Exception exception) {
+            if (tx != null) {
+                tx.rollback();
+            }
+
+            throw new IMObjectDAOException(FailedToDeleteCollectionOfObjects,
+                                           exception);
 
         } finally {
             clearCache();
@@ -200,9 +228,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             executeQuery(queryString, new Params(parameters), collector,
                          firstResult, maxResults, count);
         } catch (Exception exception) {
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.FailedToExecuteQuery,
-                    exception);
+            throw new IMObjectDAOException(FailedToExecuteQuery, exception);
         }
     }
 
@@ -307,14 +333,11 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     public IPage<IMObject> get(String shortName, String instanceName,
                                String clazz, boolean activeOnly,
                                int firstResult, int maxResults) {
-        try {
-            // check that rm has been specified
-            if (StringUtils.isEmpty(clazz)) {
-                throw new IMObjectDAOException(
-                        IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified,
-                        new Object[]{});
-            }
+        if (StringUtils.isEmpty(clazz)) {
+            throw new IMObjectDAOException(ClassNameMustBeSpecified);
+        }
 
+        try {
             StringBuffer queryString = new StringBuffer();
             List<String> names = new ArrayList<String>();
             List<Object> params = new ArrayList<Object>();
@@ -384,8 +407,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             return collector.getPage();
         } catch (Exception exception) {
             throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.FailedToFindIMObjects,
-                    exception, shortName, instanceName, clazz);
+                    FailedToFindIMObjects, exception, shortName, instanceName,
+                    clazz);
         }
     }
 
@@ -396,14 +419,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      *      long)
      */
     public IMObject getById(String clazz, long id) {
+        if (StringUtils.isEmpty(clazz)) {
+            throw new IMObjectDAOException(ClassNameMustBeSpecified);
+        }
         try {
-            // check that rm has been specified
-            if (StringUtils.isEmpty(clazz)) {
-                throw new IMObjectDAOException(
-                        IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified,
-                        new Object[]{});
-            }
-
             StringBuffer queryString = new StringBuffer();
 
             queryString.append("select entity from ");
@@ -426,9 +445,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 session.close();
             }
         } catch (Exception exception) {
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.FailedToFindIMObject,
-                    exception);
+            throw new IMObjectDAOException(FailedToFindIMObject, exception);
         }
     }
 
@@ -439,14 +456,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      *      java.lang.String)
      */
     public IMObject getByLinkId(String clazz, String linkId) {
+        if (StringUtils.isEmpty(clazz)) {
+            throw new IMObjectDAOException(ClassNameMustBeSpecified);
+        }
         try {
-            // check that rm has been specified
-            if (StringUtils.isEmpty(clazz)) {
-                throw new IMObjectDAOException(
-                        IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified,
-                        new Object[]{});
-            }
-
             StringBuffer queryString = new StringBuffer();
 
             queryString.append("select entity from ");
@@ -469,9 +482,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 session.close();
             }
         } catch (Exception exception) {
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.FailedToFindIMObjectReference,
-                    exception);
+            throw new IMObjectDAOException(FailedToFindIMObjectReference,
+                                           exception);
         }
     }
 
@@ -496,9 +508,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             executeNamedQuery(query, parameters, firstResult, maxResults,
                               collector, count);
         } catch (Exception exception) {
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.FailedToExecuteNamedQuery,
-                    exception);
+            throw new IMObjectDAOException(FailedToExecuteNamedQuery,
+                                           exception);
         }
     }
 
@@ -627,9 +638,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     private int count(String queryString, Params params, Session session) {
         int indexOfFrom = queryString.indexOf("from");
         if (indexOfFrom == -1) {
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.InvalidQueryString,
-                    queryString);
+            throw new IMObjectDAOException(InvalidQueryString, queryString);
         }
 
         Query query = session.createQuery("select count(*) "
@@ -685,6 +694,35 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         } catch (Throwable exception) {
             logger.warn(exception, exception);
         }
+    }
+
+    /**
+     * Reloads an object into a session.
+     *
+     * @param object  the object to load
+     * @param session the session to use
+     * @return the reloaded object
+     * @throws StaleObjectStateException if the object has subsequently been
+     *                                   deleted/changed
+     * @throws HibernateException        for any other error
+     */
+    private IMObject reload(IMObject object, Session session) {
+        StringBuffer queryString = new StringBuffer("from ");
+        String clazz = object.getClass().getName();
+        queryString.append(clazz);
+        queryString.append(" as o where o.uid = :uid and o.version = :version");
+        Query query = session.createQuery(queryString.toString());
+        query.setParameter("uid", object.getUid());
+        query.setParameter("version", object.getVersion());
+        List rows = query.list();
+        if (rows.isEmpty()) {
+            throw new StaleObjectStateException(clazz, object.getUid());
+        }
+        IMObject result = (IMObject) rows.get(0);
+        if (result.getVersion() != object.getVersion()) {
+            throw new StaleObjectStateException(clazz, object.getUid());
+        }
+        return result;
     }
 
     /**
