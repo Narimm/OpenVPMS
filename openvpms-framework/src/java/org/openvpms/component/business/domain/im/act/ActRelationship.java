@@ -29,20 +29,20 @@ import java.util.Map;
 
 
 /**
- * A class that represents the directed association between Acts.
+ * A class that represents the directed association between two {@link Act}s.
  *
- * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ActRelationship extends IMObject {
 
     /**
-     * Generated SUID
+     * Serialisation version identifier.
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * An integer representing the relative order of the relationship among 
+     * An integer representing the relative order of the relationship among
      * other like typed relationships.
      */
     private int sequence;
@@ -56,37 +56,41 @@ public class ActRelationship extends IMObject {
     private boolean parentChildRelationship;
 
     /**
-     * Holds dynamic details about the act relationship
+     * Holds dynamic details about the act relationship.
      */
     private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
 
     /**
-     * Reference to the source {@link Act} reference
+     * Reference to the source {@link Act} reference.
      */
     private IMObjectReference source;
 
     /**
-     * Reference to the target {@link Act} reference
+     * Reference to the target {@link Act} reference.
      */
     private IMObjectReference target;
 
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public ActRelationship() {
         // do nothing
     }
 
     /**
-     * @return Returns the details.
+     * Returns the relationship details.
+     *
+     * @return the details
      */
     public Map<String, Object> getDetails() {
         return new TypedValueMap(details);
     }
 
     /**
-     * @param details The details to set.
+     * Sets the relationship details.
+     *
+     * @param details the details to set
      */
     public void setDetails(Map<String, Object> details) {
         this.details = TypedValueMap.create(details);
@@ -111,45 +115,72 @@ public class ActRelationship extends IMObject {
     }
 
     /**
-     * @return Returns the sourceAct.
+     * Returns the source act reference. If this is a parent/child relationship,
+     * then the source act represents the parent.
+     *
+     * @return the source act reference
      */
     public IMObjectReference getSource() {
         return source;
     }
 
     /**
-     * @param sourceAct The sourceAct to set.
+     * Sets the source act reference.
+     *
+     * @param source a reference to the source act
      */
-    public void setSource(IMObjectReference sourceAct) {
-        this.source = sourceAct;
+    public void setSource(IMObjectReference source) {
+        this.source = source;
     }
 
     /**
-     * @return Returns the targetAct.
+     * Returns the target act reference, If this is a parent/child relationship,
+     * then the target act represents the child.
+     *
+     * @return the target act reference
      */
     public IMObjectReference getTarget() {
         return target;
     }
 
     /**
-     * @param targetAct The targetAct to set.
+     * Sets the target act reference.
+     *
+     * @param target a reference to the target act
      */
-    public void setTarget(IMObjectReference targetAct) {
-        this.target = targetAct;
+    public void setTarget(IMObjectReference target) {
+        this.target = target;
     }
 
     /**
      * @return Returns the parentChildRelationship.
+     * @deprecated use {@link #isParentChildRelationship()}
      */
+    @Deprecated
     public boolean getParentChildRelationship() {
         return parentChildRelationship;
     }
 
     /**
-     * @param parentChildRelationship The parentChildRelationship to set.
+     * Determines if this is a parent/child relationship between two acts.
+     *
+     * @param parentChildRelationship if <tt>true</true> it is a parent/child
+     *                                relationship
      */
     public void setParentChildRelationship(boolean parentChildRelationship) {
         this.parentChildRelationship = parentChildRelationship;
+    }
+
+    /**
+     * Determines if this is a parent/child relationship between two acts.
+     * If <tt>true</tt> it indicates that the parent act is the owner of the
+     * relationship and is responsible for managing its lifecycle. When the
+     * parent act is deleted, then the child act must also be deleted.
+     *
+     * @return <tt>true</tt> if this is a parent/child relationship
+     */
+    public boolean isParentChildRelationship() {
+        return parentChildRelationship;
     }
 
     /* (non-Javadoc)
@@ -157,7 +188,7 @@ public class ActRelationship extends IMObject {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        ActRelationship copy = (ActRelationship)super.clone();
+        ActRelationship copy = (ActRelationship) super.clone();
         copy.details = (details == null) ? null
                 : new HashMap<String, TypedValue>(details);
         copy.parentChildRelationship = this.parentChildRelationship;

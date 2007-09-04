@@ -33,5 +33,8 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
+        <node name="parentChild" path="/parentChildRelationship"
+              type="java.lang.Boolean" readOnly="true" hidden="true"
+              defaultValue="true()" />
 	</archetype>
 </archetypes>

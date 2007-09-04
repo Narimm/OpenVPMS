@@ -41,6 +41,7 @@ public class IMObjectDAOException extends OpenVPMSException {
         FailedToSaveIMObject,
         FailedToSaveCollectionOfObjects,
         FailedToDeleteIMObject,
+        FailedToDeleteCollectionOfObjects,
         FailedToFindIMObject,
         FailedToFindIMObjects,
         ClassNameMustBeSpecified,

@@ -19,14 +19,17 @@
 package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToDeleteCollectionOfObjects;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToDeleteObject;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -49,16 +52,15 @@ public class ArchetypeServiceActTestCase
         extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * Holds a reference to the entity service
+     * The archetype service.
      */
     private IArchetypeService service;
 
 
     /**
-     * Test the creation of a simple act
+     * Test the creation of a simple act.
      */
-    public void testSimpleActCreation()
-            throws Exception {
+    public void testSimpleActCreation() throws Exception {
         Party person = createPerson("MR", "Jim", "Alateras");
         service.save(person);
         Act act = createSimpleAct("study", "inprogress");
@@ -68,19 +70,16 @@ public class ArchetypeServiceActTestCase
         act.addParticipation(participation);
         service.save(act);
 
-        person = (Party) ArchetypeQueryHelper.getByUid(service,
-                                                       person.getArchetypeId(),
-                                                       person.getUid());
-        assertTrue(person != null);
+        Act act1 = (Act) ArchetypeQueryHelper.getByUid(
+                service, act.getArchetypeId(), act.getUid());
+        assertEquals(act1, act);
     }
 
     /**
      * Test the search by acts function
      */
     @SuppressWarnings("unchecked")
-    public void testGetActs()
-            throws Exception {
-
+    public void testGetActs() throws Exception {
         // create an act which participates in 5 acts
         Party person = createPerson("MR", "Jim", "Alateras");
         for (int index = 0; index < 5; index++) {
@@ -95,14 +94,12 @@ public class ArchetypeServiceActTestCase
         service.save(person);
 
         // now use the getActs request
-        IPage<Act> acts = ArchetypeQueryHelper.getActs(service,
-                                                       person.getObjectReference(),
-                                                       "participation.simple",
-                                                       "act", "simple",
-                                                       null, null, null, null,
-                                                       null, false, 0,
-                                                       ArchetypeQuery.ALL_RESULTS);
-        assertTrue(acts.getTotalResults() == 5);
+        IPage<Act> acts = ArchetypeQueryHelper.getActs(
+                service, person.getObjectReference(),
+                "participation.simple", "act", "simple",
+                null, null, null, null,
+                null, false, 0, ArchetypeQuery.ALL_RESULTS);
+        assertEquals(5, acts.getTotalResults());
 
         // now look at the paging aspects
         acts = ArchetypeQueryHelper.getActs(service,
@@ -110,125 +107,319 @@ public class ArchetypeServiceActTestCase
                                             "participation.simple", "act",
                                             "simple", null, null, null, null,
                                             null, false, 0, 1);
-        assertTrue(acts.getTotalResults() == 5);
-        assertTrue(acts.getResults().size() == 1);
+        assertEquals(5, acts.getTotalResults());
+        assertEquals(1, acts.getResults().size());
         assertFalse(StringUtils.isEmpty(acts.getResults().get(0).getName()));
     }
 
     /**
-     * Retrieve acts using a start and end date
+     * Retrieve acts using a start and end date.
      */
-    public void testGetActsBetweenTimes()
-            throws Exception {
-        ArchetypeQuery query = new ArchetypeQuery("act.simple", false,
-                                                  true).add(
-                new NodeConstraint("startTime", RelationalOp.BTW, new Date(),
-                                   new Date(
-                                           System.currentTimeMillis() + 2 * 60 * 60 * 1000))).add(
-                new NodeConstraint("name", "between"));
+    public void testGetActsBetweenTimes() throws Exception {
+        Date startTime = new Date();
+        Date endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000);
+        ArchetypeQuery query = new ArchetypeQuery("act.simple", false, true)
+                .add(new NodeConstraint("startTime", RelationalOp.BTW,
+                                        startTime, endTime))
+                .add(new NodeConstraint("name", "between"));
         int acount = service.get(query).getResults().size();
         service.save(createSimpleAct("between", "start"));
         int acount1 = service.get(query).getResults().size();
-        assertTrue(acount1 == acount + 1);
+        assertEquals(acount + 1, acount1);
 
         for (int index = 0; index < 5; index++) {
             service.save(createSimpleAct("between", "start"));
         }
         acount1 = service.get(query).getResults().size();
-        assertTrue(acount1 == acount + 6);
+        assertEquals(acount + 6, acount1);
     }
 
     /**
-     * Test ovpms-211
+     * Tests OVPMS-211.
      */
-    public void testOVPMS211()
-            throws Exception {
-        Act estimationItem = (Act) service.create("act.customerEstimationItem");
-        setNodeValue(estimationItem, "fixedPrice", "1.0");
-        setNodeValue(estimationItem, "lowQty", "2.0");
-        setNodeValue(estimationItem, "lowUnitPrice", "3.0");
-        setNodeValue(estimationItem, "highQty", "4.0");
-        setNodeValue(estimationItem, "highUnitPrice", "5.0");
-        try {
-            service.save(estimationItem);
-        } catch (ValidationException exception) {
-            logger.error(exception);
-        }
+    public void testOVPMS211() throws Exception {
+        Act estimationItem1
+                = (Act) service.create("act.customerEstimationItem");
+        ActBean estimationItem1Bean = new ActBean(estimationItem1);
+        estimationItem1Bean.setValue("fixedPrice", "1.0");
+        estimationItem1Bean.setValue("lowQty", "2.0");
+        estimationItem1Bean.setValue("lowUnitPrice", "3.0");
+        estimationItem1Bean.setValue("highQty", "4.0");
+        estimationItem1Bean.setValue("highUnitPrice", "5.0");
+        estimationItem1Bean.save();
 
         Act estimation = (Act) service.create("act.customerEstimation");
-        assertTrue(estimation != null);
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                estimation.getArchetypeId());
-        assertTrue(adesc != null);
-        NodeDescriptor ndesc = adesc.getNodeDescriptor("lowTotal");
-        assertTrue(ndesc != null);
-        assertTrue(ndesc.getValue(estimation).getClass().getName(),
-                   ndesc.getValue(estimation) instanceof BigDecimal);
-        setNodeValue(estimation, "status", "IN_PROGRESS");
+        ActBean estimationBean = new ActBean(estimation);
+        estimationBean.setValue("status", "IN_PROGRESS");
+        estimationBean.addRelationship("actRelationship.customerEstimationItem",
+                                       estimationItem1);
 
-        ActRelationship rel = (ActRelationship) service.create(
-                "actRelationship.customerEstimationItem");
-        assertTrue(rel != null);
-        setNodeValue(rel, "source", estimation.getObjectReference());
-        setNodeValue(rel, "target", estimationItem.getObjectReference());
-        estimation.addSourceActRelationship(rel);
+        Act estimationItem2
+                = (Act) service.create("act.customerEstimationItem");
+        ActBean estimationItem2Bean = new ActBean(estimationItem2);
+        estimationItem2Bean.setValue("fixedPrice", "2.0");
+        estimationItem2Bean.setValue("lowQty", "3.0");
+        estimationItem2Bean.setValue("lowUnitPrice", "4.0");
+        estimationItem2Bean.setValue("highQty", "5.0");
+        estimationItem2Bean.setValue("highUnitPrice", "6.0");
+        estimationItem2Bean.save();
 
-        estimationItem = (Act) service.create("act.customerEstimationItem");
-        setNodeValue(estimationItem, "fixedPrice", "2.0");
-        setNodeValue(estimationItem, "lowQty", "3.0");
-        setNodeValue(estimationItem, "lowUnitPrice", "4.0");
-        setNodeValue(estimationItem, "highQty", "5.0");
-        setNodeValue(estimationItem, "highUnitPrice", "6.0");
-        try {
-            service.save(estimationItem);
-        } catch (ValidationException exception) {
-            logger.error(exception);
-        }
+        estimationBean.addRelationship("actRelationship.customerEstimationItem",
+                                       estimationItem2);
+        estimationBean.save();
 
-        rel = (ActRelationship) service.create(
-                "actRelationship.customerEstimationItem");
-        assertTrue(rel != null);
-        setNodeValue(rel, "source", estimation.getObjectReference());
-        setNodeValue(rel, "target", estimationItem.getObjectReference());
-        estimation.addSourceActRelationship(rel);
-        try {
-            service.save(estimation);
-        } catch (ValidationException exception) {
-            logger.error(exception);
-        }
+        // reload the estimation
+        estimation = reload(estimation);
+        estimationBean = new ActBean(estimation);
 
-        estimation = (Act) ArchetypeQueryHelper.getByUid(service,
-                                                         estimation.getArchetypeId(),
-                                                         estimation.getUid());
-        assertTrue(estimation != null);
-        assertTrue(((BigDecimal) getNodeValue(estimation,
-                                              "lowTotal")).longValue() > 0);
-        assertTrue(((BigDecimal) getNodeValue(estimation,
-                                              "highTotal")).longValue() > 0);
+        // verify low & high totals have been calculated
+        BigDecimal lowTotal = estimationBean.getBigDecimal("lowTotal");
+        BigDecimal highTotal = estimationBean.getBigDecimal("highTotal");
+        assertTrue(lowTotal.compareTo(BigDecimal.ZERO) > 0);
+        assertTrue(highTotal.compareTo(BigDecimal.ZERO) > 0);
     }
 
     /**
-     * test ovpms-228
+     * Tests OVPMS-228.
      */
-    public void testOVPMS228()
-            throws Exception {
+    public void testOVPMS228() throws Exception {
         Act act = (Act) service.create("act.customerAccountPayment");
-        assertTrue(act != null);
+        assertNotNull(act);
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
                 act.getArchetypeId());
-        assertTrue(adesc != null);
+        assertNotNull(adesc);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("amount");
-        assertTrue(ndesc != null);
+        assertNotNull(ndesc);
         ndesc.getValue(act);
         assertTrue(ndesc.getValue(act).getClass().getName(),
                    ndesc.getValue(act) instanceof BigDecimal);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Verifies an act can be removed.
      *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     * @throws Exception for any error
      */
+    public void testSingleActRemove() throws Exception {
+        Act act = createSimpleAct("act", "IN_PROGRESS");
+        service.save(act);
+        assertEquals(act, reload(act));
+
+        service.remove(act);
+        assertNull(reload(act));
+    }
+
+    /**
+     * Creates a set of acts with non-parent/child relationships, and verifies
+     * that deleting one act doesn't cascade to the rest.
+     *
+     * @throws Exception for any error
+     */
+    public void testPeerActRemoval() throws Exception {
+        Act act1 = createSimpleAct("act1", "IN_PROGRESS");
+        Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+        Act act3 = createSimpleAct("act3", "IN_PROGRESS");
+        ActBean bean1 = new ActBean(act1);
+        ActBean bean2 = new ActBean(act2);
+
+        // create a relationship from act1 -> act2
+        ActRelationship r1 = bean1.addRelationship("actRelationship.simple",
+                                                   act2);
+        r1.setName("act1->act2");
+        assertFalse(r1.isParentChildRelationship());
+
+        // create a relationship from act2 -> act3
+        ActRelationship r2 = bean2.addRelationship("actRelationship.simple",
+                                                   act3);
+        r2.setName("act2->act3");
+        assertFalse(r2.isParentChildRelationship());
+
+        service.save(act1);
+        service.save(act2);
+        service.save(act3);
+
+        service.remove(act1);
+        assertNull(reload(act1));
+        assertNotNull(reload(act2));
+        assertNotNull(reload(act3));
+
+        service.remove(act3);
+        assertNull(reload(act3));
+        assertNotNull(reload(act2));
+    }
+
+    /**
+     * Creates a parent/child act hierarchy, and verifies that:
+     * <ul>
+     * <li>deleting the children doesn't affect the remaining children or
+     * parent; and</li>
+     * <li>deleting the parent causes deletion of the children</li>
+     * </ul>
+     *
+     * @throws Exception
+     */
+    public void testParentChildRemoval() throws Exception {
+        Act estimation = (Act) service.create("act.customerEstimation");
+        service.remove(estimation);
+        estimation.setStatus("IN_PROGRESS");
+        Act item1 = (Act) service.create("act.customerEstimationItem");
+        Act item2 = (Act) service.create("act.customerEstimationItem");
+        Act item3 = (Act) service.create("act.customerEstimationItem");
+        ActBean bean = new ActBean(estimation);
+        bean.addRelationship("actRelationship.customerEstimationItem", item1);
+        bean.addRelationship("actRelationship.customerEstimationItem", item2);
+        bean.addRelationship("actRelationship.customerEstimationItem", item3);
+        service.save(item1);
+        service.save(item2);
+        service.save(item3);
+        bean.save();
+
+        // remove an item, and verify it has been removed and that the other
+        // acts aren't removed
+        service.remove(item1);
+        assertNull(reload(item1));
+        assertNotNull(reload(estimation));
+        assertNotNull(reload(item2));
+        assertNotNull(reload(item3));
+
+        // now remove the estimation and verify the remaining items are removed
+        service.remove(estimation);
+        assertNull(reload(estimation));
+        assertNull(reload(item2));
+        assertNull(reload(item3));
+    }
+
+    /**
+     * Verifies that a set of acts in a cyclic parent/child relationship can
+     * be removed.
+     *
+     * @throws Exception for any error
+     */
+    public void testCyclicParentChildRemoval() throws Exception {
+        // create 3 acts, with the following relationships:
+        // act1 -> act2 -> act3 -> act1
+        Act act1 = createSimpleAct("act1", "IN_PROGRESS");
+        Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+        Act act3 = createSimpleAct("act3", "IN_PROGRESS");
+
+        ActBean bean1 = new ActBean(act1);
+        ActRelationship r1 = bean1.addRelationship("actRelationship.simple",
+                                                   act2);
+        r1.setName("act1->act2");
+        r1.setParentChildRelationship(true);
+
+        ActBean bean2 = new ActBean(act2);
+        ActRelationship r2 = bean2.addRelationship("actRelationship.simple",
+                                                   act3);
+        r2.setName("act2->act3");
+        r2.setParentChildRelationship(true);
+
+        ActBean bean3 = new ActBean(act3);
+        ActRelationship r3 = bean3.addRelationship("actRelationship.simple",
+                                                   act1);
+        r3.setName("act3->act1");
+        r3.setParentChildRelationship(true);
+
+        bean1.save();
+        bean2.save();
+        bean3.save();
+
+        // remove act2. The removal should cascade to include act3 and act1
+        service.remove(act2);
+        assertNull(reload(act1));
+        assertNull(reload(act2));
+        assertNull(reload(act3));
+    }
+
+    /**
+     * Verifies that acts with peer and parent/child relationships are handled
+     * correctly at deletion, i.e the deletion cascades to those target
+     * acts in parent/child relationships, and not those in peer relationships.
+     *
+     * @throws Exception for any error
+     */
+    public void testPeerParentChildRemoval() throws Exception {
+        // create 3 acts with the following relationships:
+        // act1 -- (parent/child) --> act2
+        //   |-------- (peer) ------> act3
+
+        Act act1 = createSimpleAct("act1", "IN_PROGRESS");
+        Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+        Act act3 = createSimpleAct("act2", "IN_PROGRESS");
+
+        ActBean bean1 = new ActBean(act1);
+        ActRelationship r1 = bean1.addRelationship("actRelationship.simple",
+                                                   act2);
+        r1.setName("act1->act2");
+        r1.setParentChildRelationship(true);
+
+        ActRelationship r2 = bean1.addRelationship("actRelationship.simple",
+                                                   act3);
+        r2.setName("act1->act3");
+        r2.setParentChildRelationship(false);
+
+        service.save(act1);
+        service.save(act2);
+        service.save(act3);
+
+        // remove act1, and verify that it and act2 are removed, and act3
+        // remains.
+        service.remove(act1);
+
+        assertNull(reload(act1));
+        assertNull(reload(act2));
+        assertNotNull(reload(act3));
+    }
+
+    /**
+     * Verifies that removal of acts with a parent/child relationship fails
+     * when the parent act has changed subsequent to the version being deleted.
+     *
+     * @throws Exception for any error
+     */
+    public void testStaleParentChildRemoval() throws Exception {
+        Act act1 = createSimpleAct("act1", "IN_PROGRESS");
+        Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+        Act act3 = createSimpleAct("act3", "IN_PROGRESS");
+
+        ActBean bean1 = new ActBean(act1);
+        ActRelationship r1 = bean1.addRelationship("actRelationship.simple",
+                                                   act2);
+        r1.setName("act1->act2");
+        r1.setParentChildRelationship(true);
+
+        service.save(act1);
+        service.save(act2);
+        service.save(act3);
+
+        Act stale = reload(act1);
+
+        ActRelationship r2 = bean1.addRelationship("actRelationship.simple",
+                                                   act3);
+        r2.setName("act2->act3");
+        r2.setParentChildRelationship(true);
+        bean1.save();
+
+        try {
+            service.remove(stale);
+            fail("Expected removal to fail");
+        } catch (ArchetypeServiceException expected) {
+            assertEquals(FailedToDeleteObject, expected.getErrorCode());
+            IMObjectDAOException cause
+                    = (IMObjectDAOException) expected.getCause();
+
+            // verify the cause comes from the DAO collection deletion method
+            assertEquals(FailedToDeleteCollectionOfObjects,
+                         cause.getErrorCode());
+        }
+    }
+
+
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+    */
     @Override
     protected String[] getConfigLocations() {
         return new String[]{
@@ -245,6 +436,18 @@ public class ArchetypeServiceActTestCase
 
         this.service = (IArchetypeService) applicationContext.getBean(
                 "archetypeService");
+    }
+
+    /**
+     * Helper to reload an act.
+     *
+     * @param act the act to reload
+     * @return the reloaded act, or <tt>null</tt> if it can't be found
+     * @throws ArchetypeServiceException for any error
+     */
+    private Act reload(Act act) {
+        return (Act) ArchetypeQueryHelper.getByObjectReference(
+                service, act.getObjectReference());
     }
 
     /**
@@ -300,39 +503,6 @@ public class ArchetypeServiceActTestCase
         person.getDetails().put("title", title);
 
         return person;
-    }
-
-    /**
-     * Set the specification node value
-     *
-     * @param imobj the imobject
-     * @param node  the node name
-     * @param value the node value
-     */
-    private void setNodeValue(IMObject imobj, String node, Object value) {
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                imobj.getArchetypeId());
-        assertTrue(adesc != null);
-        NodeDescriptor ndesc = adesc.getNodeDescriptor(node);
-        assertTrue(ndesc != null);
-        ndesc.setValue(imobj, value);
-    }
-
-    /**
-     * Get the specification node value
-     *
-     * @param imobj the imobject
-     * @param node  the node name
-     * @return Object
-     *         the node value
-     */
-    private Object getNodeValue(IMObject imobj, String node) {
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
-                imobj.getArchetypeId());
-        assertTrue(adesc != null);
-        NodeDescriptor ndesc = adesc.getNodeDescriptor(node);
-        assertTrue(ndesc != null);
-        return ndesc.getValue(imobj);
     }
 
 }
