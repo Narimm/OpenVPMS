@@ -125,6 +125,12 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         return result;
     }
 
+    /**
+     * Strips bad characters from the text.
+     *
+     * @param str the string to clean
+     * @return the clean string
+     */
     private String clean(String str) {
         int index = str.indexOf(0);
         if (index != -1) {
@@ -134,6 +140,5 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         }
         return str;
     }
-
 
 }

@@ -61,6 +61,21 @@ public class StringPropertyTransformerTestCase
     }
 
     /**
+     * Verifies that any embedded nulls are removed. These cause the
+     * client to crash.
+     */
+    public void testStripASCIIZero() {
+        String bad = "abcd\u000012345";
+        Party person = TestHelper.createCustomer();
+        NodeDescriptor descriptor = getDescriptor(person, "name");
+        Property property = new IMObjectProperty(person, descriptor);
+        StringPropertyTransformer handler
+                = new StringPropertyTransformer(property);
+        String good = (String) handler.apply(bad);
+        assertEquals("abcd12345", good);
+    }
+
+    /**
      * Tests macro expansion by {@link StringPropertyTransformer#apply}.
      */
     public void testMacroExpansion() {
