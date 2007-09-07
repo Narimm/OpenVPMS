@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.table;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.web.component.util.TextHelper;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -118,7 +119,16 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
         if (col == null) {
             throw new IllegalArgumentException("Illegal column=" + column);
         }
-        return getValue(object, col, row);
+        Object result = getValue(object, col, row);
+        if (result instanceof String) {
+            String str = (String) result;
+            if (TextHelper.hasControlChars(str)) {
+                // replace any control chars with spaces.
+                str = TextHelper.replaceControlChars(str, " ");
+            }
+            result = str;
+        }
+        return result;
     }
 
     /**
