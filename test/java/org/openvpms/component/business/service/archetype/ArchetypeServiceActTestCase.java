@@ -26,9 +26,11 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToDeleteObject;
+import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.FailedToSaveCollectionOfObjects;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -38,7 +40,10 @@ import org.openvpms.component.system.common.query.RelationalOp;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -193,6 +198,99 @@ public class ArchetypeServiceActTestCase
         ndesc.getValue(act);
         assertTrue(ndesc.getValue(act).getClass().getName(),
                    ndesc.getValue(act) instanceof BigDecimal);
+    }
+
+    /**
+     * Saves a collection of acts.
+     *
+     * @throws Exception for any error
+     */
+    public void testSaveCollection() throws Exception {
+        Act act1 = createSimpleAct("act1", "IN_PROGRESS");
+        Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+        Act act3 = createSimpleAct("act3", "IN_PROGRESS");
+
+        List<IMObject> acts = Arrays.asList((IMObject) act1, act2, act3);
+        List<IMObject> saved = checkSaveCollection(acts, 0);
+        for (IMObject act : acts) {
+            // verify the source acts haven't changed.
+            assertEquals(-1, act.getUid());
+            assertEquals(0, act.getVersion());
+        }
+
+        // verify the source acts can't be saved (they will be duplicates on
+        // linkId)
+        try {
+            checkSaveCollection(acts, 1);
+            fail("Expected save to fail");
+        } catch (ArchetypeServiceException expected) {
+            assertEquals(FailedToSaveCollectionOfObjects,
+                         expected.getErrorCode());
+        }
+
+        // verify the saved acts can be re-saved
+        checkSaveCollection(saved, 1);
+
+        // now change the first act, and attempt to re-save the collection.
+        // This should fail as the collection doesn't have the latest version
+        // of act1
+        act1 = reload(act1);
+        service.save(act1);
+        try {
+            checkSaveCollection(saved, 2);
+            fail("Expected save to fail");
+        } catch (ArchetypeServiceException expected) {
+            assertEquals(FailedToSaveCollectionOfObjects,
+                         expected.getErrorCode());
+        }
+    }
+
+    /**
+     * Verifies that the {@link IArchetypeService#save(Collection<IMObject>)}
+     * method can be used to save 2 or more acts that reference the same
+     * ActRelationship.
+     *
+     * @throws Exception for any error
+     */
+    public void testOBF163() throws Exception {
+        Act estimation = (Act) service.create("act.customerEstimation");
+        estimation.setStatus("POSTED");
+        ActRelationship relationship = (ActRelationship) service.create(
+                "actRelationship.customerEstimationItem");
+        Act item = (Act) service.create("act.customerEstimationItem");
+        relationship.setSource(estimation.getObjectReference());
+        relationship.setTarget(item.getObjectReference());
+        estimation.addActRelationship(relationship);
+        item.addActRelationship(relationship);
+        service.save(estimation);
+        service.save(item);
+
+        // reload the estimation and item. Each with have a separate copy of
+        // the same persistent act relationship
+        estimation = reload(estimation);
+        item = reload(item);
+        assertNotNull(estimation);
+        assertNotNull(item);
+
+        List<IMObject> acts = Arrays.asList((IMObject) estimation, item);
+
+        // save the collection, and verify they have saved by checking the
+        // versions.
+        checkSaveCollection(acts, 1);
+    }
+
+    private List<IMObject> checkSaveCollection(List<IMObject> objects,
+                                               long version) {
+        List<IMObject> saved = service.save(objects);
+        assertEquals(objects.size(), saved.size());
+        assertEquals(objects, saved);
+        for (IMObject object : saved) {
+            assertEquals(version, object.getVersion());
+            IMObject reloaded = reload(object);
+            assertEquals(object, reloaded);
+            assertEquals(version, reloaded.getVersion());
+        }
+        return saved;
     }
 
     /**
@@ -439,15 +537,16 @@ public class ArchetypeServiceActTestCase
     }
 
     /**
-     * Helper to reload an act.
+     * Helper to reload an object.
      *
-     * @param act the act to reload
-     * @return the reloaded act, or <tt>null</tt> if it can't be found
+     * @param object the object to reload
+     * @return the reloaded object, or <tt>null</tt> if it can't be found
      * @throws ArchetypeServiceException for any error
      */
-    private Act reload(Act act) {
-        return (Act) ArchetypeQueryHelper.getByObjectReference(
-                service, act.getObjectReference());
+    @SuppressWarnings("unchecked")
+    private <T extends IMObject> T reload(T object) {
+        return (T) ArchetypeQueryHelper.getByObjectReference(
+                service, object.getObjectReference());
     }
 
     /**
