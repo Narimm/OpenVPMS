@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 
 /**
@@ -93,6 +94,10 @@ public class ArchetypeService implements IArchetypeService {
      * calls
      */
     private EntityInterceptor entityInterceptor;
+
+
+    private static final Pattern CNTRL_CHARS
+            = Pattern.compile(".*[\\p{Cntrl}].*");
 
     /**
      * Construct an instance of this service using the specified archetpe class by loading and parsing all the
@@ -591,7 +596,7 @@ public class ArchetypeService implements IArchetypeService {
      */
     @Deprecated
     public List<IMObject> save(Collection<IMObject> objects,
-                                     boolean validate) {
+                               boolean validate) {
         if (dao == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoDaoConfigured,
@@ -754,6 +759,14 @@ public class ArchetypeService implements IArchetypeService {
                 }
             }
 
+            if (value instanceof String) {
+                if (CNTRL_CHARS.matcher((String) value).matches()) {
+                    errors.add(new ValidationError(
+                            shortName, node.getName(),
+                            " contains invalid characters"));
+                }
+            }
+
             // do collection related processing
             if (node.isCollection()) {
                 Collection collection = node.toCollection(value);
@@ -764,7 +777,6 @@ public class ArchetypeService implements IArchetypeService {
                     errors.add(new ValidationError(shortName, node.getName(),
                                                    " must supply at least " + minCardinality + " "
                                                            + node.getBaseName()));
-
                 }
 
                 // check the max cardinality if specified

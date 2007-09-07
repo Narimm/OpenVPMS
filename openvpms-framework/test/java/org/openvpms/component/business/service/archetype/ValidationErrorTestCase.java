@@ -383,7 +383,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
     }
 
     /**
-     * Tst where only unbounded cardinality is specified on collections.
+     * Test where only unbounded cardinality is specified on collections.
      */
     public void testUnboundedCardinalityOnCollections() throws Exception {
         Hashtable cparams = getTestData().getGlobalParams();
@@ -430,6 +430,47 @@ public class ValidationErrorTestCase extends BaseTestCase {
         pet.getIdentities().add(
                 createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
+    }
+
+    /**
+     * Verfies that validation fails if control characters are present in
+     * a string.
+     *
+     * @throws Exception for any error
+     */
+    public void testInvalidChars() throws Exception {
+        Hashtable cparams = getTestData().getGlobalParams();
+        Hashtable params = this.getTestData().getTestCaseParams(
+                "testMinUnboundedCardinalityOnCollections", "normal");
+
+        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
+                (String) params.get("file"), (String) cparams
+                .get("assertionFile"));
+        ArchetypeService service = new ArchetypeService(cache);
+
+        assertNotNull(service.getArchetypeDescriptor("party.animalpet"));
+        Party pet = (Party) service.create("party.animalpet");
+
+        pet.getDetails().put("sex", "male");
+        pet.getDetails().put("dateOfBirth", new Date());
+
+        EntityIdentity eid = (EntityIdentity) service.create(
+                "entityIdentity.animalAlias");
+        eid.setIdentity("animal1");
+        pet.getIdentities().add(eid);
+
+        // check control chars <= 31
+        for (char ch = 0; ch < 32; ++ch) {
+            String invalidName = "abc" + ch + "def";
+            pet.setName(invalidName);
+            try {
+                service.validateObject(pet);
+                fail("Expected validation error to be thrown for char "
+                        + "0x" + Integer.toHexString(ch));
+            } catch (ValidationException expected) {
+                // do nothing
+            }
+        }
     }
 
     /*
