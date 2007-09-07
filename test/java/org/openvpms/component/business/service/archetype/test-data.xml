@@ -81,7 +81,17 @@
         </param>
       </params>
     </method>
+
+    <!-- Data for the testInvalidChars method -->
+    <method name="testInvalidChars" test-case="normal">
+      <params>
+        <param name="file" type="java.lang.String">
+          org/openvpms/component/business/service/archetype/party.animalpet.xml
+        </param>
+      </params>
+    </method>
   </class>
+    
   <class name="CreateDefaultObjectTestCase">
     <params>
       <param name="assertionFile" type="java.lang.String">
