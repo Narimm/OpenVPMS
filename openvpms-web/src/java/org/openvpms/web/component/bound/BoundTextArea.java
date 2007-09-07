@@ -23,6 +23,7 @@ import nextapp.echo2.app.TextArea;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.StringPropertyTransformer;
+import org.openvpms.web.component.util.TextDocument;
 
 
 /**
@@ -43,6 +44,7 @@ public class BoundTextArea extends TextArea {
      * @param rows     the no. of rows to display
      */
     public BoundTextArea(Property property, int columns, int rows) {
+        super(new TextDocument());
         setWidth(new Extent(columns, Extent.EX));
         setHeight(new Extent(rows, Extent.EM));
         Binder binder = new TextComponentBinder(this, property);

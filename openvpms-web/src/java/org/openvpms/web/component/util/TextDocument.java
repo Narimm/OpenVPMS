@@ -24,10 +24,17 @@ import org.apache.commons.lang.ObjectUtils;
 
 
 /**
- * Implementation of the <em>Document</em> interface that only
- * fires <em>DocumentEvents</em> if the new text is different to the prior
- * text. This is a replacement for the default <em>StringDocument<em>
+ * Implementation of the <em>Document</em> interface that:
+ * <ul>
+ * <li>only fires <em>DocumentEvents</em> if the new text is different to the
+ * prior text. This is a replacement for the default <em>StringDocument<em>
  * implementation that performs no difference check.
+ * </li>
+ * <li>
+ * replaces invalid characters with spaces. Certain control characters
+ * (e.g, ascii 0) can cause the client to crash.
+ * </li>
+ * </ul>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -46,6 +53,10 @@ public class TextDocument extends AbstractDocument {
      * @param text the new text of the document
      */
     public void setText(String text) {
+        if (TextHelper.hasControlChars(text)) {
+            // replace any control chars with spaces.
+            text = TextHelper.replaceControlChars(text, " ");
+        }
         if (!ObjectUtils.equals(this.text, text)) {
             this.text = text;
             DocumentEvent e = new DocumentEvent(this);

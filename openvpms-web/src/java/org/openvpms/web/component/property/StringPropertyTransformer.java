@@ -18,11 +18,9 @@
 
 package org.openvpms.web.component.property;
 
-import org.apache.commons.lang.CharSetUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.util.MacroEvaluator;
+import org.openvpms.web.component.util.TextHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -51,11 +49,6 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
      * The context.
      */
     private final Object context;
-
-    /**
-     * The logger.
-     */
-    private Log log = LogFactory.getLog(StringPropertyTransformer.class);
 
 
     /**
@@ -98,7 +91,12 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         Property property = getProperty();
         String result = null;
         if (object instanceof String) {
-            String str = clean((String) object);
+            String str = (String) object;
+            if (TextHelper.hasControlChars(str)) {
+                String msg = Messages.get("property.error.invalidchars",
+                                          property.getDisplayName());
+                throw new PropertyException(property, msg);
+            }
             if (macros != null) {
                 result = macros.evaluate(str, context);
             } else {
@@ -123,22 +121,6 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         }
 
         return result;
-    }
-
-    /**
-     * Strips bad characters from the text.
-     *
-     * @param str the string to clean
-     * @return the clean string
-     */
-    private String clean(String str) {
-        int index = str.indexOf(0);
-        if (index != -1) {
-            log.error("String ' " + str
-                    + "' contains embedded nulls (ASCII 0). Removing");
-            str = CharSetUtils.delete(str, "\u0000");
-        }
-        return str;
     }
 
 }

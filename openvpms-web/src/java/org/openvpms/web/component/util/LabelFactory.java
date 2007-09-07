@@ -23,7 +23,8 @@ import nextapp.echo2.app.Label;
 
 
 /**
- * Factory for {@link Label}s.
+ * Factory for {@link Label}s. Labels returned by this factory filter
+ * invalid characters, using {@link TextHelper}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -42,7 +43,7 @@ public final class LabelFactory extends ComponentFactory {
      * @return a new label
      */
     public static Label create() {
-        Label label = new Label();
+        Label label = new FilteringLabel();
         setDefaultStyle(label);
         return label;
     }
@@ -83,6 +84,26 @@ public final class LabelFactory extends ComponentFactory {
         Label label = create(key);
         setStyle(label, style);
         return label;
+    }
+
+    /**
+     * Label that replaces any control characters with spaces.
+     */
+    private static class FilteringLabel extends Label {
+        /**
+         * Sets the text to be displayed.
+         *
+         * @param newValue the text to be displayed
+         */
+        @Override
+        public void setText(String newValue) {
+            if (TextHelper.hasControlChars(newValue)) {
+                // replace any control chars with spaces.
+                newValue = TextHelper.replaceControlChars(newValue, " ");
+            }
+            super.setText(newValue);
+        }
+
     }
 
 }
