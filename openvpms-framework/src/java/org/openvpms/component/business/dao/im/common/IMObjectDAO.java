@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.IPage;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 
@@ -45,11 +46,13 @@ public interface IMObjectDAO {
 
     /**
      * Saves a collection of objects in a single transaction.
+     * The supplied instances are not modified.
      *
      * @param objects the objects to save
+     * @return the saved objects, in the same order as supplied
      * @throws IMObjectDAOException if the request cannot complete
      */
-    void save(Collection<IMObject> objects);
+    List<IMObject> save(Collection<IMObject> objects);
 
     /**
      * Deletes an {@link IMObject}.

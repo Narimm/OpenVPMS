@@ -120,12 +120,14 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     /* (non-Javadoc)
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#save(java.util.Collection)
      */
-    public void save(Collection<IMObject> objects) {
+    public List<IMObject> save(Collection<IMObject> objects) {
+        List<IMObject> result = new ArrayList<IMObject>();
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         Transaction tx = session.beginTransaction();
         try {
-            for (Object object : objects) {
-                session.saveOrUpdate(object);
+            for (IMObject object : objects) {
+                object = (IMObject) session.merge(object);
+                result.add(object);
             }
             tx.commit();
         } catch (Exception exception) {
@@ -140,6 +142,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             clearCache();
             session.close();
         }
+        return result;
     }
 
     /*

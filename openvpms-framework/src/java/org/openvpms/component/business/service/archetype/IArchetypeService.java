@@ -200,27 +200,27 @@ public interface IArchetypeService {
 
     /**
      * Save a collection of {@link IMObject} instances.
+     * The supplied instances are not modified.
      *
-     * @param entities the entities to insert or update
-     * @throws ArchetypeServiceException if the service cannot save any of the
-     *                                   entities
-     * @throws ValidationException       if any of the specified entities cannot
-     *                                   be validated
+     * @param objects the objects to insert or update
+     * @return the saved objects, in the same order as supplied
+     * @throws ArchetypeServiceException if an object can't be saved
+     * @throws ValidationException       if an object can't be validated
      */
-    public void save(Collection<IMObject> entities);
+    List<IMObject> save(Collection<IMObject> objects);
 
     /**
      * Save a collection of {@link IMObject} instances.
+     * The supplied instances are not modified.
      *
-     * @param entities the entities to insert or update
+     * @param objects  the objects to insert or update
      * @param validate whether to validate or not
-     * @throws ArchetypeServiceException if the service cannot save any of the
-     *                                   entities
-     * @throws ValidationException       if any of the specified entities cannot
-     *                                   be validated
+     * @return the saved objects, in the same order as supplied
+     * @throws ArchetypeServiceException if an object can't be saved
+     * @throws ValidationException       if an object can't be validated
      */
     @Deprecated
-    public void save(Collection<IMObject> entities, boolean validate);
+    List<IMObject> save(Collection<IMObject> objects, boolean validate);
 
     /**
      * Retrieves the objects matching the query.

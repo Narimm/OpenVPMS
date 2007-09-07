@@ -568,42 +568,50 @@ public class ArchetypeService implements IArchetypeService {
 
     /**
      * Save a collection of {@link IMObject} instances.
+     * The supplied instances are not modified.
      *
-     * @param entities the entities to insert or update
-     * @throws ArchetypeServiceException if the service cannot save any of the
-     *                                   entities
-     * @throws ValidationException       if any of the specified entities cannot
-     *                                   be validated
+     * @param objects the objects to insert or update
+     * @return the saved objects, in the same order as supplied
+     * @throws ArchetypeServiceException if an object can't be saved
+     * @throws ValidationException       if an object can't be validated
      */
-    public void save(Collection<IMObject> entities) {
-        save(entities, true);
+    public List<IMObject> save(Collection<IMObject> objects) {
+        return save(objects, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#save(java.util.Collection)
+    /**
+     * Save a collection of {@link IMObject} instances.
+     * The supplied instances are not modified.
+     *
+     * @param objects  the objects to insert or update
+     * @param validate whether to validate or not
+     * @return the saved objects, in the same order as supplied
+     * @throws ArchetypeServiceException if an object can't be saved
+     * @throws ValidationException       if an object can't be validated
      */
-
-    public void save(Collection<IMObject> entities, boolean validate) {
+    @Deprecated
+    public List<IMObject> save(Collection<IMObject> objects,
+                                     boolean validate) {
         if (dao == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoDaoConfigured,
                     new Object[]{});
         }
 
-        // first validate each entity
+        // first validate each object
         if (validate) {
-            for (Object entity : entities) {
-                validateObject((IMObject) entity);
+            for (IMObject object : objects) {
+                validateObject(object);
             }
         }
 
-        // now issue a call to save the entities
+        // now issue a call to save the objects
         try {
-            dao.save(entities);
+            return dao.save(objects);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToSaveCollectionOfObjects,
-                    exception, entities.size());
+                    exception, objects.size());
         }
     }
 
