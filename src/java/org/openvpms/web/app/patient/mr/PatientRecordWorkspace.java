@@ -66,7 +66,12 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
             "act.patientDocumentForm",
             "act.patientDocumentLetter",
             "act.patientDocumentAttachment",
-            "act.patientDocumentImage"};
+            "act.patientDocumentImage",
+            "act.patientInvestigationBiochemistry",
+            "act.patientInvestigationCytology",
+            "act.patientInvestigationHaemotology",
+            "act.patientInvestigationRadiology"
+            };
 
     /**
      * The default sort constraint.
