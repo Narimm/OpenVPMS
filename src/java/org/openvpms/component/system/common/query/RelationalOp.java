@@ -31,7 +31,8 @@ public enum RelationalOp {
     LTE(1), 
     GT(1),
     GTE(1),
-    BTW(2);
+    BTW(2),
+    IN(1);
     
     /**
      * The number of parameters required for each operator

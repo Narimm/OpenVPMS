@@ -3,6 +3,7 @@ package org.openvpms.component.business.service.archetype.query;
 import org.apache.commons.lang.WordUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import static org.openvpms.component.business.service.archetype.query.QueryBuilderException.ErrorCode.OperatorNotSupported;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.JoinConstraint;
@@ -442,35 +443,35 @@ public class QueryContext {
         String varName;
         RelationalOp op = constraint.getOperator();
         String qname = getQualifiedPropertyName(property);
+        Object[] parameters = constraint.getParameters();
         switch (op) {
             case BTW:
-                if (constraint.getParameters()[0] != null
-                        || constraint.getParameters()[1] != null) {
+                if (parameters[0] != null || parameters[1] != null) {
                     // process left hand side
                     pushLogicalOperator(LogicalOperator.And);
-                    if (constraint.getParameters()[0] != null) {
+                    if (parameters[0] != null) {
                         appendLogicalOperator();
                         varName = paramNames.getName(property);
                         whereClause.append(qname)
                                 .append(getOperator(RelationalOp.GTE,
-                                                    constraint.getParameters()[0]))
+                                                    parameters[0]))
                                 .append(" :")
                                 .append(varName);
                         params.put(varName, getValue(RelationalOp.GTE,
-                                                     constraint.getParameters()[0]));
+                                                     parameters[0]));
                     }
 
                     // process right hand side
-                    if (constraint.getParameters()[1] != null) {
+                    if (parameters[1] != null) {
                         appendLogicalOperator();
                         varName = paramNames.getName(property);
                         whereClause.append(qname)
                                 .append(getOperator(RelationalOp.LTE,
-                                                    constraint.getParameters()[1]))
+                                                    parameters[1]))
                                 .append(" :")
                                 .append(varName);
                         params.put(varName, getValue(RelationalOp.LTE,
-                                                     constraint.getParameters()[1]));
+                                                     parameters[1]));
                     }
                     popLogicalOperator();
                 }
@@ -487,11 +488,10 @@ public class QueryContext {
                 varName = paramNames.getName(property);
                 whereClause.append(qname)
                         .append(" ")
-                        .append(getOperator(op, constraint.getParameters()[0]))
+                        .append(getOperator(op, parameters[0]))
                         .append(" :")
                         .append(varName);
-                params.put(varName, getValue(op,
-                                             constraint.getParameters()[0]));
+                params.put(varName, getValue(op, parameters[0]));
                 break;
 
             case IsNULL:
@@ -502,12 +502,32 @@ public class QueryContext {
                             .append(isNull).append(" and ")
                             .append(qname).append(".linkId")
                             .append(isNull).append(")");
-
                 } else {
                     whereClause.append(qname).append(isNull);
                 }
                 break;
 
+            case IN:
+                appendLogicalOperator();
+                boolean ref = isReference(property);
+                whereClause.append(qname);
+                if (ref) {
+                    whereClause.append(".linkId");
+                }
+                whereClause.append(" ")
+                        .append(getOperator(op, null))
+                        .append(" (");
+
+                for (int i = 0; i < parameters.length; ++i) {
+                    if (i > 0) {
+                       whereClause.append(", ");
+                    }
+                    varName = paramNames.getName(property);
+                    whereClause.append(":").append(varName);
+                    params.put(varName, getValue(op, parameters[i]));
+                }
+                whereClause.append(")");
+                break;
             default:
                 throw new QueryBuilderException(OperatorNotSupported, op);
         }
@@ -576,6 +596,8 @@ public class QueryContext {
                 return "!=";
             case IsNULL:
                 return "is NULL";
+            case IN:
+                return "in";
             default:
                 throw new QueryBuilderException(OperatorNotSupported, operator);
         }
@@ -597,6 +619,9 @@ public class QueryContext {
                 return param;
 
             default:
+                if (param instanceof IMObjectReference) {
+                    return ((IMObjectReference) param).getLinkId();
+                }
                 return param;
         }
     }

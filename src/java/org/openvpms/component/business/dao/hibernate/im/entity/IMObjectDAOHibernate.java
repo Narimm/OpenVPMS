@@ -533,39 +533,47 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         try {
             session.setFlushMode(FlushMode.MANUAL);
-            Query query = session.createQuery(queryString);
-            params.setParameters(query);
 
-            // set the first result
-            if (firstResult != 0) {
-                query.setFirstResult(firstResult);
-            }
-
-            // set the maximum number fo rows
-            if (maxResults != ArchetypeQuery.ALL_RESULTS) {
-                query.setMaxResults(maxResults);
-                logger.debug("The maximum number of rows is " + maxResults);
-            }
-
-            query.setCacheable(true);
-
-            List rows = query.list();
             collector.setFirstResult(firstResult);
             collector.setPageSize(maxResults);
-            if (maxResults == ArchetypeQuery.ALL_RESULTS) {
-                collector.setTotalResults(rows.size());
-            } else if (count) {
+
+            if (maxResults == 0 && count) {
+                // only want a count of the results matching the criteria
                 int rowCount = count(queryString, params, session);
-                if (rowCount < rows.size()) {
-                    // rows deleted since initial query
-                    rowCount = rows.size();
-                }
                 collector.setTotalResults(rowCount);
             } else {
-                collector.setTotalResults(-1);
-            }
-            for (Object object : rows) {
-                collector.collect(object);
+                Query query = session.createQuery(queryString);
+                params.setParameters(query);
+
+                // set the first result
+                if (firstResult != 0) {
+                    query.setFirstResult(firstResult);
+                }
+
+                // set the maximum number of rows
+                if (maxResults != ArchetypeQuery.ALL_RESULTS) {
+                    query.setMaxResults(maxResults);
+                    logger.debug("The maximum number of rows is " + maxResults);
+                }
+
+                query.setCacheable(true);
+
+                List rows = query.list();
+                if (maxResults == ArchetypeQuery.ALL_RESULTS) {
+                    collector.setTotalResults(rows.size());
+                } else if (count) {
+                    int rowCount = count(queryString, params, session);
+                    if (rowCount < rows.size()) {
+                        // rows deleted since initial query
+                        rowCount = rows.size();
+                    }
+                    collector.setTotalResults(rowCount);
+                } else {
+                    collector.setTotalResults(-1);
+                }
+                for (Object object : rows) {
+                    collector.collect(object);
+                }
             }
         } finally {
             session.close();
