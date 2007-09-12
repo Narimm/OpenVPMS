@@ -76,7 +76,7 @@ public class PagedIMTable<T> extends Column {
     public void setResultSet(ResultSet<T> set) {
         PagedIMTableModel<T> model = getPagedIMTableModel();
         model.setResultSet(set);
-        if (set.hasNext() && set.getPages() > 1) {
+        if (set.getPages() > 1) {
             if (navigator == null) {
                 navigator = new TableNavigator(table);
                 navigator.setFocusTraversalParticipant(false);

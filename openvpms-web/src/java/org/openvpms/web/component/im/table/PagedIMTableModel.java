@@ -122,10 +122,7 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
         List<T> objects = Collections.emptyList();
         IPage<T> result = set.getPage(page);
         if (result != null) {
-            int rows = result.getTotalResults();
-            if (rows > 0) {
-                objects = result.getResults();
-            }
+            objects = result.getResults();
         }
         this.page = page;
         setPage(objects);
@@ -146,10 +143,7 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      * @return the total number of pages
      */
     public int getPages() {
-        if (set.getPage(page) != null) {
-            return set.getPages();
-        }
-        return 0;
+        return set.getPages();
     }
 
     /**
@@ -168,10 +162,7 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      * @return the total number of rows
      */
     public int getResults() {
-        if (set.getPage(page) != null) {
-            return set.getResults();
-        }
-        return 0;
+        return set.getResults();
     }
 
     /**

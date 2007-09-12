@@ -68,23 +68,11 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
                                             statuses, rowsPerPage, sort);
 
         assertFalse(set.hasNext());
-        try {
-            set.getPages();
-            fail("Expected getPages() to throw IllegalStateException");
-        } catch (IllegalStateException expected) {
-            // no-op
-        }
+        assertEquals(0, set.getPages());
+        assertEquals(0, set.getResults());
         assertNull(set.getPage(0));
         assertNull(set.getPage(1));
         assertEquals(rowsPerPage, set.getPageSize());
-
-        try {
-            set.getResults();
-            fail("Expected getResults() to throw IllegalStateException");
-        } catch (IllegalStateException expected) {
-            // no-op
-        }
-
         assertTrue(set.isSortedAscending());
         assertTrue(set.getSortConstraints() != null
                 && set.getSortConstraints().length == 0);

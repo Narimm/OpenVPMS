@@ -53,6 +53,15 @@ public abstract class AbstractListResultSet<T> extends AbstractResultSet<T> {
     }
 
     /**
+     * Returns the total number of results matching the query criteria.
+     *
+     * @return the total number of results
+     */
+    public int getResults() {
+        return objects.size();
+    }
+
+    /**
      * Determines if duplicate results should be filtered.
      *
      * @param distinct if true, remove duplicate results

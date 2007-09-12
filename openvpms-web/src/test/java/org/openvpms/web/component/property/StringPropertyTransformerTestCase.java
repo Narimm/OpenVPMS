@@ -61,18 +61,22 @@ public class StringPropertyTransformerTestCase
     }
 
     /**
-     * Verifies that any embedded nulls are removed. These cause the
-     * client to crash.
+     * Verifies that an exception is thrown if a string contains control
+     * characters.
      */
-    public void testStripASCIIZero() {
+    public void testExceptionForControlChars() {
         String bad = "abcd\u000012345";
         Party person = TestHelper.createCustomer();
         NodeDescriptor descriptor = getDescriptor(person, "name");
         Property property = new IMObjectProperty(person, descriptor);
         StringPropertyTransformer handler
                 = new StringPropertyTransformer(property);
-        String good = (String) handler.apply(bad);
-        assertEquals("abcd12345", good);
+        try {
+            handler.apply(bad);
+            fail("Expected PropertyException to be thrown");
+        } catch (PropertyException expected) {
+            // expected behaviour
+        }
     }
 
     /**

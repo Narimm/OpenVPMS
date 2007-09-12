@@ -22,6 +22,7 @@ import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.web.component.util.TextHelper;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -212,5 +213,19 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
             ++offset;
         }
         return result;
+    }
+
+    /**
+     * Helper to create a table column.
+     *
+     * @param index     the column index
+     * @param headerKey the header label resource key
+     */
+    protected static TableColumn createTableColumn(int index,
+                                                   String headerKey) {
+        TableColumn column = new TableColumn(index);
+        String label = Messages.get(headerKey);
+        column.setHeaderValue(label);
+        return column;
     }
 }

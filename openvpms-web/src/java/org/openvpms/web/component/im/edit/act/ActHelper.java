@@ -21,8 +21,6 @@ package org.openvpms.web.component.im.edit.act;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -36,8 +34,6 @@ import org.openvpms.web.component.im.query.ParticipantConstraint;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 
 /**
@@ -162,23 +158,7 @@ public class ActHelper {
      * @param relationshipTypes the relationship types
      */
     public static String[] getTargetShortNames(String ... relationshipTypes) {
-        Set<String> matches = new LinkedHashSet<String>();
-        for (String relationshipType : relationshipTypes) {
-            ArchetypeDescriptor relationship
-                    = DescriptorHelper.getArchetypeDescriptor(relationshipType);
-            NodeDescriptor target = relationship.getNodeDescriptor("target");
-            if (target != null) {
-                for (String shortName : target.getArchetypeRange()) {
-                    // expand wildcards
-                    String[] shortNames
-                            = DescriptorHelper.getShortNames(shortName, false);
-                    for (String expanded : shortNames) {
-                        matches.add(expanded);
-                    }
-                }
-            }
-        }
-        return matches.toArray(new String[0]);
+        return DescriptorHelper.getNodeShortNames(relationshipTypes, "target");
     }
 
 }

@@ -30,12 +30,9 @@ import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.IMTableModel;
-import org.openvpms.web.component.im.table.PagedIMObjectTable;
+import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.table.SortableTableModel;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -47,12 +44,14 @@ import java.util.List;
 
 
 /**
- * Read-only viewer for a collection of {@link IMObject}s.
+ * Viewer for a collection of {@link IMObject}s. The collection is displayed
+ * in a table. When an item is selected, a viewer containing it is displayed
+ * in a box beneath the table.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AbstractIMObjectCollectionViewer
+public abstract class IMTableCollectionViewer<T>
         implements IMObjectCollectionViewer {
 
     /**
@@ -61,9 +60,9 @@ public class AbstractIMObjectCollectionViewer
     private final IMObject object;
 
     /**
-     * Collection to browse.
+     * Collection to view.
      */
-    private PagedIMObjectTable<IMObject> table;
+    private PagedIMTable<T> table;
 
     /**
      * The collection property.
@@ -98,9 +97,9 @@ public class AbstractIMObjectCollectionViewer
      * @param parent   the parent object
      * @param layout   the layout context. May be <tt>null</tt>
      */
-    public AbstractIMObjectCollectionViewer(CollectionProperty property,
-                                            IMObject parent,
-                                            LayoutContext layout) {
+    public IMTableCollectionViewer(CollectionProperty property,
+                                   IMObject parent,
+                                   LayoutContext layout) {
         if (layout == null) {
             context = new DefaultLayoutContext();
         } else {
@@ -149,6 +148,35 @@ public class AbstractIMObjectCollectionViewer
     }
 
     /**
+     * Create a new table model.
+     *
+     * @param context the layout context
+     * @return a new table model
+     */
+    protected abstract IMTableModel<T> createTableModel(LayoutContext context);
+
+    /**
+     * Selects an object in the table.
+     *
+     * @param object the object to select
+     */
+    protected abstract void setSelected(IMObject object);
+
+    /**
+     * Returns the selected object.
+     *
+     * @return the selected object. May be <tt>null</tt>
+     */
+    protected abstract IMObject getSelected();
+
+    /**
+     * Creates a new result set.
+     *
+     * @return a new result set
+     */
+    protected abstract ResultSet<T> createResultSet();
+
+    /**
      * Lays out the component.
      */
     protected Component doLayout() {
@@ -170,7 +198,7 @@ public class AbstractIMObjectCollectionViewer
      * Browses the selected object.
      */
     protected void onBrowse() {
-        IMObject object = table.getTable().getSelected();
+        IMObject object = getSelected();
         if (object != null) {
             browse(object);
         }
@@ -216,7 +244,7 @@ public class AbstractIMObjectCollectionViewer
      *
      * @return the table
      */
-    protected PagedIMObjectTable<IMObject> getTable() {
+    protected PagedIMTable<T> getTable() {
         if (table == null) {
             table = createTable();
         }
@@ -228,9 +256,9 @@ public class AbstractIMObjectCollectionViewer
      *
      * @return a new table
      */
-    protected PagedIMObjectTable<IMObject> createTable() {
-        PagedIMObjectTable<IMObject> table = new PagedIMObjectTable<IMObject>(
-                createTableModel());
+    protected PagedIMTable<T> createTable() {
+        IMTableModel<T> tableModel = createTableModel(getLayoutContext());
+        PagedIMTable<T> table = new PagedIMTable<T>(tableModel);
         table.getTable().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onBrowse();
@@ -240,22 +268,12 @@ public class AbstractIMObjectCollectionViewer
     }
 
     /**
-     * Creates a new table model.
-     *
-     * @return a new table model
-     */
-    protected IMObjectTableModel<IMObject> createTableModel() {
-        return IMObjectTableModelFactory.create(property.getArchetypeRange(),
-                                                context);
-    }
-
-    /**
      * Populates the table.
      */
     protected void populateTable() {
-        ResultSet<IMObject> set = createResultSet();
+        ResultSet<T> set = createResultSet();
         table.setResultSet(set);
-        IMTableModel<IMObject> model = table.getTable().getModel();
+        IMTableModel<T> model = table.getTable().getModel();
         if (model instanceof SortableTableModel) {
             // if no column is currently sorted, sort on the default (if any)
             SortableTableModel sortable = ((SortableTableModel) model);
@@ -264,15 +282,6 @@ public class AbstractIMObjectCollectionViewer
                 sortable.sort(sortable.getDefaultSortColumn(), true);
             }
         }
-    }
-
-    /**
-     * Creates a new result set for display.
-     *
-     * @return a new result set
-     */
-    protected ResultSet<IMObject> createResultSet() {
-        return new IMObjectListResultSet<IMObject>(getObjects(), ROWS);
     }
 
 }

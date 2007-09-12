@@ -108,6 +108,23 @@ public class IMObjectSorter {
     }
 
     /**
+     * Returns a new comparator.
+     *
+     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
+     *                  sort in descending order
+     */
+    public static Comparator getComparator(boolean ascending) {
+        Comparator comparator = ComparatorUtils.naturalComparator();
+
+        // handle nulls.
+        comparator = ComparatorUtils.nullLowComparator(comparator);
+        if (!ascending) {
+            comparator = ComparatorUtils.reversedComparator(comparator);
+        }
+        return comparator;
+    }
+
+    /**
      * Returns a new transformer for a node sort constraint.
      *
      * @param sort the sort constraint
@@ -169,23 +186,6 @@ public class IMObjectSorter {
         Transformer transform = ChainedTransformer.getInstance(
                 transformer, new ArchetypeTransformer());
         return new TransformingComparator(transform, comparator);
-    }
-
-    /**
-     * Returns a new comparator.
-     *
-     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
-     *                  sort in descending order
-     */
-    private static Comparator getComparator(boolean ascending) {
-        Comparator comparator = ComparatorUtils.naturalComparator();
-
-        // handle nulls.
-        comparator = ComparatorUtils.nullLowComparator(comparator);
-        if (!ascending) {
-            comparator = ComparatorUtils.reversedComparator(comparator);
-        }
-        return comparator;
     }
 
     private static class NodeTransformer implements Transformer {

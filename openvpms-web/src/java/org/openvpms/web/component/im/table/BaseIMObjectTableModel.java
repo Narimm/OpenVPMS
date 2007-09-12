@@ -216,18 +216,4 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
         return index;
     }
 
-    /**
-     * Helper to create a table column.
-     *
-     * @param index     the column index
-     * @param headerKey the header label resource key
-     */
-    protected static TableColumn createTableColumn(int index,
-                                                   String headerKey) {
-        TableColumn column = new TableColumn(index);
-        String label = Messages.get(headerKey);
-        column.setHeaderValue(label);
-        return column;
-    }
-
 }

@@ -18,22 +18,22 @@
 
 package org.openvpms.web.app.customer;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionEditor;
 import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionPropertyEditor;
-import org.openvpms.web.component.im.relationship.RelationshipHelper;
+import org.openvpms.web.component.im.relationship.RelationshipState;
+import org.openvpms.web.component.im.relationship.RelationshipStateQuery;
+import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.property.CollectionProperty;
-
-import java.util.Date;
-import java.util.List;
 
 
 /**
  * Editor for collections of <em>entityRelationship.patientOwner</em> and
  * <em>entityRelationship.patientLocation</em> relationships.
- * Hides any inactive/deceased patients  if the 'hide inactive' checkbox is
+ * Hides any inactive/deceased patients if the 'hide inactive' checkbox is
  * selected.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -43,7 +43,7 @@ public class PatientEntityRelationshipCollectionEditor
         extends EntityRelationshipCollectionEditor {
 
     /**
-     * Construct a new <code>EntityRelationshipCollectionEditor</code>.
+     * Creates a new <tt>EntityRelationshipCollectionEditor</tt>.
      *
      * @param property the collection property
      * @param object   the object being edited
@@ -56,6 +56,21 @@ public class PatientEntityRelationshipCollectionEditor
     }
 
     /**
+     * Create a new table model.
+     *
+     * @param context the layout context
+     * @return a new table model
+     */
+    @Override
+    protected IMTableModel<RelationshipState> createTableModel(
+            LayoutContext context) {
+        EntityRelationshipCollectionPropertyEditor editor
+                = getCollectionPropertyEditor();
+        return new PatientRelationshipStateTableModel(context,
+                                                      editor.parentIsSource());
+    }
+
+    /**
      * An {@link EntityRelationshipCollectionPropertyEditor} that excludes
      * inactive/deceased patients if the 'hide inactive' checkbox is selected.
      */
@@ -63,7 +78,7 @@ public class PatientEntityRelationshipCollectionEditor
             extends EntityRelationshipCollectionPropertyEditor {
 
         /**
-         * Construct a new <code>Editor</code>.
+         * Construct a new <tt>Editor</tt>.
          *
          * @param property the collection property
          * @param party    the party
@@ -73,25 +88,15 @@ public class PatientEntityRelationshipCollectionEditor
         }
 
         /**
-         * Filters objects.
-         * This implementation filters inactive/deceased patients if
-         * {@link #getExcludeInactive()} is <code>true</code>.
+         * Creates a new relationship state query.
          *
-         * @param objects the objects to filter
-         * @return the filtered objects
+         * @param parent the parent entity
+         * @return a new query
          */
         @Override
-        protected List<IMObject> filter(List<IMObject> objects) {
-            List<IMObject> result;
-            if (getExcludeInactive()) {
-                Party party = (Party) getObject();
-                result = RelationshipHelper.filterPatients(party, objects,
-                                                           new Date());
-            } else {
-                result = objects;
-            }
-
-            return result;
+        protected RelationshipStateQuery createQuery(Entity parent) {
+            return new PatientRelationshipStateQuery(
+                    parent, getObjects(), getProperty().getArchetypeRange());
         }
     }
 

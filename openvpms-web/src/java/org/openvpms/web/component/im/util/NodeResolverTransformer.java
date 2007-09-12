@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.util;
 
 import org.apache.commons.collections.FunctorException;
 import org.apache.commons.collections.Transformer;
+import org.apache.commons.collections.map.LRUMap;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -39,15 +40,32 @@ public class NodeResolverTransformer implements Transformer {
      */
     private final String node;
 
+    private LRUMap cache;
 
     /**
-     * Construct a new <tt>NodeTransformer</tt>.
+     * Creates a new <tt>NodeResolverTransformer</tt>, that doesn't cache node
+     * values.
      *
      * @param node the node name
      */
     public NodeResolverTransformer(String node) {
-        this.node = node;
+        this(node, 0);
     }
+
+    /**
+     * Creates a new <tt>NodeResolverTransformer</tt>.
+     *
+     * @param node      the node name
+     * @param cacheSize the size of the node cache. Use <= 0 to indicate no
+     *                  cache
+     */
+    public NodeResolverTransformer(String node, int cacheSize) {
+        this.node = node;
+        if (cacheSize > 0) {
+            cache = new LRUMap(cacheSize);
+        }
+    }
+
 
     /**
      * Transforms the input object (leaving it unchanged) into some output
@@ -62,13 +80,23 @@ public class NodeResolverTransformer implements Transformer {
      *                                  completed
      */
     public Object transform(Object input) {
+        Object result = null;
         if (input instanceof IMObject) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            NodeResolver resolver = new NodeResolver((IMObject) input, service);
-            return resolver.getObject(node);
+            if (cache != null) {
+                result = cache.get(input);
+            }
+            if (result == null) {
+                IArchetypeService service
+                        = ArchetypeServiceHelper.getArchetypeService();
+                NodeResolver resolver = new NodeResolver((IMObject) input,
+                                                         service);
+                result = resolver.getObject(node);
+                if (cache != null) {
+                    cache.put(input, result);
+                }
+            }
         }
-        return null;
+        return result;
     }
 
 }

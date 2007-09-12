@@ -266,7 +266,7 @@ public abstract class AbstractActResultSet<T>
         query.setFirstResult(firstResult);
         query.setMaxResults(maxResults);
         query.setDistinct(isDistinct());
-        query.setCountResults(true);
+        query.setCountResults(false);
         IConstraint constraints = getConstraints();
         if (constraints != null) {
             query.add(constraints);

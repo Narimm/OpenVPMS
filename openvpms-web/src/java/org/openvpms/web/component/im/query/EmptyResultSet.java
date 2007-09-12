@@ -61,6 +61,15 @@ public class EmptyResultSet<T> extends AbstractResultSet<T> {
     }
 
     /**
+     * Returns the total number of results matching the query criteria.
+     *
+     * @return the total number of results
+     */
+    public int getResults() {
+        return 0;
+    }
+
+    /**
      * Sorts the set. This resets the iterator.
      *
      * @param sort the sort criteria. May be <code>null</code>
