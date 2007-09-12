@@ -26,16 +26,15 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
-import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
+import org.openvpms.web.component.im.edit.IMTableCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.NodeResolverTransformer;
+import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.resource.util.Messages;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -46,7 +45,7 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class EntityRelationshipCollectionEditor
-        extends IMObjectTableCollectionEditor {
+        extends IMTableCollectionEditor<RelationshipState> {
 
     /**
      * Determines if inactive relationships should be displayed.
@@ -83,16 +82,54 @@ public class EntityRelationshipCollectionEditor
     }
 
     /**
+     * Create a new table model.
+     *
+     * @param context the layout context
+     * @return a new table model
+     */
+    protected IMTableModel<RelationshipState> createTableModel(
+            LayoutContext context) {
+        EntityRelationshipCollectionPropertyEditor editor
+                = getCollectionPropertyEditor();
+        return new RelationshipStateTableModel(context,
+                                               editor.parentIsSource());
+    }
+
+    /**
+     * Selects an object in the table.
+     *
+     * @param object the object to select
+     */
+    protected void setSelected(IMObject object) {
+        EntityRelationshipCollectionPropertyEditor editor
+                = getCollectionPropertyEditor();
+        RelationshipState state
+                = editor.getRelationshipState((EntityRelationship) object);
+        getTable().getTable().setSelected(state);
+    }
+
+    /**
+     * Returns the selected object.
+     *
+     * @return the selected object. May be <tt>null</tt>
+     */
+    protected IMObject getSelected() {
+        RelationshipState selected = getTable().getTable().getSelected();
+        return (selected != null) ? selected.getRelationship() : null;
+    }
+
+    /**
      * Creates a new result set for display.
      *
      * @return a new result set
      */
-    @Override
-    protected ResultSet<IMObject> createResultSet() {
-        CollectionPropertyEditor editor = getCollectionPropertyEditor();
-        List<IMObject> objects = editor.getObjects();
-        return new IMObjectListResultSet<IMObject>(
-                objects, ROWS, new NodeResolverTransformer("target"));
+    protected ResultSet<RelationshipState> createResultSet() {
+        EntityRelationshipCollectionPropertyEditor editor
+                = getCollectionPropertyEditor();
+        List<RelationshipState> relationships
+                = new ArrayList<RelationshipState>(editor.getRelationships());
+        return new RelationshipStateResultSet(relationships,
+                                              editor.parentIsSource(), ROWS);
     }
 
     /**
@@ -118,12 +155,23 @@ public class EntityRelationshipCollectionEditor
     }
 
     /**
+     * Returns the collection property editor.
+     *
+     * @return the collection property editor
+     */
+    @Override
+    protected EntityRelationshipCollectionPropertyEditor
+            getCollectionPropertyEditor() {
+        return (EntityRelationshipCollectionPropertyEditor)
+                super.getCollectionPropertyEditor();
+    }
+
+    /**
      * Invoked when the 'hide inactive' checkbox changes.
      */
     private void onHideInactiveChanged() {
         EntityRelationshipCollectionPropertyEditor editor
-                = (EntityRelationshipCollectionPropertyEditor)
-                getCollectionPropertyEditor();
+                = getCollectionPropertyEditor();
         editor.setExcludeInactive(hideInactive.isSelected());
         populateTable();
     }

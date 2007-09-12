@@ -56,7 +56,6 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
      * Returns the total number of pages.
      *
      * @return the total no. of pages.
-     * @throws IllegalStateException if there is no current page
      */
     int getPages();
 
@@ -72,7 +71,6 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
      * Returns the total number of results matching the query criteria.
      *
      * @return the total number of results
-     * @throws IllegalStateException if there is no current page
      */
     int getResults();
 

@@ -26,8 +26,9 @@ import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.NodeResolverTransformer;
-import org.openvpms.web.component.im.view.AbstractIMObjectCollectionViewer;
+import org.openvpms.web.component.im.view.IMObjectTableCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
+
 
 /**
  * Viewer for collections of {@link ActRelationship}s.
@@ -36,7 +37,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ActRelationshipCollectionViewer
-        extends AbstractIMObjectCollectionViewer {
+        extends IMObjectTableCollectionViewer {
 
 
     /**

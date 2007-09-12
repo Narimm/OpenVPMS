@@ -30,10 +30,10 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DefaultIMObjectCollectionViewer
-        extends AbstractIMObjectCollectionViewer {
+        extends IMObjectTableCollectionViewer {
 
     /**
-     * Construct a new <code>DefaultIMObjectCollectionViewer</code>.
+     * Construct a new <tt>DefaultIMObjectCollectionViewer</tt>.
      *
      * @param property the collection to view
      * @param parent   the parent object

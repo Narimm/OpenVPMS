@@ -21,12 +21,15 @@ package org.openvpms.web.component.im.relationship;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.property.CollectionProperty;
 
-import java.util.Date;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 
 /**
@@ -42,24 +45,47 @@ public class EntityRelationshipCollectionPropertyEditor
     /**
      * The parent object.
      */
-    private final Entity object;
+    private final Entity parent;
+
+    /**
+     * Determines if the parent is the source or target of the relationships.
+     */
+    private final boolean parentIsSource;
+
+    /**
+     * The relationship state factory.
+     */
+    private final RelationshipStateFactory factory;
 
     /**
      * Determines if inactive relationships should be excluded.
      */
     private boolean exclude = true;
 
+    /**
+     * The entity relationship states, keyed on their corresponding
+     * relationships.
+     */
+    private Map<EntityRelationship, RelationshipState> states
+            = new LinkedHashMap<EntityRelationship, RelationshipState>();
+
 
     /**
-     * Construct a new <code>EntityRelationshipCollectionPropertyEditor</code>.
+     * Creates a new <tt>EntityRelationshipCollectionPropertyEditor</tt>.
      *
      * @param property the collection property
-     * @param object   the parent object
+     * @param parent   the parent entity
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public EntityRelationshipCollectionPropertyEditor(
-            CollectionProperty property, Entity object) {
+            CollectionProperty property, Entity parent) {
         super(property);
-        this.object = object;
+        this.parent = parent;
+
+        RelationshipStateQuery query = createQuery(parent);
+        parentIsSource = query.parentIsSource();
+        factory = query.getFactory();
+        states = query.query();
     }
 
     /**
@@ -67,14 +93,14 @@ public class EntityRelationshipCollectionPropertyEditor
      *
      * @return the parent object
      */
-    public Entity getObject() {
-        return object;
+    public Entity getParent() {
+        return parent;
     }
 
     /**
      * Indicates if inactive relationships should be excluded.
      *
-     * @param exclude if <code>true</code> exclude inactive relationships
+     * @param exclude if <tt>true</tt> exclude inactive relationships
      */
     public void setExcludeInactive(boolean exclude) {
         this.exclude = exclude;
@@ -83,40 +109,94 @@ public class EntityRelationshipCollectionPropertyEditor
     /**
      * Determines if inactive relationships should be excluded.
      *
-     * @return <code>true</code> if inactive relationships should be excluded
+     * @return <tt>true</tt> if inactive relationships should be excluded
      */
     public boolean getExcludeInactive() {
         return exclude;
     }
 
     /**
-     * Returns the objects in the collection.
+     * Determines if the parent is the source or target of the relationships.
      *
-     * @return the objects in the collection
+     * @return <tt>true</tt> if the parent is the source, <tt>false</tt> if it
+     *         is the target
      */
-    @Override
-    public List<IMObject> getObjects() {
-        return filter(super.getObjects());
+    public boolean parentIsSource() {
+        return parentIsSource;
     }
 
     /**
-     * Filters objects.
-     * This implementation filters inactive objects,
-     * if {@link #getExcludeInactive()} is <code>true</code>.
+     * Returns the relationship states, filtering inactive states if
+     * {@link #getExcludeInactive()} is <tt>true</tt>.
      *
-     * @param objects the objects to filter
-     * @return the filtered objects
+     * @return the relationship states
      */
-    protected List<IMObject> filter(List<IMObject> objects) {
-        List<IMObject> result;
+    public Collection<RelationshipState> getRelationships() {
+        Collection<RelationshipState> result;
         if (exclude) {
-            result = RelationshipHelper.filterInactive(object, objects,
-                                                       new Date());
+            result = new ArrayList<RelationshipState>();
+            for (RelationshipState relationship : states.values()) {
+                if (relationship.isActive()) {
+                    result.add(relationship);
+                }
+            }
         } else {
-            result = objects;
+            result = states.values();
         }
-
         return result;
+    }
+
+    /**
+     * Returns the relationship state for a relationship.
+     *
+     * @param relationship the relationship
+     * @return the corresponding state, or <tt>null</tt> if none is found
+     */
+    public RelationshipState getRelationshipState(
+            EntityRelationship relationship) {
+        return states.get(relationship);
+    }
+
+    /**
+     * Adds an object to the collection, if it doesn't exist.
+     *
+     * @param object the object to add
+     * @return <tt>true</tt> if the object was added, otherwise <tt>false</tt>
+     */
+    @Override
+    public boolean add(IMObject object) {
+        boolean added = super.add(object);
+        if (added) {
+            EntityRelationship relationship = (EntityRelationship) object;
+            RelationshipState state = factory.create(getParent(), relationship,
+                                                     parentIsSource);
+            states.put(relationship, state);
+        }
+        return added;
+    }
+
+    /**
+     * Removes an object from the collection.
+     * This removes any associated editor.
+     *
+     * @param object the object to remove
+     */
+    @Override
+    @SuppressWarnings("SuspiciousMethodCalls")
+    public void remove(IMObject object) {
+        super.remove(object);
+        states.remove(object);
+    }
+
+    /**
+     * Creates a new relationship state query.
+     *
+     * @param parent the parent entity
+     * @return a new query
+     */
+    protected RelationshipStateQuery createQuery(Entity parent) {
+        return new RelationshipStateQuery(
+                parent, getObjects(), getProperty().getArchetypeRange());
     }
 
 }

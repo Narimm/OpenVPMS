@@ -18,9 +18,11 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -43,8 +45,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
         extends AbstractResultSet<T> {
 
     /**
-     * Additional constraints to associate with the query. May be
-     * <code>null</code>
+     * Additional constraints to associate with the query. May be <tt>null</tt>.
      */
     private final IConstraint constraints;
 
@@ -54,9 +55,13 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     private boolean distinct;
 
     /**
-     * The sort criteria. May be <code>null</code>.
+     * The sort criteria. May be <tt>null</tt>.
      */
     private SortConstraint[] sort;
+
+    private LRUMap cache = new LRUMap();
+
+    private int count = -1;
 
     /**
      * The logger.
@@ -66,10 +71,10 @@ public abstract class AbstractArchetypeServiceResultSet<T>
 
 
     /**
-     * Construct a new <code>AbstractArchetypeServiceResultSet</code>.
+     * Construct a new <tt>AbstractArchetypeServiceResultSet</tt>.
      *
      * @param pageSize the maximum no. of results per page
-     * @param sort     the sort criteria. May be <code>null</code>
+     * @param sort     the sort criteria. May be <tt>null</tt>
      */
     public AbstractArchetypeServiceResultSet(int pageSize,
                                              SortConstraint[] sort) {
@@ -77,11 +82,11 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     }
 
     /**
-     * Construct a new <code>AbstractArchetypeServiceResultSet</code>.
+     * Construct a new <tt>AbstractArchetypeServiceResultSet</tt>.
      *
-     * @param constraints query constraints. May be <code>null</code>
+     * @param constraints query constraints. May be <tt>null</tt>
      * @param pageSize    the maximum no. of results per page
-     * @param sort        the sort criteria. May be <code>null</code>
+     * @param sort        the sort criteria. May be <tt>null</tt>
      */
     public AbstractArchetypeServiceResultSet(IConstraint constraints,
                                              int pageSize,
@@ -92,9 +97,36 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     }
 
     /**
+     * Reset the iterator.
+     */
+    @Override
+    public void reset() {
+        cache.clear();
+        count = -1;
+        super.reset();
+    }
+
+    /**
+     * Returns the total number of results matching the query criteria.
+     *
+     * @return the total number of results
+     */
+    public int getResults() {
+        if (count == -1) {
+            ArchetypeQuery query = createQuery(0, 0);
+            query.setCountResults(true);
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            IPage<IMObject> results = service.get(query);
+            count = results.getTotalResults();
+        }
+        return count;
+    }
+
+    /**
      * Sort the set. This resets the iterator.
      *
-     * @param sort the sort criteria. May be <code>null</code>
+     * @param sort the sort criteria. May be <tt>null</tt>
      */
     public void sort(SortConstraint[] sort) {
         setSortConstraint(sort);
@@ -104,8 +136,8 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     /**
      * Determines if the node is sorted ascending or descending.
      *
-     * @return <code>true</code> if the node is sorted ascending or no sort
-     *         constraint was specified; <code>false</code> if it is sorted
+     * @return <tt>true</tt> if the node is sorted ascending or no sort
+     *         constraint was specified; <tt>false</tt> if it is sorted
      *         descending
      */
     public boolean isSortedAscending() {
@@ -133,8 +165,8 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     /**
      * Determines if duplicate results should be filtered.
      *
-     * @return <code>true</code> if duplicate results should be removed;
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if duplicate results should be removed;
+     *         otherwise <tt>false</tt>
      */
     public boolean isDistinct() {
         return distinct;
@@ -143,7 +175,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     /**
      * Sets the sort criteria.
      *
-     * @param sort the sort criteria. May be <code>null</code>
+     * @param sort the sort criteria. May be <tt>null</tt>
      */
     protected void setSortConstraint(SortConstraint[] sort) {
         this.sort = (sort != null) ? sort : new SortConstraint[0];
@@ -180,7 +212,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
         query.setFirstResult(firstResult);
         query.setMaxResults(maxResults);
         query.setDistinct(isDistinct());
-        query.setCountResults(true);
+        query.setCountResults(false);
         IConstraint constraints = getConstraints();
         if (constraints != null) {
             query.add(constraints);
@@ -194,10 +226,28 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     /**
      * Returns the specified page.
      *
+     * @param page the page no.
+     * @return the page corresponding to <tt>page</tt>. May be <tt>null</tt>
+     */
+    @Override
+    public IPage<T> getPage(int page) {
+        IPage<T> result = (IPage<T>) cache.get(page);
+        if (result == null) {
+            result = super.getPage(page);
+            if (result != null) {
+                cache.put(page, result);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the specified page.
+     *
      * @param firstResult the first result of the page to retrieve
      * @param maxResults  the maximun no of results in the page
-     * @return the page corresponding to <code>firstResult</code>, or
-     *         <code>null</code> if none exists
+     * @return the page corresponding to <tt>firstResult</tt>, or
+     *         <tt>null</tt> if none exists
      */
     protected IPage<T> getPage(int firstResult, int maxResults) {
         IPage<IMObject> result = null;

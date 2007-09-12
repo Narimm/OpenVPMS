@@ -18,15 +18,14 @@
 
 package org.openvpms.web.app.customer;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionViewer;
-import org.openvpms.web.component.im.relationship.RelationshipHelper;
+import org.openvpms.web.component.im.relationship.RelationshipState;
+import org.openvpms.web.component.im.relationship.RelationshipStateQuery;
+import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.property.CollectionProperty;
-
-import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -42,7 +41,7 @@ public class PatientEntityRelationshipCollectionViewer
         extends EntityRelationshipCollectionViewer {
 
     /**
-     * Construct a new <code>PatientEntityRelationshipCollectionViewer</code>.
+     * Construct a new <tt>PatientEntityRelationshipCollectionViewer</tt>.
      *
      * @param property the collection to view
      * @param parent   the parent object
@@ -54,20 +53,26 @@ public class PatientEntityRelationshipCollectionViewer
     }
 
     /**
-     * Filters objects.
-     * This implementation filters inactive objects, if {@link #hideInactive()}
-     * is <code>true</code>.
+     * Create a new table model.
      *
-     * @param objects the objects to filter
-     * @return the filtered objects
+     * @param context the layout context
+     * @return a new table model
+     */
+    protected IMTableModel<RelationshipState> createTableModel(
+            LayoutContext context) {
+        return new PatientRelationshipStateTableModel(context,
+                                                      parentIsSource());
+    }
+
+    /**
+     * Creates a new relationship state query.
+     *
+     * @param parent the parent entity
+     * @return a new query
      */
     @Override
-    protected List<IMObject> filter(List<IMObject> objects) {
-        if (hideInactive()) {
-            Party object = (Party) getObject();
-            objects = RelationshipHelper.filterPatients(object, objects,
-                                                        new Date());
-        }
-        return objects;
+    protected RelationshipStateQuery createQuery(Entity parent) {
+        return new PatientRelationshipStateQuery(
+                parent, getObjects(), getProperty().getArchetypeRange());
     }
 }

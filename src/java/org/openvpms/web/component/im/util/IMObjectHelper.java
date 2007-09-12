@@ -165,6 +165,32 @@ public class IMObjectHelper {
     }
 
     /**
+     * Determines if an object associated with a reference is active.
+     *
+     * @param reference the object reference. May be <tt>null</tt>
+     * @return <tt>true</tt> if the object is active, otherwise <tt>false</tt>
+     */
+    public static boolean isActive(IMObjectReference reference) {
+        if (reference != null) {
+            try {
+                ObjectRefConstraint constraint
+                        = new ObjectRefConstraint("o", reference);
+                ArchetypeQuery query = new ArchetypeQuery(constraint);
+                query.add(new NodeSelectConstraint("o.active"));
+                query.setMaxResults(1);
+                Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
+                if (iter.hasNext()) {
+                    ObjectSet set = iter.next();
+                    return (Boolean) set.get("o.active");
+                }
+            } catch (OpenVPMSException error) {
+                log.error(error, error);
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns an object given its reference and descriptor. If the reference is
      * null, determines if the specified archetype range matches that of the
      * current object being viewed/edited and returns that instead.

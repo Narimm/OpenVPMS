@@ -48,13 +48,13 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     private int _cursor;
 
     /**
-     * The nodes to query. If <code>null</code> indicates to query all nodes.
+     * The nodes to query. If <tt>null</tt> indicates to query all nodes.
      */
     private String[] nodes;
 
 
     /**
-     * Construct a new <code>AbstractResultSet</code>.
+     * Construct a new <tt>AbstractResultSet</tt>.
      *
      * @param pageSize the maximum no. of results per page
      */
@@ -75,8 +75,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * Returns the specified page.
      *
      * @param page the page no.
-     * @return the page corresponding to <code>page</code>.
-     *         May be <code>null</code>
+     * @return the page corresponding to <tt>page</tt>. May be <tt>null</tt>
      */
     public IPage<T> getPage(int page) {
         IPage<T> result = get(page);
@@ -88,13 +87,17 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * Returns the total number of pages.
      *
      * @return the total no. of pages.
-     * @throws IllegalStateException if there is no current page
      */
     public int getPages() {
-        if (_page == null) {
-            throw new IllegalStateException("No current page");
+        if (pageSize == ArchetypeQuery.ALL_RESULTS) {
+            return 1;
         }
-        return getPages(_page);
+        int results = getResults();
+        int pages = (results / pageSize);
+        if (results % pageSize > 0) {
+            ++pages;
+        }
+        return pages;
     }
 
     /**
@@ -108,23 +111,10 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     }
 
     /**
-     * Returns the total number of results matching the query criteria.
-     *
-     * @return the total number of results
-     * @throws IllegalStateException if there is no current page
-     */
-    public int getResults() {
-        if (_page == null) {
-            throw new IllegalStateException("No current page");
-        }
-        return _page.getTotalResults();
-    }
-
-    /**
-     * Sets the nodes to query. If <code>null</code> or empty, indicates
+     * Sets the nodes to query. If <tt>null</tt> or empty, indicates
      * to query all nodes.
      *
-     * @param nodes the nodes to query. May be <code>null</code>
+     * @param nodes the nodes to query. May be <tt>null</tt>
      */
     public void setNodes(String[] nodes) {
         this.nodes = nodes;
@@ -133,7 +123,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     /**
      * Returns the nodes to query.
      *
-     * @return the nodes to query/ If <code>null</code> indicates to query
+     * @return the nodes to query/ If <tt>null</tt> indicates to query
      *         all nodes
      */
     public String[] getNodes() {
@@ -266,16 +256,16 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * Returns the specified page.
      *
      * @param firstResult the first result of the page to retrieve
-     * @param maxResults  the maximun no of results in the page
-     * @return the page corresponding to <code>firstResult</code>, or
-     *         <code>null</code> if none exists
+     * @param maxResults  the maximum no of results in the page
+     * @return the page corresponding to <tt>firstResult</tt>, or
+     *         <tt>null</tt> if none exists
      */
     protected abstract IPage<T> getPage(int firstResult, int maxResults);
 
     /**
      * Returns the current page.
      *
-     * @return the current page or <code>null</code> if there is no current
+     * @return the current page or <tt>null</tt> if there is no current
      *         page
      */
     protected IPage<T> getPage() {
@@ -297,23 +287,6 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     }
 
     /**
-     * Returns the total no. of pages.
-     *
-     * @param page the current page
-     * @return the total no. of pages
-     */
-    protected int getPages(IPage<T> page) {
-        if (pageSize == ArchetypeQuery.ALL_RESULTS) {
-            return 1;
-        }
-        int pages = (page.getTotalResults() / pageSize);
-        if (page.getTotalResults() % pageSize > 0) {
-            ++pages;
-        }
-        return pages;
-    }
-
-    /**
      * Helper to return the index of the first result of the current page.
      *
      * @param page the current page
@@ -328,7 +301,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      *
      * @param page the current page
      * @return the index of the first result in the next page. If
-     *         <code>&gt;objects.size()</code> indicates at end of set
+     *         <tt>&gt;objects.size()</tt> indicates at end of set
      */
     protected int getNextRow(IPage<T> page) {
         return getFirstResult(page) + page.getResults().size();
@@ -338,7 +311,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * Helper to return the index of the first result of the previous page.
      *
      * @return the index of the first result of the previous page. If
-     *         <code>&lt;0</code> indicates at beginning of set
+     *         <tt>&lt;0</tt> indicates at beginning of set
      */
     protected int getPreviousRow(IPage<T> page) {
         if (pageSize == ArchetypeQuery.ALL_RESULTS) {
@@ -351,7 +324,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * Returns the specified page.
      *
      * @param page the page no.
-     * @return the page, or <code>null</code> if there is no such page
+     * @return the page, or <tt>null</tt> if there is no such page
      */
     protected IPage<T> get(int page) {
         int row = page * pageSize;

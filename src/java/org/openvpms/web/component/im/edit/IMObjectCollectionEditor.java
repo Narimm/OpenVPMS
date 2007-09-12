@@ -23,6 +23,7 @@ import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.property.CollectionProperty;
 
+
 /**
  * Editor for a collection of {@link IMObject}s.
  *
