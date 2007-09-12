@@ -169,7 +169,7 @@ public class TestHelper extends Assert {
      * @return a new user
      */
     public static User createUser() {
-        return createUser("zuser", true);
+        return createUser("zuser" + System.currentTimeMillis(), true);
     }
 
     /**
