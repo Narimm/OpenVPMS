@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -431,6 +432,26 @@ public class QueryBuilderTestCase
         ArchetypeQuery query = new ArchetypeQuery("document.act", false, false);
         query.add(new NodeConstraint("docReference", RelationalOp.IsNULL));
 
+        checkQuery(query, expected);
+    }
+
+    /**
+     * Tests queries
+     */
+    public void testIn() {
+        final String expected = "select documentAct0 from "
+                + DocumentAct.class.getName() + " as documentAct0 "
+                + "where (documentAct0.archetypeId.shortName = :shortName0 and "
+                + "documentAct0.docReference.linkId "
+                + "in (:docReference0, :docReference1))";
+        ArchetypeId id = new ArchetypeId("document.common.1.0");
+        Document d1 = new Document(id);
+        Document d2 = new Document(id);
+
+        ArchetypeQuery query = new ArchetypeQuery("document.act", false, false);
+        query.add(new NodeConstraint("docReference", RelationalOp.IN,
+                                     d1.getObjectReference(),
+                                     d2.getObjectReference()));
         checkQuery(query, expected);
     }
 

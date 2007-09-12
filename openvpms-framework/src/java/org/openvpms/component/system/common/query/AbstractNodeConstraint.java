@@ -89,13 +89,13 @@ public abstract class AbstractNodeConstraint implements IConstraint {
         }
         this.operator = operator;
 
-        if ((parameters == null && operator != RelationalOp.IsNULL)
-                || (parameters != null
-                && parameters.length != operator.getParamCount())) {
+        int size = parameters != null ? parameters.length : 0;
+        int expected = operator.getParamCount();
+        if ((operator == RelationalOp.IN && size < 1)
+                || (operator != RelationalOp.IN && size != expected)) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.ParameterCountMismatch,
-                    operator, operator.getParamCount(),
-                    (parameters == null ? 0 : parameters.length));
+                    operator, operator.getParamCount(), size);
         }
         this.parameters = parameters;
     }
