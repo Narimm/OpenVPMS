@@ -207,7 +207,7 @@ public class TestHelper extends Assert {
      * @return a new user
      */
     public static User createClinician(boolean save) {
-        User user = createUser("zvet", false);
+        User user = createUser("zvet" + System.currentTimeMillis(), false);
         user.addClassification(
                 getClassification("lookup.userType", "CLINICIAN"));
         if (save) {
