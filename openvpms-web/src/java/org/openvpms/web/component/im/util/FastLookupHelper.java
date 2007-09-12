@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelperExce
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -84,8 +85,9 @@ public class FastLookupHelper {
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
     public static List<Lookup> getLookups(NodeDescriptor descriptor) {
-        return LookupHelper.get(ArchetypeServiceHelper.getArchetypeService(),
-                                descriptor, NODES);
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        return filter(LookupHelper.get(service, descriptor, NODES));
     }
 
     /**
@@ -122,8 +124,9 @@ public class FastLookupHelper {
      */
     public static List<Lookup> getLookups(NodeDescriptor descriptor,
                                           IMObject context) {
-        return LookupHelper.get(ArchetypeServiceHelper.getArchetypeService(),
-                                descriptor, context, NODES);
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        return filter(LookupHelper.get(service, descriptor, context, NODES));
     }
 
     /**
@@ -163,6 +166,25 @@ public class FastLookupHelper {
         Map<String, String> result = new HashMap<String, String>();
         for (Lookup lookup : getLookups(descriptor)) {
             result.put(lookup.getCode(), lookup.getName());
+        }
+        return result;
+    }
+
+    /**
+     * Removes inactive lookups.
+     *
+     * @param lookups the lookups to filter
+     * @return the filtered lookups
+     */
+    private static List<Lookup> filter(List<Lookup> lookups) {
+        if (lookups.isEmpty()) {
+            return lookups;
+        }
+        List<Lookup> result = new ArrayList<Lookup>();
+        for (Lookup lookup : lookups) {
+            if (lookup.isActive()) {
+                result.add(lookup);
+            }
         }
         return result;
     }
