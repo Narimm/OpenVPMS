@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -269,6 +270,25 @@ public class DescriptorHelperTestCase
         assertNotNull(object);
         String name = DescriptorHelper.getDisplayName(object, "startTime");
         assertEquals("Date", name);
+    }
+
+    /**
+     * Tests the {@link DescriptorHelper#getNodeShortNames(String[], String)}
+     * method.
+     */
+    public void testGetNodeShortNames() {
+        String[] shortNames = {"entityRelationship.animal*"};
+        String[] nodeShortNames = DescriptorHelper.getNodeShortNames(
+                shortNames, "target");
+        assertEquals(1, nodeShortNames.length);
+        assertEquals("party.animalpet", nodeShortNames[0]);
+
+        nodeShortNames = DescriptorHelper.getNodeShortNames(shortNames,
+                                                            "source");
+        assertEquals(2, nodeShortNames.length);
+        List<String> list =Arrays.asList(nodeShortNames);
+        assertTrue(list.contains("party.person"));
+        assertTrue(list.contains("organization.organization"));
     }
 
     /**

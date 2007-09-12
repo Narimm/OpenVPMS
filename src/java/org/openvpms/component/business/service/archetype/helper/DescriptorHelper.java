@@ -390,6 +390,56 @@ public final class DescriptorHelper {
     }
 
     /**
+     * Returns archetype short names from a node for each archetype where
+     * the node is present. This expands any wildcards.
+     * <p/>
+     * If the {@link NodeDescriptor#getFilter} is non-null, matching shortnames
+     * are returned, otherwise matching short names from
+     * {@link NodeDescriptor#getArchetypeRange()} are returned.
+     *
+     * @param shortNames the archetype short names
+     * @param node       the node name
+     * @return a list of short names
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String[] getNodeShortNames(String[] shortNames, String node) {
+        return getNodeShortNames(
+                shortNames, node, ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns archetype short names from a node for each archetype where
+     * the specified node is present. This expands any wildcards.
+     * <p/>
+     * If the {@link NodeDescriptor#getFilter} is non-null, matching shortnames
+     * are returned, otherwise matching short names from
+     * {@link NodeDescriptor#getArchetypeRange()} are returned.
+     *
+     * @param shortNames the archetype short names
+     * @param node       the node name
+     * @return a list of short names
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String[] getNodeShortNames(String[] shortNames, String node,
+                                             IArchetypeService service) {
+        Set<String> matches = new LinkedHashSet<String>();
+        String[] expanded = getShortNames(shortNames);
+        for (String shortName : expanded) {
+            ArchetypeDescriptor archetype
+                    = DescriptorHelper.getArchetypeDescriptor(shortName);
+            if (archetype != null) {
+                NodeDescriptor desc = archetype.getNodeDescriptor(node);
+                if (desc != null) {
+                    for (String match : getShortNames(desc, service)) {
+                        matches.add(match);
+                    }
+                }
+            }
+        }
+        return matches.toArray(new String[0]);
+    }
+
+    /**
      * Returns the display name for an archetype.
      *
      * @param shortName the archetype short name
