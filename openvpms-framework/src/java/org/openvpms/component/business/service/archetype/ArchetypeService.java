@@ -96,8 +96,11 @@ public class ArchetypeService implements IArchetypeService {
     private EntityInterceptor entityInterceptor;
 
 
+    /**
+     * Control characters, excluding <em>'\n', '\r', '\t'</em>.
+     */
     private static final Pattern CNTRL_CHARS
-            = Pattern.compile(".*[\\p{Cntrl}].*");
+            = Pattern.compile(".*[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F].*");
 
     /**
      * Construct an instance of this service using the specified archetpe class by loading and parsing all the

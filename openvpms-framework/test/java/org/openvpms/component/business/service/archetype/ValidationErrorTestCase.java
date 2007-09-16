@@ -433,8 +433,8 @@ public class ValidationErrorTestCase extends BaseTestCase {
     }
 
     /**
-     * Verfies that validation fails if control characters are present in
-     * a string.
+     * Verfies that validation fails if any control characters
+     * (except '\n', '\r' and '\t') are present in a string.
      *
      * @throws Exception for any error
      */
@@ -459,17 +459,15 @@ public class ValidationErrorTestCase extends BaseTestCase {
         eid.setIdentity("animal1");
         pet.getIdentities().add(eid);
 
-        // check control chars <= 31
+        // check control chars <= 31. \r, \n, and \t should valid
         for (char ch = 0; ch < 32; ++ch) {
-            String invalidName = "abc" + ch + "def";
-            pet.setName(invalidName);
-            try {
-                service.validateObject(pet);
-                fail("Expected validation error to be thrown for char "
-                        + "0x" + Integer.toHexString(ch));
-            } catch (ValidationException expected) {
-                // do nothing
-            }
+            boolean valid = ch == '\r' || ch == '\n' || ch == '\t';
+            checkCharacter(ch, valid, pet, service);
+        }
+        // check remaining chars up to 255. 0x7F (delete) should be invalid.
+        for (char ch = 32; ch <= 255; ++ch) {
+            boolean valid = ch != '\u007F';  // delete char
+            checkCharacter(ch, valid, pet, service);
         }
     }
 
@@ -500,6 +498,33 @@ public class ValidationErrorTestCase extends BaseTestCase {
     protected void dumpErrors(ValidationException exception) {
         for (ValidationError error : exception.getErrors()) {
             error(error);
+        }
+    }
+
+    /**
+     * Verifies that a validation exception is thrown for invalid characters
+     * present in a string.
+     *
+     * @param ch      the character to check
+     * @param valid   determines if the character is valid or not
+     * @param pet     an object to populate
+     * @param service the archetype service
+     */
+    private void checkCharacter(char ch, boolean valid, Party pet,
+                                ArchetypeService service) {
+        String name = "abc" + ch + "def";
+        pet.setName(name);
+        try {
+            service.validateObject(pet);
+            if (!valid) {
+                fail("Expected validation error to be thrown for char "
+                        + "0x" + Integer.toHexString(ch));
+            }
+        } catch (ValidationException exception) {
+            if (valid) {
+                fail("Expected no validation error to be thrown for char "
+                        + "0x" + Integer.toHexString(ch));
+            }
         }
     }
 
