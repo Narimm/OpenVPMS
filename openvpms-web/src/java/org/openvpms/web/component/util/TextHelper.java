@@ -30,14 +30,22 @@ import java.util.regex.Pattern;
 public class TextHelper {
 
     /**
+     * Regular expression that matches strings control characters except
+     * '\n', '\r', '\t'.
+     */
+    private static final String CNTRL_CHARS
+            = "[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]";
+
+    /**
      * Pattern that matches strings containing control characters.
      */
-    private static final Pattern CONTAINS = Pattern.compile(".*[\\p{Cntrl}].*");
+    private static final Pattern CONTAINS
+            = Pattern.compile(".*" + CNTRL_CHARS + ".*");
 
     /**
      * Pattern used to replace control characters.
      */
-    private static final Pattern REPLACE = Pattern.compile("[\\p{Cntrl}]");
+    private static final Pattern REPLACE = Pattern.compile(CNTRL_CHARS);
 
 
     /**
