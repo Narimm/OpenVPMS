@@ -54,10 +54,19 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
 
     /**
      * Returns the total number of pages.
+     * For complex queries, this operation can be expensive. If an exact
+     * count is not required, use {@link #getEstimatedPages()}.
      *
      * @return the total no. of pages.
      */
     int getPages();
+
+    /**
+     * Returns an estimation of the total no. of pages.
+     *
+     * @return an estimation of the total no. of pages
+     */
+    int getEstimatedPages();
 
     /**
      * Returns the number of results returned per page.
@@ -69,10 +78,31 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
 
     /**
      * Returns the total number of results matching the query criteria.
+     * For complex queries, this operation can be expensive. If an exact
+     * count is not required, use {@link #getEstimatedResults()}.
      *
      * @return the total number of results
      */
     int getResults();
+
+    /**
+     * Returns an estimation of the total no. of results matching the query
+     * criteria.
+     *
+     * @return an estimation of the total no. of results
+     */
+    int getEstimatedResults();
+
+    /**
+     * Determines if the estimated no. of results is the actual total, i.e
+     * if {@link #getEstimatedResults()} would return the same as
+     * {@link #getResults()}, and {@link #getEstimatedPages()} would return
+     * the same as {@link #getPages()}.
+     *
+     * @return <tt>true</tt> if the estimated results equals the actual no.
+     *         of results
+     */
+    boolean isEstimatedActual();
 
     /**
      * Determines if the node is sorted ascending or descending.

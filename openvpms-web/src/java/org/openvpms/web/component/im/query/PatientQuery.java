@@ -256,7 +256,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
     }
 
     /**
-     * Returns tha patients associated with a customer.
+     * Returns the patients associated with a customer.
      *
      * @param customer the customer
      * @return a list of patients associated with <code>nustomer</code>

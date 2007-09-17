@@ -18,12 +18,8 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
-
-import java.util.Collections;
-import java.util.List;
 
 
 /**
@@ -44,14 +40,9 @@ public class EmptyResultSet<T> extends AbstractResultSet<T> {
      */
     private boolean sortAscending = true;
 
-    /**
-     * The results.
-     */
-    private static List RESULTS = Collections.emptyList();
-
 
     /**
-     * Construct a new <code>EmptyResultSet</code>.
+     * Construct a new <tt>EmptyResultSet</tt>.
      *
      * @param pageSize the maximum no. of results per page
      */
@@ -60,8 +51,11 @@ public class EmptyResultSet<T> extends AbstractResultSet<T> {
         reset();
     }
 
+
     /**
      * Returns the total number of results matching the query criteria.
+     * For complex queries, this operation can be expensive. If an exact
+     * count is not required, use {@link #getEstimatedResults()}.
      *
      * @return the total number of results
      */
@@ -70,9 +64,32 @@ public class EmptyResultSet<T> extends AbstractResultSet<T> {
     }
 
     /**
+     * Returns an estimation of the total no. of results matching the query
+     * criteria.
+     *
+     * @return an estimation of the total no. of results
+     */
+    public int getEstimatedResults() {
+        return 0;
+    }
+
+    /**
+     * Determines if the estimated no. of results is the actual total, i.e
+     * if {@link #getEstimatedResults()} would return the same as
+     * {@link #getResults()}, and {@link #getEstimatedPages()} would return
+     * the same as {@link #getPages()}.
+     *
+     * @return <tt>true</tt> if the estimated results equals the actual no.
+     *         of results
+     */
+    public boolean isEstimatedActual() {
+        return true;
+    }
+
+    /**
      * Sorts the set. This resets the iterator.
      *
-     * @param sort the sort criteria. May be <code>null</code>
+     * @param sort the sort criteria. May be <tt>null</tt>
      */
     public void sort(SortConstraint[] sort) {
         reset();
@@ -81,8 +98,8 @@ public class EmptyResultSet<T> extends AbstractResultSet<T> {
     /**
      * Determines if the node is sorted ascending or descending.
      *
-     * @return <code>true</code> if the node is sorted ascending or no sort
-     *         constraint was specified; <code>false</code> if it is sorted
+     * @return <tt>true</tt> if the node is sorted ascending or no sort
+     *         constraint was specified; <tt>false</tt> if it is sorted
      *         descending
      */
     public boolean isSortedAscending() {
@@ -110,8 +127,8 @@ public class EmptyResultSet<T> extends AbstractResultSet<T> {
     /**
      * Determines if duplicate results should be filtered.
      *
-     * @return <code>true</code> if duplicate results should be removed;
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if duplicate results should be removed;
+     *         otherwise <tt>false</tt>
      */
     public boolean isDistinct() {
         return false;
@@ -120,14 +137,10 @@ public class EmptyResultSet<T> extends AbstractResultSet<T> {
     /**
      * Returns the specified page.
      *
-     * @param firstResult the first result of the page to retrieve
-     * @param maxResults  the maximun no of results in the page
-     * @return the page corresponding to <code>firstResult</code>, or
-     *         <code>null</code> if none exists
+     * @param page the page no.
+     * @return the page, or <tt>null</tt> if there is no such page
      */
-    @SuppressWarnings("unchecked")
-    protected IPage<T> getPage(int firstResult, int maxResults) {
-        return new Page<T>(RESULTS, firstResult, maxResults, 0);
+    protected IPage<T> get(int page) {
+        return null;
     }
-
 }

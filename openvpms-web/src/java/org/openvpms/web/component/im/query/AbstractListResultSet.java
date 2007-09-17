@@ -54,11 +54,36 @@ public abstract class AbstractListResultSet<T> extends AbstractResultSet<T> {
 
     /**
      * Returns the total number of results matching the query criteria.
+     * For complex queries, this operation can be expensive. If an exact
+     * count is not required, use {@link #getEstimatedResults()}.
      *
      * @return the total number of results
      */
     public int getResults() {
         return objects.size();
+    }
+
+    /**
+     * Returns an estimation of the total no. of results matching the query
+     * criteria.
+     *
+     * @return an estimation of the total no. of results
+     */
+    public int getEstimatedResults() {
+        return getResults();
+    }
+
+    /**
+     * Determines if the estimated no. of results is the actual total, i.e
+     * if {@link #getEstimatedResults()} would return the same as
+     * {@link #getResults()}, and {@link #getEstimatedPages()} would return
+     * the same as {@link #getPages()}.
+     *
+     * @return <tt>true</tt> if the estimated results equals the actual no.
+     *         of results
+     */
+    public boolean isEstimatedActual() {
+        return true;
     }
 
     /**
@@ -73,11 +98,35 @@ public abstract class AbstractListResultSet<T> extends AbstractResultSet<T> {
     /**
      * Determines if duplicate results should be filtered.
      *
-     * @return <code>true</code> if duplicate results should be removed;
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if duplicate results should be removed;
+     *         otherwise <tt>false</tt>
      */
     public boolean isDistinct() {
         return false;
+    }
+
+    /**
+     * Returns the specified page.
+     *
+     * @param page the page no.
+     * @return the page, or <tt>null</tt> if there is no such page
+     */
+    protected IPage<T> get(int page) {
+        Page<T> result = null;
+        int from = page * getPageSize();
+        if (from < objects.size()) {
+            int to;
+            int maxResults = getPageSize();
+            if (maxResults == ArchetypeQuery.ALL_RESULTS
+                    || ((from + maxResults) >= objects.size())) {
+                to = objects.size();
+            } else {
+                to = from + maxResults;
+            }
+            List<T> rows = new ArrayList<T>(objects.subList(from, to));
+            result = new Page<T>(rows, page, maxResults, objects.size());
+        }
+        return result;
     }
 
     /**
@@ -89,23 +138,4 @@ public abstract class AbstractListResultSet<T> extends AbstractResultSet<T> {
         return objects;
     }
 
-    /**
-     * Returns the specified page.
-     *
-     * @param firstResult the first result of the page to retrieve
-     * @param maxResults  the maximun no of results in the page
-     * @return the page corresponding to <code>firstResult</code>, or
-     *         <code>null</code> if none exists
-     */
-    protected IPage<T> getPage(int firstResult, int maxResults) {
-        int to;
-        if (maxResults == ArchetypeQuery.ALL_RESULTS
-                || ((firstResult + maxResults) >= objects.size())) {
-            to = objects.size();
-        } else {
-            to = firstResult + maxResults;
-        }
-        List<T> rows = new ArrayList<T>(objects.subList(firstResult, to));
-        return new Page<T>(rows, firstResult, maxResults, objects.size());
-    }
 }

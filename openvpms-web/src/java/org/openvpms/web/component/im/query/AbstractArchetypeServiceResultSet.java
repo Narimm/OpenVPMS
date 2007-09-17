@@ -18,10 +18,12 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.apache.commons.collections.map.LRUMap;
+import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -32,6 +34,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -59,9 +62,27 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      */
     private SortConstraint[] sort;
 
-    private LRUMap cache = new LRUMap();
+    /**
+     * A cache of retrieved pages. These are referenced via soft references,
+     * so that they can be reclaimed by the garbage collector if necessary.
+     */
+    private ReferenceMap cache = new ReferenceMap();
 
+    /**
+     * The count of results matching the criteria, or <tt>-1</tt> if it
+     * is not known.
+     */
     private int count = -1;
+
+    /**
+     * Determines if the count is an estimation or the actual no. of results.
+     */
+    private boolean estimation = true;
+
+    /**
+     * The no. of pages to prefetch and cache.
+     */
+    private int prefetchPages = 4;
 
     /**
      * The logger.
@@ -103,24 +124,51 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     public void reset() {
         cache.clear();
         count = -1;
+        estimation = true;
         super.reset();
     }
 
     /**
      * Returns the total number of results matching the query criteria.
+     * For complex queries, this operation can be expensive. If an exact
+     * count is not required, use {@link #getEstimatedResults()}.
      *
      * @return the total number of results
      */
     public int getResults() {
-        if (count == -1) {
+        if (count == -1 || estimation) {
             ArchetypeQuery query = createQuery(0, 0);
             query.setCountResults(true);
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
             IPage<IMObject> results = service.get(query);
             count = results.getTotalResults();
+            estimation = false;
         }
         return count;
+    }
+
+    /**
+     * Returns an estimation of the total no. of results matching the query
+     * criteria.
+     *
+     * @return an estimation of the total no. of results
+     */
+    public int getEstimatedResults() {
+        return (count == -1) ? 0 : count;
+    }
+
+    /**
+     * Determines if the estimated no. of results is the actual total, i.e
+     * if {@link #getEstimatedResults()} would return the same as
+     * {@link #getResults()}, and {@link #getEstimatedPages()} would return
+     * the same as {@link #getPages()}.
+     *
+     * @return <tt>true</tt> if the estimated results equals the actual no.
+     *         of results
+     */
+    public boolean isEstimatedActual() {
+        return !estimation;
     }
 
     /**
@@ -227,43 +275,98 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * Returns the specified page.
      *
      * @param page the page no.
-     * @return the page corresponding to <tt>page</tt>. May be <tt>null</tt>
+     * @return the page, or <tt>null</tt> if there is no such page
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    @Override
-    public IPage<T> getPage(int page) {
+    @SuppressWarnings("unchecked")
+    protected IPage<T> get(int page) {
         IPage<T> result = (IPage<T>) cache.get(page);
         if (result == null) {
-            result = super.getPage(page);
-            if (result != null) {
-                cache.put(page, result);
-            }
+            result = query(page);
         }
         return result;
     }
 
     /**
-     * Returns the specified page.
+     * Queries the specified page.
      *
-     * @param firstResult the first result of the page to retrieve
-     * @param maxResults  the maximun no of results in the page
-     * @return the page corresponding to <tt>firstResult</tt>, or
-     *         <tt>null</tt> if none exists
+     * @param page the page to query
+     * @return the page, or <tt>null</tt>
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    protected IPage<T> getPage(int firstResult, int maxResults) {
-        IPage<IMObject> result = null;
+    private IPage<T> query(int page) {
+        IPage<T> result = null;
+        int firstResult = getFirstResult(page);
+        int pageSize = getPageSize();
+        int maxResults = pageSize;
+        int pages = 1;  // no. of requested pages
+        if (maxResults != ArchetypeQuery.ALL_RESULTS && prefetchPages != 0) {
+            maxResults = pageSize * prefetchPages;
+            pages = prefetchPages;
+        }
         try {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             ArchetypeQuery query = createQuery(firstResult, maxResults);
             String[] nodes = getNodes();
+            IPage<IMObject> matches;
             if (nodes == null || nodes.length == 0) {
-                result = service.get(query);
+                matches = service.get(query);
             } else {
-                result = service.get(query, Arrays.asList(nodes));
+                matches = service.get(query, Arrays.asList(nodes));
+            }
+
+            List<IMObject> results = matches.getResults();
+            if (results.isEmpty()) {
+                cache.remove(page);
+            } else if (pages == 1) {
+                result = convert(matches);
+                cache.put(page, result);
+            } else {
+                // need to split the matches into multiple pages.
+                // Each page will be cached, and the first returned.
+                for (int i = 0; i < pages; ++i) {
+                    int from = i * pageSize;
+                    int to;
+                    if (from < results.size()) {
+                        if (((from + pageSize) >= results.size())) {
+                            to = results.size();
+                        } else {
+                            to = from + pageSize;
+                        }
+                        List<IMObject> subResults = results.subList(from, to);
+                        IPage<IMObject> subPage = new Page<IMObject>(
+                                subResults, firstResult + from, pageSize,
+                                count);
+                        if (i == 0) {
+                            result = convert(subPage);
+                        }
+                        cache.put(page + i, subPage);
+                    } else {
+                        cache.remove(i);
+                    }
+                }
+            }
+
+            // update the count of total results if necessary
+            if (matches.getTotalResults() != -1) {
+                count = matches.getTotalResults();
+                estimation = false;
+            } else if (results.isEmpty()) {
+                if (count > firstResult) {
+                    count = firstResult - 1;
+                    estimation = true;
+                }
+            } else {
+                int lastResult = firstResult + results.size();
+                if (lastResult > count) {
+                    count = lastResult;
+                    estimation = (results.size() == maxResults);
+                }
             }
         } catch (OpenVPMSException exception) {
             log.error(exception, exception);
         }
-        return convert(result);
+        return result;
     }
 
     /**

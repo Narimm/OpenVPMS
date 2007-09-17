@@ -76,11 +76,36 @@ public class CustomerAppointmentQuery extends WorkflowQuery<ObjectSet> {
 
         /**
          * Returns the total number of results matching the query criteria.
+         * For complex queries, this operation can be expensive. If an exact
+         * count is not required, use {@link #getEstimatedResults()}.
          *
          * @return the total number of results
          */
         public int getResults() {
-            return 1;
+            return 0;
+        }
+
+        /**
+         * Returns an estimation of the total no. of results matching the query
+         * criteria.
+         *
+         * @return an estimation of the total no. of results
+         */
+        public int getEstimatedResults() {
+            return 0;
+        }
+
+        /**
+         * Determines if the estimated no. of results is the actual total, i.e
+         * if {@link #getEstimatedResults()} would return the same as
+         * {@link #getResults()}, and {@link #getEstimatedPages()} would return
+         * the same as {@link #getPages()}.
+         *
+         * @return <tt>true</tt> if the estimated results equals the actual no.
+         *         of results
+         */
+        public boolean isEstimatedActual() {
+            return true;
         }
 
         /**
@@ -132,12 +157,11 @@ public class CustomerAppointmentQuery extends WorkflowQuery<ObjectSet> {
         /**
          * Returns the specified page.
          *
-         * @param firstResult the first result of the page to retrieve
-         * @param maxResults  the maximun no of results in the page
+         * @param page
          * @return the page corresponding to <code>firstResult</code>, or
          *         <code>null</code> if none exists
          */
-        protected IPage<ObjectSet> getPage(int firstResult, int maxResults) {
+        protected IPage<ObjectSet> get(int page) {
             Party schedule = (Party) IMObjectHelper.getObject(getEntityId());
             User clinician = (User) IMObjectHelper.getObject(getClinician());
             AppointmentQuery query = new AppointmentQuery();
