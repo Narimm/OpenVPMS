@@ -66,7 +66,7 @@ public final class IMObjectDeletor {
         try {
             if (object instanceof Entity) {
                 Entity entity = (Entity) object;
-                if (hasParticipations(entity)) {
+                if (hasParticipations(entity) && !entity.getArchetypeId().getShortName().equals("entity.documentTemplate")) {
                     if (object.isActive()) {
                         confirmDeactivate(object, listener);
                     } else {
