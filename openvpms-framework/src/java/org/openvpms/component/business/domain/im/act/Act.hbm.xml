@@ -83,17 +83,22 @@
       table="financial_acts">
       <key column="financial_act_id" on-delete="cascade"/>
       <property name="quantity" access="property" column="quantity"
-        type="big_decimal" />
+        type="big_decimal" precision="18" scale="3"/>
       <property name="fixedAmount" access="property" column="fixed_amount"
-        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType" />
+        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType"
+        precision="18" scale="3"/>
       <property name="unitAmount" access="property" column="unit_amount"
-        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType" />
+        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType"
+        precision="18" scale="3"/>
       <property name="taxAmount" access="property" column="tax_amount"
-        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType" />
+        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType"
+        precision="18" scale="3"/>
       <property name="total" access="property" column="total"
-        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType" />
+        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType"
+        precision="18" scale="3"/>
       <property name="allocatedAmount" access="property" column="allocated_amount"
-        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType" />
+        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType"
+        precision="18" scale="3"/>
       <property name="credit" access="property" column="credit" type="boolean" />
       <property name="printed" access="property" column="printed"
         type="boolean" />
