@@ -30,11 +30,13 @@ import nextapp.echo2.app.table.TableModel;
 public interface PageableTableModel extends TableModel {
 
     /**
-     * Sets the current page.
+     * Attempts to set the current page.
      *
      * @param page the page to set
+     * @return <tt>true</tt> if the page was set, or <tt>false</tt> if there
+     *         is no such page
      */
-    void setPage(int page);
+    boolean setPage(int page);
 
     /**
      * Returns the current page.
@@ -45,10 +47,29 @@ public interface PageableTableModel extends TableModel {
 
     /**
      * Returns the total number of pages.
+     * For complex queries, this operation can be expensive. If an exact
+     * count is not required, use {@link #getEstimatedPages()}.
      *
-     * @return the total number of pages
+     * @return the total no. of pages.
      */
     int getPages();
+
+    /**
+     * Returns an estimation of the total no. of pages.
+     *
+     * @return an estimation of the total no. of pages
+     */
+    int getEstimatedPages();
+
+    /**
+     * Determines if the estimated no. of results is the actual total, i.e
+     * if {@link #getEstimatedPages()} would return the same as
+     * {@link #getPages()}.
+     *
+     * @return <tt>true</tt> if the estimated pages equals the actual no.
+     *         of pages
+     */
+    boolean isEstimatedActual();
 
     /**
      * Returns the number of rows per page.
@@ -59,10 +80,21 @@ public interface PageableTableModel extends TableModel {
 
     /**
      * Returns the total number of rows.
-     * <em>NOTE: </em> the {@link #getRowCount} method returns the number of
+     * This is the same as invoking <tt>getPages(true)</tt>.
+     * <p><em>NOTE: </em> the {@link #getRowCount} method returns the number of
      * visible rows.
      *
      * @return the total number of rows
      */
     int getResults();
+
+    /**
+     * Returns the total number of results matching the query criteria.
+     *
+     * @param force if <tt>true</tt>, force a calculation of the total no. of
+     *              results
+     * @return the total no. of results, or <tt>-1</tt> if the no. isn't known
+     */
+    int getResults(boolean force);
+
 }

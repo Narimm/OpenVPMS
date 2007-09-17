@@ -36,8 +36,7 @@ import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * A controller for tables containing <code>PageableTableModel</code> backed
- * tables.
+ * A controller for tables containing <tt>PageableTableModel</tt> backed tables.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -81,7 +80,7 @@ public class TableNavigator extends Row {
 
 
     /**
-     * Construct a new <code>TableNavigator</code>.
+     * Construct a new <tt>TableNavigator</tt>.
      *
      * @param table the table to navigate
      */
@@ -132,7 +131,7 @@ public class TableNavigator extends Row {
     public void first() {
         int page = getModel().getPage();
         if (page != 0) {
-            setCurrentPage(0);
+            changePage(0);
         }
     }
 
@@ -143,7 +142,7 @@ public class TableNavigator extends Row {
         PageableTableModel model = getModel();
         int page = model.getPage();
         if (page > 0) {
-            setCurrentPage(page - 1);
+            changePage(page - 1);
         }
     }
 
@@ -153,9 +152,7 @@ public class TableNavigator extends Row {
     public void next() {
         PageableTableModel model = getModel();
         int page = model.getPage();
-        if (page < getLastPage()) {
-            setCurrentPage(page + 1);
-        }
+        changePage(page + 1);
     }
 
     /**
@@ -166,10 +163,13 @@ public class TableNavigator extends Row {
         int lastPage = getLastPage();
         int page = model.getPage();
         if (page != lastPage) {
-            setCurrentPage(lastPage);
+            changePage(lastPage);
         }
     }
 
+    /**
+     * Lays out the component.
+     */
     protected void doLayout() {
         setCellSpacing(new Extent(10));
 
@@ -228,20 +228,32 @@ public class TableNavigator extends Row {
         refresh();
     }
 
-
-    protected void setCurrentPage(int page) {
-        getModel().setPage(page);
-        table.setSelectionModel(new DefaultListSelectionModel());
-        pageSelector.setSelectedIndex(page);
+    /**
+     * Attempts to change to the specified page.
+     *
+     * @param page the new page
+     */
+    protected void changePage(int page) {
+        PageableTableModel model = getModel();
+        if (model.setPage(page)) {
+            table.setSelectionModel(new DefaultListSelectionModel());
+            pageSelector.setSelectedIndex(page);
+        } else {
+            // failed to set the current page
+            if (model.getPage() == (page - 1)) {
+                setTotal(model.getPage() + 1);
+            }
+        }
     }
 
+    /**
+     * Refreshes the page selector and page count, if necessary.
+     */
     protected void refresh() {
         PageableTableModel model = getModel();
-
-        int pages = model.getPages();
+        int pages = getPages();
         if (pages != pageSelector.getModel().size()) {
-            String total = Messages.get("label.navigation.page.total", pages);
-            pageCount.setText(total);
+            setTotal(pages);
 
             String[] pageNos = new String[pages];
             for (int i = 0; i < pageNos.length; ++i) {
@@ -253,12 +265,43 @@ public class TableNavigator extends Row {
         pageSelector.setSelectedIndex(selected);
     }
 
+    /**
+     * Returns the table model.
+     *
+     * @return the table model
+     */
     protected PageableTableModel getModel() {
         return (PageableTableModel) table.getModel();
     }
 
     /**
-     * Returns the index of the last page.
+     * Sets the page total label.
+     *
+     * @param pages the total no. of pages
+     */
+    private void setTotal(int pages) {
+        String total;
+        if (getModel().isEstimatedActual()) {
+            total = Messages.get("navigation.page.total", pages);
+        } else {
+            total = Messages.get("navigation.page.totalunknown", pages);
+        }
+        pageCount.setText(total);
+    }
+
+    /**
+     * Returns the estimated no. of pages.
+     *
+     * @return an estimate of the no. of pages
+     */
+    private int getPages() {
+        PageableTableModel model = getModel();
+        return model.getEstimatedPages();
+    }
+
+    /**
+     * Returns the index of the last page. Note that this operation may
+     * be expensive.
      *
      * @return the index of the last page
      */

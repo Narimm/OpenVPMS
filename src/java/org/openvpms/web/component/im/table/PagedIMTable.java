@@ -76,7 +76,13 @@ public class PagedIMTable<T> extends Column {
     public void setResultSet(ResultSet<T> set) {
         PagedIMTableModel<T> model = getPagedIMTableModel();
         model.setResultSet(set);
-        if (set.getPages() > 1) {
+        int pages = set.getEstimatedPages();
+        boolean actual = set.isEstimatedActual();
+
+        // only display the table navigator if:
+        // . the no. of pages != 0 and is an estimation
+        // . the no. of pages are known and > 1
+        if ((!actual && pages > 0) || pages > 1) {
             if (navigator == null) {
                 navigator = new TableNavigator(table);
                 navigator.setFocusTraversalParticipant(false);
