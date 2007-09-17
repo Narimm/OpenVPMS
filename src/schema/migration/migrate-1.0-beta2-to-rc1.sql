@@ -417,3 +417,15 @@ alter table users
     drop index user_name_idx,
     add unique key (user_name);
 
+# increase scale as per OBF-119
+
+alter table financial_acts
+    modify column quantity decimal(18, 3),
+    modify column fixed_amount decimal(18, 3),
+    modify column unit_amount decimal(18, 3),
+    modify column tax_amount decimal(18, 3),
+    modify column total decimal(18, 3),
+    modify column allocated_amount decimal(18, 3);
+
+alter table product_prices
+    modify column price decimal(18,3);

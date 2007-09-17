@@ -42,7 +42,8 @@
     <property name="fromDate" access="property" column="start_time" type="timestamp" />
     <property name="thruDate" access="property" column="end_time" type="timestamp" />
     <property name="fixed" access="property" column="is_fixed" type="boolean" />
-    <property name="price" access="property" column="price" type="big_decimal" />
+    <property name="price" access="property" column="price" type="big_decimal"
+              precision="18" scale="3"/>
     <property name="active" access="property" column="active" type="boolean" />
     <map name="details" access="field" table="product_price_details"
          lazy="false" cascade="all,delete-orphan">
