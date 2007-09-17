@@ -105,10 +105,7 @@ public class BatchArchetypeUpdater
      */
     @Override
     protected void processingCompleted() {
-        if (dialog != null) {
-            dialog.close();
-            dialog = null;
-        }
+        closeDialog();
         setProcessed(processor.getProcessed());
         super.processingCompleted();
     }
@@ -121,8 +118,19 @@ public class BatchArchetypeUpdater
      */
     @Override
     protected void notifyError(Throwable exception) {
+        closeDialog();
         setSuspend(true);
         super.notifyError(exception);
+    }
+
+    /**
+     * Closes the dialog if it is open.
+     */
+    private void closeDialog() {
+        if (dialog != null) {
+            dialog.close();
+            dialog = null;
+        }
     }
 
     private class DerivedProgressBarProcessor

@@ -316,6 +316,14 @@ public class ArchetypeCRUDWindow
      */
     private void updateDerivedNodes(List<ArchetypeDescriptor> descriptors) {
         BatchArchetypeUpdater updater = new BatchArchetypeUpdater(descriptors);
+        updater.setListener(new BatchProcessorListener() {
+            public void completed() {
+            }
+
+            public void error(Throwable exception) {
+                ErrorHelper.show(exception);
+            }
+        });
         updater.process();
     }
 
