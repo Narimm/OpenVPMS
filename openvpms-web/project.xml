@@ -802,6 +802,15 @@
                 <war.bundle>true</war.bundle>
             </properties>
         </dependency>
+		<dependency>
+            <groupId>jfreechart</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.0.0</version>
+            <url>http://www.jfree.org/jfreechart/</url>
+            <properties>
+                <war.bundle>true</war.bundle>
+            </properties>
+        </dependency>        
     </dependencies>
 
     <build>
