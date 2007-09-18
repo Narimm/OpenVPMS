@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>Patient - Visit Note Conversion</name>
+    <directory>&#47;</directory>
+    <log>
+      <read/>
+      <write/>
+      <input/>
+      <output/>
+      <update/>
+      <connection/>
+      <table/>
+      <use_batchid>Y</use_batchid>
+      <use_logfield>N</use_logfield>
+      </log>
+    <maxdate>
+      <connection/>
+      <table/>
+      <field/>
+      <offset>0.0</offset>
+      <maxdiff>0.0</maxdiff>
+      </maxdate>
+    <size_rowset>1000</size_rowset>
+    <sleep_time_empty>1</sleep_time_empty>
+    <sleep_time_full>1</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>5000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <dependencies>
+      </dependencies>
+    <partitionschemas>
+      </partitionschemas>
+    <slaveservers>
+      </slaveservers>
+    <clusterschemas>
+      </clusterschemas>
+  <modified_user>admin</modified_user>
+  <modified_date>2007&#47;04&#47;09 12:20:17.563</modified_date>
+    </info>
+  <notepads>
+    </notepads>
+  <connection>
+    <name>RxWorks Demo</name>
+    <server/>
+    <type>MSACCESS</type>
+    <access>ODBC</access>
+    <database>RxWorks Demo Database</database>
+    <port>-1</port>
+    <username/>
+    <password>Encrypted </password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
+      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>-1</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <order>
+  <hop> <from>Transform Visit Fields</from><to>Visit Notes</to><enabled>Y</enabled> </hop>  <hop> <from>Select Visit Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Visit Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Table input</from><to>Select Visit Fields</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>Dummy (do nothing)</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+    <GUI>
+      <xloc>342</xloc>
+      <yloc>242</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter rows</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Transform Visit Fields</send_true_to>
+<send_false_to>Dummy (do nothing)</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PATIENT</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text>-1</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>TEXT</leftvalue>
+   <function>IS NOT NULL</function>
+   <rightvalue/>
+   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>338</xloc>
+      <yloc>136</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select Visit Fields</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>Consultation Number</name>
+        <rename>VISITNO</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Consultation Date</name>
+        <rename>STARTTIME</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Consultation Weight</name>
+        <rename>WEIGHT</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Patient Number</name>
+        <rename>PATIENT</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Examination Text</name>
+        <rename>TEXT</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Consulting Vet</name>
+        <rename>CLINICIAN</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Special Instructions</name>
+        <rename>INSTRUCTIONS</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <meta>        <name>VISITNO</name>
+        <rename/>
+        <type>String</type>
+        <length>-2</length>
+        <precision>-2</precision>
+        </meta>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>229</xloc>
+      <yloc>135</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Table input</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <connection>RxWorks Demo</connection>
+    <sql>SELECT *
+FROM Consultation c inner join visit v on c.[Visit Number] = v.[Visit Number]
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+     <cluster_schema/>
+    <GUI>
+      <xloc>97</xloc>
+      <yloc>138</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform Visit Fields</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>
+var VISITITEMID = &quot;NOTES&quot; + VISITNO.getString();
+
+</jsScript_script>
+        </jsScript>      <jsScript>        <jsScript_type>-1</jsScript_type>
+        <jsScript_name>num2str_Sample</jsScript_name>
+        <jsScript_script>&#47;&#47; Converts a numeric Value to a String with the
+&#47;&#47; given format.
+&#47;&#47;
+&#47;&#47; Usage:
+&#47;&#47; num2str(var);
+&#47;&#47; 1. String - The String to convert.
+&#47;&#47; The converstation uses the standard localized format.
+&#47;&#47;
+&#47;&#47; num2str(var,var);
+&#47;&#47; 1. String - The String to convert.
+&#47;&#47; 2. String - The Format 
+&#47;&#47;
+&#47;&#47; num2str(var,var,var);
+&#47;&#47; 1. String - The String to convert.
+&#47;&#47; 2. String - The Format
+&#47;&#47; 3: String - The Locale Parameter
+&#47;&#47; An valid ISO Language Code. (DE = German, EN = English, FR = France, ...)
+&#47;&#47; 
+&#47;&#47; 2006-11-15
+&#47;&#47;
+var d1 = 123.40;
+var d2 = -123.40;
+Alert(num2str(d1));
+Alert(num2str(d1, &quot;0.00&quot;));
+Alert(num2str(d1, &quot;0.00&quot;, &quot;EN&quot;));
+Alert(num2str(d2, &quot;0.00;(0.00)&quot;, &quot;EN&quot;));
+      </jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>VISITITEMID</name>
+        <rename>VISITITEMID</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>442</xloc>
+      <yloc>134</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Visit Notes</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>N</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>VISITITEMID</idColumn><mapping><source>STARTTIME</source><target>&lt;act.patientClinicalNote>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientClinicalNote>note</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENT</source><target>&lt;act.patientClinicalNote>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITITEMID</source><target>&lt;act.patientClinicalNote>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.patientClinicalNote>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINICIAN</source><target>&lt;act.patientClinicalNote>clinician[0]&lt;participation.clinician>entity</target><excludeNull>true</excludeNull><value>&lt;security.user>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITITEMID</source><target>&lt;act.patientClinicalNote>clinician[0]&lt;participation.clinician>act</target><excludeNull>true</excludeNull><value>&lt;act.patientClinicalNote>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITNO</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>true</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITITEMID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>true</excludeNull><value>&lt;act.patientClinicalNote>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>590</xloc>
+      <yloc>135</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+</transformation>

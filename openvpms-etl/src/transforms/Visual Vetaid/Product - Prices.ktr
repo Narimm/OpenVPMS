@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Product - Service Conversion</name>
+    <name>Product - Information Conversion</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -47,7 +47,7 @@
     <server/>
     <type>MSACCESS</type>
     <access>ODBC</access>
-    <database>Visual Vetaid</database>
+    <database>RxWorks Demo Database</database>
     <port>-1</port>
     <username/>
     <password>Encrypted </password>
@@ -64,68 +64,37 @@
       <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
     </attributes>
   </connection>
-  <connection>
-    <name>archetypes</name>
-    <server/>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>conversion</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>conversion</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>openvpms</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
-  <hop> <from>Select Service fields</from><to>Sort Service Rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Service Rows</from><to>Merge Fees</to><enabled>Y</enabled> </hop>  <hop> <from>Item Input</from><to>Select Service fields</to><enabled>Y</enabled> </hop>  <hop> <from>Item Service Fees Input</from><to>Select Fee options</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fee options</from><to>Sort Fee Options</to><enabled>Y</enabled> </hop>  <hop> <from>Item Quantity Break Input</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Sort Quantity Break</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Fees</from><to>Merge Breaks</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Fee Options</from><to>Unique rows</to><enabled>Y</enabled> </hop>  <hop> <from>Unique rows</from><to>Merge Fees</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Quantity Break</from><to>Unique rows 2</to><enabled>Y</enabled> </hop>  <hop> <from>Unique rows 2</from><to>Merge Breaks</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Breaks</from><to>Transform fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform fields</from><to>Select Final Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Final Fields</from><to>Filter Services</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Services</from><to>Product Service Charges Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Services</from><to>Filter Medication</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Medication</from><to>Product Medication Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Medication</from><to>Product Merchandise Output</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Select Service fields</from><to>Sort Service Rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Service Rows</from><to>Merge Fees</to><enabled>Y</enabled> </hop>  <hop> <from>Item Input</from><to>Select Service fields</to><enabled>Y</enabled> </hop>  <hop> <from>Item Service Fees Input</from><to>Select Fee options</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fee options</from><to>Sort Fee Options</to><enabled>Y</enabled> </hop>  <hop> <from>Item Quantity Break Input</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Sort Quantity Break</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Fees</from><to>Merge Breaks</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Fee Options</from><to>Unique rows</to><enabled>Y</enabled> </hop>  <hop> <from>Unique rows</from><to>Merge Fees</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Quantity Break</from><to>Unique rows 2</to><enabled>Y</enabled> </hop>  <hop> <from>Unique rows 2</from><to>Merge Breaks</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Breaks</from><to>Transform fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform fields</from><to>Select Final Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Services</from><to>Product Service Charges Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Services</from><to>Filter Medication</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Medication</from><to>Product Medication Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Medication</from><to>Product Merchandise Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select Final Fields</from><to>Filter Services</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>Filter Medication</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Product Medication Output</send_true_to>
+<send_false_to>Product Merchandise Output</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>COMPONENTGROUP</leftvalue>
+ <function>STARTS WITH</function>
+ <rightvalue/>
+ <value><name>constant</name><type>String</type><text>Drug</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>799</xloc>
+      <yloc>261</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
 
   <step>
     <name>Filter Services</name>
@@ -162,8 +131,8 @@
     </compare>
      <cluster_schema/>
     <GUI>
-      <xloc>719</xloc>
-      <yloc>133</yloc>
+      <xloc>798</xloc>
+      <yloc>132</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -300,6 +269,44 @@
     </step>
 
   <step>
+    <name>Product Medication Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>ID</idColumn><mapping><source>NAME</source><target>&lt;product.medication>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRINTEDNAME</source><target>&lt;product.medication>printedName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SELLINGUNIT</source><target>&lt;product.medication>dispensingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SELLINGUNIT</source><target>&lt;product.medication>sellingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INGREDIENTS</source><target>&lt;product.medication>activeIngredients</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRINTLABEL</source><target>&lt;product.medication>label</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.medication>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MARKUP</source><target>&lt;product.medication>prices[0]&lt;productPrice.markup>markup</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;product.medication>prices[1]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;product.medication>prices[2]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>100</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>917</xloc>
+      <yloc>265</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Product Merchandise Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>ID</idColumn><mapping><source>NAME</source><target>&lt;product.merchandise>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRINTEDNAME</source><target>&lt;product.merchandise>printedName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SELLINGUNIT</source><target>&lt;product.merchandise>sellingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.merchandise>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MARKUP</source><target>&lt;product.merchandise>prices[0]&lt;productPrice.markup>markup</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;product.merchandise>prices[1]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;product.merchandise>prices[2]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>100</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>921</xloc>
+      <yloc>386</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Product Service Charges Output</name>
     <type>OpenVPMSLoaderPlugin</type>
     <description/>
@@ -420,9 +427,13 @@
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
+        </field>      <field>        <name>STANDARDFEE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>612</xloc>
+      <xloc>667</xloc>
       <yloc>134</yloc>
       <draw>Y</draw>
       </GUI>
@@ -507,10 +518,14 @@
         <rename>DEACTIVATEDDATE</rename>
         <length>-2</length>
         <precision>-2</precision>
+        </field>      <field>        <name>Item Standard Fee</name>
+        <rename>STANDARDFEE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>171</xloc>
-      <yloc>133</yloc>
+      <yloc>132</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -680,8 +695,8 @@ if (NAME.getString() == &quot;&quot; || NAME.getString() == null)
         <precision>-1</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>512</xloc>
-      <yloc>135</yloc>
+      <xloc>547</xloc>
+      <yloc>134</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -728,73 +743,6 @@ if (NAME.getString() == &quot;&quot; || NAME.getString() == null)
     <GUI>
       <xloc>424</xloc>
       <yloc>320</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter Medication</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<send_true_to>Product Medication Output</send_true_to>
-<send_false_to>Product Merchandise Output</send_false_to>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue>COMPONENTGROUP</leftvalue>
- <function>STARTS WITH</function>
- <rightvalue/>
- <value><name>constant</name><type>String</type><text>Drug</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
-    </compare>
-     <cluster_schema/>
-    <GUI>
-      <xloc>720</xloc>
-      <yloc>262</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Product Medication Output</name>
-    <type>OpenVPMSLoaderPlugin</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<mappings><connection>openvpms</connection><idColumn>ID</idColumn><mapping><source>NAME</source><target>&lt;product.medication>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRINTEDNAME</source><target>&lt;product.medication>printedName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SELLINGUNIT</source><target>&lt;product.medication>dispensingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SELLINGUNIT</source><target>&lt;product.medication>sellingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>INGREDIENTS</source><target>&lt;product.medication>activeIngredients</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRINTLABEL</source><target>&lt;product.medication>label</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.medication>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MARKUP</source><target>&lt;product.medication>prices[0]&lt;productPrice.markup>markup</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;product.medication>prices[1]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;product.medication>prices[2]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>100</batchSize></mappings>     <cluster_schema/>
-    <GUI>
-      <xloc>917</xloc>
-      <yloc>265</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Product Merchandise Output</name>
-    <type>OpenVPMSLoaderPlugin</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<mappings><connection>openvpms</connection><idColumn>ID</idColumn><mapping><source>NAME</source><target>&lt;product.merchandise>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRINTEDNAME</source><target>&lt;product.merchandise>printedName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SELLINGUNIT</source><target>&lt;product.merchandise>sellingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.merchandise>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MARKUP</source><target>&lt;product.merchandise>prices[0]&lt;productPrice.markup>markup</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;product.merchandise>prices[1]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;product.merchandise>prices[2]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>100</batchSize></mappings>     <cluster_schema/>
-    <GUI>
-      <xloc>921</xloc>
-      <yloc>386</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

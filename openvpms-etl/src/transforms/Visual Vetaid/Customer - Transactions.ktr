@@ -1,0 +1,929 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>Customer - Transaction Conversion</name>
+    <directory>&#47;</directory>
+    <log>
+      <read/>
+      <write/>
+      <input/>
+      <output/>
+      <update/>
+      <connection/>
+      <table/>
+      <use_batchid>Y</use_batchid>
+      <use_logfield>N</use_logfield>
+      </log>
+    <maxdate>
+      <connection/>
+      <table/>
+      <field/>
+      <offset>0.0</offset>
+      <maxdiff>0.0</maxdiff>
+      </maxdate>
+    <size_rowset>1000</size_rowset>
+    <sleep_time_empty>1</sleep_time_empty>
+    <sleep_time_full>1</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>5000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <dependencies>
+      </dependencies>
+    <partitionschemas>
+      </partitionschemas>
+    <slaveservers>
+      </slaveservers>
+    <clusterschemas>
+      </clusterschemas>
+  <modified_user>admin</modified_user>
+  <modified_date>2007&#47;04&#47;09 10:47:12.000</modified_date>
+    </info>
+  <notepads>
+    </notepads>
+  <connection>
+    <name>RxWorks Demo</name>
+    <server/>
+    <type>MSACCESS</type>
+    <access>ODBC</access>
+    <database>RxWorks Demo Database</database>
+    <port>-1</port>
+    <username/>
+    <password>Encrypted </password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
+      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>-1</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <order>
+  <hop> <from>Select Transaction Fields</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Filter Invoices</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Invoices</from><to>Invoice Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Filter Payments</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Credit Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Payments</from><to>Payment Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Payments</from><to>Filter Refunds</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Refunds</from><to>Refund Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Refunds</from><to>Filter Debit</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Debit</from><to>Debit Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Debit</from><to>Filter Credit</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credit</from><to>Credit Adj Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credit</from><to>Filter Init</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Init</from><to>Filter Bad</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Bad</from><to>Bad Output</to><enabled>Y</enabled> </hop>  <hop> <from>Table input</from><to>Select Transaction Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Bad</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Init</from><to>Init Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Invoices</from><to>Filter Counter Sales</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Counter Sales</from><to>Filter Credits</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Counter Sales</from><to>Counter Sales</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>Bad Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>TRANSID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountBadDebt>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSTAT</source><target>&lt;act.customerAccountBadDebt>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountBadDebt>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAXAMT</source><target>&lt;act.customerAccountBadDebt>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REFERENCE</source><target>&lt;act.customerAccountBadDebt>reference</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target>&lt;act.customerAccountDebitAdjust>notes</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLIENTID</source><target>&lt;act.customerAccountBadDebt>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;act.customerAccountBadDebt>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountBadDebt>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>764</xloc>
+      <yloc>627</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Counter Sales</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>TRANSID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountChargesCounter>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSTAT</source><target>&lt;act.customerAccountChargesCounter>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountChargesCounter>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAXAMT</source><target>&lt;act.customerAccountChargesCounter>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLIENTID</source><target>&lt;act.customerAccountChargesCounter>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;act.customerAccountChargesCounter>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesCounter>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>753</xloc>
+      <yloc>122</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Credit Adj Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>TRANSID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountCreditAdjust>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSTAT</source><target>&lt;act.customerAccountCreditAdjust>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountCreditAdjust>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAXAMT</source><target>&lt;act.customerAccountCreditAdjust>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REFERENCE</source><target>&lt;act.customerAccountCreditAdjust>reference</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target>&lt;act.customerAccountDebitAdjust>notes</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLIENTID</source><target>&lt;act.customerAccountCreditAdjust>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;act.customerAccountCreditAdjust>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountCreditAdjust>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>763</xloc>
+      <yloc>482</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Credit Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>TRANSID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountChargesCredit>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSTAT</source><target>&lt;act.customerAccountChargesCredit>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountChargesCredit>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAXAMT</source><target>&lt;act.customerAccountChargesCredit>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REFERENCE</source><target>&lt;act.customerAccountChargesCredit>reference</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target>&lt;act.customerAccountChargesCredit>notes</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLIENTID</source><target>&lt;act.customerAccountChargesCredit>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;act.customerAccountChargesCredit>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesCredit>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>755</xloc>
+      <yloc>189</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Debit Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>TRANSID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountDebitAdjust>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSTAT</source><target>&lt;act.customerAccountDebitAdjust>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountDebitAdjust>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAXAMT</source><target>&lt;act.customerAccountDebitAdjust>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REFERENCE</source><target>&lt;act.customerAccountDebitAdjust>reference</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target>&lt;act.customerAccountDebitAdjust>notes</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLIENTID</source><target>&lt;act.customerAccountDebitAdjust>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;act.customerAccountDebitAdjust>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountDebitAdjust>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>760</xloc>
+      <yloc>414</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Dummy (do nothing)</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+    <GUI>
+      <xloc>467</xloc>
+      <yloc>721</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Bad</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Bad Output</send_true_to>
+<send_false_to>Dummy (do nothing)</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>TYPE</leftvalue>
+ <function>=</function>
+ <rightvalue/>
+ <value><name>constant</name><type>Integer</type><text> 6</text><length>-1</length><precision>0</precision><isnull>N</isnull></value> </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>469</xloc>
+      <yloc>624</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Counter Sales</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>N</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Counter Sales</send_true_to>
+<send_false_to>Filter Credits</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>TYPE</leftvalue>
+   <function>&gt;=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text> 100</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>OLDAMOUNT</leftvalue>
+   <function>&gt;=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>BigNumber</type><text>0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PATIENTID</leftvalue>
+   <function>=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text>-1</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>469</xloc>
+      <yloc>122</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Credit</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Credit Adj Output</send_true_to>
+<send_false_to>Filter Init</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>OLDAMOUNT</leftvalue>
+   <function>&lt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <conditions>
+    <condition>
+     <negated>N</negated>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 12</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 13</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 14</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 15</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 16</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    </conditions>
+   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>469</xloc>
+      <yloc>483</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Credits</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Credit Output</send_true_to>
+<send_false_to>Filter Payments</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>TYPE</leftvalue>
+   <function>&gt;=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text> 100</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>OLDAMOUNT</leftvalue>
+   <function>&lt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>BigNumber</type><text>0.00</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>468</xloc>
+      <yloc>190</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Debit</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Debit Output</send_true_to>
+<send_false_to>Filter Credit</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>OLDAMOUNT</leftvalue>
+   <function>&gt;=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <conditions>
+    <condition>
+     <negated>N</negated>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 12</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 13</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 14</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 15</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 16</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    </conditions>
+   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>469</xloc>
+      <yloc>415</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Init</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Init Output</send_true_to>
+<send_false_to>Filter Bad</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>TYPE</leftvalue>
+   <function>=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text> 11</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>469</xloc>
+      <yloc>552</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Invoices</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Invoice Output</send_true_to>
+<send_false_to>Filter Counter Sales</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>TYPE</leftvalue>
+   <function>&gt;=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text> 100</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>OLDAMOUNT</leftvalue>
+   <function>&gt;=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>BigNumber</type><text>0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PATIENTID</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text>-1</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>467</xloc>
+      <yloc>57</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Payments</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Payment Output</send_true_to>
+<send_false_to>Filter Refunds</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>OLDAMOUNT</leftvalue>
+   <function>&gt;=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <conditions>
+    <condition>
+     <negated>N</negated>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 7</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 8</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 9</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 10</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 1</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 5</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    </conditions>
+   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>467</xloc>
+      <yloc>258</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Refunds</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Refund Output</send_true_to>
+<send_false_to>Filter Debit</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>OLDAMOUNT</leftvalue>
+   <function>&lt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <conditions>
+    <condition>
+     <negated>N</negated>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 7</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 8</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 9</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 10</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 1</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    <condition>
+     <negated>N</negated>
+     <operator>OR</operator>
+     <leftvalue>TYPE</leftvalue>
+     <function>=</function>
+     <rightvalue/>
+     <value><name>constant</name><type>Integer</type><text> 5</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>     </condition>
+    </conditions>
+   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>467</xloc>
+      <yloc>336</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Init Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>TRANSID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountInitialBalance>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSTAT</source><target>&lt;act.customerAccountInitialBalance>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountInitialBalance>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REFERENCE</source><target>&lt;act.customerAccountInitialBalance>reference</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CREDIT</source><target>&lt;act.customerAccountInitialBalance>credit</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLIENTID</source><target>&lt;act.customerAccountInitialBalance>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;act.customerAccountInitialBalance>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountInitialBalance>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>767</xloc>
+      <yloc>553</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Invoice Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>TRANSID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountChargesInvoice>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSTAT</source><target>&lt;act.customerAccountChargesInvoice>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountChargesInvoice>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAXAMT</source><target>&lt;act.customerAccountChargesInvoice>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REFERENCE</source><target>&lt;act.customerAccountChargesInvoice>reference</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target>&lt;act.customerAccountChargesInvoice>notes</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLIENTID</source><target>&lt;act.customerAccountChargesInvoice>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;act.customerAccountChargesInvoice>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesInvoice>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>750</xloc>
+      <yloc>56</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Payment Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>TRANSID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountPayment>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSTAT</source><target>&lt;act.customerAccountPayment>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountPayment>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REFERENCE</source><target>&lt;act.customerAccountPayment>reference</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLIENTID</source><target>&lt;act.customerAccountPayment>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;act.customerAccountPayment>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPayment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;act.customerAccountPayment>till[0]&lt;participation.till>entity</target><excludeNull>true</excludeNull><value>&lt;party.organisationTill>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;act.customerAccountPayment>till[0]&lt;participation.till>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountPayment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>757</xloc>
+      <yloc>259</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Refund Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>TRANSID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountRefund>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSTAT</source><target>&lt;act.customerAccountRefund>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountRefund>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REFERENCE</source><target>&lt;act.customerAccountRefund>reference</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLIENTID</source><target>&lt;act.customerAccountRefund>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;act.customerAccountRefund>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountRefund>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;act.customerAccountRefund>till[0]&lt;participation.till>entity</target><excludeNull>true</excludeNull><value>&lt;party.organisationTill>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSID</source><target>&lt;act.customerAccountRefund>till[0]&lt;participation.till>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountRefund>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>762</xloc>
+      <yloc>333</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select Transaction Fields</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>Transaction Number</name>
+        <rename>TRANSID</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Client Number</name>
+        <rename>CLIENTID</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Transaction Date</name>
+        <rename>DATE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Transaction Amount</name>
+        <rename>AMOUNT</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Transaction Type</name>
+        <rename>TYPE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Transaction Text</name>
+        <rename>DESCRIPTION</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Transaction Tax</name>
+        <rename>TAXAMT</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Reference No</name>
+        <rename>REFERENCE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Type Name</name>
+        <rename>TYPENAME</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Patient Number</name>
+        <rename>PATIENTID</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Incomplete Status</name>
+        <rename>STATUS</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Special Instructions</name>
+        <rename>INSTRUCTIONS</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Clinic Code</name>
+        <rename>CLINIC</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>214</xloc>
+      <yloc>55</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Table input</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <connection>RxWorks Demo</connection>
+    <sql>SELECT *
+FROM ([Transaction] LEFT JOIN [Visit] ON Visit.[Visit Number] = Transaction.[Visit Number]) INNER JOIN [Transaction Type] ON Transaction.[Transaction Type] = [Transaction Type].[Type Code];</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+     <cluster_schema/>
+    <GUI>
+      <xloc>66</xloc>
+      <yloc>59</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform Fields</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+var TRANSTAT = &quot;POSTED&quot;
+
+var OLDAMOUNT = AMOUNT.getNumber()
+&#47;&#47; If Settlement Discount make negate old amount
+if (TYPE.getInt() == 5)
+	OLDAMOUNT = - OLDAMOUNT
+
+&#47;&#47; If Balance Transfer set Credit flag according to amount
+var CREDIT = false
+if (TYPE.getNumber() == 11 &amp;&amp; AMOUNT.getNumber() &lt; 0)
+	CREDIT = true
+
+&#47;&#47; Make amounst absolute
+AMOUNT.setNumber(abs(AMOUNT.getNumber()))
+TAXAMT.setNumber(abs(TAXAMT.getNumber()))
+
+if (DESCRIPTION.getString() == null)
+	DESCRIPTION.setString(TYPENAME.getString())
+else
+	DESCRIPTION.setString(TYPENAME.getString() + &apos;-&apos; + DESCRIPTION.getString())
+
+if (INSTRUCTIONS.getString() != null)
+	DESCRIPTION.setString(DESCRIPTION.getString() + &apos;\n&apos; + INSTRUCTIONS.getString())</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>TRANSTAT</name>
+        <rename>TRANSTAT</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>OLDAMOUNT</name>
+        <rename>OLDAMOUNT</rename>
+        <type>Number</type>
+        <length>16</length>
+        <precision>2</precision>
+        </field>      <field>        <name>CREDIT</name>
+        <rename>CREDIT</rename>
+        <type>Boolean</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>340</xloc>
+      <yloc>57</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+</transformation>
