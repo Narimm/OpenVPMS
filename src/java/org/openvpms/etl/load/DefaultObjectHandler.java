@@ -74,7 +74,8 @@ public class DefaultObjectHandler implements ObjectHandler {
      * ETLLog instances created via {@link #add}, keyed on their corresponding
      * IMObject.
      */
-    private Map<IMObject, ETLLog> logs = new HashMap<IMObject, ETLLog>();
+    private Map<IMObject, List<ETLLog>> logs
+            = new HashMap<IMObject, List<ETLLog>>();
 
     /**
      * ETLLog instances created via {@link #error}.
@@ -159,10 +160,11 @@ public class DefaultObjectHandler implements ObjectHandler {
      */
     public void rollback() {
         for (IMObject object : incomplete.values()) {
-            ETLLog log = logs.remove(object);
-            String reference = Reference.create(log.getArchetype(),
-                                                log.getRowId());
-            references.remove(reference);
+            for (ETLLog log : logs.remove(object)) {
+                String reference = Reference.create(log.getArchetype(),
+                                                    log.getRowId());
+                references.remove(reference);
+            }
         }
         incomplete.clear();
     }
@@ -200,7 +202,12 @@ public class DefaultObjectHandler implements ObjectHandler {
         String archetype = object.getArchetypeId().getShortName();
         String reference = Reference.create(archetype, rowId);
         references.put(reference, object.getObjectReference());
-        logs.put(object, createLog(rowId, object, index));
+        List<ETLLog> logList = logs.get(object);
+        if (logList == null) {
+            logList = new ArrayList<ETLLog>();
+            logs.put(object, logList);
+        }
+        logList.add(createLog(rowId, object, index));
         incomplete.put(object.getObjectReference(), object);
         rowIds.add(rowId);
     }
@@ -289,11 +296,13 @@ public class DefaultObjectHandler implements ObjectHandler {
      * @param errorLogs any error logs
      */
     protected void save(Collection<IMObject> objects,
-                        Map<IMObject, ETLLog> logs,
+                        Map<IMObject, List<ETLLog>> logs,
                         Collection<ETLLog> errorLogs) {
         try {
             service.save(objects);
-            dao.save(logs.values());
+            for (List<ETLLog> logList : logs.values()) {
+                dao.save(logList);
+            }
         } catch (OpenVPMSException exception) {
             // can't process as a batch. Process individual objects.
             for (IMObject object : objects) {
@@ -312,17 +321,20 @@ public class DefaultObjectHandler implements ObjectHandler {
      * Save an object.
      *
      * @param object the object to save
-     * @param log    the object's log
+     * @param logs   the logs associated with the object
      */
-    protected void save(IMObject object, ETLLog log) {
+    protected void save(IMObject object, List<ETLLog> logs) {
         try {
             service.save(object);
         } catch (OpenVPMSException exception) {
-            log.setErrors(exception.getMessage());
-            log.setLinkId(null);
-            notifyListener(log.getRowId(), exception);
+            ETLLog first = logs.get(0);
+            for (ETLLog log : logs) {
+                log.setErrors(exception.getMessage());
+                log.setLinkId(null);
+            }
+            notifyListener(first.getRowId(), exception);
         }
-        dao.save(log);
+        dao.save(logs);
     }
 
     /**

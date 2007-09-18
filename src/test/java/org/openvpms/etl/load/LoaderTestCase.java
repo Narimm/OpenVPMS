@@ -34,6 +34,7 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -319,6 +320,68 @@ public class LoaderTestCase
     }
 
     /**
+     * Tests mapping references.
+     * This adds two prices to an existing product.
+     */
+    public void testMappingReference() {
+        // create a product
+        Product product = (Product) service.create("product.medication");
+        assertNotNull(product);
+        product.setName("XLoaderTestCaseProduct" + System.currentTimeMillis());
+        service.save(product);
+
+        // add a log for the product, so it can be referenced
+        ETLLog productLog = new ETLLog("PRODLOADER", "PROD1",
+                                       "product.medication");
+        productLog.setLinkId(product.getLinkId());
+        dao.save(productLog);
+
+        Mappings mappings = new Mappings();
+        mappings.setIdColumn("LEGACY_ID");
+
+        Mapping priceMap = createMapping(
+                "PRICE",
+                "$PRODID<product.medication>prices[1]<productPrice.unitPrice>price");
+        mappings.addMapping(priceMap);
+
+        String loaderName = "PRICELOAD";
+        Loader loader = createLoader(loaderName, mappings);
+
+        // create two rows for different prices that reference the same product
+        String priceId1 = "ID1";
+        String priceId2 = "ID2";
+        BigDecimal price1 = new BigDecimal("1.5");
+        BigDecimal price2 = new BigDecimal("0.95");
+        ETLRow row1 = createPriceRow(priceId1, "PROD1", price1);
+        ETLRow row2 = createPriceRow(priceId2, "PROD1", price2);
+
+        List<IMObject> objects1 = loader.load(row1);
+        List<IMObject> objects2 = loader.load(row2);
+        loader.close();
+        assertEquals(2, objects1.size());
+        assertEquals(product, objects1.get(0));
+
+        assertEquals(2, objects2.size());
+        assertEquals(product, objects2.get(0));
+
+        IMObjectBean price1Bean = new IMObjectBean(objects1.get(1), service);
+        assertTrue(price1Bean.isA("productPrice.unitPrice"));
+        assertEquals(0, price1.compareTo(price1Bean.getBigDecimal("price")));
+
+        IMObjectBean price2Bean = new IMObjectBean(objects2.get(1), service);
+        assertTrue(price2Bean.isA("productPrice.unitPrice"));
+        assertEquals(0, price2.compareTo(price2Bean.getBigDecimal("price")));
+
+        List<ETLLog> logs = dao.get(loaderName, priceId1, null);
+        assertEquals(1, logs.size());
+        checkLog(logs, loaderName, priceId1, "product.medication", -1);
+
+        logs = dao.get(loaderName, priceId2, null);
+        assertEquals(1, logs.size());
+        checkLog(logs, loaderName, priceId2, "product.medication", -1);
+    }
+
+    /**
      * Returns the location of the spring config files.
      *
      * @return an array of config locations
@@ -414,6 +477,22 @@ public class LoaderTestCase
     }
 
     /**
+     * Helper to create a row containing a price id, product id and price.
+     *
+     * @param legacyId  the price legacy id
+     * @param productId the product legacy id
+     * @param price     the price
+     * @return a new row
+     */
+    private ETLRow createPriceRow(String legacyId, String productId,
+                                  BigDecimal price) {
+        ETLRow row = new ETLRow(legacyId);
+        row.add("PRICE", price);
+        row.add("PRODID", productId);
+        return row;
+    }
+
+    /**
      * Helper to create a new mapping.
      *
      * @param source the source to map
@@ -482,9 +561,11 @@ public class LoaderTestCase
          */
         @Override
         protected void save(Collection<IMObject> objects,
-                            Map<IMObject, ETLLog> logs,
+                            Map<IMObject,List<ETLLog>> logs,
                             Collection<ETLLog> errorLogs) {
-            dao.save(logs.values());
+            for (List<ETLLog> logList : logs.values()) {
+                dao.save(logList);
+            }
             for (ETLLog errorLog : errorLogs) {
                 dao.remove(errorLog.getLoader(), errorLog.getRowId());
             }

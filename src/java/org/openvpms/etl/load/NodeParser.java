@@ -24,15 +24,17 @@ import java.util.regex.Pattern;
 
 /**
  * Parses nodes of the form:
- * <code>
- * node = "&lt;" &lt;archetype&gt; "&gt;" &lt;node&gt; "[" collection "]"
+ * <pre>
+ * node = reference? &lt;" &lt;archetype&gt; "&gt;" &lt;node&gt; "[" collection "]"
+ * reference = "$" fieldName
  * collection = "[" &lt;index&gt; "]"  node
- * </code>
+ * </pre>
  * <p/>
  * E.g:
  * <code>
  * &lt;party.customerPerson&gt;firstName
  * &lt;party.customerPerson&gt;contacts[0]address
+ * $PRODID<product.medication>prices[1]<productPrice.unitPrice>price
  * </code>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -45,7 +47,7 @@ public class NodeParser {
      */
     @SuppressWarnings({"HardCodedStringLiteral"})
     private static final Pattern pattern
-            = Pattern.compile("<([^<>]+)>(\\w+)(\\[(\\d+)\\])?");
+            = Pattern.compile("(\\$(\\w+))?<([^<>]+)>(\\w+)(\\[(\\d+)\\])?");
 
     /**
      * Parses a node.
@@ -62,12 +64,17 @@ public class NodeParser {
             if (start != matcher.start()) {
                 return null;
             }
-            String archetype = matcher.group(1);
-            String name = matcher.group(2);
-            String indexStr = matcher.group(4);
+            String field = matcher.group(2);
+            String archetype = matcher.group(3);
+            String name = matcher.group(4);
+            String indexStr = matcher.group(6);
             int index = (indexStr != null) ? Integer.parseInt(indexStr) : -1;
-            Node current = new Node(archetype, name, index);
+            Node current = new Node(field, archetype, name, index);
             if (parent != null) {
+                if (field != null) {
+                    // don't allow references in child nodes
+                    return null;
+                }
                 parent.setChild(current);
             }
             parent = current;
