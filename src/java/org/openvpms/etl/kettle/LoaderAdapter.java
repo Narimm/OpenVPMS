@@ -102,7 +102,10 @@ public class LoaderAdapter {
                                           mapping.getSource());
                 throw new KettleException(msg);
             }
-            mapRow.add(mapping.getSource(), getValue(value));
+        }
+        for (int i = 0; i < row.size(); ++i) {
+            Value value = row.getValue(i);
+            mapRow.add(value.getName(), getValue(value));
         }
         return loader.load(mapRow);
     }
