@@ -20,12 +20,19 @@
 		latest="true"
 		type="org.openvpms.component.business.domain.im.product.ProductPrice" displayName="Product Fixed Price" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" path="/name" type="java.lang.String" derived="true" hidden="true"
-			minCardinality="1" derivedValue="concat('Fixed Price','')" />
+		<node name="name" path="/name" type="java.lang.String" minCardinality="1" defaultValue="'Fixed Price'"/>
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('$ ',/price, ' fixed')" />
-		<node name="fixed" path="/fixed" type="java.lang.Boolean" readOnly="true" defaultValue="true()" />
+			derivedValue="concat('$ ',/price, ' ','(',date:formatDate(/fromDate), ' - ',date:formatDate(/thruDate),')')" />
+		<node name="fixed" path="/fixed" type="java.lang.Boolean" readOnly="true" hidden="true" defaultValue="true()" />
+        <node name="cost" path="/details/cost" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="0.0"/>
+		<node name="markup" path="/details/markup" type="java.math.BigDecimal"  minCardinality="0" defaultValue="100.0"/>			
 		<node name="price" path="/price" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"  minCardinality="1"/>			
+		<node name="maxDiscount" displayName="Max. Discount" path="/details/maxDiscount" type="java.math.BigDecimal"  minCardinality="0" defaultValue="'100.0'"/>			
+		<node displayName="From Date" name="fromDate" path="/fromDate"
+			type="java.util.Date" minCardinality="0"
+			defaultValue="java.util.Date.new()" />
+		<node displayName="To Date" name="thruDate" path="/thruDate"
+			type="java.util.Date" minCardinality="0" />
 	</archetype>
 </archetypes>

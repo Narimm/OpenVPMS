@@ -24,15 +24,24 @@
               minCardinality="1" derivedValue="concat('Unit Price','')"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" minCardinality="1" derived="true"
-              derivedValue="concat('$ ',/price, ' each')"/>
-        <node name="fixed" path="/fixed" type="java.lang.Boolean" readOnly="true" defaultValue="false()"/>
+              derivedValue="concat('$ ',/price, ' ',openvpms:lookup(.,'uom'),'(',date:formatDate(/fromDate), ' - ',date:formatDate(/thruDate),')')"/>
+        <node name="fixed" path="/fixed" type="java.lang.Boolean" readOnly="true" hidden="true" defaultValue="false()"/>
+        <node name="cost" path="/details/cost" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="0.0"/>
+		<node name="markup" path="/details/markup" type="java.math.BigDecimal"  minCardinality="0" defaultValue="100.0"/>			
         <node name="price" path="/price" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"/>
-        <node name="uom" displayName="Units of Measure" path="/details/qtyUom" type="java.lang.String" minCardinality="0">
+        <node name="uom" displayName="Selling Units" path="/details/qtyUom" type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.uom"/>
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
+        <node name="quantity" path="/details/quantity" type="java.lang.Integer" defaultVale="99999'" minCardinality="0"/>
+		<node name="maxDiscount" displayName="Max. Discount" path="/details/maxDiscount" type="java.math.BigDecimal"  minCardinality="0" defaultValue="100.0"/>			
+		<node displayName="From Date" name="fromDate" path="/fromDate"
+			type="java.util.Date" minCardinality="0"
+			defaultValue="java.util.Date.new()" />
+		<node displayName="To Date" name="thruDate" path="/thruDate"
+			type="java.util.Date" minCardinality="0" />
     </archetype>
 </archetypes>
