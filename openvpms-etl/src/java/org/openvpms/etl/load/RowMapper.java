@@ -158,7 +158,7 @@ class RowMapper {
             Object value = row.get(mapping.getSource());
             if (!mapping.getExcludeNull()
                     || (mapping.getExcludeNull() && value != null)) {
-                mapValue(value, mapping);
+                mapValue(value, mapping, row);
             }
         }
         if (lookupHandler != null && !lookups.isEmpty()) {
@@ -174,19 +174,21 @@ class RowMapper {
      *
      * @param value   the value to map
      * @param mapping the mapping
+     * @param row     the row being mapped
      * @throws LoaderException           for any loader error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private void mapValue(Object value, Mapping mapping) {
+    private void mapValue(Object value, Mapping mapping, ETLRow row) {
         Node node = nodes.get(mapping.getTarget());
         Node parentNode;
-        IMObject object = getObject(node, null, null, mapping);
+        IMObject object = getObject(node, null, null, mapping, row);
         while (node.getChild() != null) {
             parentNode = node;
             node = node.getChild();
-            object = getObject(node, parentNode, object, mapping);
+            object = getObject(node, parentNode, object, mapping, row);
         }
-        NodeDescriptor descriptor = getNode(node.getArchetype(), node.getName());
+        NodeDescriptor descriptor = getNode(node.getArchetype(),
+                                            node.getName());
         if (descriptor.isObjectReference()) {
             String targetValue = getStringValue(value, mapping);
             descriptor.setValue(object, handler.getReference(targetValue));
@@ -210,20 +212,27 @@ class RowMapper {
     }
 
     /**
-     * Gets an object for the specified node, creating it if it doesn't
-     * exist.
+     * Gets an object for the specified node.
+     * If the node references an existing object, this will be returned,
+     * otherwise the object will be created.
      *
      * @param node       the node
      * @param parentNode the parent node. May be <tt>null</tt>
      * @param parent     the parent object. May be <tt>null</tt>
      * @param mapping    the mapping
+     * @param row        the row being mapped
      * @return the object corresponding to the node
      */
     private IMObject getObject(Node node, Node parentNode, IMObject parent,
-                               Mapping mapping) {
-        IMObject object = objects.get(node.getObjectPath());
+                               Mapping mapping, ETLRow row) {
+        IMObject object;
+        object = objects.get(node.getObjectPath());
         if (object == null) {
-            object = create(node, mapping);
+            if (node.getField() != null) {
+                object = getObject(node, row);
+            } else {
+                object = create(node, mapping);
+            }
             objects.put(node.getObjectPath(), object);
             int index = (parent != null) ? parentNode.getIndex() : -1;
             if (parent == null) {
@@ -235,7 +244,8 @@ class RowMapper {
                 if (descriptor.isCollection()) {
                     descriptor.addChildToCollection(parent, object);
                 } else if (descriptor.isObjectReference()) {
-                    descriptor.setValue(parent, object.getObjectReference());
+                    descriptor.setValue(parent,
+                                        object.getObjectReference());
                     handler.add(rowId, object, index);
                 } else {
                     descriptor.setValue(parent, object);
@@ -243,6 +253,22 @@ class RowMapper {
             }
         }
         return object;
+    }
+
+    /**
+     * Returns an object identified by reference.
+     *
+     * @param node the node containing the reference
+     * @param row  the row being mapped
+     */
+    private IMObject getObject(Node node, ETLRow row) {
+        Object value = row.get(node.getField());
+        if (value == null) {
+            throw new LoaderException(NullReference, node.getArchetype(),
+                                      node.getField());
+        }
+        String ref = Reference.create(node.getArchetype(), value.toString());
+        return handler.getObject(ref);
     }
 
     /**

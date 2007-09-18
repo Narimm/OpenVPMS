@@ -29,6 +29,11 @@ package org.openvpms.etl.load;
 public class Node {
 
     /**
+     * The field name.
+     */
+    private final String field;
+
+    /**
      * The archetype short name.
      */
     private final String archetype;
@@ -57,15 +62,26 @@ public class Node {
     /**
      * Constructs a new <tt>Node</tt>.
      *
+     * @param field     the field name. May be <tt>null</tt>
      * @param archetype the archetype short name
      * @param name      the node name
      * @param index     the collection index, or <tt>-1</tt> if this is not a
      *                  collection node
      */
-    public Node(String archetype, String name, int index) {
+    public Node(String field, String archetype, String name, int index) {
+        this.field = field;
         this.archetype = archetype;
         this.name = name;
         this.index = index;
+    }
+
+    /**
+     * Returns the field name.
+     *
+     * @return the field name. May be <tt>null</tt>
+     */
+    public String getField() {
+        return field;
     }
 
     /**
@@ -106,6 +122,10 @@ public class Node {
         StringBuffer result = new StringBuffer();
         if (parent != null) {
             result.append(parent.getNodePath());
+        }
+        if (field != null) {
+            result.append("$");
+            result.append(field);
         }
         result.append("<");
         result.append(archetype);

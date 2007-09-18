@@ -45,6 +45,7 @@ public class LoaderException extends OpenVPMSException {
         InvalidMapping,
         InvalidNode,
         InvalidReference,
+        NullReference,
         LookupNotFound,
         LookupSourceNodeNotFound,
         LookupRelationshipNotFound,
