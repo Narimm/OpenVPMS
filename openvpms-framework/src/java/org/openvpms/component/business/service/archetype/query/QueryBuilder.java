@@ -525,9 +525,14 @@ public class QueryBuilder {
      * @param context    the context
      */
     private void process(NodeSortConstraint constraint, QueryContext context) {
+        TypeSet types = context.getTypeSet(constraint.getAlias());
+        if (types == null) {
+            throw new QueryBuilderException(
+                    InvalidQualifiedName, constraint.getNodeName());
+        }
+
         NodeDescriptor ndesc = getMatchingNodeDescriptor(
-                context.peekTypeSet().getDescriptors(),
-                constraint.getNodeName());
+                types.getDescriptors(), constraint.getNodeName());
         if (ndesc == null) {
             throw new QueryBuilderException(
                     NoNodeDescriptorForName, constraint.getNodeName());
