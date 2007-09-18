@@ -75,6 +75,44 @@
     </step>
 
   <step>
+    <name>Attachment Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>HISTORYID</idColumn><mapping><source>DATE</source><target>&lt;act.patientDocumentAttachment>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientDocumentAttachment>description</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FILENAME</source><target>&lt;act.patientDocumentAttachment>fileName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientDocumentAttachment>status</target><excludeNull>false</excludeNull><value>COMPLETED</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientDocumentAttachment>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;act.patientDocumentAttachment>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientDocumentAttachment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>false</excludeNull><value>&lt;act.patientDocumentAttachment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>720</xloc>
+      <yloc>619</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Biochemistry Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>HISTORYID</idColumn><mapping><source>DATE</source><target>&lt;act.patientInvestigationBiochemistry>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientInvestigationBiochemistry>description</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FILENAME</source><target>&lt;act.patientInvestigationBiochemistry>fileName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientInvestigationBiochemistry>status</target><excludeNull>false</excludeNull><value>FINAL</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientInvestigationBiochemistry>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;act.patientInvestigationBiochemistry>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientInvestigationBiochemistry>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>false</excludeNull><value>&lt;act.patientInvestigationBiochemistry>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>720</xloc>
+      <yloc>445</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Dummy (do nothing)</name>
     <type>Dummy</type>
     <description/>
@@ -89,6 +127,64 @@
     <GUI>
       <xloc>339</xloc>
       <yloc>597</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Chem</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>N</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Biochemistry Output</send_true_to>
+<send_false_to>Filter Haem</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>TEXT</leftvalue>
+ <function>STARTS WITH</function>
+ <rightvalue/>
+ <value><name>constant</name><type>String</type><text>Chem.</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>564</xloc>
+      <yloc>443</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Haem</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>N</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Haemotology Output</send_true_to>
+<send_false_to>Attachment Output</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>TEXT</leftvalue>
+ <function>STARTS WITH</function>
+ <rightvalue/>
+ <value><name>constant</name><type>String</type><text>Haem.</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>565</xloc>
+      <yloc>537</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -217,6 +313,25 @@
     <GUI>
       <xloc>340</xloc>
       <yloc>445</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Haemotology Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>HISTORYID</idColumn><mapping><source>DATE</source><target>&lt;act.patientInvestigationBiochemistry>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientInvestigationBiochemistry>description</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FILENAME</source><target>&lt;act.patientInvestigationBiochemistry>fileName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientInvestigationBiochemistry>status</target><excludeNull>false</excludeNull><value>FINAL</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientInvestigationBiochemistry>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;act.patientInvestigationBiochemistry>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientInvestigationBiochemistry>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>false</excludeNull><value>&lt;act.patientInvestigationBiochemistry>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>718</xloc>
+      <yloc>536</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -467,25 +582,6 @@
     </step>
 
   <step>
-    <name>Biochemistry Output</name>
-    <type>OpenVPMSLoaderPlugin</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<mappings><connection>openvpms</connection><idColumn>HISTORYID</idColumn><mapping><source>DATE</source><target>&lt;act.patientInvestigationBiochemistry>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientInvestigationBiochemistry>description</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FILENAME</source><target>&lt;act.patientInvestigationBiochemistry>fileName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientInvestigationBiochemistry>status</target><excludeNull>false</excludeNull><value>FINAL</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientInvestigationBiochemistry>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;act.patientInvestigationBiochemistry>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientInvestigationBiochemistry>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>false</excludeNull><value>&lt;act.patientInvestigationBiochemistry>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
-    <GUI>
-      <xloc>720</xloc>
-      <yloc>445</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
     <name>Transform Fields</name>
     <type>ScriptValueMod</type>
     <description/>
@@ -545,102 +641,6 @@ if (TEXT.getString() != null) {
     <GUI>
       <xloc>452</xloc>
       <yloc>444</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter Chem</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>N</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<send_true_to>Biochemistry Output</send_true_to>
-<send_false_to>Filter Haem</send_false_to>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue>TEXT</leftvalue>
- <function>STARTS WITH</function>
- <rightvalue/>
- <value><name>constant</name><type>String</type><text>Chem.</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
-    </compare>
-     <cluster_schema/>
-    <GUI>
-      <xloc>564</xloc>
-      <yloc>443</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter Haem</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>N</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<send_true_to>Haemotology Output</send_true_to>
-<send_false_to>Attachment Output</send_false_to>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue>TEXT</leftvalue>
- <function>STARTS WITH</function>
- <rightvalue/>
- <value><name>constant</name><type>String</type><text>Haem.</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
-    </compare>
-     <cluster_schema/>
-    <GUI>
-      <xloc>565</xloc>
-      <yloc>537</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Attachment Output</name>
-    <type>OpenVPMSLoaderPlugin</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<mappings><connection>openvpms</connection><idColumn>HISTORYID</idColumn><mapping><source>DATE</source><target>&lt;act.patientDocumentAttachment>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientDocumentAttachment>description</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FILENAME</source><target>&lt;act.patientDocumentAttachment>fileName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientDocumentAttachment>status</target><excludeNull>false</excludeNull><value>COMPLETED</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientDocumentAttachment>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;act.patientDocumentAttachment>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientDocumentAttachment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>false</excludeNull><value>&lt;act.patientDocumentAttachment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
-    <GUI>
-      <xloc>720</xloc>
-      <yloc>619</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Haemotology Output</name>
-    <type>OpenVPMSLoaderPlugin</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<mappings><connection>openvpms</connection><idColumn>HISTORYID</idColumn><mapping><source>DATE</source><target>&lt;act.patientInvestigationBiochemistry>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientInvestigationBiochemistry>description</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FILENAME</source><target>&lt;act.patientInvestigationBiochemistry>fileName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TEXT</source><target>&lt;act.patientInvestigationBiochemistry>status</target><excludeNull>false</excludeNull><value>FINAL</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientInvestigationBiochemistry>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;act.patientInvestigationBiochemistry>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientInvestigationBiochemistry>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HISTORYID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>false</excludeNull><value>&lt;act.patientInvestigationBiochemistry>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
-    <GUI>
-      <xloc>718</xloc>
-      <yloc>536</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
