@@ -270,7 +270,9 @@ public abstract class AbstractActResultSet<T>
                                                     node.getNodeName());
                 if (descriptor != null
                         && QueryHelper.isParticipationNode(descriptor)) {
-                    QueryHelper.addSortOnParticipation(archetypes, query,
+                    ShortNameConstraint shortNames = (ShortNameConstraint)
+                            query.getArchetypeConstraint();
+                    QueryHelper.addSortOnParticipation(shortNames, query,
                                                        descriptor,
                                                        node.isAscending());
                 } else {

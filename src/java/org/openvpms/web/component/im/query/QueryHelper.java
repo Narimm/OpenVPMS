@@ -84,13 +84,13 @@ public class QueryHelper {
         String[] particShortNames = DescriptorHelper.getShortNames(descriptor);
         String particAlias = getAlias("partic", query);
         ShortNameConstraint participation = new ShortNameConstraint(
-                particAlias, particShortNames, true, true);
+                particAlias, particShortNames, false, false);
         acts.add(new CollectionNodeConstraint(descriptor.getName(),
                                               participation)
                 .setJoinType(JoinConstraint.JoinType.LeftOuterJoin));
         ShortNameConstraint entity = new ShortNameConstraint(
                 getAlias("entity", query),
-                getEntityShortNames(particShortNames), true, true);
+                getEntityShortNames(particShortNames), false, false);
         query.add(entity);
         query.add(new IdConstraint(acts.getAlias(), particAlias + ".act"));
         query.add(new IdConstraint(entity.getAlias(), particAlias + ".entity"));
