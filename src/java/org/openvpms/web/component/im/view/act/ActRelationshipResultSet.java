@@ -20,8 +20,10 @@ package org.openvpms.web.component.im.view.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -32,6 +34,8 @@ import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractListResultSet;
+import org.openvpms.web.component.im.query.QueryHelper;
+import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -143,33 +147,37 @@ public class ActRelationshipResultSet
      * @param nodes the nodes
      */
     protected void sort(List<String> nodes) {
-        List<IMObject> sorted = new ArrayList<IMObject>();
-        ArchetypeQuery query = createQuery(nodes, sortAscending);
-        Map<Long, ActRelationship> relsByUID
-                = new LinkedHashMap<Long, ActRelationship>();
-        for (IMObject object : getObjects()) {
-            relsByUID.put(object.getUid(), (ActRelationship) object);
-        }
+        try {
+            List<IMObject> sorted = new ArrayList<IMObject>();
+            ArchetypeQuery query = createQuery(nodes, sortAscending);
+            Map<Long, ActRelationship> relsByUID
+                    = new LinkedHashMap<Long, ActRelationship>();
+            for (IMObject object : getObjects()) {
+                relsByUID.put(object.getUid(), (ActRelationship) object);
+            }
 
-        Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
-        while (iter.hasNext()) {
-            ObjectSet set = iter.next();
-            Long uid = (Long) set.get("rel.uid");
-            ActRelationship relationship = relsByUID.remove(uid);
-            if (relationship != null) {
+            Iterator<ObjectSet> iter = new ObjectSetQueryIterator(query);
+            while (iter.hasNext()) {
+                ObjectSet set = iter.next();
+                Long uid = (Long) set.get("rel.uid");
+                ActRelationship relationship = relsByUID.remove(uid);
+                if (relationship != null) {
+                    sorted.add(relationship);
+                }
+            }
+
+            // for all relationships not persistent, just add to the sorted set.
+            // TODO. Should fall back and use in memory sorting with a binary
+            // search to determine where they should go, or a Collection.sort()
+            // if it is more efficient to do so.
+            for (IMObject relationship : relsByUID.values()) {
                 sorted.add(relationship);
             }
+            getObjects().clear();
+            getObjects().addAll(sorted);
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
         }
-
-        // for all relationships not persistent, just add to the sorted set.
-        // TODO. Should fall back and use in memory sorting with a binary
-        // search to determine where they should go, or a Collection.sort()
-        // if it is more efficient to do so.
-        for (IMObject relationship : relsByUID.values()) {
-            sorted.add(relationship);
-        }
-        getObjects().clear();
-        getObjects().addAll(sorted);
     }
 
     /**
@@ -196,7 +204,18 @@ public class ActRelationshipResultSet
         query.add(new IdConstraint("rel.target", "target"));
         query.add(new NodeSelectConstraint("rel.uid"));
         for (String node : nodes) {
-            query.add(new NodeSortConstraint("target", node, ascending));
+            NodeDescriptor descriptor = QueryHelper.getDescriptor(target, node);
+            if (descriptor != null) {
+                if (QueryHelper.isParticipationNode(descriptor)) {
+                    QueryHelper.addSortOnParticipation(target, query,
+                                                       descriptor,
+                                                       ascending);
+                } else {
+                    query.add(new NodeSortConstraint(target.getAlias(), node,
+                                                     ascending));
+                }
+            }
+
         }
         return query;
     }

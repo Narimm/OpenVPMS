@@ -106,7 +106,7 @@ class PatientRelationshipStateQuery extends RelationshipStateQuery {
                     pState.setDeceased(true);
                 }
             }
-        } else {
+        } else if (!states.isEmpty()) {
             // build a map of patient UIDs to their corresponding states
             Map<Long, PatientRelationshipState> patients
                     = new HashMap<Long, PatientRelationshipState>();
