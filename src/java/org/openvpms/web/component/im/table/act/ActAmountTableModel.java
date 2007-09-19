@@ -200,6 +200,17 @@ public class ActAmountTableModel<T extends Act>
     }
 
     /**
+     * Helper to determine the next available model index.
+     *
+     * @param columns the columns
+     * @return the next available model index.
+     */
+    @Override
+    protected int getNextModelIndex(TableColumnModel columns) {
+        return super.getNextModelIndex(columns, AMOUNT_INDEX + 1);
+    }
+
+    /**
      * Returns an amount from an act.
      *
      * @param act the act
