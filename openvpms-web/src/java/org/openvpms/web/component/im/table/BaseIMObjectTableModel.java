@@ -205,7 +205,18 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
      * @return the next available model index.
      */
     protected int getNextModelIndex(TableColumnModel columns) {
-        int index = NEXT_INDEX;
+        return getNextModelIndex(columns, NEXT_INDEX);
+    }
+
+    /**
+     * Helper to determine the next available model index.
+     *
+     * @param columns the columns
+     * @param from    the index to start searching from
+     * @return the next available model index.
+     */
+    protected int getNextModelIndex(TableColumnModel columns, int from) {
+        int index = from + 1;
         Iterator iterator = columns.getColumns();
         while (iterator.hasNext()) {
             TableColumn col = (TableColumn) iterator.next();
