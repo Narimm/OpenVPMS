@@ -46,7 +46,7 @@ public abstract class AbstractIMObjectTableModel<T extends IMObject>
      * @param model the table column model. May be <code>null</code>
      */
     public AbstractIMObjectTableModel(TableColumnModel model) {
-        this.model = model;
+        super(model);
     }
 
 }
