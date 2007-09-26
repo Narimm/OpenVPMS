@@ -25,6 +25,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.table.PageableTableModel;
 import org.openvpms.web.component.table.SortableTableModel;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -109,7 +110,12 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
                 }
             }
         }
-        setPage(0);
+        if (!setPage(0)) {
+            // no pages.
+            page = 0;
+            List<T> objects = Collections.emptyList();
+            setPage(objects);
+        }
     }
 
     /**
