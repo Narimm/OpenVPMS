@@ -160,6 +160,7 @@ public class ReminderQuery {
                                                           "act.patientReminder",
                                                           true);
         ArchetypeQuery query = new ArchetypeQuery(act);
+        query.setMaxResults(1000);
         query.setDistinct(true);
 
         ShortNameConstraint participation = new ShortNameConstraint(

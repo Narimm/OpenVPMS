@@ -20,7 +20,7 @@ package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -60,14 +60,14 @@ public class DueReminderQuery {
     private Date cancel;
 
     /**
-     * The reminder rules.
-     */
-    private final ReminderRules rules;
-
-    /**
      * The archetype service.
      */
     private final IArchetypeService service;
+
+    /**
+     * A cache of reminder types.
+     */
+    private final ReminderTypeCache reminderTypes;
 
 
     /**
@@ -83,7 +83,7 @@ public class DueReminderQuery {
      * @param service the archetype service
      */
     public DueReminderQuery(IArchetypeService service) {
-        rules = new ReminderRules(service);
+        reminderTypes = new ReminderTypeCache(service);
         this.service = service;
     }
 
@@ -95,6 +95,9 @@ public class DueReminderQuery {
      */
     public void setReminderType(Entity reminderType) {
         this.reminderType = reminderType;
+        if (reminderType != null) {
+            reminderTypes.add(reminderType);
+        }
     }
 
     /**
@@ -243,8 +246,9 @@ public class DueReminderQuery {
             while (iterator.hasNext()) {
                 Act reminder = iterator.next();
                 ActBean bean = new ActBean(reminder, service);
-                Entity reminderType = bean.getParticipant(
+                IMObjectReference ref = bean.getParticipantRef(
                         "participation.reminderType");
+                ReminderType reminderType = reminderTypes.get(ref);
                 if (reminderType != null) {
                     if (shouldCancel(reminder, reminderType)
                             || isDue(bean, reminderType)) {
@@ -263,10 +267,10 @@ public class DueReminderQuery {
          * @param reminderType the reminder type
          * @return <tt>true</tt> if the reminder should be cancelled
          */
-        private boolean shouldCancel(Act reminder, Entity reminderType) {
+        private boolean shouldCancel(Act reminder, ReminderType reminderType) {
             if (cancel != null) {
-                return rules.shouldCancel(reminder.getActivityEndTime(),
-                                          reminderType, cancel);
+                return reminderType.shouldCancel(reminder.getActivityEndTime(),
+                                                 cancel);
             }
             return false;
         }
@@ -275,15 +279,14 @@ public class DueReminderQuery {
          * Determines if a reminder is due, relative to the 'from' and 'to'
          * dates.
          *
-         * @param reminder         the reminder
+         * @param reminder     the reminder
          * @param reminderType the reminder type
          * @return <tt>true</tt> if the reminder is due
          */
-        private boolean isDue(ActBean reminder, Entity reminderType) {
+        private boolean isDue(ActBean reminder, ReminderType reminderType) {
             int reminderCount = reminder.getInt("reminderCount");
-            EntityRelationship template = rules.getReminderTypeTemplate(
-                    reminderCount, reminderType);
-            return rules.isDue(reminder.getAct(), template, from, to);
+            return reminderType.isDue(reminder.getAct().getActivityEndTime(),
+                                      reminderCount, from, to);
         }
     }
 

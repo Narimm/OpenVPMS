@@ -81,6 +81,11 @@ public class ReminderProcessor
      */
     private final PatientRules patientRules;
 
+    /**
+     * Reminder type cache.
+     */
+    private final ReminderTypeCache reminderTypes;
+
 
     /**
      * Constructs a new <tt>DefaultReminderProcessor</tt>, using the current
@@ -122,6 +127,7 @@ public class ReminderProcessor
         this.service = service;
         rules = new ReminderRules(service);
         patientRules = new PatientRules(service);
+        reminderTypes = new ReminderTypeCache(service);
     }
 
     /**
@@ -133,21 +139,22 @@ public class ReminderProcessor
      */
     public void process(Act reminder) {
         ActBean bean = new ActBean(reminder, service);
-        Entity reminderType = bean.getParticipant("participation.reminderType");
+        ReminderType reminderType = reminderTypes.get(
+                bean.getParticipantRef("participation.reminderType"));
         if (reminderType == null) {
             throw new ReminderProcessorException(NoReminderType);
         }
-        Date due = reminder.getActivityEndTime();
-        if (rules.shouldCancel(due, reminderType, processingDate)) {
-            cancel(reminder, reminderType);
+        Date dueDate = reminder.getActivityEndTime();
+        if (reminderType.shouldCancel(dueDate, processingDate)) {
+            cancel(reminder, reminderType.getEntity());
         } else {
             int reminderCount = bean.getInt("reminderCount");
-            EntityRelationship template = rules.getReminderTypeTemplate(
-                    reminderCount, reminderType);
-            if (rules.isDue(reminder, template, from, to)) {
-                generate(reminder, reminderType, template);
+            if (reminderType.isDue(dueDate, reminderCount, from, to)) {
+                EntityRelationship template
+                        = reminderType.getTemplateRelationship(reminderCount);
+                generate(reminder, reminderType.getEntity(), template);
             } else {
-                skip(reminder, reminderType);
+                skip(reminder, reminderType.getEntity());
             }
         }
     }
