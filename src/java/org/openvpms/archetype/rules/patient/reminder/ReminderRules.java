@@ -84,23 +84,25 @@ public class ReminderRules {
 
 
     /**
-     * Creates a new <tt>ReminderRules</tt> that caches reminder types.
+     * Creates a new <tt>ReminderRules</tt>.
      */
     public ReminderRules() {
         this(ArchetypeServiceHelper.getArchetypeService());
     }
 
     /**
-     * Creates a new <tt>ReminderRules</tt> that caches reminder types.
+     * Creates a new <tt>ReminderRules</tt>.
      *
      * @param service the archetype service
      */
     public ReminderRules(IArchetypeService service) {
-        this(service, new ReminderTypeCache());
+        this(service, null);
     }
 
     /**
      * Creates a new <tt>ReminderRules</tt>.
+     * A reminder type cache can be specified to cache reminders. By default,
+     * no cache is used.
      *
      * @param service       the archetype service
      * @param reminderTypes a cache for reminder types. If <tt>null</tt>, no

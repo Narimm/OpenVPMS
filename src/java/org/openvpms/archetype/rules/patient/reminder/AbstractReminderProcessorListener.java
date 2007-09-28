@@ -56,7 +56,7 @@ public abstract class AbstractReminderProcessorListener
      * @param service the archetype service
      */
     public AbstractReminderProcessorListener(IArchetypeService service) {
-        rules = new ReminderRules(service);
+        rules = new ReminderRules(service, new ReminderTypeCache());
     }
 
     /**
