@@ -40,13 +40,15 @@
     <property name="description" access="property" column="description"
       type="string" />
     <property name="active" access="property" column="active" type="boolean" />
-    <set name="users" table="user_roles" inverse="true">
+    <set name="users" table="user_roles" inverse="true"
+         lazy="true" batch-size="50">
       <key column="security_role_id" />
       <many-to-many
         class="org.openvpms.component.business.domain.im.security.User"
         column="user_id" outer-join="auto" />
     </set>
     <set name="authorities" inverse="false" table="roles_authorities"
+         lazy="true" batch-size="50"
          cascade="none">
       <key column="security_role_id" not-null="true"/>
       <many-to-many

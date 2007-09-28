@@ -55,7 +55,9 @@
         </composite-element>
     </map>
     <set name="classifications" access="property" inverse="false"
-         table="contact_classifications" cascade="none">
+         table="contact_classifications"
+         lazy="true" batch-size="50"
+         cascade="none">
       <key column="contact_id" />
       <many-to-many
         class="org.openvpms.component.business.domain.im.lookup.Lookup"
