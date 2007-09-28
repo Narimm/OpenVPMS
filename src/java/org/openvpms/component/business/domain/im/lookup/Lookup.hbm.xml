@@ -58,14 +58,16 @@
             <property name="value" length="5000" not-null="true"/>
           </composite-element>
         </map>
-        <set name="sourceLookupRelationships" access="property" lazy="true"
-             cascade="all,delete-orphan" inverse="true">
+        <set name="sourceLookupRelationships" access="property" inverse="true"
+             lazy="true" batch-size="50"
+             cascade="all,delete-orphan">
             <key column="source_linkId" not-null="true" property-ref="linkId" on-delete="cascade"/>
             <one-to-many
                     class="org.openvpms.component.business.domain.im.lookup.LookupRelationship"/>
         </set>
-        <set name="targetLookupRelationships" access="property" lazy="true"
-             cascade="all,delete-orphan" inverse="true">
+        <set name="targetLookupRelationships" access="property" inverse="true"
+             lazy="true" batch-size="50"
+             cascade="all,delete-orphan">
             <key column="target_linkId" not-null="true" property-ref="linkId" on-delete="cascade"/>
             <one-to-many
                     class="org.openvpms.component.business.domain.im.lookup.LookupRelationship"/>

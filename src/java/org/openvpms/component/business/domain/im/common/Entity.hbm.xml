@@ -51,26 +51,31 @@
        </composite-element>
     </map>
     <set name="classifications" access="property" inverse="false"
-      table="entity_classifications" cascade="evict">
+         table="entity_classifications"
+         lazy="true" batch-size="50"
+         cascade="evict">
       <key column="entity_id" not-null="true" />
       <many-to-many
         class="org.openvpms.component.business.domain.im.lookup.Lookup"
         column="lookup_id" outer-join="auto" />
     </set>
     <set name="identities" access="property" inverse="true"
+         lazy="true" batch-size="50"
          cascade="all,delete-orphan">
       <key column="entity_id" not-null="true" on-delete="cascade"/>
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityIdentity" />
     </set>
-    <set name="sourceEntityRelationships" access="property"
-         cascade="all,delete-orphan" inverse="true">
+    <set name="sourceEntityRelationships" access="property" inverse="true"
+         lazy="true" batch-size="50"
+         cascade="all,delete-orphan">
       <key column="source_linkId" property-ref="linkId" not-null="true" on-delete="cascade"/>
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
     </set>
-    <set name="targetEntityRelationships" access="property"
-         cascade="all,delete-orphan" inverse="true">
+    <set name="targetEntityRelationships" access="property" inverse="true"
+         lazy="true" batch-size="50"
+         cascade="all,delete-orphan">
       <key column="target_linkId" property-ref="linkId" not-null="true" on-delete="cascade"/>
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
@@ -85,8 +90,9 @@
            type="string" length="20" not-null="true" unique="true" />
       <property name="password" access="property" column="password"
            type="string" length="20"/>
-      <set name="roles" access="property" table="user_roles"
-           cascade="save-update" inverse="false">
+      <set name="roles" access="property" table="user_roles" inverse="false"
+           lazy="true" batch-size="50"
+           cascade="save-update">
         <key column="user_id" />
         <many-to-many
           class="org.openvpms.component.business.domain.im.security.SecurityRole"
@@ -100,6 +106,7 @@
       table="parties">
       <key column="party_id" on-delete="cascade" />
       <set name="contacts" access="property" inverse="true"
+           lazy="true" batch-size="50"
            cascade="all,delete-orphan">
         <key column="party_id" on-delete="cascade"/>
         <one-to-many
@@ -113,6 +120,7 @@
       table="products">
       <key column="product_id" on-delete="cascade"/>
       <set name="productPrices" access="property" inverse="true"
+           lazy="true" batch-size="50"
            cascade="all,delete-orphan">
         <key column="product_id" on-delete="cascade"/>
         <one-to-many

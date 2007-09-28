@@ -22,7 +22,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.Serializable;
-import java.util.StringTokenizer;
 
 
 /**
@@ -69,7 +68,7 @@ public class ArchetypeId implements Serializable, Cloneable {
     private String rmName;
 
     /**
-     * The entity name (i.e. equivalent to the
+     * The entity name.
      */
     private String entityName;
 
@@ -111,7 +110,7 @@ public class ArchetypeId implements Serializable, Cloneable {
      *                              specified
      */
     public ArchetypeId(String qname) {
-        parseQualifiedName(qname);
+        setQualifiedName(qname);
     }
 
     /**
@@ -245,7 +244,7 @@ public class ArchetypeId implements Serializable, Cloneable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -255,12 +254,27 @@ public class ArchetypeId implements Serializable, Cloneable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
         return getQualifiedName();
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        ArchetypeId copy = (ArchetypeId) super.clone();
+        copy.concept = this.concept;
+        copy.entityName = this.entityName;
+        copy.qualifiedName = this.qualifiedName;
+        copy.shortName = this.shortName;
+        copy.version = this.version;
+
+        return copy;
     }
 
     /**
@@ -286,8 +300,11 @@ public class ArchetypeId implements Serializable, Cloneable {
      *
      * @param entityName the entity name
      */
+    @Deprecated
     protected void setEntityName(String entityName) {
         this.entityName = entityName;
+        shortName = null;
+        qualifiedName = null;
     }
 
     /**
@@ -295,8 +312,11 @@ public class ArchetypeId implements Serializable, Cloneable {
      *
      * @param concept the concept to set
      */
+    @Deprecated
     protected void setConcept(String concept) {
         this.concept = concept;
+        shortName = null;
+        qualifiedName = null;
     }
 
     /**
@@ -307,7 +327,10 @@ public class ArchetypeId implements Serializable, Cloneable {
      *                              specified
      */
     protected void setQualifiedName(String qname) {
-        parseQualifiedName(qname);
+        QualifiedName cached = QualifiedName.get(qname);
+        setShortName(cached.getShortName());
+        version = cached.getVersion();
+        qualifiedName = cached.getQualifiedName();
     }
 
     /**
@@ -317,7 +340,7 @@ public class ArchetypeId implements Serializable, Cloneable {
      * @throws ArchetypeIdException if an illegal short name has been specified
      */
     protected void setShortName(String shortName) {
-        parseShortName(shortName);
+        setShortName(ShortName.get(shortName));
     }
 
     /**
@@ -327,85 +350,17 @@ public class ArchetypeId implements Serializable, Cloneable {
      */
     protected void setVersion(String version) {
         this.version = version;
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        ArchetypeId copy = (ArchetypeId) super.clone();
-        copy.concept = this.concept;
-        copy.entityName = this.entityName;
-        copy.qualifiedName = this.qualifiedName;
-        copy.shortName = this.shortName;
-        copy.version = this.version;
-
-        return copy;
+        qualifiedName = null;
     }
 
     /**
-     * Parses a qualified archetype id.
-     *
-     * @param qname the qualified archetype id
-     * @throws ArchetypeIdException if an illegal archetype id has been
-     *                              specified
-     */
-    protected void parseQualifiedName(String qname) {
-        if (StringUtils.isEmpty(qname)) {
-            throw new ArchetypeIdException(
-                    ArchetypeIdException.ErrorCode.EmptyQualifiedName);
-        }
-
-        // the qname is made up of entity name, concept and version
-        StringTokenizer tokens = new StringTokenizer(qname, ".");
-        if (tokens.countTokens() < 2) {
-            throw new ArchetypeIdException(
-                    ArchetypeIdException.ErrorCode.InvalidQNameFormat, qname);
-        }
-
-        entityName = tokens.nextToken();
-        concept = tokens.nextToken();
-
-        if (tokens.hasMoreTokens()) {
-
-            // all the rest have to be the version number which may have a '.'
-            StringBuffer buf = new StringBuffer(tokens.nextToken());
-            while (tokens.hasMoreTokens()) {
-                buf.append(".").append(tokens.nextToken());
-            }
-            version = buf.toString();
-        }
-
-        // store the qualified name
-        qualifiedName = qname;
-    }
-
-    /**
-     * Parses a short name.
+     * Sets the short name.
      *
      * @param shortName the short name
-     * @throws ArchetypeIdException if an illegal short name has been specified
      */
-    protected void parseShortName(String shortName) {
-        if (StringUtils.isEmpty(shortName)) {
-            throw new ArchetypeIdException(
-                    ArchetypeIdException.ErrorCode.EmptyShortName);
-        }
-
-        // the short name is made up of entity name and concept
-        StringTokenizer tokens = new StringTokenizer(shortName, ".");
-        if (tokens.countTokens() != 2) {
-            throw new ArchetypeIdException(
-                    ArchetypeIdException.ErrorCode.InvalidShortNameFormat,
-                    shortName);
-        }
-
-        entityName = tokens.nextToken();
-        concept = tokens.nextToken();
-
-        // store the short name
-        this.shortName = shortName;
+    private void setShortName(ShortName shortName) {
+        entityName = shortName.getEntityName();
+        concept = shortName.getConcept();
+        this.shortName = shortName.getShortName();
     }
-
 }
