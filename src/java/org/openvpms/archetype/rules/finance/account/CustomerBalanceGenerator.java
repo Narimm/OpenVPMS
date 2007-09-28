@@ -23,6 +23,7 @@ import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
+import com.martiansoftware.jsap.stringparsers.BooleanStringParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
@@ -36,6 +37,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -98,6 +100,16 @@ public class CustomerBalanceGenerator {
      * Determines if unposted acts should be processed.
      */
     private final boolean unposted;
+
+    /**
+     * Determines if the generator should fail on error.
+     */
+    private boolean failOnError = true;
+
+    /**
+     * The no. of errors encountered.
+     */
+    private int errors = 0;
 
     /**
      * The logger.
@@ -192,6 +204,16 @@ public class CustomerBalanceGenerator {
     }
 
     /**
+     * Determines if generation should fail when an error occurs.
+     * Defaults to <tt>true</tt>.
+     *
+     * @param failOnError if <tt>true</tt> fail when an error occurs
+     */
+    public void setFailOnError(boolean failOnError) {
+        this.failOnError = failOnError;
+    }
+
+    /**
      * Main line.
      *
      * @param args command line arguments
@@ -220,6 +242,7 @@ public class CustomerBalanceGenerator {
                         = new CustomerBalanceGenerator(context, posted,
                                                        unposted);
                 generator.setRegenerate(regenerate);
+                generator.setFailOnError(config.getBoolean("failOnError"));
                 if (id == -1) {
                     generator.generate(name);
                 } else {
@@ -245,10 +268,25 @@ public class CustomerBalanceGenerator {
         int count = 0;
         while (iterator.hasNext()) {
             Party customer = iterator.next();
-            generate(customer);
-            ++count;
+            try {
+                generate(customer);
+                ++count;
+            } catch (OpenVPMSException exception) {
+                if (failOnError) {
+                    throw exception;
+                } else {
+                    ++errors;
+                    log.error("Failed to generate account balance for "
+                            + customer.getName(), exception);
+                }
+            }
         }
         log.info("Generated account balances for " + count + " customers");
+        if (errors != 0) {
+            log.warn("There were " + errors + " errors");
+        } else {
+            log.info("There were no errors");
+        }
     }
 
     /**
@@ -277,6 +315,12 @@ public class CustomerBalanceGenerator {
         parser.registerParameter(new Switch("regenerate").setShortFlag('r')
                 .setLongFlag("regenerate").setDefault("false")
                 .setHelp("Regenerate account balances."));
+        parser.registerParameter(new FlaggedOption("failOnError")
+                .setShortFlag('e')
+                .setLongFlag("failOnError")
+                .setDefault("true")
+                .setStringParser(BooleanStringParser.getParser())
+                .setHelp("Fail on error"));
         parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
                 .setLongFlag("context")
                 .setDefault(APPLICATION_CONTEXT)
