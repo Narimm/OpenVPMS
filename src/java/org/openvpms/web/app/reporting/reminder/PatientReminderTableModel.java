@@ -25,11 +25,13 @@ import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -85,7 +87,8 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      */
     public PatientReminderTableModel() {
         super(new String[]{"act.patientReminder"});
-        rules = new ReminderRules();
+        rules = new ReminderRules(ArchetypeServiceHelper.getArchetypeService(),
+                                  new ReminderTypeCache());
         patientRules = new PatientRules();
     }
 
