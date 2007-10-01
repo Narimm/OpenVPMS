@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -451,7 +452,8 @@ public class CustomerAccountRules {
      * @param act the act
      */
     private void addBalanceParticipation(ActBean act) {
-        Party customer = (Party) act.getParticipant("participation.customer");
+        IMObjectReference customer
+                = act.getParticipantRef("participation.customer");
         if (customer == null) {
             throw new CustomerAccountRuleException(MissingCustomer,
                                                    act.getAct());
