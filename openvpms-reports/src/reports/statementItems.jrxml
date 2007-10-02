@@ -31,6 +31,7 @@
 	<field name="target.total" class="java.math.BigDecimal"/>
 	<field name="target.product.entity.name" class="java.lang.String"/>
 	<field name="target.product.entity.displayName" class="java.lang.String"/>
+	<field name="target.product.entity.printedName" class="java.lang.String"/>
 
 	<variable name="SUM_target.total" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
 		<variableExpression><![CDATA[$F{target.total}]]></variableExpression>
@@ -115,7 +116,7 @@
 					<textElement>
 						<font/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{target.product.entity.name}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[($F{target.product.entity.printedName} == null) ? $F{target.product.entity.name}: $F{target.product.entity.printedName}]]></textFieldExpression>
 				</textField>
 			</band>
 		</detail>

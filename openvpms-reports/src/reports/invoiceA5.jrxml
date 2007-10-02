@@ -36,6 +36,8 @@
 	<field name="notes" class="java.lang.String"/>
 	<field name="[party:getBillingAddress(openvpms:get(.,'customer.entity'))]" class="java.lang.String"/>
 	<field name="[party:getAccountBalance(.)]" class="java.math.BigDecimal"/>
+	<field name="[party:getFullName(party:getPractice())]" class="java.lang.String"/>
+	<field name="[party:getBillingAddress(party:getPractice())]" class="java.lang.String"/>
 
 		<background>
 			<band height="0"  isSplitAllowed="true" >
