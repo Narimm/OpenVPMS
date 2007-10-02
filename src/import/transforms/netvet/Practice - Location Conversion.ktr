@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name/>
+    <directory>&#47;</directory>
+    <log>
+      <read/>
+      <write/>
+      <input/>
+      <output/>
+      <update/>
+      <connection/>
+      <table/>
+      <use_batchid>Y</use_batchid>
+      <use_logfield>N</use_logfield>
+      </log>
+    <maxdate>
+      <connection/>
+      <table/>
+      <field/>
+      <offset>0.0</offset>
+      <maxdiff>0.0</maxdiff>
+      </maxdate>
+    <size_rowset>1000</size_rowset>
+    <sleep_time_empty>1</sleep_time_empty>
+    <sleep_time_full>1</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>5000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <dependencies>
+      </dependencies>
+    <partitionschemas>
+      </partitionschemas>
+    <slaveservers>
+      </slaveservers>
+    <clusterschemas>
+      </clusterschemas>
+  <modified_user>-</modified_user>
+  <modified_date>2007&#47;04&#47;20 14:09:23.197</modified_date>
+    </info>
+  <notepads>
+    </notepads>
+  <order>
+  <hop> <from>Transform Clinic Fields</from><to>OpenVPMS Location Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select Clinic Fields</from><to>Transform Clinic Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Generate Rows</from><to>Select Clinic Fields</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>Generate Rows</name>
+    <type>RowGenerator</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <name>name</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif>Main Clinic</nullif>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>
+      <field>
+        <name>address</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif>Street</nullif>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>
+      <field>
+        <name>suburb</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif>Suburb</nullif>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>
+      <field>
+        <name>state</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif>VIC</nullif>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>
+      <field>
+        <name>postcode</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif>9999</nullif>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>
+      <field>
+        <name>phone</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif>99999</nullif>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>
+      </fields>
+    <limit>1</limit>
+     <cluster_schema/>
+    <GUI>
+      <xloc>112</xloc>
+      <yloc>249</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>OpenVPMS Location Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>OpenVPMS</connection><idColumn>CLINIC</idColumn><mapping><source>LOCATIONNAME</source><target>&lt;party.organisationLocation>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>LOCATIONNAME</source><target>&lt;party.organisationLocation>currency</target><excludeNull>false</excludeNull><value>AUD</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>address</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>address</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>suburb</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>suburb</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>state</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>state</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>postcode</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>postcode</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>phone</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;entityRelationship.practiceLocation>target</target><excludeNull>true</excludeNull><value>&lt;party.organisationLocation>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;entityRelationship.practiceLocation>source</target><excludeNull>true</excludeNull><value>&lt;party.organisationPractice>1</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>674</xloc>
+      <yloc>243</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select Clinic Fields</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>name</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>address</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>suburb</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>state</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>postcode</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>phone</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>266</xloc>
+      <yloc>247</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform Clinic Fields</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+var CLINIC = 1
+var LOCATIONNAME = name.getString() + &quot;- CLINIC &quot; + CLINIC</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>LOCATIONNAME</name>
+        <rename>LOCATIONNAME</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>CLINIC</name>
+        <rename>CLINIC</rename>
+        <type>Number</type>
+        <length>16</length>
+        <precision>2</precision>
+        </field>      <field>        <name>LOCATIONNAME</name>
+        <rename>LOCATIONNAME</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>471</xloc>
+      <yloc>246</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+</transformation>

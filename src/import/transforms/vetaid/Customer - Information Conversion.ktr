@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>Customer Conversion</name>
+    <directory>&#47;</directory>
+    <log>
+      <read/>
+      <write/>
+      <input/>
+      <output/>
+      <update/>
+      <connection/>
+      <table/>
+      <use_batchid>Y</use_batchid>
+      <use_logfield>N</use_logfield>
+      </log>
+    <maxdate>
+      <connection/>
+      <table/>
+      <field/>
+      <offset>0.0</offset>
+      <maxdiff>0.0</maxdiff>
+      </maxdate>
+    <size_rowset>1000</size_rowset>
+    <sleep_time_empty>1</sleep_time_empty>
+    <sleep_time_full>1</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>5000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <dependencies>
+      </dependencies>
+    <partitionschemas>
+      </partitionschemas>
+    <slaveservers>
+      </slaveservers>
+    <clusterschemas>
+      </clusterschemas>
+  <modified_user>admin</modified_user>
+  <modified_date>2007&#47;04&#47;09 10:47:14.000</modified_date>
+    </info>
+  <notepads>
+    </notepads>
+  <connection>
+    <name>archetypes</name>
+    <server/>
+    <type>MYSQL</type>
+    <access>Native</access>
+    <database>openvpms</database>
+    <port>3306</port>
+    <username>openvpms</username>
+    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
+      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>conversion</name>
+    <server>localhost</server>
+    <type>MYSQL</type>
+    <access>Native</access>
+    <database>conversion</database>
+    <port>3306</port>
+    <username>openvpms</username>
+    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
+      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>openvpms</name>
+    <server>localhost</server>
+    <type>MYSQL</type>
+    <access>Native</access>
+    <database>openvpms</database>
+    <port>3306</port>
+    <username>openvpms</username>
+    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
+    </attributes>
+  </connection>
+  <order>
+  <hop> <from>Client Input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Customer Output</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>Client Input</name>
+    <type>XBaseInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <file_dbf>F:\VETAID\CLIENT.DBF</file_dbf>
+    <limit>0</limit>
+    <add_rownr>N</add_rownr>
+    <field_rownr/>
+    <include>N</include>
+    <include_field/>
+    <accept_filenames>N</accept_filenames>
+    <accept_field/>
+    <accept_stepname/>
+     <cluster_schema/>
+    <GUI>
+      <xloc>65</xloc>
+      <yloc>149</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Customer Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>CLNUMBER</idColumn><mapping><source>CLTITLE</source><target>&lt;party.customerperson>title</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLINITS</source><target>&lt;party.customerperson>initials</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLFSTNAME</source><target>&lt;party.customerperson>firstName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLSURNAME</source><target>&lt;party.customerperson>lastName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;party.customerperson>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLPHONENUM</source><target>&lt;party.customerperson>contacts[0]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLPHONEAREA</source><target>&lt;party.customerperson>contacts[0]&lt;contact.phoneNumber>areaCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLPHONENUM</source><target>&lt;party.customerperson>contacts[0]&lt;contact.phoneNumber>purposes[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.contactPurpose>code=HOME</value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>WKPHONENUM</source><target>&lt;party.customerperson>contacts[1]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>WKPHONEAREA</source><target>&lt;party.customerperson>contacts[1]&lt;contact.phoneNumber>areaCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>WKPHONENUM</source><target>&lt;party.customerperson>contacts[1]&lt;contact.phoneNumber>purposes[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.contactPurpose>code=WORK</value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLADDRESS</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>address</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLSUBURB</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>suburb</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLSTATE</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>state</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>CLPOSTCODE</source><target>&lt;party.customerperson>contacts[3]&lt;contact.location>postcode</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>FAXPHONEAREA</source><target>&lt;party.customerperson>contacts[4]&lt;contact.faxNumber>areaCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>FAXPHONENUM</source><target>&lt;party.customerperson>contacts[4]&lt;contact.faxNumber>faxNumber</target><excludeNull>true</excludeNull><value>&lt;lookup.contactPurpose>code=WORK</value><removeDefaultObjects>true</removeDefaultObjects></mapping><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>466</xloc>
+      <yloc>147</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select Fields</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>CLNUMBER</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLTITLE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLINITS</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLFSTNAME</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLSURNAME</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>DEACTIVATE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLCOMPANY</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLPHONE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>WKPHONE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>FAX</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLADDRESS1</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLADDRESS2</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLSUBURB</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLSTATE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLPOSTCODE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>CLTYPE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>212</xloc>
+      <yloc>148</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform Fields</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+var wordUtils = Packages.org.apache.commons.lang.WordUtils;
+var ovpmsfuncs = Packages.org.openvpms.etl.ETLHelper
+
+&#47;&#47; Transform Name information
+CLFSTNAME.setString(wordUtils.capitalizeFully(trim(CLFSTNAME.getString())))
+CLSURNAME.setString(wordUtils.capitalizeFully(trim(CLSURNAME.getString())))
+if (CLSURNAME.getString() == &quot;&quot;) {
+	CLSURNAME.setString(&quot;No LastName&quot;)
+}
+CLTITLE.setString(trim(CLTITLE.getString()))
+CLINITS.setString(trim(CLINITS.getString()))
+
+&#47;&#47; Transform Address information
+CLADDRESS1.setString(wordUtils.capitalizeFully(trim(CLADDRESS1.getString())))
+CLADDRESS2.setString(wordUtils.capitalizeFully(trim(CLADDRESS2.getString())))
+CLSUBURB.setString(wordUtils.capitalizeFully(trim(CLSUBURB.getString())))
+CLSTATE.setString(wordUtils.capitalize(trim(CLSTATE.getString())))
+CLPOSTCODE.setString(trim(CLPOSTCODE.getString()))
+var CLADDRESS = CLADDRESS1.getString() + &quot; &quot; + CLADDRESS2.getString()
+
+&#47;&#47; Transform Phone Information
+CLPHONE.setString(trim(CLPHONE.getString()))
+WKPHONE.setString(trim(WKPHONE.getString()))
+FAX.setString(trim(FAX.getString()))
+var CLPHONENUM
+var WKPHONENUM
+var FAXPHONENUM
+var CLPHONEAREA
+var WKPHONEAREA
+var FAXPHONEAREA
+
+try {
+	if (substr(CLPHONE.getString(),0,1) == &quot;(&quot;) {
+		CLPHONENUM = trim(substr(CLPHONE.getString(),5))
+		if (CLPHONENUM == &quot;&quot;)
+			CLPHONEAREA = &quot;&quot;
+		else
+			CLPHONEAREA = trim(substr(CLPHONE.getString(),1,4))
+	}
+	else {
+		CLPHONENUM = CLPHONE.getString()
+		CLPHONEAREA = &quot;&quot;
+	}
+}
+catch (e) {
+	CLPHONENUM = CLPHONE.getString()
+	CLPHONEAREA = &quot;&quot;
+}
+
+try {
+	if (substr(WKPHONE.getString(),0,1) == &quot;(&quot;) {
+		WKPHONENUM = trim(substr(WKPHONE.getString(),5))
+		if (WKPHONENUM == &quot;&quot;)
+			WKPHONEAREA = &quot;&quot;
+		else
+			WKPHONEAREA = trim(substr(WKPHONE.getString(),1,4))
+	}
+	else {
+		WKPHONENUM = WKPHONE.getString()
+		WKPHONEAREA = &quot;&quot;
+	}
+}
+catch (e) {
+	WKPHONENUM = WKPHONE.getString()
+	WKPHONEAREA = &quot;&quot;
+}
+if (FAX.getString() == null || FAX.getString() == &quot;&quot;) {
+	FAXPHONENUM = null
+	FAXPHONEAREA = null
+}
+else {
+	try {
+		if (substr(FAX.getString(),0,1) == &quot;(&quot;) {
+			FAXPHONENUM = trim(substr(FAX.getString(),5))
+			if (FAXPHONENUM == &quot;&quot;)
+				FAXPHONEAREA = &quot;&quot;
+			else
+				FAXPHONEAREA = trim(substr(WKPHONE.getString(),1,4))
+		}
+		else {
+			FAXPHONENUM = FAX.getString()
+			FAXPHONEAREA = &quot;&quot;
+		}
+	}
+	catch (e) {
+		FAXPHONENUM = FAX.getString()
+		FAXPHONEAREA = &quot;&quot;
+	}
+}
+
+&#47;&#47;Transform Client Type
+CLTYPE.setString(upper(trim(CLTYPE.getString())))
+
+
+&#47;&#47;Reverse DEACTIVATE flag to make active flag
+var ACTIVE = !DEACTIVATE.getBool()</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>CLADDRESS</name>
+        <rename>CLADDRESS</rename>
+        <type>String</type>
+        <length>255</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>CLPHONEAREA</name>
+        <rename>CLPHONEAREA</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>CLPHONENUM</name>
+        <rename>CLPHONENUM</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>WKPHONEAREA</name>
+        <rename>WKPHONEAREA</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>WKPHONENUM</name>
+        <rename>WKPHONENUM</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>FAXPHONENUM</name>
+        <rename>FAXPHONENUM</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>FAXPHONEAREA</name>
+        <rename>FAXPHONEAREA</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>ACTIVE</name>
+        <rename>ACTIVE</rename>
+        <type>Boolean</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>342</xloc>
+      <yloc>148</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+</transformation>
