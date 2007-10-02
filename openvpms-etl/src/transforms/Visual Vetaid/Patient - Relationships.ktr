@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Patient - Relationships Conversion</name>
+    <name>Patient - Relationships</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -43,11 +43,11 @@
   <notepads>
     </notepads>
   <connection>
-    <name>Visual Vetaid</name>
+    <name>RxWorks</name>
     <server/>
     <type>MSACCESS</type>
     <access>ODBC</access>
-    <database>RxWorks Demo Database</database>
+    <database>RxWorks</database>
     <port>-1</port>
     <username/>
     <password>Encrypted </password>
@@ -226,7 +226,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <connection>Visual Vetaid</connection>
+    <connection>RxWorks</connection>
     <sql>select * from [Patient Location]</sql>
     <limit>0</limit>
     <lookup/>
@@ -270,7 +270,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <connection>Visual Vetaid</connection>
+    <connection>RxWorks</connection>
     <sql>select * from [Patient Owner]</sql>
     <limit>0</limit>
     <lookup/>

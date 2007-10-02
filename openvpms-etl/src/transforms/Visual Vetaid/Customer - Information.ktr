@@ -43,11 +43,11 @@
   <notepads>
     </notepads>
   <connection>
-    <name>Visual Vetaid</name>
+    <name>RxWorks</name>
     <server/>
     <type>MSACCESS</type>
     <access>ODBC</access>
-    <database>RxWorks Demo Database</database>
+    <database>RxWorks</database>
     <port>-1</port>
     <username/>
     <password>Encrypted </password>
@@ -78,7 +78,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <connection>Visual Vetaid</connection>
+    <connection>RxWorks</connection>
     <sql>select * from client</sql>
     <limit>0</limit>
     <lookup/>
@@ -103,7 +103,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <connection>Visual Vetaid</connection>
+    <connection>RxWorks</connection>
     <sql>select * from [client phone numbers]</sql>
     <limit>0</limit>
     <lookup/>
@@ -131,7 +131,7 @@
 <mappings><connection>openvpms</connection><idColumn>CLIENTID</idColumn><mapping><source>SURNAME</source><target>&lt;party.customerperson>lastName</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>FIRSTNAME</source><target>&lt;party.customerperson>firstName</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>TITLE</source><target>&lt;party.customerperson>title</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>INITIALS</source><target>&lt;party.customerperson>initials</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>ADDRESS</source><target>&lt;party.customerperson>contacts[0]&lt;contact.location>address</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ADDRESS3</source><target>&lt;party.customerperson>contacts[0]&lt;contact.location>suburb</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>STATE</source><target>&lt;party.customerperson>contacts[0]&lt;contact.location>state</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>POSTCODE</source><target>&lt;party.customerperson>contacts[0]&lt;contact.location>postcode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FAX</source><target>&lt;party.customerperson>contacts[1]&lt;contact.faxNumber>faxNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WORK</source><target>&lt;party.customerperson>contacts[2]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HOME</source><target>&lt;party.customerperson>contacts[3]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>EMAIL</source><target>&lt;party.customerperson>contacts[1]&lt;contact.email>emailAddress</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACCOUNTTYPE</source><target>&lt;party.customerperson>type[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.customerAccountType>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>675</xloc>
-      <yloc>216</yloc>
+      <yloc>215</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -179,7 +179,17 @@
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
-var ADDRESS = ADDRESS1.getString() + &quot;\n&quot; + ADDRESS2.getString()
+
+if (SURNAME.getString() == null || SURNAME.getString() == &quot;&quot;) {
+	SURNAME.setString(&quot;No Name&quot;);
+}
+var ADDRESS = &quot;&quot;
+if (ADDRESS1.getString() != null &amp;&amp; ADDRESS2.getString() != null) {
+	ADDRESS = ADDRESS1.getString() + &quot;\n&quot; + ADDRESS2.getString();
+}
+else if (ADDRESS1.getString() != null) {
+	ADDRESS = ADDRESS1.getString();
+}
 var ACTIVE = !DEACTIVATED.getBool()
 ACCOUNTTYPE.setString(replace(upper(ACCOUNTTYPE.getString()),&quot; &quot;,&quot;_&quot;))</jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>ADDRESS</name>

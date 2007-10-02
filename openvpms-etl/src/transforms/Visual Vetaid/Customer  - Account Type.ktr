@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Customer - Account Type Conversion</name>
+    <name>Customer - Account Type</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -43,11 +43,11 @@
   <notepads>
     </notepads>
   <connection>
-    <name>RxWorks Demo</name>
+    <name>RxWorks</name>
     <server/>
     <type>MSACCESS</type>
     <access>ODBC</access>
-    <database>RxWorks Demo Database</database>
+    <database>RxWorks</database>
     <port>-1</port>
     <username/>
     <password>Encrypted </password>
@@ -210,7 +210,7 @@ var CODE = replace(upper(LISTNAME.getString()),&quot; &quot;,&quot;_&quot;)</jsS
            <field_name/>
            <schema_name/>
            </partitioning>
-    <connection>RxWorks Demo</connection>
+    <connection>RxWorks</connection>
     <sql>select * from [List - Combos]</sql>
     <limit>0</limit>
     <lookup/>

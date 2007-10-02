@@ -42,68 +42,8 @@
     </info>
   <notepads>
     </notepads>
-  <connection>
-    <name>archetypes</name>
-    <server/>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>conversion</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>conversion</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>openvpms</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
-  <hop> <from>Inventory Input</from><to>Select Inventory Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Inventory Fields</from><to>Lookup Dispensing Fee</to><enabled>Y</enabled> </hop>  <hop> <from>Charges Input</from><to>Filter Dispensing Fee Charge</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Dispensing Fee Charge</from><to>Select Charge fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Charge fields</from><to>Row Normaliser</to><enabled>Y</enabled> </hop>  <hop> <from>Row Normaliser</from><to>Lookup Dispensing Fee</to><enabled>Y</enabled> </hop>  <hop> <from>Lookup Dispensing Fee</from><to>Transform Inventory Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Inventory Fields</from><to>Product Medication Output</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Inventory Input</from><to>Select Inventory Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Inventory Fields</from><to>Lookup Dispensing Fee</to><enabled>Y</enabled> </hop>  <hop> <from>Charges Input</from><to>Filter Dispensing Fee Charge</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Dispensing Fee Charge</from><to>Select Charge fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Charge fields</from><to>Row Normaliser</to><enabled>Y</enabled> </hop>  <hop> <from>Row Normaliser</from><to>Lookup Dispensing Fee</to><enabled>Y</enabled> </hop>  <hop> <from>Lookup Dispensing Fee</from><to>Transform Inventory Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Inventory Fields</from><to>Product Medication Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Dispensing Fee Charge</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Charges Input</name>
@@ -137,15 +77,15 @@
     <name>Filter Dispensing Fee Charge</name>
     <type>FilterRows</type>
     <description/>
-    <distribute>Y</distribute>
+    <distribute>N</distribute>
     <copies>1</copies>
          <partitioning>
            <method>none</method>
            <field_name/>
            <schema_name/>
            </partitioning>
-<send_true_to/>
-<send_false_to/>
+<send_true_to>Select Charge fields</send_true_to>
+<send_false_to>Dummy (do nothing)</send_false_to>
     <compare>
 <condition>
  <negated>N</negated>
@@ -443,6 +383,25 @@ if (DEACTIVATE.getDate() != null)
     <GUI>
       <xloc>588</xloc>
       <yloc>114</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Dummy (do nothing)</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+    <GUI>
+      <xloc>212</xloc>
+      <yloc>388</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

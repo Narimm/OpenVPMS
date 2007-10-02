@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Patient - Visit Note Conversion</name>
+    <name>Patient - Visit Note</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -43,11 +43,11 @@
   <notepads>
     </notepads>
   <connection>
-    <name>RxWorks Demo</name>
+    <name>RxWorks</name>
     <server/>
     <type>MSACCESS</type>
     <access>ODBC</access>
-    <database>RxWorks Demo Database</database>
+    <database>RxWorks</database>
     <port>-1</port>
     <username/>
     <password>Encrypted </password>
@@ -191,7 +191,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <connection>RxWorks Demo</connection>
+    <connection>RxWorks</connection>
     <sql>SELECT *
 FROM Consultation c inner join visit v on c.[Visit Number] = v.[Visit Number]
 </sql>

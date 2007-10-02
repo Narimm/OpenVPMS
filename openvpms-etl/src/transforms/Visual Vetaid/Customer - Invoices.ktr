@@ -43,11 +43,11 @@
   <notepads>
     </notepads>
   <connection>
-    <name>RxWorks Demo</name>
+    <name>RxWorks</name>
     <server/>
     <type>MSACCESS</type>
     <access>ODBC</access>
-    <database>RxWorks Demo Database</database>
+    <database>RxWorks</database>
     <port>-1</port>
     <username/>
     <password>Encrypted </password>
@@ -485,7 +485,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <connection>RxWorks Demo</connection>
+    <connection>RxWorks</connection>
     <sql>SELECT *
 FROM (Visit INNER JOIN (Consultation INNER JOIN [Consultation Item] ON Consultation.[Consultation Number] = [Consultation Item].[Consultation Number]) ON Visit.[Visit Number] = Consultation.[Visit Number]) INNER JOIN [Transaction] ON Visit.[Visit Number] = Transaction.[Visit Number]</sql>
     <limit>0</limit>

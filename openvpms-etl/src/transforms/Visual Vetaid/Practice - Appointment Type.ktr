@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name/>
+    <name>Practice - Appointment Type</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -43,11 +43,11 @@
   <notepads>
     </notepads>
   <connection>
-    <name>RxWorks Demo</name>
+    <name>RxWorks</name>
     <server/>
     <type>MSACCESS</type>
     <access>ODBC</access>
-    <database>RxWorks Demo Database</database>
+    <database>RxWorks</database>
     <port>-1</port>
     <username/>
     <password>Encrypted </password>
@@ -114,6 +114,33 @@
     </step>
 
   <step>
+    <name>Table input</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <connection>RxWorks</connection>
+    <sql>SELECT *
+FROM [List - Appointment Type]
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+     <cluster_schema/>
+    <GUI>
+      <xloc>91</xloc>
+      <yloc>110</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Transform Fields</name>
     <type>ScriptValueMod</type>
     <description/>
@@ -133,33 +160,6 @@
     <GUI>
       <xloc>385</xloc>
       <yloc>112</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Table input</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <connection>RxWorks Demo</connection>
-    <sql>SELECT *
-FROM [List - Appointment Type]
-</sql>
-    <limit>0</limit>
-    <lookup/>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
-     <cluster_schema/>
-    <GUI>
-      <xloc>91</xloc>
-      <yloc>110</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
