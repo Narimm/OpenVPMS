@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name/>
+    <name>Practice - Task Type</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -46,25 +46,6 @@
   <hop> <from>Generate Rows</from><to>TaskType</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
-    <name>TaskType</name>
-    <type>OpenVPMSLoaderPlugin</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<mappings><connection>OpenVPMS</connection><idColumn>NAME</idColumn><mapping><source>NAME</source><target>&lt;entity.taskType>name</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
-    <GUI>
-      <xloc>411</xloc>
-      <yloc>124</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
     <name>Generate Rows</name>
     <type>RowGenerator</type>
     <description/>
@@ -92,6 +73,25 @@
      <cluster_schema/>
     <GUI>
       <xloc>218</xloc>
+      <yloc>124</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>TaskType</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>OpenVPMS</connection><idColumn>NAME</idColumn><mapping><source>NAME</source><target>&lt;entity.taskType>name</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>411</xloc>
       <yloc>124</yloc>
       <draw>Y</draw>
       </GUI>

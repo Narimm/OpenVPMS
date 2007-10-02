@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Customer - Transaction Conversion</name>
+    <name>Customer - Transactions</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -43,11 +43,11 @@
   <notepads>
     </notepads>
   <connection>
-    <name>RxWorks Demo</name>
+    <name>RxWorks</name>
     <server/>
     <type>MSACCESS</type>
     <access>ODBC</access>
-    <database>RxWorks Demo Database</database>
+    <database>RxWorks</database>
     <port>-1</port>
     <username/>
     <password>Encrypted </password>
@@ -850,7 +850,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <connection>RxWorks Demo</connection>
+    <connection>RxWorks</connection>
     <sql>SELECT *
 FROM ([Transaction] LEFT JOIN [Visit] ON Visit.[Visit Number] = Transaction.[Visit Number]) INNER JOIN [Transaction Type] ON Transaction.[Transaction Type] = [Transaction Type].[Type Code];</sql>
     <limit>0</limit>
