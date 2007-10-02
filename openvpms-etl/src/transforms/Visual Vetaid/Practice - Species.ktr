@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Customer - Account Type Conversion</name>
+    <name>Practice - Species</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -37,17 +37,17 @@
       </slaveservers>
     <clusterschemas>
       </clusterschemas>
-  <modified_user>admin</modified_user>
-  <modified_date>2007&#47;04&#47;09 10:47:14.000</modified_date>
+  <modified_user>-</modified_user>
+  <modified_date>2007&#47;09&#47;15 11:04:46.014</modified_date>
     </info>
   <notepads>
     </notepads>
   <connection>
-    <name>Visual Vetaid</name>
+    <name>RxWorks</name>
     <server/>
     <type>MSACCESS</type>
     <access>ODBC</access>
-    <database>Visual Vetaid</database>
+    <database>RxWorks</database>
     <port>-1</port>
     <username/>
     <password>Encrypted </password>
@@ -64,47 +64,8 @@
       <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
     </attributes>
   </connection>
-  <connection>
-    <name>openvpms</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
-  <hop> <from>Modified Java Script Value</from><to>Account Type Output</to><enabled>Y</enabled> </hop>  <hop> <from>Table input</from><to>Select Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  </order>
-
-  <step>
-    <name>Account Type Output</name>
-    <type>OpenVPMSLoaderPlugin</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<mappings><connection>openvpms</connection><idColumn>CODE</idColumn><mapping><source>CODE</source><target>&lt;lookup.customerAccountType>code</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>NAME</source><target>&lt;lookup.customerAccountType>name</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>10</batchSize></mappings>     <cluster_schema/>
-    <GUI>
-      <xloc>680</xloc>
-      <yloc>152</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
+  <hop> <from>Table input</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Sort rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort rows</from><to>Unique rows</to><enabled>Y</enabled> </hop>  <hop> <from>Unique rows</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Modified Java Script Value</from><to>Species</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Dummy (do nothing)</name>
@@ -119,8 +80,8 @@
            </partitioning>
      <cluster_schema/>
     <GUI>
-      <xloc>336</xloc>
-      <yloc>249</yloc>
+      <xloc>530</xloc>
+      <yloc>318</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -129,7 +90,7 @@
     <name>Filter rows</name>
     <type>FilterRows</type>
     <description/>
-    <distribute>Y</distribute>
+    <distribute>N</distribute>
     <copies>1</copies>
          <partitioning>
            <method>none</method>
@@ -141,15 +102,15 @@
     <compare>
 <condition>
  <negated>N</negated>
- <leftvalue>LISTTYPE</leftvalue>
- <function>=</function>
+ <leftvalue>SPECIES</leftvalue>
+ <function>IS NOT NULL</function>
  <rightvalue/>
- <value><name>constant</name><type>String</type><text>AT</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value> </condition>
+ </condition>
     </compare>
      <cluster_schema/>
     <GUI>
-      <xloc>336</xloc>
-      <yloc>154</yloc>
+      <xloc>531</xloc>
+      <yloc>211</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -169,31 +130,44 @@
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
-var wordUtils = Packages.org.apache.commons.lang.WordUtils;
-var ovpmsfuncs = Packages.org.openvpms.etl.ETLHelper
+var NAME = SPECIES.getString()
+SPECIES.setString(replace(upper(trim(SPECIES.getString())),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
 
-var NAME = wordUtils.capitalizeFully(trim(LISTNAME.getString()))
-var CODE = replace(upper(LISTNAME.getString()),&quot; &quot;,&quot;_&quot;)</jsScript_script>
+</jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>NAME</name>
         <rename>NAME</rename>
         <type>String</type>
         <length>-1</length>
         <precision>-1</precision>
-        </field>      <field>        <name>CODE</name>
-        <rename>CODE</rename>
-        <type>String</type>
-        <length>-1</length>
-        <precision>-1</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>503</xloc>
-      <yloc>152</yloc>
+      <xloc>641</xloc>
+      <yloc>210</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Select Fields</name>
+    <name>Species</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SPECIES</idColumn><mapping><source>SPECIES</source><target>&lt;lookup.species>code</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>NAME</source><target>&lt;lookup.species>name</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>781</xloc>
+      <yloc>210</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select values</name>
     <type>SelectValues</type>
     <description/>
     <distribute>Y</distribute>
@@ -203,18 +177,43 @@ var CODE = replace(upper(LISTNAME.getString()),&quot; &quot;,&quot;_&quot;)</jsS
            <field_name/>
            <schema_name/>
            </partitioning>
-    <fields>      <field>        <name>List Type</name>
-        <rename>LISTTYPE</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>List Description</name>
-        <rename>LISTNAME</rename>
+    <fields>      <field>        <name>Patient Species</name>
+        <rename>SPECIES</rename>
         <length>-2</length>
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>204</xloc>
-      <yloc>151</yloc>
+      <xloc>243</xloc>
+      <yloc>209</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Sort rows</name>
+    <type>SortRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <directory>%%java.io.tmpdir%%</directory>
+      <prefix>out</prefix>
+      <sort_size>5000</sort_size>
+      <compress>Y</compress>
+    <fields>
+      <field>
+        <name>SPECIES</name>
+        <ascending>Y</ascending>
+        </field>
+      </fields>
+     <cluster_schema/>
+    <GUI>
+      <xloc>351</xloc>
+      <yloc>212</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -230,16 +229,39 @@ var CODE = replace(upper(LISTNAME.getString()),&quot; &quot;,&quot;_&quot;)</jsS
            <field_name/>
            <schema_name/>
            </partitioning>
-    <connection>Visual Vetaid</connection>
-    <sql>select * from [List - Combos]</sql>
+    <connection>RxWorks</connection>
+    <sql>SELECT * from Patient</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
     <variables_active>N</variables_active>
      <cluster_schema/>
     <GUI>
-      <xloc>92</xloc>
-      <yloc>151</yloc>
+      <xloc>140</xloc>
+      <yloc>210</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Unique rows</name>
+    <type>Unique</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <count_rows>N</count_rows>
+      <count_field/>
+    <fields>      <field>        <name>SPECIES</name>
+        <case_insensitive>N</case_insensitive>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>443</xloc>
+      <yloc>209</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
