@@ -186,7 +186,7 @@
 					<textElement>
 						<font/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{target.product.entity.printedName}]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[($F{target.product.entity.printedName} == null) ? $F{target.product.entity.name}: $F{target.product.entity.printedName}]]></textFieldExpression>
 				</textField>
 			</band>
 		</detail>
