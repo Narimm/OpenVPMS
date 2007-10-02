@@ -18,17 +18,22 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
-import com.martiansoftware.jsap.FlaggedOption;
-import com.martiansoftware.jsap.JSAP;
-import com.martiansoftware.jsap.JSAPException;
-import com.martiansoftware.jsap.JSAPResult;
-import com.martiansoftware.jsap.Switch;
-import com.martiansoftware.jsap.stringparsers.BooleanStringParser;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_ALLOCATION_SHORTNAME;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_BALANCE_SHORTNAME;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_ALLOCATION_SHORTNAME;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_BALANCE_SHORTNAME;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -50,14 +55,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import com.martiansoftware.jsap.FlaggedOption;
+import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPException;
+import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.Switch;
+import com.martiansoftware.jsap.stringparsers.BooleanStringParser;
 
 
 /**
@@ -104,7 +107,7 @@ public class CustomerBalanceGenerator {
     /**
      * Determines if the generator should fail on error.
      */
-    private boolean failOnError = true;
+    private boolean failOnError = false;
 
     /**
      * The no. of errors encountered.
@@ -318,7 +321,7 @@ public class CustomerBalanceGenerator {
         parser.registerParameter(new FlaggedOption("failOnError")
                 .setShortFlag('e')
                 .setLongFlag("failOnError")
-                .setDefault("true")
+                .setDefault("false")
                 .setStringParser(BooleanStringParser.getParser())
                 .setHelp("Fail on error"));
         parser.registerParameter(new FlaggedOption("context").setShortFlag('c')

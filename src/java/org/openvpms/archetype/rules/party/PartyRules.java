@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
@@ -432,7 +433,9 @@ public class PartyRules {
         String suburb = bean.getString("suburb");
         String state = bean.getString("state");
         String postcode = bean.getString("postcode");
-        return address + "\n" + suburb + " " + state + " " + postcode;
+        return ((address != null) ? address:"") + "\n" + ((suburb != null) ? suburb:"") + " " 
+        				+ ((state != null) ? state:"") + " "
+        				+ ((postcode != null) ? postcode:"");
     }
 
     /**
@@ -444,11 +447,8 @@ public class PartyRules {
     private String formatPhone(Contact contact) {
         IMObjectBean bean = new IMObjectBean(contact, service);
         String areaCode = bean.getString("areaCode");
-        if (areaCode == null) {
-            areaCode = "";
-        }
         String phone = bean.getString("telephoneNumber");
-        if (areaCode == "") {
+        if (areaCode == null || areaCode == "") {
         	return phone;
         }
         else {
@@ -456,6 +456,76 @@ public class PartyRules {
         }
     }
 
+    /**
+     * Returns the Practice party
+
+     * @return the practice party object
+     */
+    public Party getPractice() {
+		// First get the Practice.  Should only be one but get first if more.
+    	List<IMObject> rows = ArchetypeQueryHelper.get(service, "party", "organisationPractice", null, true,
+	        0, 1).getResults();
+    	if (!rows.isEmpty()) {
+    		Party practice = (Party) rows.get(0);
+    		return practice;
+    	}
+    	else
+    		return null;
+    }
+    
+    /**
+     * Returns a Bpay Id for the Party.
+     * Utilises the party uid and adds a check digit using a Luntz 10 algorithm.
+     * 
+     * @param party
+     * @return string bpay id
+     */
+    public String getBpayId(Party party) {
+    	  // this will be a running total
+    	  int sum = 0;
+    	  // Get string value of party uid
+    	  String uid = String.valueOf(party.getUid());
+    	  
+    	  // loop through digits from right to left
+    	  for (int i = 0; i < uid.length(); i++) {
+
+    	    //set ch to "current" character to be processed
+    	    char ch = uid.charAt(uid.length() - i - 1);
+
+    	    // our "digit" is calculated using ASCII value - 48
+    	    int digit = (int)ch - 48;
+
+    	    // weight will be the current digit's contribution to
+    	    // the running total
+    	    int weight;
+    	    if (i % 2 == 0) {
+
+    	      // for alternating digits starting with the rightmost, we
+    	      // use our formula this is the same as multiplying x 2 and
+    	      // adding digits together for values 0 to 9.  Using the
+    	      // following formula allows us to gracefully calculate a
+    	      // weight for non-numeric "digits" as well (from their
+    	      // ASCII value - 48).
+    	      weight = (2 * digit) - (int) (digit / 5) * 9;
+
+    	    } else {
+
+    	      // even-positioned digits just contribute their ascii
+    	      // value minus 48
+    	      weight = digit;
+
+    	    }
+
+    	    // keep a running total of weights
+    	    sum += weight;
+    	  }
+    	  // avoid sum less than 10 (if characters below "0" allowed,
+    	  // this could happen)
+    	  sum = (10 - ((Math.abs(sum) + 10)%10)) % 10;
+
+    	  return uid + String.valueOf(sum);
+    }
+    
     /**
      * Returns a concatenated list of values for a set of objects.
      *
