@@ -634,6 +634,66 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns the Practice party object.
+     *
+     * @return the practice party object
+     */
+    public Party getPractice() {
+        return getPartyRules().getPractice();
+    }
+
+    /**
+     * Returns the Bpay ID for a customer.
+     *
+     * @param context the expression context. Expected to reference a party or
+     *                act
+     * @return a Bpay ID for the customer, or <tt>null</tt>
+     */
+
+    public String getBpayID(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        Object value = pointer.getValue();
+        if (value instanceof Party) {
+            return getBpayId((Party) value);
+
+        } else if (value instanceof Act) {
+            return getBpayId((Act) value);
+        }
+        return null;
+    }
+
+    /**
+     * Returns a Bpay Id for the Party.
+     * Utilises the party uid and adds a check digit using a Luntz 10 algorithm.
+     * 
+     * @param party
+     * @return string bpay id
+     */
+    public String getBpayId(Party party) {
+    	return getPartyRules().getBpayId(party);
+    }
+    
+    /**
+     * Returns the Bpay ID for customer associated with an
+     * act via an <em>participation.customer</em> or <em>participation.patient</em>
+     * participation.
+     *
+     * @param act the act
+     * @return the Bpay ID
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getBpayId(Act act) {
+        if (act != null) {
+            Party party = getPartyRules().getCustomer(act);
+            if (party == null) {
+                party = getPatientRules().getOwner(act);
+            }
+            return (party != null) ? getBpayId(party) : null;
+        }
+        return null;
+    }
+
+    /**
      * Returns the archetype service.
      *
      * @return the archetype service
