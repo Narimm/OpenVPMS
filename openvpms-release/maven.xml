@@ -87,8 +87,15 @@
             <fileset dir="${basedir}/src/import/transforms"/>
         </copy>
 
+        <!-- copy the databases -->
         <mkdir dir="${distDir}/db"/>
         <copy todir="${distDir}/db" file="${maven.build.dir}/db.zip"/>
+
+        <!-- copy the update scripts etc -->
+        <mkdir dir="${distDir}/update"/>
+        <copy todir="${distDir}/update">
+            <fileset dir="${basedir}/src/update"/>
+        </copy>
     </goal>
 
     <goal name="openvpms:createdb">
