@@ -177,6 +177,7 @@
                 <ant:arg value="-t"/>
                 <ant:arg value="${doctype}"/>
             </j:if>
+            <ant:arg value="--failOnError=false"/>
         </ant:java>
     </goal>
 
