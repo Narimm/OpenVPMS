@@ -457,6 +457,12 @@
       <version>1.0-rc1-SNAPSHOT</version>
       <url>http://www.openvpms.org</url>
     </dependency>
+    <dependency>
+      <groupId>p6spy</groupId>
+      <artifactId>p6spy</artifactId>
+      <version>1.3</version>
+      <url>http://jakarta.apache.org/commons/dbcp/</url>
+    </dependency>
   </dependencies>
 
   <build>
