@@ -8,11 +8,8 @@
 
     <!-- ================================================================== -->
     <!-- Deploy zip                                                         -->
-    <!-- NOTE: this target is not in keeping with maven's one target per    -->
-    <!-- project approach...                                                -->
     <!-- ================================================================== -->
-    <goal name="zip:deploy"
-          prereqs="zip, jar:deploy"
+    <goal name="zip:deploy" prereqs="zip"
           description="Deploy a zip to the remote repository">
 
         <artifact:deploy artifact="${maven.build.dir}/${maven.final.name}.zip"
@@ -24,7 +21,7 @@
     <!-- NOTE: this target is not in keeping with maven's one target per    -->
     <!-- project approach...                                                -->
     <!-- ================================================================== -->
-    <goal name="zip:install" prereqs="jar:install"
+    <goal name="zip:install" prereqs="zip"
           description="Install the zip in the local repository">
 
         <artifact:install artifact="${maven.build.dir}/${maven.final.name}.zip"
