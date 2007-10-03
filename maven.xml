@@ -11,7 +11,7 @@
     </goal>
 
     <goal name="openvpms:dist-prepare-bin-filesystem" 
-          prereqs="dist:build-setup,generate-hibernate-properties">
+          prereqs="dist:build-setup">
         <!--
 
         This is the directory where everything is copied to so that it can
@@ -30,8 +30,22 @@
           <fileset dir="${basedir}/src/bin"/>
         </copy>
 
+        <!-- Ensure scripts, batch files have appropriate end-of-line chars -->
+        <fixcrlf srcDir="${distDir}" eol="lf">
+          <include name="**/*.sh"/>
+        </fixcrlf>
+
+        <fixcrlf srcDir="${distDir}" eol="crlf">
+          <include name="**/*.bat"/>
+        </fixcrlf>
+
         <!-- copy the dependencies -->
         <deploy:copy-deps todir="${distDir}/lib"/>
+
+        <!-- move the webapp -->
+        <mkdir dir="${distDir}/webapps"/>
+        <move file="${distDir}/lib/openvpms-${pom.currentVersion}.war"
+              tofile="${distDir}/webapps/openvpms.war"/>
 
         <!-- copy the configuration files -->
         <mkdir dir="${distDir}/conf"/>
@@ -42,15 +56,107 @@
         <copy todir="${distDir}/conf"
               file="${basedir}/src/conf/spring/applicationContext.xml"/>
 
-        <!-- Ensure scripts, batch files have appropriate end-of-line chars -->
-        <fixcrlf srcDir="${distDir}" eol="lf">
-          <include name="**/*.sh"/>
-        </fixcrlf>
+        <!--  copy the report templates -->
+        <mkdir dir="${distDir}/reports"/>
+        <copy todir="${distDir}/reports">
+          <fileset dir="${basedir}/src/reports"/>
+        </copy>
 
-        <fixcrlf srcDir="${distDir}" eol="crlf">
-          <include name="**/*.bat"/>
-        </fixcrlf>
+        <mkdir dir="${distDir}/import/plugin"/>
+        <move file="${distDir}/lib/openvpms-etl-${pom.currentVersion}.zip"
+              tofile="${distDir}/import/plugin/OpenVPMSLoader.zip"/>
+
+        <!--  copy the import templates -->
+        <mkdir dir="${distDir}/import/transforms"/>
+        <copy todir="${distDir}/import/transforms">
+          <fileset dir="${basedir}/src/import/transforms"/>
+        </copy>
+
+        <mkdir dir="${distDir}/db"/>
+        <copy todir="${distDir}/db" file="${maven.build.dir}/db.zip"/>
     </goal>
+
+    <goal name="openvpms:createdb">
+        <attainGoal name="hibernate:schema-export"/>
+        <attainGoal name="archetype:load"/>
+        <attainGoal name="report:load"/>
+        <attainGoal name="openvpms:dumpdb"/>
+    </goal>
+
+    <!-- ================================================================== -->
+    <!-- Archetype targets                                                  -->
+    <!-- ================================================================== -->
+    <goal name="archetype:load"
+          description="Load the Archetypes from a directory">
+        <attainGoal name="extract-archetype-files"/>
+        <ant:java
+                classname="org.openvpms.tools.archetype.loader.ArchetypeLoader"
+                failonerror="true"
+                fork="true">
+            <ant:classpath>
+                <ant:pathelement path="${maven.build.dest}"/>
+                <ant:pathelement path="${maven.build.dir}/hibernate"/>
+                <ant:path refid="maven.dependency.classpath"/>
+            </ant:classpath>
+            <arg line="${openvpms.archetype.loader.cmdline}"/>
+        </ant:java>
+    </goal>
+
+    <goal name="extract-archetype-files">
+        <mkdir dir="${maven.build.dir}/archetypes"/>
+        <delete>
+            <fileset dir="${maven.build.dir}/archetypes" includes="**/*.adl"/>
+        </delete>
+
+        <j:set var="repo" value="${context.getVariable('maven.repo.local')}"/>
+        <j:set var="dependencyId" value="org.openvpms:openvpms-archetypes"/>
+        <j:set var="artifactPath"
+               value="${pom.getDependencyPath(dependencyId)}"/>
+        <j:set var="artifactRepoPath" value="${repo}/${artifactPath}"/>
+
+        <unzip src="${artifactPath}" dest="${maven.build.dir}/archetypes">
+            <patternset>
+                <include name="**/*.adl"/>
+                <include name="**/*.xml"/>
+            </patternset>
+        </unzip>
+    </goal>
+
+    <!-- ================================================================== -->
+    <!-- Report loading                                                     -->
+    <!-- ================================================================== -->
+    <goal name="report:load" description="Load the reports from a directory">
+        <ant:java classname="org.openvpms.report.tools.TemplateLoader"
+                  failonerror="true"
+                  fork="true">
+            <ant:classpath>
+                <ant:pathelement path="${maven.build.dir}/hibernate"/>
+                <ant:pathelement path="${basedir}/src/conf/spring"/>
+                <ant:pathelement path="${maven.build.dest}"/>
+                <ant:path refid="maven.dependency.classpath"/>
+            </ant:classpath>
+            <arg line="${openvpms.report.loader.cmdline}"/>
+        </ant:java>
+    </goal>
+
+    <!-- ================================================================== -->
+    <!-- Schema targets                                                     -->
+    <!-- ================================================================== -->
+    <goal name="openvpms:dumpdb">
+        <mkdir dir="${maven.build.dir}/db"/>
+        <exec executable="mysqldump" output="${maven.build.dir}/db/db.sql"
+              failOnError="true" logError="true">
+            <arg line="${openvpms.db.name} -u ${openvpms.db.user} --password=${openvpms.db.password}"/>
+        </exec>
+        <zip zipfile="${maven.build.dir}/db.zip">
+          <zipfileset dir="${maven.build.dir}/db"/>
+        </zip>
+    </goal>
+
+    <preGoal name="hibernate:schema-export">
+        <attainGoal name="generate-hibernate-properties"/>
+        <attainGoal name="extract-mapping-files"/>
+    </preGoal>
 
     <goal name="generate-hibernate-properties">
         <copy tofile="${maven.hibernate.properties}"
@@ -66,6 +172,24 @@
                         value="${hibernate.connection.password}"/>
             </filterset>
         </copy>
+    </goal>
+
+    <goal name="extract-mapping-files">
+        <delete>
+            <fileset dir="${maven.build.dir}/hibernate" includes="**/*.hbm.xml"/>
+        </delete>
+
+        <j:set var="repo" value="${context.getVariable('maven.repo.local')}"/>
+        <j:set var="dependencyId" value="org.openvpms:openvpms-framework"/>
+        <j:set var="artifactPath"
+               value="${pom.getDependencyPath(dependencyId)}"/>
+        <j:set var="artifactRepoPath" value="${repo}/${artifactPath}"/>
+
+        <unzip src="${artifactPath}" dest="${maven.hibernate.input.dir}">
+            <patternset>
+                <include name="**/*.hbm.xml"/>
+            </patternset>
+        </unzip>
     </goal>
 
 </project>
