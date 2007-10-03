@@ -38,6 +38,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -112,14 +113,19 @@ class StatementGenerator extends AbstractStatementGenerator {
         List<ObjectSet> balances = query.getObjects();
         List<Party> customers = new ArrayList<Party>();
         for (ObjectSet set : balances) {
-            IMObjectReference ref = (IMObjectReference) set.get(
-                    CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
-            Party customer = (Party) IMObjectHelper.getObject(ref);
-            if (customer != null) {
-                customers.add(customer);
+            BigDecimal balance
+                    = (BigDecimal) set.get(CustomerBalanceSummaryQuery.BALANCE);
+            if (BigDecimal.ZERO.compareTo(balance) != 0) {
+                // only include customers with non-zero balances
+                IMObjectReference ref = (IMObjectReference) set.get(
+                        CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
+                Party customer = (Party) IMObjectHelper.getObject(ref);
+                if (customer != null) {
+                    customers.add(customer);
+                }
             }
-            init(customers, query.getDate(), false, context);
         }
+        init(customers, query.getDate(), false, context);
     }
 
     /**
