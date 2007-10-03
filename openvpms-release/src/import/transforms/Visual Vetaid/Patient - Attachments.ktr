@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Patient - Visit Attachments</name>
+    <name>Patient - Attachments</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -65,10 +65,10 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Visit Attachments</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Filename</from><to>Visit Attachment Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Transform Filename</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Patient Attachments</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Filename</from><to>Patient Attachment Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Transform Filename</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
-    <name>Visit Attachment Output</name>
+    <name>Patient Attachment Output</name>
     <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -78,16 +78,16 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>ID</idColumn><mapping><source>DATE</source><target>&lt;act.patientDocumentAttachment>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target>&lt;act.patientDocumentAttachment>description</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FILENAME</source><target>&lt;act.patientDocumentAttachment>fileName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target>&lt;act.patientDocumentAttachment>status</target><excludeNull>false</excludeNull><value>COMPLETED</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientDocumentAttachment>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ID</source><target>&lt;act.patientDocumentAttachment>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientDocumentAttachment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>false</excludeNull><value>&lt;act.patientDocumentAttachment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>ID</idColumn><mapping><source>DATE</source><target>&lt;act.patientDocumentAttachment>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target>&lt;act.patientDocumentAttachment>description</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FILENAME</source><target>&lt;act.patientDocumentAttachment>fileName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target>&lt;act.patientDocumentAttachment>status</target><excludeNull>false</excludeNull><value>COMPLETED</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientDocumentAttachment>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ID</source><target>&lt;act.patientDocumentAttachment>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientDocumentAttachment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>562</xloc>
-      <yloc>153</yloc>
+      <xloc>488</xloc>
+      <yloc>151</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Visit Attachments</name>
+    <name>Patient Attachments</name>
     <type>TableInput</type>
     <description/>
     <distribute>Y</distribute>
@@ -99,8 +99,7 @@
            </partitioning>
     <connection>RxWorks</connection>
     <sql>SELECT *
-FROM Attachment INNER JOIN (Consultation INNER JOIN Visit ON Visit.[Visit Number] = Consultation.[Visit Number]) ON Attachment.[Object Number] = Consultation.[Consultation Number]
-WHERE (((Attachment.[Object Type])=3));</sql>
+FROM Attachment WHERE (((Attachment.[Object Type])=2));</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
@@ -129,7 +128,7 @@ WHERE (((Attachment.[Object Type])=3));</sql>
         <length>-2</length>
         <precision>-2</precision>
         </field>      <field>        <name>Object Number</name>
-        <rename>VISITID</rename>
+        <rename>PATIENTID</rename>
         <length>-2</length>
         <precision>-2</precision>
         </field>      <field>        <name>Path</name>
@@ -142,10 +141,6 @@ WHERE (((Attachment.[Object Type])=3));</sql>
         <precision>-2</precision>
         </field>      <field>        <name>Created Date</name>
         <rename>DATE</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>Patient Number</name>
-        <rename>PATIENTID</rename>
         <length>-2</length>
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
@@ -175,7 +170,7 @@ WHERE (((Attachment.[Object Type])=3));</sql>
 </jsScript_script>
         </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>388</xloc>
+      <xloc>328</xloc>
       <yloc>151</yloc>
       <draw>Y</draw>
       </GUI>

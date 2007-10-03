@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name/>
+    <directory>&#47;</directory>
+    <log>
+      <read/>
+      <write/>
+      <input/>
+      <output/>
+      <update/>
+      <connection/>
+      <table/>
+      <use_batchid>Y</use_batchid>
+      <use_logfield>N</use_logfield>
+      </log>
+    <maxdate>
+      <connection/>
+      <table/>
+      <field/>
+      <offset>0.0</offset>
+      <maxdiff>0.0</maxdiff>
+      </maxdate>
+    <size_rowset>1000</size_rowset>
+    <sleep_time_empty>1</sleep_time_empty>
+    <sleep_time_full>1</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>5000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <dependencies>
+      </dependencies>
+    <partitionschemas>
+      </partitionschemas>
+    <slaveservers>
+      </slaveservers>
+    <clusterschemas>
+      </clusterschemas>
+  <modified_user>-</modified_user>
+  <modified_date>2007&#47;04&#47;20 14:09:23.197</modified_date>
+    </info>
+  <notepads>
+    </notepads>
+  <connection>
+    <name>RxWorks</name>
+    <server/>
+    <type>MSACCESS</type>
+    <access>ODBC</access>
+    <database>RxWorks</database>
+    <port>-1</port>
+    <username/>
+    <password>Encrypted </password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
+      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>-1</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <order>
+  <hop> <from>Transform Clinic Fields</from><to>Location</to><enabled>Y</enabled> </hop>  <hop> <from>Select Clinic Fields</from><to>Transform Clinic Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Table input</from><to>Select Clinic Fields</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>Location</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>OpenVPMS</connection><idColumn>CODE</idColumn><mapping><source>NAME</source><target>&lt;party.organisationLocation>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>NAME</source><target>&lt;party.organisationLocation>currency</target><excludeNull>false</excludeNull><value>AUD</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ADDRESS</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.location>address</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PHONENO</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>EMAIL</source><target>&lt;party.organisationLocation>contacts[0]&lt;contact.email>emailAddress</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;entityRelationship.practiceLocation>target</target><excludeNull>true</excludeNull><value>&lt;party.organisationLocation>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;entityRelationship.practiceLocation>source</target><excludeNull>true</excludeNull><value>&lt;party.organisationPractice>1</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>674</xloc>
+      <yloc>243</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select Clinic Fields</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>Clinic Code</name>
+        <rename>CODE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Clinic Name</name>
+        <rename>NAME</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Clinic Address</name>
+        <rename>ADDRESS</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Clinic Phone Number</name>
+        <rename>PHONENO</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Clinic Fax Number</name>
+        <rename>FAXNO</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Clinic Email Address</name>
+        <rename>EMAIL</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>256</xloc>
+      <yloc>247</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Table input</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <connection>RxWorks</connection>
+    <sql>SELECT *
+FROM Clinic
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+     <cluster_schema/>
+    <GUI>
+      <xloc>119</xloc>
+      <yloc>250</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform Clinic Fields</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>471</xloc>
+      <yloc>246</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+</transformation>
