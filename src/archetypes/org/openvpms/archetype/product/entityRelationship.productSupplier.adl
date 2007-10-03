@@ -26,20 +26,24 @@
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat('Product Supplier', '(', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')"/>
-        <node name="activeStartTime" path="/activeStartTime"
+        <node name="activeStartTime" displayName="Start Date" path="/activeStartTime"
               type="java.util.Date" minCardinality="1"
-              hidden="true" defaultValue="java.util.Date.new()"/>
+              defaultValue="java.util.Date.new()"/>
+        <node name="activeEndTime" displayname="End Date" path="/activeEndTime"
+              type="java.util.Date" minCardinality="0" />
         <node name="reorderCode" displayName="Reorder Code" path="/details/reorderCode" type="java.lang.String" minCardinality="0"/>
         <node name="reorderName" displayName="Reorder Description" path="/details/reorderName" type="java.lang.String" minCardinality="0"/>
-        <node name="minimumQty" displayName="Minimum Order Qty" path="/details/minimumOrderQty" type="java.lang.Integer" minCardinality="0"/>
-        <node name="orderQtyInc" displayName="Order Qty Increments" path="/details/orderQtyInc" type="java.lang.Integer" minCardinality="0"/>
-        <node name="qtyUom" displayName="Units of Measure" path="/details/qtyUom" type="java.lang.String" minCardinality="0">
+        <node name="barCode" displayName="Reorder Bar Code" path="/details/barCode" type="java.lang.String" minCardinality="0"/>
+        <node name="packSize" displayName="Pack Size" path="/details/packSize" type="java.lang.Integer" minCardinality="0"/>
+        <node name="packUom" displayName="Pack UOM" path="/details/packUom" type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.uom"/>
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
+        <node name="minimumQty" displayName="Minimum Order Qty" path="/details/minimumOrderQty" type="java.lang.Integer" minCardinality="0"/>
+        <node name="orderQtyInc" displayName="Order Qty Increments" path="/details/orderQtyInc" type="java.lang.Integer" minCardinality="0"/>
         <node name="leadTime" displayName="Lead Time" path="/details/leadTime" type="java.lang.Integer" minCardinality="0"/>
         <node name="leadUom" displayName="Lead Time Units" path="/details/leadUom" type="java.lang.String" minCardinality="0" defaultValue="'DAYS'">
             <assertion name="lookup.local">
@@ -52,6 +56,7 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
+        <node name="listPrice" path="/details/listPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0"/>
         <node name="source" displayName="Product" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
@@ -63,6 +68,10 @@
                     <propertyMap name="archetype">
                         <property name="shortName"
                                   value="product.merchandise"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="product.service"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
