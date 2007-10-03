@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Patient - Visit Attachments</name>
+    <name>Product - Suppliers</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -37,8 +37,8 @@
       </slaveservers>
     <clusterschemas>
       </clusterschemas>
-  <modified_user>-</modified_user>
-  <modified_date>2007&#47;06&#47;01 09:16:32.498</modified_date>
+  <modified_user>admin</modified_user>
+  <modified_date>2007&#47;04&#47;09 17:01:13.040</modified_date>
     </info>
   <notepads>
     </notepads>
@@ -65,29 +65,10 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Visit Attachments</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Filename</from><to>Visit Attachment Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Transform Filename</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Item Brands</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Transform fields</from><to>Product Suppliers</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Transform fields</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
-    <name>Visit Attachment Output</name>
-    <type>OpenVPMSLoaderPlugin</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-<mappings><connection>openvpms</connection><idColumn>ID</idColumn><mapping><source>DATE</source><target>&lt;act.patientDocumentAttachment>startTime</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target>&lt;act.patientDocumentAttachment>description</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FILENAME</source><target>&lt;act.patientDocumentAttachment>fileName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target>&lt;act.patientDocumentAttachment>status</target><excludeNull>false</excludeNull><value>COMPLETED</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientDocumentAttachment>patient[0]&lt;participation.patient>entity</target><excludeNull>false</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ID</source><target>&lt;act.patientDocumentAttachment>patient[0]&lt;participation.patient>act</target><excludeNull>false</excludeNull><value>&lt;act.patientDocumentAttachment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;actRelationship.patientClinicalEventItem>source</target><excludeNull>false</excludeNull><value>&lt;act.patientClinicalEvent>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ID</source><target>&lt;actRelationship.patientClinicalEventItem>target</target><excludeNull>false</excludeNull><value>&lt;act.patientDocumentAttachment>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
-    <GUI>
-      <xloc>562</xloc>
-      <yloc>153</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Visit Attachments</name>
+    <name>Item Brands</name>
     <type>TableInput</type>
     <description/>
     <distribute>Y</distribute>
@@ -98,17 +79,34 @@
            <schema_name/>
            </partitioning>
     <connection>RxWorks</connection>
-    <sql>SELECT *
-FROM Attachment INNER JOIN (Consultation INNER JOIN Visit ON Visit.[Visit Number] = Consultation.[Visit Number]) ON Attachment.[Object Number] = Consultation.[Consultation Number]
-WHERE (((Attachment.[Object Type])=3));</sql>
+    <sql>select * from [Item Brand]</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
     <variables_active>N</variables_active>
      <cluster_schema/>
     <GUI>
-      <xloc>86</xloc>
-      <yloc>152</yloc>
+      <xloc>59</xloc>
+      <yloc>139</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Product Suppliers</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>ID</idColumn><mapping><source>ID</source><target>&lt;entityRelationship.productSupplier>source</target><excludeNull>true</excludeNull><value>&lt;product.*>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SUPPLIERID</source><target>&lt;entityRelationship.productSupplier>target</target><excludeNull>true</excludeNull><value>&lt;party.supplierorganisation>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>NAME</source><target>&lt;entityRelationship.productSupplier>reorderName</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;entityRelationship.productSupplier>reorderCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>BARCODE</source><target>&lt;entityRelationship.productSupplier>barCode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>LISTPRICE</source><target>&lt;entityRelationship.productSupplier>listPrice</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PACKSIZE</source><target>&lt;entityRelationship.productSupplier>packSize</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ENDDATE</source><target>&lt;entityRelationship.productSupplier>activeEndTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>477</xloc>
+      <yloc>142</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -124,40 +122,48 @@ WHERE (((Attachment.[Object Type])=3));</sql>
            <field_name/>
            <schema_name/>
            </partitioning>
-    <fields>      <field>        <name>Attachment Code</name>
+    <fields>      <field>        <name>Item Code</name>
         <rename>ID</rename>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>Object Number</name>
-        <rename>VISITID</rename>
+        </field>      <field>        <name>Supplier</name>
+        <rename>SUPPLIERID</rename>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>Path</name>
-        <rename>FILENAME</rename>
+        </field>      <field>        <name>Brand Name</name>
+        <rename>NAME</rename>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>Notes</name>
-        <rename>DESCRIPTION</rename>
+        </field>      <field>        <name>Stock Order Code</name>
+        <rename>CODE</rename>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>Created Date</name>
-        <rename>DATE</rename>
+        </field>      <field>        <name>Bar Code</name>
+        <rename>BARCODE</rename>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>Patient Number</name>
-        <rename>PATIENTID</rename>
+        </field>      <field>        <name>Last Price</name>
+        <rename>LISTPRICE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Pack Size</name>
+        <rename>PACKSIZE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Deactivated Date</name>
+        <rename>ENDDATE</rename>
         <length>-2</length>
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>207</xloc>
-      <yloc>151</yloc>
+      <xloc>165</xloc>
+      <yloc>140</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Transform Filename</name>
+    <name>Transform fields</name>
     <type>ScriptValueMod</type>
     <description/>
     <distribute>Y</distribute>
@@ -171,12 +177,13 @@ WHERE (((Attachment.[Object Type])=3));</sql>
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
-		
+
+
 </jsScript_script>
         </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>388</xloc>
-      <yloc>151</yloc>
+      <xloc>302</xloc>
+      <yloc>141</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

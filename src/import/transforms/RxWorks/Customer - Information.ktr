@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>Customer - Information</name>
+    <directory>&#47;</directory>
+    <log>
+      <read/>
+      <write/>
+      <input/>
+      <output/>
+      <update/>
+      <connection/>
+      <table/>
+      <use_batchid>Y</use_batchid>
+      <use_logfield>N</use_logfield>
+      </log>
+    <maxdate>
+      <connection/>
+      <table/>
+      <field/>
+      <offset>0.0</offset>
+      <maxdiff>0.0</maxdiff>
+      </maxdate>
+    <size_rowset>1000</size_rowset>
+    <sleep_time_empty>1</sleep_time_empty>
+    <sleep_time_full>1</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>5000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <dependencies>
+      </dependencies>
+    <partitionschemas>
+      </partitionschemas>
+    <slaveservers>
+      </slaveservers>
+    <clusterschemas>
+      </clusterschemas>
+  <modified_user>-</modified_user>
+  <modified_date>2007&#47;04&#47;24 21:06:54.196</modified_date>
+    </info>
+  <notepads>
+    </notepads>
+  <connection>
+    <name>RxWorks</name>
+    <server/>
+    <type>MSACCESS</type>
+    <access>ODBC</access>
+    <database>RxWorks</database>
+    <port>-1</port>
+    <username/>
+    <password>Encrypted </password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
+      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>-1</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <order>
+  <hop> <from>Client Input</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Row denormaliser</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Join</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  <hop> <from>Modified Java Script Value</from><to>Customer Output</to><enabled>Y</enabled> </hop>  <hop> <from>Client Phone Numbers</from><to>Select values 2</to><enabled>Y</enabled> </hop>  <hop> <from>Select values 2</from><to>Row denormaliser</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>Client Input</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <connection>RxWorks</connection>
+    <sql>select * from client</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+     <cluster_schema/>
+    <GUI>
+      <xloc>105</xloc>
+      <yloc>172</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Client Phone Numbers</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <connection>RxWorks</connection>
+    <sql>select * from [client phone numbers]</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+     <cluster_schema/>
+    <GUI>
+      <xloc>106</xloc>
+      <yloc>307</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Customer Output</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>CLIENTID</idColumn><mapping><source>SURNAME</source><target>&lt;party.customerperson>lastName</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>FIRSTNAME</source><target>&lt;party.customerperson>firstName</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>TITLE</source><target>&lt;party.customerperson>title</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>INITIALS</source><target>&lt;party.customerperson>initials</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>true</removeDefaultObjects></mapping><mapping><source>ADDRESS</source><target>&lt;party.customerperson>contacts[0]&lt;contact.location>address</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ADDRESS3</source><target>&lt;party.customerperson>contacts[0]&lt;contact.location>suburb</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>STATE</source><target>&lt;party.customerperson>contacts[0]&lt;contact.location>state</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>POSTCODE</source><target>&lt;party.customerperson>contacts[0]&lt;contact.location>postcode</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FAX</source><target>&lt;party.customerperson>contacts[1]&lt;contact.faxNumber>faxNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>WORK</source><target>&lt;party.customerperson>contacts[2]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>HOME</source><target>&lt;party.customerperson>contacts[3]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>EMAIL</source><target>&lt;party.customerperson>contacts[1]&lt;contact.email>emailAddress</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACCOUNTTYPE</source><target>&lt;party.customerperson>type[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.customerAccountType>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>675</xloc>
+      <yloc>215</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Merge Join</name>
+    <type>MergeJoin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<join_type>LEFT OUTER</join_type>
+<step1>Select values</step1>
+<step2>Row denormaliser</step2>
+    <keys_1>
+      <key>CLIENTID</key>
+    </keys_1>
+    <keys_2>
+      <key>CLIENTID</key>
+    </keys_2>
+     <cluster_schema/>
+    <GUI>
+      <xloc>392</xloc>
+      <yloc>218</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Modified Java Script Value</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+
+if (SURNAME.getString() == null || SURNAME.getString() == &quot;&quot;) {
+	SURNAME.setString(&quot;No Name&quot;);
+}
+var ADDRESS = &quot;&quot;
+if (ADDRESS1.getString() != null &amp;&amp; ADDRESS2.getString() != null) {
+	ADDRESS = ADDRESS1.getString() + &quot;\n&quot; + ADDRESS2.getString();
+}
+else if (ADDRESS1.getString() != null) {
+	ADDRESS = ADDRESS1.getString();
+}
+var ACTIVE = !DEACTIVATED.getBool()
+ACCOUNTTYPE.setString(replace(upper(ACCOUNTTYPE.getString()),&quot; &quot;,&quot;_&quot;))</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>ADDRESS</name>
+        <rename>ADDRESS</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>ACTIVE</name>
+        <rename>ACTIVE</rename>
+        <type>Boolean</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>525</xloc>
+      <yloc>217</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Row denormaliser</name>
+    <type>Denormaliser</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <key_field>PHONENAME</key_field>
+      <group>
+        <field>
+          <name>CLIENTID</name>
+          </field>
+        </group>
+      <fields>
+        <field>
+          <field_name>PHONENUMBER</field_name>
+          <key_value>Fax</key_value>
+          <target_name>FAX</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>50</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>PHONENUMBER</field_name>
+          <key_value>Work</key_value>
+          <target_name>WORK</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>50</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>PHONENUMBER</field_name>
+          <key_value>Home</key_value>
+          <target_name>HOME</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>50</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>PHONENUMBER</field_name>
+          <key_value>Email</key_value>
+          <target_name>EMAIL</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>50</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        </fields>
+     <cluster_schema/>
+    <GUI>
+      <xloc>312</xloc>
+      <yloc>304</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select values</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>Client Number</name>
+        <rename>CLIENTID</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Surname</name>
+        <rename>SURNAME</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>First Name</name>
+        <rename>FIRSTNAME</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Title</name>
+        <rename>TITLE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Initials</name>
+        <rename>INITIALS</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Company</name>
+        <rename>COMPANY</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Address 1</name>
+        <rename>ADDRESS1</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Address 2</name>
+        <rename>ADDRESS2</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Address 3</name>
+        <rename>ADDRESS3</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>State</name>
+        <rename>STATE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Postcode</name>
+        <rename>POSTCODE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Account Type</name>
+        <rename>ACCOUNTTYPE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Deactivated Client</name>
+        <rename>DEACTIVATED</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>225</xloc>
+      <yloc>174</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select values 2</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>Client Number</name>
+        <rename>CLIENTID</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Phone Name</name>
+        <rename>PHONENAME</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Phone Number</name>
+        <rename>PHONENUMBER</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>216</xloc>
+      <yloc>306</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+</transformation>

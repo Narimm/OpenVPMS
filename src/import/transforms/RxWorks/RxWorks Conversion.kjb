@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job>
+  <name/>
+  <directory>&#47;</directory>
+  <modified_user>-</modified_user>
+  <modified_date>2007&#47;10&#47;03 11:05:57.320</modified_date>
+  <logconnection/>
+  <logtable/>
+   <use_batchid>Y</use_batchid>
+   <pass_batchid>N</pass_batchid>
+   <use_logfield>Y</use_logfield>
+   <shared_objects_file/>
+  <entries>
+    <entry>
+      <name>Start</name>
+      <description/>
+      <type>SPECIAL</type>
+      <start>Y</start>
+      <dummy>N</dummy>
+      <repeat>N</repeat>
+      <schedulerType>0</schedulerType>
+      <interval>60</interval>
+      <hour>12</hour>
+      <minutes>0</minutes>
+      <weekDay>1</weekDay>
+      <DayOfMonth>1</DayOfMonth>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>105</xloc>
+      <yloc>302</yloc>
+      </entry>
+    <entry>
+      <name>Practice Conversion.kjb</name>
+      <description/>
+      <type>JOB</type>
+      <filename>${Internal.Job.Filename.Directory}&#47;Practice Conversion.kjb</filename>
+      <jobname/>
+      <directory>&#47;</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Error</loglevel>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>215</xloc>
+      <yloc>203</yloc>
+      </entry>
+    <entry>
+      <name>Product Conversion.kjb</name>
+      <description/>
+      <type>JOB</type>
+      <filename>${Internal.Job.Filename.Directory}&#47;Product Conversion.kjb</filename>
+      <jobname/>
+      <directory>&#47;</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Error</loglevel>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>268</xloc>
+      <yloc>310</yloc>
+      </entry>
+    <entry>
+      <name>Customer Conversion.kjb</name>
+      <description/>
+      <type>JOB</type>
+      <filename>${Internal.Job.Filename.Directory}&#47;Customer Conversion.kjb</filename>
+      <jobname/>
+      <directory>&#47;</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Error</loglevel>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>376</xloc>
+      <yloc>205</yloc>
+      </entry>
+    <entry>
+      <name>Appointment Conversion.kjb</name>
+      <description/>
+      <type>JOB</type>
+      <filename>${Internal.Job.Filename.Directory}&#47;Appointment Conversion.kjb</filename>
+      <jobname/>
+      <directory>&#47;</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Error</loglevel>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>468</xloc>
+      <yloc>309</yloc>
+      </entry>
+    <entry>
+      <name>Transaction Conversion.kjb</name>
+      <description/>
+      <type>JOB</type>
+      <filename>${Internal.Job.Filename.Directory}&#47;Transaction Conversion.kjb</filename>
+      <jobname/>
+      <directory>&#47;</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Error</loglevel>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>555</xloc>
+      <yloc>210</yloc>
+      </entry>
+    <entry>
+      <name>History Conversion.kjb</name>
+      <description/>
+      <type>JOB</type>
+      <filename>${Internal.Job.Filename.Directory}&#47;History Conversion.kjb</filename>
+      <jobname/>
+      <directory>&#47;</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Error</loglevel>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>652</xloc>
+      <yloc>316</yloc>
+      </entry>
+    </entries>
+  <hops>
+    <hop>
+      <from>Start</from>
+      <to>Practice Conversion.kjb</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>Y</unconditional>
+      </hop>
+    <hop>
+      <from>Practice Conversion.kjb</from>
+      <to>Product Conversion.kjb</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+      </hop>
+    <hop>
+      <from>Product Conversion.kjb</from>
+      <to>Customer Conversion.kjb</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+      </hop>
+    <hop>
+      <from>Customer Conversion.kjb</from>
+      <to>Appointment Conversion.kjb</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+      </hop>
+    <hop>
+      <from>Appointment Conversion.kjb</from>
+      <to>Transaction Conversion.kjb</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+      </hop>
+    <hop>
+      <from>Transaction Conversion.kjb</from>
+      <to>History Conversion.kjb</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+      </hop>
+    </hops>
+  <notepads>
+    </notepads>
+  </job>
