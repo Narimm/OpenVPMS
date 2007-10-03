@@ -467,7 +467,7 @@ KeyTable.prototype.processRolloverExit = function(echoEvent) {
 };
 
 KeyTable.prototype.processFocus = function(echoEvent) {
-    if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement(), true)) {
+    if (!this.enabled || !this.verifyInput()) {
         return;
     }
 
@@ -490,6 +490,37 @@ KeyTable.prototype.processFocus = function(echoEvent) {
     }
 
     EchoDomUtil.preventEventDefault(echoEvent);
+}
+
+//
+// Workaround for the EchoClientEngine.verifyInput() method. The
+// EchoClientEngine
+// implementation returns false if the supplied element isn't a child of the
+// current modal element. However this doesn't take into account a change to
+// the modal element in the server message.
+// This is probably a bug in EchoServerMessage.processPhase2(), which invokes
+// EchoServerMessage.processMessageParts() prior to
+// EchoServerMessage.processApplicationProperties(). The latter is responsible
+// updating the modal element, and should probably occur prior to
+// processMessageParts()
+//
+KeyTable.prototype.verifyInput = function() {
+    var element = this.getElement();
+    if (!EchoModalManager.isElementInModalContext(element)) {
+        var modalElementId = EchoServerMessage.messageDocument.documentElement.getAttribute("modal-id");
+        if (modalElementId) {
+            var modalElement = document.getElementById(modalElementId);
+            if (!EchoDomUtil.isAncestorOf(modalElement, element)) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    if (EchoDomPropertyStore.getPropertyValue(element, "EchoClientEngine.inputDisabled")) {
+        return false;
+    }
+    return true;
 }
 
 KeyTable.prototype.processBlur = function(echoEvent) {
