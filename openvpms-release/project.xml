@@ -129,9 +129,6 @@
             <artifactId>commons-resources</artifactId>
             <version>1.0-dev</version>
             <url>http://jakarta.apache.org/commons/resources/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>jdom</groupId>
@@ -167,9 +164,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -177,9 +171,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -187,9 +178,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -197,9 +185,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -207,9 +192,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -217,9 +199,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -248,9 +227,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springmodules</groupId>
@@ -293,10 +269,7 @@
             <version>1.2.3</version>
             <type>jar</type>
             <url>http://ehcache.sf.net</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
-        </dependency>
+3        </dependency>
         <dependency>
             <groupId>jug</groupId>
             <artifactId>jug</artifactId>
@@ -319,9 +292,6 @@
             <groupId>castor</groupId>
             <artifactId>castor-xml</artifactId>
             <version>0.9.7</version>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
             <url>http://castor.codehaus.org/</url>
         </dependency>
         <dependency>
@@ -329,27 +299,18 @@
             <artifactId>xstream</artifactId>
             <version>1.2.1</version>
             <url>http://xstream.codehaus.org/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>xpp3</groupId>
             <artifactId>xpp3</artifactId>
             <version>1.1.2a</version>
             <url>http://xstream.codehaus.org/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
             <url>http://xml.apache.org/xerces2-j/</url>
             <version>2.4.0</version>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>xml-apis</groupId>
@@ -362,9 +323,6 @@
             <artifactId>hibernate</artifactId>
             <version>3.2.2</version>
             <url>http://www.hibernate.org</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>asm</groupId>
@@ -377,18 +335,12 @@
             <artifactId>asm-attrs</artifactId>
             <version>1.5.3</version>
             <url>http://asm.objectweb.org/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>antlr</groupId>
             <artifactId>antlr</artifactId>
             <version>2.7.6</version>
             <url>http://www.antlr.org/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>jsap</groupId>
@@ -401,72 +353,48 @@
             <artifactId>dom4j</artifactId>
             <version>1.6.1</version>
             <url>http://wwww.dom4j.org/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>jta</groupId>
             <artifactId>jta</artifactId>
             <version>1.0.1</version>
             <url>http://java.sun.com</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
             <version>2.1_3</version>
             <url>http://cglib.sourceforge.net/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.0.0-beta-bin</version>
             <url>http://www.mysql.com</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>c3p0</groupId>
             <artifactId>c3p0</artifactId>
             <version>0.9.1</version>
             <url>http://sourceforge.net/projects/c3p0</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>commons-jxpath</groupId>
             <artifactId>commons-jxpath</artifactId>
             <version>1.3-20060323</version>
             <url>http://jakarta.apache.org/commons/jxpath/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils-core</artifactId>
             <version>1.7.0</version>
             <url>http://jakarta.apache.org/commons/jxpath/</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>acegisecurity</groupId>
             <artifactId>acegi-security</artifactId>
             <version>1.0.0-RC1</version>
             <url>http://acegisecurity.sourceforge.net</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>ognl</groupId>
@@ -497,18 +425,12 @@
             <artifactId>openvpms-framework</artifactId>
             <version>1.0-rc1-SNAPSHOT</version>
             <url>http://www.openvpms.org</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
             <version>1.0-rc1-SNAPSHOT</version>
             <url>http://www.openvpms.org</url>
-            <properties>
-                <kettle.plugin>true</kettle.plugin>
-            </properties>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
