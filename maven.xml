@@ -6,11 +6,11 @@
 
     <goal name="openvpms:dist" prereqs="openvpms:dist-prepare-bin-filesystem">
         <zip zipfile="${maven.dist.dir}/${maven.final.name}.zip">
-          <zipfileset dir="${maven.dist.bin.archive.dir}"/>
+            <zipfileset dir="${maven.dist.bin.archive.dir}"/>
         </zip>
     </goal>
 
-    <goal name="openvpms:dist-prepare-bin-filesystem" 
+    <goal name="openvpms:dist-prepare-bin-filesystem"
           prereqs="dist:build-setup">
         <!--
 
@@ -27,20 +27,35 @@
         <!-- copy scripts -->
         <mkdir dir="${distDir}/bin"/>
         <copy todir="${distDir}/bin">
-          <fileset dir="${basedir}/src/bin"/>
+            <fileset dir="${basedir}/src/bin"/>
         </copy>
 
         <!-- Ensure scripts, batch files have appropriate end-of-line chars -->
         <fixcrlf srcDir="${distDir}" eol="lf">
-          <include name="**/*.sh"/>
+            <include name="**/*.sh"/>
         </fixcrlf>
 
         <fixcrlf srcDir="${distDir}" eol="crlf">
-          <include name="**/*.bat"/>
+            <include name="**/*.bat"/>
         </fixcrlf>
 
         <!-- copy the dependencies -->
         <deploy:copy-deps todir="${distDir}/lib"/>
+
+        <!-- hack to extract the etl jar from the kettle plugin -->
+        <!-- need a 2 stage process as the unzip task in ant 1.5.3 doesn't -->
+        <!-- seem to support the flattenmapper                             -->
+        <unzip src="${distDir}/lib/openvpms-etl-${pom.currentVersion}.zip"
+               dest="${maven.build.dir}">
+            <patternset>
+                <include name="**/openvpms-etl-${pom.currentVersion}.jar"/>
+            </patternset>
+        </unzip>
+        <move todir="${distDir}/lib">
+            <fileset dir="${maven.build.dir}/OpenVPMSLoader">
+                <include name="**/*.jar"/>
+            </fileset>
+        </move>
 
         <!-- move the webapp -->
         <mkdir dir="${distDir}/webapps"/>
@@ -59,7 +74,7 @@
         <!--  copy the report templates -->
         <mkdir dir="${distDir}/reports"/>
         <copy todir="${distDir}/reports">
-          <fileset dir="${basedir}/src/reports"/>
+            <fileset dir="${basedir}/src/reports"/>
         </copy>
 
         <mkdir dir="${distDir}/import/plugin"/>
@@ -69,7 +84,7 @@
         <!--  copy the import templates -->
         <mkdir dir="${distDir}/import/transforms"/>
         <copy todir="${distDir}/import/transforms">
-          <fileset dir="${basedir}/src/import/transforms"/>
+            <fileset dir="${basedir}/src/import/transforms"/>
         </copy>
 
         <mkdir dir="${distDir}/db"/>
@@ -149,7 +164,7 @@
             <arg line="${openvpms.db.name} -u ${openvpms.db.user} --password=${openvpms.db.password}"/>
         </exec>
         <zip zipfile="${maven.build.dir}/db.zip">
-          <zipfileset dir="${maven.build.dir}/db"/>
+            <zipfileset dir="${maven.build.dir}/db"/>
         </zip>
     </goal>
 
@@ -176,7 +191,8 @@
 
     <goal name="extract-mapping-files">
         <delete>
-            <fileset dir="${maven.build.dir}/hibernate" includes="**/*.hbm.xml"/>
+            <fileset dir="${maven.build.dir}/hibernate"
+                     includes="**/*.hbm.xml"/>
         </delete>
 
         <j:set var="repo" value="${context.getVariable('maven.repo.local')}"/>
