@@ -53,6 +53,10 @@
                         <property name="shortName"
                                   value="product.service"/>
                     </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="product.merchandise"/>
+                    </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
