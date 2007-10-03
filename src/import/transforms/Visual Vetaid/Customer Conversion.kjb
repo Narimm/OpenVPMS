@@ -79,102 +79,6 @@
       <yloc>257</yloc>
       </entry>
     <entry>
-      <name>Patient - Information</name>
-      <description/>
-      <type>TRANS</type>
-      <filename>${Internal.Job.Filename.Directory}&#47;Patient - Information.ktr</filename>
-      <transname/>
-      <directory>&#47;</directory>
-      <arg_from_previous>N</arg_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <clear_rows>Y</clear_rows>
-      <clear_files>Y</clear_files>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <loglevel>Error</loglevel>
-      <cluster>N</cluster>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>545</xloc>
-      <yloc>252</yloc>
-      </entry>
-    <entry>
-      <name>Patient - Relationships</name>
-      <description/>
-      <type>TRANS</type>
-      <filename>${Internal.Job.Filename.Directory}&#47;Patient - Relationships.ktr</filename>
-      <transname/>
-      <directory>&#47;</directory>
-      <arg_from_previous>N</arg_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <clear_rows>Y</clear_rows>
-      <clear_files>Y</clear_files>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <loglevel>Error</loglevel>
-      <cluster>N</cluster>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>660</xloc>
-      <yloc>252</yloc>
-      </entry>
-    <entry>
-      <name>Patient - Reminders</name>
-      <description/>
-      <type>TRANS</type>
-      <filename>${Internal.Job.Filename.Directory}&#47;Patient - Reminders.ktr</filename>
-      <transname/>
-      <directory>&#47;</directory>
-      <arg_from_previous>N</arg_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <clear_rows>Y</clear_rows>
-      <clear_files>Y</clear_files>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <loglevel>Error</loglevel>
-      <cluster>N</cluster>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>766</xloc>
-      <yloc>253</yloc>
-      </entry>
-    <entry>
-      <name>Patient - Attachments</name>
-      <description/>
-      <type>TRANS</type>
-      <filename>${Internal.Job.Filename.Directory}&#47;Patient - Attachments.ktr</filename>
-      <transname/>
-      <directory>&#47;</directory>
-      <arg_from_previous>N</arg_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <clear_rows>Y</clear_rows>
-      <clear_files>Y</clear_files>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <loglevel>Error</loglevel>
-      <cluster>N</cluster>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>880</xloc>
-      <yloc>253</yloc>
-      </entry>
-    <entry>
       <name>Customer - Attachments</name>
       <description/>
       <type>TRANS</type>
@@ -219,44 +123,8 @@
       <unconditional>N</unconditional>
       </hop>
     <hop>
-      <from>Patient - Information</from>
-      <to>Patient - Relationships</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-      </hop>
-    <hop>
-      <from>Patient - Relationships</from>
-      <to>Patient - Reminders</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-      </hop>
-    <hop>
-      <from>Patient - Reminders</from>
-      <to>Patient - Attachments</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-      </hop>
-    <hop>
       <from>Customer - Information</from>
       <to>Customer - Attachments</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-      </hop>
-    <hop>
-      <from>Customer - Attachments</from>
-      <to>Patient - Information</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>

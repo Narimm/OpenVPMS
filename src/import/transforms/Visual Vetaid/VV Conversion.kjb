@@ -111,8 +111,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>468</xloc>
-      <yloc>309</yloc>
+      <xloc>554</xloc>
+      <yloc>201</yloc>
       </entry>
     <entry>
       <name>Transaction Conversion.kjb</name>
@@ -132,8 +132,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>555</xloc>
-      <yloc>210</yloc>
+      <xloc>641</xloc>
+      <yloc>311</yloc>
       </entry>
     <entry>
       <name>History Conversion.kjb</name>
@@ -153,8 +153,29 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>652</xloc>
-      <yloc>316</yloc>
+      <xloc>699</xloc>
+      <yloc>211</yloc>
+      </entry>
+    <entry>
+      <name>Patient Conversion.kjb</name>
+      <description/>
+      <type>JOB</type>
+      <filename>${Internal.Job.Filename.Directory}&#47;Patient Conversion.kjb</filename>
+      <jobname/>
+      <directory>&#47;</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Error</loglevel>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>458</xloc>
+      <yloc>311</yloc>
       </entry>
     </entries>
   <hops>
@@ -186,15 +207,6 @@
       <unconditional>N</unconditional>
       </hop>
     <hop>
-      <from>Customer Conversion.kjb</from>
-      <to>Appointment Conversion.kjb</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-      </hop>
-    <hop>
       <from>Appointment Conversion.kjb</from>
       <to>Transaction Conversion.kjb</to>
       <from_nr>0</from_nr>
@@ -206,6 +218,24 @@
     <hop>
       <from>Transaction Conversion.kjb</from>
       <to>History Conversion.kjb</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+      </hop>
+    <hop>
+      <from>Customer Conversion.kjb</from>
+      <to>Patient Conversion.kjb</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+      </hop>
+    <hop>
+      <from>Patient Conversion.kjb</from>
+      <to>Appointment Conversion.kjb</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
