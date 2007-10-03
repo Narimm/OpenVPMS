@@ -31,10 +31,10 @@
       <yloc>258</yloc>
       </entry>
     <entry>
-      <name>Customer - Account Type</name>
+      <name>Patient - Information</name>
       <description/>
       <type>TRANS</type>
-      <filename>${Internal.Job.Filename.Directory}\Customer  - Account Type.ktr</filename>
+      <filename>${Internal.Job.Filename.Directory}&#47;Patient - Information.ktr</filename>
       <transname/>
       <directory>&#47;</directory>
       <arg_from_previous>N</arg_from_previous>
@@ -51,85 +51,118 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>165</xloc>
-      <yloc>257</yloc>
-      </entry>
-    <entry>
-      <name>Customer - Information</name>
-      <description/>
-      <type>TRANS</type>
-      <filename>${Internal.Job.Filename.Directory}&#47;Customer - Information.ktr</filename>
-      <transname/>
-      <directory>&#47;</directory>
-      <arg_from_previous>N</arg_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <clear_rows>Y</clear_rows>
-      <clear_files>Y</clear_files>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <loglevel>Error</loglevel>
-      <cluster>N</cluster>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>291</xloc>
-      <yloc>257</yloc>
-      </entry>
-    <entry>
-      <name>Customer - Attachments</name>
-      <description/>
-      <type>TRANS</type>
-      <filename>${Internal.Job.Filename.Directory}&#47;Customer - Attachments.ktr</filename>
-      <transname/>
-      <directory>&#47;</directory>
-      <arg_from_previous>N</arg_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <clear_rows>Y</clear_rows>
-      <clear_files>Y</clear_files>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <loglevel>Error</loglevel>
-      <cluster>N</cluster>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>416</xloc>
+      <xloc>201</xloc>
       <yloc>256</yloc>
+      </entry>
+    <entry>
+      <name>Patient - Relationships</name>
+      <description/>
+      <type>TRANS</type>
+      <filename>${Internal.Job.Filename.Directory}&#47;Patient - Relationships.ktr</filename>
+      <transname/>
+      <directory>&#47;</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>Y</clear_rows>
+      <clear_files>Y</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Error</loglevel>
+      <cluster>N</cluster>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>336</xloc>
+      <yloc>255</yloc>
+      </entry>
+    <entry>
+      <name>Patient - Reminders</name>
+      <description/>
+      <type>TRANS</type>
+      <filename>${Internal.Job.Filename.Directory}&#47;Patient - Reminders.ktr</filename>
+      <transname/>
+      <directory>&#47;</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>Y</clear_rows>
+      <clear_files>Y</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Error</loglevel>
+      <cluster>N</cluster>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>468</xloc>
+      <yloc>254</yloc>
+      </entry>
+    <entry>
+      <name>Patient - Attachments</name>
+      <description/>
+      <type>TRANS</type>
+      <filename>${Internal.Job.Filename.Directory}&#47;Patient - Attachments.ktr</filename>
+      <transname/>
+      <directory>&#47;</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>Y</clear_rows>
+      <clear_files>Y</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Error</loglevel>
+      <cluster>N</cluster>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>600</xloc>
+      <yloc>253</yloc>
       </entry>
     </entries>
   <hops>
     <hop>
+      <from>Patient - Information</from>
+      <to>Patient - Relationships</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+      </hop>
+    <hop>
+      <from>Patient - Relationships</from>
+      <to>Patient - Reminders</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+      </hop>
+    <hop>
+      <from>Patient - Reminders</from>
+      <to>Patient - Attachments</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+      </hop>
+    <hop>
       <from>Start</from>
-      <to>Customer - Account Type</to>
+      <to>Patient - Information</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>
       <unconditional>Y</unconditional>
-      </hop>
-    <hop>
-      <from>Customer - Account Type</from>
-      <to>Customer - Information</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-      </hop>
-    <hop>
-      <from>Customer - Information</from>
-      <to>Customer - Attachments</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
       </hop>
     </hops>
   <notepads>
