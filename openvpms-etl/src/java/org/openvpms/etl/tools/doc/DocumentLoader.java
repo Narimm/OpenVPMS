@@ -22,6 +22,7 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.stringparsers.BooleanStringParser;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,6 +33,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSet;
@@ -67,6 +69,11 @@ public class DocumentLoader {
     private final IArchetypeService service;
 
     /**
+     * Determines if the generator should fail on error.
+     */
+    private boolean failOnError = true;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(DocumentLoader.class);
@@ -93,6 +100,16 @@ public class DocumentLoader {
     public DocumentLoader(IArchetypeService service, DocumentFactory factory) {
         this.service = service;
         this.factory = factory;
+    }
+
+    /**
+     * Determines if generation should fail when an error occurs.
+     * Defaults to <tt>true</tt>.
+     *
+     * @param failOnError if <tt>true</tt> fail when an error occurs
+     */
+    public void setFailOnError(boolean failOnError) {
+        this.failOnError = failOnError;
     }
 
     /**
@@ -145,15 +162,32 @@ public class DocumentLoader {
         }
         log.info("Found " + refs.size() + " documents");
         if (!refs.isEmpty()) {
+            int count = 0;
+            int errors = 0;
             for (IMObjectReference ref : refs) {
-                DocumentAct act = getDocumentAct(ref);
-                if (act != null) {
-                    Document doc = factory.create(act);
-                    act.setDocReference(doc.getObjectReference());
-                    act.setMimeType(doc.getMimeType());
-                    service.save(doc);
-                    service.save(act);
+                try {
+                    DocumentAct act = getDocumentAct(ref);
+                    if (act != null) {
+                        Document doc = factory.create(act);
+                        act.setDocReference(doc.getObjectReference());
+                        act.setMimeType(doc.getMimeType());
+                        service.save(doc);
+                        service.save(act);
+                    }
+                } catch (OpenVPMSException exception) {
+                    if (failOnError) {
+                        throw exception;
+                    } else {
+                        ++errors;
+                        log.error(exception.getMessage());
+                    }
                 }
+            }
+            log.info("Loaded " + count + " documents");
+            if (errors != 0) {
+                log.warn("There were " + errors + " errors");
+            } else {
+                log.info("There were no errors");
             }
         }
     }
@@ -182,10 +216,12 @@ public class DocumentLoader {
                 DocumentLoader loader = new DocumentLoader(
                         ArchetypeServiceHelper.getArchetypeService(),
                         new FileDocumentFactory(dir));
+                loader.setFailOnError(config.getBoolean("failOnError"));
                 loader.load(type);
             }
         } catch (Throwable throwable) {
             log.error(throwable, throwable);
+            System.exit(1);
         }
     }
 
@@ -233,6 +269,12 @@ public class DocumentLoader {
                 .setLongFlag("type")
                 .setHelp("The archetype short name. May contain wildcards. "
                 + "If not specified, defaults to all document acts"));
+        parser.registerParameter(new FlaggedOption("failOnError")
+                .setShortFlag('e')
+                .setLongFlag("failOnError")
+                .setDefault("true")
+                .setStringParser(BooleanStringParser.getParser())
+                .setHelp("Fail on error"));
         parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
                 .setLongFlag("context")
                 .setDefault(APPLICATION_CONTEXT)

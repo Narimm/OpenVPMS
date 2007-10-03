@@ -81,15 +81,15 @@ public class FileDocumentFactory implements DocumentFactory {
         Document doc;
         String fileName = act.getFileName();
         String mimeType = act.getMimeType();
+        File file = new File(parent, fileName);
         try {
             DocumentHandler handler = handlers.get(fileName, "document.other");
-            File file = new File(parent, fileName);
             FileInputStream stream = new FileInputStream(file);
             int size = (int) file.length();
             doc = handler.create(fileName, stream, mimeType, size);
             stream.close();
         } catch (IOException exception) {
-            throw new DocumentException(ReadError, exception);
+            throw new DocumentException(ReadError, file.getPath(), exception);
         }
         return doc;
     }
