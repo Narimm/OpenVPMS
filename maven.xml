@@ -77,6 +77,13 @@
             <fileset dir="${basedir}/src/reports"/>
         </copy>
 
+        <!-- copy the import data -->
+        <mkdir dir="${distDir}/import/data"/>
+        <copy todir="${distDir}/import/data">
+            <fileset dir="${basedir}/src/import/data"/>
+        </copy>
+
+        <!-- move the kettle plugin -->
         <mkdir dir="${distDir}/import/plugin"/>
         <move file="${distDir}/lib/openvpms-etl-${pom.currentVersion}.zip"
               tofile="${distDir}/import/plugin/OpenVPMSLoader.zip"/>
@@ -116,6 +123,7 @@
                 failonerror="true"
                 fork="true">
             <ant:classpath>
+                <ant:pathelement path="${basedir}/src/conf/log4j"/>
                 <ant:pathelement path="${maven.build.dest}"/>
                 <ant:pathelement path="${maven.build.dir}/hibernate"/>
                 <ant:path refid="maven.dependency.classpath"/>
@@ -152,6 +160,7 @@
                   failonerror="true"
                   fork="true">
             <ant:classpath>
+                <ant:pathelement path="${basedir}/src/conf/log4j"/>
                 <ant:pathelement path="${maven.build.dir}/hibernate"/>
                 <ant:pathelement path="${basedir}/src/conf/spring"/>
                 <ant:pathelement path="${maven.build.dest}"/>
