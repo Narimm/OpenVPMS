@@ -34,6 +34,7 @@
 	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'lastName')]" class="java.lang.String"/>
 	<field name="quantity" class="java.math.BigDecimal"/>
 	<field name="product.entity.printedName" class="java.lang.String"/>
+	<field name="[party.getFullName(party:getPractice())]" class="java.lang.String"/>
 
 	<variable name="patientFullName" class="java.lang.String" resetType="Report" calculation="Nothing">
 		<variableExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'lastName')]} + "," + $F{patient.entity.name}]]></variableExpression>
@@ -169,32 +170,6 @@
 				<staticText>
 					<reportElement
 						x="15"
-						y="127"
-						width="164"
-						height="11"
-						key="staticText-5"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Center">
-						<font pdfFontName="Helvetica-Oblique" size="8" isBold="false" isItalic="true"/>
-					</textElement>
-				<text><![CDATA[A Veterinary Practice]]></text>
-				</staticText>
-				<staticText>
-					<reportElement
-						x="0"
-						y="133"
-						width="181"
-						height="11"
-						key="staticText-6"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Center">
-						<font pdfFontName="Helvetica-BoldOblique" size="8" isBold="false" isItalic="true"/>
-					</textElement>
-				<text><![CDATA[999 A Road A suburb ]]></text>
-				</staticText>
-				<staticText>
-					<reportElement
-						x="15"
 						y="93"
 						width="30"
 						height="11"
@@ -205,19 +180,6 @@
 						<font size="8"/>
 					</textElement>
 				<text><![CDATA[ Patient:]]></text>
-				</staticText>
-				<staticText>
-					<reportElement
-						x="1"
-						y="140"
-						width="191"
-						height="11"
-						key="staticText-9"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement textAlignment="Center">
-						<font pdfFontName="Helvetica-BoldOblique" size="8" isBold="false" isItalic="true"/>
-					</textElement>
-				<text><![CDATA[(99) 9999-9999]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
@@ -244,6 +206,19 @@
 						<font size="8"/>
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA[$V{patientFullName}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="15"
+						y="125"
+						width="174"
+						height="13"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Center">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{[party.getFullName(party:getPractice())]}]]></textFieldExpression>
 				</textField>
 			</band>
 		</detail>
