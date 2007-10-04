@@ -1,0 +1,20 @@
+<archetype>
+	<data id="Clinician" archetype="lookup.userType" code="CLINICIAN" />
+	<data id="Nurse" archetype="lookup.userType" code="NURSE" />
+	<data id="Receptionist" archetype="lookup.userType" code="RECEPTIONIST" />
+	<data id="AUTH1" archetype="security.archetypeAuthority" name="save.all" description="Authority to Save All Archetypes"
+		serviceName="archetypeService" method="save" archetypeShortName="*" />
+	<data id="AUTH2" archetype="security.archetypeAuthority" name="remove.all" description="Authority to Remove All Archetypes"
+		serviceName="archetypeService" method="remove" archetypeShortName="*" />
+	<data id="ROLE1" archetype="security.role" name="Administration" >
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:AUTH1" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:AUTH2" />
+	</data>
+	<data archetype="security.user" username="admin" name="admin" password="admin">
+		<data collection="roles" archetype="security.role" childId="id:ROLE1" />
+	</data>
+	<data id="VET1" archetype="security.user" username="vet" name="vet" password="vet">
+		<data collection="roles" archetype="security.role" childId="id:ROLE1" />
+		<data collection="classifications" archetype="lookup.userType" childId="id:Clinician" />
+	</data>
+</archetype>

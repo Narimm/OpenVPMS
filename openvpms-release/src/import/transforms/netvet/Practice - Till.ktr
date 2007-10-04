@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name/>
+    <name>Practice - Till</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -43,10 +43,10 @@
   <notepads>
     </notepads>
   <order>
-  <hop> <from>Select User Fields</from><to>Transform Users</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Users</from><to>OpenVPMS User Output</to><enabled>Y</enabled> </hop>  <hop> <from>Text file input</from><to>Select User Fields</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Transform Till Fields</from><to>OpenVPMS Till Output</to><enabled>Y</enabled> </hop>  <hop> <from>Text file input</from><to>Select Till Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Till Fields</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Transform Till Fields</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
-    <name>OpenVPMS User Output</name>
+    <name>OpenVPMS Till Output</name>
     <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -56,16 +56,16 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>OpenVPMS</connection><idColumn>CODE</idColumn><mapping><source>CODE</source><target>&lt;security.user>username</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;security.user>password</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>NAME</source><target>&lt;security.user>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;security.user>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VET</source><target>&lt;security.user>classifications[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.userType>code=$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>OpenVPMS</connection><idColumn>TILLID</idColumn><mapping><source>NAME</source><target>&lt;party.organisationTill>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CSHFLT</source><target>&lt;party.organisationTill>tillFloat</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>LSTBAL</source><target>&lt;party.organisationTill>lastBalance</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>LBDATE</source><target>&lt;party.organisationTill>lastCleared</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TILLID</source><target>&lt;entityRelationship.locationTill>target</target><excludeNull>true</excludeNull><value>&lt;party.organisationTill>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;entityRelationship.locationTill>source</target><excludeNull>true</excludeNull><value>&lt;party.organisationLocation>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>678</xloc>
-      <yloc>137</yloc>
+      <xloc>649</xloc>
+      <yloc>252</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Select User Fields</name>
+    <name>Select Till Fields</name>
     <type>SelectValues</type>
     <description/>
     <distribute>Y</distribute>
@@ -83,14 +83,22 @@
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>STATUS</name>
+        </field>      <field>        <name>CSHFLT</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>LSTBAL</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>LBDATE</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>247</xloc>
-      <yloc>137</yloc>
+      <xloc>269</xloc>
+      <yloc>252</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -131,7 +139,7 @@
     <format>DOS</format>
     <encoding/>
     <file>
-      <name>${NETVET_DATA}\doctor.txt</name>
+      <name>${NETVET_DATA}&#47;cashbox.txt</name>
       <filemask/>
       <file_required/>
       <type>CSV</type>
@@ -171,7 +179,7 @@
         <repeat>N</repeat>
         </field>
       <field>
-        <name>STATUS</name>
+        <name>CSHFLT</name>
         <type>String</type>
         <format/>
         <currency/>
@@ -186,7 +194,7 @@
         <repeat>N</repeat>
         </field>
       <field>
-        <name>STREET</name>
+        <name>LSTBAL</name>
         <type>String</type>
         <format/>
         <currency/>
@@ -201,58 +209,13 @@
         <repeat>N</repeat>
         </field>
       <field>
-        <name>SUBURB</name>
-        <type>String</type>
-        <format/>
+        <name>LBDATE</name>
+        <type>Date</type>
+        <format>dd&#47;MM&#47;yyyy</format>
         <currency/>
         <decimal/>
         <group/>
-        <nullif/>
-        <ifnull/>
-        <position>-1</position>
-        <length>-1</length>
-        <precision>-1</precision>
-        <trim_type>none</trim_type>
-        <repeat>N</repeat>
-        </field>
-      <field>
-        <name>POSCDE</name>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <nullif/>
-        <ifnull/>
-        <position>-1</position>
-        <length>-1</length>
-        <precision>-1</precision>
-        <trim_type>none</trim_type>
-        <repeat>N</repeat>
-        </field>
-      <field>
-        <name>PHONE1</name>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <nullif/>
-        <ifnull/>
-        <position>-1</position>
-        <length>-1</length>
-        <precision>-1</precision>
-        <trim_type>none</trim_type>
-        <repeat>N</repeat>
-        </field>
-      <field>
-        <name>PHONE2</name>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <nullif/>
+        <nullif>          </nullif>
         <ifnull/>
         <position>-1</position>
         <length>-1</length>
@@ -277,14 +240,14 @@
     <date_format_locale>en_au</date_format_locale>
      <cluster_schema/>
     <GUI>
-      <xloc>113</xloc>
-      <yloc>137</yloc>
+      <xloc>121</xloc>
+      <yloc>252</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Transform Users</name>
+    <name>Transform Till Fields</name>
     <type>ScriptValueMod</type>
     <description/>
     <distribute>Y</distribute>
@@ -298,29 +261,45 @@
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
-
-var ACTIVE = true
-if (STATUS.getString() == &quot;X&quot;) {
-	ACTIVE = false
-}
-var VET = &quot;CLINICIAN&quot;
-
-if (NAME.getString() == &quot;&quot; || NAME.getString() == null)
-	NAME.setString(CODE.getString())</jsScript_script>
-        </jsScript>     </jsScripts>    <fields>      <field>        <name>ACTIVE</name>
-        <rename>ACTIVE</rename>
-        <type>Boolean</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        </field>      <field>        <name>VET</name>
-        <rename>VET</rename>
-        <type>String</type>
-        <length>-1</length>
-        <precision>-1</precision>
+var CLINIC = 1</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>CLINIC</name>
+        <rename>CLINIC</rename>
+        <type>Number</type>
+        <length>16</length>
+        <precision>2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>448</xloc>
-      <yloc>135</yloc>
+      <xloc>456</xloc>
+      <yloc>252</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Add sequence</name>
+    <type>Sequence</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <valuename>TILLID</valuename>
+      <use_database>N</use_database>
+      <connection/>
+      <schema/>
+      <seqname>SEQ_</seqname>
+      <use_counter>Y</use_counter>
+      <counter_name/>
+      <start_at>1</start_at>
+      <increment_by>1</increment_by>
+      <max_value>9999999</max_value>
+     <cluster_schema/>
+    <GUI>
+      <xloc>362</xloc>
+      <yloc>252</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
