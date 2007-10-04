@@ -70,7 +70,7 @@
 
     <template name="Statement Items"
               archetype="SUBREPORT"
-              path="statementItemsA5.jrxml"
+              path="statementItems A5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
