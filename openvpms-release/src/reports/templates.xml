@@ -86,7 +86,7 @@
               mimeType="text/xml"
               docType="document.other"/>
 
-    <template name="Customer Account Balance"
+    <template name="Customer Account Balance Report"
               archetype="CUSTOMER_BALANCE"
               path="customerAccountBalance.jrxml"
               mimeType="text/xml"
@@ -104,7 +104,7 @@
               mimeType="text/xml"
               docType="document.other"/>
 
-    <template name="Patient Reminders"
+    <template name="Patient Reminders Report"
               archetype="act.patientReminder"
               path="patientReminders.jrxml"
               mimeType="text/xml"
