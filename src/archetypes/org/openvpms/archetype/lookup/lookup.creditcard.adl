@@ -32,7 +32,7 @@
               minCardinality="1"/>
         <node name="floorLimit" path="/details/floorLimit"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              minCardinality="1"/>
+              minCardinality="0"/>
         <node name="authorisation" path="/details/authorisation"
               type="java.lang.String" minCardinality="0" maxLength="300"/>
         <node name="separateList" displayName="Separate Deposit List"
