@@ -85,7 +85,7 @@
                 </prop>
             </props>
         </property>
-        <property name="schemaUpdate" value="true"/>
+        <property name="schemaUpdate" value="false"/>
         <property name="mappingResources">
             <list>
                 <value>
