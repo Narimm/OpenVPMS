@@ -56,6 +56,11 @@ public class PatientMedicationActEditor extends AbstractActEditor {
         }
 
         if (parent != null) {
+            if (act.isNew()) {
+                // default the act start time to that of the parent
+                act.setActivityStartTime(parent.getActivityStartTime());
+            }
+
             ActBean bean = new ActBean(parent);
             if (bean.hasNode("product")) {
                 // update the product from the parent

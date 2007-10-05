@@ -56,11 +56,11 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
 
 
     /**
-     * Constructs a new <code>AbstractActEditor</code>.
+     * Constructs a new <tt>AbstractActEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>
+     * @param parent  the parent object. May be <tt>null</tt>
+     * @param context the layout context. May be <tt>null</tt>
      */
     public AbstractActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
@@ -77,10 +77,49 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Returns the act start time.
+     *
+     * @return the act start time. May be <tt>null</tt>
+     */
+    public Date getStartTime() {
+        return ((Act) getObject()).getActivityStartTime();
+    }
+
+    /**
+     * Sets the act start time, temporarily disabling callbacks.
+     *
+     * @param time the start time
+     */
+    public void setStartTime(Date time) {
+        Property startTime = getProperty("startTime");
+        removeStartEndTimeListeners();
+        startTime.setValue(time);
+        addStartEndTimeListeners();
+    }
+
+    /**
+     * Returns the end time.
+     *
+     * @return the end time. May be <tt>null</tt>
+     */
+    public Date getEndTime() {
+        return ((Act) getObject()).getActivityEndTime();
+    }
+
+    /**
+     * Sets the act end time, temporarily disabling callbacks.
+     *
+     * @param time the end time
+     */
+    public void setEndTime(Date time) {
+        setEndTime(time, true);
+    }
+
+    /**
      * Helper to initialises a participation, if it exists and is empty.
      *
      * @param name   the participation name
-     * @param entity the participation entity. May be <code>null</code>
+     * @param entity the participation entity. May be <tt>null</tt>
      */
     protected void initParticipant(String name, IMObject entity) {
         IMObjectReference ref
@@ -113,7 +152,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Sets a participant.
      *
      * @param name   the participation property name
-     * @param entity the participant. May be <code>null</code>
+     * @param entity the participant. May be <tt>null</tt>
      */
     protected void setParticipant(String name, IMObject entity) {
         IMObjectReference ref
@@ -125,7 +164,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Sets a participant.
      *
      * @param name   the participation property name
-     * @param entity the participant. May be <code>null</code>
+     * @param entity the participant. May be <tt>null</tt>
      */
     protected void setParticipant(String name, IMObjectReference entity) {
         Property property = getProperty(name);
@@ -150,7 +189,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Returns a participant reference.
      *
      * @param name the participation property name
-     * @return a reference to the participant. May be <code>null</code>
+     * @return a reference to the participant. May be <tt>null</tt>
      */
     protected IMObjectReference getParticipantRef(String name) {
         Property property = getProperty(name);
@@ -168,7 +207,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Returns a prticipant.
      *
      * @param name the participation property name
-     * @return the participant. May be <code>null</code>
+     * @return the participant. May be <tt>null</tt>
      */
     protected IMObject getParticipant(String name) {
         return IMObjectHelper.getObject(getParticipantRef(name));
@@ -203,49 +242,10 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Returns the act start time.
-     *
-     * @return the act start time. May be <code>null</code>
-     */
-    protected Date getStartTime() {
-        return ((Act) getObject()).getActivityStartTime();
-    }
-
-    /**
-     * Sets the act start time, temporarily disabling callbacks.
-     *
-     * @param time the start time
-     */
-    protected void setStartTime(Date time) {
-        Property startTime = getProperty("startTime");
-        removeStartEndTimeListeners();
-        startTime.setValue(time);
-        addStartEndTimeListeners();
-    }
-
-    /**
-     * Returns the end time.
-     *
-     * @return the end time. May be <code>null</code>
-     */
-    protected Date getEndTime() {
-        return ((Act) getObject()).getActivityEndTime();
-    }
-
-    /**
-     * Sets the act end time, temporarily disabling callbacks.
-     *
-     * @param time the end time
-     */
-    protected void setEndTime(Date time) {
-        setEndTime(time, true);
-    }
-
-    /**
      * Sets the act end time.
      *
      * @param time    the end time
-     * @param disable if <code>true</code> disable the {@link #onEndTimeChanged}
+     * @param disable if <tt>true</tt> disable the {@link #onEndTimeChanged}
      *                callback
      */
     protected void setEndTime(Date time, boolean disable) {
