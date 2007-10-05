@@ -6,7 +6,6 @@
         category="Transform"
         classname="org.openvpms.etl.kettle.LoaderPluginMeta">
     <libraries>
-        <library name="${pom.ArtifactId}-${pom.CurrentVersion}.jar"/>
         #foreach ($dep in $pom.getDependencies())
         #if ($dep.getProperty("kettle.plugin"))
         <library name="${dep.Artifact}"/>
