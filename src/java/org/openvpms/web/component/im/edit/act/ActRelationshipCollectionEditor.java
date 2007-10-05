@@ -38,6 +38,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -189,6 +190,7 @@ public class ActRelationshipCollectionEditor
             IMObjectBean bean = new IMObjectBean(template);
             List<IMObject> values = bean.getValues("includes");
             Act copy = act; // replace the existing act with the first
+            Date startTime = act.getActivityStartTime();
             // templated product
             for (IMObject value : values) {
                 EntityRelationship relationship = (EntityRelationship) value;
@@ -202,6 +204,9 @@ public class ActRelationshipCollectionEditor
                             new ReadOnlyComponentFactory(context));
                     editor = (ActItemEditor) createEditor(copy, context);
 
+                    // reset the start-time, which may have been set by
+                    // the editor
+                    copy.setActivityStartTime(startTime);
                 }
                 IMObjectBean relationshipBean = new IMObjectBean(relationship);
                 if (relationshipBean.hasNode("includeQty")) {

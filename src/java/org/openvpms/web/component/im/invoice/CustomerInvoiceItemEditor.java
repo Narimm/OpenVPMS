@@ -123,6 +123,11 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                     + act.getArchetypeId().getShortName());
         }
 
+        if (act.isNew()) {
+            // default the act start time to today
+            act.setActivityStartTime(new Date());
+        }
+
         calculateTax();
 
         IMObjectReference ref = getProduct();
@@ -161,6 +166,13 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                 updateQuantity();
             }
         };
+
+        ModifiableListener startTimeListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateMedicationStartTime();
+            }
+        };
+        getProperty("startTime").addModifiableListener(startTimeListener);
     }
 
     /**
@@ -370,6 +382,35 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Updates any medication acts with the start time.
+     */
+    private void updateMedicationStartTime() {
+        ActRelationshipCollectionEditor editors = getMedicationEditors();
+        if (editors != null) {
+            List<Act> acts = editors.getActs();
+            PatientMedicationActEditor current
+                    = (PatientMedicationActEditor) editors.getCurrentEditor();
+            if (!acts.isEmpty() || current != null) {
+                Act parent = (Act) getObject();
+                Date startTime = parent.getActivityStartTime();
+                for (Act a : editors.getActs()) {
+                    PatientMedicationActEditor editor
+                            = (PatientMedicationActEditor) editors.getEditor(a);
+                    editor.setStartTime(startTime);
+                }
+                editors.refresh();
+
+                if (current != null) {
+                    // update the current editor as well. If this refers to a
+                    // new object, it may not be in the list of 'committed' acts
+                    // returned by the above.
+                    current.setStartTime(startTime);
+                }
+            }
         }
     }
 
