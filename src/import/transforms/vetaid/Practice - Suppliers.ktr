@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>Practice - Suppliers</name>
+    <directory>&#47;</directory>
+    <log>
+      <read/>
+      <write/>
+      <input/>
+      <output/>
+      <update/>
+      <connection/>
+      <table/>
+      <use_batchid>Y</use_batchid>
+      <use_logfield>N</use_logfield>
+      </log>
+    <maxdate>
+      <connection/>
+      <table/>
+      <field/>
+      <offset>0.0</offset>
+      <maxdiff>0.0</maxdiff>
+      </maxdate>
+    <size_rowset>1000</size_rowset>
+    <sleep_time_empty>1</sleep_time_empty>
+    <sleep_time_full>1</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>5000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <dependencies>
+      </dependencies>
+    <partitionschemas>
+      </partitionschemas>
+    <slaveservers>
+      </slaveservers>
+    <clusterschemas>
+      </clusterschemas>
+  <modified_user>-</modified_user>
+  <modified_date>2007&#47;10&#47;02 14:57:18.461</modified_date>
+    </info>
+  <notepads>
+    </notepads>
+  <order>
+  <hop> <from>Select values</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  <hop> <from>Modified Java Script Value</from><to>Suppliers</to><enabled>Y</enabled> </hop>  <hop> <from>XBase input</from><to>Select values</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>Modified Java Script Value</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+var wordUtils = Packages.org.apache.commons.lang.WordUtils;
+
+&#47;&#47; Transform Name information
+
+var ADDRESS = ADDRESS1.getString() + &quot;\n&quot; + ADDRESS2.getString()</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>ADDRESS</name>
+        <rename>ADDRESS</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>312</xloc>
+      <yloc>104</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select values</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>SUPPLIER</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>DESCRIPT</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>ADDRESS1</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>ADDRESS2</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>STATE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>PCODE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>PHONE</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>FAX</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>188</xloc>
+      <yloc>108</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Suppliers</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>SUPPLIER</idColumn><mapping><source>DESCRIPT</source><target>&lt;party.supplierorganisation>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ADDRESS</source><target>&lt;party.supplierorganisation>contacts[0]&lt;contact.location>address</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>STATE</source><target>&lt;party.supplierorganisation>contacts[0]&lt;contact.location>state</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PCODE</source><target>&lt;party.supplierorganisation>contacts[0]&lt;contact.location>postcode</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PHONE</source><target>&lt;party.supplierorganisation>contacts[0]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FAX</source><target>&lt;party.supplierorganisation>contacts[0]&lt;contact.faxNumber>faxNumber</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>440</xloc>
+      <yloc>104</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>XBase input</name>
+    <type>XBaseInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <file_dbf>${VETAID_DATA}\SUPPLIER.DBF</file_dbf>
+    <limit>0</limit>
+    <add_rownr>N</add_rownr>
+    <field_rownr/>
+    <include>N</include>
+    <include_field/>
+    <accept_filenames>N</accept_filenames>
+    <accept_field/>
+    <accept_stepname/>
+     <cluster_schema/>
+    <GUI>
+      <xloc>77</xloc>
+      <yloc>105</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+</transformation>

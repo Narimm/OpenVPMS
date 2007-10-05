@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name/>
+    <name>Practice - Deposit Accounts</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -42,30 +42,8 @@
     </info>
   <notepads>
     </notepads>
-  <connection>
-    <name>OpenVPMS</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
-  <hop> <from>Clinic Input</from><to>Select Clinic Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Clinic Fields</from><to>OpenVPMS Till Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select Clinic Fields</from><to>Transform Clinic Fields</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Clinic Input</from><to>Select Clinic Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Clinic Fields</from><to>OpenVPMS Deposit Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select Clinic Fields</from><to>Transform Clinic Fields</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Clinic Input</name>
@@ -78,7 +56,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <file_dbf>F:\VETAID\CLINIC.DBF</file_dbf>
+    <file_dbf>${VETAID_DATA}&#47;CLINIC.DBF</file_dbf>
     <limit>0</limit>
     <add_rownr>N</add_rownr>
     <field_rownr/>
@@ -96,7 +74,7 @@
     </step>
 
   <step>
-    <name>OpenVPMS Till Output</name>
+    <name>OpenVPMS Deposit Output</name>
     <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -106,10 +84,10 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>OpenVPMS</connection><idColumn>CLINIC</idColumn><mapping><source>DEPOSITNAME</source><target>&lt;party.organisationTill>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;entityRelationship.locationTill>target</target><excludeNull>true</excludeNull><value>&lt;party.organisationDeposit>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;entityRelationship.locationTill>source</target><excludeNull>true</excludeNull><value>&lt;party.organisationLocation>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>false</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>OpenVPMS</connection><idColumn>CLINIC</idColumn><mapping><source>DEPOSITNAME</source><target>&lt;party.organisationDeposit>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRACTICE</source><target>&lt;party.organisationDeposit>accountName</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETBANK</source><target>&lt;party.organisationDeposit>bank</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETACCOUNT</source><target>&lt;party.organisationDeposit>accountNumber</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETSUB</source><target>&lt;party.organisationDeposit>branch</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;entityRelationship.locationDeposit>target</target><excludeNull>true</excludeNull><value>&lt;party.organisationDeposit>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;entityRelationship.locationDeposit>source</target><excludeNull>true</excludeNull><value>&lt;party.organisationLocation>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLINIC</source><target>&lt;party.organisationDeposit>lastBalance</target><excludeNull>false</excludeNull><value>0.0</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>670</xloc>
-      <yloc>250</yloc>
+      <yloc>248</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -167,8 +145,8 @@
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>259</xloc>
-      <yloc>252</yloc>
+      <xloc>269</xloc>
+      <yloc>250</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -188,7 +166,7 @@
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
-var DEPOSITNAME = &quot;Clinic &quot; + CLINIC.getString() + &quot; Till&quot;</jsScript_script>
+var DEPOSITNAME = &quot;Clinic &quot; + CLINIC.getString() + &quot; Deposit Account&quot;</jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>DEPOSITNAME</name>
         <rename>DEPOSITNAME</rename>
         <type>String</type>
