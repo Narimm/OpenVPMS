@@ -68,8 +68,6 @@
                   tofile="${kettle.plugin.dir}/plugin.xml"/>
         <ant:copy file="${basedir}/src/conf/kettle/plugin.png"
                   todir="${kettle.plugin.dir}"/>
-        <ant:copy file="${maven.build.dir}/${maven.final.name}.jar"
-                  todir="${kettle.plugin.dir}"/>
         <j:forEach var="lib" items="${pom.artifacts}">
             <j:set var="dep" value="${lib.dependency}"/>
             <j:if test="${dep.getProperty('kettle.plugin')=='true'}">
