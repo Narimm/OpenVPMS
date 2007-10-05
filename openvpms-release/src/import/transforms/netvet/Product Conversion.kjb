@@ -102,6 +102,30 @@
       <xloc>374</xloc>
       <yloc>221</yloc>
       </entry>
+    <entry>
+      <name>Product - Suppliers</name>
+      <description/>
+      <type>TRANS</type>
+      <filename>${Internal.Job.Filename.Directory}&#47;Product - Suppliers.ktr</filename>
+      <transname/>
+      <directory>&#47;</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>Y</clear_rows>
+      <clear_files>Y</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Error</loglevel>
+      <cluster>N</cluster>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>493</xloc>
+      <yloc>293</yloc>
+      </entry>
     </entries>
   <hops>
     <hop>
@@ -125,6 +149,15 @@
     <hop>
       <from>Product  - Group</from>
       <to>Product - Information</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+      </hop>
+    <hop>
+      <from>Product - Information</from>
+      <to>Product - Suppliers</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
