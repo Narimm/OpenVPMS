@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name/>
+    <name>Practice - Users</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -42,30 +42,68 @@
     </info>
   <notepads>
     </notepads>
-  <connection>
-    <name>OpenVPMS</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
-  <hop> <from>User Input</from><to>Select User Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select User Fields</from><to>Transform Users</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Users</from><to>OpenVPMS User Output</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>User Input</from><to>Select User Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Users</from><to>OpenVPMS User Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select User Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Users</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>Dummy (do nothing)</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+    <GUI>
+      <xloc>354</xloc>
+      <yloc>218</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter rows</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>N</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Transform Users</send_true_to>
+<send_false_to>Dummy (do nothing)</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>USERID</leftvalue>
+   <function>IS NOT NULL</function>
+   <rightvalue/>
+   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>USERID</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>String</type><text/><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>354</xloc>
+      <yloc>140</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
 
   <step>
     <name>OpenVPMS User Output</name>
@@ -80,7 +118,7 @@
            </partitioning>
 <mappings><connection>OpenVPMS</connection><idColumn>USERID</idColumn><mapping><source>USERID</source><target>&lt;security.user>username</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>USERID</source><target>&lt;security.user>password</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>USERNAME</source><target>&lt;security.user>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;security.user>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VET</source><target>&lt;security.user>classifications[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.userType>code=$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>797</xloc>
+      <xloc>596</xloc>
       <yloc>137</yloc>
       <draw>Y</draw>
       </GUI>
@@ -109,10 +147,6 @@
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>DEACTIVATE</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>247</xloc>
@@ -137,7 +171,7 @@
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
 
-var ACTIVE = !DEACTIVATE.getBool()
+var ACTIVE = true
 var VET = null
 if (CONSVET.getBool() == true) {
 	VET = &quot;CLINICIAN&quot;
@@ -154,8 +188,8 @@ if (CONSVET.getBool() == true) {
         <precision>-1</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>385</xloc>
-      <yloc>136</yloc>
+      <xloc>485</xloc>
+      <yloc>137</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -171,7 +205,7 @@ if (CONSVET.getBool() == true) {
            <field_name/>
            <schema_name/>
            </partitioning>
-    <file_dbf>F:\VETAID\USER.DBF</file_dbf>
+    <file_dbf>${VETAID_DATA}&#47;USER.DBF</file_dbf>
     <limit>0</limit>
     <add_rownr>N</add_rownr>
     <field_rownr/>

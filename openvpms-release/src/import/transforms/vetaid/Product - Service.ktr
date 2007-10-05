@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Product - Service Conversion</name>
+    <name>Product - Service</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -55,68 +55,8 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
       <heigth>101</heigth>
       </notepad>
     </notepads>
-  <connection>
-    <name>archetypes</name>
-    <server/>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>conversion</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>conversion</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>openvpms</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
-  <hop> <from>Services Input</from><to>Select Service fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Service Fields</from><to>Sort by product Id</to><enabled>Y</enabled> </hop>  <hop> <from>Charges Input</from><to>Select Charge fields</to><enabled>Y</enabled> </hop>  <hop> <from>Row Normaliser</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Sort Charge Rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Charge Rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Join</from><to>Transform Service Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Service Reference Fields</from><to>Product Service Reference Output</to><enabled>Y</enabled> </hop>  <hop> <from>Sort by product Id</from><to>Unique product Id&apos;s</to><enabled>Y</enabled> </hop>  <hop> <from>Unique product Id&apos;s</from><to>Product Service Charges Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select Service fields</from><to>Sort Service Rows</to><enabled>Y</enabled> </hop>  <hop> <from>Select Charge fields</from><to>Row Normaliser</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Service Rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Service input Reference</from><to>Select Service Reference Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Service Reference Fields</from><to>Transform Service Reference Fields</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Services Input</from><to>Select Service fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Service Fields</from><to>Sort by product Id</to><enabled>Y</enabled> </hop>  <hop> <from>Charges Input</from><to>Select Charge fields</to><enabled>Y</enabled> </hop>  <hop> <from>Row Normaliser</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Sort Charge Rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Charge Rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Join</from><to>Transform Service Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Service Reference Fields</from><to>Product Reference</to><enabled>Y</enabled> </hop>  <hop> <from>Sort by product Id</from><to>Unique product Id&apos;s</to><enabled>Y</enabled> </hop>  <hop> <from>Unique product Id&apos;s</from><to>Product Service Charges</to><enabled>Y</enabled> </hop>  <hop> <from>Select Service fields</from><to>Sort Service Rows</to><enabled>Y</enabled> </hop>  <hop> <from>Select Charge fields</from><to>Row Normaliser</to><enabled>Y</enabled> </hop>  <hop> <from>Sort Service Rows</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Services Input</from><to>Select Service Reference Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Service Reference Fields</from><to>Transform Service Reference Fields</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Charges Input</name>
@@ -140,8 +80,8 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
     <accept_stepname/>
      <cluster_schema/>
     <GUI>
-      <xloc>65</xloc>
-      <yloc>475</yloc>
+      <xloc>53</xloc>
+      <yloc>479</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -204,7 +144,7 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
     </step>
 
   <step>
-    <name>Product Service Charges Output</name>
+    <name>Product Reference</name>
     <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -214,16 +154,16 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>NAME</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.service>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;product.service>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>NAME</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.service>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;product.service>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>900</xloc>
-      <yloc>313</yloc>
+      <xloc>899</xloc>
+      <yloc>205</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Product Service Reference Output</name>
+    <name>Product Service Charges</name>
     <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -233,10 +173,10 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>NAME</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.service>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;product.service>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>NAME</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.service>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITPRICE</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNITS</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>uom</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>FIXEDPRICE</source><target>&lt;product.service>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>899</xloc>
-      <yloc>205</yloc>
+      <xloc>900</xloc>
+      <yloc>314</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -542,7 +482,7 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
         <precision>0</precision>
         </meta>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>208</xloc>
+      <xloc>209</xloc>
       <yloc>212</yloc>
       <draw>Y</draw>
       </GUI>
@@ -574,36 +514,8 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
         <precision>0</precision>
         </meta>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>175</xloc>
+      <xloc>218</xloc>
       <yloc>314</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Service input Reference</name>
-    <type>XBaseInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <file_dbf>F:\VETAID\SERVICES.DBF</file_dbf>
-    <limit>0</limit>
-    <add_rownr>N</add_rownr>
-    <field_rownr/>
-    <include>N</include>
-    <include_field/>
-    <accept_filenames>N</accept_filenames>
-    <accept_field/>
-    <accept_stepname/>
-     <cluster_schema/>
-    <GUI>
-      <xloc>64</xloc>
-      <yloc>210</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -612,7 +524,7 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
     <name>Services Input</name>
     <type>XBaseInput</type>
     <description/>
-    <distribute>Y</distribute>
+    <distribute>N</distribute>
     <copies>1</copies>
          <partitioning>
            <method>none</method>
@@ -630,8 +542,8 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
     <accept_stepname/>
      <cluster_schema/>
     <GUI>
-      <xloc>66</xloc>
-      <yloc>315</yloc>
+      <xloc>46</xloc>
+      <yloc>283</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -696,8 +608,8 @@ doesn&apos;t hold the actual service charge reference that was selected at the t
       </fields>
      <cluster_schema/>
     <GUI>
-      <xloc>285</xloc>
-      <yloc>314</yloc>
+      <xloc>313</xloc>
+      <yloc>315</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -761,7 +673,11 @@ if (SERVICE.getString() == null || SERVICE.getString() == &quot;&quot;)
 	SERVICE.setString(&quot;No Name&quot;)
 
 &#47;&#47;Transform active flag
-var NAME = SERVICE.getString() + &quot; &quot; + SPECIES.getString() + &quot; - &quot; + substr(ITEMNAME.getString(),2)
+var NAME
+if (ITEMNAME.getString() == null || ITEMNAME.getString() == &quot;&quot; || (ITEMNAME.getString().length &lt; 2))
+	NAME = SERVICE.getString() + &quot; &quot; + SPECIES.getString()
+else
+	NAME = SERVICE.getString() + &quot; &quot; + SPECIES.getString() + &quot; - &quot; + substr(ITEMNAME.getString(),2)
 var ACTIVE = true
 
 &#47;&#47;Transform prices
@@ -883,7 +799,7 @@ var FIXEDPRICE = 0.0
         <case_insensitive>Y</case_insensitive>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>759</xloc>
+      <xloc>758</xloc>
       <yloc>315</yloc>
       <draw>Y</draw>
       </GUI>

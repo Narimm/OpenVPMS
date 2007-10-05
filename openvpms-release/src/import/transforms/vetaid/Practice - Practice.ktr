@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name/>
+    <name>Practice - Practice</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -42,30 +42,8 @@
     </info>
   <notepads>
     </notepads>
-  <connection>
-    <name>OpenVPMS</name>
-    <server>localhost</server>
-    <type>MYSQL</type>
-    <access>Native</access>
-    <database>openvpms</database>
-    <port>3306</port>
-    <username>openvpms</username>
-    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
-      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
-      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
-  <hop> <from>Clinic Input</from><to>Select Clinic Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Clinic Fields</from><to>Split Streem</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Practice Fields</from><to>OpenVPMS Practice Output</to><enabled>Y</enabled> </hop>  <hop> <from>Split Streem</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Practice Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Clinic Input</from><to>Select Clinic Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Practice Fields</from><to>OpenVPMS Practice Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Transform Practice Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Select Clinic Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Clinic Input</name>
@@ -78,7 +56,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <file_dbf>F:\VETAID\CLINIC.DBF</file_dbf>
+    <file_dbf>${VETAID_DATA}\CLINIC.DBF</file_dbf>
     <limit>0</limit>
     <add_rownr>N</add_rownr>
     <field_rownr/>
@@ -90,7 +68,7 @@
      <cluster_schema/>
     <GUI>
       <xloc>115</xloc>
-      <yloc>251</yloc>
+      <yloc>250</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -108,8 +86,8 @@
            </partitioning>
      <cluster_schema/>
     <GUI>
-      <xloc>498</xloc>
-      <yloc>184</yloc>
+      <xloc>435</xloc>
+      <yloc>377</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -137,7 +115,7 @@
     </compare>
      <cluster_schema/>
     <GUI>
-      <xloc>501</xloc>
+      <xloc>433</xloc>
       <yloc>255</yloc>
       <draw>Y</draw>
       </GUI>
@@ -154,10 +132,10 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>OpenVPMS</connection><idColumn>PRACTICEID</idColumn><mapping><source>PRACTICE</source><target>&lt;party.organisationPractice>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETADDR1</source><target>&lt;party.organisationPractice>contacts[0]&lt;contact.location>address</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETSUB</source><target>&lt;party.organisationPractice>contacts[0]&lt;contact.location>suburb</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETSTATE</source><target>&lt;party.organisationPractice>contacts[0]&lt;contact.location>state</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETPOST</source><target>&lt;party.organisationPractice>contacts[0]&lt;contact.location>postcode</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETPHONE</source><target>&lt;party.organisationPractice>contacts[0]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>PRACTICEID</idColumn><mapping><source>PRACTICE</source><target>&lt;party.organisationPractice>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETADDR1</source><target>&lt;party.organisationPractice>contacts[0]&lt;contact.location>address</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETSUB</source><target>&lt;party.organisationPractice>contacts[0]&lt;contact.location>suburb</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETSTATE</source><target>&lt;party.organisationPractice>contacts[0]&lt;contact.location>state</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETPOST</source><target>&lt;party.organisationPractice>contacts[0]&lt;contact.location>postcode</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VETPHONE</source><target>&lt;party.organisationPractice>contacts[0]&lt;contact.phoneNumber>telephoneNumber</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>798</xloc>
-      <yloc>252</yloc>
+      <yloc>255</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -222,25 +200,6 @@
     </step>
 
   <step>
-    <name>Split Streem</name>
-    <type>Dummy</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-     <cluster_schema/>
-    <GUI>
-      <xloc>375</xloc>
-      <yloc>252</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
     <name>Transform Practice Fields</name>
     <type>ScriptValueMod</type>
     <description/>
@@ -263,8 +222,8 @@ var PRACTICEID = 1</jsScript_script>
         <precision>2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>627</xloc>
-      <yloc>253</yloc>
+      <xloc>583</xloc>
+      <yloc>256</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

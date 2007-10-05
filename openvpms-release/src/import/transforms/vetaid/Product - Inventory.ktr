@@ -74,6 +74,25 @@
     </step>
 
   <step>
+    <name>Dummy (do nothing)</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+    <GUI>
+      <xloc>212</xloc>
+      <yloc>388</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Filter Dispensing Fee Charge</name>
     <type>FilterRows</type>
     <description/>
@@ -160,8 +179,8 @@
     </lookup>
      <cluster_schema/>
     <GUI>
-      <xloc>436</xloc>
-      <yloc>113</yloc>
+      <xloc>449</xloc>
+      <yloc>114</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -177,7 +196,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>INVENTNAME</source><target>&lt;product.medication>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRESENT</source><target>&lt;product.medication>dispensingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRESENT</source><target>&lt;product.medication>sellingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.medication>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MARKUP</source><target>&lt;product.medication>prices[0]&lt;productPrice.markup>markup</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SALEPRICE</source><target>&lt;product.medication>prices[1]&lt;productPrice.unitPrice>price</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRESENT</source><target>&lt;product.medication>prices[1]&lt;productPrice.unitPrice>uom</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DISPENSINGFEE</source><target>&lt;product.medication>prices[2]&lt;productPrice.fixedPrice>price</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>PRODUCTID</idColumn><mapping><source>INVENTNAME</source><target>&lt;product.medication>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRESENT</source><target>&lt;product.medication>dispensingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRESENT</source><target>&lt;product.medication>sellingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.medication>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MARKUP</source><target>&lt;product.medication>prices[0]&lt;productPrice.unitPrice>markup</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>SALEPRICE</source><target>&lt;product.medication>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRESENT</source><target>&lt;product.medication>prices[0]&lt;productPrice.unitPrice>uom</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DISPENSINGFEE</source><target>&lt;product.medication>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>749</xloc>
       <yloc>114</yloc>
@@ -223,7 +242,7 @@
         <norm>fee</norm>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>467</xloc>
+      <xloc>457</xloc>
       <yloc>286</yloc>
       <draw>Y</draw>
       </GUI>
@@ -373,7 +392,9 @@ if (PRESENT.getString() != null)
 &#47;&#47;Transform Deactivate Date
 var ACTIVE = true
 if (DEACTIVATE.getDate() != null)
-	ACTIVE = false</jsScript_script>
+	ACTIVE = false
+if (DISPENSINGFEE.getString() == &quot;0.0&quot;)
+	DISPENSINGFEE.setString(null)</jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>ACTIVE</name>
         <rename>ACTIVE</rename>
         <type>Boolean</type>
@@ -383,25 +404,6 @@ if (DEACTIVATE.getDate() != null)
     <GUI>
       <xloc>588</xloc>
       <yloc>114</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Dummy (do nothing)</name>
-    <type>Dummy</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-     <cluster_schema/>
-    <GUI>
-      <xloc>212</xloc>
-      <yloc>388</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
