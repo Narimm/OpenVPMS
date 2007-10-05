@@ -441,6 +441,12 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-etl</artifactId>
+            <version>1.0-rc1-SNAPSHOT</version>
+            <url>http://www.openvpms.org</url>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-etl-plugin</artifactId>
             <type>zip</type>
             <version>1.0-rc1-SNAPSHOT</version>
             <url>http://www.openvpms.org</url>

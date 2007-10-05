@@ -42,21 +42,6 @@
         <!-- copy the dependencies -->
         <deploy:copy-deps todir="${distDir}/lib"/>
 
-        <!-- hack to extract the etl jar from the kettle plugin -->
-        <!-- need a 2 stage process as the unzip task in ant 1.5.3 doesn't -->
-        <!-- seem to support the flattenmapper                             -->
-        <unzip src="${distDir}/lib/openvpms-etl-${pom.currentVersion}.zip"
-               dest="${maven.build.dir}">
-            <patternset>
-                <include name="**/openvpms-etl-${pom.currentVersion}.jar"/>
-            </patternset>
-        </unzip>
-        <move todir="${distDir}/lib">
-            <fileset dir="${maven.build.dir}/OpenVPMSLoader">
-                <include name="**/*.jar"/>
-            </fileset>
-        </move>
-
         <!-- move the webapp -->
         <mkdir dir="${distDir}/webapps"/>
         <move file="${distDir}/lib/openvpms-${pom.currentVersion}.war"
@@ -83,9 +68,9 @@
             <fileset dir="${basedir}/src/import/data"/>
         </copy>
 
-        <!-- move the kettle plugin -->
+        <!-- rename the kettle plugin -->
         <mkdir dir="${distDir}/import/plugin"/>
-        <move file="${distDir}/lib/openvpms-etl-${pom.currentVersion}.zip"
+        <move file="${distDir}/lib/openvpms-etl-plugin-${pom.currentVersion}.zip"
               tofile="${distDir}/import/plugin/OpenVPMSLoader.zip"/>
 
         <!--  copy the import templates -->
@@ -222,6 +207,18 @@
                 <include name="**/*.hbm.xml"/>
             </patternset>
         </unzip>
+
+        <j:set var="dependencyId" value="org.openvpms:openvpms-etl"/>
+        <j:set var="artifactPath"
+               value="${pom.getDependencyPath(dependencyId)}"/>
+        <j:set var="artifactRepoPath" value="${repo}/${artifactPath}"/>
+
+        <unzip src="${artifactPath}" dest="${maven.hibernate.input.dir}">
+            <patternset>
+                <include name="**/*.hbm.xml"/>
+            </patternset>
+        </unzip>
+
     </goal>
 
 </project>

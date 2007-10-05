@@ -16,7 +16,6 @@ java org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicati
 goto end
 
 :doSetup
-java org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml -f ../import/data/base.xml
-java org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml -f ../import/data/setup.xml
+java org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml -d ../import/data
 
 :end
