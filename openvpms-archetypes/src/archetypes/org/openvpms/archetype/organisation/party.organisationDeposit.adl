@@ -24,15 +24,15 @@
               path="/description" hidden="true" derived="true"
               derivedValue="concat('Last Deposit : ',/details/lastDeposit, ' Last Balance : ',/details/lastBalance)"/>
         <node name="accountName" path="/details/accountName" type="java.lang.String" minCardinality="1"/>
-        <node name="bank" path="/details/bank" type="java.lang.String" minCardinality="1">
+        <node name="bank" path="/details/bank" type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.bank"/>
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
-        <node name="branch" path="/details/branch" type="java.lang.String" minCardinality="1"/>
-        <node name="accountNumber" path="/details/accountNumber" type="java.lang.String" minCardinality="1"/>
+        <node name="branch" path="/details/branch" type="java.lang.String" minCardinality="0"/>
+        <node name="accountNumber" path="/details/accountNumber" type="java.lang.String" minCardinality="0"/>
         <node name="lastDeposit" path="/details/lastDeposit" type="java.util.Date"/>
         <node name="lastBalance" path="/details/lastBalance" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
