@@ -6,7 +6,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-etl</artifactId>
-            <version>1.0-rc1-SNAPSHOT</version>
+            <version>${pom.currentVersion}</version>
             <url>http://www.openvpms.org</url>
             <properties>
                 <kettle.plugin>true</kettle.plugin>
