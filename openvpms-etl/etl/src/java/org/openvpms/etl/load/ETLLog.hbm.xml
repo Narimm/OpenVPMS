@@ -26,13 +26,12 @@
             <column name="log_id"/>
             <generator class="native"/>
         </id>
-        <property name="rowId" column="row_id" type="string"
-                  length="32"
-                  index="etl_log_rowId_idx"/>
-        <property name="loader" column="loader" type="string"
-                  length="32" index="etl_log_rowId_idx"/>
+        <property name="rowId" column="row_id" type="string" length="32"
+                  index="etl_rowId_loader_idx, etl_rowId_archetype_idx"/>
+        <property name="loader" column="loader" type="string" length="32"
+                  index="etl_rowId_loader_idx"/>
         <property name="archetype" type="string" column="archetype"
-                  index="etl_log_rowId_idx" not-null="false"/>
+                  index="etl_rowId_archetype_idx" not-null="false"/>
         <property name="index" column="collection_index" type="integer" not-null="false"/>
         <property name="linkId" type="string" length="36" column="linkId"/>
         <property name="errors" column="error_messages" type="string"
