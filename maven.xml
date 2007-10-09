@@ -79,9 +79,10 @@
             <fileset dir="${basedir}/src/import/transforms"/>
         </copy>
 
-        <!-- copy the databases -->
+        <!-- copy the database scripts -->
         <mkdir dir="${distDir}/db"/>
-        <copy todir="${distDir}/db" file="${maven.build.dir}/db.zip"/>
+        <copy todir="${distDir}/db" file="${basedir}/src/db/createdb.sql"/>
+        <copy todir="${distDir}/db" file="${maven.build.dir}/db/db.sql"/>
 
         <!-- copy the update scripts etc -->
         <mkdir dir="${distDir}/update"/>
@@ -164,9 +165,6 @@
               failOnError="true" logError="true">
             <arg line="${openvpms.db.name} -u ${openvpms.db.user} --password=${openvpms.db.password}"/>
         </exec>
-        <zip zipfile="${maven.build.dir}/db.zip">
-            <zipfileset dir="${maven.build.dir}/db"/>
-        </zip>
     </goal>
 
     <preGoal name="hibernate:schema-export">
