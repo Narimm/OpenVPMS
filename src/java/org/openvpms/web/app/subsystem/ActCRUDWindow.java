@@ -139,25 +139,31 @@ public abstract class ActCRUDWindow<T extends Act>
      */
     protected void onPost() {
         try {
-            final IMPrinter<T> printer
-                    = IMPrinterFactory.create(getObject());
-
+            final T act = getObject();
+            final IMPrinter<T> printer = IMPrinterFactory.create(act);
             final PostDialog dialog = new PostDialog(
                     Messages.get("act.post.title", getTypeDisplayName()));
             dialog.setDefaultPrinter(printer.getDefaultPrinter());
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent e) {
                     if (PostDialog.OK_ID.equals(dialog.getAction())) {
-                        boolean printed = false;
-                        if (dialog.print()) {
-                            try {
-                                printer.print(dialog.getPrinter());
-                                printed = true;
-                            } catch (OpenVPMSException exception) {
-                                ErrorHelper.show(exception);
+                        try {
+                            boolean saved = post(act);
+                            if (dialog.print()) {
+                                try {
+                                    printer.print(dialog.getPrinter());
+                                    saved |= printed(act);
+                                } catch (OpenVPMSException exception) {
+                                    ErrorHelper.show(exception);
+                                }
                             }
+                            if (saved) {
+                                // act was saved. Need to refresh
+                                saved(act);
+                            }
+                        } catch (OpenVPMSException exception) {
+                            ErrorHelper.show(exception);
                         }
-                        posted(getObject(), printed);
                     }
                 }
             });
@@ -194,7 +200,9 @@ public abstract class ActCRUDWindow<T extends Act>
                 = (InteractiveIMPrinter<T>) super.createPrinter(object);
         printer.setListener(new PrinterListener() {
             public void printed(String printer) {
-                ActCRUDWindow.this.printed(object);
+                if (ActCRUDWindow.this.printed(object)) {
+                    saved(object);
+                }
             }
 
             public void cancelled() {
@@ -211,47 +219,22 @@ public abstract class ActCRUDWindow<T extends Act>
     }
 
     /**
-     * Invoked when an act has been successfully printed.
+     * Invoked when an act has been successfully printed. Updates the
+     * act's printed flag if necessary, and saves the act.
      *
      * @param object the object
+     * @return <tt>true</tt> if the act was saved
      */
-    protected void printed(T object) {
+    protected boolean printed(T object) {
+        boolean saved = false;
         try {
             if (setPrintStatus(object, true)) {
-                SaveHelper.save(object);
-                setObject(object);
-                CRUDWindowListener<T> listener = getListener();
-                if (listener != null) {
-                    listener.saved(object, false);
-                }
+                saved = SaveHelper.save(object);
             }
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
-    }
-
-    /**
-     * Invoked when an act has been posted.
-     *
-     * @param act     the act
-     * @param printed if <code>true</code> indicates that the act was printed
-     */
-    protected void posted(T act, boolean printed) {
-        try {
-            String status = act.getStatus();
-            if (!POSTED.equals(status)) {
-                act.setStatus(POSTED);
-                setPrintStatus(act, printed);
-                SaveHelper.save(act);
-                setObject(act);
-                CRUDWindowListener<T> listener = getListener();
-                if (listener != null) {
-                    listener.saved(act, false);
-                }
-            }
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
-        }
+        return saved;
     }
 
     /**
@@ -318,6 +301,35 @@ public abstract class ActCRUDWindow<T extends Act>
             });
         }
         return preview;
+    }
+
+    /**
+     * Posts an act. This changes the act's status to POSTED, and saves it.
+     *
+     * @param act the act to post
+     * @return <tt>true</tt> if the act was saved
+     */
+    private boolean post(Act act) {
+        String status = act.getStatus();
+        if (!POSTED.equals(status)) {
+            act.setStatus(POSTED);
+            return SaveHelper.save(act);
+        }
+        return false;
+    }
+
+    /**
+     * Invoked when an act is saved. Refreshes the window and notifies any
+     * registered listener.
+     *
+     * @param act the act
+     */
+    private void saved(T act) {
+        setObject(act);
+        CRUDWindowListener<T> listener = getListener();
+        if (listener != null) {
+            listener.saved(act, false);
+        }
     }
 
 }
