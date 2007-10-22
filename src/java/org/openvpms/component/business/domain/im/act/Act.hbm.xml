@@ -33,7 +33,7 @@
     <component name="archetypeId">
       <property name="shortName" access="property" column="arch_short_name"
         type="string" length="100" not-null="true"
-        index="act_short_name_idx" />
+        index="act_short_name_status_idx" />
       <property name="version" access="property" column="arch_version"
         type="string" length="100" not-null="true"/>
     </component>
@@ -48,7 +48,7 @@
       index="act_end_time_idx"/>
     <property name="reason" column="reason" type="string" />
     <property name="status" column="status" type="string"
-    	index="act_status_idx" />
+    	index="act_short_name_status_idx" />
     <map name="details" access="field" table="act_details" lazy="false"
          cascade="all,delete-orphan">
       <key column="act_id"/>
