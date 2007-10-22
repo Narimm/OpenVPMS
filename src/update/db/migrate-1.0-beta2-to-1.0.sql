@@ -429,3 +429,11 @@ alter table financial_acts
 
 alter table product_prices
     modify column price decimal(18,3);
+
+# re-arrange act indexes. Makes the earlier creation of act_status_idx,
+# but some earlier adopter sites have already applied the change
+
+alter table acts
+    drop index act_short_name_idx,
+    drop index act_status_idx,
+    add index act_short_name_status_idx (arch_short_name, status);
