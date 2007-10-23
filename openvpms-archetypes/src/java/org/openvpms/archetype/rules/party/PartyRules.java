@@ -428,14 +428,34 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private String formatAddress(Contact contact) {
+    	return formatAddress(contact, false);
+    }
+
+    /**
+     * Formats an address from an <em>contact.location</em> contact.
+     *
+     * @param contact contact
+     * @return a formatted address
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private String formatAddress(Contact contact, boolean singleLine) {
         IMObjectBean bean = new IMObjectBean(contact, service);
-        String address = bean.getString("address");
-        String suburb = bean.getString("suburb");
-        String state = bean.getString("state");
-        String postcode = bean.getString("postcode");
-        return ((address != null) ? address:"") + "\n" + ((suburb != null) ? suburb:"") + " " 
-        				+ ((state != null) ? state:"") + " "
-        				+ ((postcode != null) ? postcode:"");
+        StringBuffer result = new StringBuffer();
+        if (singleLine) {      	
+        	result.append(bean.getString("address","").replace('\n', ' '));
+            result.append(" ");
+        }
+        else {
+        	result.append(bean.getString("address",""));
+            result.append("\n");
+        }
+        result.append(" ");
+    	result.append(bean.getString("suburb",""));
+        result.append(" ");
+    	result.append(bean.getString("state",""));
+        result.append(" ");
+    	result.append(bean.getString("postcode",""));
+       	return result.toString();      
     }
 
     /**
@@ -471,6 +491,33 @@ public class PartyRules {
     	}
     	else
     		return null;
+    }
+    
+    /**
+     * Returns the Practice address
+
+     * @return the practice address string
+     */
+    public String getPracticeAddress() {
+    	return formatAddress(getContact(getPractice(),"contact.location", null),true);
+    }
+    
+    /**
+     * Returns the Practice phone number
+
+     * @return the practice phone string
+     */
+    public String getPracticeTelephone() {
+    	return getWorkTelephone(getPractice());
+    }
+    
+    /**
+     * Returns the Practice fax number
+
+     * @return the practice fax string
+     */
+    public String getPracticeFaxNumber() {
+    	return getFaxNumber(getPractice());
     }
     
     /**

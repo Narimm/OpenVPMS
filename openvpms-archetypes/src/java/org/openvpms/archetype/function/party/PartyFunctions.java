@@ -643,6 +643,36 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns the Practice Address as a single line String.
+     *
+     * @return the practice address as a string
+     */
+    public String getPracticeAddress() {
+        return getPartyRules().getPracticeAddress();
+        
+    }
+
+    /**
+     * Returns the Practice Telephone Number.
+     *
+     * @return the practice telephone as a string
+     */
+    public String getPracticeTelephone() {
+        return getPartyRules().getPracticeTelephone();
+        
+    }
+
+    /**
+     * Returns the Practice Fax Number as a String.
+     *
+     * @return the practice fax number as a string
+     */
+    public String getPracticeFaxNumber() {
+        return getPartyRules().getPracticeFaxNumber();
+        
+    }
+
+    /**
      * Returns the Bpay ID for a customer.
      *
      * @param context the expression context. Expected to reference a party or
