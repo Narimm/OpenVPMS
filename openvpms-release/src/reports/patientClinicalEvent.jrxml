@@ -12,8 +12,8 @@
 		 columnSpacing="0"
 		 leftMargin="0"
 		 rightMargin="0"
-		 topMargin="0"
-		 bottomMargin="0"
+		 topMargin="85"
+		 bottomMargin="28"
 		 whenNoDataType="NoPages"
 		 isTitleNewPage="false"
 		 isSummaryNewPage="false">
@@ -50,7 +50,7 @@
 					<reportElement
 						x="139"
 						y="6"
-						width="83"
+						width="114"
 						height="13"
 						key="textField-1"
 						stretchType="RelativeToBandHeight"
@@ -78,8 +78,8 @@
 				</textField>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="228"
-						y="6"
+						x="256"
+						y="5"
 						width="92"
 						height="13"
 						key="textField-8"/>
@@ -91,9 +91,9 @@
 				</textField>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="325"
+						x="351"
 						y="6"
-						width="86"
+						width="60"
 						height="13"
 						key="textField-9"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
@@ -102,7 +102,7 @@
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA[$F{status}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="76"
 						y="6"
@@ -141,195 +141,21 @@
 			</band>
 			</groupFooter>
 		</group>
-		<group  name="patientClinicalNoteGroup" >
-			<groupExpression><![CDATA[]]></groupExpression>
-			<groupHeader>
-			<band height="15"  isSplitAllowed="true" >
-				<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalNote"))]]></printWhenExpression>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="166"
-						y="0"
-						width="245"
-						height="14"
-						key="textField-15"
-						stretchType="RelativeToBandHeight"
-						isPrintWhenDetailOverflows="true"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{note}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="94"
-						y="0"
-						width="67"
-						height="14"
-						key="textField-16"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="34"
-						y="1"
-						width="55"
-						height="13"
-						key="textField-17"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
-				</textField>
-			</band>
-			</groupHeader>
-			<groupFooter>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-			</groupFooter>
-		</group>
-		<group  name="patientInvestigationGroup" >
-			<groupExpression><![CDATA[]]></groupExpression>
-			<groupHeader>
-			<band height="15"  isSplitAllowed="true" >
-				<printWhenExpression><![CDATA[new Boolean($F{shortName}.startsWith("act.patientInvestigation"))]]></printWhenExpression>
-				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="34"
-						y="1"
-						width="55"
-						height="13"
-						key="textField-20"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="94"
-						y="0"
-						width="66"
-						height="14"
-						key="textField-21"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="166"
-						y="0"
-						width="245"
-						height="14"
-						key="textField-22"
-						stretchType="RelativeToBandHeight"
-						isPrintWhenDetailOverflows="true"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{description} + " [" + $F{status} + "]"]]></textFieldExpression>
-				</textField>
-			</band>
-			</groupHeader>
-			<groupFooter>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-			</groupFooter>
-		</group>
-		<group  name="patientItemGroup" >
-			<groupExpression><![CDATA[]]></groupExpression>
-			<groupHeader>
-			<band height="15"  isSplitAllowed="true" >
-				<printWhenExpression><![CDATA[new Boolean(!$F{shortName}.equals("act.patientClinicalEvent") && !$F{shortName}.equals("act.patientClinicalNote") && !$F{shortName}.startsWith("act.patientInvestigation"))]]></printWhenExpression>
-				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="34"
-						y="1"
-						width="55"
-						height="13"
-						key="textField-10"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="94"
-						y="0"
-						width="66"
-						height="14"
-						key="textField-11"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="166"
-						y="0"
-						width="245"
-						height="14"
-						key="textField-14"
-						stretchType="RelativeToBandHeight"
-						isPrintWhenDetailOverflows="true"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{description}]]></textFieldExpression>
-				</textField>
-			</band>
-			</groupHeader>
-			<groupFooter>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-			</groupFooter>
-		</group>
 		<background>
 			<band height="0"  isSplitAllowed="true" >
 			</band>
 		</background>
 		<title>
 			<band height="0"  isSplitAllowed="true" >
-				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="11"
-						y="-23"
-						width="564"
-						height="15"
-						key="textField-19"
-						stretchType="RelativeToBandHeight"
-						isPrintWhenDetailOverflows="true"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{patient.entity.name} + " - " + $F{patient.entity.description}]]></textFieldExpression>
-				</textField>
 			</band>
 		</title>
 		<pageHeader>
-			<band height="139"  isSplitAllowed="true" >
+			<band height="70"  isSplitAllowed="true" >
 				<staticText>
 					<reportElement
-						x="166"
-						y="69"
-						width="111"
+						x="155"
+						y="0"
+						width="123"
 						height="16"
 						key="staticText-14"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
@@ -341,7 +167,7 @@
 				<staticText>
 					<reportElement
 						x="11"
-						y="84"
+						y="15"
 						width="40"
 						height="12"
 						key="staticText-15"/>
@@ -354,7 +180,7 @@
 				<staticText>
 					<reportElement
 						x="11"
-						y="114"
+						y="45"
 						width="40"
 						height="11"
 						key="staticText-16"/>
@@ -367,7 +193,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="56"
-						y="114"
+						y="45"
 						width="230"
 						height="11"
 						key="textField"/>
@@ -380,7 +206,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="56"
-						y="125"
+						y="56"
 						width="344"
 						height="12"
 						key="textField"/>
@@ -393,7 +219,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="56"
-						y="84"
+						y="15"
 						width="230"
 						height="12"
 						key="textField"/>
@@ -406,7 +232,7 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="56"
-						y="96"
+						y="27"
 						width="344"
 						height="18"
 						key="textField"/>
@@ -419,7 +245,7 @@
 				<staticText>
 					<reportElement
 						x="325"
-						y="82"
+						y="13"
 						width="25"
 						height="12"
 						key="staticText-19"/>
@@ -432,7 +258,7 @@
 				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="350"
-						y="82"
+						y="13"
 						width="50"
 						height="12"
 						key="textField"/>
@@ -445,7 +271,7 @@
 				<line direction="TopDown">
 					<reportElement
 						x="11"
-						y="138"
+						y="69"
 						width="400"
 						height="0"
 						key="line-1"/>
@@ -458,11 +284,89 @@
 			</band>
 		</columnHeader>
 		<detail>
-			<band height="0"  isSplitAllowed="true" >
+			<band height="15"  isSplitAllowed="true" >
+				<printWhenExpression><![CDATA[new Boolean(!$F{shortName}.equals("act.patientClinicalEvent"))]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="164"
+						y="1"
+						width="245"
+						height="14"
+						key="textField-15"
+						stretchType="RelativeToBandHeight"
+						isPrintWhenDetailOverflows="true">
+							<printWhenExpression><![CDATA[new Boolean($F{shortName}.equals("act.patientClinicalNote"))]]></printWhenExpression>
+						</reportElement>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{note}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="164"
+						y="1"
+						width="245"
+						height="14"
+						key="textField-22"
+						stretchType="RelativeToBandHeight"
+						isPrintWhenDetailOverflows="true">
+							<printWhenExpression><![CDATA[new Boolean($F{shortName}.startsWith("act.patientInvestigation"))]]></printWhenExpression>
+						</reportElement>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{description} + " [" + $F{status} + "]"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="32"
+						y="1"
+						width="55"
+						height="13"
+						key="textField-10"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="93"
+						y="1"
+						width="66"
+						height="14"
+						key="textField-11"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{displayName}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="164"
+						y="1"
+						width="245"
+						height="14"
+						key="textField-14"
+						stretchType="RelativeToBandHeight"
+						isPrintWhenDetailOverflows="true">
+							<printWhenExpression><![CDATA[new Boolean(!$F{shortName}.equals("act.patientClinicalEvent") && !$F{shortName}.equals("act.patientClinicalNote") && !$F{shortName}.startsWith("act.patientInvestigation"))]]></printWhenExpression>
+						</reportElement>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{description}]]></textFieldExpression>
+				</textField>
 				<staticText>
 					<reportElement
 						x="113"
-						y="-32"
+						y="13"
 						width="0"
 						height="0"
 						key="staticText-12"/>
