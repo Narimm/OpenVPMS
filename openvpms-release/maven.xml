@@ -11,7 +11,7 @@
     </goal>
 
     <goal name="openvpms:dist-prepare-bin-filesystem"
-          prereqs="dist:build-setup">
+          prereqs="dist:build-setup, openvpms:createdb">
         <!--
 
         This is the directory where everything is copied to so that it can
@@ -88,6 +88,12 @@
         <mkdir dir="${distDir}/update"/>
         <copy todir="${distDir}/update">
             <fileset dir="${basedir}/src/update"/>
+        </copy>
+
+        <!-- copy the archetypes -->
+        <mkdir dir="${distDir}/update/archetypes"/>
+        <copy todir="${distDir}/update/archetypes">
+            <fileset dir="${maven.build.dir}/archetypes"/>
         </copy>
     </goal>
 
