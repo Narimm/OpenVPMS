@@ -38,6 +38,7 @@
         <node name="initials" path="/details/initials" type="java.lang.String" maxLength="15"/>
         <node name="lastName" path="/details/lastName" type="java.lang.String"
               minCardinality="1" maxLength="30"/>
+        <node name="notes" displayName="Notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="300"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
