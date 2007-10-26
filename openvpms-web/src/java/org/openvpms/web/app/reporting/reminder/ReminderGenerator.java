@@ -41,6 +41,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.reporting.ReportingException;
+import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -94,6 +95,8 @@ class ReminderGenerator extends AbstractBatchProcessor {
      * @param to       only process reminder if its next due date &lt;= to
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException for any reminder error
+     * @throws ReportingException         if the reminder has no associated
+     *                                    document template
      */
     public ReminderGenerator(Act reminder, Date from, Date to) {
         ReminderProcessor processor = new ReminderProcessor(from, to);
@@ -102,7 +105,11 @@ class ReminderGenerator extends AbstractBatchProcessor {
         processor.addListener(collector);
         processor.process(reminder);
         List<ReminderEvent> reminders = collector.getReminders();
-        if (!reminders.isEmpty()) {
+        if (reminders.size() == 1) {
+            ReminderEvent event = reminders.get(0);
+            if (event.getDocumentTemplate() == null) {
+                throw new ReportingException(ReminderMissingDocTemplate);
+            }
             processors.put(new ReminderPrintProcessor(reminders),
                            reminders);
         }
