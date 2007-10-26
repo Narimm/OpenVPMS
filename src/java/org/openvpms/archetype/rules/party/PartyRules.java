@@ -307,11 +307,10 @@ public class PartyRules {
             IMObjectBean bean = new IMObjectBean(contact, service);
             String areaCode = bean.getString("areaCode");
             String faxNumber = bean.getString("faxNumber");
-            if (areaCode == null || areaCode == "") {
-            	return faxNumber;
-            }
-            else {
-                return "(" + areaCode + ")" + faxNumber;            	
+            if (areaCode == null || areaCode.equals("")) {
+                return faxNumber;
+            } else {
+                return "(" + areaCode + ")" + faxNumber;
             }
         }
         return "";
@@ -428,7 +427,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private String formatAddress(Contact contact) {
-    	return formatAddress(contact, false);
+        return formatAddress(contact, false);
     }
 
     /**
@@ -441,21 +440,19 @@ public class PartyRules {
     private String formatAddress(Contact contact, boolean singleLine) {
         IMObjectBean bean = new IMObjectBean(contact, service);
         StringBuffer result = new StringBuffer();
-        if (singleLine) {      	
-        	result.append(bean.getString("address","").replace('\n', ' '));
+        if (singleLine) {
+            result.append(bean.getString("address", "").replace('\n', ' '));
             result.append(" ");
-        }
-        else {
-        	result.append(bean.getString("address",""));
+        } else {
+            result.append(bean.getString("address", ""));
             result.append("\n");
         }
+        result.append(bean.getString("suburb", ""));
         result.append(" ");
-    	result.append(bean.getString("suburb",""));
+        result.append(bean.getString("state", ""));
         result.append(" ");
-    	result.append(bean.getString("state",""));
-        result.append(" ");
-    	result.append(bean.getString("postcode",""));
-       	return result.toString();      
+        result.append(bean.getString("postcode", ""));
+        return result.toString();
     }
 
     /**
@@ -468,111 +465,109 @@ public class PartyRules {
         IMObjectBean bean = new IMObjectBean(contact, service);
         String areaCode = bean.getString("areaCode");
         String phone = bean.getString("telephoneNumber");
-        if (areaCode == null || areaCode == "") {
-        	return phone;
-        }
-        else {
-            return "(" + areaCode + ") " + phone;        	
+        if (areaCode == null || areaCode.equals("")) {
+            return phone;
+        } else {
+            return "(" + areaCode + ") " + phone;
         }
     }
 
     /**
      * Returns the Practice party
-
+     *
      * @return the practice party object
      */
     public Party getPractice() {
-		// First get the Practice.  Should only be one but get first if more.
-    	List<IMObject> rows = ArchetypeQueryHelper.get(service, "party", "organisationPractice", null, true,
-	        0, 1).getResults();
-    	if (!rows.isEmpty()) {
-    		Party practice = (Party) rows.get(0);
-    		return practice;
-    	}
-    	else
-    		return null;
+        // First get the Practice.  Should only be one but get first if more.
+        List<IMObject> rows = ArchetypeQueryHelper.get(
+                service, "party", "organisationPractice", null, true,
+                0, 1).getResults();
+        if (!rows.isEmpty()) {
+            return (Party) rows.get(0);
+        } else
+            return null;
     }
-    
+
     /**
      * Returns the Practice address
-
+     *
      * @return the practice address string
      */
     public String getPracticeAddress() {
-    	return formatAddress(getContact(getPractice(),"contact.location", null),true);
+        return formatAddress(
+                getContact(getPractice(), "contact.location", null), true);
     }
-    
+
     /**
      * Returns the Practice phone number
-
+     *
      * @return the practice phone string
      */
     public String getPracticeTelephone() {
-    	return getWorkTelephone(getPractice());
+        return getWorkTelephone(getPractice());
     }
-    
+
     /**
      * Returns the Practice fax number
-
+     *
      * @return the practice fax string
      */
     public String getPracticeFaxNumber() {
-    	return getFaxNumber(getPractice());
+        return getFaxNumber(getPractice());
     }
-    
+
     /**
      * Returns a Bpay Id for the Party.
      * Utilises the party uid and adds a check digit using a Luntz 10 algorithm.
-     * 
+     *
      * @param party
      * @return string bpay id
      */
     public String getBpayId(Party party) {
-    	  // this will be a running total
-    	  int sum = 0;
-    	  // Get string value of party uid
-    	  String uid = String.valueOf(party.getUid());
-    	  
-    	  // loop through digits from right to left
-    	  for (int i = 0; i < uid.length(); i++) {
+        // this will be a running total
+        int sum = 0;
+        // Get string value of party uid
+        String uid = String.valueOf(party.getUid());
 
-    	    //set ch to "current" character to be processed
-    	    char ch = uid.charAt(uid.length() - i - 1);
+        // loop through digits from right to left
+        for (int i = 0; i < uid.length(); i++) {
 
-    	    // our "digit" is calculated using ASCII value - 48
-    	    int digit = (int)ch - 48;
+            //set ch to "current" character to be processed
+            char ch = uid.charAt(uid.length() - i - 1);
 
-    	    // weight will be the current digit's contribution to
-    	    // the running total
-    	    int weight;
-    	    if (i % 2 == 0) {
+            // our "digit" is calculated using ASCII value - 48
+            int digit = (int) ch - 48;
 
-    	      // for alternating digits starting with the rightmost, we
-    	      // use our formula this is the same as multiplying x 2 and
-    	      // adding digits together for values 0 to 9.  Using the
-    	      // following formula allows us to gracefully calculate a
-    	      // weight for non-numeric "digits" as well (from their
-    	      // ASCII value - 48).
-    	      weight = (2 * digit) - (int) (digit / 5) * 9;
+            // weight will be the current digit's contribution to
+            // the running total
+            int weight;
+            if (i % 2 == 0) {
 
-    	    } else {
+                // for alternating digits starting with the rightmost, we
+                // use our formula this is the same as multiplying x 2 and
+                // adding digits together for values 0 to 9.  Using the
+                // following formula allows us to gracefully calculate a
+                // weight for non-numeric "digits" as well (from their
+                // ASCII value - 48).
+                weight = (2 * digit) - (digit / 5) * 9;
+            } else {
 
-    	      // even-positioned digits just contribute their ascii
-    	      // value minus 48
-    	      weight = digit;
+                // even-positioned digits just contribute their ascii
+                // value minus 48
+                weight = digit;
 
-    	    }
+            }
 
-    	    // keep a running total of weights
-    	    sum += weight;
-    	  }
-    	  // avoid sum less than 10 (if characters below "0" allowed,
-    	  // this could happen)
-    	  sum = (10 - ((Math.abs(sum) + 10)%10)) % 10;
+            // keep a running total of weights
+            sum += weight;
+        }
+        // avoid sum less than 10 (if characters below "0" allowed,
+        // this could happen)
+        sum = (10 - ((Math.abs(sum) + 10) % 10)) % 10;
 
-    	  return uid + String.valueOf(sum);
+        return uid + String.valueOf(sum);
     }
-    
+
     /**
      * Returns a concatenated list of values for a set of objects.
      *
@@ -713,12 +708,11 @@ public class PartyRules {
                             setMatch(1, contact);
                         }
                     } else if (!exact) {
-                    	if (preferred) {
-                    		setMatch(2, contact);
-                    	}
-                    	else {
-                            setMatch(3, contact);                    		
-                    	}
+                        if (preferred) {
+                            setMatch(2, contact);
+                        } else {
+                            setMatch(3, contact);
+                        }
                     }
                 } else {
                     if (preferred) {
