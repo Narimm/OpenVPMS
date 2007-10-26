@@ -561,7 +561,7 @@ public class LoaderTestCase
          */
         @Override
         protected void save(Collection<IMObject> objects,
-                            Map<IMObject,List<ETLLog>> logs,
+                            Map<String, List<ETLLog>> logs,
                             Collection<ETLLog> errorLogs) {
             for (List<ETLLog> logList : logs.values()) {
                 dao.save(logList);
