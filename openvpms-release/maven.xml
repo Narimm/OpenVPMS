@@ -2,7 +2,16 @@
          xmlns:ant="jelly:ant"
          xmlns:maven="jelly:maven"
          xmlns:deploy="deploy"
+         xmlns:artifact="artifact"
          xmlns:j="jelly:core">
+
+    <goal name="openvpms:dist-deploy" prereqs="openvpms:dist">
+        <artifact:deploy
+          artifact="${maven.dist.dir}/${maven.final.name}.zip"
+          type="zip"
+          project="${pom}"
+        />
+    </goal>
 
     <goal name="openvpms:dist" prereqs="openvpms:dist-prepare-bin-filesystem">
         <zip zipfile="${maven.dist.dir}/${maven.final.name}.zip">
