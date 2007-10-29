@@ -95,6 +95,21 @@
         <copy todir="${distDir}/update/archetypes">
             <fileset dir="${maven.build.dir}/archetypes"/>
         </copy>
+
+        <!-- copy the readme and license -->
+        <copy todir="${distDir}">
+            <fileset dir="${basedir}/src/doc"/>
+            <fileset dir="${basedir}">
+                <include name="License.txt"/>
+            </fileset>
+        </copy>
+
+        <!-- copy the images -->
+        <mkdir dir="${distDir}/images"/>
+        <copy todir="${distDir}/images">
+            <fileset dir="${basedir}/src/images"/>
+        </copy>
+
     </goal>
 
     <goal name="openvpms:createdb">
