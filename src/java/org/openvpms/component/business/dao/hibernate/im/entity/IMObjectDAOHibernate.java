@@ -43,6 +43,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,29 +121,34 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     /* (non-Javadoc)
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#save(java.util.Collection)
      */
-    public List<IMObject> save(Collection<IMObject> objects) {
-        List<IMObject> result = new ArrayList<IMObject>();
+    public void save(Collection<IMObject> objects) {
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         Transaction tx = session.beginTransaction();
+        Map<IMObject, IMObject> merged = new HashMap<IMObject, IMObject>();
         try {
             for (IMObject object : objects) {
-                object = (IMObject) session.merge(object);
-                result.add(object);
+                MergeHandler handler = MergeHandlerFactory.getHandler(object);
+                merged.put(object, handler.merge(object, session));
             }
             tx.commit();
+            for (Map.Entry<IMObject, IMObject> entry : merged.entrySet()) {
+                IMObject target = entry.getKey();
+                IMObject source = entry.getValue();
+                MergeHandler handler = MergeHandlerFactory.getHandler(target);
+                handler.update(target, source);
+            }
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
             }
-
             throw new IMObjectDAOException(FailedToSaveCollectionOfObjects,
                                            exception);
 
         } finally {
+            merged.clear();
             clearCache();
             session.close();
         }
-        return result;
     }
 
     /*

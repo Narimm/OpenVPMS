@@ -33,6 +33,7 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -292,6 +293,44 @@ public class ArchetypeServiceDescriptorTestCase
                 fail(shortName + " does not match expression entityRelationship.an*");
             }
         }
+    }
+
+    /**
+     * Verifies that multiple archetype descriptors can be saved via the
+     * {@link IArchetypeService#save(Collection<IMObject>)} method.
+     */
+    public void testSaveCollection() {
+        String name1 = "archetype1.dummy.1.0";
+        String name2 = "archetype2.dummy.1.0";
+        removeDescriptor(name1);
+        removeDescriptor(name2);
+        ArchetypeDescriptor desc1 = createArchetypeDescriptor(
+                name1, "thisClass", "archetype1.dummy", true);
+        NodeDescriptor ndesc1 = createNodeDescriptor("name", "/name",
+                                                     "java.lang.String", 1, 1);
+        desc1.addNodeDescriptor(ndesc1);
+
+        ArchetypeDescriptor desc2 = createArchetypeDescriptor(
+                name2, "thisClass", "archetype2.dummy", true);
+        NodeDescriptor ndesc2 = createNodeDescriptor("name", "/name",
+                                                     "java.lang.String", 1, 1);
+        desc2.addNodeDescriptor(ndesc2);
+
+        // check the initial values of the ids and versions
+        assertEquals(-1, desc1.getUid());
+        assertEquals(0, desc1.getVersion());
+        assertEquals(-1, desc2.getUid());
+        assertEquals(0, desc2.getVersion());
+
+        // save the archetype descriptors
+        Collection<IMObject> col = Arrays.asList((IMObject) desc1, desc2);
+        service.save(col);
+
+        // verify the ids and versions have updated
+        assertFalse(desc1.getUid() == -1);
+        assertEquals(1, desc1.getVersion());
+        assertFalse(desc2.getUid() == -1);
+        assertEquals(1, desc2.getVersion());
     }
 
     /* (non-Javadoc)

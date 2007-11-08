@@ -191,13 +191,12 @@ public abstract class SecurityServiceTests extends
         objects.add(party1);
         objects.add(party2);
 
-        objects = checkSave(objects, false,
-                            "archetype:archetypeService.save:*.*");
-        objects = checkSave(objects, false,
-                            "archetype:archetypeService.save:party.*");
-        objects = checkSave(objects, false,
-                            "archetype:archetypeService.save:party.person",
-                            "archetype:archetypeService.save:party.animalpet");
+        checkSave(objects, false,
+                  "archetype:archetypeService.save:party.*");
+        checkSave(objects, false,
+                  "archetype:archetypeService.save:party.person",
+                  "archetype:archetypeService.save:party.animalpet");
+        checkSave(objects, false, "archetype:archetypeService.save:*.*");
         checkSave(objects, true,
                   "archetype:archetypeService.save:party.person");
     }
@@ -264,14 +263,12 @@ public abstract class SecurityServiceTests extends
      * @param objects     the collection to save
      * @param fail        if <tt>true</tt> the save is expected to fail
      * @param authorities the user's authorities
-     * @return the saved objects
      */
-    private List<IMObject> checkSave(Collection<IMObject> objects,
-                                     boolean fail, String ... authorities) {
-        List<IMObject> result = null;
+    private void checkSave(Collection<IMObject> objects,
+                           boolean fail, String ... authorities) {
         createSecurityContext("jima", "jima", authorities);
         try {
-            result = archetype.save(objects);
+            archetype.save(objects);
             if (fail) {
                 fail("Save of collection should have failed");
             }
@@ -284,6 +281,5 @@ public abstract class SecurityServiceTests extends
                 fail("Incorrect error code was specified during the exception");
             }
         }
-        return result;
     }
 }

@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToDeleteCollectionOfObjects;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -211,25 +212,10 @@ public class ArchetypeServiceActTestCase
         Act act3 = createSimpleAct("act3", "IN_PROGRESS");
 
         List<IMObject> acts = Arrays.asList((IMObject) act1, act2, act3);
-        List<IMObject> saved = checkSaveCollection(acts, 0);
-        for (IMObject act : acts) {
-            // verify the source acts haven't changed.
-            assertEquals(-1, act.getUid());
-            assertEquals(0, act.getVersion());
-        }
+        checkSaveCollection(acts, 0);
 
-        // verify the source acts can't be saved (they will be duplicates on
-        // linkId)
-        try {
-            checkSaveCollection(acts, 1);
-            fail("Expected save to fail");
-        } catch (ArchetypeServiceException expected) {
-            assertEquals(FailedToSaveCollectionOfObjects,
-                         expected.getErrorCode());
-        }
-
-        // verify the saved acts can be re-saved
-        checkSaveCollection(saved, 1);
+        // verify the acts can be re-saved
+        checkSaveCollection(acts, 1);
 
         // now change the first act, and attempt to re-save the collection.
         // This should fail as the collection doesn't have the latest version
@@ -237,7 +223,7 @@ public class ArchetypeServiceActTestCase
         act1 = reload(act1);
         service.save(act1);
         try {
-            checkSaveCollection(saved, 2);
+            checkSaveCollection(acts, 2);
             fail("Expected save to fail");
         } catch (ArchetypeServiceException expected) {
             assertEquals(FailedToSaveCollectionOfObjects,
@@ -262,35 +248,35 @@ public class ArchetypeServiceActTestCase
         relationship.setTarget(item.getObjectReference());
         estimation.addActRelationship(relationship);
         item.addActRelationship(relationship);
-        service.save(estimation);
-        service.save(item);
 
-        // reload the estimation and item. Each with have a separate copy of
+        List<IMObject> acts = Arrays.asList((IMObject) estimation, item);
+        checkSaveCollection(acts, 1);
+
+        // reload the estimation and item. Each will have a separate copy of
         // the same persistent act relationship
         estimation = reload(estimation);
         item = reload(item);
         assertNotNull(estimation);
         assertNotNull(item);
 
-        List<IMObject> acts = Arrays.asList((IMObject) estimation, item);
+        acts = Arrays.asList((IMObject) estimation, item);
 
         // save the collection, and verify they have saved by checking the
         // versions.
-        checkSaveCollection(acts, 1);
-    }
+        checkSaveCollection(acts, 2);
 
-    private List<IMObject> checkSaveCollection(List<IMObject> objects,
-                                               long version) {
-        List<IMObject> saved = service.save(objects);
-        assertEquals(objects.size(), saved.size());
-        assertEquals(objects, saved);
-        for (IMObject object : saved) {
-            assertEquals(version, object.getVersion());
-            IMObject reloaded = reload(object);
-            assertEquals(object, reloaded);
-            assertEquals(version, reloaded.getVersion());
-        }
-        return saved;
+        // now remove the relationship, and add a new one
+        estimation.removeActRelationship(relationship);
+        item.removeActRelationship(relationship);
+
+        ActRelationship relationship2 = (ActRelationship) service.create(
+                "actRelationship.customerEstimationItem");
+        relationship2.setSource(estimation.getObjectReference());
+        relationship2.setTarget(item.getObjectReference());
+        estimation.addActRelationship(relationship2);
+        item.addActRelationship(relationship2);
+
+        checkSaveCollection(acts, 3);
     }
 
     /**
@@ -534,6 +520,23 @@ public class ArchetypeServiceActTestCase
 
         this.service = (IArchetypeService) applicationContext.getBean(
                 "archetypeService");
+    }
+
+    /**
+     * Saves a collection via the {@link IMObjectDAOHibernate#save(Collection)}
+     * method and verifies they have saved with the correct version.
+     *
+     * @param objects the objects to save
+     * @param version the expected version
+     */
+    private void checkSaveCollection(List<IMObject> objects, long version) {
+        service.save(objects);
+        for (IMObject object : objects) {
+            assertEquals(version, object.getVersion());
+            IMObject reloaded = reload(object);
+            assertEquals(object, reloaded);
+            assertEquals(version, reloaded.getVersion());
+        }
     }
 
     /**
