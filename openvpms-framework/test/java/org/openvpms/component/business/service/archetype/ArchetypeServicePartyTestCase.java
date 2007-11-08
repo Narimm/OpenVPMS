@@ -29,6 +29,9 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 /**
  * Test that ability to create and query on parties.
  *
@@ -108,6 +111,41 @@ public class ArchetypeServicePartyTestCase extends
         service.remove(person);
         assertNull(get(person.getObjectReference()));
         assertNull(get(contact.getObjectReference()));
+    }
+
+    /**
+     * Verifies that multiple parties can be saved via the
+     * {@link IArchetypeService#save(Collection<IMObject>)} method.
+     */
+    public void testSaveCollection() {
+        Lookup classification = createLookup("EMAIL");
+        service.save(classification);
+        Lookup classification1 = createLookup("HOME");
+        service.save(classification1);
+
+        Party person1 = createPerson("MR", "Jim", "Alateras");
+        person1.addContact(createContact(classification));
+        person1.addContact(createContact(classification1));
+
+        Party person2 = createPerson("MR", "Tim", "Anderson");
+        person1.addContact(createContact(classification));
+        person1.addContact(createContact(classification1));
+
+        // check the initial values of the ids and versions
+        assertEquals(-1, person1.getUid());
+        assertEquals(0, person1.getVersion());
+        assertEquals(-1, person2.getUid());
+        assertEquals(0, person2.getVersion());
+
+        // save the archetype descriptors
+        Collection<IMObject> col = Arrays.asList((IMObject) person1, person2);
+        service.save(col);
+
+        // verify the ids and versions have updated
+        assertFalse(person1.getUid() == -1);
+        assertEquals(1, person1.getVersion());
+        assertFalse(person2.getUid() == -1);
+        assertEquals(1, person2.getVersion());
     }
 
     /*

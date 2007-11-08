@@ -576,30 +576,25 @@ public class ArchetypeService implements IArchetypeService {
 
     /**
      * Save a collection of {@link IMObject} instances.
-     * The supplied instances are not modified.
      *
      * @param objects the objects to insert or update
-     * @return the saved objects, in the same order as supplied
      * @throws ArchetypeServiceException if an object can't be saved
      * @throws ValidationException       if an object can't be validated
      */
-    public List<IMObject> save(Collection<IMObject> objects) {
-        return save(objects, true);
+    public void save(Collection<IMObject> objects) {
+        save(objects, true);
     }
 
     /**
      * Save a collection of {@link IMObject} instances.
-     * The supplied instances are not modified.
      *
      * @param objects  the objects to insert or update
      * @param validate whether to validate or not
-     * @return the saved objects, in the same order as supplied
      * @throws ArchetypeServiceException if an object can't be saved
      * @throws ValidationException       if an object can't be validated
      */
     @Deprecated
-    public List<IMObject> save(Collection<IMObject> objects,
-                               boolean validate) {
+    public void save(Collection<IMObject> objects, boolean validate) {
         if (dao == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoDaoConfigured,
@@ -615,7 +610,7 @@ public class ArchetypeService implements IArchetypeService {
 
         // now issue a call to save the objects
         try {
-            return dao.save(objects);
+            dao.save(objects);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToSaveCollectionOfObjects,

@@ -27,10 +27,13 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -263,6 +266,43 @@ public class LookupTestCase extends
         ndesc = adesc.getNodeDescriptor("state");
         assertNotNull(ndesc);
         assertEquals("other", LookupHelper.getUnspecifiedValue(ndesc));
+    }
+
+    /**
+     * Verifies that multiple lookups and their relationships can be saved via
+     * the {@link IArchetypeService#save(Collection<IMObject>)} method.
+     */
+    public void testSaveCollection() {
+        // create the country and states and relationships
+        Lookup cty = createCountryLookup("AU");
+        Lookup state1 = createStateLookup("VIC");
+        Lookup state2 = createStateLookup("NSW");
+        Lookup state3 = createStateLookup("TAS");
+        cty.addLookupRelationship(createLookupRelationship(
+                "lookupRelationship.countryState", cty, state1));
+        cty.addLookupRelationship(createLookupRelationship(
+                "lookupRelationship.countryState", cty, state2));
+        cty.addLookupRelationship(createLookupRelationship(
+                "lookupRelationship.countryState", cty, state3));
+        List<IMObject> objects = Arrays.asList((IMObject) cty, state1, state2,
+                                               state3);
+
+        // verify the initial id and versions
+        for (IMObject object : objects) {
+            assertEquals(-1, object.getUid());
+            assertEquals(0, object.getVersion());
+        }
+
+        service.save(objects);
+
+        // verify the update id and versions
+        for (IMObject object : objects) {
+            assertFalse(object.getUid() == -1);
+        }
+        assertEquals(1, cty.getVersion());
+        assertEquals(0, state1.getVersion());
+        assertEquals(0, state2.getVersion());
+        assertEquals(0, state3.getVersion());
     }
 
     /* (non-Javadoc)
