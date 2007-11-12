@@ -84,7 +84,7 @@ public class Participation extends IMObject {
     /**
      * Holds details about the participation.
      */
-    private Map<String, TypedValue> details;
+    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
 
 
     /**
