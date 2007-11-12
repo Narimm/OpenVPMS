@@ -26,7 +26,6 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -397,8 +396,11 @@ public class CustomerAccountRules {
      * @param act         the act that triggered the update.
      *                    May be <tt>null</tt>
      * @param unallocated the unallocated acts
+     * @return a list of the acts that were updated
      */
-    void updateBalance(FinancialAct act, Iterator<FinancialAct> unallocated) {
+    @SuppressWarnings("unchecked")
+    List<FinancialAct> updateBalance(FinancialAct act,
+                                     Iterator<FinancialAct> unallocated) {
         List<BalanceAct> debits = new ArrayList<BalanceAct>();
         List<BalanceAct> credits = new ArrayList<BalanceAct>();
 
@@ -417,7 +419,7 @@ public class CustomerAccountRules {
                 debits.add(new BalanceAct(a));
             }
         }
-        List<IMObject> modified = new ArrayList<IMObject>();
+        List<FinancialAct> modified = new ArrayList<FinancialAct>();
         for (BalanceAct credit : credits) {
             for (ListIterator<BalanceAct> iter = debits.listIterator();
                  iter.hasNext();) {
@@ -435,15 +437,12 @@ public class CustomerAccountRules {
             }
         }
         if (!modified.isEmpty()) {
-/*
-           Commented out as a workaround to OBF-163
-            // save all modified acts in the one transaction
-            service.save(modified);
-*/
-            for (IMObject object : modified) {
-                service.save(object);
-            }
+            // save all updates in the one transaction
+            List objects = modified;
+            service.save(objects);
+            modified = objects;
         }
+        return modified;
     }
 
     /**
