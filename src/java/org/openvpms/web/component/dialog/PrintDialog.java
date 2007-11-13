@@ -152,7 +152,6 @@ public class PrintDialog extends PopupDialog {
             });
         }
 
-        setDefaultPrinter(PrintHelper.getDefaultPrinter());
         Column column = ColumnFactory.create("CellSpacing", label,
                                              RowFactory.create(printers));
         // wrap printers in a row so it renders min width on FF
