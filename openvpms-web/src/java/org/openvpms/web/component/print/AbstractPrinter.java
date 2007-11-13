@@ -18,6 +18,12 @@
 
 package org.openvpms.web.component.print;
 
+import java.math.BigDecimal;
+
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.MediaTray;
+import javax.print.attribute.standard.OrientationRequested;
+
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.doc.MediaHelper;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
@@ -29,12 +35,8 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.util.PrintHelper;
 import org.openvpms.web.servlet.DownloadServlet;
-
-import javax.print.attribute.standard.MediaSizeName;
-import javax.print.attribute.standard.MediaTray;
-import javax.print.attribute.standard.OrientationRequested;
-import java.math.BigDecimal;
 
 
 /**
@@ -145,6 +147,8 @@ public abstract class AbstractPrinter implements Printer {
             if (printer != null) {
                 result = helper.getPrinter(printer);
             }
+            else
+            	result = PrintHelper.getDefaultPrinter();
         }
         return result;
     }
