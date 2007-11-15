@@ -630,6 +630,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     private void checkBalance(BigDecimal amount) {
         Party customer = getCustomer();
         checkEquals(amount, rules.getBalance(customer));
+        checkEquals(amount, rules.getDefinitiveBalance(customer));
     }
 
     /**

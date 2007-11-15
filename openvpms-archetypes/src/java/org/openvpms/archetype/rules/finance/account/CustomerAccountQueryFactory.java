@@ -99,12 +99,22 @@ public class CustomerAccountQueryFactory {
         return query;
     }
 
+    /**
+     * Creates an object set query for acts for the specified
+     * customer. Returns only the amount, allocatedAmount and credit nodes,
+     * named <em>a.amount</em>, <em>a.allocatedAmount</em> and <em>a.credit</em>
+     * respectively.
+     *
+     * @param customer   the customer
+     * @param shortNames the act short names
+     * @return a new query
+     */
     public static ArchetypeQuery createObjectSetQuery(Party customer,
-                                                      String[] shortNames,
-                                                      boolean sortAscending) {
+                                                      String[] shortNames) {
         ArchetypeQuery query = createQuery(customer, shortNames);
-        query.add(new NodeSortConstraint("startTime", sortAscending));
+        query.add(new NodeSortConstraint("startTime", false));
         query.add(new NodeSelectConstraint("a.amount"));
+        query.add(new NodeSelectConstraint("a.allocatedAmount"));
         query.add(new NodeSelectConstraint("a.credit"));
         return query;
     }
@@ -143,7 +153,7 @@ public class CustomerAccountQueryFactory {
     }
 
     /**
-     * Creates a account balance participation query.
+     * Creates an account balance participation query.
      *
      * @param customer   the customer
      * @param shortNames the act archetype short names

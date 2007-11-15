@@ -70,4 +70,14 @@ public class UserRules {
         }
         return false;
     }
+
+    /**
+     * Determines if a user has administrator priviledges.
+     * TODO - needs to be updated for OVPMS-702.
+     *
+     * @return <tt>true</tt> if the user is an administrator
+     */
+    public boolean isAdministrator(User user) {
+        return "admin".equals(user.getUsername());
+    }
 }

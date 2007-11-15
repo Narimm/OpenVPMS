@@ -169,6 +169,19 @@ public class CustomerAccountRules {
     }
 
     /**
+     * Calculates a definitive outstanding balance for a customer.
+     * This sums total amounts for <em>all</em> POSTED acts associated with the
+     * customer, rather than just using unallocated acts, and can be used
+     * to detect account balance errors.
+     *
+     * @param customer the customer
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getDefinitiveBalance(Party customer) {
+        return calculator.getDefinitiveBalance(customer);
+    }
+
+    /**
      * Calculates a new balance for a customer from the current outstanding
      * balance and a running total.
      * If the new balance is:

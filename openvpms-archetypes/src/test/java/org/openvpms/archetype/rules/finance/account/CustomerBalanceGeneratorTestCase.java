@@ -47,6 +47,7 @@ public class CustomerBalanceGeneratorTestCase
     private CustomerAccountRules rules;
 
 
+
     /**
      * Verifies that an <em>act.customerAccountChargesInvoice</em> is
      * offset by an <em>act.customerAccountPayment</em> for the same amount.
@@ -127,7 +128,7 @@ public class CustomerBalanceGeneratorTestCase
         checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         CustomerBalanceGenerator generator
-                = new CustomerBalanceGenerator(applicationContext);
+                = new CustomerBalanceGenerator(getArchetypeService());
         generator.generate(id);
         checkEquals(amount, rules.getBalance(customer));
         FinancialAct credit = createBadDebt(amount);
@@ -149,7 +150,7 @@ public class CustomerBalanceGeneratorTestCase
         checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         CustomerBalanceGenerator generator
-                = new CustomerBalanceGenerator(applicationContext);
+                = new CustomerBalanceGenerator(getArchetypeService());
         generator.generate(name);
         checkEquals(amount, rules.getBalance(customer));
         FinancialAct credit = createBadDebt(amount);
@@ -203,17 +204,22 @@ public class CustomerBalanceGeneratorTestCase
     private void checkCalculateBalanceForSameAmount(FinancialAct debit,
                                                     FinancialAct credit) {
         CustomerBalanceGenerator generator
-                = new CustomerBalanceGenerator(applicationContext);
+                = new CustomerBalanceGenerator(getArchetypeService());
         Party customer = getCustomer();
 
         // initial balance is zero
         checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        assertTrue(generator.check(customer));
 
         // save the debit act, and verify the balance is the same as the debit
         // total
         save(debit);
+        // definitive balance out of sync with balance until generate invoked
+        assertFalse(generator.check(customer));
         generator.generate(customer);
         checkEquals(debit.getTotal(), rules.getBalance(customer));
+
+        assertTrue(generator.check(customer)); // should now be in sync
 
         // verify an participation.customerAccountBalance has been added to
         // the debit act
@@ -248,6 +254,7 @@ public class CustomerBalanceGeneratorTestCase
         ActRelationship creditAlloc = getAccountAllocationRelationship(credit);
         checkAllocation(debitAlloc, debit, credit, debit.getTotal());
         checkAllocation(creditAlloc, debit, credit, debit.getTotal());
+        assertTrue(generator.check(customer));
 
         // Now delete the credit. The balance will not be updated to reflect
         // the deletion.
@@ -258,11 +265,13 @@ public class CustomerBalanceGeneratorTestCase
         checkEquals(debit.getTotal(), debit.getAllocatedAmount());
 
         // need to regenerate to get the correct balance
+        assertFalse(generator.check(customer));
         generator.setRegenerate(true);
         generator.generate(customer);
         debit = (FinancialAct) get(debit);
         checkEquals(BigDecimal.ZERO, debit.getAllocatedAmount());
         checkEquals(debit.getTotal(), rules.getBalance(customer));
+        assertTrue(generator.check(customer));
 
         // participation.customerAccountBalance will have been recreated
         Participation balanceParticipation3
@@ -305,7 +314,7 @@ public class CustomerBalanceGeneratorTestCase
                                                       String status) {
         assertFalse(FinancialActStatus.POSTED.equals(status));
         CustomerBalanceGenerator generator
-                = new CustomerBalanceGenerator(applicationContext,
+                = new CustomerBalanceGenerator(getArchetypeService(),
                                                false, true);
         Party customer = getCustomer();
 

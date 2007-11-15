@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.ActCalculator;
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.*;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -90,6 +91,25 @@ class BalanceCalculator {
                 = new ObjectSetQueryIterator(service, query);
         query.add(new NodeConstraint("startTime", RelationalOp.LT, date));
         return calculateBalance(iterator);
+    }
+
+    /**
+     * Calculates a definitive outstanding balance for a customer.
+     * This sums total amounts for <em>all</em> POSTED acts associated with the
+     * customer, rather than just using unallocated acts, and can be used
+     * to detect account balance errors.
+     *
+     * @param customer the customer
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public BigDecimal getDefinitiveBalance(Party customer) {
+        ArchetypeQuery query
+                = CustomerAccountQueryFactory.createObjectSetQuery(
+                customer, DEBIT_CREDIT_SHORT_NAMES);
+        query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
+        Iterator<ObjectSet> iterator
+                = new ObjectSetQueryIterator(service, query);
+        return calculateDefinitiveBalance(iterator);
     }
 
     /**
@@ -205,6 +225,24 @@ class BalanceCalculator {
             boolean credit = (Boolean) set.get("a.credit");
             BigDecimal unallocated = getAllocatable(amount, allocated);
             total = calculator.addAmount(total, unallocated, credit);
+        }
+        return total;
+    }
+
+    /**
+     * Calculates a definitive oustanding balance, using act totals.
+     *
+     * @param iterator an iterator over the collection
+     * @return the outstanding balance
+     */
+    protected BigDecimal calculateDefinitiveBalance(Iterator<ObjectSet> iterator) {
+        BigDecimal total = BigDecimal.ZERO;
+        ActCalculator calculator = new ActCalculator(service);
+        while (iterator.hasNext()) {
+            ObjectSet set = iterator.next();
+            BigDecimal amount = (BigDecimal) set.get("a.amount");
+            boolean credit = (Boolean) set.get("a.credit");
+            total = calculator.addAmount(total, amount, credit);
         }
         return total;
     }
