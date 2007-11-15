@@ -25,18 +25,28 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import org.openvpms.archetype.rules.finance.account.CustomerBalanceGenerator;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.InformationDialog;
+import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 
@@ -51,17 +61,22 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     /**
      * The reverse button.
      */
-    private Button _reverse;
+    private Button reverse;
 
     /**
      * The statement button.
      */
-    private Button _statement;
+    private Button statement;
 
     /**
      * The adjust button.
      */
-    private Button _adjust;
+    private Button adjust;
+
+    /**
+     * The check button.
+     */
+    private Button check;
 
     /**
      * Reverse button identifier.
@@ -79,6 +94,11 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     private static final String ADJUST_ID = "adjust";
 
     /**
+     * Check button identifier.
+     */
+    private static final String CHECK_ID = "check";
+
+    /**
      * Opening Balance type.
      */
     private static final String OPENING_BALANCE_TYPE
@@ -92,7 +112,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
 
     /**
-     * Create a new <code>EstimationCRUDWindow</code>.
+     * Create a new <tt>AccountCRUDWindow</tt>.
      *
      * @param type      display name for the types of objects that this may
      *                  create
@@ -109,21 +129,34 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        _reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
+        reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onReverse();
             }
         });
-        _statement = ButtonFactory.create(STATEMENT_ID, new ActionListener() {
+        statement = ButtonFactory.create(STATEMENT_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onStatement();
             }
         });
-        _adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
+        adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onAdjust();
             }
         });
+        // If we are logged in an admin, show the administration subsystem
+        User user = GlobalContext.getInstance().getUser();
+        if (user != null) {
+            UserRules rules = new UserRules();
+            if (rules.isAdministrator(user)) {
+                check = ButtonFactory.create(CHECK_ID, new ActionListener() {
+                    public void actionPerformed(ActionEvent event) {
+                        onCheck();
+                    }
+                });
+            }
+        }
+
         enableButtons(buttons, true);
     }
 
@@ -137,10 +170,13 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.removeAll();
         if (enable) {
-            buttons.add(_reverse);
+            buttons.add(reverse);
             buttons.add(getPrintButton());
-            buttons.add(_statement);
-            buttons.add(_adjust);
+            buttons.add(statement);
+            buttons.add(adjust);
+            if (check != null) {
+                buttons.add(check);
+            }
         }
     }
 
@@ -188,6 +224,47 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
                                "act.customerAccountBadDebt"};
         onCreate(Messages.get("customer.account.createtype"),
                  new ShortNameList(shortNames));
+    }
+
+    /**
+     * Invoked when the 'check' button is pressed.
+     */
+    protected void onCheck() {
+        final Party customer = GlobalContext.getInstance().getCustomer();
+        if (customer != null) {
+            CustomerAccountRules rules = new CustomerAccountRules();
+            BigDecimal expected = rules.getDefinitiveBalance(customer);
+            BigDecimal actual = rules.getBalance(customer);
+            String title = Messages.get("customer.account.balancecheck.title");
+            if (expected.compareTo(actual) == 0) {
+                String message = Messages.get(
+                        "customer.account.balancecheck.ok");
+                InformationDialog.show(title, message);
+            } else {
+                String message = Messages.get(
+                        "customer.account.balancecheck.error",
+                        expected, actual);
+                final ConfirmationDialog dialog = new ConfirmationDialog(title,
+                                                                         message);
+                dialog.addWindowPaneListener(new WindowPaneListener() {
+                    public void windowPaneClosing(WindowPaneEvent e) {
+                        if (PopupDialog.OK_ID.equals(dialog.getAction())) {
+                            try {
+                                IArchetypeService service
+                                        = ServiceHelper.getArchetypeService(
+                                        false);
+                                CustomerBalanceGenerator gen = new CustomerBalanceGenerator(
+                                        service);
+                                gen.generate(customer);
+                            } catch (Throwable exception) {
+                                ErrorHelper.show(exception);
+                            }
+                        }
+                    }
+                });
+                dialog.show();
+            }
+        }
     }
 
     /**
