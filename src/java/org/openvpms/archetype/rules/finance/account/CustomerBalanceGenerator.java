@@ -24,6 +24,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.stringparsers.BooleanStringParser;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
@@ -37,6 +38,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.ruleengine.DroolsRuleEngine;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -46,11 +48,14 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.springframework.aop.Advisor;
+import org.springframework.aop.framework.Advised;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -129,27 +134,36 @@ public class CustomerBalanceGenerator {
      * Constructs a new <tt>CustomerBalanceGenerator</tt>, including
      * both posted and unposted acts.
      *
-     * @param context the spring application context
+     * @param service the archetype service
+     * @throws IllegalStateException if rules are enabled on the archetype
+     *                               service
      */
-    public CustomerBalanceGenerator(ApplicationContext context) {
-        this(context, true, true);
+    public CustomerBalanceGenerator(IArchetypeService service) {
+        this(service, true, true);
     }
 
     /**
      * Constructs a new <tt>CustomerBalanceGenerator</tt>.
      *
-     * @param context  the spring application context
+     * @param service  the archetype service
      * @param posted   if <tt>true</tt> include posted acts
      * @param unposted if <tt>true</tt> include unposted acts
+     * @throws IllegalStateException if rules are enabled on the archetype
+     *                               service
      */
-    public CustomerBalanceGenerator(ApplicationContext context,
+    public CustomerBalanceGenerator(IArchetypeService service,
                                     boolean posted, boolean unposted) {
-        if (context.containsBean("ruleEngineProxyCreator")) {
-            throw new IllegalStateException(
-                    "Rules must be disabled to run "
-                            + CustomerBalanceGenerator.class.getName());
+        if (service instanceof Advised) {
+            Advised advised = (Advised) service;
+            for (Advisor advisor :advised.getAdvisors()) {
+                if (advisor.getAdvice() instanceof DroolsRuleEngine) {
+                    throw new IllegalStateException(
+                            "Rules must be disabled to run "
+                                    + CustomerBalanceGenerator.class.getName());
+                }
+            }
         }
-        service = (IArchetypeService) context.getBean("archetypeService");
+        this.service = service;
         rules = new CustomerAccountRules(service);
         this.posted = posted;
         this.unposted = unposted;
@@ -168,16 +182,10 @@ public class CustomerBalanceGenerator {
      * Generates account balance information for all customers matching
      * the specified name.
      *
-     * @param name the customer name
+     * @param name the customer name. May be <tt>null</tt>
      */
     public void generate(String name) {
-        ArchetypeQuery query = new ArchetypeQuery("party.customer*", true,
-                                                  false);
-        query.setMaxResults(1000);
-        if (name != null) {
-            query.add(new NodeConstraint("name", name));
-        }
-        query.add(new NodeSortConstraint("name"));
+        ArchetypeQuery query = createNameQuery(name);
         generate(query);
     }
 
@@ -188,9 +196,7 @@ public class CustomerBalanceGenerator {
      * @param id the customer identifier
      */
     public void generate(long id) {
-        ArchetypeQuery query = new ArchetypeQuery("party.customer*", true,
-                                                  false);
-        query.add(new NodeConstraint("uid", id));
+        ArchetypeQuery query = createIdQuery(id);
         generate(query);
     }
 
@@ -216,6 +222,52 @@ public class CustomerBalanceGenerator {
     }
 
     /**
+     * Checks the account balance for all customers matching the specified name.
+     *
+     * @param name the customer name. May be <tt>null</tt>
+     * @return <tt>true</tt> if the account balance is correct,
+     *         otherwise <tt>false</tt>
+     */
+    public boolean check(String name) {
+        ArchetypeQuery query = createNameQuery(name);
+        return check(query);
+    }
+
+    /**
+     * Checks the account balance for the customer with the specified id.
+     *
+     * @param id the customer identifier
+     * @return <tt>true</tt> if the account balance is correct,
+     *         otherwise <tt>false</tt>
+     */
+    public boolean check(long id) {
+        ArchetypeQuery query = createIdQuery(id);
+        return check(query);
+    }
+
+    /**
+     * Checks the account balance for the specified customer.
+     *
+     * @param customer the customer
+     * @return <tt>true</tt> if the account balance is correct,
+     *         otherwise <tt>false</tt>
+     */
+    public boolean check(Party customer) {
+        log.info("Checking account balance for " + customer.getName());
+        BalanceCalculator calc = new BalanceCalculator(service);
+        BigDecimal expected = calc.getDefinitiveBalance(customer);
+        BigDecimal running = calc.getBalance(customer);
+        boolean result = expected.compareTo(running) == 0;
+        if (!result) {
+            log.error("Failed to check account balance for "
+                    + customer.getName() + ", ID=" + customer.getUid()
+                    + ": running balance=" + running
+                    + ", expected balance=" + expected);
+        }
+        return result;
+    }
+
+    /**
      * Main line.
      *
      * @param args command line arguments
@@ -230,9 +282,11 @@ public class CustomerBalanceGenerator {
                 String contextPath = config.getString("context");
                 String name = config.getString("name");
                 long id = config.getLong("id");
+                boolean generate = config.getBoolean("generate");
                 boolean regenerate = config.getBoolean("regenerate");
                 boolean posted = config.getBoolean("posted");
                 boolean unposted = config.getBoolean("unposted");
+                boolean check = config.getBoolean("check");
 
                 ApplicationContext context;
                 if (!new File(contextPath).exists()) {
@@ -240,17 +294,28 @@ public class CustomerBalanceGenerator {
                 } else {
                     context = new FileSystemXmlApplicationContext(contextPath);
                 }
+                IArchetypeService service = (IArchetypeService) context.getBean(
+                        "archetypeService");
                 CustomerBalanceGenerator generator
-                        = new CustomerBalanceGenerator(context, posted,
+                        = new CustomerBalanceGenerator(service, posted,
                                                        unposted);
-                generator.setRegenerate(regenerate);
-                generator.setFailOnError(config.getBoolean("failOnError"));
-                if (id == -1) {
-                    generator.generate(name);
+                if (check) {
+                    if (id == -1) {
+                        generator.check(name);
+                    } else {
+                        generator.check(id);
+                    }
+                } else if (generate || regenerate) {
+                    generator.setRegenerate(regenerate);
+                    generator.setFailOnError(config.getBoolean("failOnError"));
+                    if (id == -1) {
+                        generator.generate(name);
+                    } else {
+                        generator.generate(id);
+                    }
                 } else {
-                    generator.generate(id);
+                    displayUsage(parser);
                 }
-
             }
         } catch (Throwable throwable) {
             log.error(throwable, throwable);
@@ -292,6 +357,81 @@ public class CustomerBalanceGenerator {
     }
 
     /**
+     * Checks account balances for all customers matching the specified
+     * query.
+     *
+     * @param query the query
+     */
+    private boolean check(ArchetypeQuery query) {
+        boolean result = true;
+        Collection<String> nodes = Arrays.asList("name");
+        Iterator<Party> iterator
+                = new IMObjectQueryIterator<Party>(service, query, nodes);
+        int count = 0;
+        while (iterator.hasNext()) {
+            Party customer = iterator.next();
+            try {
+                boolean ok = check(customer);
+                ++count;
+                if (!ok) {
+                    result = false;
+                    if (failOnError) {
+                        return result;
+                    } else {
+                        ++errors;
+                    }
+                }
+            } catch (OpenVPMSException exception) {
+                if (failOnError) {
+                    throw exception;
+                } else {
+                    ++errors;
+                    log.error("Failed to check account balance for "
+                            + customer.getName(), exception);
+                }
+            }
+        }
+        log.info("Checked account balances for " + count + " customers");
+        if (errors != 0) {
+            log.warn("There were " + errors + " errors");
+        } else {
+            log.info("There were no errors");
+        }
+        return result;
+    }
+
+
+    /**
+     * Creates a query on customer name.
+     *
+     * @param name the customer name/ May be <tt>null</tt>
+     * @return a new query
+     */
+    private ArchetypeQuery createNameQuery(String name) {
+        ArchetypeQuery query = new ArchetypeQuery("party.customer*", true,
+                                                  false);
+        query.setMaxResults(1000);
+        if (!StringUtils.isEmpty(name)) {
+            query.add(new NodeConstraint("name", name));
+        }
+        query.add(new NodeSortConstraint("name"));
+        return query;
+    }
+
+    /**
+     * Creates a query on customer id.
+     *
+     * @param id the customer identifier
+     * @return a new query
+     */
+    private ArchetypeQuery createIdQuery(long id) {
+        ArchetypeQuery query = new ArchetypeQuery("party.customer*", true,
+                                                  false);
+        query.add(new NodeConstraint("uid", id));
+        return query;
+    }
+
+    /**
      * Creates a new command line parser.
      *
      * @return a new parser
@@ -314,6 +454,12 @@ public class CustomerBalanceGenerator {
                 .setLongFlag("unposted")
                 .setStringParser(JSAP.BOOLEAN_PARSER).setDefault("true")
                 .setHelp("Process acts that aren't POSTED."));
+        parser.registerParameter(new Switch("check").setShortFlag('c')
+                .setLongFlag("check").setDefault("false")
+                .setHelp("Check account balances."));
+        parser.registerParameter(new Switch("generate").setShortFlag('g')
+                .setLongFlag("generate").setDefault("false")
+                .setHelp("Check account balances."));
         parser.registerParameter(new Switch("regenerate").setShortFlag('r')
                 .setLongFlag("regenerate").setDefault("false")
                 .setHelp("Regenerate account balances."));
@@ -323,7 +469,7 @@ public class CustomerBalanceGenerator {
                 .setDefault("false")
                 .setStringParser(BooleanStringParser.getParser())
                 .setHelp("Fail on error"));
-        parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
+        parser.registerParameter(new FlaggedOption("context")
                 .setLongFlag("context")
                 .setDefault(APPLICATION_CONTEXT)
                 .setHelp("Application context path"));
