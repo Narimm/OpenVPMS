@@ -219,17 +219,22 @@ public abstract class AbstractActResultSet<T>
 
         if (participants != null) {
             String[] shortNames = DescriptorHelper.getShortNames(
-                    archetypes.getShortNames());
+                    archetypes.getShortNames(), archetypes.isPrimaryOnly());
             try {
                 for (ParticipantConstraint participant : participants) {
                     ParticipantConstraint p
                             = (ParticipantConstraint) participant.clone();
-                    OrConstraint or = new OrConstraint();
-                    for (String shortName : shortNames) {
-                        ArchetypeId id = new ArchetypeId(shortName);
-                        or.add(new ObjectRefNodeConstraint("act", id));
+                    if (shortNames.length > 1) {
+                        OrConstraint or = new OrConstraint();
+                        for (String shortName : shortNames) {
+                            ArchetypeId id = new ArchetypeId(shortName);
+                            or.add(new ObjectRefNodeConstraint("act", id));
+                        }
+                        p.add(or);
+                    } else if (shortNames.length == 1) {
+                        ArchetypeId id = new ArchetypeId(shortNames[0]);
+                        p.add(new ObjectRefNodeConstraint("act", id));
                     }
-                    p.add(or);
                     query.add(p);
                 }
             } catch (CloneNotSupportedException exception) {

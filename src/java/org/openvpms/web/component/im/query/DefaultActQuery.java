@@ -143,7 +143,25 @@ public class DefaultActQuery<T extends Act> extends DateRangeActQuery<T> {
     public DefaultActQuery(Entity entity, String participant,
                            String participation, String[] acts,
                            String[] statuses) {
-        super(entity, participant, participation, acts, statuses);
+        this(entity, participant, participation, acts, true, statuses);
+    }
+
+    /**
+     * Constructs a new <tt>DefaultActQuery</tt>.
+     *
+     * @param entity        the entity to search for
+     * @param participant   the partcipant node name
+     * @param participation the entity participation short name
+     * @param acts          the act short names
+     * @param primaryOnly   if <tt>true</tt> only primary archetypes will be
+     *                      queried
+     * @param statuses      the act statuses to search on. May be
+     *                      <tt>empty</tt>
+     */
+    public DefaultActQuery(Entity entity, String participant,
+                           String participation, String[] acts,
+                           boolean primaryOnly, String[] statuses) {
+        super(entity, participant, participation, acts, primaryOnly, statuses);
     }
 
 }

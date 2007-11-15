@@ -159,15 +159,29 @@ public abstract class AbstractQuery<T> implements Query<T> {
 
     /**
      * Construct a new <code>AbstractQuery</code> that queries objects with
-     * the specified short names.
+     * the specified primary short names.
      *
      * @param shortNames the short names
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
     public AbstractQuery(String[] shortNames) {
-        this.shortNames = DescriptorHelper.getShortNames(shortNames);
-        archetypes = new ShortNameConstraint(shortNames, true, true);
+        this(shortNames, true);
+    }
+
+    /**
+     * Construct a new <code>AbstractQuery</code> that queries objects with
+     * the specified short names.
+     *
+     * @param shortNames  the short names
+     * @param primaryOnly if <tt>true</tt> only include primary archetypes
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
+     */
+    public AbstractQuery(String[] shortNames, boolean primaryOnly) {
+        this.shortNames = DescriptorHelper.getShortNames(shortNames,
+                                                         primaryOnly);
+        archetypes = new ShortNameConstraint(shortNames, primaryOnly, true);
         refModelName = null;
     }
 
@@ -401,6 +415,15 @@ public abstract class AbstractQuery<T> implements Query<T> {
     }
 
     /**
+     * Determines if only primary archetypes will be queried.
+     *
+     * @return <tt>true</tt> if only primary archetypes will be queried
+     */
+    public boolean isPrimaryOnly() {
+        return archetypes.isPrimaryOnly();
+    }
+
+    /**
      * Returns the archetype reference model name.
      *
      * @return the archetype reference model name. May be <code>null</code>
@@ -440,7 +463,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
             result = getArchetypes();
             result.setActiveOnly(activeOnly);
         } else {
-            result = new ShortNameConstraint(type, true, activeOnly);
+            result = new ShortNameConstraint(type, isPrimaryOnly(), activeOnly);
         }
         return result;
     }
