@@ -94,12 +94,26 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * Constructs a new <tt>ActQuery</tt>.
      *
-     * @param shortNames the act short names to query
+     * @param shortNames the act short names to query. Must be primary
+     *                   archetypes
      * @param statuses   the act statuses to search on. May be
      *                   <tt>empty</tt>
      */
     public ActQuery(String[] shortNames, String[] statuses) {
-        this(null, null, null, shortNames, statuses);
+        this(null, null, null, shortNames, true, statuses);
+    }
+
+    /**
+     * Constructs a new <tt>ActQuery</tt>.
+     *
+     * @param shortNames  the act short names to query
+     * @param primaryOnly if <tt>true</tt> only primary archetypes will be
+     *                    queried
+     * @param statuses    the act statuses to search on. May be <tt>empty</tt>
+     */
+    public ActQuery(String[] shortNames, boolean primaryOnly,
+                    String[] statuses) {
+        this(null, null, null, shortNames, primaryOnly, statuses);
     }
 
     /**
@@ -107,7 +121,8 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      *
      * @param entity        the entity to search for. May be <tt>null</tt>
      * @param participant   the partcipant node name. May be <tt>null</tt>
-     * @param participation the entity participation short name. May be <tt>null</tt>
+     * @param participation the entity participation short name.
+     *                      May be <tt>null</tt>
      * @param shortNames    the act short names
      * @param statusLookups the act status lookups
      * @param excludeStatus to exclude. May be <tt>null</tt>
@@ -125,19 +140,36 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     }
 
     /**
-     * Construct a new  <tt>ActQuery</tt>.
+     * Constructs a new  <tt>ActQuery</tt>.
      *
      * @param entity        the entity to search for. May be <tt>null</tt>
      * @param participant   the partcipant node name. May be <tt>null</tt>
      * @param participation the entity participation short name. May be
      *                      <tt>null</tt>
      * @param shortNames    the act short names
-     * @param statuses      the act statuses to search on. May be
-     *                      <tt>empty</tt>
+     * @param statuses      the act statuses to search on. May be <tt>empty</tt>
      */
     public ActQuery(Entity entity, String participant, String participation,
                     String[] shortNames, String[] statuses) {
-        super(shortNames);
+        this(entity, participant, participation, shortNames, true, statuses);
+    }
+
+    /**
+     * Constructs a new  <tt>ActQuery</tt>.
+     *
+     * @param entity        the entity to search for. May be <tt>null</tt>
+     * @param participant   the partcipant node name. May be <tt>null</tt>
+     * @param participation the entity participation short name. May be
+     *                      <tt>null</tt>
+     * @param shortNames    the act short names
+     * @param primaryOnly   if <tt>true</tt> only primary archetypes will be
+     *                      queried
+     * @param statuses      the act statuses to search on. May be <tt>empty</tt>
+     */
+    public ActQuery(Entity entity, String participant, String participation,
+                    String[] shortNames, boolean primaryOnly,
+                    String[] statuses) {
+        super(shortNames, primaryOnly);
         setEntity(entity);
         this.participant = participant;
         this.participation = participation;
@@ -238,7 +270,8 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
             String[] shortNames = constraint.getShortNames();
             shortNames = CollectionHelper.concat(shortNames,
                                                  requiredShortNames);
-            result = new ShortNameConstraint(shortNames, true, true);
+            result = new ShortNameConstraint(shortNames,
+                                             constraint.isPrimaryOnly(), true);
         }
         return result;
     }
@@ -289,11 +322,11 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     protected ShortNameConstraint getArchetypeConstraint(String shortName) {
         ShortNameConstraint result;
         if (requiredShortNames == null) {
-            result = new ShortNameConstraint(shortName, true, true);
+            result = new ShortNameConstraint(shortName, isPrimaryOnly(), true);
         } else {
             String[] shortNames = CollectionHelper.concat(requiredShortNames,
                                                           shortName);
-            result = new ShortNameConstraint(shortNames, true, true);
+            result = new ShortNameConstraint(shortNames, isPrimaryOnly(), true);
         }
         return result;
     }

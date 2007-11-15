@@ -54,7 +54,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param shortNames the act short names to query
      */
     public DateRangeActQuery(String[] shortNames) {
-        this(null, null, null, shortNames, new String[0]);
+        this(null, null, null, shortNames, true, new String[0]);
     }
 
     /**
@@ -91,7 +91,26 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
     public DateRangeActQuery(Entity entity, String participant,
                              String participation, String[] shortNames,
                              String[] statuses) {
-        super(entity, participant, participation, shortNames, statuses);
+        this(entity, participant, participation, shortNames, true, statuses);
+    }
+
+    /**
+     * Constructs a new <tt>DateRangeActQuery</tt>.
+     *
+     * @param entity        the entity to search for
+     * @param participant   the partcipant node name
+     * @param participation the entity participation short name
+     * @param shortNames    the act short names
+     * @param primaryOnly   if <tt>true</tt> only primary archetypes will be
+     *                      queried
+     * @param statuses      the act statuses to search on. May be
+     *                      <tt>empty</tt>
+     */
+    public DateRangeActQuery(Entity entity, String participant,
+                             String participation, String[] shortNames,
+                             boolean primaryOnly, String[] statuses) {
+        super(entity, participant, participation, shortNames, primaryOnly,
+              statuses);
         selectType = true;
         QueryFactory.initialise(this);
     }

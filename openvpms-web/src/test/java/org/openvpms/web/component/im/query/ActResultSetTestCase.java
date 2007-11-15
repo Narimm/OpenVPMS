@@ -148,6 +148,28 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
     }
 
     /**
+     * Verifies that non-primary archetypes can be specified.
+     */
+    public void testNonPrimary() {
+        Party patient = TestHelper.createPatient(true);
+        String[] shortNames = {"act.customerAccountInvoiceItem",
+                               "act.customerAccountCreditItem"};
+        ShortNameConstraint archetypes = new ShortNameConstraint(shortNames,
+                                                                 false, true);
+        ParticipantConstraint participant = new ParticipantConstraint(
+                "patient", "participation.patient",
+                patient.getObjectReference());
+        Date from = null;       // query all dates
+        Date to = null;
+        String[] statuses = {}; // query all statuses
+        int rowsPerPage = 20;
+        SortConstraint[] sort = null;
+        ActResultSet set = new ActResultSet(archetypes, participant, from, to,
+                                            statuses, rowsPerPage, sort);
+        assertFalse(set.hasNext());
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -226,6 +248,5 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
         }
         return count;
     }
-
 
 }
