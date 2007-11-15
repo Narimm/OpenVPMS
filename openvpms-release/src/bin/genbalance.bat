@@ -2,4 +2,4 @@
 
 call setenv.bat
 
-java org.openvpms.archetype.rules.finance.account.CustomerBalanceGenerator -c ../conf/applicationContext.xml
+java org.openvpms.archetype.rules.finance.account.CustomerBalanceGenerator --context ../conf/applicationContext.xml %*%
