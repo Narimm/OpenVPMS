@@ -32,9 +32,9 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.layout.SplitPaneLayoutData;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContextHolder;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.admin.AdminSubsystem;
 import org.openvpms.web.app.customer.CustomerSubsystem;
 import org.openvpms.web.app.patient.PatientSubsystem;
@@ -42,6 +42,7 @@ import org.openvpms.web.app.product.ProductSubsystem;
 import org.openvpms.web.app.reporting.ReportingSubsystem;
 import org.openvpms.web.app.supplier.SupplierSubsystem;
 import org.openvpms.web.app.workflow.WorkflowSubsystem;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.subsystem.Subsystem;
 import org.openvpms.web.component.subsystem.Workspace;
 import org.openvpms.web.component.util.ButtonColumn;
@@ -162,15 +163,16 @@ public class MainPane extends SplitPane implements ContextChangeListener {
         addSubsystem(new PatientSubsystem());
         addSubsystem(new SupplierSubsystem());
         addSubsystem(new WorkflowSubsystem());
-        //addSubsystem(new FinancialSubsystem());
         addSubsystem(new ProductSubsystem());
         addSubsystem(new ReportingSubsystem());
 
-        // If we are logged in as admin show the administration subsystem 
-        Authentication auth
-                = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && "admin".equals(auth.getName())) {
-            addSubsystem(new AdminSubsystem());
+        // If we are logged in an admin, show the administration subsystem
+        User user = GlobalContext.getInstance().getUser();
+        if (user != null) {
+            UserRules rules = new UserRules();
+            if (rules.isAdministrator(user)) {
+                addSubsystem(new AdminSubsystem());
+            }
         }
 
         menu.addButton("help", new ActionListener() {
