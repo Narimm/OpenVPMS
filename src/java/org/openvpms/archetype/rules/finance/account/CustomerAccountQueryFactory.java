@@ -113,6 +113,7 @@ public class CustomerAccountQueryFactory {
                                                       String[] shortNames) {
         ArchetypeQuery query = createQuery(customer, shortNames);
         query.add(new NodeSortConstraint("startTime", false));
+        query.add(new NodeSortConstraint("uid", true));
         query.add(new NodeSelectConstraint("a.amount"));
         query.add(new NodeSelectConstraint("a.allocatedAmount"));
         query.add(new NodeSelectConstraint("a.credit"));
@@ -175,6 +176,7 @@ public class CustomerAccountQueryFactory {
         }
         query.add(constraint);
         query.add(new NodeSortConstraint("startTime", false));
+        query.add(new NodeSortConstraint("uid", true));
         return query;
     }
 

@@ -155,7 +155,7 @@ public class CustomerBalanceGenerator {
                                     boolean posted, boolean unposted) {
         if (service instanceof Advised) {
             Advised advised = (Advised) service;
-            for (Advisor advisor :advised.getAdvisors()) {
+            for (Advisor advisor : advised.getAdvisors()) {
                 if (advisor.getAdvice() instanceof DroolsRuleEngine) {
                     throw new IllegalStateException(
                             "Rules must be disabled to run "
@@ -253,16 +253,17 @@ public class CustomerBalanceGenerator {
      *         otherwise <tt>false</tt>
      */
     public boolean check(Party customer) {
-        log.info("Checking account balance for " + customer.getName());
+        log.info("Checking account balance for " + customer.getName()
+                + ", ID=" + customer.getUid());
         BalanceCalculator calc = new BalanceCalculator(service);
         BigDecimal expected = calc.getDefinitiveBalance(customer);
-        BigDecimal running = calc.getBalance(customer);
-        boolean result = expected.compareTo(running) == 0;
+        BigDecimal actual = calc.getBalance(customer);
+        boolean result = expected.compareTo(actual) == 0;
         if (!result) {
             log.error("Failed to check account balance for "
                     + customer.getName() + ", ID=" + customer.getUid()
-                    + ": running balance=" + running
-                    + ", expected balance=" + expected);
+                    + ": expected balance=" + expected
+                    + ", actual balance=" + actual);
         }
         return result;
     }
@@ -415,6 +416,7 @@ public class CustomerBalanceGenerator {
             query.add(new NodeConstraint("name", name));
         }
         query.add(new NodeSortConstraint("name"));
+        query.add(new NodeSortConstraint("uid"));
         return query;
     }
 
@@ -682,6 +684,7 @@ public class CustomerBalanceGenerator {
                     "entity", customer.getObjectReference()));
             query.add(constraint);
             query.add(new NodeSortConstraint("startTime", true));
+            query.add(new NodeSortConstraint("uid", true));
             OrConstraint or = new OrConstraint();
             for (String shortName : shortNames) {
                 // duplicate the act short names onto the participation act
