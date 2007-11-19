@@ -75,7 +75,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         product.addClassification(taxType);
         save(product);
 
-        checkCalculateTax(customer, product, new BigDecimal("0.09"));
+        checkCalculateTax(customer, product, new BigDecimal("0.091"));
     }
 
     /**
@@ -86,7 +86,7 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
         Party customer = createCustomer();
         Product product = createProductWithProductTypeTax();
 
-        checkCalculateTax(customer, product, new BigDecimal("0.09"));
+        checkCalculateTax(customer, product, new BigDecimal("0.091"));
     }
 
     /**
@@ -102,8 +102,20 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link TaxRules#getTaxRate(Product)} method.
+     */
+    public void testGetTaxRate() {
+        Product productNoTax = createProduct();
+        BigDecimal noTax = rules.getTaxRate(productNoTax);
+        assertTrue(BigDecimal.ZERO.compareTo(noTax) == 0);
+
+        Product product10Tax = createProductWithTax();
+        BigDecimal percent10 = new BigDecimal(10);
+        assertTrue(percent10.compareTo(rules.getTaxRate(product10Tax)) == 0);
+    }
+
+    /**
      * Sets up the test case.
-     * s     *
      *
      * @throws Exception for any error
      */

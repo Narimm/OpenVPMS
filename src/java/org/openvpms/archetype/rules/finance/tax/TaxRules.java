@@ -19,7 +19,6 @@
 package org.openvpms.archetype.rules.finance.tax;
 
 import static org.openvpms.archetype.rules.finance.tax.TaxRuleException.ErrorCode.InvalidActForTax;
-import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -159,8 +158,19 @@ public class TaxRules {
             throw new TaxRuleException(InvalidActForTax,
                                        act.getArchetypeId().getShortName());
         }
-        List<IMObject> taxRates = getTaxRates(act, customer);
+        List<IMObject> taxRates = getTaxRates(act, customer);   
         return calculateTaxAmount(act, taxRates);
+    }
+
+    /**
+     * Returns the tax rate of a product, expressed as a percentage.
+     *
+     * @param product the product
+     * @return the tax rate
+     */
+    public BigDecimal getTaxRate(Product product) {
+        Collection<IMObject> rates = getChargeTaxRates(product);
+        return getTaxRate(rates);
     }
 
     /**
@@ -242,22 +252,34 @@ public class TaxRules {
      */
     private BigDecimal calculateTaxAmount(FinancialAct act,
                                           List<IMObject> taxRates) {
-        BigDecimal taxTotal = BigDecimal.ZERO;
+        BigDecimal tax = BigDecimal.ZERO;
         BigDecimal total = act.getTotal();
         if (total != null) {
-            for (IMObject taxRate : taxRates) {
-                IMObjectBean taxBean = new IMObjectBean(taxRate, service);
-                BigDecimal rate = taxBean.getBigDecimal("rate",
-                                                        BigDecimal.ZERO);
-                BigDecimal divisor = new BigDecimal(100).add(rate);
-                BigDecimal tax = total.multiply(rate);
-                tax = tax.divide(divisor, 3, RoundingMode.HALF_UP);
-                taxTotal = taxTotal.add(tax);
-            }
+            BigDecimal rate = getTaxRate(taxRates);
+            tax = total.multiply(rate);
+            BigDecimal divisor = new BigDecimal(100).add(rate);
+            tax = tax.divide(divisor, 3, RoundingMode.HALF_UP);
         }
-        taxTotal = MathRules.round(taxTotal);
-        act.setTaxAmount(new Money(taxTotal));
-        return taxTotal;
+        act.setTaxAmount(new Money(tax));
+        return tax;
+    }
+
+    /**
+     * Returns the tax rate, expressed as a percentage.
+     *
+     * @param taxRates
+     * @return the tax rate
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private BigDecimal getTaxRate(Collection<IMObject> taxRates) {
+        BigDecimal result = BigDecimal.ZERO;
+        for (IMObject taxRate : taxRates) {
+            IMObjectBean taxBean = new IMObjectBean(taxRate, service);
+            BigDecimal rate = taxBean.getBigDecimal("rate",
+                                                    BigDecimal.ZERO);
+            result = result.add(rate);
+        }
+        return result;
     }
 
     /**
