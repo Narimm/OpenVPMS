@@ -22,13 +22,14 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.util.TextDocument;
 
 import java.text.Format;
 import java.text.ParseException;
 
 
 /**
- * Binds a {@link Property} to a <code>TextField</code>, providing formatting.
+ * Binds a {@link Property} to a <tt>TextField</tt>, providing formatting.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -38,23 +39,24 @@ public class BoundFormattedField extends TextField {
     /**
      * The formatter.
      */
-    private final Format _format;
+    private final Format format;
 
 
     /**
-     * Construct a new <code>BoundFormattedField</code>.
+     * Construct a new <tt>BoundFormattedField</tt>.
      *
      * @param property the property to bind
      * @param format   the formatter
      */
     public BoundFormattedField(Property property, Format format) {
-        _format = format;
+        super(new TextDocument());
+        this.format = format;
         Binder binder = new FormattingBinder(this, property);
         binder.setField();
     }
 
     /**
-     * Construct a new <code>BoundFormattedField</code>.
+     * Construct a new <tt>BoundFormattedField</tt>.
      *
      * @param property the property to bind
      * @param columns  the no. of columns to display.
@@ -69,13 +71,13 @@ public class BoundFormattedField extends TextField {
     /**
      * Parses the field value.
      *
-     * @return the parsed value, or <code>value</code> if it can't be parsed
+     * @return the parsed value, or <tt>value</tt> if it can't be parsed
      */
     protected Object parse(String value) {
         Object result = null;
         if (value != null) {
             try {
-                result = _format.parseObject(value);
+                result = format.parseObject(value);
             } catch (ParseException exception) {
                 // failed to parse, so return the field unchanged
                 result = value;
@@ -90,13 +92,13 @@ public class BoundFormattedField extends TextField {
      * @return the format
      */
     protected Format getFormat() {
-        return _format;
+        return format;
     }
 
     private class FormattingBinder extends TextComponentBinder {
 
         /**
-         * Construct a new <code>FormattingtBinder</code>.
+         * Construct a new <tt>FormattingtBinder</tt>.
          *
          * @param component the component to bind
          * @param property  the property to bind
@@ -125,7 +127,7 @@ public class BoundFormattedField extends TextField {
         protected void setFieldValue(Object value) {
             if (value != null) {
                 try {
-                    value = _format.format(value);
+                    value = format.format(value);
                 } catch (IllegalArgumentException ignore) {
                     // failed to format, so set the field unchanged
                 }

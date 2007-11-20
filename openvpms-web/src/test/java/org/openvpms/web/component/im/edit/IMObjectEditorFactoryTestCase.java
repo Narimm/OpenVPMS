@@ -29,6 +29,7 @@ import org.openvpms.web.app.customer.account.AdjustmentActEditor;
 import org.openvpms.web.app.patient.PatientEditor;
 import org.openvpms.web.app.patient.mr.PatientClinicalEventActEditor;
 import org.openvpms.web.app.patient.mr.PatientClinicalProblemActEditor;
+import org.openvpms.web.app.product.ProductPriceEditor;
 import org.openvpms.web.app.workflow.messaging.UserMessageActEditor;
 import org.openvpms.web.component.im.doc.DocumentTemplateEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
@@ -352,6 +353,15 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     public void testCreatePatientClinicalProblemActEditor() {
         checkCreate("act.patientClinicalProblem",
                     PatientClinicalProblemActEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link ProductPriceEditor} is created for
+     * <em>productPrice.fixedPrice</em> and <em>productPrice.unitPrice</em>.
+     */
+    public void testCreateProductPriceEditor() {
+        checkCreate("productPrice.fixedPrice", ProductPriceEditor.class);
+        checkCreate("productPrice.unitPrice", ProductPriceEditor.class);
     }
 
     /**
