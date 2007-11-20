@@ -80,6 +80,11 @@ public class RecordBrowser implements Browser<Act> {
     private TableBrowser<Act> document;
 
     /**
+     * The charges browser.
+     */
+    private TableBrowser<Act> charges;
+
+    /**
      * The event listener.
      */
     private RecordBrowserListener listener;
@@ -99,7 +104,7 @@ public class RecordBrowser implements Browser<Act> {
      * The browser view.
      */
     public enum View {
-        SUMMARY, PROBLEMS, REMINDER_ALERT, DOCUMENTS
+        SUMMARY, PROBLEMS, REMINDER_ALERT, DOCUMENTS, CHARGES
     }
 
 
@@ -113,7 +118,8 @@ public class RecordBrowser implements Browser<Act> {
      * @param document      query for documents
      */
     public RecordBrowser(PatientSummaryQuery summary, Query<Act> problems,
-                         Query<Act> reminderAlert, Query<Act> document) {
+                         Query<Act> reminderAlert, Query<Act> document,
+                         Query<Act> charges) {
         this.summary = new SummaryTableBrowser(summary);
         this.problems = IMObjectTableBrowserFactory.create(problems, null);
 
@@ -125,6 +131,10 @@ public class RecordBrowser implements Browser<Act> {
         this.reminderAlert = new DefaultIMObjectTableBrowser<Act>(reminderAlert,
                                                                   model);
         this.document = IMObjectTableBrowserFactory.create(document, null);
+        IMObjectTableModel<Act> chargeModel = new ChargesActTableModel(
+                charges.getShortNames());
+        this.charges = new DefaultIMObjectTableBrowser<Act>(charges,
+                chargeModel);
     }
 
     /**
@@ -140,6 +150,7 @@ public class RecordBrowser implements Browser<Act> {
             addTab(2, "button.problem", model, problems);
             addTab(3, "button.reminder", model, reminderAlert);
             addTab(4, "button.document", model, document);
+            addTab(5, "button.charges", model, charges);
             tab = TabbedPaneFactory.create(model);
             tab.setSelectedIndex(selected);
 
@@ -196,6 +207,7 @@ public class RecordBrowser implements Browser<Act> {
         problems.addQueryListener(listener);
         reminderAlert.addQueryListener(listener);
         document.addQueryListener(listener);
+        charges.addQueryListener(listener);
     }
 
     /**
@@ -206,6 +218,7 @@ public class RecordBrowser implements Browser<Act> {
         query(problems);
         query(reminderAlert);
         query(document);
+        query(charges);
     }
 
     /**
@@ -226,6 +239,9 @@ public class RecordBrowser implements Browser<Act> {
             case DOCUMENTS:
                 result = document;
                 break;
+            case CHARGES:
+            	result = charges;
+            	break;
             default:
                 result = summary;
         }
@@ -249,6 +265,8 @@ public class RecordBrowser implements Browser<Act> {
             case 3:
                 result = View.DOCUMENTS;
                 break;
+            case 4:
+            	result = View.CHARGES;
             default:
                 result = View.SUMMARY;
         }
