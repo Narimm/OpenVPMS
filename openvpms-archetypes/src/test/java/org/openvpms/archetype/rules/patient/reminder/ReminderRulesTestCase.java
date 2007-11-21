@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import java.util.Date;
+
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -29,11 +31,9 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-
-import java.util.Date;
-import java.util.Set;
 
 
 /**
@@ -223,6 +223,12 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         checkShouldCancel(reminder, "2007-02-01", false);
         checkShouldCancel(reminder, "2007-02-14", false);
         checkShouldCancel(reminder, "2007-02-15", true);
+        
+        // Now set patient to deceased
+        EntityBean patientBean = new EntityBean(patient);
+        patientBean.setValue("deceased", new Boolean(true));
+        checkShouldCancel(reminder,"2007-02-01", true);
+        
     }
 
     /**

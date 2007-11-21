@@ -129,6 +129,7 @@ public class TestHelper extends Assert {
         EntityBean bean = new EntityBean(patient);
         bean.setValue("name", "XPatient-" + System.currentTimeMillis());
         bean.setValue("species", "CANINE");
+        bean.setValue("deceased", new Boolean(false));
         if (save) {
             bean.save();
         }

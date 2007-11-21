@@ -264,6 +264,13 @@ public class ReminderRules {
      */
     public boolean shouldCancel(Act reminder, Date date) {
         ActBean bean = new ActBean(reminder, service);
+        // First check if Patient deceased and if so set to Cancel
+        Party patient = (Party) bean.getParticipant("participation.patient");
+        EntityBean patientBean = new EntityBean(patient, service);
+        if (patientBean.getBoolean("deceased",false) == true) {
+        	return true;
+        }
+        // Otherwise get reminderType and check cancel period
         ReminderType reminderType = getReminderType(bean);
         if (reminderType != null) {
             Date due = reminder.getActivityEndTime();
