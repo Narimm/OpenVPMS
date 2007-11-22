@@ -19,11 +19,16 @@
 package org.openvpms.web.app.product;
 
 import nextapp.echo2.app.Component;
+
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.web.app.customer.account.AccountCRUDWindow;
+import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -81,6 +86,14 @@ public class InformationWorkspace extends CRUDWorkspace<Product> {
         if (product != getObject()) {
             setObject(product);
         }
+    }
+    /**
+     * Creates a new CRUD window for viewing and editing Products.
+     *
+     * @return a new CRUD window
+     */
+    protected CRUDWindow<Product> createCRUDWindow() {
+        return new ProductCRUDWindow(getType(), getShortNames());
     }
 
 }
