@@ -86,7 +86,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     /**
      * Updates the price using the following formula:
      * <p/>
-     * <tt>price = (cost price * (1 + markup/100) ) * (1 + tax/100)</tt>
+     * <tt>price = (cost * (1 + markup/100) ) * (1 + tax/100)</tt>
      */
     private void updatePrice() {
         BigDecimal cost = getValue("cost");
@@ -103,8 +103,8 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
                 taxDec = getPercentRate(rules.getTaxRate(product));
             }
             BigDecimal price = cost.multiply(
-                    BigDecimal.ONE.add(markupDec).multiply(
-                            BigDecimal.ONE.add(taxDec)));
+                    BigDecimal.ONE.add(markupDec)).multiply(
+                    BigDecimal.ONE.add(taxDec));
             property.setValue(price);
             property.addModifiableListener(priceListener);
         }
