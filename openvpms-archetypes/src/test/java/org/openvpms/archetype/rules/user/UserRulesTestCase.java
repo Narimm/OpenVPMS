@@ -18,10 +18,16 @@
 
 package org.openvpms.archetype.rules.user;
 
+import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+
+import java.util.List;
 
 
 /**
@@ -54,5 +60,55 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
                 = TestHelper.getClassification("lookup.userType", "CLINICIAN");
         user.addClassification(clinicianClassification);
         assertTrue(rules.isClinician(user));
+    }
+
+    /**
+     * Tests the {@link UserRules#getLocations(User)} method.
+     */
+    public void testGetLocations() {
+        User user = TestHelper.createUser();
+        Party location1 = TestHelper.createLocation();
+        Party location2 = TestHelper.createLocation();
+        EntityBean bean = new EntityBean(user);
+
+        bean.addRelationship("entityRelationship.userLocation", location1);
+        bean.addRelationship("entityRelationship.userLocation", location2);
+        UserRules rules = new UserRules();
+        List<Party> locations = rules.getLocations(user);
+        assertEquals(2, locations.size());
+        assertTrue(locations.contains(location1));
+        assertTrue(locations.contains(location2));
+    }
+
+    /**
+     * Tests the {@link UserRules#getDefaultLocation(User)} method.
+     */
+    public void testGetDefaultLocation() {
+        User user = TestHelper.createUser();
+
+        UserRules rules = new UserRules();
+        assertNull(rules.getDefaultLocation(user));
+
+        Party location1 = TestHelper.createLocation();
+        Party location2 = TestHelper.createLocation();
+        EntityBean bean = new EntityBean(user);
+
+        bean.addRelationship("entityRelationship.userLocation", location1);
+        EntityRelationship rel2
+                = bean.addRelationship("entityRelationship.userLocation",
+                                       location2);
+
+        Party defaultLocation = rules.getDefaultLocation(user);
+        assertNotNull(defaultLocation);
+
+        // location can be one of location1, or location2, as default not
+        // specified
+        assertTrue(defaultLocation.equals(location1)
+                || defaultLocation.equals(location2));
+
+        // mark rel2 as the default
+        EntityRelationshipHelper.setDefault(user, "locations", rel2,
+                                            getArchetypeService());
+        assertEquals(location2, rules.getDefaultLocation(user));
     }
 }

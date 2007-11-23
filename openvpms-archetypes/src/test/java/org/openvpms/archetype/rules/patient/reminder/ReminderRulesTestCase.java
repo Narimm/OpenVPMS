@@ -18,8 +18,6 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import java.util.Date;
-
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -34,6 +32,9 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+
+import java.util.Date;
+import java.util.Set;
 
 
 /**
@@ -226,7 +227,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         
         // Now set patient to deceased
         EntityBean patientBean = new EntityBean(patient);
-        patientBean.setValue("deceased", new Boolean(true));
+        patientBean.setValue("deceased", true);
+        patientBean.save();
         checkShouldCancel(reminder,"2007-02-01", true);
         
     }
@@ -267,21 +269,21 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
 
         // add a REMINDER classification to the email contact and verify it is
         // returned instead of the preferred location contact
-        email = (Contact) get(email);
+        email = get(email);
         Lookup reminder = TestHelper.getClassification("lookup.contactPurpose",
                                                        "REMINDER");
         email.addClassification(reminder);
         save(email);
-        owner = (Party) get(owner);
+        owner = get(owner);
         contact = rules.getContact(owner.getContacts());
         assertTrue(TypeHelper.isA(contact, "contact.email"));
 
         // add a REMINDER classification to the location contact and verify it
         // is returned instead of the email contact
-        location = (Contact) get(location);
+        location = get(location);
         location.addClassification(reminder);
         save(location);
-        owner = (Party) get(owner);
+        owner = get(owner);
         contact = rules.getContact(owner.getContacts());
         assertTrue(TypeHelper.isA(contact, "contact.location"));
     }
@@ -329,10 +331,9 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * @param status   the expected reminder status
      * @param reload   if <code>true</code>, reload the act before checking
      */
-    private void checkReminder(Act reminder, String status,
-                               boolean reload) {
+    private void checkReminder(Act reminder, String status, boolean reload) {
         if (reload) {
-            reminder = (Act) get(reminder);
+            reminder = get(reminder);
             assertNotNull(reminder);
         }
         assertEquals(status, reminder.getStatus());

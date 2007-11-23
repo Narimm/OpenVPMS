@@ -80,8 +80,9 @@ public abstract class ArchetypeServiceTest
      * @return the corresponding object or <code>null</code> if no object
      *         is found
      */
-    protected IMObject get(IMObject object) {
-        return get(object.getObjectReference());
+    @SuppressWarnings("unchecked")
+    protected <T extends IMObject> T get(T object) {
+        return (T) get(object.getObjectReference());
     }
 
     /**
