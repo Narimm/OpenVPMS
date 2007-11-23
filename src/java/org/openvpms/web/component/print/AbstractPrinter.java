@@ -18,12 +18,6 @@
 
 package org.openvpms.web.component.print;
 
-import java.math.BigDecimal;
-
-import javax.print.attribute.standard.MediaSizeName;
-import javax.print.attribute.standard.MediaTray;
-import javax.print.attribute.standard.OrientationRequested;
-
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.doc.MediaHelper;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
@@ -34,9 +28,15 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.PrintProperties;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.PrintHelper;
 import org.openvpms.web.servlet.DownloadServlet;
+
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.MediaTray;
+import javax.print.attribute.standard.OrientationRequested;
+import java.math.BigDecimal;
 
 
 /**
@@ -139,16 +139,18 @@ public abstract class AbstractPrinter implements Printer {
      * @param template an <em>entity.documentTemplate</em>
      */
     protected String getDefaultPrinter(Entity template) {
-        String result = null;
-        Party practice = GlobalContext.getInstance().getPractice();
-        if (practice != null) {
-            EntityRelationship printer = helper.getDocumentTemplatePrinter(
-                    template, practice);
-            if (printer != null) {
-                result = helper.getPrinter(printer);
-            }
-            else
-            	result = PrintHelper.getDefaultPrinter();
+        String result;
+        Context context = GlobalContext.getInstance();
+        EntityRelationship printer
+                = getDocumentTemplatePrinter(context.getLocation(), template);
+        if (printer == null) {
+            printer = getDocumentTemplatePrinter(context.getPractice(),
+                                                 template);
+        }
+        if (printer != null) {
+            result = helper.getPrinter(printer);
+        } else {
+            result = PrintHelper.getDefaultPrinter();
         }
         return result;
     }
@@ -192,7 +194,7 @@ public abstract class AbstractPrinter implements Printer {
 
     /**
      * Helper to return the <em>entityRelationship.documentTemplatePrinter</em>
-     * for a template and printer and current practice.
+     * for a template and printer and current location/practice.
      *
      * @param template an <em>entity.documentTemplate</em>
      * @param printer  the printer
@@ -202,19 +204,14 @@ public abstract class AbstractPrinter implements Printer {
      */
     protected EntityRelationship getDocumentTemplatePrinter(Entity template,
                                                             String printer) {
-        Party practice = GlobalContext.getInstance().getPractice();
-        if (practice != null) {
-            EntityRelationship relationship
-                    = helper.getDocumentTemplatePrinter(template, practice);
-            if (relationship != null) {
-                // make sure the relationship is for the same printer
-                if (ObjectUtils.equals(printer,
-                                       helper.getPrinter(relationship))) {
-                    return relationship;
-                }
-            }
+        GlobalContext context = GlobalContext.getInstance();
+        EntityRelationship result = getDocumentTemplatePrinter(
+                context.getLocation(), template, printer);
+        if (result == null) {
+            result = getDocumentTemplatePrinter(context.getPractice(), template,
+                                                printer);
         }
-        return null;
+        return result;
     }
 
     /**
@@ -251,4 +248,49 @@ public abstract class AbstractPrinter implements Printer {
         }
         return result;
     }
+
+    /**
+     * Helper to return the <em>entityRelationship.documentTemplatePrinter</em>
+     * for a template and printer for an organisation.
+     *
+     * @param organisation the organisation. May be <tt>null</tt>
+     * @param template     an <em>entity.documentTemplate</em>
+     * @param printer      the printer
+     * @return the corresponding
+     *         <em>entityRelationship.documentTemplatePrinter</em>
+     *         or <tt>null</tt> if none is found
+     */
+    private EntityRelationship getDocumentTemplatePrinter(Party organisation,
+                                                          Entity template,
+                                                          String printer) {
+        EntityRelationship relationship = getDocumentTemplatePrinter(
+                organisation, template);
+        if (relationship != null) {
+            // make sure the relationship is for the same printer
+            if (ObjectUtils.equals(printer, helper.getPrinter(relationship))) {
+                return relationship;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Helper to return the <em>entityRelationship.documentTemplatePrinter</em>
+     * for a template and organisation.
+     *
+     * @param organisation the organisation. May be <tt>null</tt>
+     * @param template     an <em>entity.documentTemplate</em>
+     * @return the corresponding
+     *         <em>entityRelationship.documentTemplatePrinter</em>
+     *         or <tt>null</tt> if none is found
+     */
+    private EntityRelationship getDocumentTemplatePrinter(Party organisation,
+                                                          Entity template) {
+        if (organisation != null) {
+            return helper.getDocumentTemplatePrinter(template, organisation);
+        }
+        return null;
+
+    }
+
 }

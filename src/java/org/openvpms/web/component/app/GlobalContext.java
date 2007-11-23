@@ -81,8 +81,13 @@ public class GlobalContext extends AbstractContext {
      */
     @Override
     public void setObject(String key, IMObject object) {
-        super.setObject(key, object);
-        notifyListeners(key, object);
+        IMObject current = getObject(key);
+        if (current != object) {
+            // only update the context if the objects have different instances,
+            // to avoid cyclic notifications
+            super.setObject(key, object);
+            notifyListeners(key, object);
+        }
     }
 
     /**

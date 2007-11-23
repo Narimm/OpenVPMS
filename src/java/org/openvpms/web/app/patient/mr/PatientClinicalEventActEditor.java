@@ -55,10 +55,10 @@ import java.util.List;
 public class PatientClinicalEventActEditor extends AbstractActEditor {
 
     /**
-     * Constructs a new <code>PatientClinicalEventActEditor</code>.
+     * Constructs a new <tt>PatientClinicalEventActEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <code>null</code>
+     * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context
      */
     public PatientClinicalEventActEditor(Act act, IMObject parent,
@@ -67,6 +67,7 @@ public class PatientClinicalEventActEditor extends AbstractActEditor {
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("patient", context.getContext().getPatient());
         initParticipant("worklist", context.getContext().getWorkList());
+        initParticipant("location", context.getContext().getLocation());
 
         addStartEndTimeListeners();
 
@@ -79,7 +80,7 @@ public class PatientClinicalEventActEditor extends AbstractActEditor {
 
     /**
      * Invoked when the status changes. Sets the end time to today if the
-     * status is 'Completed', or <code>null</code> if it is 'Pending'.
+     * status is 'Completed', or <tt>null</tt> if it is 'Pending'.
      */
     private void onStatusChanged() {
         Property status = getProperty("status");

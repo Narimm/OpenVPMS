@@ -68,8 +68,8 @@ public class IMObjectListModel extends AbstractListModel {
      * @param all     if <code>true</code>, add a localised "All"
      * @param none    if <code>true</code>, add a localised "None"
      */
-    public IMObjectListModel(List<IMObject> objects, boolean all,
-                             boolean none) {
+    public <T extends IMObject> IMObjectListModel(List<T> objects, boolean all,
+                                                  boolean none) {
         this.all = all;
         this.none = none;
         this.objects = getObjects(objects);
@@ -95,6 +95,23 @@ public class IMObjectListModel extends AbstractListModel {
     }
 
     /**
+     * Returns the index of the specified object.
+     *
+     * @param object the objecvt
+     * @return the index of <tt>object</tt>, or <tt>-1</tt> if it doesn't exist
+     */
+    public int indexOf(IMObject object) {
+        int result = -1;
+        for (int i = 0; i < objects.size(); ++i) {
+            if (objects.get(i).equals(object)) {
+                result = i;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
      * Helper to prepend the objects "all" or "none" when required.
      * *
      *
@@ -102,18 +119,15 @@ public class IMObjectListModel extends AbstractListModel {
      * @return a copy of <code>objects</code> preprended with "all" and/or
      *         "none" added when required
      */
-    protected List<IMObject> getObjects(List<IMObject> objects) {
-        if (all || none) {
-            objects = new ArrayList<IMObject>(objects);
-
-            if (all) {
-                objects.add(0, ALL);
-            }
-            if (none) {
-                objects.add(0, NONE);
-            }
+    protected <T extends IMObject> List<IMObject> getObjects(List<T> objects) {
+        List<IMObject> result = new ArrayList<IMObject>(objects);
+        if (all) {
+            result.add(0, ALL);
         }
-        return objects;
+        if (none) {
+            result.add(0, NONE);
+        }
+        return result;
     }
 
     static {

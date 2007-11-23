@@ -33,16 +33,17 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 public class CustomerPaymentEditor extends PaymentEditor {
 
     /**
-     * Constructs a new <code>CustomerPaymentEditor</code>.
+     * Constructs a new <tt>CustomerPaymentEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <code>null</code>
+     * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context
      */
     public CustomerPaymentEditor(Act act, IMObject parent,
                                  LayoutContext context) {
         super(act, parent, context);
         initParticipant("customer", context.getContext().getCustomer());
+        initParticipant("location", context.getContext().getLocation());
     }
 
 }

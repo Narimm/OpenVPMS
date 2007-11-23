@@ -536,8 +536,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      */
     protected IMPrinter<T> createPrinter(T object) {
         IMPrinter<T> printer = IMPrinterFactory.create(object);
-        InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer);
-        return iPrinter;
+        return new InteractiveIMPrinter<T>(printer);
     }
 
     /**

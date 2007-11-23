@@ -21,18 +21,14 @@ package org.openvpms.web.component.app;
 import nextapp.echo2.app.ApplicationInstance;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import static org.openvpms.web.component.im.relationship.RelationshipHelper.getDefaultTarget;
 import org.openvpms.web.system.SpringApplicationInstance;
-
-import java.util.List;
 
 
 /**
@@ -57,6 +53,13 @@ public abstract class ContextApplicationInstance
         initUser();
         initPractice();
         initLocation();
+        context.addListener(new ContextListener() {
+            public void changed(String key, IMObject value) {
+                if (Context.LOCATION_SHORTNAME.equals(key)) {
+                    updateLocation((Party) value);
+                }
+            }
+        });
     }
 
     /**
@@ -117,16 +120,8 @@ public abstract class ContextApplicationInstance
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void initPractice() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        // First get the Practice.  Should only be one but get first if more.
-        List<IMObject> rows = ArchetypeQueryHelper.get(
-                service, "party", "organisationPractice", null, true,
-                0, 1).getResults();
-        if (!rows.isEmpty()) {
-            Party practice = (Party) rows.get(0);
-            context.setPractice(practice);
-        }
+        PracticeRules rules = new PracticeRules();
+        context.setPractice(rules.getPractice());
     }
 
     /**
@@ -146,14 +141,16 @@ public abstract class ContextApplicationInstance
             return;
         }
 
+        UserRules userRules = new UserRules();
         // Now get the default location for the user or the first location if
         // no default.
-        Party location = (Party) getDefaultTarget(user, "locations");
+        Party location = userRules.getDefaultLocation(user);
 
         // If no locations defined for user find default location for Practice
         // or the first location if no default.
         if (location == null) {
-            location = (Party) getDefaultTarget(practice, "locations");
+            PracticeRules practiceRules = new PracticeRules();
+            location = practiceRules.getDefaultLocation(practice);
         }
 
         // If no location then return
@@ -162,18 +159,17 @@ public abstract class ContextApplicationInstance
         }
         context.setLocation(location);
 
-        // Now get the default Deposit object.
-        context.setDeposit((Party) getDefaultTarget(location,
-                                                    "depositAccounts"));
+        updateLocation(location);
+    }
 
-        // Now get the default Till object.
-        context.setTill((Party) getDefaultTarget(location, "tills"));
+    private void updateLocation(Party location) {
+        LocationRules rules = new LocationRules();
 
-        // Now get the default Schedule object.
-        context.setSchedule((Party) getDefaultTarget(location, "schedules"));
-
-        // Now get the default WorkList object.
-        context.setWorkList((Party) getDefaultTarget(location, "workLists"));
+        // initialise the defaults for the location
+        context.setDeposit(rules.getDefaultDepositAccount(location));
+        context.setTill(rules.getDefaultTill(location));
+        context.setSchedule(rules.getDefaultSchedule(location));
+        context.setWorkList(rules.getDefaultWorkList(location));
     }
 
 }

@@ -42,6 +42,7 @@ import org.openvpms.web.app.product.ProductSubsystem;
 import org.openvpms.web.app.reporting.ReportingSubsystem;
 import org.openvpms.web.app.supplier.SupplierSubsystem;
 import org.openvpms.web.app.workflow.WorkflowSubsystem;
+import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.subsystem.Subsystem;
 import org.openvpms.web.component.subsystem.Workspace;
@@ -65,7 +66,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class MainPane extends SplitPane implements ContextChangeListener {
+public class MainPane extends SplitPane implements ContextChangeListener,
+                                                   ContextListener {
 
     /**
      * The subsystems.
@@ -166,8 +168,11 @@ public class MainPane extends SplitPane implements ContextChangeListener {
         addSubsystem(new ProductSubsystem());
         addSubsystem(new ReportingSubsystem());
 
-        // If we are logged in an admin, show the administration subsystem
-        User user = GlobalContext.getInstance().getUser();
+        GlobalContext context = GlobalContext.getInstance();
+        context.addListener(this);
+
+        // if the current user is an admin, show the administration subsystem
+        User user = context.getUser();
         if (user != null) {
             UserRules rules = new UserRules();
             if (rules.isAdministrator(user)) {
@@ -213,6 +218,21 @@ public class MainPane extends SplitPane implements ContextChangeListener {
                 subsystem.setWorkspace(workspace);
                 select(subsystem);
                 break;
+            }
+        }
+    }
+
+    /**
+     * Invoked when a global context object changes, to refresh the current
+     * visible workspace, if necessary.
+     *
+     * @param key   the context key
+     * @param value the context value. May be <tt>null</tt>
+     */
+    public void changed(String key, IMObject value) {
+        if (value != null) {
+            if (workspace.canHandle(value.getArchetypeId().getShortName())) {
+                workspace.setIMObject(value);
             }
         }
     }

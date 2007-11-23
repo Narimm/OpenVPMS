@@ -43,6 +43,7 @@ class TextComponentBinder extends Binder {
      * The document update listener.
      */
     private final DocumentListener _listener;
+    private final ActionListener actionListener;
 
 
     /**
@@ -64,11 +65,12 @@ class TextComponentBinder extends Binder {
 
         // Register an action listener to ensure document update events
         // are triggered in a timely fashion
-        _component.addActionListener(new ActionListener() {
+        actionListener = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 // no-op.
             }
-        });
+        };
+        _component.addActionListener(actionListener);
     }
 
     /**
@@ -87,8 +89,10 @@ class TextComponentBinder extends Binder {
      */
     protected void setFieldValue(Object value) {
         _component.getDocument().removeDocumentListener(_listener);
+        _component.removeActionListener(actionListener);
         String text = (value != null) ? value.toString() : null;
         _component.setText(text);
         _component.getDocument().addDocumentListener(_listener);
+        _component.addActionListener(actionListener);
     }
 }
