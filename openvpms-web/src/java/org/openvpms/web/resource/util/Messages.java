@@ -94,7 +94,9 @@ public final class Messages {
     public static String get(String key, boolean allowNull) {
         String result = null;
         try {
-            Locale locale = ApplicationInstance.getActive().getLocale();
+            ApplicationInstance active = ApplicationInstance.getActive();
+            Locale locale = (active != null) ? active.getLocale()
+                    : Locale.getDefault();
             ResourceBundle bundle = ResourceBundle.getBundle(BUNDLE_NAME,
                                                              locale);
             result = bundle.getString(key);

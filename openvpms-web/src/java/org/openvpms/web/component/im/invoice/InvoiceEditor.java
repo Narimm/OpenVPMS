@@ -13,7 +13,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id:InvoiceEditor.java 2287 2007-08-13 07:56:33Z tanderson $
  */
 
 package org.openvpms.web.component.im.invoice;
@@ -50,6 +50,7 @@ public abstract class InvoiceEditor extends ActEditor {
      */
     public InvoiceEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
+        initParticipant("location", context.getContext().getLocation());
         recalculateTax();
     }
 

@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
@@ -27,9 +28,8 @@ import org.openvpms.web.resource.util.Messages;
 
 /**
  * @author tony
- *
  */
-public class ChargesCRUDWindow extends ActCRUDWindow {
+public class ChargesCRUDWindow extends ActCRUDWindow<Act> {
 
     /**
      * Reminder and alert shortnames supported by the workspace.
@@ -45,7 +45,7 @@ public class ChargesCRUDWindow extends ActCRUDWindow {
               new ShortNameList(SHORT_NAMES));
     }
 
-	/**
+    /**
      * Enables/disables the buttons that require an object to be selected.
      *
      * @param buttons the button set
@@ -68,6 +68,7 @@ public class ChargesCRUDWindow extends ActCRUDWindow {
     protected void layoutButtons(ButtonSet buttons) {
         buttons.add(getPrintButton());
     }
+
     /**
      * Invoked when the 'print' button is pressed.
      * This implementation prints the current rather than

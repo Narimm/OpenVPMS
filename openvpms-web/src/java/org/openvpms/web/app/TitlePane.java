@@ -24,21 +24,23 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.user.UserRules;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
+import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -59,6 +61,7 @@ public class TitlePane extends ContentPane {
      * The style name.
      */
     private static final String STYLE = "TitlePane";
+    private SelectField locationSelector;
 
 
     /**
@@ -79,16 +82,37 @@ public class TitlePane extends ContentPane {
         centre.setAlignment(new Alignment(Alignment.DEFAULT, Alignment.CENTER));
         logo.setLayoutData(centre);
 
-        Label label = LabelFactory.create(null, "small");
-        label.setText(Messages.get("label.user", getUserName()));
+        Label user = LabelFactory.create(null, "small");
+        user.setText(Messages.get("label.user", getUserName()));
 
-        Row labelRow = RowFactory.create("InsetX", label);
+        Row locationUserRow = RowFactory.create("CellSpacing", user);
+
+        List<Party> locations = getLocations();
+        if (!locations.isEmpty()) {
+            Party defLocation = getDefaultLocation();
+            Label location = LabelFactory.create("app.location", "small");
+            IMObjectListModel model = new IMObjectListModel(locations,
+                                                            false, false);
+            locationSelector = SelectFieldFactory.create(model);
+            if (defLocation != null) {
+                locationSelector.setSelectedItem(defLocation);
+            }
+            locationSelector.setCellRenderer(new IMObjectListCellRenderer());
+            locationUserRow.add(location, 0);
+            locationUserRow.add(locationSelector, 1);
+            locationSelector.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    changeLocation();
+                }
+            });
+        }
+
+        Row inset = RowFactory.create("InsetX", locationUserRow);
         RowLayoutData right = new RowLayoutData();
         right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.BOTTOM));
         right.setWidth(new Extent(100, Extent.PERCENT));
-        labelRow.setLayoutData(right);
-
-        Row row = RowFactory.create(logo, labelRow);
+        inset.setLayoutData(right);
+        Row row = RowFactory.create(logo, inset);
         add(row);
     }
 
@@ -98,28 +122,59 @@ public class TitlePane extends ContentPane {
      * @return the user name
      */
     protected String getUserName() {
-        String result = null;
-        Authentication auth
-                = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getName() != null) {
-            ArchetypeQuery query = new ArchetypeQuery("security.user", true,
-                                                      true);
-            query.add(new NodeConstraint("username", auth.getName()));
-            query.setMaxResults(1);
+        User user = GlobalContext.getInstance().getUser();
+        return (user != null) ? user.getName() : null;
+    }
 
-            try {
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
-                List<IMObject> rows = service.get(query).getResults();
-                if (!rows.isEmpty()) {
-                    User user = (User) rows.get(0);
-                    result = user.getName();
+    /**
+     * Changes the location.
+     */
+    private void changeLocation() {
+        Party selected = (Party) locationSelector.getSelectedItem();
+        GlobalContext.getInstance().setLocation(selected);
+    }
+
+    /**
+     * Returns the locations for the current user.
+     */
+    private List<Party> getLocations() {
+        List<Party> locations = Collections.emptyList();
+        GlobalContext context = GlobalContext.getInstance();
+        User user = context.getUser();
+        if (user != null) {
+            UserRules rules = new UserRules();
+            locations = rules.getLocations(user);
+            if (locations.isEmpty()) {
+                Party practice = context.getPractice();
+                if (practice != null) {
+                    PracticeRules practiceRules = new PracticeRules();
+                    locations = practiceRules.getLocations(practice);
                 }
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
             }
         }
-        return result;
+        return locations;
+    }
+
+    /**
+     * Returns the default location for the current user.
+     *
+     * @return the default location, or <tt>null</tt> if none is found
+     */
+    private Party getDefaultLocation() {
+        Party location = null;
+        User user = GlobalContext.getInstance().getUser();
+        if (user != null) {
+            UserRules rules = new UserRules();
+            location = rules.getDefaultLocation(user);
+            if (location == null) {
+                Party practice = GlobalContext.getInstance().getPractice();
+                if (practice != null) {
+                    PracticeRules practiceRules = new PracticeRules();
+                    location = practiceRules.getDefaultLocation(practice);
+                }
+            }
+        }
+        return location;
     }
 
 }

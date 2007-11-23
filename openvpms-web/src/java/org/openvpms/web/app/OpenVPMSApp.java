@@ -28,7 +28,6 @@ import nextapp.echo2.webrender.ClientConfiguration;
 import nextapp.echo2.webrender.Connection;
 import nextapp.echo2.webrender.WebRenderServlet;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
@@ -56,6 +55,25 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      */
     private ContextChangeListener listener;
 
+    /**
+     * The current location.
+     */
+    private String location;
+
+    /**
+     * The current customer.
+     */
+    private String customer;
+
+
+    /**
+     * Constructs a new <tt>OpenVPMSApp</tt>.
+     */
+    public OpenVPMSApp() {
+        Context context = getContext();
+        location = getLocation(context.getLocation());
+        customer = getCustomer(context.getCustomer());
+    }
 
     /**
      * Invoked to initialize the application, returning the default window.
@@ -66,12 +84,16 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         configureSessionExpirationURL();
         setStyleSheet(Styles.DEFAULT_STYLE_SHEET);
         window = new Window();
-        window.setTitle(Messages.get("app.title.default"));
+        updateTitle();
         window.setContent(new ApplicationContentPane());
         getContext().addListener(new ContextListener() {
             public void changed(String key, IMObject value) {
                 if (Context.CUSTOMER_SHORTNAME.equals(key)) {
-                    updateTitle(value);
+                    customer = getCustomer(value);
+                    updateTitle();
+                } else if (Context.LOCATION_SHORTNAME.equals(key)) {
+                    location = getLocation(value);
+                    updateTitle();
                 }
             }
         });
@@ -159,18 +181,44 @@ public class OpenVPMSApp extends ContextApplicationInstance {
 
     /**
      * Updates the window title with the customer name.
-     *
-     * @param customer the customer. May be <tt>null</tt>
      */
-    private void updateTitle(IMObject customer) {
-        String title;
-        if (customer == null) {
-            title = Messages.get("app.title.noCustomer");
-        } else {
-            IMObjectBean bean = new IMObjectBean(customer);
-            title = Messages.get("app.title.customer", bean.getString("name"));
+    private void updateTitle() {
+        window.setTitle(Messages.get("app.title", location, customer));
+    }
+
+    /**
+     * Returns the location name.
+     *
+     * @param location the location or <tt>null</tt>
+     * @return the location name
+     */
+    private String getLocation(IMObject location) {
+        return getName(location, "app.title.noLocation");
+    }
+
+    /**
+     * Returns the location name.
+     *
+     * @param customer the customer or <tt>null</tt>
+     * @return the customer name
+     */
+    private String getCustomer(IMObject customer) {
+        return getName(customer, "app.title.noCustomer");
+    }
+
+    /**
+     * Returns the name of an object, or a fallback string if the object is
+     * <tt>null</tt>.
+     *
+     * @param object  the object. May be <tt>null</tt>
+     * @param nullKey the message key if the object is null
+     * @return the name of the object
+     */
+    private String getName(IMObject object, String nullKey) {
+        if (object == null) {
+            return Messages.get(nullKey);
         }
-        window.setTitle(title);
+        return object.getName();
     }
 
 }
