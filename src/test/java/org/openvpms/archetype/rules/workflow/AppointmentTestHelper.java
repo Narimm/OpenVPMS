@@ -157,6 +157,18 @@ public class AppointmentTestHelper extends TestHelper {
     }
 
     /**
+     * Helper to create a new <em>party.organisationWorkList</em>.
+     *
+     * @return a new work list
+     */
+    public static Party createWorkList() {
+        Party workList = (Party) create("party.organisationWorkList");
+        workList.setName("XWorkList");
+        save(workList);
+        return workList;
+    }
+
+    /**
      * Creates a lookup.
      *
      * @param shortName the lookup short name

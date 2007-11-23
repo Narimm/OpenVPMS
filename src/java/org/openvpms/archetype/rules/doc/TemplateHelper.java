@@ -126,17 +126,19 @@ public class TemplateHelper {
     /**
      * Returns the <em>entityRelationship.documentTemplatePrinter</em>
      * associated with an <em>entity.documentTemplate</em> for the given
-     * <em>party.organisationPractice</em>.
+     * <em>party.organisationPractice</em> or
+     * <em>party.organisationLocation</em>.
      *
-     * @param template the template. An <em>entity.documentTemplate</em>
-     * @param practice the practice. An <em>party.organisationPractice</em>
+     * @param template     the template. An <em>entity.documentTemplate</em>
+     * @param organisation the practice. An <em>party.organisationPractice</em>
+     *                     or <em>party.organisationLocation</em>
      * @return the corresponding document template printer relationship, or
      *         <tt>null</tt> if none is found
      */
     public EntityRelationship getDocumentTemplatePrinter(Entity template,
-                                                         Party practice) {
+                                                         Party organisation) {
         IMObjectBean templateBean = new IMObjectBean(template, service);
-        IMObjectReference practiceRef = practice.getObjectReference();
+        IMObjectReference practiceRef = organisation.getObjectReference();
         for (EntityRelationship relationship :
                 templateBean.getValues("printers", EntityRelationship.class)) {
             if (relationship.getTarget() != null &&

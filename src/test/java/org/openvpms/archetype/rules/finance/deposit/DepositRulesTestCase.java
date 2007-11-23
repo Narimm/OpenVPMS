@@ -44,7 +44,7 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
     /**
      * The account.
      */
-    private Party _account;
+    private Party account;
 
 
     /**
@@ -113,10 +113,10 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
         DepositRules.deposit(deposit.getAct(), service);
 
         // reload the account to pick up the updates
-        _account = (Party) get(_account.getObjectReference());
-        assertNotNull(_account);
+        account = (Party) get(account.getObjectReference());
+        assertNotNull(account);
 
-        IMObjectBean bean = new IMObjectBean(_account);
+        IMObjectBean bean = new IMObjectBean(account);
         Date lastDeposit = bean.getDate("lastDeposit");
         Date now = new Date();
 
@@ -132,7 +132,7 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        _account = createAccount();
+        account = DepositTestHelper.createDepositAccount();
     }
 
     /**
@@ -144,7 +144,7 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
     private ActBean createDeposit(String status) {
         ActBean act = createAct("act.bankDeposit");
         act.setStatus(status);
-        act.setParticipant("participation.deposit", _account);
+        act.setParticipant("participation.deposit", account);
         return act;
     }
 
@@ -160,22 +160,5 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
         return new ActBean(act);
     }
 
-    /**
-     * Creates and saves a new deposit account.
-     *
-     * @return a new account
-     */
-    private Party createAccount() {
-        Party account = (Party) create("party.organisationDeposit");
-        assertNotNull(account);
-        account.setName("XDepositRulesTestCase-Account" + hashCode());
-        IMObjectBean bean = new IMObjectBean(account);
-        bean.setValue("bank", "Westpac");
-        bean.setValue("branch", "Eltham");
-        bean.setValue("accountNumber", "123-456-789");
-        bean.setValue("accountName", "Foo");
-        save(account);
-        return account;
-    }
 
 }

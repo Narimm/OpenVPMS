@@ -21,6 +21,7 @@ package org.openvpms.archetype.rules.finance.till;
 import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.archetype.rules.finance.deposit.DepositHelper;
+import org.openvpms.archetype.rules.finance.deposit.DepositTestHelper;
 import static org.openvpms.archetype.rules.finance.till.TillRuleException.ErrorCode.*;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -219,15 +220,15 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
                                                      BigDecimal.ONE);
 
         // clear the till
-        Party account = createAccount();
+        Party account = DepositTestHelper.createDepositAccount();
         rules.clearTill(balance, BigDecimal.ZERO, account);
 
         // reload the act and save it to force TillRules.addToTill() to run
         // again. However the act should not be added to a new balance as
         // there is an existing actRelationship.tillBalanceItem relationship.
-        Act latest = (Act) get(payment.getAct());
+        Act latest = get(payment.getAct());
         save(latest);
-        latest = (Act) get(latest);
+        latest = get(latest);
         payment = new ActBean(latest);
         List<ActRelationship> relationships = payment.getRelationships(
                 "actRelationship.tillBalanceItem");
@@ -410,7 +411,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
             assertNull(balance);
         }
         if (balance != null) {
-            Act latest = (Act) get(act.getAct());
+            Act latest = get(act.getAct());
             int found = countRelationships(balance, latest);
             if (posted) {
                 assertTrue("Act not added to till balance", found != 0);
@@ -439,7 +440,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         tillBean.setValue("tillFloat", initialCashFloat);
         tillBean.save();
 
-        Party account = createAccount();
+        Party account = DepositTestHelper.createDepositAccount();
         ActBean balanceBean = createBalance(TillBalanceStatus.UNCLEARED);
         balanceBean.save();
         assertNull(balanceBean.getAct().getActivityEndTime());
@@ -572,24 +573,6 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         assertNotNull(till);
         till.setName("TillRulesTestCase-Till" + hashCode());
         return till;
-    }
-
-    /**
-     * Creates and saves a new deposit account.
-     *
-     * @return a new account
-     */
-    private Party createAccount() {
-        Party account = (Party) create("party.organisationDeposit");
-        assertNotNull(account);
-        account.setName("TillRulesTestCase-Account" + hashCode());
-        IMObjectBean bean = new IMObjectBean(account);
-        bean.setValue("bank", "Westpac");
-        bean.setValue("branch", "Eltham");
-        bean.setValue("accountNumber", "123-456-789");
-        bean.setValue("accountName", "Foo");
-        save(account);
-        return account;
     }
 
     /**

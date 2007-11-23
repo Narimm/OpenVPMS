@@ -22,6 +22,7 @@ import junit.framework.Assert;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -129,7 +130,7 @@ public class TestHelper extends Assert {
         EntityBean bean = new EntityBean(patient);
         bean.setValue("name", "XPatient-" + System.currentTimeMillis());
         bean.setValue("species", "CANINE");
-        bean.setValue("deceased", new Boolean(false));
+        bean.setValue("deceased", false);
         if (save) {
             bean.save();
         }
@@ -261,6 +262,19 @@ public class TestHelper extends Assert {
     }
 
     /**
+     * Creates a new <code>party.supplierorganisation</em>.
+     *
+     * @return a new party
+     */
+    public static Party createSupplier() {
+        Party party = (Party) create("party.supplierorganisation");
+        IMObjectBean bean = new IMObjectBean(party);
+        bean.setValue("name", "XSupplier");
+        bean.save();
+        return party;
+    }
+
+    /**
      * Creates a new <code>party.supplierVeterinarian</em>.
      *
      * @return a new party
@@ -271,6 +285,23 @@ public class TestHelper extends Assert {
         bean.setValue("firstName", "J");
         bean.setValue("lastName", "XSupplierVet");
         bean.setValue("title", "MR");
+        bean.save();
+        return party;
+    }
+
+    /**
+     * Creates a new <tt>party.organisationLocation</tt>.
+     *
+     * @return a new location
+     */
+    public static Party createLocation() {
+        Party party = (Party) create("party.organisationLocation");
+        party.setName("XLocation");
+        Contact contact = (Contact) create("contact.phoneNumber");
+        party.addContact(contact);
+        Lookup currency = getClassification("lookup.currency", "AUD");
+        IMObjectBean bean = new IMObjectBean(party);
+        bean.setValue("currency", currency.getCode());
         bean.save();
         return party;
     }

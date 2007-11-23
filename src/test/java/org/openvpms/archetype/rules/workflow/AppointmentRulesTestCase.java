@@ -190,7 +190,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         bean.addRelationship("actRelationship.customerAppointmentTask", task);
         save(appointment);
 
-        task = (Act) get(task); // need to reload as relationship has been added
+        task = get(task); // need to reload as relationship has been added
 
         checkStatus(task, WorkflowStatus.PENDING, appointment,
                     WorkflowStatus.PENDING);
@@ -238,7 +238,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     protected Act createTask() {
         Entity taskType = createTaskType();
         Party customer = TestHelper.createCustomer();
-        Entity workList = createWorkList();
+        Party workList = AppointmentTestHelper.createWorkList();
         Act act = createAct("act.customerTask");
         ActBean bean = new ActBean(act);
         bean.setStatus(WorkflowStatus.PENDING);
@@ -283,18 +283,6 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to create a new <em>party.organisationWorkList</em>.
-     *
-     * @return a new work list
-     */
-    protected Party createWorkList() {
-        Party workList = (Party) create("party.organisationWorkList");
-        workList.setName("XWorkList");
-        save(workList);
-        return workList;
-    }
-
-    /**
      * Helper to create a new <code>party.organisationSchedule</em>.
      *
      * @param slotSize        the schedule slot size
@@ -336,7 +324,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         save(source);
 
         // reload the linked act to get any new status
-        linked = (Act) get(linked);
+        linked = get(linked);
         assertNotNull(linked);
         assertEquals(expectedStatus, linked.getStatus());
 
