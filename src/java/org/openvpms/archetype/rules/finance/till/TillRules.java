@@ -45,6 +45,8 @@ import org.openvpms.component.system.common.query.QueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 
 
@@ -379,7 +381,7 @@ public class TillRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void doAddToTill(Act act) {
-        ActBean bean = new ActBean(act);
+        ActBean bean = new ActBean(act, service);
         boolean isAdjust = TypeHelper.isA(act, "act.tillBalanceAdjustment");
         IMObjectReference till = bean.getParticipantRef(TILL_PARTICIPATION);
         if (till == null) {
@@ -393,7 +395,8 @@ public class TillRules {
         if (balanceBean.getRelationship(act) == null) {
             balanceBean.addRelationship(TILL_BALANCE_ITEM, act);
             updateBalance(balanceBean);
-            balanceBean.save();
+            Collection<IMObject> list = Arrays.asList((IMObject) act, balance);
+            service.save(list);
         } else if (isAdjust) {
             updateBalance(balanceBean);
             balanceBean.save();
@@ -412,16 +415,17 @@ public class TillRules {
         ActBean bean = new ActBean(act, service);
         bean.setStatus(TillBalanceStatus.UNCLEARED);
         bean.setParticipant(TillRules.TILL_PARTICIPATION, till);
-        
+
         // Get the Till and extract last cash float amount to set balance cash float.  
         Entity theTill = bean.getParticipant(TILL_PARTICIPATION);
         BigDecimal tillCashFloat;
         if (theTill != null) {
-	        IMObjectBean tillBean = new IMObjectBean(theTill, service);
-	        tillCashFloat = tillBean.getBigDecimal("tillFloat", BigDecimal.ZERO);
-	        bean.setValue("cashFloat", tillCashFloat);
+            IMObjectBean tillBean = new IMObjectBean(theTill, service);
+            tillCashFloat = tillBean.getBigDecimal("tillFloat",
+                                                   BigDecimal.ZERO);
+            bean.setValue("cashFloat", tillCashFloat);
         }
-        
+
         return act;
     }
 
