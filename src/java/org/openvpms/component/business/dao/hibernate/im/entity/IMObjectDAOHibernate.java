@@ -102,8 +102,18 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         Transaction tx = session.beginTransaction();
         try {
-            session.saveOrUpdate(object);
+            MergeHandler handler = null;
+            IMObject source = null;
+            if (object.isNew()) {
+                session.saveOrUpdate(object);
+            } else {
+                handler = MergeHandlerFactory.getHandler(object);
+                source = handler.merge(object, session);
+            }
             tx.commit();
+            if (handler != null) {
+                handler.update(object, source);
+            }
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -111,7 +121,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
             throw new IMObjectDAOException(FailedToSaveIMObject, exception,
                                            object.getUid());
-
         } finally {
             clearCache();
             session.close();

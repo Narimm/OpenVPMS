@@ -221,6 +221,7 @@ public class ArchetypeServiceActTestCase
         // This should fail as the collection doesn't have the latest version
         // of act1
         act1 = reload(act1);
+        act1.setStatus("POSTED");
         service.save(act1);
         try {
             checkSaveCollection(acts, 2);
@@ -277,6 +278,34 @@ public class ArchetypeServiceActTestCase
         item.addActRelationship(relationship2);
 
         checkSaveCollection(acts, 3);
+    }
+
+    /**
+     * Verifies that the {@link IArchetypeService#save(Collection<IMObject>)}
+     * method and {@link IArchetypeService#save(IMObject) method can be used
+     * to save the same object.
+     *
+     * @throws Exception for any error
+     */
+    public void testOBF170() {
+        Party person = createPerson("MR", "Jim", "Alateras");
+        service.save(person);
+
+        Act act1 = createSimpleAct("act1", "IN_PROGRESS");
+
+        Participation p1 = createSimpleParticipation("act1p1", person, act1);
+        act1.addParticipation(p1);
+
+        service.save(act1);
+        act1.setStatus("POSTED");
+        Collection<IMObject> objects = Arrays.asList((IMObject) act1);
+        service.save(objects);
+
+        act1.removeParticipation(p1);
+        objects = Arrays.asList((IMObject) act1);
+        service.save(objects);
+
+        service.save(act1);
     }
 
     /**
