@@ -42,7 +42,7 @@ import java.util.Set;
 public class ActBean extends IMObjectBean {
 
     /**
-     * Constructs a new <code>ActBean</code>.
+     * Constructs a new <tt>ActBean</tt>.
      *
      * @param act the act
      */
@@ -51,7 +51,7 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Constructs a new <code>ActBean</code>.
+     * Constructs a new <tt>ActBean</tt>.
      *
      * @param act     the act
      * @param service the archetype service
@@ -88,10 +88,11 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
-     * Adds an act relationship.
+     * Adds an act relationship, to both acts.
      *
      * @param shortName the relationship short name
      * @param target    the target act
+     * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
      */
     public ActRelationship addRelationship(String shortName, Act target) {
@@ -104,6 +105,7 @@ public class ActBean extends IMObjectBean {
         r.setSource(act.getObjectReference());
         r.setTarget(target.getObjectReference());
         act.addActRelationship(r);
+        target.addActRelationship(r);
         return r;
     }
 
@@ -111,8 +113,8 @@ public class ActBean extends IMObjectBean {
      * Returns the first act relationship with the specified act as a target.
      *
      * @param target the target act
-     * @return the first act relationship with <code>target</code> as its target
-     *         or <code>null</code> if none is found
+     * @return the first act relationship with <tt>target</tt> as its target
+     *         or <tt>null</tt> if none is found
      */
     public ActRelationship getRelationship(Act target) {
         Act act = getAct();
@@ -260,7 +262,7 @@ public class ActBean extends IMObjectBean {
      * Returns the first participation of the specified type.
      *
      * @param shortName the participation short name
-     * @return the participation or <code>null</code> if none is found
+     * @return the participation or <tt>null</tt> if none is found
      */
     public Participation getParticipation(String shortName) {
         for (Participation p : getAct().getParticipations()) {
@@ -298,7 +300,7 @@ public class ActBean extends IMObjectBean {
      * type.
      *
      * @param shortName the participation short name
-     * @return the entity, or <code>null</code> if none is found
+     * @return the entity, or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getParticipant(String shortName) {
