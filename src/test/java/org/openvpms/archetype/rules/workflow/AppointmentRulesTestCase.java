@@ -48,6 +48,38 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
 
 
     /**
+     * Tests the {@link AppointmentRules#getSlotSize(Party)} method.
+     */
+    public void testGetSlotSize() {
+        Entity appointmentType = createAppointmentType();
+        Party schedule = createSchedule(15, "MINUTES", 2, appointmentType);
+        assertEquals(15, rules.getSlotSize(schedule));
+    }
+
+    /**
+     * Tests the {@link AppointmentRules#getDefaultAppointmentType(Party)}
+     * method.
+     */
+    public void testGetDefaultAppointmentType() {
+        Entity appointmentType1 = createAppointmentType();
+        Entity appointmentType2 = createAppointmentType();
+        Party schedule = createSchedule(15, "MINUTES", 2, null);
+        assertNull(rules.getDefaultAppointmentType(schedule));
+
+        AppointmentTestHelper.addAppointmentType(schedule, appointmentType1, 2,
+                                                 false);
+
+        // no default appointment type, so should pick the first available
+        assertEquals(rules.getDefaultAppointmentType(schedule),
+                     appointmentType1);
+
+        AppointmentTestHelper.addAppointmentType(schedule, appointmentType2, 2,
+                                                 true);
+        assertEquals(rules.getDefaultAppointmentType(schedule),
+                     appointmentType2);
+    }
+
+    /**
      * Tests the behaviour of {@link AppointmentRules#calculateEndTime} when
      * the schedule units are in minutes .
      */

@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.workflow;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -77,6 +78,19 @@ public class AppointmentRules {
     public int getSlotSize(Party schedule) {
         EntityBean bean = new EntityBean(schedule, service);
         return getSlotSize(bean);
+    }
+
+    /**
+     * Returns the default appointment type associated with a schedule.
+     *
+     * @param schedule the schedule
+     * @return the default appointment type, or the the first appointment type
+     *         if there is no default, or <tt>null</tt> if none is found
+     * @throws OpenVPMSException for any error
+     */
+    public Entity getDefaultAppointmentType(Party schedule) {
+        return EntityRelationshipHelper.getDefaultTarget(
+                schedule, "appointmentTypes", service);
     }
 
     /**
