@@ -67,7 +67,7 @@ public class AppointmentTestHelper extends TestHelper {
      * @param slotSize        the schedule slot size
      * @param slotUnits       the schedule slot units
      * @param noSlots         the appointment no. of slots
-     * @param appointmentType the appointment type
+     * @param appointmentType the appointment type. May be <tt>null</tt>
      * @return a new schedule
      */
     public static Party createSchedule(int slotSize, String slotUnits,
@@ -77,15 +77,36 @@ public class AppointmentTestHelper extends TestHelper {
         bean.setValue("name", "XSchedule");
         bean.setValue("slotSize", slotSize);
         bean.setValue("slotUnits", slotUnits);
-        EntityRelationship relationship = (EntityRelationship) create(
-                "entityRelationship.scheduleAppointmentType");
-        relationship.setSource(schedule.getObjectReference());
-        relationship.setTarget(appointmentType.getObjectReference());
-        IMObjectBean relBean = new IMObjectBean(relationship);
-        relBean.setValue("noSlots", noSlots);
-        schedule.addEntityRelationship(relationship);
+        if (appointmentType != null) {
+            addAppointmentType(schedule, appointmentType, noSlots, true);
+        }
         bean.save();
         return schedule;
+    }
+
+    /**
+     * Helper to add a appointment type to a schedule.
+     *
+     * @param schedule        the schedule
+     * @param appointmentType the appointment type
+     * @param noSlots         the appointment no. of slots
+     * @param isDefault       determines if the appointment type is the default
+     * @return the new <em>entityRelationship.scheduleAppointmentType</em>
+     */
+    public static EntityRelationship addAppointmentType(Party schedule,
+                                                        Entity appointmentType,
+                                                        int noSlots,
+                                                        boolean isDefault) {
+        EntityBean bean = new EntityBean(schedule);
+        EntityRelationship relationship = bean.addRelationship(
+                "entityRelationship.scheduleAppointmentType",
+                appointmentType);
+        IMObjectBean relBean = new IMObjectBean(relationship);
+        relBean.setValue("noSlots", noSlots);
+        if (isDefault) {
+            relBean.setValue("default", true);
+        }
+        return relationship;
     }
 
     /**
