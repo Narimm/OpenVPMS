@@ -811,6 +811,15 @@
                 <war.bundle>true</war.bundle>
             </properties>
         </dependency>
+        <dependency>
+            <groupId>jcommon</groupId>
+            <artifactId>jcommon</artifactId>
+            <version>1.0.0</version>
+            <url>http://www.jfree.org/jfreechart/</url>
+            <properties>
+                <war.bundle>true</war.bundle>
+            </properties>
+        </dependency>
     </dependencies>
 
     <build>
