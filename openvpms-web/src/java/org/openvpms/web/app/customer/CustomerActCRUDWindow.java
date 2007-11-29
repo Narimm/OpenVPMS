@@ -18,7 +18,10 @@
 
 package org.openvpms.web.app.customer;
 
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
+
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -76,4 +79,18 @@ public abstract class CustomerActCRUDWindow<T extends Act>
         super.onCreated(act);
     }
 
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(T object, boolean isNew) {
+        super.onSaved(object, isNew);
+        String status = object.getStatus();
+        if (POSTED.equals(status)) {
+        	print(object);
+        }
+    } 
 }
