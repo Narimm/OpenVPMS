@@ -163,10 +163,13 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
         // update the most recent act.patientClinicalEvent, setting it status
         // to COMPLETED, if one is present
-        addTask(new GetClinicalEventTask());
-        TaskProperties eventProperties = new TaskProperties();
-        eventProperties.add("status", ActStatus.COMPLETED);
-        addTask(new ConditionalUpdateTask(EVENT_SHORTNAME, eventProperties));
+        // TODO:  Removed this as causing version issues on common consulting room workflow.   
+        // After consulting workflow and completing billing reception woudl do checkout and update visit
+        // but clinician would also add more clinical records causing version conflict when saved.
+        //addTask(new GetClinicalEventTask());
+        //TaskProperties eventProperties = new TaskProperties();
+        //eventProperties.add("status", ActStatus.COMPLETED);
+        //addTask(new ConditionalUpdateTask(EVENT_SHORTNAME, eventProperties));
     }
 
     /**
