@@ -456,13 +456,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * Invoked when the 'print' button is pressed.
      */
     protected void onPrint() {
-        T object = getObject();
-        try {
-            IMPrinter<T> printer = createPrinter(object);
-            printer.print();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
+    	print(getObject());
     }
 
     /**
@@ -560,4 +554,17 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
         return new DefaultLayoutContext(true);
     }
 
+    /**
+     * Print an object.
+     *
+     * @param object the object to print
+     */
+    protected void print(T object) {
+        try {
+            IMPrinter<T> printer = createPrinter(object);
+            printer.print();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
 }

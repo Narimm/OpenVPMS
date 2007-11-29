@@ -19,9 +19,15 @@
 package org.openvpms.web.app.customer;
 
 
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
+
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.SaveHelper;
 
 
 /**
