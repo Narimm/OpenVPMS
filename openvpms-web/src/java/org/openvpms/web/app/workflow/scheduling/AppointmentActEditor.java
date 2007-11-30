@@ -384,9 +384,13 @@ public class AppointmentActEditor extends AbstractActEditor {
             ComponentState result;
             String name = property.getName();
             if (name.equals("startTime")) {
-                result = new ComponentState(startTimeField, property);
+                result = new ComponentState(startTimeField.getComponent(),
+                                            startTimeField.getProperty(),
+                                            startTimeField.getFocusGroup());
             } else if (name.equals("endTime")) {
-                result = new ComponentState(endTimeField, property);
+                result = new ComponentState(endTimeField.getComponent(),
+                                            endTimeField.getProperty(),
+                                            endTimeField.getFocusGroup());
             } else {
                 result = super.createComponent(property, parent, context);
             }
