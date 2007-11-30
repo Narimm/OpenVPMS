@@ -54,6 +54,8 @@ public class ActBeanTestCase
         assertEquals(0, bean.getRelationships(relName).size());
 
         ActRelationship r = bean.addRelationship(relName, target);
+        assertTrue(target.getActRelationships().contains(r));
+
         checkRelationship(r, relName, source, target);
         r = bean.getRelationship(target);
         checkRelationship(r, relName, source, target);
