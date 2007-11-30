@@ -25,8 +25,10 @@ import org.openvpms.web.component.dialog.PopupDialog;
 
 
 /**
- * An {@link EvalTask} task that pops up a Yes/No/Cancel confirmation dialog,
- * evaluating to <code>true</code> if Yes is selected, or <code>false</code>
+ * An {@link EvalTask} task that pops up a Yes/No/Cancel or OK/Cancel
+ * confirmation dialog.
+ * <p/>
+ * It evaluates <tt>true</tt> if Yes/OK is selected, or <tt>false</tt>
  * if No is selected. Selecting Cancel cancels the task.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -44,16 +46,33 @@ public class ConfirmationTask extends EvalTask<Boolean> {
      */
     private final String message;
 
+    /**
+     * Determines if the No button should be displayed.
+     */
+    private final boolean displayNo;
+
 
     /**
-     * Creates a new <code>ConfirmationTask</code>.
+     * Creates a new <tt>ConfirmationTask</tt>.
      *
      * @param title   the dialog title
      * @param message the dialog message
      */
     public ConfirmationTask(String title, String message) {
+        this(title, message, true);
+    }
+
+    /**
+     * Creates a new <tt>ConfirmationTask</tt>.
+     *
+     * @param title     the dialog title
+     * @param message   the dialog message
+     * @param displayNo determines if the 'No' button should be displayed
+     */
+    public ConfirmationTask(String title, String message, boolean displayNo) {
         this.title = title;
         this.message = message;
+        this.displayNo = displayNo;
     }
 
     /**
@@ -65,12 +84,15 @@ public class ConfirmationTask extends EvalTask<Boolean> {
      * @param context the task context
      */
     public void start(TaskContext context) {
+        String[] buttons = (displayNo) ? PopupDialog.YES_NO_CANCEL
+                : PopupDialog.OK_CANCEL;
         final ConfirmationDialog dialog = new ConfirmationDialog(
-                title, message, PopupDialog.YES_NO_CANCEL);
+                title, message, buttons);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 String action = dialog.getAction();
-                if (ConfirmationDialog.YES_ID.equals(action)) {
+                if (ConfirmationDialog.YES_ID.equals(action)
+                        || ConfirmationDialog.OK_ID.equals(action)) {
                     setValue(true);
                 } else if (ConfirmationDialog.NO_ID.equals(action)) {
                     setValue(false);

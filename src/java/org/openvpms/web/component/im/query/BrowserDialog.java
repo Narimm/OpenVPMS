@@ -18,10 +18,17 @@
 
 package org.openvpms.web.component.im.query;
 
+import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 
 
 /**
@@ -40,13 +47,13 @@ public class BrowserDialog<T extends IMObject> extends PopupDialog {
     /**
      * The selected object.
      */
-    private T _selected;
+    private T selected;
 
     /**
      * Determines if the user wants to create a new object. Set when the 'New'
      * button is pressed.
      */
-    private boolean _createNew = false;
+    private boolean createNew = false;
 
     /**
      * Window style name.
@@ -55,7 +62,7 @@ public class BrowserDialog<T extends IMObject> extends PopupDialog {
 
 
     /**
-     * Construct a new <code>BrowserDialog</code>.
+     * Construct a new <tt>BrowserDialog</tt>.
      *
      * @param title   the dialog title
      * @param browser the browser
@@ -65,40 +72,52 @@ public class BrowserDialog<T extends IMObject> extends PopupDialog {
     }
 
     /**
-     * Constructs a new <code>BrowserDialog</code>.
+     * Constructs a new <tt>BrowserDialog</tt>.
      *
      * @param title   the dialog title
      * @param buttons the buttons to display
      * @param browser the browser
      */
     public BrowserDialog(String title, String[] buttons, Browser<T> browser) {
-        this(title, buttons, browser, false);
+        this(title, null, buttons, browser, false);
     }
 
     /**
-     * Construct a new <code>BrowserDialog</code>.
+     * Construct a new <tt>BrowserDialog</tt>.
      *
      * @param title   the dialog title
      * @param browser the browser
-     * @param addNew  if <code>true</code> add a 'new' button
+     * @param addNew  if <tt>true</tt> add a 'new' button
      */
     public BrowserDialog(String title, Browser<T> browser, boolean addNew) {
-        this(title, CANCEL, browser, addNew);
+        this(title, null, CANCEL, browser, addNew);
     }
 
     /**
-     * Construct a new <code>BrowserDialog</code>.
+     * Construct a new <tt>BrowserDialog</tt>.
      *
      * @param title   the dialog title
+     * @param message the dialog message. May be <tt>null</tt>
      * @param buttons the buttons to display
      * @param browser the browser
-     * @param addNew  if <code>true</code> add a 'new' button
+     * @param addNew  if <tt>true</tt> add a 'new' button
      */
-    public BrowserDialog(String title, String[] buttons, Browser<T> browser,
-                         boolean addNew) {
+    public BrowserDialog(String title, String message, String[] buttons,
+                         Browser<T> browser, boolean addNew) {
         super(title, STYLE, buttons, browser.getFocusGroup());
         setModal(true);
-        getLayout().add(browser.getComponent());
+
+        Component component = browser.getComponent();
+        if (message != null) {
+            Label label = LabelFactory.create();
+            label.setText(message);
+            Row inset = RowFactory.create("Inset", label);
+            Column column = ColumnFactory.create("CellSpacing", inset,
+                                                 component);
+            getLayout().add(column);
+        } else {
+            getLayout().add(component);
+        }
 
         if (addNew) {
             addButton(NEW_ID, new ActionListener() {
@@ -120,20 +139,20 @@ public class BrowserDialog<T extends IMObject> extends PopupDialog {
     /**
      * Returns the selected object.
      *
-     * @return the selected object, or <code>null</code> if none was selected
+     * @return the selected object, or <tt>null</tt> if none was selected
      */
     public T getSelected() {
-        return _selected;
+        return selected;
     }
 
     /**
      * Determines if the 'New' button was selected, indicating that a new object
      * should be created.
      *
-     * @return <code>true</code> if 'New' was selected
+     * @return <tt>true</tt> if 'New' was selected
      */
     public boolean createNew() {
-        return _createNew;
+        return createNew;
     }
 
     /**
@@ -142,7 +161,7 @@ public class BrowserDialog<T extends IMObject> extends PopupDialog {
      * @param object the selected object
      */
     protected void onSelected(T object) {
-        _selected = object;
+        selected = object;
         close();
     }
 
@@ -151,7 +170,7 @@ public class BrowserDialog<T extends IMObject> extends PopupDialog {
      * browser.
      */
     protected void onNew() {
-        _createNew = true;
+        createNew = true;
         close();
     }
 
