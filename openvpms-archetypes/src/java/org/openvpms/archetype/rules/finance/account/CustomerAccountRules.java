@@ -618,7 +618,6 @@ public class CustomerAccountRules {
             ActBean debitBean = new ActBean(act, service);
             ActRelationship relationship = debitBean.addRelationship(
                     ACCOUNT_ALLOCATION_SHORTNAME, credit.getAct());
-            credit.getAct().addActRelationship(relationship);
             IMObjectBean relBean = new IMObjectBean(relationship, service);
             relBean.setValue("allocatedAmount", allocated);
         }
