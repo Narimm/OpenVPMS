@@ -20,6 +20,8 @@ package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
 /**
@@ -31,13 +33,27 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 public abstract class AbstractIMObjectCopyHandler
         implements IMObjectCopyHandler {
 
+    /**
+     * Determines how {@link IMObjectCopier} should treat an object. This
+     * implementation always returns a new instance, of the same archetype as
+     * <tt>object</tt>.
+     *
+     * @param object  the source object
+     * @param service the archetype service
+     * @return <tt>object</tt> if the object shouldn't be copied,
+     *         <tt>null</tt> if it should be replaced with <tt>null</tt>,
+     *         or a new instance if the object should be copied
+     */
+    public IMObject getObject(IMObject object, IArchetypeService service) {
+        return service.create(object.getArchetypeId());
+    }
 
     /**
      * Determines how a node should be copied.
      *
      * @param source the source node
      * @param target the target archetype
-     * @return a node to copy source to, or <code>null</code> if the node
+     * @return a node to copy source to, or <tt>null</tt> if the node
      *         shouldn't be copied
      */
     public NodeDescriptor getNode(NodeDescriptor source,
@@ -54,7 +70,7 @@ public abstract class AbstractIMObjectCopyHandler
      *
      * @param source the source node
      * @param target the target archetype
-     * @return a node to copy source to, or <code>null</code> if the node
+     * @return a node to copy source to, or <tt>null</tt> if the node
      *         shouldn't be copied
      */
     protected NodeDescriptor getTargetNode(NodeDescriptor source,
@@ -71,10 +87,9 @@ public abstract class AbstractIMObjectCopyHandler
      * Helper to determine if a node is copyable.
      *
      * @param node   the node descriptor
-     * @param source if <code>true</code> the node is the source; otherwise its
+     * @param source if <tt>true</tt> the node is the source; otherwise its
      *               the target
-     * @return <code>true</code> if the node is copyable; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the node is copyable; otherwise <tt>false</tt>
      */
     protected boolean isCopyable(NodeDescriptor node, boolean source) {
         boolean result = !node.getName().equals("uid");  // NON-NLS

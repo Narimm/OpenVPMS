@@ -40,37 +40,47 @@ public class IMObjectCopier {
     /**
      * The archetype service.
      */
-    private IArchetypeService _service;
+    private final IArchetypeService service;
 
     /**
      * Map of original -> copied references, to avoid duplicate copying.
      */
-    private Map<IMObjectReference, IMObjectReference> _references;
+    private Map<IMObjectReference, IMObjectReference> references;
 
     /**
      * The copy handler.
      */
-    private final IMObjectCopyHandler _handler;
+    private final IMObjectCopyHandler handler;
 
 
     /**
-     * Construct a new <code>IMObjectCopier</code>.
+     * Construct a new <tt>IMObjectCopier</tt>.
      *
      * @param handler the copy handler
      */
     public IMObjectCopier(IMObjectCopyHandler handler) {
-        _handler = handler;
-        _service = ArchetypeServiceHelper.getArchetypeService();
+        this(handler, ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Construct a new <tt>IMObjectCopier</tt>.
+     *
+     * @param handler the copy handler
+     */
+    public IMObjectCopier(IMObjectCopyHandler handler,
+                          IArchetypeService service) {
+        this.handler = handler;
+        this.service = service;
     }
 
     /**
      * Copy an object.
      *
      * @param object the object to copy.
-     * @return a copy of <code>object</code>
+     * @return a copy of <tt>object</tt>
      */
     public IMObject copy(IMObject object) {
-        _references = new HashMap<IMObjectReference, IMObjectReference>();
+        references = new HashMap<IMObjectReference, IMObjectReference>();
         return apply(object);
     }
 
@@ -79,15 +89,15 @@ public class IMObjectCopier {
      * determined by the {@link IMObjectCopyHandler}.
      *
      * @param source the source object
-     * @return a copy of <code>source</code> if the handler indicates it should
-     *         be copied; otherwise returns <code>source</code> unchanged
+     * @return a copy of <tt>source</tt> if the handler indicates it should
+     *         be copied; otherwise returns <tt>source</tt> unchanged
      */
     protected IMObject apply(IMObject source) {
-        IMObject target = _handler.getObject(source, _service);
+        IMObject target = handler.getObject(source, service);
         if (target != null) {
             // cache the references to avoid copying the same object twice
-            _references.put(source.getObjectReference(),
-                            target.getObjectReference());
+            references.put(source.getObjectReference(),
+                           target.getObjectReference());
 
             if (target != source) {
                 doCopy(source, target);
@@ -104,14 +114,14 @@ public class IMObjectCopier {
      */
     protected void doCopy(IMObject source, IMObject target) {
         ArchetypeDescriptor sourceType
-                = DescriptorHelper.getArchetypeDescriptor(source, _service);
+                = DescriptorHelper.getArchetypeDescriptor(source, service);
         ArchetypeDescriptor targetType
-                = DescriptorHelper.getArchetypeDescriptor(target, _service);
+                = DescriptorHelper.getArchetypeDescriptor(target, service);
 
         // copy the nodes
         for (NodeDescriptor sourceDesc : sourceType.getAllNodeDescriptors()) {
-            NodeDescriptor targetDesc = _handler.getNode(sourceDesc,
-                                                         targetType);
+            NodeDescriptor targetDesc = handler.getNode(sourceDesc,
+                                                        targetType);
             if (targetDesc != null) {
                 if (sourceDesc.isObjectReference()) {
                     IMObjectReference ref
@@ -144,18 +154,18 @@ public class IMObjectCopier {
      * reference.
      *
      * @param reference the reference
-     * @return a new reference, or one from <code>references</code> if the
+     * @return a new reference, or one from <tt>references</tt> if the
      *         reference has already been copied
      */
     private IMObjectReference copyReference(IMObjectReference reference) {
-        IMObjectReference result = _references.get(reference);
+        IMObjectReference result = references.get(reference);
         if (result == null) {
             IMObject original = ArchetypeQueryHelper.getByObjectReference(
-                    _service, reference);
+                    service, reference);
             IMObject object = apply(original);
             if (object != original && object != null) {
                 // copied, so save it
-                _service.save(object);
+                service.save(object);
             }
             if (object != null) {
                 result = object.getObjectReference();
