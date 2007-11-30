@@ -54,6 +54,16 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      */
     private final Task createTask;
 
+    /**
+     * The dialog title.
+     */
+    private String title;
+
+    /**
+     * The dialog message.
+     */
+    private String message;
+
 
     /**
      * Constructs a new <tt>SelectIMObjectTask</tt>.
@@ -104,6 +114,27 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
     }
 
     /**
+     * Sets the dialog title.
+     * <p/>
+     * If none is specified, one will be generated from the type of objects
+     * being queried.
+     *
+     * @param title the dialog title. May be <tt>null</tt>
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * Sets the dialog message.
+     * <p/>
+     * If none is specified, no message will be displayed.
+     */
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    /**
      * Starts the task.
      * <p/>
      * The registered {@link TaskListener} will be notified on completion or
@@ -113,12 +144,15 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      */
     public void start(final TaskContext context) {
         Browser<T> browser = IMObjectTableBrowserFactory.create(query);
-        String title = Messages.get("imobject.select.title", type);
+        if (title == null) {
+            title = Messages.get("imobject.select.title", type);
+        }
         String[] buttons = isRequired()
                 ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
         boolean addNew = (createTask != null);
         final BrowserDialog<T> dialog
-                = new BrowserDialog<T>(title, buttons, browser, addNew);
+                = new BrowserDialog<T>(title, message, buttons, browser,
+                                       addNew);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 if (dialog.createNew()) {

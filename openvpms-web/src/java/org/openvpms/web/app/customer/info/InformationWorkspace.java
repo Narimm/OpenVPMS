@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerSummary;
+import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.ContextHelper;
@@ -106,6 +107,16 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
         if (latest != getObject()) {
             setObject(latest);
         }
+    }
+
+    /**
+     * Creates a new CRUD window.
+     *
+     * @return a new CRUD window
+     */
+    @Override
+    protected CRUDWindow<Party> createCRUDWindow() {
+        return new InformationCRUDWindow(getType(), getShortNames());
     }
 
 }

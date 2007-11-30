@@ -23,7 +23,7 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DefaultIMObjectCopyHandler;
+import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 
 
@@ -34,7 +34,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActCopyHandler extends DefaultIMObjectCopyHandler {
+public class ActCopyHandler extends AbstractIMObjectCopyHandler {
 
     /**
      * Determines how {@link IMObjectCopier} should treat an object.

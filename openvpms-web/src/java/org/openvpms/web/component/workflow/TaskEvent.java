@@ -45,7 +45,7 @@ public class TaskEvent {
 
 
     /**
-     * Creates a new <code>TaskEvent</code>/
+     * Creates a new <tt>TaskEvent</tt>.
      *
      * @param type the event type
      * @param task the task that generated the event
