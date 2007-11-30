@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
-import nextapp.echo2.app.Component;
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
 import static org.openvpms.archetype.rules.act.FinancialActStatus.CANCELLED;
 import org.openvpms.archetype.rules.patient.PatientRules;
@@ -26,6 +25,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.bound.BoundDateTimeField;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.edit.act.CustomerParticipationEditor;
@@ -258,8 +258,10 @@ public class TaskActEditor extends AbstractActEditor {
             ComponentState result;
             String name = property.getName();
             if (name.equals("startTime") || name.equals("endTime")) {
-                Component component = DateTimeFieldFactory.create(property);
-                result = new ComponentState(component, property);
+                BoundDateTimeField field = DateTimeFieldFactory.create(
+                        property);
+                result = new ComponentState(field.getComponent(), property,
+                                            field.getFocusGroup());
             } else {
                 result = super.createComponent(property, parent, context);
             }

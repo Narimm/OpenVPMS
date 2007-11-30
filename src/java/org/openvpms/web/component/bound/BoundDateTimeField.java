@@ -18,10 +18,14 @@
 
 package org.openvpms.web.component.bound;
 
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.web.component.edit.AbstractPropertyEditor;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.TimePropertyTransformer;
+import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
 import java.util.Calendar;
@@ -35,7 +39,7 @@ import java.util.GregorianCalendar;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class BoundDateTimeField extends Row {
+public class BoundDateTimeField extends AbstractPropertyEditor {
 
     /**
      * The date field.
@@ -47,6 +51,16 @@ public class BoundDateTimeField extends Row {
      */
     private final BoundTimeField time;
 
+    /**
+     * The focus group.
+     */
+    private final FocusGroup group;
+
+    /**
+     * The date/time row.
+     */
+    private final Row component;
+
 
     /**
      * Constructs a new <tt>BoundDateTimeField</tt>.
@@ -54,7 +68,7 @@ public class BoundDateTimeField extends Row {
      * @param property the property to bind
      */
     public BoundDateTimeField(Property property) {
-        setStyleName("CellSpacing");
+        super(property);
         TimePropertyTransformer transformer
                 = new TimePropertyTransformer(property);
         Date current = (Date) property.getValue();
@@ -65,8 +79,10 @@ public class BoundDateTimeField extends Row {
 
         date = new DateField(property, transformer);
         time = TimeFieldFactory.create(property);
-        add(date);
-        add(time);
+        component = RowFactory.create("CellSpacing", date, time);
+        group = new FocusGroup(property.getName());
+        group.add(date);
+        group.add(time);
     }
 
     /**
@@ -85,6 +101,24 @@ public class BoundDateTimeField extends Row {
      */
     public BoundTimeField getTime() {
         return time;
+    }
+
+    /**
+     * Returns the edit component.
+     *
+     * @return the edit component
+     */
+    public Component getComponent() {
+        return component;
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    public FocusGroup getFocusGroup() {
+        return group;
     }
 
     private static class DateField extends BoundDateField {
