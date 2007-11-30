@@ -11,17 +11,15 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.archetype.rules.product;
+package org.openvpms.archetype.rules.party;
 
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
@@ -29,12 +27,14 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHand
 
 
 /**
- * {@link IMObjectCopyHandler} that creates copies of products.
+ * An {@link IMObjectCopyHandler} for copying {@link EntityRelationship}s.
+ * This copies the relationship, and references the existing source and target
+ * objects.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-12-12 04:10:40Z $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ProductCopyHandler extends AbstractIMObjectCopyHandler {
+public class EntityRelationshipCopyHandler extends AbstractIMObjectCopyHandler {
 
     /**
      * Determines how {@link IMObjectCopier} should treat an object.
@@ -42,21 +42,14 @@ public class ProductCopyHandler extends AbstractIMObjectCopyHandler {
      * @param object  the source object
      * @param service the archetype service
      * @return <tt>object</tt> if the object shouldn't be copied,
-     *         <tt>null</tt> if it should be replaced with
-     *         <tt>null</tt>, or a new instance if the object should be
-     *         copied
+     *         <tt>null</tt> if it should be replaced with <tt>null</tt>,
+     *         or a new instance if the object should be copied
      */
     @Override
     public IMObject getObject(IMObject object, IArchetypeService service) {
-        IMObject result;
-        if ((object instanceof Entity && !(object instanceof Product))
-                || object instanceof Lookup) {
-            result = object;
-        } else {
-            result = super.getObject(object, service);
+        if (object instanceof EntityRelationship) {
+            return super.getObject(object, service);
         }
-        return result;
-
+        return object;
     }
-
 }

@@ -28,11 +28,9 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Random;
 
 
 /**
@@ -144,10 +142,9 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a new act
      */
     protected FinancialAct createChargesInvoice(Money amount, Party customer) {
-        return createCharges("act.customerAccountChargesInvoice",
-                             "act.customerAccountInvoiceItem",
-                             "actRelationship.customerAccountInvoiceItem",
-                             amount, customer);
+        return FinancialTestHelper.createChargesInvoice(amount, customer,
+                                                        getPatient(),
+                                                        getProduct());
     }
 
     /**
@@ -171,10 +168,9 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a new act
      */
     protected FinancialAct createChargesCounter(Money amount) {
-        return createCharges("act.customerAccountChargesCounter",
-                             "act.customerAccountCounterItem",
-                             "actRelationship.customerAccountCounterItem",
-                             amount, getCustomer());
+        return FinancialTestHelper.createChargesCounter(amount,
+                                                        getCustomer(),
+                                                        getProduct());
     }
 
     /**
@@ -184,10 +180,9 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a new act
      */
     protected FinancialAct createChargesCredit(Money amount) {
-        return createCharges("act.customerAccountChargesCredit",
-                             "act.customerAccountCreditItem",
-                             "actRelationship.customerAccountCreditItem",
-                             amount, getCustomer());
+        return FinancialTestHelper.createChargesCredit(amount, getCustomer(),
+                                                       getPatient(),
+                                                       getProduct());
     }
 
     /**
@@ -349,39 +344,8 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      */
     protected Lookup createAccountType(int paymentTerms, DateUnits paymentUom,
                                        BigDecimal accountFeeAmount) {
-        Lookup lookup = (Lookup) create("lookup.customerAccountType");
-        IMObjectBean bean = new IMObjectBean(lookup);
-        bean.setValue("code", "XCUSTOMER_ACCOUNT_TYPE"
-                + Math.abs(new Random().nextInt()));
-        bean.setValue("paymentTerms", paymentTerms);
-        bean.setValue("paymentUom", paymentUom.toString());
-        bean.setValue("accountFeeAmount", accountFeeAmount);
-        save(lookup);
-        return lookup;
-    }
-
-    /**
-     * Helper to create a charges act.
-     *
-     * @param shortName the act short name
-     * @param amount    the act total
-     * @param customer  the customer
-     * @return a new act
-     */
-    private FinancialAct createCharges(String shortName,
-                                       String itemShortName,
-                                       String relationshipShortName,
-                                       Money amount, Party customer) {
-        FinancialAct act = createAct(shortName, amount, customer);
-        ActBean bean = new ActBean(act);
-        FinancialAct item = (FinancialAct) create(itemShortName);
-        item.setTotal(amount);
-        ActBean itemBean = new ActBean(item);
-        itemBean.addParticipation("participation.patient", getPatient());
-        itemBean.addParticipation("participation.product", getProduct());
-        itemBean.save();
-        bean.addRelationship(relationshipShortName, item);
-        return act;
+        return FinancialTestHelper.createAccountType(paymentTerms, paymentUom,
+                                                     accountFeeAmount);
     }
 
     /**

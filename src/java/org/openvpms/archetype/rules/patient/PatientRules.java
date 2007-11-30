@@ -70,7 +70,7 @@ public class PatientRules {
 
 
     /**
-     * Constructs a new <code>PatientRules</code>.
+     * Constructs a new <tt>PatientRules</tt>.
      *
      * @throws ArchetypeServiceException if the archetype service is not
      *                                   configured
@@ -80,7 +80,7 @@ public class PatientRules {
     }
 
     /**
-     * Construct a new <code>PatientRules/code>.
+     * Construct a new <tt>PatientRules</tt>.
      *
      * @param service the archetype service
      */
@@ -99,13 +99,10 @@ public class PatientRules {
      */
     public EntityRelationship addPatientOwnerRelationship(Party customer,
                                                           Party patient) {
-        EntityRelationship relationship
-                = (EntityRelationship) service.create(PATIENT_OWNER);
+        EntityBean bean = new EntityBean(customer, service);
+        EntityRelationship relationship = bean.addRelationship(PATIENT_OWNER,
+                                                               patient);
         relationship.setActiveStartTime(new Date());
-        relationship.setSource(customer.getObjectReference());
-        relationship.setTarget(patient.getObjectReference());
-        customer.addEntityRelationship(relationship);
-        patient.addEntityRelationship(relationship);
         return relationship;
     }
 
@@ -117,7 +114,7 @@ public class PatientRules {
      * closest to the act start time.
      *
      * @param act the act
-     * @return the patient's owner, or <code>null</code> if none can be found
+     * @return the patient's owner, or <tt>null</tt> if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getOwner(Act act) {
@@ -185,7 +182,7 @@ public class PatientRules {
      *
      * @param customer the customer
      * @param patient  the patient
-     * @return <code>true</code> if the customer is the owner of the patient
+     * @return <tt>true</tt> if the customer is the owner of the patient
      * @throws ArchetypeServiceException for any archetype service error
      */
     public boolean isOwner(Party customer, Party patient) {
@@ -201,7 +198,7 @@ public class PatientRules {
      *
      * @param patient the patient
      * @param time    the time
-     * @return the referral vet, or <code>null</code> if none is founds
+     * @return the referral vet, or <tt>null</tt> if none is founds
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getReferralVet(Party patient, Date time) {

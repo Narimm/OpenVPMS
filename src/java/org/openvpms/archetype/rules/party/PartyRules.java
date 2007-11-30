@@ -568,6 +568,10 @@ public class PartyRules {
         return uid + String.valueOf(sum);
     }
 
+    protected IArchetypeService getArchetypeService() {
+        return service;
+    }
+
     /**
      * Returns a concatenated list of values for a set of objects.
      *
