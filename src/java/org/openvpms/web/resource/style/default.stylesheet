@@ -680,8 +680,8 @@
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="closable" value="true"/>
-            <property name="width" value="1000px"/>
-            <property name="height" value="700px"/>
+            <property name="width" value="900px"/>
+            <property name="height" value="600px"/>
             <property name="resizable" value="true"/>
             <property name="font">
                 <font size="9pt"/>
@@ -694,8 +694,8 @@
     <style name="EditDialog-1024x768" base-name="EditDialog"
            type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="width" value="800px"/>
-            <property name="height" value="500px"/>
+            <property name="width" value="700px"/>
+            <property name="height" value="600px"/>
             <property name="font">
                 <font size="7pt"/>
             </property>
@@ -723,7 +723,7 @@
         <properties>
             <property name="closable" value="true"/>
             <property name="width" value="900px"/>
-            <property name="height" value="675px"/>
+            <property name="height" value="600px"/>
             <property name="resizable" value="true"/>
             <property name="font">
                 <font size="9pt"/>
@@ -735,7 +735,7 @@
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="width" value="700px"/>
-            <property name="height" value="450px"/>
+            <property name="height" value="550px"/>
             <property name="font">
                 <font size="7pt"/>
             </property>
@@ -917,8 +917,11 @@
         </properties>
     </style>
 
-    <style name="Palette.ListLabel" type="nextapp.echo2.app.Label"/>
+    <style name="Palette.ListLabel" base-name="default" type="nextapp.echo2.app.Label"/>
 
+    <style name="Palette.ListLabel-1024x768" base-name="default-1024x768" type="nextapp.echo2.app.Label"/>
+
+    <style name="Palette.ListLabel-800x600" base-name="default-800x600" type="nextapp.echo2.app.Label"/>
 
     <!-- =================================================================== -->
     <!--  Table                                                              -->
@@ -1845,7 +1848,7 @@
 
     <style name="default" type="nextapp.echo2.app.TextArea">
         <properties>
-            <property name="background" value="#fffacd"/>
+            <property name="background" value="#ffff99"/>
             <!-- lemonchiffon -->
             <property name="foreground" value="#000000"/>
             <!-- black -->
@@ -1865,7 +1868,9 @@
            type="nextapp.echo2.app.TextArea">
         <properties>
             <property name="font">
-                <font size="7pt"/>
+                <font size="7pt">
+                    <typeface name="Verdana"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1874,14 +1879,16 @@
            type="nextapp.echo2.app.TextArea">
         <properties>
             <property name="font">
-                <font size="6pt"/>
+                <font size="6pt">
+                    <typeface name="Verdana"/>
+                </font>
             </property>
         </properties>
     </style>
 
     <style name="default" type="nextapp.echo2.app.text.TextComponent">
         <properties>
-            <property name="background" value="#fffacd"/>
+            <property name="background" value="#ffff99"/>
             <!-- lemonchiffon -->
             <property name="foreground" value="#000000"/>
             <!-- black -->
