@@ -79,7 +79,7 @@
               filter="participation.customerAccountBalance" hidden="true"/>
         <node name="location" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
-              filter="participation.location" hidden="true"/>
+              filter="participation.location" readOnly="true"/>
         <node name="items" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
               filter="actRelationship.customerAccountInvoiceItem">
