@@ -107,7 +107,19 @@ public class UserRules {
      * @return <tt>true</tt> if the user is an administrator
      */
     public boolean isAdministrator(User user) {
-        return "admin".equals(user.getUsername());
+    	
+        if ("admin".equals(user.getUsername())) {
+        	return true;
+        }
+        else {
+            for (Lookup lookup : user.getClassifications()) {
+                if (TypeHelper.isA(lookup, "lookup.userType")
+                        && "ADMINISTRATOR".equals(lookup.getCode())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
