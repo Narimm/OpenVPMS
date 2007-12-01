@@ -21,10 +21,14 @@ package org.openvpms.web.app.customer.info;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
@@ -83,8 +87,17 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        if (enable && TypeHelper.isA(getObject(), "party.customerperson")) {
-            buttons.add(merge);
+        User user = GlobalContext.getInstance().getUser();
+        if (enable && TypeHelper.isA(getObject(), "party.customerperson") && user != null) {
+            // If we are an administrator user, show the merge button else remove
+            UserRules rules = new UserRules();
+            if (rules.isAdministrator(user)) {
+                buttons.add(merge);
+            }
+            else {
+            	buttons.remove(merge);
+            }
+        	
         } else {
             buttons.remove(merge);
         }
