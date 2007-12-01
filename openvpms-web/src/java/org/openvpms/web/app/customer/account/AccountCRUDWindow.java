@@ -144,7 +144,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
                 onAdjust();
             }
         });
-        // If we are logged in an admin, show the administration subsystem
+        // If we are logged in an administrator, show the Check button
         User user = GlobalContext.getInstance().getUser();
         if (user != null) {
             UserRules rules = new UserRules();
