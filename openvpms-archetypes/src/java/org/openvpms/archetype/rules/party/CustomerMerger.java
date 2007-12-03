@@ -18,26 +18,11 @@
 
 package org.openvpms.archetype.rules.party;
 
-import static org.openvpms.archetype.rules.party.MergeException.ErrorCode.CannotMergeToSameParty;
-import org.openvpms.component.business.domain.im.common.EntityIdentity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DefaultIMObjectCopyHandler;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -46,12 +31,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class CustomerMerger {
-
-    /**
-     * The archetype service.
-     */
-    private final IArchetypeService service;
+class CustomerMerger extends PartyMerger {
 
     /**
      * Customer rules.
@@ -72,66 +52,8 @@ class CustomerMerger {
      * @param service the archetype service
      */
     public CustomerMerger(IArchetypeService service) {
-        this.service = service;
+        super("party.customerperson", service);
         rules = new CustomerRules(service);
-    }
-
-    /**
-     * Merges one <em>party.customerperson</em> with another.
-     * One completion, the 'to' customer will contain all of the 'from'
-     * customer's contacts, identities, classifications and relationships,
-     * and any act participations will be changed to reference the 'to'
-     * customer. The 'from' customer will be deleted.
-     * If both the 'from' and 'to' customer's have
-     * <em>lookup.customerAccountType</em> classifications, the 'to' customer's
-     * classification will take precedence.
-     *
-     * @param from the customer to merge from
-     * @param to   the customer to merge to
-     */
-    public void merge(Party from, Party to) {
-        if (from.getObjectReference().equals(to.getObjectReference())) {
-            throw new MergeException(CannotMergeToSameParty);
-        }
-        if (!TypeHelper.isA(from, "party.customerperson")) {
-            throw new MergeException(MergeException.ErrorCode.InvalidPartyType,
-                                     DescriptorHelper.getDisplayName(from,
-                                                                     service));
-        }
-        if (!TypeHelper.isA(to, "party.customerperson")) {
-            throw new MergeException(MergeException.ErrorCode.InvalidPartyType,
-                                     DescriptorHelper.getDisplayName(to,
-                                                                     service));
-        }
-
-        copyContacts(from, to);
-        copyClassifications(from, to);
-        copyEntityRelationships(from, to);
-        copyIdentities(from, to);
-
-        List<IMObject> participations = moveParticipations(from, to);
-
-        List<IMObject> merged = new ArrayList<IMObject>();
-        merged.add(to);
-        merged.addAll(participations);
-        service.save(merged);
-        service.remove(from);
-    }
-
-    /**
-     * Copies contacts from one party to another.
-     *
-     * @param from the party to copy from
-     * @param to   the party to copy to
-     */
-    private void copyContacts(Party from, Party to) {
-        Contact[] contacts = from.getContacts().toArray(new Contact[0]);
-        IMObjectCopier contactCopier = new IMObjectCopier(
-                new ContactCopyHandler(), service);
-        for (Contact contact : contacts) {
-            Contact copy = (Contact) contactCopier.copy(contact);
-            to.addContact(copy);
-        }
     }
 
     /**
@@ -144,7 +66,8 @@ class CustomerMerger {
      * @param from the party to copy from
      * @param to   the party to copy to
      */
-    private void copyClassifications(Party from, Party to) {
+    @Override
+    protected void copyClassifications(Party from, Party to) {
         for (Lookup lookup : from.getClassifications()) {
             if (!TypeHelper.isA(lookup, "lookup.customerAccountType")) {
                 to.addClassification(lookup);
@@ -157,70 +80,6 @@ class CustomerMerger {
                 to.addClassification(accountType);
             }
         }
-    }
-
-    /**
-     * Copies entity relationships from one party to another.
-     *
-     * @param from the party to copy from
-     * @param to   the party to copy to
-     */
-    private void copyEntityRelationships(Party from, Party to) {
-        IMObjectReference fromRef = from.getObjectReference();
-        IMObjectReference toRef = to.getObjectReference();
-        IMObjectCopier copier = new IMObjectCopier(
-                new EntityRelationshipCopyHandler(), service);
-
-        for (EntityRelationship relationship : from.getEntityRelationships()) {
-            EntityRelationship copy
-                    = (EntityRelationship) copier.copy(relationship);
-            if (copy.getSource().equals(fromRef)) {
-                copy.setSource(toRef);
-            } else {
-                copy.setTarget(toRef);
-            }
-            to.addEntityRelationship(copy);
-        }
-    }
-
-    /**
-     * Copies identities from one party to another.
-     *
-     * @param from the party to copy from
-     * @param to   the party to copy to
-     */
-    private void copyIdentities(Party from, Party to) {
-        IMObjectCopier copier = new IMObjectCopier(
-                new DefaultIMObjectCopyHandler(), service);
-        for (EntityIdentity identity : from.getIdentities()) {
-            EntityIdentity copy = (EntityIdentity) copier.copy(identity);
-            to.addIdentity(copy);
-        }
-    }
-
-    /**
-     * Moves act participations from one party to another.
-     * This loads all participations referencing the 'from' party,
-     * and assigns them to the 'to' party.
-     *
-     * @param from the party to move from
-     * @param to   the party to move to
-     * @return the moved participations
-     */
-    private List<IMObject> moveParticipations(Party from, Party to) {
-        IMObjectReference fromRef = from.getObjectReference();
-        IMObjectReference toRef = to.getObjectReference();
-
-        ArchetypeQuery query
-                = new ArchetypeQuery("participation.*", true, false);
-        query.add(new ObjectRefNodeConstraint("entity", fromRef));
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List<IMObject> participations = service.get(query).getResults();
-        for (IMObject object : participations) {
-            Participation participation = (Participation) object;
-            participation.setEntity(toRef);
-        }
-        return participations;
     }
 
 }
