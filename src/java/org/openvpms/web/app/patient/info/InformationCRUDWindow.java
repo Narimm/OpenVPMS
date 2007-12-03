@@ -26,10 +26,14 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
+import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.workflow.TaskEvent;
+import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -45,6 +49,11 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * The check-in button.
      */
     private Button checkIn;
+
+    /**
+     * The merge button.
+     */
+    private Button merge;
 
 
     /**
@@ -75,6 +84,13 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
                 }
             });
         }
+        if (merge == null) {
+            merge = ButtonFactory.create("merge", new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onMerge();
+                }
+            });
+        }
     }
 
     /**
@@ -86,10 +102,13 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
+        buttons.remove(checkIn);
+        buttons.remove(merge);
         if (enable) {
             buttons.add(checkIn);
-        } else {
-            buttons.remove(checkIn);
+            if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
+                buttons.add(merge);
+            }
         }
     }
 
@@ -110,5 +129,26 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
             ErrorHelper.show(title, msg);
         }
     }
+
+    /**
+     * Merges the current patient with another.
+     */
+    private void onMerge() {
+        final MergeWorkflow workflow = new PatientMergeWorkflow(getObject());
+        workflow.addTaskListener(new TaskListener() {
+            /**
+             * Invoked when a task event occurs.
+             *
+             * @param event the event
+             */
+            public void taskEvent(TaskEvent event) {
+                if (event.getType() == TaskEvent.Type.COMPLETED) {
+                    onRefresh(getObject());
+                }
+            }
+        });
+        workflow.start();
+    }
+
 
 }

@@ -26,10 +26,8 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceGenerator;
-import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -41,6 +39,7 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -144,17 +143,13 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
                 onAdjust();
             }
         });
-        // If we are logged in an administrator, show the Check button
-        User user = GlobalContext.getInstance().getUser();
-        if (user != null) {
-            UserRules rules = new UserRules();
-            if (rules.isAdministrator(user)) {
-                check = ButtonFactory.create(CHECK_ID, new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
-                        onCheck();
-                    }
-                });
-            }
+        // If thelogged in user is an administrator, show the Check button
+        if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
+            check = ButtonFactory.create(CHECK_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onCheck();
+                }
+            });
         }
 
         enableButtons(buttons, true);

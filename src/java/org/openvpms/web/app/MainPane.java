@@ -32,9 +32,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.layout.SplitPaneLayoutData;
-import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.admin.AdminSubsystem;
 import org.openvpms.web.app.customer.CustomerSubsystem;
 import org.openvpms.web.app.patient.PatientSubsystem;
@@ -44,6 +42,7 @@ import org.openvpms.web.app.supplier.SupplierSubsystem;
 import org.openvpms.web.app.workflow.WorkflowSubsystem;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.subsystem.Subsystem;
 import org.openvpms.web.component.subsystem.Workspace;
 import org.openvpms.web.component.util.ButtonColumn;
@@ -172,12 +171,8 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         context.addListener(this);
 
         // if the current user is an admin, show the administration subsystem
-        User user = context.getUser();
-        if (user != null) {
-            UserRules rules = new UserRules();
-            if (rules.isAdministrator(user)) {
-                addSubsystem(new AdminSubsystem());
-            }
+        if (UserHelper.isAdmin(context.getUser())) {
+            addSubsystem(new AdminSubsystem());
         }
 
         menu.addButton("help", new ActionListener() {

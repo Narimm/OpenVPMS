@@ -21,15 +21,15 @@ package org.openvpms.web.app.customer.info;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
-import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
+import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
@@ -87,19 +87,14 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        User user = GlobalContext.getInstance().getUser();
-        if (enable && TypeHelper.isA(getObject(), "party.customerperson") && user != null) {
-            // If we are an administrator user, show the merge button else remove
-            UserRules rules = new UserRules();
-            if (rules.isAdministrator(user)) {
+        buttons.remove(merge);
+        if (enable) {
+            // only add the merge for admin users
+            User user = GlobalContext.getInstance().getUser();
+            if (TypeHelper.isA(getObject(), "party.customerperson")
+                    && UserHelper.isAdmin(user)) {
                 buttons.add(merge);
             }
-            else {
-            	buttons.remove(merge);
-            }
-        	
-        } else {
-            buttons.remove(merge);
         }
     }
 
@@ -107,7 +102,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * Merges the current customer with another.
      */
     private void onMerge() {
-        final MergeWorkflow workflow = new MergeWorkflow(getObject());
+        final MergeWorkflow workflow = new CustomerMergeWorkflow(getObject());
         workflow.addTaskListener(new TaskListener() {
             /**
              * Invoked when a task event occurs.
