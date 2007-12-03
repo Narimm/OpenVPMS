@@ -36,10 +36,10 @@ public class MergeExceptionTestCase extends TestCase {
         assertEquals("Need to update tests to incorporate new messages",
                      2, MergeException.ErrorCode.values().length);
 
-        checkException(MergeException.ErrorCode.InvalidPartyType,
-                       "foo is not a valid customer type for merging", "foo");
-        checkException(MergeException.ErrorCode.CannotMergeToSameParty,
-                       "Cannot merge a customer with itself");
+        checkException(MergeException.ErrorCode.InvalidType,
+                       "Cannot merge foo", "foo");
+        checkException(MergeException.ErrorCode.CannotMergeToSameObject,
+                       "Cannot merge a foo with itself", "foo");
     }
 
     /**

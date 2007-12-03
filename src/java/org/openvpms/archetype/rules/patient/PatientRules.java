@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.patient;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.openvpms.archetype.rules.party.MergeException;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -366,6 +367,19 @@ public class PatientRules {
             }
         }
         return null;
+    }
+
+    /**
+     * Merges two patients.
+     *
+     * @param from the patient to merge
+     * @param to   the patient to merge to
+     * @throws MergeException            if the patients cannot be merged
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void mergePatients(Party from, Party to) {
+        PatientMerger merger = new PatientMerger(service);
+        merger.merge(from, to);
     }
 
     /**

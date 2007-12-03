@@ -21,19 +21,14 @@ package org.openvpms.archetype.rules.party;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 
 import java.math.BigDecimal;
 
@@ -44,7 +39,7 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerMergerTestCase extends ArchetypeServiceTest {
+public class CustomerMergerTestCase extends AbstractPartyMergerTest {
 
     /**
      * Customer rules.
@@ -73,7 +68,7 @@ public class CustomerMergerTestCase extends ArchetypeServiceTest {
         // verify contacts copied accross
         assertEquals(fromContactsSize + toContactsSize,
                      merged.getContacts().size());
-   }
+    }
 
     /**
      * Tests a merge where the merge-from customer has an account type,
@@ -200,7 +195,7 @@ public class CustomerMergerTestCase extends ArchetypeServiceTest {
             checkMerge(from, to);
             fail("Expected merge to invalid party to fail");
         } catch (MergeException expected) {
-            assertEquals(MergeException.ErrorCode.InvalidPartyType,
+            assertEquals(MergeException.ErrorCode.InvalidType,
                          expected.getErrorCode());
         }
     }
@@ -214,7 +209,7 @@ public class CustomerMergerTestCase extends ArchetypeServiceTest {
             checkMerge(from, from);
             fail("Expected merge to same customer to fail");
         } catch (MergeException expected) {
-            assertEquals(MergeException.ErrorCode.CannotMergeToSameParty,
+            assertEquals(MergeException.ErrorCode.CannotMergeToSameObject,
                          expected.getErrorCode());
         }
     }
@@ -251,23 +246,6 @@ public class CustomerMergerTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Counts all participations for a party.
-     *
-     * @param party the party
-     * @return the no. of participations for the party
-     * @throws ArchetypeServiceException for any error
-     */
-    private int countParticipations(Party party) {
-        ArchetypeQuery query
-                = new ArchetypeQuery("participation.*", true, false);
-        query.setCountResults(true);
-        query.add(new ObjectRefNodeConstraint("entity",
-                                              party.getObjectReference()));
-        IPage<IMObject> page = getArchetypeService().get(query);
-        return page.getTotalResults();
-    }
-
-    /**
      * Helper to create a new entity identity.
      *
      * @param identity the identity
@@ -279,5 +257,4 @@ public class CustomerMergerTestCase extends ArchetypeServiceTest {
         id.setIdentity(identity);
         return id;
     }
-
 }

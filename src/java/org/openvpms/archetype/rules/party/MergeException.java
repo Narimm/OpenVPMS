@@ -23,7 +23,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
- * Exception for customer merge errors. 
+ * Exception for object merge errors. 
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -34,8 +34,8 @@ public class MergeException extends OpenVPMSException {
      * An enumeration of error codes.
      */
     public enum ErrorCode {
-        InvalidPartyType,
-        CannotMergeToSameParty
+        InvalidType,
+        CannotMergeToSameObject
     }
 
     /**
