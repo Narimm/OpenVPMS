@@ -18,24 +18,20 @@
 
 package org.openvpms.web.app.product;
 
-import java.util.Date;
-
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-
 import org.openvpms.archetype.rules.product.ProductRules;
-import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -60,85 +56,83 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
 
 
     /**
-     * Create a new <tt>ProductCRUDWindow</tt>.
+     * Creates a new <tt>ProductCRUDWindow</tt>.
      *
-     * @param type      display name for the types of objects that this may
-     *                  create
-     * @param shortName the archetype short name
+     * @param type       display name for the types of objects that this may
+     *                   create
+     * @param shortNames the archetype short names
      */
-	public ProductCRUDWindow(String type, ShortNames shortNames) {
-		super(type, shortNames);
-	}
-	/**
-	* Lays out the buttons.
-	*
-	* @param buttons the button row
-	*/
-	@Override
-	protected void layoutButtons(ButtonSet buttons) {
+    public ProductCRUDWindow(String type, ShortNames shortNames) {
+        super(type, shortNames);
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
-        // If we are logged in an admin, show the copy button
-        User user = GlobalContext.getInstance().getUser();
-        if (user != null) {
-            UserRules rules = new UserRules();
-            if (rules.isAdministrator(user)) {
-            	if (copy == null) {
-	                copy = ButtonFactory.create(COPY_ID, new ActionListener() {
-	                    public void actionPerformed(ActionEvent event) {
-	                        onCopy();
-	                    }
-	                });
-            	}
+        // If the logged in user is an admin, show the copy button
+        if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
+            if (copy == null) {
+                copy = ButtonFactory.create(COPY_ID, new ActionListener() {
+                    public void actionPerformed(ActionEvent event) {
+                        onCopy();
+                    }
+                });
             }
-        }	
-	}
-	
-	/**
-	* Enables/disables the buttons that require an object to be selected.
-	*
-	* @param buttons the button set
-	* @param enable  determines if buttons should be enabled
-	*/
-	@Override
-	protected void enableButtons(ButtonSet buttons, boolean enable) {
+        }
+    }
+
+    /**
+     * Enables/disables the buttons that require an object to be selected.
+     *
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
+     */
+    @Override
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
+        buttons.remove(copy);
         if (enable) {
-        	if (copy != null) {
-                buttons.add(copy);       
+            if (copy != null) {
+                buttons.add(copy);
             }
-    	}
-	}
+        }
+    }
 
-	/**
-	* Invoked when the 'copy' button is pressed.
-	*/
-	protected void onCopy() {
-	   final Product product = getObject();
-	   if (product != null) {
-	       String name = getArchetypeDescriptor().getDisplayName();
-	       String title = Messages.get("product.information.copy.title", name);
-	       String message = Messages.get("product.information.copy.message",
-	                                     name);
-	       final ConfirmationDialog dialog
-	               = new ConfirmationDialog(title, message);
-	       dialog.addWindowPaneListener(new WindowPaneListener() {
-	           public void windowPaneClosing(WindowPaneEvent e) {
-	               if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-	                   copy(product);
-	               }
-	           }
-	       });
-	       dialog.show();
-	   }
-	}
+    /**
+     * Invoked when the 'copy' button is pressed.
+     */
+    protected void onCopy() {
+        final Product product = getObject();
+        if (product != null) {
+            String name = getArchetypeDescriptor().getDisplayName();
+            String title = Messages.get("product.information.copy.title", name);
+            String message = Messages.get("product.information.copy.message",
+                                          name);
+            final ConfirmationDialog dialog
+                    = new ConfirmationDialog(title, message);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent e) {
+                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                        copy(product);
+                    }
+                }
+            });
+            dialog.show();
+        }
+    }
 
-	/**
+    /**
      * Copy the product.
      *
      * @param product the product to copy
      */
     private void copy(Product product) {
-    	Product copy = null;
+        Product copy = null;
         try {
             ProductRules rules = new ProductRules();
             copy = rules.copy(product);
@@ -150,5 +144,5 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
         }
         onRefresh(copy);
     }
-	
+
 }
