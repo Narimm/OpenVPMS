@@ -16,12 +16,13 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.customer.CustomerFinancialActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
@@ -87,6 +88,7 @@ public class InvoiceWorkspace extends CustomerFinancialActWorkspace {
             actSelected(null);
         }
     }
+
 
     /**
      * Creates a new table model to display acts.

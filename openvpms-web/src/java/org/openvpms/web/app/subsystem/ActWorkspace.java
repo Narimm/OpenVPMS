@@ -115,7 +115,7 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
     /**
      * Invoked when an act is selected.
      *
-     * @param act the act
+     * @param act the act,. May be <tt>null</tt>
      */
     protected void actSelected(A act) {
         window.setObject(act);

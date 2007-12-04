@@ -16,12 +16,16 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.customer.charge;
 
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.workflow.PrintActTask;
+import org.openvpms.web.component.workflow.Tasks;
 
 
 /**
@@ -71,6 +75,27 @@ public class InvoiceCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         } else {
             buttons.add(getCreateButton());
         }
+    }
+
+    /**
+     * Invoked when posting of an act is complete.
+     * Pops up a dialog to print the act, if one hasn't already been displayed,
+     * and prompts to pay the account.
+     *
+     * @param act           the act
+     * @param printPrompted determines if a print dialog has been displayed to
+     *                      print the act
+     */
+    @Override
+    protected void onPosted(FinancialAct act, boolean printPrompted) {
+        Tasks tasks = new Tasks();
+        if (!printPrompted) {
+            PrintActTask print = new PrintActTask(act);
+            print.setRequired(false);
+            tasks.addTask(print);
+        }
+        tasks.addTask(new PaymentWorkflow());
+        tasks.start();
     }
 
 }

@@ -25,15 +25,13 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.app.workflow.GetClinicalEventTask;
-import static org.openvpms.web.app.workflow.GetClinicalEventTask.EVENT_SHORTNAME;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
 import static org.openvpms.web.app.workflow.GetInvoiceTask.INVOICE_SHORTNAME;
+import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
-import org.openvpms.web.component.workflow.ConditionalUpdateTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
@@ -110,11 +108,12 @@ public class CheckOutWorkflow extends WorkflowImpl {
      */
     private void initialise(Act act) {
         ActBean bean = new ActBean(act);
+        GlobalContext global = GlobalContext.getInstance();
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
         User clinician = (User) bean.getParticipant("participation.clinician");
         if (clinician == null) {
-            clinician = GlobalContext.getInstance().getClinician();
+            clinician = global.getClinician();
         }
 
         initial = new DefaultTaskContext(false);
@@ -122,11 +121,8 @@ public class CheckOutWorkflow extends WorkflowImpl {
         initial.setPatient(patient);
         initial.setClinician(clinician);
 
-        initial.setUser(GlobalContext.getInstance().getUser());
-        initial.setTill(GlobalContext.getInstance().getTill());
-
-        // need to set location for cash rounding purposes during payments
-        initial.setLocation(GlobalContext.getInstance().getLocation());
+        initial.setUser(global.getUser());
+        initial.setLocation(global.getLocation());
 
         // get the latest invoice, or create one if none is available, and edit
         // it
@@ -141,11 +137,8 @@ public class CheckOutWorkflow extends WorkflowImpl {
         postTasks.addTask(
                 new UpdateIMObjectTask(INVOICE_SHORTNAME, invoiceProps));
 
-        String payTitle = Messages.get("workflow.checkout.payaccount.title");
-        String payMsg = Messages.get("workflow.checkout.payaccount.message");
-        postTasks.addTask(new ConditionalTask(
-                new ConfirmationTask(payTitle, payMsg),
-                new EditIMObjectTask("act.customerAccountPayment", true)));
+        // if the invoice is posted, prompt to pay the account
+        postTasks.addTask(new PaymentWorkflow(initial));
         postTasks.setRequired(false);
 
         String invoiceTitle = Messages.get(
