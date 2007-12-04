@@ -18,12 +18,20 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
+import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.app.workflow.WorkflowQuery;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.component.util.DateHelper;
+import org.openvpms.web.component.util.LabelFactory;
+
+import java.text.DateFormat;
 
 
 /**
@@ -36,15 +44,50 @@ import org.openvpms.web.component.im.table.PagedIMTable;
 public class AppointmentBrowser extends TableBrowser<ObjectSet> {
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects using the
-     * specified query.
+     * Displays the selected date above the appointments.
+     */
+    private final Label selectedDate;
+
+
+    /**
+     * Construct a new <tt>AppointmentBrowser</tt> that queries ObjectSets using
+     * the specified query.
      *
      * @param query the query
      * @param model the table model
      */
-    public AppointmentBrowser(Query<ObjectSet> query,
+    public AppointmentBrowser(WorkflowQuery<ObjectSet> query,
                               IMTableModel<ObjectSet> model) {
         super(query, null, model);
+        selectedDate = LabelFactory.create(null, "bold");
+        ColumnLayoutData layout = new ColumnLayoutData();
+        layout.setAlignment(Alignment.ALIGN_CENTER);
+        selectedDate.setLayoutData(layout);
+    }
+
+    /**
+     * Query using the specified criteria, and populate the table with matches.
+     */
+    @Override
+    public void query() {
+        super.query();
+        WorkflowQuery<ObjectSet> query = (WorkflowQuery<ObjectSet>) getQuery();
+        DateFormat format = DateHelper.getFullDateFormat();
+        selectedDate.setText(format.format(query.getDate()));
+    }
+
+    /**
+     * Adds the table to the browser component.
+     *
+     * @param component the browser component
+     */
+    @Override
+    protected void doLayout(Component component) {
+        super.doLayout(component);
+        int index = component.indexOf(getTable());
+
+        // add the label before the table
+        component.add(selectedDate, index);
     }
 
     /**

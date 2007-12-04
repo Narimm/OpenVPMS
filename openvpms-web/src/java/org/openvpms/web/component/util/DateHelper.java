@@ -50,6 +50,11 @@ public class DateHelper {
     private static final String DATE_VIEW_PATTERN;
 
     /**
+     * Full date pattern.
+     */
+    private static final String FULL_DATE_PATTERN;
+
+    /**
      * Time edit pattern.
      */
     private static final String TIME_EDIT_PATTERN;
@@ -115,7 +120,7 @@ public class DateHelper {
     /**
      * Returns a date format.
      *
-     * @param edit if <code>true</code> return a format for editingl otherwise
+     * @param edit if <code>true</code> return a format for editing otherwise
      *             return a format for viewing dates
      * @return a date format
      */
@@ -135,6 +140,22 @@ public class DateHelper {
             format = new SimpleDateFormat(pattern, locale);
         }
         return format;
+    }
+
+    /**
+     * Returns the full date format for the current locale.
+     * <p/>
+     * This can be overridden by specifying the <em>date.format.full</em>
+     * property in <tt>messages.properties</tt>.
+     *
+     * @return the full date format
+     */
+    public static DateFormat getFullDateFormat() {
+        Locale locale = ApplicationInstance.getActive().getLocale();
+        if (FULL_DATE_PATTERN != null) {
+            return new SimpleDateFormat(FULL_DATE_PATTERN, locale);
+        }
+        return DateFormat.getDateInstance(DateFormat.FULL, locale);
     }
 
     /**
@@ -262,6 +283,9 @@ public class DateHelper {
 
         String dateView = Messages.get("date.format.view", true);
         DATE_VIEW_PATTERN = (!StringUtils.isEmpty(dateView)) ? dateView : null;
+
+        String fullDate = Messages.get("date.format.full", true);
+        FULL_DATE_PATTERN = (!StringUtils.isEmpty(fullDate)) ? fullDate : null;
 
         String timeEdit = Messages.get("time.format.edit", true);
         TIME_EDIT_PATTERN = (!StringUtils.isEmpty(timeEdit)) ? timeEdit : null;
