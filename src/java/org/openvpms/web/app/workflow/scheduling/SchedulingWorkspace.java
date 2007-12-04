@@ -28,6 +28,7 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.workflow.WorkflowQuery;
 import org.openvpms.web.app.workflow.WorkflowSummary;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -235,7 +236,8 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * @return a new browser
      */
     protected Browser<ObjectSet> createBrowser(Query<ObjectSet> query) {
-        return new AppointmentBrowser(query, createTableModel());
+        return new AppointmentBrowser((WorkflowQuery<ObjectSet>) query,
+                                      createTableModel());
     }
 
     /**

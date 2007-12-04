@@ -106,14 +106,7 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
 
         ResultSet<T> set = doQuery();
         if (table == null) {
-            table = createTable(model);
-            table.getTable().addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    onSelect();
-                }
-            });
-            component.add(table);
-            getFocusGroup().add(table);
+            doLayout(component);
         }
 
         if (set == null) {
@@ -125,6 +118,22 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
                 && imTable.isFocusTraversalParticipant()) {
             ApplicationInstance.getActive().setFocusedComponent(imTable);
         }
+    }
+
+    /**
+     * Adds the table to the browser component.
+     *
+     * @param component the browser component
+     */
+    protected void doLayout(Component component) {
+        table = createTable(model);
+        table.getTable().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onSelect();
+            }
+        });
+        component.add(table);
+        getFocusGroup().add(table);
     }
 
     /**
