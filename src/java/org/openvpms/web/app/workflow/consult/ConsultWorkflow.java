@@ -27,7 +27,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
 import static org.openvpms.web.app.workflow.GetInvoiceTask.INVOICE_SHORTNAME;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
@@ -76,15 +75,17 @@ public class ConsultWorkflow extends WorkflowImpl {
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
         User clinician = (User) bean.getParticipant("participation.clinician");
+        final GlobalContext global = GlobalContext.getInstance();
         if (clinician == null) {
-            clinician = GlobalContext.getInstance().getClinician();
+            clinician = global.getClinician();
         }
 
         initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);
         initial.setPatient(patient);
         initial.setClinician(clinician);
-        initial.setUser(GlobalContext.getInstance().getUser());
+        initial.setUser(global.getUser());
+        initial.setLocation(global.getLocation());
 
         // get the latest clinical event, or create one if none is available
         // and edit it.
@@ -112,7 +113,6 @@ public class ConsultWorkflow extends WorkflowImpl {
         // add a task to update the global context at the end of the workflow
         addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
-                Context global = GlobalContext.getInstance();
                 global.setClinician(context.getClinician());
             }
         });

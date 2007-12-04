@@ -160,6 +160,7 @@ public abstract class ActCRUDWindow<T extends Act>
                             if (saved) {
                                 // act was saved. Need to refresh
                                 saved(act);
+                                onPosted(act, true);
                             }
                         } catch (OpenVPMSException exception) {
                             ErrorHelper.show(exception);
@@ -171,6 +172,18 @@ public abstract class ActCRUDWindow<T extends Act>
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Invoked when posting of an act is complete.
+     * This implementation does nothing.
+     *
+     * @param act           the act
+     * @param printPrompted determines if a print dialog has been displayed to
+     *                      print the act
+     */
+    protected void onPosted(T act, boolean printPrompted) {
+
     }
 
     /**

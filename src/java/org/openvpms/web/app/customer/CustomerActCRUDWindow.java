@@ -19,9 +19,7 @@
 package org.openvpms.web.app.customer;
 
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
-
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -44,7 +42,13 @@ public abstract class CustomerActCRUDWindow<T extends Act>
         extends ActCRUDWindow<T> {
 
     /**
-     * Create a new <code>CustomerActCRUDWindow</code>.
+     * Determines if the current act is posted or not.
+     */
+    private boolean posted;
+
+
+    /**
+     * Create a new <tt>CustomerActCRUDWindow</tt>.
      *
      * @param type       display name for the types of objects that this may
      *                   create
@@ -52,6 +56,17 @@ public abstract class CustomerActCRUDWindow<T extends Act>
      */
     public CustomerActCRUDWindow(String type, ShortNames shortNames) {
         super(type, shortNames);
+    }
+
+    /**
+     * Sets the object.
+     *
+     * @param object the object. May be <tt>null</tt>
+     */
+    @Override
+    public void setObject(T object) {
+        posted = (object != null) && POSTED.equals(object.getStatus());
+        super.setObject(object);
     }
 
     /**
@@ -87,10 +102,27 @@ public abstract class CustomerActCRUDWindow<T extends Act>
      */
     @Override
     protected void onSaved(T object, boolean isNew) {
+        boolean prevPosted = posted;
         super.onSaved(object, isNew);
         String status = object.getStatus();
-        if (POSTED.equals(status)) {
-        	print(object);
+        if (!prevPosted && POSTED.equals(status)) {
+            onPosted(object, false);
         }
-    } 
+    }
+
+    /**
+     * Invoked when posting of an act is complete.
+     * If no print dialog has been displayed, pops up a dialog to print the
+     * act
+     *
+     * @param act           the act
+     * @param printPrompted determines if a print dialog has been displayed to
+     *                      print the act
+     */
+    @Override
+    protected void onPosted(T act, boolean printPrompted) {
+        if (!printPrompted) {
+            print(act);
+        }
+    }
 }

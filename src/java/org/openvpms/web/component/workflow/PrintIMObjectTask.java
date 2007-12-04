@@ -35,9 +35,14 @@ import org.openvpms.web.component.print.PrinterListener;
 public class PrintIMObjectTask extends AbstractTask {
 
     /**
+     * The object to print.
+     */
+    private IMObject object;
+
+    /**
      * The short name of the object to print.
      */
-    private final String shortName;
+    private String shortName;
 
     /**
      * Determines if objects should be printed interactively.
@@ -46,6 +51,27 @@ public class PrintIMObjectTask extends AbstractTask {
      */
     private final boolean interactive;
 
+
+    /**
+     * Creates a new <tt>PrintIMObjectTask</tt>.
+     *
+     * @param object the object to print
+     */
+    public PrintIMObjectTask(IMObject object) {
+        this(object, true);
+    }
+
+    /**
+     * Creates a new <tt>PrintIMObjectTask</tt>.
+     *
+     * @param object      the object to print
+     * @param interactive if <tt>true</tt> print interactively, otherwise
+     *                    attempt to print in the background
+     */
+    public PrintIMObjectTask(IMObject object, boolean interactive) {
+        this.object = object;
+        this.interactive = interactive;
+    }
 
     /**
      * Creates a new <tt>PrintIMObjectTask</tt>.
@@ -77,11 +103,12 @@ public class PrintIMObjectTask extends AbstractTask {
      * @param context the task context
      */
     public void start(final TaskContext context) {
-        IMObject object = context.getObject(shortName);
+        if (object == null) {
+            object = context.getObject(shortName);
+        }
         if (object != null) {
             try {
-                IMPrinter<IMObject> printer = IMPrinterFactory.create(
-                        object);
+                IMPrinter<IMObject> printer = IMPrinterFactory.create(object);
                 boolean skip = !isRequired();
                 InteractiveIMPrinter<IMObject> iPrinter
                         = new InteractiveIMPrinter<IMObject>(printer, skip);
@@ -89,7 +116,7 @@ public class PrintIMObjectTask extends AbstractTask {
 
                 iPrinter.setListener(new PrinterListener() {
                     public void printed(String printer) {
-                        notifyCompleted();
+                        onPrinted(object);
                     }
 
                     public void cancelled() {
@@ -111,6 +138,16 @@ public class PrintIMObjectTask extends AbstractTask {
         } else {
             notifyCancelled();
         }
+    }
+
+    /**
+     * Invoked when the object is successfully printed.
+     * Notifies completion of the task.
+     *
+     * @param object the printed object
+     */
+    protected void onPrinted(IMObject object) {
+        notifyCompleted();
     }
 
 }

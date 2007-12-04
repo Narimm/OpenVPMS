@@ -27,6 +27,9 @@ package org.openvpms.web.component.workflow;
  */
 public class Tasks extends AbstractTask {
 
+    /**
+     * The workflow.
+     */
     private WorkflowImpl workflow = new WorkflowImpl();
 
     /**
@@ -46,6 +49,14 @@ public class Tasks extends AbstractTask {
      */
     public void setBreakOnSkip(boolean breakOnSkip) {
         workflow.setBreakOnSkip(breakOnSkip);
+    }
+
+    /**
+     * Starts the task, using a {@link DefaultTaskContext} that inherits
+     * from the global context.
+     */
+    public void start() {
+        start(new DefaultTaskContext());
     }
 
     /**

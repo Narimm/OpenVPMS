@@ -16,18 +16,13 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.customer.payment;
 
 
-import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
-
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 
 
 /**
@@ -39,7 +34,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
     /**
-     * Create a new <code>ActCRUDWindow</code>.
+     * Create a new <tt>PaymentCRUDWindow</tt>.
      *
      * @param type       display name for the types of objects that this may
      *                   create
