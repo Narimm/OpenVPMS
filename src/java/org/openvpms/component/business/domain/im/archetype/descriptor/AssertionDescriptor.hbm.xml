@@ -36,7 +36,7 @@
     <property name="index" access="property" column="assertion_index" type="integer" />
     <property name="errorMessage" access="property" column="error_message"
       type="string" />
-    <property name="propertyMap" column="property_map" length="20000"
+    <property name="propertyMap" column="property_map" length="65536"
       type="org.openvpms.component.business.dao.hibernate.usertype.PropertyMapUserType" />
   </class>
 
