@@ -35,6 +35,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.ReportException;
 import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
@@ -45,7 +46,7 @@ import java.util.Map;
 
 
 /**
- * Generates a jasper report for an <tt>IMObject</code>.
+ * Generates a jasper report for an <tt>IMObject</tt>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -119,7 +120,8 @@ public class DynamicJasperReport extends AbstractJasperIMReport<IMObject> {
      * @return a new datas ource
      */
     protected JRDataSource createDataSource(Iterator<IMObject> objects) {
-        return new IMObjectCollectionDataSource(objects, getArchetypeService());
+        return new IMObjectCollectionDataSource(objects, getArchetypeService(),
+                                                getDocumentHandlers());
     }
 
     /**
@@ -155,6 +157,9 @@ public class DynamicJasperReport extends AbstractJasperIMReport<IMObject> {
         int y = 0;
         for (NodeDescriptor node : archetype.getSimpleNodeDescriptors()) {
             if (node.isHidden()) {
+                continue;
+            }
+            if (IMObjectReference.class.equals(node.getClazz())) {
                 continue;
             }
             JRDesignField field = new JRDesignField();

@@ -24,6 +24,7 @@ import net.sf.jasperreports.engine.JRField;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.comparators.TransformingComparator;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -37,8 +38,8 @@ import java.util.List;
 
 
 /**
- * Implementation of the <code>JRDataSource</code> interface, for collections
- * of <code>IMObject</code>s.
+ * Implementation of the <tt>JRDataSource</tt> interface, for collections
+ * of <tt>IMObject</tt>s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -56,24 +57,27 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
     private IMObjectDataSource current;
 
     /**
-     * Display name for this collection. May be <code>null</code>
+     * Display name for this collection. May be <tt>null</tt>.
      */
     private String displayName;
 
 
     /**
-     * Construct a new <code>IMObjectCollectionDataSource</code> for a
+     * Construct a new <tt>IMObjectCollectionDataSource</tt> for a
      * collection node.
      *
      * @param parent     the parent object
      * @param descriptor the collection desccriptor
+     * @param service    the archetype service
+     * @param handlers   the document handlers
      * @param sortNodes  the sort nodes
      */
     public IMObjectCollectionDataSource(IMObject parent,
                                         NodeDescriptor descriptor,
                                         IArchetypeService service,
+                                        DocumentHandlers handlers,
                                         String ... sortNodes) {
-        super(service);
+        super(service, handlers);
         List<IMObject> values = descriptor.getChildren(parent);
         for (String sortNode : sortNodes) {
             sort(values, sortNode);
@@ -83,15 +87,17 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
     }
 
     /**
-     * Construct a new <code>IMObjectCollectionDataSource</code> for a
+     * Construct a new <tt>IMObjectCollectionDataSource</tt> for a
      * collection of objects.
      *
-     * @param objects the objects
-     * @param service the archetype service
+     * @param objects  the objects
+     * @param service  the archetype service
+     * @param handlers the document handlers
      */
     public IMObjectCollectionDataSource(Iterator<IMObject> objects,
-                                        IArchetypeService service) {
-        super(service);
+                                        IArchetypeService service,
+                                        DocumentHandlers handlers) {
+        super(service, handlers);
         iter = objects;
     }
 
@@ -103,8 +109,8 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
     public boolean next() {
         boolean result = iter.hasNext();
         if (result) {
-            current = new IMObjectDataSource(iter.next(),
-                                             getArchetypeService());
+            current = new IMObjectDataSource(iter.next(), getArchetypeService(),
+                                             getDocumentHandlers());
         }
         return result;
     }
@@ -172,7 +178,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
 
 
         /**
-         * Construct a new <code>NodeTransformer</code>.
+         * Construct a new <tt>NodeTransformer</tt>.
          *
          * @param name    the field name
          * @param service the archetype service

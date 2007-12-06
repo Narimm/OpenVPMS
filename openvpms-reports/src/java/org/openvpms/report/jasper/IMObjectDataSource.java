@@ -21,19 +21,21 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
-
+import org.openvpms.archetype.rules.doc.DocumentHandler;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
-import org.openvpms.report.IMObjectExpressionEvaluator;
 import org.openvpms.report.ExpressionEvaluator;
+import org.openvpms.report.IMObjectExpressionEvaluator;
 
 
 /**
- * Implementation of the <code>JRDataSource</code> interface, for a single
- * <code>IMObject</code>s.
+ * Implementation of the <tt>JRDataSource</tt> interface, for a single
+ * <tt>IMObject</tt>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -56,22 +58,30 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     private final ExpressionEvaluator evaluator;
 
     /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
+    /**
      * Determines if there is another record.
      */
     private boolean next = true;
 
 
     /**
-     * Construct a new <code>IMObjectDataSource</code>.
+     * Construct a new <tt>IMObjectDataSource</tt>.
      *
-     * @param object  the source object
-     * @param service the archetype service
+     * @param object   the source object
+     * @param service  the archetype service
+     * @param handlers the document handlers
      */
-    public IMObjectDataSource(IMObject object, IArchetypeService service) {
-        super(service);
+    public IMObjectDataSource(IMObject object, IArchetypeService service,
+                              DocumentHandlers handlers) {
+        super(service, handlers);
         this.object = object;
         resolver = new NodeResolver(object, service);
         evaluator = new IMObjectExpressionEvaluator(object, resolver);
+        this.handlers = handlers;
     }
 
     /**
@@ -102,7 +112,8 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
             throw new JRException("No node found for field=" + name);
         }
         return new IMObjectCollectionDataSource(
-                object, descriptor, getArchetypeService(), sortNodes);
+                object, descriptor, getArchetypeService(),
+                getDocumentHandlers(), sortNodes);
     }
 
     /**
@@ -113,7 +124,17 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      * @throws JRException for any error
      */
     public Object getFieldValue(JRField field) throws JRException {
-        return evaluator.getValue(field.getName());
+        Object value = evaluator.getValue(field.getName());
+        if (value instanceof Document) {
+            Document doc = (Document) value;
+            if (doc.getContents() != null && doc.getContents().length != 0) {
+                DocumentHandler handler = handlers.get(doc);
+                value = handler.getContent(doc);
+            } else {
+                value = null;
+            }
+        }
+        return value;
     }
 
 }
