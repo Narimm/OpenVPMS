@@ -37,8 +37,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class ArchetypeServiceTest extends
-                                           AbstractDependencyInjectionSpringContextTests {
+public abstract class ArchetypeServiceTest
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
      * Returns the location of the spring config files.
@@ -56,9 +56,7 @@ public abstract class ArchetypeServiceTest extends
      * @return the new object
      */
     protected IMObject create(String shortName) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        IMObject object = service.create(shortName);
+        IMObject object = getArchetypeService().create(shortName);
         assertNotNull(object);
         return object;
     }
@@ -123,5 +121,14 @@ public abstract class ArchetypeServiceTest extends
         bean.addValue("contacts", contactBean.getObject());
         bean.save();
         return (Party) bean.getObject();
+    }
+
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getArchetypeService() {
+        return ArchetypeServiceHelper.getArchetypeService();
     }
 }

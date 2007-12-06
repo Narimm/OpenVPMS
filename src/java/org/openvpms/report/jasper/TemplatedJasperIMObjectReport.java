@@ -74,7 +74,8 @@ public class TemplatedJasperIMObjectReport
      * @return a new datas ource
      */
     protected JRDataSource createDataSource(Iterator<IMObject> objects) {
-        return new IMObjectCollectionDataSource(objects, getArchetypeService());
+        return new IMObjectCollectionDataSource(objects, getArchetypeService(),
+                                                getDocumentHandlers());
     }
 
 }

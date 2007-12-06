@@ -20,11 +20,12 @@ package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
 /**
- * Abstract JRDataSource for <code>IMObject</code>s.
+ * Abstract JRDataSource for <tt>IMObject</tt>s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -34,14 +35,24 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
     /**
      * The archetype service.
      */
-    private final IArchetypeService _service;
+    private final IArchetypeService service;
+
+    /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
 
 
     /**
-     * Construct a new <code>AbstractIMObjectDataSource</code>.
+     * Construct a new <tt>AbstractIMObjectDataSource</tt>.
+     *
+     * @param service  the archetype service
+     * @param handlers the document handlers
      */
-    public AbstractIMObjectDataSource(IArchetypeService service) {
-        _service = service;
+    public AbstractIMObjectDataSource(IArchetypeService service,
+                                      DocumentHandlers handlers) {
+        this.service = service;
+        this.handlers = handlers;
     }
 
     /**
@@ -70,7 +81,16 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
      * @return the archetype service
      */
     protected IArchetypeService getArchetypeService() {
-        return _service;
+        return service;
+    }
+
+    /**
+     * Returns the document handlers.
+     *
+     * @return the document handlers
+     */
+    protected DocumentHandlers getDocumentHandlers() {
+        return handlers;
     }
 
 }

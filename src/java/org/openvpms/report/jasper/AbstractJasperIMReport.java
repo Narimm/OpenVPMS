@@ -315,6 +315,15 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     }
 
     /**
+     * Returns the document handlers.
+     *
+     * @return the document handlers
+     */
+    protected DocumentHandlers getDocumentHandlers() {
+        return handlers;
+    }
+
+    /**
      * Returns the default report parameters to use when filling the report.
      *
      * @return the report parameters
