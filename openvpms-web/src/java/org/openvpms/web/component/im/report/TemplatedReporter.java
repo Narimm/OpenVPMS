@@ -126,7 +126,7 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
      * @return the document, or <tt>null</tt> if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected Document getTemplateDocument() {
+    public Document getTemplateDocument() {
         Entity template = getTemplate();
         if (template != null) {
             TemplateHelper helper = new TemplateHelper();

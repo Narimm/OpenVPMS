@@ -11,42 +11,44 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
 package org.openvpms.web.component.im.doc;
 
-import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.PrintException;
 import org.openvpms.web.component.im.print.TemplatedIMPrinter;
-import org.openvpms.web.component.im.report.DocumentActReporter;
+import org.openvpms.web.component.im.report.IMObjectReporter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
- * A printer for {@link DocumentAct}s.
+ * A printer for attachments associated with {@link DocumentAct}s.
+ * If a document template (<em>entity.documentTemplate</em>) is associated with
+ * the act, then this will be used to generate the document to print.
+ * Otherwise, any {@link Document} associated with the act will be printed
+ * directly.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocumentActPrinter extends TemplatedIMPrinter<IMObject> {
+public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
 
     /**
      * Constructs a new <tt>DocumentActPrinter</tt>.
      *
      * @param object the object to print
-     * @throws DocumentException if the object doesn't have any
-     *                           <em>participation.documentTemplate</em>
-     *                           participation
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    public DocumentActPrinter(DocumentAct object) {
-        super(new DocumentActReporter(object));
+    public DocumentActAttachmentPrinter(DocumentAct object) {
+        super(new IMObjectReporter<IMObject>(object));
     }
 
     /**
@@ -66,14 +68,32 @@ public class DocumentActPrinter extends TemplatedIMPrinter<IMObject> {
         if (printer == null) {
             throw new PrintException(PrintException.ErrorCode.NoPrinter);
         }
-        DocumentAct act = (DocumentAct) getObject();
-        Document doc = (Document) IMObjectHelper.getObject(
-                act.getDocReference());
-        if (doc == null) {
-            super.print(printer);
-        } else {
-            print(doc, printer);
+        print(getDocument(), printer);
+    }
+
+    /**
+     * Returns a document corresponding to that which would be printed.
+     * If a document template is associated with the {@link DocumentAct}
+     * archetype, then this will be used to generate the document.
+     * Otherwise, any {@link Document} associated with the {@link DocumentAct}
+     * will be used.
+     *
+     * @return a document
+     * @throws OpenVPMSException for any error
+     */
+    @Override
+    public Document getDocument() {
+        Document template = getReporter().getTemplateDocument();
+        Document result = null;
+        if (template == null) {
+            DocumentAct act = (DocumentAct) getObject();
+            result = (Document) IMObjectHelper.getObject(
+                    act.getDocReference());
         }
+        if (result == null) {
+            result = super.getDocument();
+        }
+        return result;
     }
 
 }

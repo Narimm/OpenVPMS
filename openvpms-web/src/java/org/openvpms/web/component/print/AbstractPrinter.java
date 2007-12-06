@@ -27,7 +27,9 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.report.DocFormats;
 import org.openvpms.report.PrintProperties;
+import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.PrintHelper;
@@ -114,13 +116,18 @@ public abstract class AbstractPrinter implements Printer {
     }
 
     /**
-     * Downloads a document to the client.
+     * Prints a document, or downloads it to the client if printing is not
+     * supported.
      *
-     * @param document the document to download
-     * @throws OpenVPMSException for any error
+     * @param document the document to print
+     * @param printer  the printer
      */
-    protected void download(Document document) {
-        DownloadServlet.startDownload(document);
+    protected void print(Document document, String printer) {
+        if (DocFormats.ODT_TYPE.equals(document.getMimeType())) {
+            OpenOfficeHelper.getPrintService().print(document, printer);
+        } else {
+            DownloadServlet.startDownload(document);
+        }
     }
 
     /**
