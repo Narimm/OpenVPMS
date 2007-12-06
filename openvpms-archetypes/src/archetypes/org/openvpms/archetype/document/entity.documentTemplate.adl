@@ -26,6 +26,7 @@
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="act.patientDocumentForm" value="Patient Form"/>
+                    <property name="act.patientDocumentImage" value="Patient Image"/>
                     <property name="act.patientDocumentLetter" value="Patient Letter"/>
                     <property name="act.customerDocumentForm" value="Customer Form"/>
                     <property name="act.customerDocumentLetter" value="Customer Letter"/>
