@@ -49,6 +49,7 @@ import org.openvpms.web.component.table.SortableTableModel;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
+import org.openvpms.web.component.util.KeyStrokeHelper;
 import org.openvpms.web.component.util.SelectFieldFactory;
 
 import java.beans.PropertyChangeEvent;
@@ -363,6 +364,8 @@ public abstract class IMTableCollectionEditor<T>
         if (editor != null && editor.getObject() == object) {
             removeEditor();
         }
+        // workaround for OVPMS-629
+        KeyStrokeHelper.reregisterKeyStrokeListeners(container);
     }
 
     /**
@@ -406,6 +409,9 @@ public abstract class IMTableCollectionEditor<T>
         editor.addModifiableListener(editorListener);
         changeFocusGroup(editor);
         setCurrentEditor(editor);
+
+        // workaround for OVPMS-629
+        KeyStrokeHelper.reregisterKeyStrokeListeners(container);
     }
 
     /**
