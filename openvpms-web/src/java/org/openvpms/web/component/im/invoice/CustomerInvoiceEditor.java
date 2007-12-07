@@ -45,10 +45,10 @@ import java.util.List;
 public class CustomerInvoiceEditor extends InvoiceEditor {
 
     /**
-     * Constructs a new <code>CustomerInvoiceEditor</code>.
+     * Constructs a new <tt>CustomerInvoiceEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <code>null</code>
+     * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context
      */
     public CustomerInvoiceEditor(Act act, IMObject parent,
@@ -60,7 +60,7 @@ public class CustomerInvoiceEditor extends InvoiceEditor {
     /**
      * Save any edits.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the save was successful
      */
     @Override
     public boolean save() {
@@ -72,22 +72,24 @@ public class CustomerInvoiceEditor extends InvoiceEditor {
     }
 
     /**
-     * Links medication acts associated with the invoice to the current
-     * visit for the associated patient.
+     * Links medication and document acts associated with the invoice to the
+     * current visit for the associated patient.
      *
-     * @return <code>true</code> if medication was processed successfully
+     * @return <tt>true</tt> if medication was processed successfully
      */
     private boolean processMedication() {
         boolean saved = false;
         try {
             ActRelationshipCollectionEditor editor = getEditor();
-            List<Act> medications = new ArrayList<Act>();
+            List<Act> acts = new ArrayList<Act>();
             for (Act act : editor.getActs()) {
                 if (TypeHelper.isA(act, "act.customerAccountInvoiceItem")) {
                     ActBean bean = new ActBean(act);
-                    for (Act medication :
-                            bean.getActs("act.patientMedication")) {
-                        medications.add(medication);
+                    for (Act medication : bean.getActsForNode("dispensing")) {
+                        acts.add(medication);
+                    }
+                    for (Act document : bean.getActsForNode("documents")) {
+                        acts.add(document);
                     }
                 }
             }
@@ -95,9 +97,9 @@ public class CustomerInvoiceEditor extends InvoiceEditor {
             if (startTime == null) {
                 startTime = new Date();
             }
-            if (!medications.isEmpty()) {
+            if (!acts.isEmpty()) {
                 MedicalRecordRules rules = new MedicalRecordRules();
-                rules.addToEvents(medications, startTime);
+                rules.addToEvents(acts, startTime);
             }
             saved = true;
         } catch (OpenVPMSException exception) {
