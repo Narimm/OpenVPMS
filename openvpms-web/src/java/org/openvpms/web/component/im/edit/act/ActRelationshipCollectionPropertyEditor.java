@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -65,27 +66,27 @@ public class ActRelationshipCollectionPropertyEditor
     /**
      * The parent act.
      */
-    private final Act _act;
+    private final Act parent;
 
     /**
      * The set of acts being edited, and their associated relationships.
      */
-    private Map<Act, ActRelationship> _acts;
+    private Map<Act, ActRelationship> acts;
 
     /**
      * The relationship short name.
      */
-    private final String _relationshipType;
+    private final String relationshipType;
 
     /**
      * The set of removed objects.
      */
-    private final Set<IMObject> _removed = new HashSet<IMObject>();
+    private final Set<IMObject> removed = new HashSet<IMObject>();
 
     /**
      * The logger.
      */
-    private static final Log _log
+    private static final Log log
             = LogFactory.getLog(ActRelationshipCollectionPropertyEditor.class);
 
 
@@ -99,8 +100,8 @@ public class ActRelationshipCollectionPropertyEditor
             CollectionProperty property, Act act) {
         super(property);
         // @todo - no support for multiple relationship archetypes
-        _relationshipType = property.getArchetypeRange()[0];
-        _act = act;
+        relationshipType = property.getArchetypeRange()[0];
+        parent = act;
     }
 
     /**
@@ -109,7 +110,7 @@ public class ActRelationshipCollectionPropertyEditor
      * @return the relationship short name
      */
     public String getRelationshipShortName() {
-        return _relationshipType;
+        return relationshipType;
     }
 
     /**
@@ -121,7 +122,7 @@ public class ActRelationshipCollectionPropertyEditor
     @Override
     public String[] getArchetypeRange() {
         ArchetypeDescriptor relationship
-                = DescriptorHelper.getArchetypeDescriptor(_relationshipType);
+                = DescriptorHelper.getArchetypeDescriptor(relationshipType);
         NodeDescriptor target = relationship.getNodeDescriptor("target");
         return DescriptorHelper.getShortNames(target);
     }
@@ -138,13 +139,8 @@ public class ActRelationshipCollectionPropertyEditor
         ActRelationship relationship = getActs().get(act);
         if (relationship == null) {
             try {
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
-                relationship = (ActRelationship) service.create(
-                        _relationshipType);
-                relationship.setSource(_act.getObjectReference());
-                relationship.setTarget(act.getObjectReference());
-
+                ActBean bean = new ActBean(parent);
+                relationship = bean.addRelationship(relationshipType, act);
                 getActs().put(act, relationship);
                 getProperty().add(relationship);
                 added = true;
@@ -192,9 +188,9 @@ public class ActRelationshipCollectionPropertyEditor
         if (saved) {
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
-            IMObject[] removed = _removed.toArray(new IMObject[0]);
+            IMObject[] toRemove = removed.toArray(new IMObject[0]);
             boolean deleted;
-            for (IMObject object : removed) {
+            for (IMObject object : toRemove) {
                 IMObjectEditor editor = getEditor(object);
                 if (editor != null) {
                     deleted = editor.delete();
@@ -213,7 +209,7 @@ public class ActRelationshipCollectionPropertyEditor
                     }
                 }
                 if (deleted) {
-                    _removed.remove(object);
+                    removed.remove(object);
                     setSaved(true);
                 } else {
                     saved = false;
@@ -230,26 +226,26 @@ public class ActRelationshipCollectionPropertyEditor
      * @return the child acts
      */
     protected Map<Act, ActRelationship> getActs() {
-        if (_acts == null) {
+        if (acts == null) {
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
             List<IMObject> relationships = super.getObjects();
-            _acts = new LinkedHashMap<Act, ActRelationship>();
+            acts = new LinkedHashMap<Act, ActRelationship>();
             for (IMObject object : relationships) {
                 ActRelationship relationship = (ActRelationship) object;
                 Act item = (Act) ArchetypeQueryHelper.getByObjectReference(
                         service, relationship.getTarget());
                 if (item != null) {
-                    _acts.put(item, relationship);
+                    acts.put(item, relationship);
                 } else {
-                    _log.warn("Target act=" + relationship.getTarget()
+                    log.warn("Target act=" + relationship.getTarget()
                             + " no longer exists. Referred to by relationship="
                             + relationship);
                     getProperty().remove(relationship);
                 }
             }
         }
-        return _acts;
+        return acts;
     }
 
     /**
@@ -260,7 +256,7 @@ public class ActRelationshipCollectionPropertyEditor
     protected void queueRemove(IMObject object) {
         removeEdited(object);
         if (!object.isNew()) {
-            _removed.add(object);
+            removed.add(object);
         }
     }
 

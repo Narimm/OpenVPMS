@@ -92,7 +92,7 @@ public class DefaultCollectionPropertyEditorTestCase
      * Returns an editor for a collection property.
      *
      * @param property the collection property
-     * @param parent   thhe parent of the collection
+     * @param parent   the parent of the collection
      * @return a new editor for the property
      */
     protected CollectionPropertyEditor createEditor(
@@ -103,9 +103,10 @@ public class DefaultCollectionPropertyEditorTestCase
     /**
      * Returns an object to add to the collection.
      *
+     * @param parent the parent of the collection
      * @return a new object to add to the collection
      */
-    protected IMObject createObject() {
+    protected IMObject createObject(IMObject parent) {
         return TestHelper.create("contact.location");
     }
 

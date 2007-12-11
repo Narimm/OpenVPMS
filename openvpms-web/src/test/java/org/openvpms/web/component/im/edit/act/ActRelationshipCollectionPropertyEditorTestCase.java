@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditorTest;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.test.TestHelper;
 
@@ -68,6 +69,43 @@ public class ActRelationshipCollectionPropertyEditorTestCase
                 property, parent);
         assertEquals("actRelationship.customerEstimationItem",
                      editor.getRelationshipShortName());
+    }
+
+    /**
+     * Verifies that the parent and child of a collection can be saved twice
+     * without losing the relationship between them.
+     * This verifies the fix for OVPMS-710.
+     */
+    public void testSaveTwice() {
+        IMObject parent = createParent();
+        CollectionProperty property = getCollectionProperty(parent);
+        CollectionPropertyEditor editor = createEditor(property, parent);
+
+        IMObject element = createObject(parent);
+        editor.add(element);
+        assertEquals(1, editor.getObjects().size());
+        assertSame(element, editor.getObjects().get(0));
+
+        // save the parent and child, verifying the versions have incremented
+        assertTrue(SaveHelper.save(parent));
+        assertTrue(editor.save());
+        assertEquals(0, parent.getVersion());
+        assertEquals(0, element.getVersion());
+
+        // now save the parent and child again
+        assertTrue(SaveHelper.save(parent));
+        editor.add(element); // doesn't add, but marks dirty to enable save
+        assertTrue(editor.save());
+        assertEquals(1, parent.getVersion());
+        assertEquals(1, element.getVersion());
+
+        // now retrieve parent and verify collection matches the original
+        IMObject savedParent = get(parent);
+        assertNotNull(savedParent);
+        CollectionPropertyEditor saved = createEditor(
+                getCollectionProperty(savedParent), savedParent);
+        assertEquals(1, saved.getObjects().size());
+        assertTrue(saved.getObjects().contains(element));
     }
 
     /**
@@ -110,9 +148,10 @@ public class ActRelationshipCollectionPropertyEditorTestCase
     /**
      * Returns an object to add to the collection.
      *
+     * @param parent the parent of the collection
      * @return a new object to add to the collection
      */
-    protected IMObject createObject() {
+    protected IMObject createObject(IMObject parent) {
         Act act = (Act) TestHelper.create("act.customerEstimationItem");
         assertNotNull(act);
 
