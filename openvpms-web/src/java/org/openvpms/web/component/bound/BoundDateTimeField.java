@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.bound;
 
+import echopointng.DateChooser;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.apache.commons.lang.ObjectUtils;
@@ -25,6 +26,7 @@ import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.TimePropertyTransformer;
+import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
@@ -86,11 +88,33 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
     }
 
     /**
+     * Sets the date portion of the date/time.
+     *
+     * @param date the date
+     */
+    public void setDate(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        DateChooser chooser = getDateField().getDateChooser();
+        chooser.setSelectedDate(calendar);
+    }
+
+    /**
+     * Returns the date portion of the date/time.
+     *
+     * @return the date
+     */
+    public Date getDate() {
+        Calendar calendar = getDateField().getDateChooser().getSelectedDate();
+        return DateHelper.getDayMonthYear(calendar.getTime());
+    }
+
+    /**
      * Returns the date field,
      *
      * @return the date field
      */
-    public BoundDateField getDate() {
+    public BoundDateField getDateField() {
         return date;
     }
 
@@ -99,7 +123,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
      *
      * @return the time field
      */
-    public BoundTimeField getTime() {
+    public BoundTimeField getTimeField() {
         return time;
     }
 
@@ -158,8 +182,8 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
                                      current.get(Calendar.SECOND));
                         date = calendar.getTime();
                     }
+                    transformer.setDate(date);
                     if (property.setValue(date)) {
-                        transformer.setDate(date);
                         Object propertyValue = property.getValue();
                         if (!ObjectUtils.equals(date, propertyValue)) {
                             setField();

@@ -38,10 +38,10 @@ public class DateTimeFieldFactory extends ComponentFactory {
      */
     public static BoundDateTimeField create(Property property) {
         BoundDateTimeField field = new BoundDateTimeField(property);
-        BoundDateField date = field.getDate();
+        BoundDateField date = field.getDateField();
         setDefaultStyle(date.getDateChooser());
         setDefaultStyle(date.getTextField());
-        setDefaultStyle(field.getTime());
+        setDefaultStyle(field.getTimeField());
         return field;
     }
 

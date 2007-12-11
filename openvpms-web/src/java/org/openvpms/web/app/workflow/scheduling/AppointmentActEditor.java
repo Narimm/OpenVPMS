@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
-import echopointng.DateChooser;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.patient.PatientRules;
@@ -46,8 +45,6 @@ import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.DateTimeFieldFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -71,11 +68,6 @@ public class AppointmentActEditor extends AbstractActEditor {
      * The end time.
      */
     private BoundDateTimeField endTimeField;
-
-    /**
-     * Listener for date changes.
-     */
-    private PropertyChangeListener dateListener;
 
 
     /**
@@ -109,17 +101,6 @@ public class AppointmentActEditor extends AbstractActEditor {
             startTime = getDefaultStartTime(scheduleDate);
             setStartTime(startTime);
         }
-
-        dateListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                String name = event.getPropertyName();
-                if ("selectedDate".equals(name)) {
-                    updateDates();
-                }
-            }
-        };
-        setStartDate(startTime);
-
 
         getProperty("status").addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -170,9 +151,32 @@ public class AppointmentActEditor extends AbstractActEditor {
     @Override
     protected void onStartTimeChanged() {
         try {
+            Date now = DateHelper.getDayMonthYear(new Date());
+            Date startDate = startTimeField.getDate();
+            if (startDate.compareTo(now) < 0) {
+                // don't permit backdating of appointments
+                removeStartEndTimeListeners();
+                startTimeField.setDate(now);
+                addStartEndTimeListeners();
+            }
             calculateEndTime();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Invoked when the end time changes. Recalculates the end time if it
+     * is less than the start time.
+     */
+    @Override
+    protected void onEndTimeChanged() {
+        Date start = getStartTime();
+        Date end = getEndTime();
+        if (start != null && end != null) {
+            if (end.compareTo(start) < 0) {
+                calculateEndTime();
+            }
         }
     }
 
@@ -264,63 +268,12 @@ public class AppointmentActEditor extends AbstractActEditor {
         if (start != null && schedule != null && appointmentType != null) {
             AppointmentRules rules = new AppointmentRules();
             Date end = rules.calculateEndTime(start, schedule, appointmentType);
-            setEndDate(end);
-            setEndTime(end);
-        }
-    }
 
-    /**
-     * Sets the appointment start date.
-     *
-     * @param selected the date
-     */
-    private void setStartDate(Date selected) {
-        setDate(startTimeField, selected);
-    }
-
-    /**
-     * Sets the appointment end date.
-     *
-     * @param selected the date
-     */
-    private void setEndDate(Date selected) {
-        setDate(endTimeField, selected);
-    }
-
-    /**
-     * Sets the date component of a date-time field.
-     *
-     * @param field the field
-     * @param date  the new date
-     */
-    private void setDate(BoundDateTimeField field, Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        DateChooser chooser = field.getDate().getDateChooser();
-        chooser.removePropertyChangeListener(dateListener);
-        chooser.setSelectedDate(calendar);
-        chooser.addPropertyChangeListener(dateListener);
-    }
-
-    /**
-     * Synchronizes the date portion of the <em>startTime</em> and
-     * <em>endTime</em> nodes with the {@link #startTimeField} and
-     * {@link #endTimeField} fields.
-     */
-    private void updateDates() {
-        Date now = DateHelper.getDayMonthYear(new Date());
-        Date selectedStart = DateHelper.getDayMonthYear(
-                startTimeField.getDate().getSelectedDate().getTime());
-        Date selectedEnd = DateHelper.getDayMonthYear(
-                endTimeField.getDate().getSelectedDate().getTime());
-        if (selectedStart.compareTo(now) < 0) {
-            // don't permit backdating of appointments
-            selectedStart = now;
-            setStartDate(selectedStart);
-        }
-        if (selectedEnd.compareTo(selectedStart) < 0) {
-            selectedEnd = selectedStart;
-            setEndDate(selectedEnd);
+            endTimeField.setDate(end); // set the date portion
+            setEndTime(end);           // set the time portion
+            // TODO - not ideal. Needs to be this way as the date and time
+            // fields are bound to the same property, which uses
+            // TimePropertyTransformer
         }
     }
 
