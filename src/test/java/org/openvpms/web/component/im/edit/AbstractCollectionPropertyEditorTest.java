@@ -73,7 +73,7 @@ public abstract class AbstractCollectionPropertyEditorTest
                    property.getMinCardinality() >= 0);
         CollectionPropertyEditor editor = createEditor(property, parent);
 
-        IMObject element = createObject();
+        IMObject element = createObject(parent);
         editor.add(element);
         assertEquals(1, editor.getObjects().size());
         assertSame(element, editor.getObjects().get(0));
@@ -114,8 +114,8 @@ public abstract class AbstractCollectionPropertyEditorTest
                    property.getMinCardinality() >= 0);
         CollectionPropertyEditor editor = createEditor(property, parent);
 
-        IMObject elt1 = createObject();
-        IMObject elt2 = createObject();
+        IMObject elt1 = createObject(parent);
+        IMObject elt2 = createObject(parent);
 
         editor.add(elt1);
         editor.add(elt2);
@@ -169,8 +169,8 @@ public abstract class AbstractCollectionPropertyEditorTest
                    property.getMinCardinality() >= 0);
         CollectionPropertyEditor editor = createEditor(property, parent);
 
-        IMObject elt1 = createObject();
-        IMObject elt2 = createObject();
+        IMObject elt1 = createObject(parent);
+        IMObject elt2 = createObject(parent);
 
         editor.add(elt1);
         editor.add(elt2);
@@ -263,9 +263,10 @@ public abstract class AbstractCollectionPropertyEditorTest
     /**
      * Returns an object to add to the collection.
      *
+     * @param parent the parent of the collection
      * @return a new object to add to the collection
      */
-    protected abstract IMObject createObject();
+    protected abstract IMObject createObject(IMObject parent);
 
     /**
      * Helper to retrieve an object from the archetype service using its
