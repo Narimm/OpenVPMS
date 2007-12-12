@@ -26,11 +26,14 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -51,6 +54,7 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.KeyStrokeHelper;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -329,26 +333,25 @@ public abstract class IMTableCollectionEditor<T>
     }
 
     /**
-     * Deletes the selected object.
+     * Invoked when the 'delete' button is pressed.
+     * If the selected object has been saved, a confirmation dialog will be
+     * displayed, prompting to delete it. If the object hasn't been saved,
+     * it will be deleted without prompting.
      */
     protected void onDelete() {
         IMObject object;
         IMObjectEditor editor = getCurrentEditor();
         if (editor != null) {
             object = editor.getObject();
-            removeEditor();
         } else {
             object = getSelected();
         }
         if (object != null) {
-            delete(object);
-            getListeners().notifyListeners(this);
-        }
-    }
-
-    protected void onCancel() {
-        if (getCurrentEditor() != null) {
-            removeEditor();
+            if (object.isNew()) {
+                delete(object);
+            } else {
+                confirmDelete(object);
+            }
         }
     }
 
@@ -454,6 +457,29 @@ public abstract class IMTableCollectionEditor<T>
         editor.removeModifiableListener(editorListener);
         setCurrentEditor(null);
         editBox = null;
+    }
+
+    /**
+     * Confirms to delete an object.
+     *
+     * @param object the object to delete
+     */
+    private void confirmDelete(final IMObject object) {
+        String displayName = DescriptorHelper.getDisplayName(object);
+        String title = Messages.get("imobject.collection.delete.title",
+                                    displayName);
+        String message = Messages.get("imobject.collection.delete.message",
+                                      displayName);
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    delete(object);
+                }
+            }
+        });
+        dialog.show();
     }
 
     /**
