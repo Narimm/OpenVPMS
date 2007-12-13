@@ -50,11 +50,10 @@ public class Editors implements Modifiable {
      */
     private ModifiableListeners listeners = new ModifiableListeners();
 
-
     /**
      * The set of editors.
      */
-    private final Set<Modifiable> editors = new HashSet<Modifiable>();
+    private final Set<Editor> editors = new HashSet<Editor>();
 
     /**
      * The set of editors associated with properties, keyed on property name.
@@ -103,6 +102,28 @@ public class Editors implements Modifiable {
      */
     public Editor getEditor(String name) {
         return propertyEditors.get(name);
+    }
+
+    /**
+     * Removes an editor.
+     *
+     * @param editor the editor to remove
+     */
+    public void remove(Editor editor) {
+        if (editor instanceof PropertyEditor) {
+            PropertyEditor p = (PropertyEditor) editor;
+            propertyEditors.remove(p.getProperty().getName());
+        }
+        editors.remove(editor);
+    }
+
+    /**
+     * Removes all the editors.
+     */
+    public void removeAll() {
+        for (Editor editor : editors.toArray(new Editor[0])) {
+            remove(editor);
+        }
     }
 
     /**

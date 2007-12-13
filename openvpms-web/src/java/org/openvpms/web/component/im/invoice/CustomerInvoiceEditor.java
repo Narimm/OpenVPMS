@@ -66,18 +66,18 @@ public class CustomerInvoiceEditor extends InvoiceEditor {
     public boolean save() {
         boolean saved = super.save();
         if (saved) {
-            saved = processMedication();
+            saved = addEventRelationships();
         }
         return saved;
     }
 
     /**
      * Links medication and document acts associated with the invoice to the
-     * current visit for the associated patient.
+     * current <em>act.patientClinicalEvent</em> for the associated patient.
      *
      * @return <tt>true</tt> if medication was processed successfully
      */
-    private boolean processMedication() {
+    private boolean addEventRelationships() {
         boolean saved = false;
         try {
             ActRelationshipCollectionEditor editor = getEditor();

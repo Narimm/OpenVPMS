@@ -615,6 +615,7 @@ public abstract class AbstractIMObjectEditor
      */
     protected void onLayout() {
         Component oldValue = getComponent();
+        editors.removeAll();
         if (getView().getLayout() instanceof ExpandableLayoutStrategy) {
             ExpandableLayoutStrategy expandable = (ExpandableLayoutStrategy) getView().getLayout();
             expandable.setShowOptional(!expandable.isShowOptional());
