@@ -31,10 +31,13 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ClinicianParticipationEditor;
@@ -42,6 +45,7 @@ import org.openvpms.web.component.im.edit.act.PatientMedicationActEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -77,8 +81,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
 
     /**
      * Node filter, used to hide the dispensing node when a non-medication
-     * product or a medication product with  dispensing label node flag = false
-     * is selected.
+     * product is selected.
      */
     private static final NodeFilter DISPENSING_FILTER = new NamedNodeFilter(
             "dispensing");
@@ -217,13 +220,19 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                 = (CollectionProperty) getProperty("dispensing");
         if (dispensing != null
                 && !TypeHelper.isA(getProduct(), "product.medication")) {
-            // need to remove any redundant dispensing act, to avoid spurious
-            // results when printing etc.
+            // need to remove any redundant dispensing act
             if (!dispensing.getValues().isEmpty()) {
                 Object[] values = dispensing.getValues().toArray();
                 ActRelationship relationship = (ActRelationship) values[0];
                 Act act = (Act) getObject();
                 act.removeActRelationship(relationship);
+                Act medication = (Act) IMObjectHelper.getObject(
+                        relationship.getTarget());
+                if (medication != null) {
+                    IArchetypeService service
+                            = ArchetypeServiceHelper.getArchetypeService();
+                    service.remove(medication);
+                }
             }
         }
         return super.doSave();
@@ -283,15 +292,15 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                 fixedPrice.setValue(BigDecimal.ZERO);
                 unitPrice.setValue(BigDecimal.ZERO);
             } else {
-                if (!hasDispensingLabel(product)) {
-                    if (getFilter() != DISPENSING_FILTER) {
-                        changeLayout(DISPENSING_FILTER);
-                    }
-                } else {
+                if (TypeHelper.isA(product, "product.medication")) {
                     if (getFilter() != null) {
                         changeLayout(null);
                     }
                     updateMedicationProduct(product);
+                } else {
+                    if (getFilter() != DISPENSING_FILTER) {
+                        changeLayout(DISPENSING_FILTER);
+                    }
                 }
                 Property fixedPrice = getProperty("fixedPrice");
                 Property unitPrice = getProperty("unitPrice");
@@ -439,7 +448,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                     // returned by the above.
                     current.setProduct(product.getObjectReference());
                 }
-            } else {
+            } else if (hasDispensingLabel(product)) {
                 // queue editing of a new medication act
                 ++medicationPopups;
                 medicationMgr.queue(editors, new MedicationManager.Listener() {
@@ -447,6 +456,15 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                         --medicationPopups;
                     }
                 });
+            } else {
+                // add a new medication act directly
+                IMObject object = editors.create();
+                if (object != null) {
+                    LayoutContext context = new DefaultLayoutContext(true);
+                    final IMObjectEditor editor = editors.createEditor(
+                            object, context);
+                    editors.addEdited(editor);
+                }
             }
         }
     }
@@ -561,17 +579,14 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
     }
 
     /**
-     * Determines if a product requires a dispensing label.
+     * Determines if a medication product requires a dispensing label.
      *
      * @param product the product
      * @return <tt>true</tt> if the product requires a dispensing label
      */
     private boolean hasDispensingLabel(Product product) {
         IMObjectBean bean = new IMObjectBean(product);
-        if (bean.isA("product.medication")) {
-            return bean.getBoolean("label");
-        }
-        return false;
+        return bean.getBoolean("label");
     }
 
     /**
