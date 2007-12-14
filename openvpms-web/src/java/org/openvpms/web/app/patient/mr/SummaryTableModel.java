@@ -43,7 +43,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.doc.DocumentViewer;
+import org.openvpms.web.component.im.doc.DocumentActTableHelper;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.DateHelper;
@@ -272,9 +272,8 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     private Component getInvestigationDetail(DocumentAct act) {
         Component component = getDetail(act);
-        DocumentViewer viewer = new DocumentViewer(act, true);
-        return RowFactory.create("CellSpacing", component,
-                                 viewer.getComponent());
+        Component viewer = DocumentActTableHelper.getDocumentViewer(act, false);
+        return RowFactory.create("CellSpacing", component, viewer);
     }
 
     /**
@@ -285,9 +284,8 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     private Component getDocumentDetail(DocumentAct act) {
         Component component = getDetail(act);
-        DocumentViewer viewer = new DocumentViewer(act, true);
-        return RowFactory.create("CellSpacing", component,
-                                 viewer.getComponent());
+        Component viewer = DocumentActTableHelper.getDocumentViewer(act, false);
+        return RowFactory.create("CellSpacing", component, viewer);
     }
 
     /**
