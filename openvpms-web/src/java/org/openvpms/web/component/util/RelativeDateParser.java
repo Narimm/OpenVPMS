@@ -77,11 +77,25 @@ public class RelativeDateParser {
         calendar = new GregorianCalendar();
         calendar.setTime(date);
         int start = 0;
+        boolean neg = false;
+        boolean first = true;
         while (start < source.length() && matcher.find(start)) {
             if (start != matcher.start()) {
                 return null;
             }
             int value = Integer.parseInt(matcher.group(1));
+            if (first) {
+                if (value < 0) {
+                    neg = true;
+                }
+                first = false;
+            } else {
+                if (value >= 0 && neg) {
+                    // if there is a leading sign, it propagates to all
+                    // other patterns where no sign is specified
+                    value = -value;
+                }
+            }
             String field = matcher.group(2);
             if (field.equals("d")) {
                 calendar.add(Calendar.DAY_OF_MONTH, value);
