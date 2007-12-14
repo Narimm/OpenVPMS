@@ -267,6 +267,7 @@ public class RecordBrowser implements Browser<Act> {
                 break;
             case 4:
             	result = View.CHARGES;
+            	break;
             default:
                 result = View.SUMMARY;
         }
