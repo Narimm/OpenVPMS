@@ -58,20 +58,20 @@ import java.util.Map;
 public class MedicalRecordRules {
 
     /**
-     * The archetype service.
-     */
-    private final IArchetypeService service;
-
-    /**
      * Clinicial event item act relationship archetype short name.
      */
-    private static final String CLINICAL_EVENT_ITEM
+    public static final String CLINICAL_EVENT_ITEM
             = "actRelationship.patientClinicalEventItem";
 
     /**
      * Clinical event archetype short name.
      */
-    private static final String CLINICAL_EVENT = "act.patientClinicalEvent";
+    public static final String CLINICAL_EVENT = "act.patientClinicalEvent";
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
 
     /**
      * Patient participation short name.
@@ -137,9 +137,11 @@ public class MedicalRecordRules {
 
     /**
      * Adds a list of
-     * <em>act.patientMedication</em> <em>act.patientInvestigation*</em> acts
+     * <em>act.patientMedication</em>, <em>act.patientInvestigation*</em>
+     * and <em>act.patientDocument*</em> acts
      * to the <em>act.patientClinicalEvent</em> associated with each act's
      * patient and the specified date. If no event exists, one will be created.
+     * If a relationship exists, it will be ignored.
      *
      * @param acts the acts to add
      * @param date the event date
@@ -156,11 +158,17 @@ public class MedicalRecordRules {
                 ActBean eventBean = new ActBean(event, service);
                 eventBean.addParticipation(PARTICIPATION_PATIENT, patient);
             }
+            boolean save = false;
             ActBean bean = new ActBean(event, service);
             for (Act a : entry.getValue()) {
-                bean.addRelationship(CLINICAL_EVENT_ITEM, a);
+                if (!bean.hasRelationship(CLINICAL_EVENT_ITEM, a)) {
+                    bean.addRelationship(CLINICAL_EVENT_ITEM, a);
+                    save = true;
+                }
             }
-            bean.save();
+            if (save) {
+                bean.save();
+            }
         }
     }
 
