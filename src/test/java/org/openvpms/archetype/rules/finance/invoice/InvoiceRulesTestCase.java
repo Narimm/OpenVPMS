@@ -20,6 +20,8 @@ package org.openvpms.archetype.rules.finance.invoice;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import static org.openvpms.archetype.rules.act.ActStatus.*;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import static org.openvpms.archetype.rules.patient.MedicalRecordRules.CLINICAL_EVENT_ITEM;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -85,7 +87,11 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     public void testSaveInvoiceItem() {
         ActBean item = createInvoiceItem();
         Product product = createProduct(true);
+        Act medication = createMedication(product);
         item.addParticipation("participation.product", product);
+        item.addRelationship("actRelationship.invoiceItemDispensing",
+                             medication);
+        save(medication);
         item.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
@@ -95,13 +101,14 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         Act reminder = reminders.get(0);
 
         // verify the start time is the same as the invoice item start time
-        assertEquals(item.getAct().getActivityStartTime(),
+        Date startTime = item.getAct().getActivityStartTime();
+        assertEquals(startTime,
                      reminder.getActivityStartTime());
 
         // verify the end time has been set
         ReminderRules rules = new ReminderRules(getArchetypeService());
         Date endTime = rules.calculateReminderDueDate(
-                item.getAct().getActivityStartTime(), this.reminder);
+                startTime, this.reminder);
         assertEquals(endTime, reminder.getActivityEndTime());
 
         // make sure a document has been added
@@ -111,8 +118,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         assertTrue(TypeHelper.isA(document, "act.patientDocumentForm"));
 
         // verify the start time is the same as the invoice item start time
-        assertEquals(item.getAct().getActivityStartTime(),
-                     document.getActivityStartTime());
+        assertEquals(startTime, document.getActivityStartTime());
 
         // check reminder participations
         ActBean reminderBean = new ActBean(reminder);
@@ -128,6 +134,15 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         assertEquals(patient, docBean.getParticipant("participation.patient"));
         assertEquals(template,
                      docBean.getParticipant("participation.documentTemplate"));
+
+        // verify the dispensing and document acts have been added to the
+        // visit
+        MedicalRecordRules medRules = new MedicalRecordRules();
+        Act event = medRules.getEvent(patient, startTime);
+        assertNotNull(event);
+        ActBean eventBean = new ActBean(event);
+        assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, medication));
+        assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, document));
 
         // change the product participation to one without a reminder.
         // The invoice should no longer have any associated reminders or
@@ -399,6 +414,19 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         }
         bean.save();
         return product;
+    }
+
+    /**
+     * Creates a new <em>act.patientMedication</em>.
+     *
+     * @param product the product
+     */
+    private Act createMedication(Product product) {
+        Act act = createAct("act.patientMedication");
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+        bean.addParticipation("participation.product", product);
+        return act;
     }
 
     /**
