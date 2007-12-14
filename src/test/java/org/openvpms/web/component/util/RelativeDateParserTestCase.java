@@ -55,6 +55,11 @@ public class RelativeDateParserTestCase extends TestCase {
         checkEquals("1d 2w 3m 4y ", 1, 2, 3, 4);
 
         checkEquals(" -30D-52W-12M-100Y", -30, -52, -12, -100);
+
+        // verify 6m is treated as -6m due to leading minus
+        checkEquals("-3y6m", 0, 0, -6, -3);
+        checkEquals("-3y 6m", 0, 0, -6, -3);
+        checkEquals("-3y-6m", 0, 0, -6, -3);
     }
 
     /**
