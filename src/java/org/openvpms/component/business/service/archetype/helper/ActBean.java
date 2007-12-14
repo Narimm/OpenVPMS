@@ -128,6 +128,37 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
+     * Determines if a relationship exists with the specified short name and
+     * target.
+     *
+     * @param shortName the relationship short name
+     * @param target    the target act
+     * @return <tt>true</tt> if a relationship exists with the specified short
+     *         name and target
+     */
+    public boolean hasRelationship(String shortName, Act target) {
+        return hasRelationship(shortName, target.getObjectReference());
+    }
+
+    /**
+     * Determines if a relationship exists with the specified short name and
+     * target.
+     *
+     * @param shortName the relationship short name
+     * @param target    the target act reference
+     * @return <tt>true</tt> if a relationship exists with the specified short
+     *         name and target
+     */
+    public boolean hasRelationship(String shortName, IMObjectReference target) {
+        for (ActRelationship relationship : getRelationships(shortName)) {
+            if (relationship.getTarget().equals(target)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Removes an act relationship.
      *
      * @param relationship the relationship to remove

@@ -42,8 +42,8 @@ public class ActBeanTestCase
 
     /**
      * Tests the {@link ActBean#addRelationship},
-     * {@link ActBean#getRelationship)} and {@link ActBean#getRelationships}
-     * methods.
+     * {@link ActBean#getRelationship)} {@link ActBean#getRelationships}
+     * and {@link ActBean#hasRelationship} methods.
      */
     public void testRelationships() {
         final String relName = "actRelationship.customerEstimationItem";
@@ -55,6 +55,8 @@ public class ActBeanTestCase
 
         ActRelationship r = bean.addRelationship(relName, target);
         assertTrue(target.getActRelationships().contains(r));
+        assertTrue(bean.hasRelationship(relName, target));
+        assertFalse(bean.hasRelationship("foo", target));
 
         checkRelationship(r, relName, source, target);
         r = bean.getRelationship(target);
@@ -64,6 +66,7 @@ public class ActBeanTestCase
 
         bean.removeRelationship(r);
         assertNull(bean.getRelationship(target));
+        assertFalse(bean.hasRelationship(relName, target));
         assertEquals(0, bean.getRelationships(relName).size());
     }
 
