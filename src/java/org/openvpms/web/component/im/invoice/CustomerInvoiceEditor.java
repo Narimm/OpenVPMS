@@ -18,19 +18,9 @@
 
 package org.openvpms.web.component.im.invoice;
 
-import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.util.ErrorHelper;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -55,57 +45,6 @@ public class CustomerInvoiceEditor extends InvoiceEditor {
                                  LayoutContext context) {
         super(act, parent, context);
         initParticipant("customer", context.getContext().getCustomer());
-    }
-
-    /**
-     * Save any edits.
-     *
-     * @return <tt>true</tt> if the save was successful
-     */
-    @Override
-    public boolean save() {
-        boolean saved = super.save();
-        if (saved) {
-            saved = addEventRelationships();
-        }
-        return saved;
-    }
-
-    /**
-     * Links medication and document acts associated with the invoice to the
-     * current <em>act.patientClinicalEvent</em> for the associated patient.
-     *
-     * @return <tt>true</tt> if medication was processed successfully
-     */
-    private boolean addEventRelationships() {
-        boolean saved = false;
-        try {
-            ActRelationshipCollectionEditor editor = getEditor();
-            List<Act> acts = new ArrayList<Act>();
-            for (Act act : editor.getActs()) {
-                if (TypeHelper.isA(act, "act.customerAccountInvoiceItem")) {
-                    ActBean bean = new ActBean(act);
-                    for (Act medication : bean.getActsForNode("dispensing")) {
-                        acts.add(medication);
-                    }
-                    for (Act document : bean.getActsForNode("documents")) {
-                        acts.add(document);
-                    }
-                }
-            }
-            Date startTime = ((Act) getObject()).getActivityStartTime();
-            if (startTime == null) {
-                startTime = new Date();
-            }
-            if (!acts.isEmpty()) {
-                MedicalRecordRules rules = new MedicalRecordRules();
-                rules.addToEvents(acts, startTime);
-            }
-            saved = true;
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-        return saved;
     }
 
 }

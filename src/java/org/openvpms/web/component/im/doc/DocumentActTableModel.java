@@ -22,14 +22,7 @@ import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.component.im.view.TableComponentFactory;
-import org.openvpms.web.component.property.IMObjectProperty;
-import org.openvpms.web.component.property.Property;
 
 
 /**
@@ -62,23 +55,10 @@ public class DocumentActTableModel extends ActAmountTableModel<DocumentAct> {
      */
     @Override
     protected Object getValue(DocumentAct act, TableColumn column, int row) {
-        Object result = null;
+        Object result;
         int index = column.getModelIndex();
         if (index == docIndex) {
-            ActBean bean = new ActBean(act);
-            if (bean.hasNode("documentTemplate")) {
-                NodeDescriptor descriptor
-                        = bean.getDescriptor("documentTemplate");
-                LayoutContext context = new DefaultLayoutContext();
-                TableComponentFactory factory = new TableComponentFactory(
-                        context);
-                context.setComponentFactory(factory);
-                Property property = new IMObjectProperty(act, descriptor);
-                result = factory.create(property, act).getComponent();
-            } else if (bean.hasNode("fileName")) {
-                DocumentViewer viewer = new DocumentViewer(act, true);
-                result = viewer.getComponent();
-            }
+            result = DocumentActTableHelper.getDocumentViewer(act, true);
         } else {
             result = super.getValue(act, column, row);
         }
