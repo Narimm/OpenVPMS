@@ -24,7 +24,7 @@
               derivedValue="concat(/details/lastName, ',', /details/firstName)"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat(openvpms:getBillingAddress(.),' - ',party:getHomeTelephone(.))"/>
+              derivedValue="concat(party:getBillingAddress(.),' - ',party:getHomeTelephone(.))"/>
         <node name="lastName" path="/details/lastName" type="java.lang.String"
               minCardinality="1" maxLength="30"/>
         <node name="title" path="/details/title" type="java.lang.String"
