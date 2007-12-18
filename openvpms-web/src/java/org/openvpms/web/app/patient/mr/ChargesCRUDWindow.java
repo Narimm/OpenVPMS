@@ -54,9 +54,6 @@ public class ChargesCRUDWindow extends ActCRUDWindow<Act> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.removeAll();
-        if (enable) {
-            buttons.add(getPrintButton());
-        }
     }
 
     /**
@@ -66,7 +63,6 @@ public class ChargesCRUDWindow extends ActCRUDWindow<Act> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        buttons.add(getPrintButton());
     }
 
     /**
