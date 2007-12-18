@@ -363,6 +363,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
                 getObject(), "patient", "participation.patient",
                 CHARGES_SHORT_NAMES, false, statuses);
         query.setDefaultSortConstraint(DEFAULT_SORT);
+        query.setMaxResults(10);
         return query;
     }
 
