@@ -161,9 +161,7 @@ public final class QueryFactory {
      * @param query the query to initialise
      */
     public static <T extends IMObject> void initialise(Query<T> query) {
-        String[] shortNames = DescriptorHelper.getShortNames(
-                query.getShortNames());
-        ArchetypeHandler<Query> handler = getQueries().getHandler(shortNames);
+        ArchetypeHandler<Query> handler = getQueries().getHandler(query.getShortNames());
         if (handler != null && handler.getType().isAssignableFrom(
                 query.getClass())) {
             try {
