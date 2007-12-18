@@ -215,6 +215,21 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
     }
 
     /**
+     * Returns the default lookup.
+     *
+     * @return the default lookup or <tt>null</tt> if there is no default
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Lookup getDefault() {
+        for (Lookup lookup : getLookups()) {
+            if (lookup.isDefaultLookup()) {
+                return lookup;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the archetype service.
      *
      * @return the archetype service

@@ -22,10 +22,17 @@ package org.openvpms.component.business.service.archetype;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
 import org.openvpms.component.business.service.archetype.helper.NodeResolverException;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
+import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import java.util.ArrayList;
@@ -153,6 +160,50 @@ public class ArchetypeServiceFunctions {
         } catch (NodeResolverException exception) {
             return defaultValue;
         }
+    }
+
+    /**
+     * Returns the default lookup for a node.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return the default lookup, or <tt>null</tt> if there is no default
+     *         lookup
+     * @throws OpenVPMSException if the call cannot complete
+     */
+    public static Object defaultLookup(IMObject object, String node) {
+        Lookup lookup = null;
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        NodeResolver resolver = new NodeResolver(object, service);
+        NodeResolver.State state = resolver.resolve(node);
+        NodeDescriptor descriptor = state.getLeafNode();
+        if (descriptor == null) {
+            throw new NodeResolverException(
+                    NodeResolverException.ErrorCode.InvalidNode, node);
+        }
+        ILookupService lookups = LookupServiceHelper.getLookupService();
+        if (descriptor.isLookup()) {
+            LookupAssertion assertion
+                    = LookupAssertionFactory.create(descriptor, service,
+                                                    lookups);
+            lookup = assertion.getDefault();
+        } else {
+            String[] shortNames = DescriptorHelper.getShortNames(descriptor,
+                                                                 service);
+            if (!TypeHelper.matches(shortNames, "lookup.*")) {
+                throw new NodeResolverException(
+                        NodeResolverException.ErrorCode.InvalidNode, node);
+
+            }
+            for (String shortName : shortNames) {
+                lookup = lookups.getDefaultLookup(shortName);
+                if (lookup != null) {
+                    break;
+                }
+            }
+        }
+        return lookup;
     }
 
 }
