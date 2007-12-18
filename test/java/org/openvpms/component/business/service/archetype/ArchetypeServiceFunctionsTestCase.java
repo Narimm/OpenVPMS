@@ -22,6 +22,7 @@ import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathInvalidAccessException;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -29,8 +30,11 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.NodeResolverException;
 import static org.openvpms.component.business.service.archetype.helper.NodeResolverException.ErrorCode.InvalidNode;
 import static org.openvpms.component.business.service.archetype.helper.NodeResolverException.ErrorCode.InvalidObject;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+import java.util.Collection;
 
 
 /**
@@ -150,6 +154,42 @@ public class ArchetypeServiceFunctionsTestCase
         Object value = context.getValue(
                 "openvpms:lookup(., 'displayName', 'default')");
         assertEquals("default", value);
+    }
+
+    /**
+     * Tests the openvpms:defaultLookup function.
+     */
+    public void testDefaultLookup() {
+        // ensure existing lookups are non-default and create some new ones,
+        // making the last one created the default.
+        Collection<Lookup> lookups
+                = LookupServiceHelper.getLookupService().getLookups(
+                "lookup.staff");
+        for (Lookup lookup : lookups) {
+            if (lookup.isDefaultLookup()) {
+                lookup.setDefaultLookup(false);
+                service.save(lookup);
+            }
+        }
+        Lookup lookup = null;
+        for (int i = 0; i < 10; ++i) {
+            lookup = (Lookup) service.create("lookup.staff");
+            lookup.setCode("CODE" + System.currentTimeMillis());
+            lookup.setName(lookup.getCode());
+            lookup.setDescription(lookup.getCode());
+            service.save(lookup);
+        }
+        assertNotNull(lookup);
+        lookup.setDefaultLookup(true);
+        service.save(lookup);
+
+        Party party = createCustomer();
+        JXPathContext context = JXPathHelper.newContext(party);
+        Object value = context.getValue(
+                "openvpms:defaultLookup(.,'classifications')");
+        assertNotNull(value);
+        assertTrue(value instanceof Lookup);
+        assertEquals(lookup, value);
     }
 
     /**

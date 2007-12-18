@@ -138,4 +138,15 @@ class RemoteLookup extends AbstractLookupAssertion {
         return getLookupService().getLookup(source, code);
     }
 
+    /**
+     * Returns the default lookup.
+     *
+     * @return the default lookup or <tt>null</tt> if there is no default
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    @Override
+    public Lookup getDefault() {
+        return getLookupService().getDefaultLookup(source);
+    }
+
 }

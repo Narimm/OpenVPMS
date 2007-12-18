@@ -214,7 +214,7 @@ public class IMObjectBeanTestCase
         assertEquals(expected, bean.getBigDecimal("amount"));
 
         // quantity has a default value
-        assertEquals(bean.getBigDecimal("quantity"), new BigDecimal("1.0"));
+        assertEquals(BigDecimal.ONE, bean.getBigDecimal("quantity"));
     }
 
     /**
@@ -304,7 +304,7 @@ public class IMObjectBeanTestCase
         } catch (IMObjectBeanException exception) {
             assertEquals(InvalidClassCast, exception.getErrorCode());
             assertEquals("Expected class of type " + Act.class.getName()
-                    + " but got " + Contact.class.getName(), 
+                    + " but got " + Contact.class.getName(),
                          exception.getMessage());
         }
     }

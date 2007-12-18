@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.archetype;
 
 // java-core
+
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.FailedToDeriveValueException;
@@ -28,14 +29,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
-import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
-import org.openvpms.component.system.common.jxpath.JXPathHelper;
-import org.openvpms.component.system.common.test.BaseTestCase;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.math.BigDecimal;
-import java.util.Hashtable;
-import java.util.Properties;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Test the
@@ -45,27 +44,19 @@ import java.util.Properties;
  * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class ArchetypeServiceTestCase extends BaseTestCase {
+public class ArchetypeServiceTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * Reference to the archetype service
+     * The archetype service.
      */
-    private ArchetypeService service;
+    private IArchetypeService service;
+
 
     /**
-     * @param args
+     * Creates a new <tt>ArchetypeServiceTestCase</tt>.
      */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(ArchetypeServiceTestCase.class);
-    }
-
-    /**
-     * Constructor for ArchetypeServiceTestCase.
-     *
-     * @param name
-     */
-    public ArchetypeServiceTestCase(String name) {
-        super(name);
+    public ArchetypeServiceTestCase() {
     }
 
     /**
@@ -84,7 +75,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      * Test create an instance of party.animalpet.
      */
     public void testCreationAnimalPet() throws Exception {
-        Party animal = (Party)service.create("party.animalpet");
+        Party animal = (Party) service.create("party.animalpet");
         assertNotNull(animal);
     }
 
@@ -93,7 +84,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      * {@link NodeDescriptor}
      */
     public void testGetValueFromNodeDescriptor() throws Exception {
-        Party person = createPerson(null, "MR", "Jim", "Alateras");
+        Party person = createPerson("party.person", "MR", "Jim", "Alateras");
 
         NodeDescriptor ndesc = service.getArchetypeDescriptor(
                 person.getArchetypeId()).getNodeDescriptor("description");
@@ -145,8 +136,8 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      * Test that a service call to deriveValues works as expected
      */
     public void testDeriveValues()
-    throws Exception {
-        Lookup country = (Lookup)service.create("lookup.country");
+            throws Exception {
+        Lookup country = (Lookup) service.create("lookup.country");
         country.setCode("AU");
         country.setName("Australia");
         assertTrue(StringUtils.isEmpty(country.getDescription()));
@@ -187,8 +178,8 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      * is specified (i.e. a node that does not support derive value}.
      */
     public void testFailedToDeriveValue()
-    throws Exception {
-        Lookup country = (Lookup)service.create("lookup.country");
+            throws Exception {
+        Lookup country = (Lookup) service.create("lookup.country");
         country.setCode("AU");
         assertTrue(StringUtils.isEmpty(country.getDescription()));
 
@@ -220,9 +211,10 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      * or if the supplied value can be co-erced into the same type
      */
     public void testOBF49()
-    throws Exception {
+            throws Exception {
         IMObject margin = service.create("productPrice.margin");
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(margin.getArchetypeId());
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
+                margin.getArchetypeId());
         assertTrue(adesc != null);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("margin");
         assertTrue(ndesc != null);
@@ -236,70 +228,89 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         assertTrue(ndesc.getValue(margin) instanceof BigDecimal);
     }
 
+    /**
+     * Verifies that the default lookup.staff is assigned to a
+     * party.customerperson on its creation, via the openvpms:defaultLookup()
+     * function.
+     */
+    public void testDefaultLookup() {
+        // ensure existing lookups are non-default and create some new ones,
+        // making the last one created the default.
+        Collection<Lookup> lookups
+                = LookupServiceHelper.getLookupService().getLookups(
+                "lookup.staff");
+        for (Lookup lookup : lookups) {
+            if (lookup.isDefaultLookup()) {
+                lookup.setDefaultLookup(false);
+                service.save(lookup);
+            }
+        }
+        Lookup lookup = null;
+        for (int i = 0; i < 10; ++i) {
+            lookup = (Lookup) service.create("lookup.staff");
+            lookup.setCode("CODE" + System.currentTimeMillis());
+            lookup.setName(lookup.getCode());
+            lookup.setDescription(lookup.getCode());
+            service.save(lookup);
+        }
+        assertNotNull(lookup);
+        lookup.setDefaultLookup(true);
+        service.save(lookup);
 
-    /* (non-Javadoc)
-    * @see org.openvpms.component.system.common.test.BaseTestCase#setUp()
-    */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        Hashtable params = getTestData().getGlobalParams();
-        String assertionFile = (String) params.get("assertionFile");
-        String dir = (String) params.get("dir");
-        String extension = (String) params.get("extension");
-
-        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
-                dir,new String[] { extension }, assertionFile);
-        service = new ArchetypeService(cache);
-
-        // set up the jxpath functions
-        Properties properties = new Properties();
-        properties.put("openvpms", ArchetypeServiceFunctions.class.getName());
-        new JXPathHelper(properties);
-
-        // set up the archetype service helper
-        new ArchetypeServiceHelper(service);
+        Party party = createPerson("party.customerperson", "MR", "T",
+                                   "Anderson");
+        Set<Lookup> classifications = party.getClassifications();
+        assertEquals(1, classifications.size());
+        assertTrue(classifications.contains(lookup));
     }
+
+
+    /*
+        * (non-Javadoc)
+        *
+        * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+        */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{
+                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
+        };
+    }
+
+    @Override
+    protected void onSetUp() throws Exception {
+        service = (IArchetypeService) applicationContext.getBean(
+                "archetypeService");
+    }
+
 
     /**
      * This will create an entity identtiy with the specified identity
      *
-     * @param shortName
-     *            the archetype
-     * @param identity
-     *            the identity to set
+     * @param shortName the archetype
+     * @param identity  the identity to set
      * @return EntityIdentity
      * @throws Exception
      */
-    private EntityIdentity createEntityIdentity(String shortName, String identity)
-    throws Exception {
+    private EntityIdentity createEntityIdentity(String shortName,
+                                                String identity)
+            throws Exception {
         EntityIdentity eid = (EntityIdentity) service.create(shortName);
         eid.setIdentity(identity);
-
         return eid;
     }
 
     /**
      * Create a person with the specified title, first name and last name
      *
-     * @param title
-     *            the title of the person
-     * @param firstName
-     *            the firstname
-     * @param lastName
-     *            the last name
-     * @return Person
-     * @throws Exception
+     * @param title     the title of the person
+     * @param firstName the firstname
+     * @param lastName  the last name
+     * @return a new party
      */
-    private Party createPerson(String shortName, String title, String firstName, String lastName)
-    throws Exception {
-        Party person;
-        if (shortName == null) {
-            person = (Party) service.create("party.person");
-        } else {
-            person = (Party) service.create(shortName);
-        }
+    private Party createPerson(String shortName, String title, String firstName,
+                               String lastName) {
+        Party person = (Party) service.create(shortName);
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);

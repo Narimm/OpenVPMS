@@ -18,7 +18,6 @@
 
 package org.openvpms.component.business.service.archetype;
 
-import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -957,88 +956,41 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @param context the JXPath
      * @param nodes   the node descriptors for the archetype
+     * @throws ArchetypeServiceException if the create fails
      */
-    @SuppressWarnings("unchecked")
-    private void create(JXPathContext context, Map nodes) {
-        for (Object o : nodes.values()) {
-            NodeDescriptor node = (NodeDescriptor) o;
+    private void create(JXPathContext context,
+                        Map<String, NodeDescriptor> nodes) {
+        for (NodeDescriptor node : nodes.values()) {
 
-            // only ceate a node if it is a collection of if it contains
-            // children nodes or if it has a default vaules specified
-            if ((node.isCollection()) ||
-                    (node.getNodeDescriptorCount() > 0) ||
-                    (!StringUtils.isEmpty(node.getDefaultValue()))) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Attempting to create path " + node.getPath()
-                            + " for node " + node.getName());
+            // only create a node if it is a collection, or it has child nodes,
+            // or it has a default value
+            if (node.isCollection() || node.getNodeDescriptorCount() > 0
+                    || !StringUtils.isEmpty(node.getDefaultValue())) {
+                create(context, node);
+            }
+
+            for (AssertionDescriptor assertion
+                    : node.getAssertionDescriptorsAsArray()) {
+                AssertionTypeDescriptor assertionType
+                        = dCache.getAssertionTypeDescriptor(
+                        assertion.getName());
+                if (assertionType == null) {
+                    throw new ArchetypeServiceException(
+                            ArchetypeServiceException.ErrorCode.AssertionTypeNotSpecified,
+                            assertion.getName());
                 }
 
-                // if we have a value to set then do a create and set
-                // otherwise do only a create
-                String value = node.getDefaultValue();
-                context.getVariables().declareVariable("node", node);
-                if (StringUtils.isEmpty(value)) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("calling createPath for node "
-                                + node.getName() + " and path "
-                                + node.getPath());
-                    }
-                    context.createPath(node.getPath());
-                } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("calling createPathAndSetValue for node "
-                                + node.getName() + " path " + node.getPath()
-                                + " and default value "
-                                + node.getDefaultValue());
-                    }
-                    context.createPath(node.getPath());
-
-                    // evaluate the default value
-                    Object defValue = context.getValue(value);
-                    if (!defValue.getClass().isAssignableFrom(node.getClazz()))
-                    {
-                        try {
-                            defValue = convertValue(defValue, node.getClazz());
-                        } catch (Exception exception) {
-                            throw new ArchetypeServiceException(
-                                    ArchetypeServiceException.ErrorCode.InvalidDefaultValue,
-                                    exception, node.getDefaultValue(),
-                                    node.getName()
-                            );
-                        }
-                    }
-                    context.setValue(node.getPath(), defValue);
+                try {
+                    assertionType.create(context.getContextBean(), node,
+                                         assertion);
+                } catch (Exception exception) {
+                    throw new ArchetypeServiceException(
+                            ArchetypeServiceException.ErrorCode.FailedToExecuteCreateFunction,
+                            exception, assertion.getName());
                 }
             }
 
-            // determine whether any of the node's associated assertions
-            // want to hook in to the creation phase
-            if (node.getAssertionDescriptorsAsArray().length > 0) {
-                // only check the assertions for non-null values
-                for (AssertionDescriptor assertion : node
-                        .getAssertionDescriptorsAsArray()) {
-                    AssertionTypeDescriptor assertionType =
-                            dCache.getAssertionTypeDescriptor(
-                                    assertion.getName());
-                    if (assertionType == null) {
-                        throw new ArchetypeServiceException(
-                                ArchetypeServiceException.ErrorCode.AssertionTypeNotSpecified,
-                                assertion.getName());
-                    }
-
-                    try {
-                        assertionType.create(context.getContextBean(), node,
-                                             assertion);
-                    } catch (Exception exception) {
-                        throw new ArchetypeServiceException(
-                                ArchetypeServiceException.ErrorCode.FailedToExecuteCreateFunction,
-                                exception, assertion.getName());
-                    }
-                }
-            }
-
-            // if this node has children then process them
-            // recursively
+            // if this node has children then process them recursively
             if (node.getNodeDescriptors().size() > 0) {
                 create(context, node.getNodeDescriptors());
             }
@@ -1046,18 +998,44 @@ public class ArchetypeService implements IArchetypeService {
     }
 
     /**
-     * Convert value to the specified type
+     * Creates a node in the context, populating any default value.
      *
-     * @param value the value to convert
-     * @param clazz the class that the value should be converted too
-     * @return Object
-     *         the converted value
-     * @throws Exception let the client handle the exception
+     * @param context the jxpath context
+     * @param node    the node to create
+     * @throws ArchetypeServiceException if the create fails
      */
-    @SuppressWarnings("unchecked")
-    private Object convertValue(Object value, Class clazz)
-            throws Exception {
-        return ConvertUtils.convert(ConvertUtils.convert(value), clazz);
+    private void create(JXPathContext context, NodeDescriptor node) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Attempting to create path " + node.getPath()
+                    + " for node " + node.getName());
+        }
+
+        context.getVariables().declareVariable("node", node);
+        context.createPath(node.getPath());
+
+        String expression = node.getDefaultValue();
+        if (!StringUtils.isEmpty(expression)) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("evaluating default value expression for node "
+                        + node.getName() + " path " + node.getPath()
+                        + " and expression " + expression);
+            }
+            Object value = context.getValue(expression);
+            IMObject object = (IMObject) context.getContextBean();
+            if (node.isCollection()) {
+                if (value != null) {
+                    if (Collection.class.isAssignableFrom(value.getClass())) {
+                        for (Object v : (Collection) value) {
+                            node.addChildToCollection(object, v);
+                        }
+                    } else {
+                        node.addChildToCollection(object, value);
+                    }
+                }
+            } else {
+                node.setValue(object, value);
+            }
+        }
     }
 
     /**

@@ -143,4 +143,14 @@ public interface LookupAssertion {
      */
     String getName(IMObject context, String code);
 
+    /**
+     * Returns the default lookup.
+     *
+     * @return the default lookup or <tt>null</tt> if there is no default
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws LookupHelperException     if this method is unsupported by the
+     *                                   lookup type
+     */
+    Lookup getDefault();
+
 }
