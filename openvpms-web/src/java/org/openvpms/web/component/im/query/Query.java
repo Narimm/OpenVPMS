@@ -108,6 +108,7 @@ public interface Query<T> extends Iterable<T> {
 
     /**
      * The archetype short names being queried.
+     * Any wildcards are expanded.
      *
      * @return the short names being queried
      */

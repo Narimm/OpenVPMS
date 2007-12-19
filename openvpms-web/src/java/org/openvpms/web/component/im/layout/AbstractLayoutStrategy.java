@@ -275,8 +275,9 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             }
         }
         int size = components.length;
+        int columns = (grid.getSize() <= 2) ? 1 : 2;
         int rows;
-        if (size <= 4) {
+        if (columns == 1) {
             rows = size;
         } else {
             rows = (size / 2) + (size % 2);
