@@ -19,6 +19,7 @@
 package org.openvpms.web.app.customer;
 
 import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
@@ -27,10 +28,22 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.GridLayoutData;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.dialog.InformationDialog;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.IMObjectListResultSet;
+import org.openvpms.web.component.im.query.ParticipantConstraint;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
+import org.openvpms.web.component.im.table.PagedIMObjectTable;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
@@ -40,6 +53,7 @@ import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -68,16 +82,18 @@ public class CustomerSummary {
 
             Label alertTitle = LabelFactory.create("customer.alerts");
             Component alert;
-            if (!hasAlerts(customer)) {
-                alert = LabelFactory.create("customer.noalerts");
-            } else {
+            final AccountType type = getAccountType(customer);
+            final List<Act> notes = getAlertNotes(customer);
+            if ((type != null && type.showAlert()) || !notes.isEmpty()) {
                 alert = ButtonFactory.create(
                         null, "alert", new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
-                        onShowAlerts(customer);
+                        new AlertDialog(type, notes);
                     }
                 });
                 alert = RowFactory.create(alert);
+            } else {
+                alert = LabelFactory.create("customer.noalerts");
             }
 
             CustomerAccountRules rules = new CustomerAccountRules();
@@ -138,14 +154,30 @@ public class CustomerSummary {
     }
 
     /**
-     * Determines if the customer has any alerts.
+     * Returns any <em>act.customerNotes</em> that are alerts for the customer.
      *
      * @param customer the customer
-     * @return <tt>true</tt> if the customer has any alerts
+     * @return a list of notes. May be empty.
      */
-    private static boolean hasAlerts(Party customer) {
-        AccountType type = getAccountType(customer);
-        return (type != null) && type.showAlert();
+    private static List<Act> getAlertNotes(Party customer) {
+        List<Act> notes = new ArrayList<Act>();
+        ArchetypeQuery query = new ArchetypeQuery("act.customerNote", false,
+                                                  true);
+        ParticipantConstraint participant
+                = new ParticipantConstraint("customer",
+                                            "participation.customer",
+                                            customer);
+        query.add(participant);
+        IMObjectQueryIterator<Act> iter = new IMObjectQueryIterator<Act>(query);
+        while (iter.hasNext()) {
+            Act note = iter.next();
+            IMObjectBean bean = new IMObjectBean(note);
+            if (bean.getBoolean("alert")) {
+                notes.add(note);
+                break;
+            }
+        }
+        return notes;
     }
 
     /**
@@ -155,30 +187,62 @@ public class CustomerSummary {
      * @return the account type, or <tt>null</tt> if none is found
      */
     private static AccountType getAccountType(Party customer) {
-        IMObjectBean bean = new IMObjectBean(customer);
-        if (bean.hasNode("type")) {
-        	List<Lookup> types = bean.getValues("type", Lookup.class);
-	        if (!types.isEmpty()) {
-	            return new AccountType(types.get(0));
-	        }
-	        return null;
-        }
-        else {
-        	return null;
-        }
+        CustomerRules rules = new CustomerRules();
+        Lookup lookup = rules.getAccountType(customer);
+        return (lookup != null) ? new AccountType(lookup) : null;
     }
 
     /**
-     * Invoked to display alerts for a customer.
+     * Displays customer alerts.
      *
-     * @param customer the customer
+     * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+     * @version $LastChangedDate$
      */
-    private static void onShowAlerts(final Party customer) {
-        AccountType type = getAccountType(customer);
-        if (type != null) {
-            String msg = Messages.get("customer.accounttype.alert",
-                                      type.getName());
-            InformationDialog.show(msg);
+    private static class AlertDialog extends PopupDialog {
+
+        /**
+         * Construct a new <tt>AlertDialog</tt>.
+         */
+        public AlertDialog(AccountType type, List<Act> notes) {
+            super(Messages.get("customer.alert.title"), null, OK);
+            setModal(true);
+            Column column = ColumnFactory.create("WideCellSpacing");
+            if (type != null && type.showAlert()) {
+                String msg = Messages.get("customer.alert.accounttype",
+                                          type.getName());
+                Label label = LabelFactory.create();
+                label.setText(msg);
+                column.add(label);
+            }
+            if (!notes.isEmpty()) {
+                Column noteCol = ColumnFactory.create("CellSpacing");
+                noteCol.add(LabelFactory.create("customer.alert.notes"));
+                IMObjectListResultSet<Act> acts
+                        = new IMObjectListResultSet<Act>(notes, 20);
+                IMObjectTableModel<Act> model
+                        = IMObjectTableModelFactory.create(
+                        new String[]{"act.customerNote"},
+                        createLayoutContext());
+                PagedIMObjectTable<Act> table
+                        = new PagedIMObjectTable<Act>(model, acts);
+                noteCol.add(table);
+                column.add(noteCol);
+            }
+            getLayout().add(ColumnFactory.create("Inset", column));
+            show();
+        }
+
+        /**
+         * Helper to create a layout context where hyperlinks are disabled.
+         *
+         * @return a new layout context
+         */
+        private LayoutContext createLayoutContext() {
+            LayoutContext context = new DefaultLayoutContext();
+            context.setEdit(true); // disable hyerlinks
+            TableComponentFactory factory = new TableComponentFactory(context);
+            context.setComponentFactory(factory);
+            return context;
         }
     }
 

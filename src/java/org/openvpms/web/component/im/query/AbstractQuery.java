@@ -279,6 +279,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
 
     /**
      * The archetype short names being queried.
+     * Any wildcards are expanded.
      *
      * @return the short names being queried
      */
