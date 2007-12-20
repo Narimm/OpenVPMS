@@ -120,18 +120,17 @@ class PrintDocumentsTask extends AbstractTask {
     }
 
     /**
-     * Returns a list of unprinted customer charges and payments.
+     * Returns a list of unprinted customer charges.
      *
      * @param context the task context
-     * @return a list of unprinted customer charges and payments
+     * @return a list of unprinted customer charges
      */
     private List<IMObject> getCustomerActs(TaskContext context) {
-        String[] shortNames = {"act.customerAccountCharges*",
-                               "act.customerAccountPayment"};
+        String shortName = "act.customerAccountCharges*";
         Party customer = context.getCustomer();
         String node = "customer";
         String participation = "participation.customer";
-        return getUnprintedActs(shortNames, customer, node, participation);
+        return getUnprintedActs(shortName, customer, node, participation);
     }
 
     /**
@@ -141,26 +140,24 @@ class PrintDocumentsTask extends AbstractTask {
      * @return a list of unprinted patient documents
      */
     private List<IMObject> getPatientActs(TaskContext context) {
-        String[] shortNames = {"act.patientDocument*"};
+        String shortName = "act.patientDocument*";
         Party patient = context.getPatient();
         String node = "patient";
         String participation = "participation.patient";
-        return getUnprintedActs(shortNames, patient, node, participation);
+        return getUnprintedActs(shortName, patient, node, participation);
     }
 
     /**
      * Returns a list of unprinted acts for a party.
      *
-     * @param shortNames    the act short names to query
+     * @param shortName     the act short name to query. May include wildcards
      * @param party         the party to query
      * @param node          the participation node to query
      * @param participation the participation short name to query
      */
-    private List<IMObject> getUnprintedActs(String[] shortNames,
-                                            Party party,
-                                            String node,
-                                            String participation) {
-        ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true);
+    private List<IMObject> getUnprintedActs(String shortName, Party party,
+                                            String node, String participation) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
         query.setFirstResult(0);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 

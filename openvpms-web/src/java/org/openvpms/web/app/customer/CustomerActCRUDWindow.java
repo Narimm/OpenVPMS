@@ -106,23 +106,18 @@ public abstract class CustomerActCRUDWindow<T extends Act>
         super.onSaved(object, isNew);
         String status = object.getStatus();
         if (!prevPosted && POSTED.equals(status)) {
-            onPosted(object, false);
+            onPosted(object);
         }
     }
 
     /**
-     * Invoked when posting of an act is complete.
-     * If no print dialog has been displayed, pops up a dialog to print the
-     * act
+     * Invoked when posting of an act is complete. This pops up a dialog to
+     * print the act
      *
-     * @param act           the act
-     * @param printPrompted determines if a print dialog has been displayed to
-     *                      print the act
+     * @param act the act
      */
     @Override
-    protected void onPosted(T act, boolean printPrompted) {
-        if (!printPrompted) {
-            print(act);
-        }
+    protected void onPosted(T act) {
+        print(act);
     }
 }
