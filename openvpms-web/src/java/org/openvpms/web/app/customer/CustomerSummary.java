@@ -174,7 +174,6 @@ public class CustomerSummary {
             IMObjectBean bean = new IMObjectBean(note);
             if (bean.getBoolean("alert")) {
                 notes.add(note);
-                break;
             }
         }
         return notes;
@@ -204,7 +203,8 @@ public class CustomerSummary {
          * Construct a new <tt>AlertDialog</tt>.
          */
         public AlertDialog(AccountType type, List<Act> notes) {
-            super(Messages.get("customer.alert.title"), null, OK);
+            super(Messages.get("customer.alert.title"),
+                  "CustomerSummary.AlertDialog", OK);
             setModal(true);
             Column column = ColumnFactory.create("WideCellSpacing");
             if (type != null && type.showAlert()) {
