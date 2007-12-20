@@ -245,6 +245,38 @@
         </properties>
     </style>
 
+    <style name="CustomerSummary.AlertDialog" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="900px"/>
+            <property name="height" value="350px"/>
+        </properties>
+    </style>
+
+    <style name="CustomerSummary.AlertDialog-1024x768"
+           base-name="CustomerSummary.AlertDialog"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="700px"/>
+            <property name="height" value="250px"/>
+            <property name="font">
+                <font size="7pt"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="CustomerSummary.AlertDialog-800x600"
+           base-name="CustomerSummary.AlertDialog-1024x768"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="680px"/>
+            <property name="height" value="250px"/>
+            <property name="font">
+                <font size="6pt"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="PatientRecordWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>
@@ -917,11 +949,14 @@
         </properties>
     </style>
 
-    <style name="Palette.ListLabel" base-name="default" type="nextapp.echo2.app.Label"/>
+    <style name="Palette.ListLabel" base-name="default"
+           type="nextapp.echo2.app.Label"/>
 
-    <style name="Palette.ListLabel-1024x768" base-name="default-1024x768" type="nextapp.echo2.app.Label"/>
+    <style name="Palette.ListLabel-1024x768" base-name="default-1024x768"
+           type="nextapp.echo2.app.Label"/>
 
-    <style name="Palette.ListLabel-800x600" base-name="default-800x600" type="nextapp.echo2.app.Label"/>
+    <style name="Palette.ListLabel-800x600" base-name="default-800x600"
+           type="nextapp.echo2.app.Label"/>
 
     <!-- =================================================================== -->
     <!--  Table                                                              -->
