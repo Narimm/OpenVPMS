@@ -17,7 +17,7 @@
 -->
 <archetypes>
     <archetype name="act.customerNote.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.act.Act" displayName="Note">
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Customer Note">
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
               derivedValue="'Note'"/>
@@ -38,7 +38,7 @@
         <node name="alert" path="/details/alert" type="java.lang.Boolean"
               minCardinality="1" defaultValue="'false'"/>
         <node name="note" path="/details/note" type="java.lang.String" maxLength="2000"/>
-        <node name="status" path="/status" tyape="java.lang.String"
+        <node name="status" path="/status" type="java.lang.String"
               minCardinality="1" defaultValue="'POSTED'" hidden="true"/>
     </archetype>
 </archetypes>
