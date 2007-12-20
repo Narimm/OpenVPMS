@@ -18,18 +18,15 @@
 
 package org.openvpms.web.app.workflow.payment;
 
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
-import org.openvpms.web.component.workflow.NodeConditionTask;
-import org.openvpms.web.component.workflow.PrintActTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
-import org.openvpms.web.component.workflow.Tasks;
+import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.resource.util.Messages;
 
@@ -51,36 +48,18 @@ public class PaymentWorkflow extends WorkflowImpl {
 
     /**
      * Creates a new <tt>PaymentWorkflow</tt>.
-     * <p/>
-     * The confirmation dialog will display OK and Cancel buttons,
-     * and prompt to print the payment if posted.
      */
     public PaymentWorkflow() {
-        this(new DefaultTaskContext(false), true, true);
-    }
-
-    /**
-     * Creates a new <tt>PaymentWorkflow</tt>.
-     * <p/>
-     * The confirmation dialog will display Yes, No, and Cancel buttons.
-     */
-    public PaymentWorkflow(TaskContext context) {
-        this(context, false, false);
+        this(new DefaultTaskContext(false));
     }
 
     /**
      * Creates a new <tt>PaymentWorkflow</tt>.
      * <p/>
      *
-     * @param context  the task context
-     * @param okCancel if <tt>true</tt> the confirmation dialog will display
-     *                 OK and Cancel buttons; otherwise it will display Yes, No
-     *                 and Cancel buttons
-     * @param print    if <tt>true</tt>,display a dialog to print the payment,
-     *                 if it is <em>POSTED</em>
+     * @param context the task context
      */
-    public PaymentWorkflow(TaskContext context, boolean okCancel,
-                           boolean print) {
+    public PaymentWorkflow(TaskContext context) {
         GlobalContext global = GlobalContext.getInstance();
         initial = context;
         if (initial.getCustomer() == null) {
@@ -103,35 +82,34 @@ public class PaymentWorkflow extends WorkflowImpl {
             // need to set location for cash rounding purposes during payments
             initial.setLocation(global.getLocation());
         }
-
-        Tasks payPrint = new Tasks();
-        String payTitle = Messages.get("workflow.payment.payaccount.title");
-        String payMsg = Messages.get("workflow.payment.payaccount.message");
-        addTask(new ConditionalTask(
-                new ConfirmationTask(payTitle, payMsg, !okCancel),
-                payPrint));
-
-        Task edit = new EditIMObjectTask(CustomerAccountActTypes.PAYMENT, true);
-        payPrint.addTask(edit);
-        if (print) {
-            // add a task to print the payment, if it is posted
-            NodeConditionTask<String> posted = new NodeConditionTask<String>(
-                    CustomerAccountActTypes.PAYMENT,
-                    "status", ActStatus.POSTED);
-
-            Task printPayment = new PrintActTask(
-                    CustomerAccountActTypes.PAYMENT);
-            payPrint.addTask(new ConditionalTask(posted, printPayment));
-        }
     }
-
 
     /**
      * Starts the workflow.
      */
     @Override
     public void start() {
-        super.start(initial);
+        start(initial);
+    }
+
+    /**
+     * Starts the task.
+     * <p/>
+     * The registered {@link TaskListener} will be notified on completion or
+     * failure.
+     *
+     * @param context the task context
+     */
+    @Override
+    public void start(TaskContext context) {
+        String payTitle = Messages.get("workflow.payment.payaccount.title");
+        String payMsg = Messages.get("workflow.payment.payaccount.message");
+        Task edit = new EditIMObjectTask(CustomerAccountActTypes.PAYMENT, true);
+        boolean displayNo = !isRequired();
+        addTask(new ConditionalTask(
+                new ConfirmationTask(payTitle, payMsg, displayNo),
+                edit));
+        super.start(context);
     }
 
 }

@@ -51,6 +51,12 @@ public class PrintIMObjectTask extends AbstractTask {
      */
     private final boolean interactive;
 
+    /**
+     * Determines if the skip button should be displayed if
+     * {@link #isRequired()} is <tt>false</tt>.
+     */
+    private boolean enableSkip = true;
+
 
     /**
      * Creates a new <tt>PrintIMObjectTask</tt>.
@@ -95,6 +101,17 @@ public class PrintIMObjectTask extends AbstractTask {
     }
 
     /**
+     * Determines if printing may be skipped. This only applies when the task
+     * is not required. Defaults to <tt>true</tt>.
+     *
+     * @param skip if <tt>true</tt> and the task is not required, displays a
+     *             skip button to skip printing.
+     */
+    public void setEnableSkip(boolean skip) {
+        enableSkip = skip;
+    }
+
+    /**
      * Starts the task.
      * <p/>
      * The registered {@link TaskListener} will be notified on completion or
@@ -109,7 +126,7 @@ public class PrintIMObjectTask extends AbstractTask {
         if (object != null) {
             try {
                 IMPrinter<IMObject> printer = IMPrinterFactory.create(object);
-                boolean skip = !isRequired();
+                boolean skip = !isRequired() && enableSkip;
                 InteractiveIMPrinter<IMObject> iPrinter
                         = new InteractiveIMPrinter<IMObject>(printer, skip);
                 iPrinter.setInteractive(interactive);

@@ -35,7 +35,9 @@ import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
+import org.openvpms.web.component.workflow.NodeConditionTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
+import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.Tasks;
@@ -130,25 +132,20 @@ public class CheckOutWorkflow extends WorkflowImpl {
         addTask(new ConditionalCreateTask(INVOICE_SHORTNAME));
         addTask(new EditIMObjectTask(INVOICE_SHORTNAME));
 
-        // on save, determine if the user wants to post the invoice
-        Tasks postTasks = new Tasks();
-        TaskProperties invoiceProps = new TaskProperties();
-        invoiceProps.add("status", FinancialActStatus.POSTED);
-        postTasks.addTask(
-                new UpdateIMObjectTask(INVOICE_SHORTNAME, invoiceProps));
+        // on save, determine if the user wants to post the invoice, but
+        // only if its not already posted
+        NodeConditionTask<String> notPosted = new NodeConditionTask<String>(
+                INVOICE_SHORTNAME, "status", false, FinancialActStatus.POSTED);
+        addTask(new ConditionalTask(notPosted, getPostTask()));
 
         // if the invoice is posted, prompt to pay the account
-        postTasks.addTask(new PaymentWorkflow(initial));
-        postTasks.setRequired(false);
+        NodeConditionTask<String> posted = new NodeConditionTask<String>(
+                INVOICE_SHORTNAME, "status", FinancialActStatus.POSTED);
 
-        String invoiceTitle = Messages.get(
-                "workflow.checkout.postinvoice.title");
-        String invoiceMsg = Messages.get(
-                "workflow.checkout.postinvoice.message");
-        ConditionalTask post = new ConditionalTask(new ConfirmationTask(
-                invoiceTitle, invoiceMsg), postTasks);
-        addTask(post);
-        post.setRequired(false);
+        PaymentWorkflow payWorkflow = new PaymentWorkflow(initial);
+        payWorkflow.setRequired(false);
+        addTask(new ConditionalTask(posted, payWorkflow));
+
         Date startTime = getStartTime(act);
         PrintDocumentsTask printDocs = new PrintDocumentsTask(startTime);
         printDocs.setRequired(false);
@@ -163,6 +160,29 @@ public class CheckOutWorkflow extends WorkflowImpl {
         //TaskProperties eventProperties = new TaskProperties();
         //eventProperties.add("status", ActStatus.COMPLETED);
         //addTask(new ConditionalUpdateTask(EVENT_SHORTNAME, eventProperties));
+    }
+
+    /**
+     * Returns a task to post the invoice.
+     *
+     * @return a task to post the invoice
+     */
+    private Task getPostTask() {
+        Tasks postTasks = new Tasks();
+        TaskProperties invoiceProps = new TaskProperties();
+        invoiceProps.add("status", FinancialActStatus.POSTED);
+        postTasks.addTask(
+                new UpdateIMObjectTask(INVOICE_SHORTNAME, invoiceProps));
+        postTasks.setRequired(false);
+
+        String invoiceTitle = Messages.get(
+                "workflow.checkout.postinvoice.title");
+        String invoiceMsg = Messages.get(
+                "workflow.checkout.postinvoice.message");
+        ConditionalTask post = new ConditionalTask(new ConfirmationTask(
+                invoiceTitle, invoiceMsg), postTasks);
+        post.setRequired(false);
+        return post;
     }
 
     /**

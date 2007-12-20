@@ -79,22 +79,21 @@ public class InvoiceCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
     /**
      * Invoked when posting of an act is complete.
-     * Pops up a dialog to print the act, if one hasn't already been displayed,
-     * and prompts to pay the account.
+     * <p/>
+     * This prompts to pay the account, and pops up a dialog to print the act.
      *
-     * @param act           the act
-     * @param printPrompted determines if a print dialog has been displayed to
-     *                      print the act
+     * @param act the act
      */
     @Override
-    protected void onPosted(FinancialAct act, boolean printPrompted) {
+    protected void onPosted(FinancialAct act) {
         Tasks tasks = new Tasks();
-        if (!printPrompted) {
-            PrintActTask print = new PrintActTask(act);
-            print.setRequired(false);
-            tasks.addTask(print);
-        }
-        tasks.addTask(new PaymentWorkflow());
+        PaymentWorkflow payment = new PaymentWorkflow();
+        payment.setRequired(false);
+        tasks.addTask(payment);
+        PrintActTask print = new PrintActTask(act);
+        print.setRequired(false);
+        print.setEnableSkip(false);
+        tasks.addTask(print);
         tasks.start();
     }
 

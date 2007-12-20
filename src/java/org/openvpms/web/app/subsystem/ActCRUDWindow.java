@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -140,27 +141,20 @@ public abstract class ActCRUDWindow<T extends Act>
     protected void onPost() {
         try {
             final T act = getObject();
-            final IMPrinter<T> printer = IMPrinterFactory.create(act);
-            final PostDialog dialog = new PostDialog(
-                    Messages.get("act.post.title", getTypeDisplayName()));
-            dialog.setDefaultPrinter(printer.getDefaultPrinter());
+            String displayName = getTypeDisplayName();
+            String title = Messages.get("act.post.title", displayName);
+            String message = Messages.get("act.post.message", displayName);
+            final ConfirmationDialog dialog = new ConfirmationDialog(
+                    title, message);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent e) {
-                    if (PostDialog.OK_ID.equals(dialog.getAction())) {
+                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
                         try {
                             boolean saved = post(act);
-                            if (dialog.print()) {
-                                try {
-                                    printer.print(dialog.getPrinter());
-                                    saved |= printed(act);
-                                } catch (OpenVPMSException exception) {
-                                    ErrorHelper.show(exception);
-                                }
-                            }
                             if (saved) {
                                 // act was saved. Need to refresh
                                 saved(act);
-                                onPosted(act, true);
+                                onPosted(act);
                             }
                         } catch (OpenVPMSException exception) {
                             ErrorHelper.show(exception);
@@ -178,11 +172,9 @@ public abstract class ActCRUDWindow<T extends Act>
      * Invoked when posting of an act is complete.
      * This implementation does nothing.
      *
-     * @param act           the act
-     * @param printPrompted determines if a print dialog has been displayed to
-     *                      print the act
+     * @param act the act
      */
-    protected void onPosted(T act, boolean printPrompted) {
+    protected void onPosted(T act) {
 
     }
 
