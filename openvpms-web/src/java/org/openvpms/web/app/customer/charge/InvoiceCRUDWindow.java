@@ -24,7 +24,10 @@ import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.PrintActTask;
+import org.openvpms.web.component.workflow.ReloadTask;
+import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.Tasks;
 
 
@@ -87,14 +90,21 @@ public class InvoiceCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     @Override
     protected void onPosted(FinancialAct act) {
         Tasks tasks = new Tasks();
+        TaskContext context = new DefaultTaskContext();
+        context.addObject(act);
         PaymentWorkflow payment = new PaymentWorkflow();
         payment.setRequired(false);
         tasks.addTask(payment);
-        PrintActTask print = new PrintActTask(act);
+
+        // need to reload the act as it may be changed via the payment workflow
+        // as part of the CustomerAccountRules
+        String shortName = act.getArchetypeId().getShortName();
+        tasks.addTask(new ReloadTask(shortName));
+        PrintActTask print = new PrintActTask(shortName);
         print.setRequired(false);
         print.setEnableSkip(false);
         tasks.addTask(print);
-        tasks.start();
+        tasks.start(context);
     }
 
 }
