@@ -22,7 +22,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.web.app.patient.summary.PatientSummary;
+import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.app.subsystem.ShortNameList;
@@ -84,7 +84,7 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
      */
     @Override
     public Component getSummary() {
-        return new PatientSummary().getSummary(getObject());
+        return CustomerPatientSummary.getSummary(getObject());
     }
 
     /**

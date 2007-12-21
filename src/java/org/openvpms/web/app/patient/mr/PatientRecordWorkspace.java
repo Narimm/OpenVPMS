@@ -18,14 +18,8 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
-
-import java.util.List;
-
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
-
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -35,7 +29,9 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.app.patient.summary.PatientSummary;
+import org.openvpms.web.app.patient.CustomerPatientSummary;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
@@ -51,6 +47,8 @@ import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.List;
 
 
 /**
@@ -73,17 +71,16 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
             "act.patientInvestigationCytology",
             "act.patientInvestigationHaemotology",
             "act.patientInvestigationRadiology"
-            };
+    };
 
     /**
      * Patient charges shortnames supported by teh workspace
-     * 
      */
     private static final String[] CHARGES_SHORT_NAMES = {
-    	"act.customerAccountInvoiceItem",
-    	"act.customerAccountCreditItem"
+            "act.customerAccountInvoiceItem",
+            "act.customerAccountCreditItem"
     };
-    
+
     /**
      * The default sort constraint.
      */
@@ -136,7 +133,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      */
     @Override
     public Component getSummary() {
-        return new PatientSummary().getSummary(getObject());
+        return CustomerPatientSummary.getSummary(getObject());
     }
 
     /**
@@ -291,12 +288,12 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
         } else if (view == RecordBrowser.View.DOCUMENTS) {
             String type = Messages.get("patient.document.createtype");
             window = new DocumentCRUDWindow(type, DOCUMENT_SHORT_NAMES);
-        } else if (view == RecordBrowser.View.REMINDER_ALERT){
+        } else if (view == RecordBrowser.View.REMINDER_ALERT) {
             window = new ReminderCRUDWindow();
         } else {
-        	window = new ChargesCRUDWindow();
+            window = new ChargesCRUDWindow();
         }
-        	
+
         Act selected = browser.getSelected();
         if (selected != null) {
             window.setObject(selected);

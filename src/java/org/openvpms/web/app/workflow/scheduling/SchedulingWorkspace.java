@@ -25,11 +25,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.app.workflow.WorkflowQuery;
-import org.openvpms.web.app.workflow.WorkflowSummary;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
@@ -122,7 +122,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
     public Component getSummary() {
         if (window != null) {
             Act act = window.getObject();
-            return WorkflowSummary.getSummary(act);
+            return CustomerPatientSummary.getSummary(act);
         }
         return null;
     }
