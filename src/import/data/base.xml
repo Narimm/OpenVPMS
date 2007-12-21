@@ -1,4 +1,5 @@
 <archetype>
+	<data id="Administrator" archetype="lookup.userType" code="ADMINISTRATOR" />
 	<data id="Clinician" archetype="lookup.userType" code="CLINICIAN" />
 	<data id="Nurse" archetype="lookup.userType" code="NURSE" />
 	<data id="Receptionist" archetype="lookup.userType" code="RECEPTIONIST" />
@@ -12,6 +13,7 @@
 	</data>
 	<data archetype="security.user" username="admin" name="admin" password="admin">
 		<data collection="roles" archetype="security.role" childId="id:ROLE1" />
+		<data collection="classifications" archetype="lookup.userType" childId="id:Administrator" />
 	</data>
 	<data id="VET1" archetype="security.user" username="vet" name="vet" password="vet">
 		<data collection="roles" archetype="security.role" childId="id:ROLE1" />
@@ -81,4 +83,9 @@
     <data archetype="lookup.macro" code="sellingUnits" name="Selling units" expression="openvpms:lookup(openvpms:get(.,'product.entity'), 'sellingUnits')"/>
     <data archetype="lookup.macro" code="dispensingUnits" name="Dispensing units" expression="openvpms:lookup(openvpms:get(.,'product.entity'), 'dispensingUnits')"/>
     <data archetype="lookup.macro" code="dispensingVerb" name="Dispensing verb" expression="openvpms:lookup(openvpms:get(.,'product.entity'), 'dispensingVerb')"/>
+    <data archetype="lookup.currency" code="AUD" name="Australian Dollar" defaultLookup="true" roundingMode="HALF_UP" minDenomination="0.05"/>
+    <data archetype="lookup.currency" code="NZD" name="New Zealand Dollar" roundingMode="HALF_UP" minDenomination="0.10"/>
+    <data archetype="lookup.currency" code="USD" name="US Dollar" roundingMode="HALF_UP" minDenomination="0.00"/>
+    <data archetype="lookup.demographicUpdate" code="PATIENT_DESEXED" name="Patient Desexed" expression="party:setPatientDesexed(.)" nodeName="patient.entity"/>
+    <data archetype="lookup.demographicUpdate" code="PATIENT_DECEASED" name="Patient Deceased" expression="party:setPatientDeceased(.)" nodeName="patient.entity"/>
 </archetype>
