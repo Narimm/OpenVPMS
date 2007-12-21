@@ -47,7 +47,7 @@
     <server>localhost</server>
     <type>MYSQL</type>
     <access>Native</access>
-    <database>openvpms</database>
+    <database>openvpms-setup</database>
     <port>3306</port>
     <username>openvpms</username>
     <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
@@ -739,7 +739,9 @@ else if (typ == &quot;S&quot;)
 	PRODUCTTYPE = &quot;Surgery&quot;
 else if (typ == &quot;E&quot;)
 	PRODUCTTYPE = &quot;Euthanasia&quot;
-else 
+else if (typ == &quot;I&quot;)
+	PRODUCTTYPE = &quot;Microchip&quot;
+else
 	PRODUCTTYPE = &quot;Other&quot;
 </jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>PRODUCTTYPE</name>
