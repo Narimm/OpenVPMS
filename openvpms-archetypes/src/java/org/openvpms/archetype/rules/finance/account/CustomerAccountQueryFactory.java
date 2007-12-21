@@ -100,10 +100,13 @@ public class CustomerAccountQueryFactory {
     }
 
     /**
-     * Creates an object set query for acts for the specified
-     * customer. Returns only the amount, allocatedAmount and credit nodes,
+     * Creates an object set query for acts for the specified customer.
+     * <p/>
+     * Returns only the amount, allocatedAmount and credit nodes,
      * named <em>a.amount</em>, <em>a.allocatedAmount</em> and <em>a.credit</em>
      * respectively.
+     * <p/>
+     * Results are ordered on descending <em>startTime</em>.
      *
      * @param customer   the customer
      * @param shortNames the act short names
@@ -111,8 +114,27 @@ public class CustomerAccountQueryFactory {
      */
     public static ArchetypeQuery createObjectSetQuery(Party customer,
                                                       String[] shortNames) {
+        return createObjectSetQuery(customer, shortNames, false);
+    }
+
+    /**
+     * Creates an object set query for acts for the specified customer.
+     * <p/>
+     * Returns only the amount, allocatedAmount and credit nodes,
+     * named <em>a.amount</em>, <em>a.allocatedAmount</em> and <em>a.credit</em>
+     * respectively.
+     *
+     * @param customer      the customer
+     * @param shortNames    the act short names
+     * @param sortAscending if <tt>true</tt>, sort on ascending
+     *                      <em>startTime</em>; otherwise sort descending
+     * @return a new query
+     */
+    public static ArchetypeQuery createObjectSetQuery(Party customer,
+                                                      String[] shortNames,
+                                                      boolean sortAscending) {
         ArchetypeQuery query = createQuery(customer, shortNames);
-        query.add(new NodeSortConstraint("startTime", false));
+        query.add(new NodeSortConstraint("startTime", sortAscending));
         query.add(new NodeSortConstraint("uid", true));
         query.add(new NodeSelectConstraint("a.amount"));
         query.add(new NodeSelectConstraint("a.allocatedAmount"));

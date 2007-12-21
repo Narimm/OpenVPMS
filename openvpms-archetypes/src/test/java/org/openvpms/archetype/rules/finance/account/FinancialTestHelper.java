@@ -78,7 +78,7 @@ public class FinancialTestHelper extends TestHelper {
     }
 
     /**
-     * Helper to create an <em>act.customerAccountChargesCredit</em>.
+     * Helper to create a POSTED <em>act.customerAccountChargesCredit</em>.
      *
      * @param amount   the act total
      * @param customer the customer
@@ -93,6 +93,44 @@ public class FinancialTestHelper extends TestHelper {
                              "act.customerAccountCreditItem",
                              "actRelationship.customerAccountCreditItem",
                              amount, customer, patient, product);
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountPayment</em>.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param patient  the patient
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createPayment(Money amount, Party customer,
+                                             Party patient, Party till) {
+        FinancialAct act = createAct("act.customerAccountPayment", amount,
+                                     customer);
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+        bean.addParticipation("participation.till", till);
+        return act;
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountRefund</em>.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param patient  the patient
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createRefund(Money amount, Party customer,
+                                            Party patient, Party till) {
+        FinancialAct act = createAct("act.customerAccountRefund", amount,
+                                     customer);
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+        bean.addParticipation("participation.till", till);
+        return act;
     }
 
     /**
@@ -116,6 +154,18 @@ public class FinancialTestHelper extends TestHelper {
         bean.setValue("accountFeeAmount", accountFeeAmount);
         save(lookup);
         return lookup;
+    }
+
+    /**
+     * Helper to create a new <em>party.organisationTill</em>.
+     *
+     * @return a new till
+     */
+    public static Party createTill() {
+        Party till = (Party) create("party.organisationTill");
+        till.setName("XTill-" + System.currentTimeMillis());
+        save(till);
+        return till;
     }
 
     /**
@@ -167,4 +217,5 @@ public class FinancialTestHelper extends TestHelper {
         bean.addParticipation("participation.customer", customer);
         return act;
     }
+
 }

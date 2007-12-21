@@ -105,9 +105,7 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      */
     protected Party getTill() {
         if (till == null) {
-            till = (Party) create("party.organisationTill");
-            till.setName("XAbstractCustomerBalanceTest-Till" + hashCode());
-            save(till);
+            till = FinancialTestHelper.createTill();
         }
         return till;
     }
@@ -203,8 +201,8 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a new payment
      */
     protected FinancialAct createPayment(Money amount, Party customer) {
-        return createPaymentRefund("act.customerAccountPayment", amount,
-                                   customer);
+        return FinancialTestHelper.createPayment(amount, customer, getPatient(),
+                                                 getTill());
     }
 
     /**
@@ -277,8 +275,8 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a new payment
      */
     protected FinancialAct createRefund(Money amount) {
-        return createPaymentRefund("act.customerAccountRefund", amount,
-                                   getCustomer());
+        return FinancialTestHelper.createRefund(amount, getCustomer(),
+                                                getPatient(), getTill());
     }
 
     /**
@@ -346,23 +344,6 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
                                        BigDecimal accountFeeAmount) {
         return FinancialTestHelper.createAccountType(paymentTerms, paymentUom,
                                                      accountFeeAmount);
-    }
-
-    /**
-     * Helper to create a payment/refund.
-     *
-     * @param shortName the act short name
-     * @param amount    the act total
-     * @param customer  the customer
-     * @return a new payment
-     */
-    private FinancialAct createPaymentRefund(String shortName, Money amount,
-                                             Party customer) {
-        FinancialAct act = createAct(shortName, amount, customer);
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.till", getTill());
-        bean.addParticipation("participation.patient", getPatient());
-        return act;
     }
 
     /**

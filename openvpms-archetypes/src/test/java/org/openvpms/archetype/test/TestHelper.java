@@ -37,6 +37,9 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
 
+import java.sql.Timestamp;
+import java.util.Date;
+
 
 /**
  * Unit test helper.
@@ -325,6 +328,27 @@ public class TestHelper extends Assert {
         classification.setCode(code);
         save(classification);
         return classification;
+    }
+
+    /**
+     * Helper to create a date-time given a string of the form
+     * <em>yyyy-mm-dd hh:mm:ss</em>.
+     *
+     * @param value the value
+     * @return the corresponding date-time
+     */
+    public static Date getDatetime(String value) {
+        return Timestamp.valueOf(value);
+    }
+
+    /**
+     * Helper to create a date given a string of the form <em>yyyy-mm-dd</em>.
+     *
+     * @param value the value
+     * @return the corresponding date
+     */
+    public static Date getDate(String value) {
+        return Timestamp.valueOf(value + " 0:0:0");
     }
 
 }

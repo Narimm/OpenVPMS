@@ -238,7 +238,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
                 "participation.customerAccountBalance"));
 
         // reload and verify act has not changed
-        invoice = (FinancialAct) get(invoice);
+        invoice = get(invoice);
         checkEquals(hundred, invoice.getTotal());
         checkEquals(BigDecimal.ZERO, invoice.getAllocatedAmount());
         checkAllocation(invoice);
@@ -251,8 +251,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkEquals(forty, rules.getBalance(customer));
 
         // reload and verify the acts have changed
-        invoice = (FinancialAct) get(invoice);
-        payment1 = (FinancialAct) get(payment1);
+        invoice = get(invoice);
+        payment1 = get(payment1);
 
         checkEquals(hundred, invoice.getTotal());
         checkEquals(sixty, invoice.getAllocatedAmount());
@@ -270,8 +270,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         // reload and verify the acts have changed
-        invoice = (FinancialAct) get(invoice);
-        payment2 = (FinancialAct) get(payment2);
+        invoice = get(invoice);
+        payment2 = get(payment2);
 
         checkEquals(hundred, invoice.getTotal());
         checkEquals(hundred, invoice.getAllocatedAmount());
@@ -506,7 +506,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         save(payment);
         checkEquals(sixty, payment.getAllocatedAmount());
 
-        invoice = (FinancialAct) get(invoice);
+        invoice = get(invoice);
         checkEquals(sixty, invoice.getAllocatedAmount());
 
         // $40 outstanding balance
@@ -517,10 +517,10 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkEquals(BigDecimal.ZERO, reversal.getAllocatedAmount());
 
         // invoice and payment retain their allocations
-        invoice = (FinancialAct) get(invoice);
+        invoice = get(invoice);
         checkEquals(sixty, invoice.getAllocatedAmount());
 
-        payment = (FinancialAct) get(payment);
+        payment = get(payment);
         checkEquals(sixty, payment.getAllocatedAmount());
 
         checkBalance(amount);
@@ -574,7 +574,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     private void checkAddToBalance(FinancialAct act) {
         save(act);
-        act = (FinancialAct) get(act);
+        act = get(act);
         ActBean bean = new ActBean(act);
         assertEquals(getCustomer(), bean.getParticipant(
                 "participation.customerAccountBalance"));
@@ -595,7 +595,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         // save and reload the debit. The allocated amount should be unchanged
         save(debit);
-        debit = (FinancialAct) get(debit);
+        debit = get(debit);
         checkEquals(amount, debit.getTotal());
         checkEquals(BigDecimal.ZERO, debit.getAllocatedAmount());
         checkAllocation(debit);
@@ -607,8 +607,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         // be the same as the total
         save(credit);
 
-        credit = (FinancialAct) get(credit);
-        debit = (FinancialAct) get(debit);
+        credit = get(credit);
+        debit = get(debit);
 
         checkEquals(amount, credit.getTotal());
         checkEquals(amount, credit.getAllocatedAmount());
