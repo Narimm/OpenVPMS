@@ -21,6 +21,7 @@ package org.openvpms.web.app.product;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
@@ -50,6 +51,13 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      */
     private final ModifiableListener markupListener;
 
+    /**
+     * Flag to indicate that the price has been modified and therefore the
+     * markup needs to be recalculated on save. This is a workaround for
+     * an echo2 bug. See OVPMS-701
+     */
+    private boolean recalcMarkup;
+
 
     /**
      * Constructs a new <tt>ProductPriceEditor</tt>.
@@ -77,10 +85,26 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
 
         priceListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                updateMarkup();
+                // updateMarkup();
+                recalcMarkup = true;
             }
         };
         getProperty("price").addModifiableListener(priceListener);
+    }
+
+    /**
+     * Save any edits.
+     *
+     * @return <code>true</code> if the save was successful
+     */
+    @Override
+    protected boolean doSave() {
+        if (recalcMarkup) {
+            IMObjectBean bean = new IMObjectBean(getObject());
+            bean.setValue("markup", calculateMarkup());
+            recalcMarkup = false;
+        }
+        return super.doSave();
     }
 
     /**
@@ -89,11 +113,35 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      * <tt>price = (cost * (1 + markup/100) ) * (1 + tax/100)</tt>
      */
     private void updatePrice() {
-        BigDecimal cost = getValue("cost");
-        if (cost.compareTo(BigDecimal.ZERO) != 0) {
-            Property property = getProperty("price");
-            property.removeModifiableListener(priceListener);
+        recalcMarkup = false;
+        Property property = getProperty("price");
+        property.removeModifiableListener(priceListener);
+        property.setValue(calculatePrice());
+        property.addModifiableListener(priceListener);
+    }
 
+    /**
+     * Recalculates the markup when the price is updated.
+     * Not currently used due to echo2 bug. See OVPMS-701
+     */
+    private void updateMarkup() {
+        Property property = getProperty("markup");
+        property.removeModifiableListener(markupListener);
+        property.setValue(calculateMarkup());
+        property.addModifiableListener(markupListener);
+    }
+
+    /**
+     * Calculates the price using the following formula:
+     * <p/>
+     * <tt>price = (cost * (1 + markup/100) ) * (1 + tax/100)</tt>
+     *
+     * @return the price
+     */
+    private BigDecimal calculatePrice() {
+        BigDecimal cost = getValue("cost");
+        BigDecimal price = BigDecimal.ZERO;
+        if (cost.compareTo(BigDecimal.ZERO) != 0) {
             BigDecimal markup = getValue("markup");
             BigDecimal markupDec = getPercentRate(markup);
             Product product = (Product) getParent();
@@ -102,25 +150,24 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
                 TaxRules rules = new TaxRules();
                 taxDec = getPercentRate(rules.getTaxRate(product));
             }
-            BigDecimal price = cost.multiply(
+            price = cost.multiply(
                     BigDecimal.ONE.add(markupDec)).multiply(
                     BigDecimal.ONE.add(taxDec));
-            property.setValue(price);
-            property.addModifiableListener(priceListener);
         }
+        return price;
     }
 
     /**
-     * Updates the markup using the following formula:
+     * Calculates the markup using the following formula:
      * <p/>
-     * <tt>((price / (cost * ( 1 + tax/100))) - 1) * 100
+     * <tt>markup = ((price / (cost * ( 1 + tax/100))) - 1) * 100</tt>
+     *
+     * @return the markup
      */
-    private void updateMarkup() {
+    private BigDecimal calculateMarkup() {
+        BigDecimal markup = BigDecimal.ZERO;
         BigDecimal cost = getValue("cost");
         if (cost.compareTo(BigDecimal.ZERO) != 0) {
-            Property property = getProperty("markup");
-            property.removeModifiableListener(markupListener);
-
             BigDecimal price = getValue("price");
             Product product = (Product) getParent();
             BigDecimal taxDec = BigDecimal.ZERO;
@@ -128,16 +175,15 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
                 TaxRules rules = new TaxRules();
                 taxDec = getPercentRate(rules.getTaxRate(product));
             }
-            BigDecimal markup = price.divide(
+            markup = price.divide(
                     cost.multiply(BigDecimal.ONE.add(taxDec)), 3,
                     RoundingMode.HALF_UP).subtract(
                     BigDecimal.ONE).multiply(new BigDecimal(100));
             if (markup.compareTo(BigDecimal.ZERO) < 0) {
                 markup = BigDecimal.ZERO;
             }
-            property.setValue(markup);
-            property.addModifiableListener(markupListener);
         }
+        return markup;
     }
 
     /**
