@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -45,6 +46,7 @@ import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -387,8 +389,7 @@ public class CustomerAccountRules {
         close.setActivityStartTime(calendar.getTime());
         calendar.add(Calendar.SECOND, 1);
         open.setActivityStartTime(calendar.getTime());
-        service.save(close); // see OBF-114
-        service.save(open);   // TODO - should be saved in 1 transaction
+        service.save(Arrays.asList((IMObject) close, open));
     }
 
     /**

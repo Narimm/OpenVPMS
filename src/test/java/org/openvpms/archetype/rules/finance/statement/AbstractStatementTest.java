@@ -20,13 +20,13 @@ package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.AbstractCustomerAccountTest;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -48,7 +48,7 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
      * @return the corresponding date-time
      */
     protected Date getDatetime(String value) {
-        return Timestamp.valueOf(value);
+        return TestHelper.getDatetime(value);
     }
 
     /**
@@ -58,7 +58,7 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
      * @return the corresponding date
      */
     protected Date getDate(String value) {
-        return Timestamp.valueOf(value + " 0:0:0");
+        return TestHelper.getDate(value);
     }
 
     /**

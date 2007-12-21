@@ -18,10 +18,15 @@
 
 package org.openvpms.archetype.rules.party;
 
+import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountQueryFactory;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
@@ -29,8 +34,11 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -215,6 +223,66 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     }
 
     /**
+     * Verifies that the 'to' customer includes the 'from' customer's balance
+     * after the merge, and that any opening and closing balance acts on or
+     * after the first transaction of the from customer are removed.
+     */
+    public void testMergeAccounts() {
+        final Money eighty = new Money(80);
+        final Money forty = new Money(40);
+        final Money fifty = new Money(50);
+        final Money ninety = new Money(90);
+        Party from = TestHelper.createCustomer();
+        Party fromPatient = TestHelper.createPatient();
+        Party to = TestHelper.createCustomer();
+        Party toPatient = TestHelper.createPatient();
+        Product product = TestHelper.createProduct();
+
+        CustomerAccountRules rules = new CustomerAccountRules();
+
+        // add some transaction history for the 'from' customer
+        Date firstStartTime = getDatetime("2007-1-2 10:0:0");
+        addInvoice(firstStartTime, eighty, from, fromPatient,
+                   product);
+        addPayment(getDatetime("2007-1-2 11:0:0"), forty, from, fromPatient);
+        rules.createPeriodEnd(from, getDatetime("2007-2-1 23:00:00"));
+
+        // ... and the 'to' customer
+        rules.createPeriodEnd(to, getDatetime("2007-1-1 23:00:00"));
+        addInvoice(getDatetime("2007-1-6 10:0:0"), fifty, to, toPatient,
+                   product);
+        rules.createPeriodEnd(to, getDatetime("2007-2-1 23:00:00"));
+
+        // verify balances prior to merge
+        assertEquals(0, forty.compareTo(rules.getBalance(from)));
+        assertEquals(0, fifty.compareTo(rules.getBalance(to)));
+
+        to = checkMerge(from, to);
+
+        // verify balances after merge
+        assertEquals(0, BigDecimal.ZERO.compareTo(rules.getBalance(from)));
+        assertEquals(0, ninety.compareTo(rules.getBalance(to)));
+
+        // now verify that the only opening and closing balance acts for the
+        // to customer are prior to the first act of the from customer
+        ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(
+                to, new String[]{CustomerAccountActTypes.OPENING_BALANCE,
+                                 CustomerAccountActTypes.CLOSING_BALANCE});
+        IMObjectQueryIterator<Act> iter = new IMObjectQueryIterator<Act>(query);
+        int count = 0;
+        while (iter.hasNext()) {
+            Act act = iter.next();
+            long startTime = act.getActivityStartTime().getTime();
+            assertTrue(startTime < firstStartTime.getTime());
+            ++count;
+        }
+        assertEquals(2, count); // expect a closing and opening balance
+
+        // verify there are no acts associated with the removed 'from' customer
+        assertEquals(0, countParticipations(from));
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -243,6 +311,39 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         Party merged = get(to);
         assertNotNull(merged);
         return merged;
+    }
+
+    /**
+     * Saves an invoice for a customer.
+     *
+     * @param startTime the invoice start time
+     * @param amount    the invoice amount
+     * @param customer  the customer
+     * @param patient   the patient
+     * @param product   the product
+     */
+    private void addInvoice(Date startTime, Money amount, Party customer,
+                            Party patient, Product product) {
+        Act act = FinancialTestHelper.createChargesInvoice(
+                amount, customer, patient, product);
+        act.setActivityStartTime(startTime);
+        save(act);
+    }
+
+    /**
+     * Saves a payment for a customer.
+     *
+     * @param startTime the payment start time
+     * @param amount    the payment amount
+     * @param customer  the customer
+     * @param patient   the patient
+     */
+    private void addPayment(Date startTime, Money amount, Party customer,
+                            Party patient) {
+        Act act = FinancialTestHelper.createPayment(
+                amount, customer, patient, FinancialTestHelper.createTill());
+        act.setActivityStartTime(startTime);
+        save(act);
     }
 
     /**
