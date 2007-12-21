@@ -315,7 +315,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="8px 2px"/>
                         <property name="background" value="#ff3366"/>
                         <!-- red -->
                     </properties>
@@ -330,7 +330,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="8px 2px"/>
                         <property name="background" value="#ccff66"/>
                         <!-- yellow -->
                     </properties>
@@ -345,7 +345,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="8px 2px"/>
                         <property name="background" value="#33ff66"/>
                         <!-- green -->
                     </properties>
@@ -511,6 +511,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#ffffff"/>
+                        <property name="insets" value="8px 2px"/>
                         <!-- white -->
                     </properties>
                 </layout-data>
@@ -524,6 +525,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#FFCCCC"/>
+                        <property name="insets" value="8px 2px"/>
                         <!-- pale red -->
                     </properties>
                 </layout-data>
@@ -537,6 +539,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#CCFFFF"/>
+                        <property name="insets" value="8px 2px"/>
                         <!-- pale blue -->
                     </properties>
                 </layout-data>
@@ -550,6 +553,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#CC99FF"/>
+                        <property name="insets" value="8px 2px"/>
                         <!-- pale dull violet -->
                     </properties>
                 </layout-data>
@@ -563,6 +567,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#CCFFCC"/>
+                        <property name="insets" value="8px 2px"/>
                         <!-- pale green -->
                     </properties>
                 </layout-data>
@@ -713,7 +718,7 @@
         <properties>
             <property name="closable" value="true"/>
             <property name="width" value="900px"/>
-            <property name="height" value="600px"/>
+            <property name="height" value="700px"/>
             <property name="resizable" value="true"/>
             <property name="font">
                 <font size="9pt"/>
@@ -726,13 +731,13 @@
     <style name="EditDialog-1024x768" base-name="EditDialog"
            type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="width" value="700px"/>
-            <property name="height" value="600px"/>
+            <property name="width" value="750px"/>
+            <property name="height" value="640px"/>
             <property name="font">
                 <font size="7pt"/>
             </property>
             <property name="positionX" value="150px"/>
-            <property name="positionY" value="30px"/>
+            <property name="positionY" value="5px"/>
         </properties>
     </style>
 
@@ -745,7 +750,7 @@
                 <font size="6pt"/>
             </property>
             <property name="positionX" value="120px"/>
-            <property name="positionY" value="25px"/>
+            <property name="positionY" value="5px"/>
         </properties>
     </style>
 
@@ -766,7 +771,7 @@
     <style name="BrowserDialog-1024x768" base-name="BrowserDialog"
            type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="width" value="700px"/>
+            <property name="width" value="800px"/>
             <property name="height" value="550px"/>
             <property name="font">
                 <font size="7pt"/>
@@ -870,6 +875,7 @@
 
     <style name="Workspace.Heading" type="nextapp.echo2.app.Label">
         <properties>
+            <property name="foreground" value="#0000ff"/>
             <property name="font">
                 <font size="14pt" bold="true"/>
             </property>
@@ -970,7 +976,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="8px 2px"/>
                         <property name="background" value="#afafef"/>
                     </properties>
                 </layout-data>
@@ -986,7 +992,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="8px 2px"/>
                         <property name="background" value="#afafef"/>
                     </properties>
                 </layout-data>
@@ -999,7 +1005,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="8px 2px"/>
                         <property name="background" value="#d1d1d1"/>
                     </properties>
                 </layout-data>
@@ -1012,7 +1018,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="8px 2px"/>
                         <property name="background" value="#ffffff"/>
                     </properties>
                 </layout-data>
@@ -1721,6 +1727,11 @@
         <properties>
             <property name="foreground" value="#000000"/>
             <!-- black -->
+            <property name="font">
+                <font size="9pt">
+                    <typeface name="Verdana"/>
+                </font>
+            </property>
         </properties>
     </style>
 
@@ -1728,7 +1739,9 @@
            type="nextapp.echo2.app.Label">
         <properties>
             <property name="font">
-                <font size="7pt"/>
+                <font size="7pt">
+                    <typeface name="Verdana"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1737,7 +1750,9 @@
            type="nextapp.echo2.app.Label">
         <properties>
             <property name="font">
-                <font size="6pt"/>
+                <font size="6pt">
+                    <typeface name="Verdana"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1746,7 +1761,9 @@
            base-name="default">
         <properties>
             <property name="font">
-                <font size="8pt"/>
+                <font size="8pt">
+                    <typeface name="Verdana"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1755,9 +1772,11 @@
            base-name="small">
         <properties>
             <properties>
-                <property name="font">
-                    <font size="7pt"/>
-                </property>
+            <property name="font">
+                <font size="7pt">
+                    <typeface name="Verdana"/>
+                </font>
+            </property>
             </properties>
         </properties>
     </style>
@@ -1774,7 +1793,9 @@
     <style name="bold" base-name="default" type="nextapp.echo2.app.Label">
         <properties>
             <property name="font">
-                <font bold="true"/>
+                <font size="9pt" bold="true">
+                    <typeface name="Verdana"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1783,7 +1804,9 @@
            type="nextapp.echo2.app.Label">
         <properties>
             <property name="font">
-                <font bold="true"/>
+                <font size="8pt" bold="true">
+                    <typeface name="Verdana"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1792,7 +1815,9 @@
            type="nextapp.echo2.app.Label">
         <properties>
             <property name="font">
-                <font bold="true"/>
+                <font size="6pt" bold="true">
+                    <typeface name="Verdana"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1903,7 +1928,7 @@
            type="nextapp.echo2.app.TextArea">
         <properties>
             <property name="font">
-                <font size="7pt">
+                <font size="8pt">
                     <typeface name="Verdana"/>
                 </font>
             </property>
@@ -1931,6 +1956,11 @@
                 <border size="1px" style="inset" color="#f0e68c"/>
                 <!-- khaki -->
             </property>
+            <property name="font">
+                <font size="9pt">
+                    <typeface name="Verdana"/>
+                </font>
+            </property>
         </properties>
     </style>
 
@@ -1938,7 +1968,9 @@
            type="nextapp.echo2.app.text.TextComponent">
         <properties>
             <property name="font">
-                <font size="7pt"/>
+                <font size="7pt">
+                    <typeface name="Verdana"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1947,7 +1979,9 @@
            type="nextapp.echo2.app.text.TextComponent">
         <properties>
             <property name="font">
-                <font size="6pt"/>
+                <font size="6pt">
+                    <typeface name="Verdana"/>
+                </font>
             </property>
         </properties>
     </style>
