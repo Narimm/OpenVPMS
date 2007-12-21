@@ -3,8 +3,6 @@
 		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777" />
 		<data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC" postcode="3088" />
 	</data>	
-    <data archetype="lookup.currency" code="AUD" name="Australian Dollar" defaultLookup="true" roundingMode="HALF_UP" minDenomination="0.05"/>
-    <data archetype="lookup.currency" code="NZD" name="New Zealand Dollar" roundingMode="HALF_UP" minDenomination="0.10"/>
 	<data id="OL1" archetype="party.organisationLocation" name="Main Clinic" currency="AUD" >
 		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777" />
 		<data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC" postcode="3088" />
