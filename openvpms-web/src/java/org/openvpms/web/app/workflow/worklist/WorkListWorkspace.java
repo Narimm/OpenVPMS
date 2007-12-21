@@ -24,10 +24,10 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.app.workflow.WorkflowSummary;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
@@ -102,7 +102,7 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
         CRUDWindow<Act> window = getCRUDWindow();
         if (window != null) {
             Act act = window.getObject();
-            return WorkflowSummary.getSummary(act);
+            return CustomerPatientSummary.getSummary(act);
         }
         return null;
     }
