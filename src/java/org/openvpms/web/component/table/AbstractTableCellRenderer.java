@@ -26,6 +26,7 @@ import nextapp.echo2.app.Table;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.TableCellRenderer;
 import org.apache.commons.beanutils.BeanUtils;
+import org.openvpms.web.component.util.LabelFactory;
 
 import java.util.Iterator;
 
@@ -83,11 +84,9 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
         if (value instanceof Component) {
             component = (Component) value;
         } else {
-            Label label;
+            Label label = LabelFactory.create();
             if (value != null) {
-                label = new Label(value.toString());
-            } else {
-                label = new Label();
+                label.setText(value.toString());
             }
             component = label;
         }

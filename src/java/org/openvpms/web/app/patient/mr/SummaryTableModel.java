@@ -46,6 +46,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.doc.DocumentActTableHelper;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.ComponentFactory;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -185,7 +186,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
             text = Messages.get("patient.record.summary.dateRange",
                                 started, completed, reason, clinician, status);
         }
-        Label summary = LabelFactory.create(null, "PatientSummary");
+        Label summary = LabelFactory.create(null, "bold");
         summary.setText(text);
         return summary;
     }
@@ -246,6 +247,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         } else {
             date = new LabelEx("");
         }
+        ComponentFactory.setDefaultStyle(date);
         date.setWidth(new Extent(150));
         // hack to work around lack of cell spanning facility in Table. todo
         return date;
@@ -260,6 +262,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
     private LabelEx getType(Act act) {
         LabelEx type = new LabelEx(DescriptorHelper.getDisplayName(act));
         type.setWidth(new Extent(150));
+        ComponentFactory.setDefaultStyle(type);
         // hack to work around lack of cell spanning facility in Table. todo
         return type;
     }
@@ -319,6 +322,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
             LabelEx label = new LabelEx(text);
             label.setIntepretNewlines(true);
             label.setLineWrap(true);
+            ComponentFactory.setDefaultStyle(label);
             result = label;
         } else {
             result = new Label();

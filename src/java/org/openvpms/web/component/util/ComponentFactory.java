@@ -36,7 +36,7 @@ public class ComponentFactory {
      *
      * @param component the component to populate
      */
-    protected static void setDefaultStyle(Component component) {
+    public static void setDefaultStyle(Component component) {
         setStyle(component, Styles.DEFAULT);
     }
 
@@ -47,7 +47,7 @@ public class ComponentFactory {
      * @param component the component
      * @param style     the style name
      */
-    protected static void setStyle(Component component, String style) {
+    public static void setStyle(Component component, String style) {
         style = Styles.getStyle(component.getClass(), style);
         component.setStyleName(style);
     }

@@ -36,7 +36,9 @@ public class GroupBoxFactory extends ComponentFactory {
      * @return a new group box
      */
     public static GroupBox create() {
-        return new GroupBox();
+        GroupBox box = new GroupBox();
+        setDefaultStyle(box);
+        return box;
     }
 
     /**

@@ -100,8 +100,7 @@ public class IMObjectReferenceViewer {
         }
         if (text != null) {
             if (link) {
-                Button button = ButtonFactory.create();
-                button.setStyleName("hyperlink");
+                Button button = ButtonFactory.create(null, "hyperlink");
                 button.setText(text);
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent event) {

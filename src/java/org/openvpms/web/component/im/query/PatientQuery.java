@@ -33,6 +33,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.LabelFactory;
 
 import java.util.ArrayList;
@@ -182,9 +183,8 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
      * @param container the container
      */
     protected void addAllPatients(Component container) {
-        allPatients = new CheckBox();
         boolean selected = (customer == null);
-        allPatients.setSelected(selected);
+        allPatients = CheckBoxFactory.create(selected);
         Label label = LabelFactory.create(ALL_PATIENTS_ID);
         container.add(label);
         container.add(allPatients);
