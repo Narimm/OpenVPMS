@@ -21,7 +21,6 @@ package org.openvpms.web.component.workflow;
 import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -44,9 +43,9 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
     private TaskContext initial;
 
     /**
-     * Iterator over the tasks.
+     * The current task index.
      */
-    private Iterator<Task> taskIterator;
+    private int taskIndex;
 
     /**
      * Determines if the workflow should cancel.
@@ -132,7 +131,7 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
      */
     public void start(TaskContext context) {
         cancel = false;
-        taskIterator = tasks.iterator();
+        taskIndex = 0;
         this.initial = context;
         next();
     }
@@ -160,8 +159,8 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
         if (cancel) {
             current = null;
             notifyCancelled();
-        } else if (taskIterator.hasNext()) {
-            current = taskIterator.next();
+        } else if (taskIndex < tasks.size()) {
+            current = tasks.get(taskIndex++);
             try {
                 current.addTaskListener(taskListener);
                 current.start(initial);
