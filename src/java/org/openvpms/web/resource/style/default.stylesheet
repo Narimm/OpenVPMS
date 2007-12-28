@@ -1612,8 +1612,7 @@
 
     <style name="default" type="nextapp.echo2.app.list.AbstractListComponent">
         <properties>
-            <property name="background" value="#fffacd"/>
-            <!-- lemonchiffon -->
+            <property name="background" value="#ffff99"/>
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverBackground" value="#98FB98"/>
             <!-- palegreen -->
@@ -1729,7 +1728,7 @@
             <!-- black -->
             <property name="font">
                 <font size="9pt">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
@@ -1740,7 +1739,7 @@
         <properties>
             <property name="font">
                 <font size="7pt">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
@@ -1751,7 +1750,7 @@
         <properties>
             <property name="font">
                 <font size="6pt">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
@@ -1762,7 +1761,7 @@
         <properties>
             <property name="font">
                 <font size="8pt">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
@@ -1772,11 +1771,11 @@
            base-name="small">
         <properties>
             <properties>
-            <property name="font">
-                <font size="7pt">
-                    <typeface name="Verdana"/>
-                </font>
-            </property>
+                <property name="font">
+                    <font size="7pt">
+                        <typeface name="Arial"/>
+                    </font>
+                </property>
             </properties>
         </properties>
     </style>
@@ -1794,7 +1793,7 @@
         <properties>
             <property name="font">
                 <font size="9pt" bold="true">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
@@ -1805,7 +1804,7 @@
         <properties>
             <property name="font">
                 <font size="8pt" bold="true">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
@@ -1816,7 +1815,7 @@
         <properties>
             <property name="font">
                 <font size="6pt" bold="true">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
@@ -1909,7 +1908,6 @@
     <style name="default" type="nextapp.echo2.app.TextArea">
         <properties>
             <property name="background" value="#ffff99"/>
-            <!-- lemonchiffon -->
             <property name="foreground" value="#000000"/>
             <!-- black -->
             <property name="border">
@@ -1918,7 +1916,7 @@
             </property>
             <property name="font">
                 <font size="9pt">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
@@ -1929,7 +1927,7 @@
         <properties>
             <property name="font">
                 <font size="8pt">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
@@ -1940,7 +1938,7 @@
         <properties>
             <property name="font">
                 <font size="6pt">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
@@ -1949,7 +1947,6 @@
     <style name="default" type="nextapp.echo2.app.text.TextComponent">
         <properties>
             <property name="background" value="#ffff99"/>
-            <!-- lemonchiffon -->
             <property name="foreground" value="#000000"/>
             <!-- black -->
             <property name="border">
@@ -1958,7 +1955,7 @@
             </property>
             <property name="font">
                 <font size="9pt">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
@@ -1969,7 +1966,7 @@
         <properties>
             <property name="font">
                 <font size="7pt">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
@@ -1980,7 +1977,7 @@
         <properties>
             <property name="font">
                 <font size="6pt">
-                    <typeface name="Verdana"/>
+                    <typeface name="Arial"/>
                 </font>
             </property>
         </properties>
