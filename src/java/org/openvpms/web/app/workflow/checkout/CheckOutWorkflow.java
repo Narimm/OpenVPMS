@@ -25,6 +25,9 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.workflow.GetClinicalEventTask;
+import static org.openvpms.web.app.workflow.GetClinicalEventTask.EVENT_SHORTNAME;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
 import static org.openvpms.web.app.workflow.GetInvoiceTask.INVOICE_SHORTNAME;
 import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
@@ -146,10 +149,12 @@ public class CheckOutWorkflow extends WorkflowImpl {
         payWorkflow.setRequired(false);
         addTask(new ConditionalTask(posted, payWorkflow));
 
-        Date startTime = getStartTime(act);
-        PrintDocumentsTask printDocs = new PrintDocumentsTask(startTime);
-        printDocs.setRequired(false);
-        addTask(printDocs);
+        // add the most recent clinicial event to the context
+        addTask(new GetClinicalEventTask());
+
+        // print acts and documents created since the visit or invoice was
+        // created
+        addTask(new PrintTask(act));
 
         // update the most recent act.patientClinicalEvent, setting it status
         // to COMPLETED, if one is present
@@ -186,19 +191,73 @@ public class CheckOutWorkflow extends WorkflowImpl {
     }
 
     /**
-     * Returns a start time for printing documents. This is the act start time,
-     * or now, whichever is smaller.
-     *
-     * @param act the act
-     * @return the start time
+     * Prints all unprinted acts and documents for the customer and patient.
+     * This uses the minimum startTime of the <em>act.patientClinicalEvent</em>,
+     * <em>act.customerAccountChargesInvoice</em> and time now to select the
+     * objects to print.
      */
-    private Date getStartTime(Act act) {
-        Date startTime = act.getActivityStartTime();
-        Date now = new Date();
-        if (startTime.getTime() > now.getTime()) {
-            startTime = now;
+    private class PrintTask extends SynchronousTask {
+
+        /**
+         * The minimum of the act start time and the time the task was created.
+         */
+        private final Date startTime;
+
+        /**
+         * Creates a new <tt>PrintTask</tt>.
+         *
+         * @param act the act. Either an <em>act.customerAppointment</em> or
+         *            <em>act.customerTask</em>.
+         */
+        public PrintTask(Act act) {
+            startTime = getMin(new Date(), act.getActivityStartTime());
         }
-        return startTime;
+
+        /**
+         * Executes the task.
+         *
+         * @throws OpenVPMSException for any error
+         */
+        public void execute(TaskContext context) {
+            Date min = getMinStartTime(INVOICE_SHORTNAME, startTime, context);
+            min = getMinStartTime(EVENT_SHORTNAME, min, context);
+            PrintDocumentsTask printDocs = new PrintDocumentsTask(min);
+            printDocs.setRequired(false);
+            addTask(printDocs);
+        }
+
+        /**
+         * Returns the minimum of two start times, one obtained from act
+         * identified by short name in the task context, the other supplied.
+         *
+         * @param shortName the act short name
+         * @param startTime the start time to compare with
+         * @param context   the task context
+         * @return the minimum of the two start times
+         */
+        private Date getMinStartTime(String shortName, Date startTime,
+                                     TaskContext context) {
+            Act act = (Act) context.getObject(shortName);
+            if (act != null) {
+                startTime = getMin(startTime, act.getActivityStartTime());
+            }
+            return startTime;
+        }
+
+        /**
+         * Returns the minimum of two dates.
+         *
+         * @param date1 the first date
+         * @param date2 the second date
+         * @return the minimum of the two dates
+         */
+        private Date getMin(Date date1, Date date2) {
+            Date min = date1;
+            if (date1.getTime() > date2.getTime()) {
+                min = date2;
+            }
+            return min;
+        }
     }
 
 }
