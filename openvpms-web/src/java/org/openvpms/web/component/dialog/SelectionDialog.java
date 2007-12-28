@@ -59,11 +59,6 @@ public class SelectionDialog extends PopupDialog {
      */
     private static final String STYLE = "SelectionDialog";
 
-    /**
-     * Content label style.
-     */
-    private static final String LABEL_STYLE = "SelectionDialog.Label";
-
 
     /**
      * Creates a new <code>SelectionDialog</code>.
@@ -104,7 +99,7 @@ public class SelectionDialog extends PopupDialog {
                 onSelected();
             }
         });
-        Label prompt = LabelFactory.create(null, LABEL_STYLE);
+        Label prompt = LabelFactory.create(null, "bold");
         prompt.setText(message);
         Column column = ColumnFactory.create(prompt, _list);
         getLayout().add(column);

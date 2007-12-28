@@ -87,7 +87,8 @@ public class TabPaneModel extends DefaultTabModel implements KeyStrokeHandler {
         result.setActionCommand(ShortcutHelper.getShortcut(tabTitle));
         result.setText(tabTitle);
         result.setIcon(tabIcon);
-        result.setStyle(DEFAULT_TOP_ALIGNED_STYLE);
+        //result.setStyle(DEFAULT_TOP_ALIGNED_STYLE);
+        ComponentFactory.setDefaultStyle(result);
         result.setFocusTraversalParticipant(false);
         if (buttons != null) {
             buttons.add(result);

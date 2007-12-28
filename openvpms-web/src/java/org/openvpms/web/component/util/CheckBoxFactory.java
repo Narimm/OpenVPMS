@@ -35,7 +35,9 @@ public class CheckBoxFactory extends ComponentFactory {
      * @return a new check box
      */
     public static CheckBox create() {
-        return new CheckBox();
+        CheckBox box = new CheckBox();
+        setDefaultStyle(box);
+        return box;
     }
 
     /**

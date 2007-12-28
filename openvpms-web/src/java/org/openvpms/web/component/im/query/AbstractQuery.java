@@ -37,6 +37,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
+import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
@@ -575,8 +576,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
      */
     protected CheckBox getInactive() {
         if (inactive == null) {
-            inactive = new CheckBox();
-            inactive.setSelected(false);
+            inactive = CheckBoxFactory.create(false);
         }
         return inactive;
     }

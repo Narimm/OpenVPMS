@@ -104,10 +104,8 @@ public class LoginDialog extends PopupDialog {
             }
         });
 
-        Label userLabel = LabelFactory.create(USER_KEY);
-        userLabel.setStyleName(LABEL_STYLE);
-        Label passLabel = LabelFactory.create(PASSWORD_KEY);
-        passLabel.setStyleName(LABEL_STYLE);
+        Label userLabel = LabelFactory.create(USER_KEY, LABEL_STYLE);
+        Label passLabel = LabelFactory.create(PASSWORD_KEY, LABEL_STYLE);
 
         Grid grid = GridFactory.create(
                 2, userLabel, username, passLabel, password);

@@ -20,19 +20,11 @@
         <properties>
             <property name="width" value="300px"/>
             <property name="height" value="150px"/>
-            <property name="font">
-                <font size="7pt"/>
-            </property>
         </properties>
     </style>
 
     <style name="LoginDialog-800x600" base-name="LoginDialog-1024x768"
            type="nextapp.echo2.app.WindowPane">
-        <properties>
-            <property name="font">
-                <font size="6pt"/>
-            </property>
-        </properties>
     </style>
 
     <style name="LoginDialog.Grid" type="nextapp.echo2.app.Grid">
@@ -42,7 +34,8 @@
         </properties>
     </style>
 
-    <style name="LoginDialog.Label" type="nextapp.echo2.app.Label">
+    <style name="LoginDialog.Label" base-name="default"
+           type="nextapp.echo2.app.Label">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.GridLayoutData">
@@ -62,30 +55,17 @@
             <property name="resizable" value="false"/>
             <property name="separatorPosition" value="30px"/>
             <property name="background" value="#339933"/>
-            <property name="font">
-                <font size="9pt"/>
-            </property>
         </properties>
     </style>
 
     <style name="ApplicationContentPane.Layout-1024x768"
            base-name="ApplicationContentPane.Layout"
            type="nextapp.echo2.app.SplitPane">
-        <properties>
-            <property name="font">
-                <font size="7pt"/>
-            </property>
-        </properties>
     </style>
 
     <style name="ApplicationContentPane.Layout-800x600"
            base-name="ApplicationContentPane.Layout-1024x768"
            type="nextapp.echo2.app.SplitPane">
-        <properties>
-            <property name="font">
-                <font size="6pt"/>
-            </property>
-        </properties>
     </style>
 
     <style name="TitlePane" type="nextapp.echo2.app.ContentPane">
@@ -149,6 +129,23 @@
     </style>
 
     <style name="MainPane.Left.Menu.SummaryBox"
+           base-name="default"
+           type="echopointng.GroupBox">
+        <properties>
+            <property name="foreground" value="#ffffff"/>
+        </properties>
+    </style>
+
+    <style name="MainPane.Left.Menu.SummaryBox-1024x768"
+           base-name="default-1024x768"
+           type="echopointng.GroupBox">
+        <properties>
+            <property name="foreground" value="#ffffff"/>
+        </properties>
+    </style>
+
+    <style name="MainPane.Left.Menu.SummaryBox-800x600"
+           base-name="default"
            type="echopointng.GroupBox">
         <properties>
             <property name="foreground" value="#ffffff"/>
@@ -200,7 +197,9 @@
             <property name="rolloverForeground" value="#000000"/>
             <property name="rolloverBackground" value="#99cc66"/>
             <property name="font">
-                <font size="9pt" bold="true"/>
+                <font size="9pt" bold="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
             <property name="border">
                 <border style="none"/>
@@ -216,7 +215,9 @@
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="font">
-                <font size="7pt" bold="true"/>
+                <font size="7pt" bold="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -225,9 +226,9 @@
            base-name="MainPane.Menu.Button"
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
-            <property name="font">
-                <font size="6pt" bold="true"/>
-            </property>
+            <font size="6pt" bold="true">
+                <typeface name="arial,sans-serif"/>
+            </font>
         </properties>
     </style>
 
@@ -378,11 +379,6 @@
 
     <style name="MedicalRecordSummary.act.patientClinicalEvent"
            type="nextapp.echo2.app.Component">
-        <properties>
-            <property name="font">
-                <font bold="true"/>
-            </property>
-        </properties>
     </style>
 
     <style name="MedicalRecordSummary.act.patientClinicalNote"
@@ -685,7 +681,9 @@
             <property name="background" value="#99cc66"/>
             <property name="foreground" value="#000000"/>
             <property name="font">
-                <font size="8pt"/>
+                <font size="8pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
             <property name="border">
                 <border size="1px" style="outset" color="#7b68ee"/>
@@ -698,7 +696,9 @@
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="font">
-                <font size="7pt"/>
+                <font size="7pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -708,7 +708,9 @@
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="font">
-                <font size="6pt"/>
+                <font size="6pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -720,9 +722,6 @@
             <property name="width" value="900px"/>
             <property name="height" value="700px"/>
             <property name="resizable" value="true"/>
-            <property name="font">
-                <font size="9pt"/>
-            </property>
             <property name="positionX" value="200px"/>
             <property name="positionY" value="40px"/>
         </properties>
@@ -733,9 +732,6 @@
         <properties>
             <property name="width" value="750px"/>
             <property name="height" value="640px"/>
-            <property name="font">
-                <font size="7pt"/>
-            </property>
             <property name="positionX" value="150px"/>
             <property name="positionY" value="5px"/>
         </properties>
@@ -746,9 +742,6 @@
         <properties>
             <property name="width" value="650px"/>
             <property name="height" value="400px"/>
-            <property name="font">
-                <font size="6pt"/>
-            </property>
             <property name="positionX" value="120px"/>
             <property name="positionY" value="5px"/>
         </properties>
@@ -762,9 +755,6 @@
             <property name="width" value="900px"/>
             <property name="height" value="600px"/>
             <property name="resizable" value="true"/>
-            <property name="font">
-                <font size="9pt"/>
-            </property>
         </properties>
     </style>
 
@@ -773,9 +763,6 @@
         <properties>
             <property name="width" value="800px"/>
             <property name="height" value="550px"/>
-            <property name="font">
-                <font size="7pt"/>
-            </property>
         </properties>
     </style>
 
@@ -784,11 +771,7 @@
         <properties>
             <property name="width" value="680px"/>
             <property name="height" value="380px"/>
-            <property name="font">
-                <font size="6pt"/>
-            </property>
         </properties>
-
     </style>
 
     <style name="Browser" type="nextapp.echo2.app.Column">
@@ -973,6 +956,11 @@
             <property name="textAlignment">
                 <alignment horizontal="left"/>
             </property>
+            <property name="font">
+                <font size="9pt" bold="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
@@ -984,11 +972,39 @@
         </properties>
     </style>
 
-    <style name="Table.Header" type="nextapp.echo2.app.Button">
+    <style name="Table.Header-1024x768" base-name="Table.Header"
+           type="nextapp.echo2.app.Label">
+        <property name="font">
+            <font size="7pt" bold="true">
+                <typeface name="arial,sans-serif"/>
+            </font>
+        </property>
+    </style>
+
+    <style name="Table.Header-800x600" base-name="Table.Header"
+           type="nextapp.echo2.app.Label">
+        <property name="font">
+            <font size="6pt" bold="true">
+                <typeface name="arial,sans-serif"/>
+            </font>
+        </property>
+    </style>
+
+    <style name="Table.Header" type="nextapp.echo2.app.button.AbstractButton">
         <properties>
+            <property name="background" value="#afafef"/>
             <property name="textAlignment">
                 <alignment horizontal="left"/>
             </property>
+            <property name="border">
+                <border style="none"/>
+            </property>
+            <property name="font">
+                <font size="9pt" bold="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+            <property name="rolloverEnabled" value="false"/>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
@@ -996,6 +1012,28 @@
                         <property name="background" value="#afafef"/>
                     </properties>
                 </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="Table.Header-1024x768" base-name="Table.Header"
+           type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="font">
+                <font size="7pt" bold="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="Table.Header-800x600" base-name="Table.Header"
+           type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="font">
+                <font size="6pt" bold="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1151,7 +1189,9 @@
             <property name="rolloverForeground" value="#ff3000"/>
             <property name="rolloverEnabled" value="true"/>
             <property name="font">
-                <font underline="true"/>
+                <font size="9pt" underline="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
             <property name="border">
                 <border style="none"/>
@@ -1162,6 +1202,27 @@
         </properties>
     </style>
 
+    <style name="hyperlink-1024x768" base-name="hyperlink"
+           type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="font">
+                <font size="7pt" underline="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="hyperlink-800x600" base-name="hyperlink"
+           type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="font">
+                <font size="6pt" underline="true">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
 
     <!-- =================================================================== -->
     <!--  Alert Button                                                       -->
@@ -1519,8 +1580,10 @@
                 </fill-image>
             </property-->
             <property name="titleForeground" value="#ffffff"/>
-            <property name="font">
-                <font size="9pt"/>
+            <property name="titleFont">
+                <font size="10pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
             <property name="border">
                 <fill-image-border content-insets="8px 8px 14px 14px"
@@ -1618,6 +1681,11 @@
             <!-- palegreen -->
             <property name="rolloverForeground" value="#000000"/>
             <!-- black -->
+            <property name="font">
+                <font size="9pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
         </properties>
     </style>
 
@@ -1625,7 +1693,9 @@
            type="nextapp.echo2.app.list.AbstractListComponent">
         <properties>
             <property name="font">
-                <font size="7pt"/>
+                <font size="7pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1634,7 +1704,9 @@
            type="nextapp.echo2.app.list.AbstractListComponent">
         <properties>
             <property name="font">
-                <font size="6pt"/>
+                <font size="6pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1708,6 +1780,41 @@
     </style>
 
     <!-- =================================================================== -->
+    <!--  GroupBox defaults                                                  -->
+    <!-- =================================================================== -->
+    <style name="default" type="echopointng.GroupBox">
+        <properties>
+            <property name="font">
+                <font size="9pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="default-1024x768" base-name="default"
+           type="echopointng.GroupBox">
+        <properties>
+            <property name="font">
+                <font size="7pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="default-800x600" base-name="default"
+           type="echopointng.GroupBox">
+        <properties>
+            <property name="font">
+                <font size="6pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <!-- =================================================================== -->
     <!--  Grid defaults                                                      -->
     <!-- =================================================================== -->
 
@@ -1717,6 +1824,39 @@
         </properties>
     </style>
 
+    <!-- =================================================================== -->
+    <!--  CheckBox defaults                                                     -->
+    <!-- =================================================================== -->
+
+    <style name="default" type="nextapp.echo2.app.CheckBox">
+        <properties>
+            <property name="font">
+                <font size="9pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="default-1024x768" type="nextapp.echo2.app.CheckBox">
+        <properties>
+            <property name="font">
+                <font size="7pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="default-800x600" type="nextapp.echo2.app.CheckBox">
+        <properties>
+            <property name="font">
+                <font size="6pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
+            </property>
+        </properties>
+    </style>
 
     <!-- =================================================================== -->
     <!--  Label defaults                                                     -->
@@ -1728,7 +1868,7 @@
             <!-- black -->
             <property name="font">
                 <font size="9pt">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>
@@ -1739,7 +1879,7 @@
         <properties>
             <property name="font">
                 <font size="7pt">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>
@@ -1750,7 +1890,7 @@
         <properties>
             <property name="font">
                 <font size="6pt">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>
@@ -1761,7 +1901,7 @@
         <properties>
             <property name="font">
                 <font size="8pt">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>
@@ -1773,7 +1913,7 @@
             <properties>
                 <property name="font">
                     <font size="7pt">
-                        <typeface name="Arial"/>
+                        <typeface name="arial,sans-serif"/>
                     </font>
                 </property>
             </properties>
@@ -1793,7 +1933,7 @@
         <properties>
             <property name="font">
                 <font size="9pt" bold="true">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>
@@ -1804,7 +1944,7 @@
         <properties>
             <property name="font">
                 <font size="8pt" bold="true">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>
@@ -1815,7 +1955,7 @@
         <properties>
             <property name="font">
                 <font size="6pt" bold="true">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>
@@ -1836,7 +1976,9 @@
                 <!-- mediumslateblue -->
             </property>
             <property name="font">
-                <font size="9pt"/>
+                <font size="9pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
             <property name="pressedEnabled" value="true"/>
             <property name="pressedBackground" value="#191970"/>
@@ -1857,7 +1999,9 @@
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="font">
-                <font size="8pt"/>
+                <font size="8pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1866,7 +2010,9 @@
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="font">
-                <font size="7pt"/>
+                <font size="7pt">
+                    <typeface name="arial,sans-serif"/>
+                </font>
             </property>
         </properties>
     </style>
@@ -1916,7 +2062,7 @@
             </property>
             <property name="font">
                 <font size="9pt">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>
@@ -1927,7 +2073,7 @@
         <properties>
             <property name="font">
                 <font size="8pt">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>
@@ -1938,7 +2084,7 @@
         <properties>
             <property name="font">
                 <font size="6pt">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>
@@ -1955,7 +2101,7 @@
             </property>
             <property name="font">
                 <font size="9pt">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>
@@ -1966,7 +2112,7 @@
         <properties>
             <property name="font">
                 <font size="7pt">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>
@@ -1977,7 +2123,7 @@
         <properties>
             <property name="font">
                 <font size="6pt">
-                    <typeface name="Arial"/>
+                    <typeface name="arial,sans-serif"/>
                 </font>
             </property>
         </properties>

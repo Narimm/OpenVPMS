@@ -27,6 +27,7 @@ import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.table.TableCellRenderer;
+import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 
 
@@ -126,8 +127,8 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
      */
     protected Button getSortButton(String label, final int column,
                                    final SortableTableModel model) {
-        Button button = new Button(label);
-        button.setStyleName(style);
+        Button button = ButtonFactory.create(null, style);
+        button.setText(label);
         button.setFocusTraversalParticipant(false);
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
