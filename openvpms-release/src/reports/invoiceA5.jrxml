@@ -38,6 +38,7 @@
 	<field name="[party:getAccountBalance(.)]" class="java.math.BigDecimal"/>
 	<field name="[party:getFullName(party:getPractice())]" class="java.lang.String"/>
 	<field name="[party:getBillingAddress(party:getPractice())]" class="java.lang.String"/>
+	<field name="allocatedAmount" class="java.math.BigDecimal"/>
 
 		<background>
 			<band height="0"  isSplitAllowed="true" >
@@ -186,13 +187,13 @@
 			</band>
 		</columnHeader>
 		<detail>
-			<band height="47"  isSplitAllowed="true" >
+			<band height="13"  isSplitAllowed="true" >
 				<subreport  isUsingCache="true">
 					<reportElement
 						x="0"
 						y="0"
 						width="355"
-						height="47"
+						height="10"
 						key="subreport-1"/>
 					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.product.entity.displayName", "target.product.entity.name"})]]></dataSourceExpression>
 					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA["invoiceItemsA5.jrxml"]]></subreportExpression>
@@ -208,22 +209,22 @@
 			</band>
 		</pageFooter>
 		<summary>
-			<band height="95"  isSplitAllowed="true" >
+			<band height="127"  isSplitAllowed="true" >
 				<rectangle>
 					<reportElement
 						x="3"
-						y="16"
+						y="35"
 						width="352"
-						height="78"
+						height="82"
 						key="rectangle-1"/>
 					<graphicElement stretchType="NoStretch"/>
 				</rectangle>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="13"
-						y="47"
+						y="52"
 						width="333"
-						height="40"
+						height="58"
 						key="textField-5"
 						isRemoveLineWhenBlank="true"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
@@ -235,25 +236,25 @@
 				<staticText>
 					<reportElement
 						x="12"
-						y="24"
-						width="142"
+						y="35"
+						width="132"
 						height="17"
 						key="staticText-4"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
 					<textElement>
 						<font size="10"/>
 					</textElement>
-				<text><![CDATA[This Invoice is inclusive of $ ]]></text>
+				<text><![CDATA[This Invoice is inclusive of ]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="154"
-						y="24"
-						width="53"
+						x="144"
+						y="35"
+						width="36"
 						height="17"
 						key="textField-6"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
+					<textElement textAlignment="Right">
 						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
 					</textElement>
 				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{tax}]]></textFieldExpression>
@@ -273,8 +274,8 @@
 				</staticText>
 				<staticText>
 					<reportElement
-						x="207"
-						y="24"
+						x="184"
+						y="35"
 						width="34"
 						height="17"
 						key="staticText-7"/>
@@ -286,9 +287,9 @@
 				</staticText>
 				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="285"
-						y="0"
-						width="69"
+						x="310"
+						y="15"
+						width="49"
 						height="14"
 						key="textField-7"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
@@ -299,8 +300,8 @@
 				</textField>
 				<staticText>
 					<reportElement
-						x="3"
-						y="0"
+						x="195"
+						y="15"
 						width="112"
 						height="14"
 						key="staticText-8"/>
@@ -310,6 +311,32 @@
 					</textElement>
 				<text><![CDATA[CURRENT BALANCE]]></text>
 				</staticText>
+				<staticText>
+					<reportElement
+						x="195"
+						y="0"
+						width="112"
+						height="14"
+						key="staticText-9"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[AMOUNT PAID]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="310"
+						y="0"
+						width="49"
+						height="14"
+						key="textField-8"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{allocatedAmount}]]></textFieldExpression>
+				</textField>
 			</band>
 		</summary>
 </jasperReport>
