@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Patient - Reminders</name>
+    <name/>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -42,6 +42,28 @@
     </info>
   <notepads>
     </notepads>
+  <connection>
+    <name>OpenVPMS</name>
+    <server>localhost</server>
+    <type>MYSQL</type>
+    <access>Native</access>
+    <database>openvpms</database>
+    <port>3306</port>
+    <username>openvpms</username>
+    <password>Encrypted 2be98afc86aa7f2e4a409ab7ec882a2c9</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_MYSQL.defaultFetchSize</code><attribute>500</attribute></attribute>
+      <attribute><code>EXTRA_OPTION_MYSQL.useCursorFetch</code><attribute>true</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MAXIMUM_POOL_SIZE</code><attribute>10</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>3306</attribute></attribute>
+      <attribute><code>STREAM_RESULTS</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
   <order>
   <hop> <from> Reminder Input</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Reminder Output</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Transform Values</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Values</from><to>Add sequence</to><enabled>Y</enabled> </hop>  </order>
 
@@ -213,7 +235,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>REMINDERNO</idColumn><mapping><source>REMINDER</source><target>&lt;act.patientReminder>reminderType[0]&lt;participation.reminderType>entity</target><excludeNull>true</excludeNull><value>&lt;entity.reminderType>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REMINDERNO</source><target>&lt;act.patientReminder>reminderType[0]&lt;participation.reminderType>act</target><excludeNull>true</excludeNull><value>&lt;act.patientReminder>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientReminder>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REMINDERNO</source><target>&lt;act.patientReminder>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.patientReminder>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DATE</source><target>&lt;act.patientReminder>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DUE</source><target>&lt;act.patientReminder>endTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>STATUS</source><target>&lt;act.patientReminder>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>REMINDERNO</idColumn><mapping><source>REMTYPE</source><target>&lt;act.patientReminder>reminderType[0]&lt;participation.reminderType>entity</target><excludeNull>true</excludeNull><value>&lt;entity.reminderType>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REMINDERNO</source><target>&lt;act.patientReminder>reminderType[0]&lt;participation.reminderType>act</target><excludeNull>true</excludeNull><value>&lt;act.patientReminder>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PATIENTID</source><target>&lt;act.patientReminder>patient[0]&lt;participation.patient>entity</target><excludeNull>true</excludeNull><value>&lt;party.patientpet>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REMINDERNO</source><target>&lt;act.patientReminder>patient[0]&lt;participation.patient>act</target><excludeNull>true</excludeNull><value>&lt;act.patientReminder>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REMINDER</source><target>&lt;act.patientReminder>product[0]&lt;participation.product>entity</target><excludeNull>true</excludeNull><value>&lt;product.*>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REMINDERNO</source><target>&lt;act.patientReminder>product[0]&lt;participation.product>act</target><excludeNull>true</excludeNull><value>&lt;act.patientReminder>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DATE</source><target>&lt;act.patientReminder>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DUE</source><target>&lt;act.patientReminder>endTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>STATUS</source><target>&lt;act.patientReminder>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>690</xloc>
       <yloc>131</yloc>
@@ -271,14 +293,57 @@
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
-REMINDER.setString(replace(upper(REMINDER.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
+REMINDER.setString(replace(upper(REMINDER.getString()),&quot; &quot;,&apos;_&apos;))
 
 var now = new Date();
 var STATUS = &quot;IN_PROGRESS&quot;
 if (dateDiff(DUE.getDate(),now,&quot;m&quot;) &gt; 24)
-	STATUS = &quot;CANCELLED&quot;</jsScript_script>
+	STATUS = &quot;CANCELLED&quot;
+
+&#47;&#47; Transform into reminder types
+
+var REMCODE = REMINDER.getString()
+if (REMCODE == &quot;DHP&quot; || REMCODE == &quot;C3&quot; || REMCODE ==&quot;C4&quot; || REMCODE == &quot;C5&quot;) {
+	var REMTYPE = &quot;CA&quot;
+}
+else if (REMCODE == &quot;DHP3Y&quot;) {
+	var REMTYPE = &quot;C3&quot;
+}
+else if (REMCODE == &quot;BOPIV&quot; || REMCODE == &quot;BORD3N&quot; || REMCODE == &quot;BORDN&quot; || 
+	REMCODE == &quot;CANIGEN_KC&quot; || REMCODE == &quot;PI&quot; || REMCODE == &quot;BB&quot; || REMCODE == &quot;TRACGUARD&quot;) {
+	var REMTYPE = &quot;KC&quot;
+}
+else if (REMCODE == &quot;MOXII10&quot;) {
+	var REMTYPE = &quot;CH&quot;
+}
+else if (REMCODE == &quot;F3&quot; || REMCODE == &quot;F4&quot; || REMCODE == &quot;FELV&quot; || REMCODE == &quot;FE&quot; || REMCODE == &quot;FEVAC&quot;) {
+	var REMTYPE = &quot;FA&quot;
+}
+else if (REMCODE == &quot;PROGIL&quot; || REMCODE == &quot;PROGIS&quot;) {
+	var REMTYPE = &quot;FF&quot;
+}
+else if (REMCODE == &quot;CYLAP&quot;) {
+	var REMTYPE = &quot;MA&quot;
+}
+else if (REMCODE == &quot;FRD&quot;) {
+	var REMTYPE = &quot;FR&quot;
+}
+else {
+	var REMTYPE = &quot;OTHER&quot;
+}
+
+if (REMCODE == &quot;FE&quot;)
+	REMINDER.setString(&quot;FEVAC&quot;)
+else if (REMCODE == &quot;PI&quot; || REMCODE == &quot;BB&quot;)
+	REMINDER.setString(&quot;BOPIV&quot;)
+</jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>STATUS</name>
         <rename>STATUS</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>REMTYPE</name>
+        <rename>REMTYPE</rename>
         <type>String</type>
         <length>-1</length>
         <precision>-1</precision>

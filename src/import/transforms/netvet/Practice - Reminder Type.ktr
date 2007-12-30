@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Practice - Reminder Type</name>
+    <name/>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -184,7 +184,7 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>REMINDER</idColumn><mapping><source>REMINDER</source><target>&lt;entity.reminderType>name</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REMINDER</source><target>&lt;entity.reminderType>defaultInterval</target><excludeNull>false</excludeNull><value>1</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>REMTYPE</idColumn><mapping><source>REMTYPE</source><target>&lt;entity.reminderType>name</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>REMTYPE</source><target>&lt;entity.reminderType>defaultInterval</target><excludeNull>false</excludeNull><value>1</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>false</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
       <xloc>778</xloc>
       <yloc>132</yloc>
@@ -209,7 +209,7 @@
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>290</xloc>
+      <xloc>262</xloc>
       <yloc>130</yloc>
       <draw>Y</draw>
       </GUI>
@@ -232,14 +232,14 @@
       <compress>Y</compress>
     <fields>
       <field>
-        <name>REMINDER</name>
+        <name>REMTYPE</name>
         <ascending>Y</ascending>
         </field>
       </fields>
      <cluster_schema/>
     <GUI>
-      <xloc>537</xloc>
-      <yloc>129</yloc>
+      <xloc>489</xloc>
+      <yloc>131</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -259,12 +259,54 @@
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
-REMINDER.setString(replace(upper(REMINDER.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
+REMINDER.setString(replace(upper(REMINDER.getString()),&quot; &quot;,&apos;_&apos;))
+
+&#47;&#47; Transform into reminder types
+
+var REMCODE = REMINDER.getString()
+if (REMCODE == &quot;DHP&quot; || REMCODE == &quot;C3&quot; || REMCODE ==&quot;C4&quot; || REMCODE == &quot;C5&quot;) {
+	var REMTYPE = &quot;CA&quot;
+}
+else if (REMCODE == &quot;DHP3Y&quot;) {
+	var REMTYPE = &quot;C3&quot;
+}
+else if (REMCODE == &quot;BOPIV&quot; || REMCODE == &quot;BORD3N&quot; || REMCODE == &quot;BORDN&quot; || 
+	REMCODE == &quot;CANIGEN_KC&quot; || REMCODE == &quot;PI&quot; || REMCODE == &quot;BB&quot; || REMCODE == &quot;TRACGUARD&quot;) {
+	var REMTYPE = &quot;KC&quot;
+}
+else if (REMCODE == &quot;MOXII10&quot;) {
+	var REMTYPE = &quot;CH&quot;
+}
+else if (REMCODE == &quot;F3&quot; || REMCODE == &quot;F4&quot; || REMCODE == &quot;FELV&quot; || REMCODE == &quot;FE&quot; || REMCODE == &quot;FEVAC&quot;) {
+	var REMTYPE = &quot;FA&quot;
+}
+else if (REMCODE == &quot;PROGIL&quot; || REMCODE == &quot;PROGIS&quot;) {
+	var REMTYPE = &quot;FF&quot;
+}
+else if (REMCODE == &quot;CYLAP&quot;) {
+	var REMTYPE = &quot;MA&quot;
+}
+else if (REMCODE == &quot;FRD&quot;) {
+	var REMTYPE = &quot;FR&quot;
+}
+else {
+	var REMTYPE = &quot;OTHER&quot;
+}
 </jsScript_script>
-        </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>REMCODE</name>
+        <rename>REMCODE</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>REMTYPE</name>
+        <rename>REMTYPE</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>424</xloc>
-      <yloc>130</yloc>
+      <xloc>377</xloc>
+      <yloc>131</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -282,11 +324,11 @@ REMINDER.setString(replace(upper(REMINDER.getString()),&quot;[^A-Z0-9]+&quot;,&a
            </partitioning>
       <count_rows>N</count_rows>
       <count_field/>
-    <fields>      <field>        <name>REMINDER</name>
+    <fields>      <field>        <name>REMTYPE</name>
         <case_insensitive>N</case_insensitive>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>666</xloc>
+      <xloc>614</xloc>
       <yloc>131</yloc>
       <draw>Y</draw>
       </GUI>
