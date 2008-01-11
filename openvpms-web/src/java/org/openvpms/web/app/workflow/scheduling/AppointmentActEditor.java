@@ -99,7 +99,12 @@ public class AppointmentActEditor extends AbstractActEditor {
         if (startTime == null) {
             Date scheduleDate = context.getContext().getScheduleDate();
             startTime = getDefaultStartTime(scheduleDate);
-            setStartTime(startTime);
+
+            startTimeField.setDate(startTime); // set the date portion
+            setStartTime(startTime);           // set the time portion
+            // TODO - not ideal. Needs to be this way as the date and time
+            // fields are bound to the same property, which uses
+            // TimePropertyTransformer
         }
 
         getProperty("status").addModifiableListener(new ModifiableListener() {
