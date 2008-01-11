@@ -44,6 +44,11 @@ import java.util.GregorianCalendar;
 public class BoundDateTimeField extends AbstractPropertyEditor {
 
     /**
+     * The time property transformer, associated with the bound property.
+     */
+    private final TimePropertyTransformer transformer;
+
+    /**
      * The date field.
      */
     private final BoundDateField date;
@@ -71,15 +76,14 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
      */
     public BoundDateTimeField(Property property) {
         super(property);
-        TimePropertyTransformer transformer
-                = new TimePropertyTransformer(property);
+        transformer = new TimePropertyTransformer(property);
         Date current = (Date) property.getValue();
         if (current != null) {
             transformer.setDate(current);
         }
         property.setTransformer(transformer);
 
-        date = new DateField(property, transformer);
+        date = new DateField(property);
         time = TimeFieldFactory.create(property);
         component = RowFactory.create("CellSpacing", date, time);
         group = new FocusGroup(property.getName());
@@ -93,6 +97,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
      * @param date the date
      */
     public void setDate(Date date) {
+        transformer.setDate(date);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         DateChooser chooser = getDateField().getDateChooser();
@@ -145,14 +150,10 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
         return group;
     }
 
-    private static class DateField extends BoundDateField {
+    private class DateField extends BoundDateField {
 
-        private final TimePropertyTransformer transformer;
-
-        public DateField(Property property,
-                         TimePropertyTransformer transformer) {
+        public DateField(Property property) {
             super(property);
-            this.transformer = transformer;
         }
 
         @Override
