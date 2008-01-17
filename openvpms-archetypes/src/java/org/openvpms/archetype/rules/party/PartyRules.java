@@ -245,7 +245,7 @@ public class PartyRules {
      */
     public String getHomeTelephone(Party party) {
         Contact contact = getContact(party, "contact.phoneNumber", "HOME",
-                                     true);
+                                     false);
         return (contact != null) ? formatPhone(contact) : "";
     }
 
