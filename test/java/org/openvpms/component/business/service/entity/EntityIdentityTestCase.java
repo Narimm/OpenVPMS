@@ -18,47 +18,31 @@
 
 package org.openvpms.component.business.service.entity;
 
-
-//openvpms-framework
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.ServiceBaseTestCase;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 
+
 /**
- * Test the entity service
+ * Tests {@link EntityIdentity} instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public class EntityIdentityTestCase extends
-    ServiceBaseTestCase {
+                                    ServiceBaseTestCase {
 
     /**
-     * Holds a reference to the archetype service
+     * Holds a reference to the archetype service.
      */
     private ArchetypeService service;
 
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(EntityIdentityTestCase.class);
-    }
-
     /**
-     * Default constructor
+     * Default constructor.
      */
     public EntityIdentityTestCase() {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
-     */
-    @Override
-    protected String[] getConfigLocations() {
-        return new String[] { "org/openvpms/component/business/service/entity/entity-service-appcontext.xml" };
     }
 
     /**
@@ -74,7 +58,8 @@ public class EntityIdentityTestCase extends
         // retrieve the person and check that there is a single
         // entity identity
         person = (Party) ArchetypeQueryHelper.getByUid(service,
-                person.getArchetypeId(), person.getUid());
+                                                       person.getArchetypeId(),
+                                                       person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
         assertTrue((person.getIdentities().iterator().next()).getUid() != -1);
@@ -97,7 +82,8 @@ public class EntityIdentityTestCase extends
 
         // retrieve the entity, check it and then remove an entity identity
         person = (Party) ArchetypeQueryHelper.getByUid(service,
-                person.getArchetypeId(), person.getUid());
+                                                       person.getArchetypeId(),
+                                                       person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 2);
 
@@ -106,16 +92,18 @@ public class EntityIdentityTestCase extends
         assertTrue(person.getIdentities().size() == 1);
         service.save(person);
 
-        assertTrue(getObjectById("entityIdentity.getById", ident1.getUid()) == null);
+        assertTrue(getObjectById("entityIdentity.getById",
+                                 ident1.getUid()) == null);
         person = (Party) ArchetypeQueryHelper.getByUid(service,
-                person.getArchetypeId(), person.getUid());
+                                                       person.getArchetypeId(),
+                                                       person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
     }
 
     /**
      * Test the update of an entity identity object, which is attached to a
-     * person object
+     * person object.
      */
     public void testEntityIdentityUpdate() throws Exception {
         Party person = createPerson("MR", "EntityIdentity", "Test");
@@ -125,7 +113,8 @@ public class EntityIdentityTestCase extends
 
         // retrieve the entity, check it and then update an entity identity
         person = (Party) ArchetypeQueryHelper.getByUid(service,
-                person.getArchetypeId(), person.getUid());
+                                                       person.getArchetypeId(),
+                                                       person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
         ident1 = person.getIdentities().iterator().next();
@@ -135,7 +124,8 @@ public class EntityIdentityTestCase extends
 
         // make sure the update happened
         person = (Party) ArchetypeQueryHelper.getByUid(service,
-                person.getArchetypeId(), person.getUid());
+                                                       person.getArchetypeId(),
+                                                       person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
         ident1 = person.getIdentities().iterator().next();
@@ -143,49 +133,34 @@ public class EntityIdentityTestCase extends
     }
 
     /**
-     * Test that we can clone anEntityIdentities object.
+     * Test that we can clone an EntityIdentity object.
      */
     public void testEntityIdentityClone() throws Exception {
         EntityIdentity eidentity = createEntityIdentity("jimbo");
-        EntityIdentity copy = (EntityIdentity)eidentity.clone();
+        EntityIdentity copy = (EntityIdentity) eidentity.clone();
         copy.setIdentity("jimmya");
         assertFalse(copy.getIdentity().equals(eidentity.getIdentity()));
     }
 
     /**
-     * Create a person
-     *
-     * @param title
-     *            the person's title
-     * @param firstName
-     *            the person's first name
-     * @param lastName
-     *            the person's last name
-     * @return Person
+     * Tests the fix for OBF-173.
      */
-    public Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party)service.create("party.person");
-        person.getDetails().put("lastName", lastName);
-        person.getDetails().put("firstName", firstName);
-        person.getDetails().put("title", title);
-
-        return person;
+    public void testOBF173() throws Exception {
+        Party person = createPerson("MR", "EntityIdentity", "Test");
+        EntityIdentity identity = createEntityIdentity("foo");
+        person.addIdentity(identity);
+        service.save(person);
+        service.save(identity);
     }
 
-    /**
-     * Create an entity identity with the specified identity
+    /*
+     * (non-Javadoc)
      *
-     * @param identity
-     *            the identity to assign
-     * @return EntityIdentity
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
      */
-    private EntityIdentity createEntityIdentity(String identity) {
-        EntityIdentity eidentity = (EntityIdentity) service
-                .create("entityIdentity.personAlias");
-        assertTrue(eidentity != null);
-
-        eidentity.setIdentity(identity);
-        return eidentity;
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[]{"org/openvpms/component/business/service/entity/entity-service-appcontext.xml"};
     }
 
     /*
@@ -196,9 +171,40 @@ public class EntityIdentityTestCase extends
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
+        service = (ArchetypeService) applicationContext.getBean(
+                "archetypeService");
+        assertNotNull(service);
+    }
 
-        this.service = (ArchetypeService) applicationContext
-                .getBean("archetypeService");
-        assertTrue(service != null);
+    /**
+     * Create a person.
+     *
+     * @param title     the person's title
+     * @param firstName the person's first name
+     * @param lastName  the person's last name
+     * @return Person
+     */
+    private Party createPerson(String title, String firstName,
+                               String lastName) {
+        Party person = (Party) service.create("party.person");
+        person.getDetails().put("lastName", lastName);
+        person.getDetails().put("firstName", firstName);
+        person.getDetails().put("title", title);
+
+        return person;
+    }
+
+    /**
+     * Create an entity identity with the specified identity.
+     *
+     * @param identity the identity to assign
+     * @return EntityIdentity
+     */
+    private EntityIdentity createEntityIdentity(String identity) {
+        EntityIdentity eidentity = (EntityIdentity) service
+                .create("entityIdentity.personAlias");
+        assertNotNull(eidentity);
+        eidentity.setIdentity(identity);
+        return eidentity;
     }
 }

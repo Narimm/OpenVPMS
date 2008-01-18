@@ -51,7 +51,7 @@ public class EntityIdentity extends IMObject {
     /**
      * Holds details about the entity identity.
      */
-    private Map<String, TypedValue> details;
+    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
 
     /**
      * Reference the Entity that this object references
