@@ -58,8 +58,12 @@ public class CustomerRules extends PartyRules {
      */
     public Lookup getAccountType(Party party) {
         EntityBean bean = new EntityBean(party, getArchetypeService());
-        List<Lookup> types = bean.getValues("type", Lookup.class);
-        return (types.isEmpty()) ? null : types.get(0);
+        if (bean.hasNode("type")) {
+            List<Lookup> types = bean.getValues("type", Lookup.class);
+            return (types.isEmpty()) ? null : types.get(0);        	
+        }
+        else
+        	return null;
     }
 
     /**
