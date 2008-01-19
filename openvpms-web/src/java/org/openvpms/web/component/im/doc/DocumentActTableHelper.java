@@ -43,25 +43,29 @@ public class DocumentActTableHelper {
      * act.
      *
      * @param act  the document act
-     * @param link if <tt>true</tt> enable an hyperlink to the object
+     * @param link if <tt>true</tt> add a hyperlink to the associated document,
+     *             or the document template if there is no document
      * @return a new component
      */
     public static Component getDocumentViewer(DocumentAct act,
                                               boolean link) {
         Component result;
         ActBean bean = new ActBean(act);
-        if (bean.hasNode("documentTemplate")) {
+        if (act.getDocReference() != null) {
+            DocumentViewer viewer = new DocumentViewer(act, link);
+            result = viewer.getComponent();
+        } else if (bean.hasNode("documentTemplate")) {
             NodeDescriptor descriptor
                     = bean.getDescriptor("documentTemplate");
             LayoutContext context = new DefaultLayoutContext();
+            if (!link) {
+                context.setEdit(true); // hack to disable hyerlinks
+            }
             TableComponentFactory factory = new TableComponentFactory(
                     context);
             context.setComponentFactory(factory);
             Property property = new IMObjectProperty(act, descriptor);
             result = factory.create(property, act).getComponent();
-        } else if (bean.hasNode("fileName")) {
-            DocumentViewer viewer = new DocumentViewer(act, link);
-            result = viewer.getComponent();
         } else {
             result = new Label();
         }

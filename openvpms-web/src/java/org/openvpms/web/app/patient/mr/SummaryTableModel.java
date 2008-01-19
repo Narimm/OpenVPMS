@@ -209,9 +209,8 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         date.setLayoutData(layout);
         type.setLayoutData(layout);
 
-        if (TypeHelper.isA(act, "act.patientInvestigation*")) {
-            detail = getInvestigationDetail((DocumentAct) act);
-        } else if (TypeHelper.isA(act, "act.patientDocument*")) {
+        if (TypeHelper.isA(act, "act.patientInvestigation*")
+                || TypeHelper.isA(act, "act.patientDocument*")) {
             detail = getDocumentDetail((DocumentAct) act);
         } else {
             detail = getDetail(act);
@@ -268,38 +267,37 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
     }
 
     /**
-     * Returns a component for the detail of an act.patientInvestigation*.
-     *
-     * @param act the act
-     * @return a new component
-     */
-    private Component getInvestigationDetail(DocumentAct act) {
-        Component component = getDetail(act);
-        Component viewer = DocumentActTableHelper.getDocumentViewer(act, false);
-        return RowFactory.create("CellSpacing", component, viewer);
-    }
-
-    /**
-     * Returns a component for the detail of an act.patientDocument*.
+     * Returns a component for the detail of an act.patientDocument*. or
+     * act.patientInvestigation*.
      *
      * @param act the act
      * @return a new component
      */
     private Component getDocumentDetail(DocumentAct act) {
-        Component component = getDetail(act);
-        Component viewer = DocumentActTableHelper.getDocumentViewer(act, false);
-        return RowFactory.create("CellSpacing", component, viewer);
+        Component result;
+        Label label = getDetail(act);
+
+        // only display a hyperlink if there is a document to download
+        boolean link = act.getDocReference() != null;
+        Component viewer = DocumentActTableHelper.getDocumentViewer(act, link);
+
+        if (StringUtils.isEmpty(label.getText())) {
+            result = viewer;
+        } else {
+            result = RowFactory.create("CellSpacing", label, viewer);
+        }
+        return result;
     }
 
     /**
-     * Returns a component to represent the act detail.
+     * Returns a label to represent the act detail.
      * If a jxpath expression is registered, this will be evaluated, otherwise
      * the act description will be used.
      *
      * @param act the act
      * @return a new component
      */
-    private Component getDetail(Act act) {
+    private Label getDetail(Act act) {
         Label result;
         String text = null;
         String shortName = act.getArchetypeId().getShortName();
