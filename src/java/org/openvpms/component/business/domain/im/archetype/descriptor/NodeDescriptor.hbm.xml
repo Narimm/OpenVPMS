@@ -62,7 +62,7 @@
     <property name="index" access="property" column="node_index" type="integer" />
     <property name="parentChild" access="property" column="is_parent_child"
       type="boolean" />
-    <map name="nodeDescriptors" access="property" lazy="false" inverse="true"
+    <map name="nodeDescriptors" access="field" lazy="false" inverse="true"
       table="node_descriptors" cascade="all,delete-orphan">
       <key column="parent_id" on-delete="cascade"/>
       <map-key column="name" type="string" />
@@ -70,7 +70,7 @@
         class="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor" />
     </map>
     <many-to-one name="parent" column="parent_id"/>
-    <map name="assertionDescriptors" access="property" lazy="false"
+    <map name="assertionDescriptors" access="field" lazy="false"
       table="assertion_descriptors" cascade="all,delete-orphan">
       <key column="node_desc_id" />
       <map-key column="type" type="string" />

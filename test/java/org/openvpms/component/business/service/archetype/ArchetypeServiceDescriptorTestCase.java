@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -131,7 +132,7 @@ public class ArchetypeServiceDescriptorTestCase
     /**
      * Create a simple archetype descriptor with node descriptor
      */
-    public void testCreateArhetypeWithNodeDescriptor()
+    public void testCreateArchetypeWithNodeDescriptor()
             throws Exception {
         String name = "archetype.dummy.1.0";
         removeDescriptor(name);
@@ -163,6 +164,49 @@ public class ArchetypeServiceDescriptorTestCase
                 .add(new NodeConstraint("type", desc.getName()));
         List<IMObject> objs = service.get(query).getResults();
         assertTrue(objs.size() > 0);
+    }
+
+    /**
+     * Tests the fix for OBF-174.
+     */
+    public void testOBF174()
+            throws Exception {
+        String name = "archetype.dummy.1.0";
+        removeDescriptor(name);
+        ArchetypeDescriptor desc = createArchetypeDescriptor(
+                name, "thisClass",
+                "archetype.dummy", true);
+
+        NodeDescriptor ndesc = createNodeDescriptor("name", "/name",
+                                                    "java.lang.String", 1, 1);
+        AssertionDescriptor assertion = (AssertionDescriptor) service.create(
+                "assertion.regularExpression");
+        IMObjectBean bean = new IMObjectBean(assertion, service);
+        bean.setValue("expressionValue", "[a-zA-Z]+");
+        bean.setValue("errorMessage", "invalid name");
+        ndesc.addAssertionDescriptor(assertion);
+        desc.addNodeDescriptor(ndesc);
+
+        service.save(desc);
+        service.save(ndesc);     // verify the node descriptor and assertion
+        service.save(assertion); // descriptor can be re-saved
+
+        IMObject obj = ArchetypeQueryHelper.getByUid(service,
+                                                     desc.getArchetypeId(),
+                                                     desc.getUid());
+        assertNotNull(obj);
+        assertTrue(obj instanceof ArchetypeDescriptor);
+        ArchetypeDescriptor desc2 = (ArchetypeDescriptor) obj;
+
+        // check that the versions are the same
+        assertEquals(desc.getVersion(), desc2.getVersion());
+        assertEquals(1, desc2.getNodeDescriptors().size());
+        NodeDescriptor ndesc2 = desc2.getAllNodeDescriptors().get(0);
+        assertEquals(ndesc.getVersion(), ndesc2.getVersion());
+        assertEquals(1, ndesc2.getAssertionDescriptors().size());
+        AssertionDescriptor assertion2
+                = ndesc2.getAssertionDescriptorsAsArray()[0];
+        assertEquals(assertion.getVersion(), assertion2.getVersion());
     }
 
     /**

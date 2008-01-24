@@ -203,11 +203,17 @@ public class NodeDescriptor extends Descriptor {
      * The filter is only valid for collections and defines the subset of
      * the collection that this node refers too.  The filter is an archetype
      * shortName, which can also be in the form of a regular expression
-     *
+     * <p/>
      * The modeFilter is a regex compliant filter
      */
     private String filter;
     private String modFilter;
+
+    private static final ArchetypeId NODE = new ArchetypeId(
+            "descriptor.node.1.0");
+
+    private static final ArchetypeId COLLECTION_NODE = new ArchetypeId(
+            "descriptor.collectionNode");
 
     /**
      * The parent node descriptor. May be <code>null</code>.
@@ -221,10 +227,21 @@ public class NodeDescriptor extends Descriptor {
 
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public NodeDescriptor() {
-        setArchetypeId(new ArchetypeId("descriptor.node.1.0"));
+    }
+
+    /**
+     * Returns the archetype Id. For nodes that have child nodes, returns
+     * <em>descriptor.collectionNode.1.0</em>, otherwise returns
+     * <em>descriptor.node.1.0</em>.
+     *
+     * @return the archetype Id.
+     */
+    @Override
+    public ArchetypeId getArchetypeId() {
+        return (nodeDescriptors == null || nodeDescriptors.isEmpty()) ? NODE : COLLECTION_NODE;
     }
 
     /**
@@ -312,26 +329,6 @@ public class NodeDescriptor extends Descriptor {
         child.setParent(this);
     }
 
-    /**
-     * Check and adjust the archetype id. If the node descriptor has other
-     * children then set the archetypeId to collection node, otherwise set it to
-     * normal node.
-     * <p/>
-     * TODO This will disappear when we introduce a new collection node class.
-     */
-    private void checkArchetypeId() {
-        if ((nodeDescriptors != null) && (nodeDescriptors.size() > 0)) {
-            if (getArchetypeId().getConcept().equals("node")) {
-                setArchetypeId(new ArchetypeId(
-                        "descriptor.collectionNode.1.0"));
-            }
-        } else {
-            if (getArchetypeId().getConcept().equals("collectionNode")) {
-                setArchetypeId(new ArchetypeId("descriptor.node.1.0"));
-            }
-        }
-    }
-
     /*
      * (non-Javadoc)
      *
@@ -407,7 +404,9 @@ public class NodeDescriptor extends Descriptor {
      * or collection.
      *
      * @return String pattern
+     * @deprecated no replacement
      */
+    @Deprecated
     public String[] getArchetypeNames() {
         ArrayList<String> result = new ArrayList<String>();
 
@@ -429,7 +428,7 @@ public class NodeDescriptor extends Descriptor {
      * Return an array of short names or short name regular expression that are
      * associated with the archetypeRange assertion. If the node does not have
      * such an assertion then return a zero length string array
-     *
+     * <p/>
      * TODO Should we more this into a utility class TODO Change return type to
      * List
      *
@@ -1205,7 +1204,10 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * @param assertionDescriptors The assertionDescriptors to set.
+     * @deprecated use {@link #addAssertionDescriptor} instead. Will be removed
+     *             post 1.x.
      */
+    @Deprecated
     public void setAssertionDescriptors(
             Map<String, AssertionDescriptor> assertionDescriptors) {
         this.assertionDescriptors = assertionDescriptors;
@@ -1213,7 +1215,11 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * @param assertionDescriptors The assertionDescriptors to set.
+     *
+     * @deprecated use {@link #addAssertionDescriptor} instead. Will be removed
+     *             post 1.x.
      */
+    @Deprecated
     public void setAssertionDescriptorsAsArray(
             AssertionDescriptor[] assertionDescriptors) {
         this.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>();
@@ -1327,16 +1333,20 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * @param nodeDescriptors The nodeDescriptors to set.
+     *
+     * @deprecated use {@link #addNodeDescriptor} instead.
      */
+    @Deprecated
     public void setNodeDescriptors(
             Map<String, NodeDescriptor> nodeDescriptors) {
         this.nodeDescriptors = nodeDescriptors;
-        checkArchetypeId();
     }
 
     /**
      * @param nodes The nodeDescriptors to set.
+     * @deprecated use {@link #addNodeDescriptor} instead.
      */
+    @Deprecated
     public void setNodeDescriptorsAsArray(NodeDescriptor[] nodes) {
         this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
         int index = 0;

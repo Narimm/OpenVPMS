@@ -73,40 +73,60 @@ abstract class AbstractMergeHandler implements MergeHandler {
 
     /**
      * Updates the target objects with the identifier and version of the their
-     * corresponding sources.
+     * corresponding sources, using {@link MergeHandlerFactory#DEFAULT}.
      *
      * @param targets the targets to update
      * @param sources the sources to update from
      */
     protected <T extends IMObject> void update(Collection<T> targets,
                                                Collection<T> sources) {
+        update(targets, sources, MergeHandlerFactory.DEFAULT);
+    }
+
+    /**
+     * Updates the target objects with the identifier and version of the their
+     * corresponding sources.
+     *
+     * @param targets the targets to update
+     * @param sources the sources to update from
+     * @param handler the handler to update the objects
+     */
+    protected <T extends IMObject> void update(Collection<T> targets,
+                                               Collection<T> sources,
+                                               MergeHandler handler) {
         if (!targets.isEmpty()) {
-            Map<IMObjectReference, T> map = new HashMap<IMObjectReference, T>();
-            for (T source : sources) {
-                map.put(source.getObjectReference(), source);
-            }
+            Map<IMObjectReference, T> map = getReferenceMap(sources);
             for (T target : targets) {
                 T source = map.get(target.getObjectReference());
                 if (source != null) {
-                    updateId(target, source);
+                    handler.update(target, source);
                 }
             }
         }
     }
 
     /**
-     * Updates the target object with the identifier and version of the source.
-     *
-     * @param target the object to update
-     * @param source the object to update from
-     */
-    private void updateId(IMObject target, IMObject source) {
-        if (target.getUid() != source.getUid()) {
-            target.setUid(source.getUid());
+      * Updates the target object with the identifier and version of the source.
+      *
+      * @param target the object to update
+      * @param source the object to update from
+      */
+     private void updateId(IMObject target, IMObject source) {
+         if (target.getUid() != source.getUid()) {
+             target.setUid(source.getUid());
+         }
+         if (target.getVersion() != source.getVersion()) {
+             target.setVersion(source.getVersion());
+         }
+     }
+
+    private <T extends IMObject>Map<IMObjectReference, T> getReferenceMap(
+            Collection<T> sources) {
+        Map<IMObjectReference, T> map = new HashMap<IMObjectReference, T>();
+        for (T source : sources) {
+            map.put(source.getObjectReference(), source);
         }
-        if (target.getVersion() != source.getVersion()) {
-            target.setVersion(source.getVersion());
-        }
+        return map;
     }
 
 }
