@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -40,6 +41,11 @@ class MergeHandlerFactory {
      */
     private static final MergeHandler ARCHETYPE
             = new ArchetypeDescriptorMergeHandler();
+
+    /**
+     * Merge handler for {@link NodeDescriptor}s.
+     */
+    private static final MergeHandler NODE = new NodeDescriptorMergeHandler();
 
     /**
      * Merge handler for {@link Act}s.
@@ -69,7 +75,7 @@ class MergeHandlerFactory {
     /**
      * The default merge handler.
      */
-    private static final MergeHandler DEFAULT = new DefaultMergeHandler();
+    protected static final MergeHandler DEFAULT = new DefaultMergeHandler();
 
 
     /**
@@ -91,6 +97,8 @@ class MergeHandlerFactory {
             return LOOKUP;
         } else if (object instanceof ArchetypeDescriptor) {
             return ARCHETYPE;
+        } else if (object instanceof NodeDescriptor) {
+            return NODE;
         }
         return DEFAULT;
 

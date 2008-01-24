@@ -32,6 +32,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 class ArchetypeDescriptorMergeHandler extends AbstractMergeHandler {
 
     /**
+     * Node descriptor merge handler.
+     */
+    private static final MergeHandler NODE_HANDLER
+            = new NodeDescriptorMergeHandler();
+
+    /**
      * Merges an object.
      *
      * @param object  the object to merge
@@ -56,7 +62,7 @@ class ArchetypeDescriptorMergeHandler extends AbstractMergeHandler {
         ArchetypeDescriptor targetDesc = (ArchetypeDescriptor) target;
         ArchetypeDescriptor sourceDesc = (ArchetypeDescriptor) source;
         update(targetDesc.getAllNodeDescriptors(),
-               sourceDesc.getAllNodeDescriptors());
+               sourceDesc.getAllNodeDescriptors(), NODE_HANDLER);
         super.update(target, source);
     }
 
