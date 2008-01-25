@@ -1189,7 +1189,7 @@
     <!--  Hyperlink Button                                                   -->
     <!-- =================================================================== -->
 
-    <style name="hyperlink" type="nextapp.echo2.app.button.AbstractButton">
+    <style name="hyperlink" type="echopointng.ButtonEx">
         <properties>
             <property name="foreground" value="#0000ff"/>
             <property name="rolloverForeground" value="#ff3000"/>
@@ -1205,11 +1205,13 @@
             <property name="rolloverBorder">
                 <border style="none"/>
             </property>
+            <property name="insets" value="0px 0px"/>
+            <property name="outsets" value="0px 0px"/>
         </properties>
     </style>
 
     <style name="hyperlink-1024x768" base-name="hyperlink"
-           type="nextapp.echo2.app.button.AbstractButton">
+           type="echopointng.ButtonEx">
         <properties>
             <property name="font">
                 <font size="7pt" underline="true">
@@ -1220,7 +1222,7 @@
     </style>
 
     <style name="hyperlink-800x600" base-name="hyperlink"
-           type="nextapp.echo2.app.button.AbstractButton">
+           type="echopointng.ButtonEx">
         <properties>
             <property name="font">
                 <font size="6pt" underline="true">

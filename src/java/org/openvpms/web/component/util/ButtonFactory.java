@@ -18,7 +18,9 @@
 
 package org.openvpms.web.component.util;
 
+import echopointng.ButtonEx;
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.MutableStyle;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.button.ShortcutButton;
 
@@ -134,6 +136,16 @@ public final class ButtonFactory extends ComponentFactory {
      */
     public static String getString(String key) {
         return getString(TYPE, key, false);
+    }
+
+    /**
+     * Hack to ensure that EPNG fallback styles aren't used. These prevent
+     * inheritance.
+     */
+    static {
+        MutableStyle defaultStyle = (MutableStyle) ButtonEx.DEFAULT_STYLE;
+        defaultStyle.removeProperty(ButtonEx.PROPERTY_BACKGROUND);
+        defaultStyle.removeProperty(ButtonEx.PROPERTY_ROLLOVER_BACKGROUND);
     }
 
 }
