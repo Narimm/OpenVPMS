@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.party;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -236,7 +237,7 @@ public class PartyRules {
     }
 
     /**
-     * Returns a formatted work telephone number for a party.
+     * Returns a formatted home telephone number for a party.
      *
      * @param party the party
      * @return a formatted home telephone number for the party. May be empty if
@@ -464,8 +465,8 @@ public class PartyRules {
     private String formatPhone(Contact contact) {
         IMObjectBean bean = new IMObjectBean(contact, service);
         String areaCode = bean.getString("areaCode");
-        String phone = bean.getString("telephoneNumber");
-        if (areaCode == null || areaCode.equals("")) {
+        String phone = bean.getString("telephoneNumber", "");
+        if (StringUtils.isEmpty(areaCode)) {
             return phone;
         } else {
             return "(" + areaCode + ") " + phone;

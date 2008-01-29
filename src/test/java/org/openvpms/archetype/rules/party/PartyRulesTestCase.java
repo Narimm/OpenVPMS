@@ -205,7 +205,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         Contact phone1 = getContact(party, "contact.phoneNumber");
         populatePhone(phone1, "12345", false, null);
 
-        assertEquals("", rules.getHomeTelephone(party));
+        assertEquals("(03) 12345", rules.getHomeTelephone(party)); // OVPMS-718
         Lookup purpose = getContactPurpose("HOME");
         phone1.addClassification(purpose);
         assertEquals("(03) 12345", rules.getHomeTelephone(party));
@@ -226,7 +226,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         Contact phone1 = getContact(party, "contact.phoneNumber");
         populatePhone(phone1, "12345", false, null);
 
-        assertEquals("", rules.getHomeTelephone(party));
+        assertEquals("", rules.getWorkTelephone(party));
         Lookup purpose = getContactPurpose("WORK");
         phone1.addClassification(purpose);
         assertEquals("(03) 12345", rules.getWorkTelephone(party));

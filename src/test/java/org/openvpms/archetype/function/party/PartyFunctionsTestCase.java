@@ -44,7 +44,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      * Tests the {@link PartyFunctions#getHomeTelephone(Party)} method.
      */
     public void testGetHomeTelephone() {
-        Party party = TestHelper.createCustomer(false);
+        Party party = createCustomer();
 
         JXPathContext ctx = JXPathHelper.newContext(party);
         assertEquals("", ctx.getValue("party:getHomeTelephone(.)"));
@@ -58,7 +58,8 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      */
     public void testActGetHomeTelephone() {
         Act act = (Act) create("act.customerEstimation");
-        Party party = TestHelper.createCustomer();
+        Party party = createCustomer();
+        save(party);
 
         JXPathContext ctx = JXPathHelper.newContext(act);
         assertEquals("", ctx.getValue("party:getHomeTelephone(.)"));
@@ -77,14 +78,15 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      * Tests the {@link PartyFunctions#getWorkTelephone(Party)} method.
      */
     public void testGetWorkTelephone() {
-        Party party = TestHelper.createCustomer(false);
+        Party party = createCustomer();
 
         JXPathContext ctx = JXPathHelper.newContext(party);
         assertEquals("", ctx.getValue("party:getWorkTelephone(.)"));
 
         party.addContact(createPhone("56789", true, "WORK"));
         assertEquals("(03) 56789", ctx.getValue("party:getWorkTelephone(.)"));
-        assertEquals("", ctx.getValue("party:getHomeTelephone(.)"));
+        assertEquals("(03) 56789",
+                     ctx.getValue("party:getHomeTelephone(.)")); // OVPMS-718
     }
 
     /**
@@ -92,7 +94,8 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      */
     public void testActGetWorkTelephone() {
         Act act = (Act) create("act.customerEstimation");
-        Party party = TestHelper.createCustomer();
+        Party party = createCustomer();
+        save(party);
 
         JXPathContext ctx = JXPathHelper.newContext(act);
         assertEquals("", ctx.getValue("party:getWorkTelephone(.)"));
@@ -169,6 +172,19 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
             contact.addClassification(lookup);
         }
         return contact;
+    }
+
+    /**
+     * Helper to create a new customer with no default contacts.
+     *
+     * @return a new customer
+     */
+    private Party createCustomer() {
+        Party party = TestHelper.createCustomer(false);
+        for (Contact contact : party.getContacts().toArray(new Contact[0])) {
+            party.removeContact(contact);
+        }
+        return party;
     }
 
 }
