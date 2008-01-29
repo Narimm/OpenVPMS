@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.patient;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -124,15 +125,54 @@ public class MedicalRecordRules {
 
     /**
      * Adds an <em>act.patientMedication</em>/<em>act.patientInvestigation*</em>
-     * to the <em>act.patientClinicalEvent</em> associated with the patient and
-     * date. If no event exists, one will be created.
+     * to the most recent <em>act.patientClinicalEvent</em>
+     * associated with the act's patient. If no <em>IN_PROGRESS</em> event
+     * exists, one will be created with the specified start time.
+     * If a relationship exists, it will be ignored.
      *
-     * @param act  the act to add
-     * @param date the event date
+     * @param act       the act to add
+     * @param startTime the timestamp to assign the event, if it is created
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void addToEvent(Act act, Date date) {
-        addToEvents(Arrays.asList(act), date);
+    public void addToEvent(Act act, Date startTime) {
+        addToEvents(Arrays.asList(act), startTime);
+    }
+
+    /**
+     * Adds a list of <em>act.patientMedication</em>,
+     * <em>act.patientInvestigation*</em> and <em>act.patientDocument*</em> acts
+     * to the most recent <em>act.patientClinicalEvent</em>
+     * associated with each act's patient. If no <em>IN_PROGRESS</em> event
+     * exists, one will be created with the specified start time.
+     * If a relationship exists, it will be ignored.
+     *
+     * @param acts      the acts to add
+     * @param startTime the timestamp to assign the event, if it is created
+     */
+    public void addToEvents(List<Act> acts, Date startTime) {
+        Map<IMObjectReference, List<Act>> map = getByPatient(acts);
+        for (Map.Entry<IMObjectReference, List<Act>> entry : map.entrySet()) {
+            IMObjectReference patient = entry.getKey();
+            Act event = getEvent(patient);
+            if (event == null || !ActStatus.IN_PROGRESS.equals(
+                    event.getStatus())) {
+                event = (Act) service.create(CLINICAL_EVENT);
+                event.setActivityStartTime(startTime);
+                ActBean eventBean = new ActBean(event, service);
+                eventBean.addParticipation(PARTICIPATION_PATIENT, patient);
+            }
+            boolean save = false;
+            ActBean bean = new ActBean(event, service);
+            for (Act a : entry.getValue()) {
+                if (!bean.hasRelationship(CLINICAL_EVENT_ITEM, a)) {
+                    bean.addRelationship(CLINICAL_EVENT_ITEM, a);
+                    save = true;
+                }
+            }
+            if (save) {
+                bean.save();
+            }
+        }
     }
 
     /**
@@ -140,14 +180,16 @@ public class MedicalRecordRules {
      * <em>act.patientMedication</em>, <em>act.patientInvestigation*</em>
      * and <em>act.patientDocument*</em> acts
      * to the <em>act.patientClinicalEvent</em> associated with each act's
-     * patient and the specified date. If no event exists, one will be created.
-     * If a relationship exists, it will be ignored.
+     * patient and the specified date. The event is obtained via
+     * {@link #getEvent(IMObjectReference, Date)}.
+     * If no event exists, one will be created. If a relationship exists, it
+     * will be ignored.
      *
      * @param acts the acts to add
      * @param date the event date
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void addToEvents(List<Act> acts, Date date) {
+    public void addToHistoricalEvents(List<Act> acts, Date date) {
         Map<IMObjectReference, List<Act>> map = getByPatient(acts);
         for (Map.Entry<IMObjectReference, List<Act>> entry : map.entrySet()) {
             IMObjectReference patient = entry.getKey();
@@ -173,13 +215,49 @@ public class MedicalRecordRules {
     }
 
     /**
+     * Returns an <em>act.patientClinicalEvent</em> for the specified patient.
+     *
+     * @param patient the patient
+     * @return the corresponding <em>act.patientClinicalEvent</em> or
+     *         <tt>null</tt> if none is found. The event may be
+     *         <em>IN_PROGRESS</em> or <em>COMPLETED</tt>
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Act getEvent(Party patient) {
+        return getEvent(patient.getObjectReference());
+    }
+
+    /**
+     * Returns the most recent <em>act.patientClinicalEvent</em> for the
+     * specified patient.
+     *
+     * @param patient the patient
+     * @return the corresponding <em>act.patientClinicalEvent</em> or
+     *         <tt>null</tt> if none is found. The event may be
+     *         <em>IN_PROGRESS</em> or <em>COMPLETED</tt>
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Act getEvent(IMObjectReference patient) {
+        ArchetypeQuery query = new ArchetypeQuery(CLINICAL_EVENT,
+                                                  true, true);
+        query.add(new CollectionNodeConstraint("patient").add(
+                new ObjectRefNodeConstraint("entity", patient)));
+        query.add(new NodeSortConstraint(START_TIME, false));
+        query.setMaxResults(1);
+        QueryIterator<Act> iter
+                = new IMObjectQueryIterator<Act>(service, query);
+        return (iter.hasNext()) ? iter.next() : null;
+    }
+
+    /**
      * Returns an <em>act.patientClinicalEvent</em> for the specified patient
      * and date.
      *
      * @param patient the patient
      * @param date    the date
      * @return the corresponding <em>act.patientClinicalEvent</em> or
-     *         <tt>null</tt> if none is found
+     *         <tt>null</tt> if none is found. The event may be
+     *         <em>IN_PROGRESS</em> or <em>COMPLETED</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Act getEvent(Party patient, Date date) {
@@ -195,7 +273,8 @@ public class MedicalRecordRules {
      * @param patient the patient reference
      * @param date    the date
      * @return the corresponding <em>act.patientClinicalEvent</em> or
-     *         <tt>null</tt> if none is found
+     *         <tt>null</tt> if none is found. The event may be
+     *         <em>IN_PROGRESS</em> or <em>COMPLETED</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Act getEvent(IMObjectReference patient, Date date) {
