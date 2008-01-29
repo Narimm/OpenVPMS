@@ -156,7 +156,7 @@ public class MedicalRecordActLinker {
             Date date = DateUtils.truncate(act.getActivityStartTime(),
                                            Calendar.DAY_OF_MONTH);
             if (current != null && !current.equals(date)) {
-                rules.addToEvents(acts, current);
+                rules.addToHistoricalEvents(acts, current);
                 acts.clear();
             }
             current = date;
@@ -164,7 +164,7 @@ public class MedicalRecordActLinker {
             ++count;
         }
         if (!acts.isEmpty()) {
-            rules.addToEvents(acts, current);
+            rules.addToHistoricalEvents(acts, current);
         }
         return count;
     }

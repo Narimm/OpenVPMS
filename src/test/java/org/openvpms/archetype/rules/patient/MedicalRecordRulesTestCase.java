@@ -18,9 +18,11 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -117,9 +119,30 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link MedicalRecordRules#getEvent} method.
+     * Tests the {@link MedicalRecordRules#getEvent(IMObjectReference)}
+     * method.
      */
     public void testGetEvent() {
+        Act event1 = createEvent(getDate("2007-1-1"));
+        event1.setStatus(ActStatus.IN_PROGRESS);
+        save(event1);
+        checkEvent(event1);
+
+        Act event2 = createEvent(getDate("2007-1-2"));
+        event2.setStatus(ActStatus.COMPLETED);
+        save(event2);
+        checkEvent(event2);
+
+        Act event3 = createEvent(getDate("2008-1-1"));
+        event3.setStatus(ActStatus.IN_PROGRESS);
+        save(event3);
+        checkEvent(event3);
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#getEvent} method.
+     */
+    public void testGetEventByDate() {
         Date jan1 = getDate("2007-1-1");
         Date jan2 = getDate("2007-1-2");
         Date jan3 = getDate("2007-1-3 10:43:55");
@@ -172,12 +195,58 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         save(event1);
         rules.addToEvents(acts, date);
 
-        event1 = (Act) get(event1);
+        event1 = rules.getEvent(patient, date);
         checkContains(event1, med1, med2);
 
         Act event2 = rules.getEvent(patient2, date);
         assertNotNull(event2);
         checkContains(event2, med3, med4);
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#addToHistoricalEvents} method.
+     */
+    public void testAddToHistoricalEvents() {
+        Date eventDate1 = getDate("2007-04-05");
+        Date eventDate2 = getDate("2007-07-01");
+        Date eventDate3 = getDate("2007-08-01");
+        Act med1 = createMedication(patient);
+        Act med2 = createMedication(patient);
+        Act med3 = createMedication(patient);
+
+        Date medDate1 = getDate("2007-04-04"); // eventDate1-1
+        med1.setActivityStartTime(medDate1);
+        save(med1);
+
+        med2.setActivityStartTime(eventDate2);
+        save(med2);
+
+        med3.setActivityStartTime(eventDate3);
+        save(med3);
+
+        Act event1 = createEvent(eventDate1);
+        save(event1);
+
+        Act event2 = createEvent(eventDate2);
+        save(event2);
+
+        Act event3 = createEvent(eventDate3);
+        save(event3);
+
+        rules.addToHistoricalEvents(Arrays.asList(med1), eventDate1);
+        rules.addToHistoricalEvents(Arrays.asList(med2), eventDate2);
+        rules.addToHistoricalEvents(Arrays.asList(med3), eventDate3);
+
+        event1 = rules.getEvent(patient, eventDate1);
+        checkContains(event1, med1);
+
+        event2 = rules.getEvent(patient, eventDate2);
+        assertNotNull(event2);
+        checkContains(event2, med2);
+
+        event3 = rules.getEvent(patient, eventDate3);
+        assertNotNull(event3);
+        checkContains(event3, med3);
     }
 
     /**
@@ -268,6 +337,20 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Act act = (Act) create(shortName);
         assertNotNull(act);
         return act;
+    }
+
+    /**
+     * Verifies that the correct event is returned.
+     *
+     * @param expected the expected event. May be <tt>null</tt>
+     */
+    private void checkEvent(Act expected) {
+        Act event = rules.getEvent(patient);
+        if (expected == null) {
+            assertNull(event);
+        } else {
+            assertEquals(expected, event);
+        }
     }
 
     /**
