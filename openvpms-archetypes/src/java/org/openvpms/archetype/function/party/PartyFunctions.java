@@ -18,10 +18,6 @@
 
 package org.openvpms.archetype.function.party;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Set;
-
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
@@ -35,6 +31,10 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Set;
 
 
 /**
