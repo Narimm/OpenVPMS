@@ -261,7 +261,7 @@
             <property name="width" value="700px"/>
             <property name="height" value="250px"/>
             <property name="font">
-                <font size="7pt"/>
+                <font size="8pt"/>
             </property>
         </properties>
     </style>
@@ -696,7 +696,7 @@
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="font">
-                <font size="7pt">
+                <font size="8pt">
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
@@ -985,7 +985,7 @@
            type="nextapp.echo2.app.Label">
         <properties>
             <property name="font">
-                <font size="7pt" bold="true">
+                <font size="8pt" bold="true">
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
@@ -1035,7 +1035,7 @@
            type="echopointng.ButtonEx">
         <properties>
             <property name="font">
-                <font size="7pt" bold="true">
+                <font size="8pt" bold="true">
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
@@ -1223,7 +1223,7 @@
            type="echopointng.ButtonEx">
         <properties>
             <property name="font">
-                <font size="7pt" underline="true">
+                <font size="8pt" underline="true">
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
@@ -1710,7 +1710,7 @@
            type="nextapp.echo2.app.list.AbstractListComponent">
         <properties>
             <property name="font">
-                <font size="7pt">
+                <font size="8pt">
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
@@ -1764,7 +1764,7 @@
            type="nextapp.echo2.app.Table">
         <properties>
             <property name="font">
-                <font size="7pt"/>
+                <font size="8pt"/>
             </property>
         </properties>
     </style>
@@ -1791,7 +1791,7 @@
            type="org.openvpms.web.component.table.KeyTable">
         <properties>
             <property name="font">
-                <font size="7pt"/>
+                <font size="8pt"/>
             </property>
         </properties>
     </style>
@@ -1813,7 +1813,7 @@
            type="echopointng.GroupBox">
         <properties>
             <property name="font">
-                <font size="7pt">
+                <font size="8pt">
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
@@ -1858,7 +1858,7 @@
     <style name="default-1024x768" type="nextapp.echo2.app.CheckBox">
         <properties>
             <property name="font">
-                <font size="7pt">
+                <font size="8pt">
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
@@ -1895,7 +1895,7 @@
            type="nextapp.echo2.app.Label">
         <properties>
             <property name="font">
-                <font size="7pt">
+                <font size="8pt">
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
@@ -1928,7 +1928,7 @@
            base-name="small">
         <properties>
             <property name="font">
-                <font size="6pt">
+                <font size="7pt">
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
@@ -1969,7 +1969,7 @@
            type="nextapp.echo2.app.Label">
         <properties>
             <property name="font">
-                <font size="7pt" bold="true">
+                <font size="8pt" bold="true">
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
@@ -2137,7 +2137,7 @@
            type="nextapp.echo2.app.text.TextComponent">
         <properties>
             <property name="font">
-                <font size="7pt">
+                <font size="8pt">
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
