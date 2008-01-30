@@ -79,7 +79,7 @@
     <style name="MainPane" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="200px"/>
+            <property name="separatorPosition" value="230px"/>
             <property name="background" value="#339933"/>
         </properties>
     </style>
@@ -507,7 +507,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#ffffff"/>
-                        <property name="insets" value="8px 2px"/>
+                        <property name="insets" value="8px 1px"/>
                         <!-- white -->
                     </properties>
                 </layout-data>
@@ -521,7 +521,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#FFCCCC"/>
-                        <property name="insets" value="8px 2px"/>
+                        <property name="insets" value="8px 1px"/>
                         <!-- pale red -->
                     </properties>
                 </layout-data>
@@ -535,7 +535,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#CCFFFF"/>
-                        <property name="insets" value="8px 2px"/>
+                        <property name="insets" value="8px 1px"/>
                         <!-- pale blue -->
                     </properties>
                 </layout-data>
@@ -549,7 +549,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#CC99FF"/>
-                        <property name="insets" value="8px 2px"/>
+                        <property name="insets" value="8px 1px"/>
                         <!-- pale dull violet -->
                     </properties>
                 </layout-data>
@@ -563,7 +563,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#CCFFCC"/>
-                        <property name="insets" value="8px 2px"/>
+                        <property name="insets" value="8px 1px"/>
                         <!-- pale green -->
                     </properties>
                 </layout-data>
@@ -753,8 +753,11 @@
         <properties>
             <property name="closable" value="true"/>
             <property name="width" value="900px"/>
-            <property name="height" value="600px"/>
+            <property name="height" value="650px"/>
             <property name="resizable" value="true"/>
+            <property name="font">
+                <font size="9pt"/>
+            </property>
         </properties>
     </style>
 
@@ -763,6 +766,9 @@
         <properties>
             <property name="width" value="800px"/>
             <property name="height" value="550px"/>
+            <property name="font">
+                <font size="8pt"/>
+            </property>
         </properties>
     </style>
 
@@ -771,6 +777,9 @@
         <properties>
             <property name="width" value="680px"/>
             <property name="height" value="380px"/>
+            <property name="font">
+                <font size="6pt"/>
+            </property>
         </properties>
     </style>
 
@@ -964,7 +973,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 2px"/>
+                        <property name="insets" value="8px 1px"/>
                         <property name="background" value="#afafef"/>
                     </properties>
                 </layout-data>
@@ -1014,7 +1023,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 2px"/>
+                        <property name="insets" value="8px 1px"/>
                         <property name="background" value="#afafef"/>
                     </properties>
                 </layout-data>
@@ -1049,7 +1058,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 2px"/>
+                        <property name="insets" value="8px 1px"/>
                         <property name="background" value="#d1d1d1"/>
                     </properties>
                 </layout-data>
@@ -1062,7 +1071,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="insets" value="8px 2px"/>
+                        <property name="insets" value="8px 1px"/>
                         <property name="background" value="#ffffff"/>
                     </properties>
                 </layout-data>
