@@ -25,7 +25,9 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -74,25 +76,49 @@ public class IMObjectCopier {
     }
 
     /**
+     * Copy an object, returning a list containing the copy, and any copied
+     * child references.
+     *
+     * @param object the object to copy
+     * @return a copy of <tt>object</tt>, and any copied child references.
+     *         The copy of <tt>object</tt> is the first element in the returned
+     *         list
+     */
+    public List<IMObject> apply(IMObject object) {
+        List<IMObject> result = new ArrayList<IMObject>();
+        references = new HashMap<IMObjectReference, IMObjectReference>();
+        IMObject target = apply(object, result, false);
+        result.add(0, target);
+        return result;
+    }
+
+    /**
      * Copy an object.
      *
      * @param object the object to copy.
      * @return a copy of <tt>object</tt>
+     * @deprecated this saves child objects, as it processes. If the copy fails,
+     *             child objects are not removed. Use {@link #apply} instead.
      */
+    @Deprecated
     public IMObject copy(IMObject object) {
         references = new HashMap<IMObjectReference, IMObjectReference>();
-        return apply(object);
+        List<IMObject> children = new ArrayList<IMObject>();
+        return apply(object, children, true);
     }
 
     /**
      * Apply the copier to an object, copying it or returning it unchanged, as
      * determined by the {@link IMObjectCopyHandler}.
      *
-     * @param source the source object
+     * @param source   the source object
+     * @param children a list of child objects created during copying
+     * @param save     determines if child objects should be saved
      * @return a copy of <tt>source</tt> if the handler indicates it should
      *         be copied; otherwise returns <tt>source</tt> unchanged
      */
-    protected IMObject apply(IMObject source) {
+    protected IMObject apply(IMObject source, List<IMObject> children,
+                             boolean save) {
         IMObject target = handler.getObject(source, service);
         if (target != null) {
             // cache the references to avoid copying the same object twice
@@ -100,7 +126,7 @@ public class IMObjectCopier {
                            target.getObjectReference());
 
             if (target != source) {
-                doCopy(source, target);
+                doCopy(source, target, children, save);
             }
         }
         return target;
@@ -109,10 +135,13 @@ public class IMObjectCopier {
     /**
      * Performs a copy of an object.
      *
-     * @param source the object to copy
-     * @param target the target to copy to
+     * @param source   the object to copy
+     * @param target   the target to copy to
+     * @param children a list of child objects created during copying
+     * @param save     determines if child objects should be saved
      */
-    protected void doCopy(IMObject source, IMObject target) {
+    protected void doCopy(IMObject source, IMObject target,
+                          List<IMObject> children, boolean save) {
         ArchetypeDescriptor sourceType
                 = DescriptorHelper.getArchetypeDescriptor(source, service);
         ArchetypeDescriptor targetType
@@ -127,7 +156,7 @@ public class IMObjectCopier {
                     IMObjectReference ref
                             = (IMObjectReference) sourceDesc.getValue(source);
                     if (ref != null) {
-                        ref = copyReference(ref);
+                        ref = copyReference(ref, children, save);
                         sourceDesc.setValue(target, ref);
                     }
                 } else if (!sourceDesc.isCollection()) {
@@ -136,7 +165,7 @@ public class IMObjectCopier {
                     for (IMObject child : sourceDesc.getChildren(source)) {
                         IMObject value;
                         if (sourceDesc.isParentChild()) {
-                            value = apply(child);
+                            value = apply(child, children, save);
                         } else {
                             value = child;
                         }
@@ -154,18 +183,25 @@ public class IMObjectCopier {
      * reference.
      *
      * @param reference the reference
+     * @param children  a list of child objects created during copying
+     * @param save      determines if child objects should be saved
      * @return a new reference, or one from <tt>references</tt> if the
      *         reference has already been copied
      */
-    private IMObjectReference copyReference(IMObjectReference reference) {
+    private IMObjectReference copyReference(IMObjectReference reference,
+                                            List<IMObject> children,
+                                            boolean save) {
         IMObjectReference result = references.get(reference);
         if (result == null) {
             IMObject original = ArchetypeQueryHelper.getByObjectReference(
                     service, reference);
-            IMObject object = apply(original);
+            IMObject object = apply(original, children, save);
             if (object != original && object != null) {
-                // copied, so save it
-                service.save(object);
+                // child was copied
+                children.add(object);
+                if (save) {
+                    service.save(object);
+                }
             }
             if (object != null) {
                 result = object.getObjectReference();

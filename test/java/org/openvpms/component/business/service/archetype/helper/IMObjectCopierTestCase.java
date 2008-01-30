@@ -19,9 +19,13 @@
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+import java.util.List;
 
 
 /**
@@ -34,8 +38,61 @@ public class IMObjectCopierTestCase
         extends AbstractDependencyInjectionSpringContextTests {
 
     /**
+     * Tests the {@link IMObjectCopier#apply method.
+     */
+    public void testApply() {
+        IMObjectCopier copier
+                = new IMObjectCopier(new DefaultIMObjectCopyHandler());
+        IMObjectBean bean = createBean("party.animalpet");
+        bean.setValue("name", "Fido");
+
+        List<IMObject> objects = copier.apply(bean.getObject());
+        assertEquals(1, objects.size());
+        IMObject copy = objects.get(0);
+        assertTrue(copy != bean.getObject());
+        assertEquals("Fido", copy.getName());
+    }
+
+    /**
+     * Verifies that child objects are copied.
+     */
+    public void testCopyChildren() {
+        IMObjectCopier copier
+                = new IMObjectCopier(new DefaultIMObjectCopyHandler());
+        Party party = (Party) create("party.customerperson");
+        IMObjectBean bean = new IMObjectBean(party);
+        bean.setValue("title", "MR");
+        bean.setValue("firstName", "Foo");
+        bean.setValue("lastName", "Bar");
+        bean.save();
+
+        Participation participation
+                = (Participation) create("participation.customer");
+        participation.setEntity(party.getObjectReference());
+
+        // copy the participation and its child party.customerperson
+        List<IMObject> objects = copier.apply(participation);
+
+        // objects should contain a participation and party
+        assertEquals(2, objects.size());
+        assertTrue(TypeHelper.isA(objects.get(0), "participation.customer"));
+        assertTrue(TypeHelper.isA(objects.get(1), "party.customerperson"));
+
+        // make sure both objects were copied
+        Participation  participationCopy = (Participation) objects.get(0);
+        Party partyCopy = (Party) objects.get(1);
+        assertTrue(participationCopy != participation);
+        assertTrue(partyCopy != party);
+
+        // verify the participation references the copy
+        assertEquals(partyCopy.getObjectReference(),
+                     participationCopy.getEntity());
+    }
+
+    /**
      * Tests copying.
      */
+    @SuppressWarnings({"deprecation"})
     public void testCopy() {
         IMObjectCopier copier
                 = new IMObjectCopier(new DefaultIMObjectCopyHandler());
@@ -60,17 +117,27 @@ public class IMObjectCopierTestCase
     }
 
     /**
+     * Helper to create an object.
+     *
+     * @param shortName the archetype short name
+     * @return the new object
+     */
+    private IMObject create(String shortName) {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        IMObject object = service.create(shortName);
+        assertNotNull(object);
+        return object;
+    }
+
+    /**
      * Helper to create an object and wrap it in an {@link IMObjectBean}.
      *
      * @param shortName the archetype short name
      * @return the bean wrapping an instance of <code>shortName</code>.
      */
     private IMObjectBean createBean(String shortName) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        IMObject object = service.create(shortName);
-        assertNotNull(object);
-        return new IMObjectBean(object);
+        return new IMObjectBean(create(shortName));
     }
 
 }
