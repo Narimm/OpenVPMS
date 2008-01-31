@@ -23,14 +23,14 @@
   </bean>
 
   <!-- Configure CacheManager from specified config location -->
-  <bean id="cacheManager" 
+  <bean id="cacheManager"
     class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
     <property name="configLocation">
       <value>classpath:org/openvpms/tools/data/loader/ehcache.xml</value>
     </property>
   </bean>
-    
-  <bean id="linkIdCache" 
+
+  <bean id="linkIdCache"
     class="org.springframework.cache.ehcache.EhCacheFactoryBean">
     <property name="cacheManager"><ref local="cacheManager"/></property>
     <property name="diskPersistent"><value>true</value></property>
@@ -38,9 +38,9 @@
     <property name="maxElementsInMemory"><value>40000</value></property>
     <property name="overflowToDisk"><value>true</value></property>
     <property name="eternal"><value>true</value></property>
-  </bean>  
-    
-  <bean id="idCache" 
+  </bean>
+
+  <bean id="idCache"
     class="org.springframework.cache.ehcache.EhCacheFactoryBean">
     <property name="cacheManager"><ref local="cacheManager"/></property>
     <property name="cacheName"><value>idCache</value></property>
@@ -48,9 +48,9 @@
     <property name="maxElementsInMemory"><value>40000</value></property>
     <property name="overflowToDisk"><value>true</value></property>
     <property name="eternal"><value>true</value></property>
-  </bean>  
-  
-  <bean id="unprocessedElementCache" 
+  </bean>
+
+  <bean id="unprocessedElementCache"
     class="org.springframework.cache.ehcache.EhCacheFactoryBean">
     <property name="cacheManager"><ref local="cacheManager"/></property>
     <property name="cacheName"><value>unprocessedElementCache</value></property>
@@ -58,11 +58,6 @@
     <property name="maxElementsInMemory"><value>40000</value></property>
     <property name="overflowToDisk"><value>true</value></property>
     <property name="eternal"><value>true</value></property>
-  </bean>  
-  
-  <!--  Entity Interceptor Bean for Hibernate -->
-  <bean id="entityInterceptor"
-    class="org.openvpms.component.system.service.hibernate.EntityInterceptor">
   </bean>
 
   <!--  Hibernate session factory -->
@@ -70,9 +65,6 @@
     class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
     <property name="dataSource">
       <ref local="dataSource" />
-    </property>
-    <property name="entityInterceptor">
-      <ref local="entityInterceptor" />
     </property>
     <property name="hibernateProperties">
       <props>
@@ -152,11 +144,18 @@
     </property>
   </bean>
 
+  <bean id="txManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+    <property name="sessionFactory" ref="sessionFactory" />
+  </bean>
+
   <!--  The IMObject DAO bean -->
   <bean id="imObjectDao"
-    class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
+        class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
     <property name="sessionFactory">
-      <ref local="sessionFactory" />
+      <ref local="sessionFactory"/>
+    </property>
+    <property name="transactionManager">
+      <ref local="txManager"/>
     </property>
   </bean>
 
@@ -183,11 +182,8 @@
     <property name="dao">
       <ref local="imObjectDao" />
     </property>
-    <property name="entityInterceptor">
-      <ref local="entityInterceptor" />
-    </property>
   </bean>
-  
+
   <!--  Instantiate the archetype service helper bean and inject their dependencies -->
   <bean id="archetypeServiceHelper"
     class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
@@ -203,5 +199,5 @@
       </props>
     </constructor-arg>
   </bean>
-  
+
 </beans>

@@ -23,19 +23,11 @@
   </bean>
 
 
-  <!--  Entity Interceptor Bean for Hibernate -->
-  <bean id="entityInterceptor"
-    class="org.openvpms.component.system.service.hibernate.EntityInterceptor">
-  </bean>
-
   <!--  Hibernate session factory -->
   <bean id="sessionFactory"
     class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
     <property name="dataSource">
       <ref local="mySQLDataSource" />
-    </property>
-    <property name="entityInterceptor">
-      <ref local="entityInterceptor" />
     </property>
     <property name="hibernateProperties">
       <props>
@@ -112,14 +104,20 @@
     </property>
   </bean>
 
-  <!--  The IMObject DAO bean -->
-  <bean id="imObjectDao"
-    class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
-    <property name="sessionFactory">
-      <ref local="sessionFactory" />
-    </property>
-  </bean>
+   <bean id="txManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
 
+    <!--  The IMObject DAO bean -->
+    <bean id="imObjectDao"
+          class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
+        <property name="sessionFactory">
+            <ref local="sessionFactory"/>
+        </property>
+        <property name="transactionManager">
+            <ref local="txManager"/>
+        </property>
+    </bean>
 
   <!--  The AuditRecord DAO bean -->
   <bean id="auditDao"
@@ -150,9 +148,6 @@
     </constructor-arg>
     <property name="dao">
       <ref local="imObjectDao" />
-    </property>
-    <property name="entityInterceptor">
-      <ref local="entityInterceptor" />
     </property>
   </bean>
   

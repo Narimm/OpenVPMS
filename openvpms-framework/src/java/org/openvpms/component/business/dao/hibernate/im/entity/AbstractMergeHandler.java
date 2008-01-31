@@ -106,24 +106,30 @@ abstract class AbstractMergeHandler implements MergeHandler {
     }
 
     /**
-      * Updates the target object with the identifier and version of the source.
-      *
-      * @param target the object to update
-      * @param source the object to update from
-      */
-     private void updateId(IMObject target, IMObject source) {
-         if (target.getUid() != source.getUid()) {
-             target.setUid(source.getUid());
-         }
-         if (target.getVersion() != source.getVersion()) {
-             target.setVersion(source.getVersion());
-         }
-     }
+     * Updates the target object with the identifier and version of the source.
+     *
+     * @param target the object to update
+     * @param source the object to update from
+     */
+    private void updateId(IMObject target, IMObject source) {
+        if (target.getUid() != source.getUid()) {
+            target.setUid(source.getUid());
+        }
+        if (target.getVersion() < source.getVersion()) {
+            target.setVersion(source.getVersion());
+        }
+    }
 
+    /**
+     * Helper to return a map of {@link IMObject}s keyed by reference.
+     *
+     * @param objects the objects
+     * @return the objects keyed by reference
+     */
     private <T extends IMObject>Map<IMObjectReference, T> getReferenceMap(
-            Collection<T> sources) {
+            Collection<T> objects) {
         Map<IMObjectReference, T> map = new HashMap<IMObjectReference, T>();
-        for (T source : sources) {
+        for (T source : objects) {
             map.put(source.getObjectReference(), source);
         }
         return map;

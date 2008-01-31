@@ -18,13 +18,8 @@
 
 package org.openvpms.component.business.service.archetype;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
@@ -48,17 +43,6 @@ import java.util.List;
  */
 public class ArchetypeServiceDescriptorTestCase
         extends AbstractDependencyInjectionSpringContextTests {
-
-    /**
-     * static to hold all session
-     */
-    public static final ThreadLocal<Session> session
-            = new ThreadLocal<Session>();
-
-    /**
-     * A Hibernate session factory.
-     */
-    private SessionFactory sessionFactory;
 
     /**
      * Holds a reference to the entity service
@@ -382,19 +366,8 @@ public class ArchetypeServiceDescriptorTestCase
     */
     @Override
     protected void onSetUp() throws Exception {
-        super.onSetUp();
-
-        this.service = (ArchetypeService) applicationContext.getBean(
+        service = (ArchetypeService) applicationContext.getBean(
                 "archetypeService");
-
-        // create the hibernate session factory
-        Configuration config = new Configuration();
-        config.addClass(ArchetypeDescriptor.class);
-        config.addClass(NodeDescriptor.class);
-        config.addClass(AssertionDescriptor.class);
-        config.addClass(ActionTypeDescriptor.class);
-        config.addClass(AssertionTypeDescriptor.class);
-        this.sessionFactory = config.buildSessionFactory();
     }
 
     /**
@@ -467,27 +440,5 @@ public class ArchetypeServiceDescriptorTestCase
         return desc;
     }
 
-    /**
-     * @return Returns the sessionFactory.
-     */
-    protected SessionFactory getSessionFactory() {
-        return sessionFactory;
-    }
-
-    /**
-     * Get the current hibernate session
-     *
-     * @return Session
-     * @throws Exception
-     */
-    public Session currentSession() throws Exception {
-        Session s = session.get();
-        // Open a new Session, if this Thread has none yet
-        if (s == null) {
-            s = getSessionFactory().openSession();
-            session.set(s);
-        }
-        return s;
-    }
 
 }

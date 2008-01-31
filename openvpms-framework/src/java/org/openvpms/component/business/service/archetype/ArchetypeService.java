@@ -46,7 +46,8 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.service.hibernate.EntityInterceptor;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,13 +90,6 @@ public class ArchetypeService implements IArchetypeService {
     private IStatelessRuleEngineInvocation ruleEngine;
 
     /**
-     * The entity interceptor that is used to intercept calls hibernate
-     * calls
-     */
-    private EntityInterceptor entityInterceptor;
-
-
-    /**
      * Control characters, excluding <em>'\n', '\r', '\t'</em>.
      */
     private static final Pattern CNTRL_CHARS
@@ -131,25 +125,6 @@ public class ArchetypeService implements IArchetypeService {
      */
     public void setDao(IMObjectDAO dao) {
         this.dao = dao;
-    }
-
-    /**
-     * Returns the entity interceptor.
-     *
-     * @return the entity interceptor
-     */
-    public EntityInterceptor getEntityInterceptor() {
-        return entityInterceptor;
-    }
-
-    /**
-     * Sets the entity interceptor.
-     *
-     * @param entityInterceptor the entity interceptor
-     */
-    public void setEntityInterceptor(EntityInterceptor entityInterceptor) {
-        this.entityInterceptor = entityInterceptor;
-        entityInterceptor.setDescriptorCache(dCache);
     }
 
     /**
@@ -549,22 +524,9 @@ public class ArchetypeService implements IArchetypeService {
             validateObject(entity);
         try {
             dao.save(entity);
-
-            // a quick fix to the archetype descriptor update problem
-            // couldn't get the hibernate interceptors working
-            // TODO Review the interceptors
-            if (entity instanceof ArchetypeDescriptor) {
-                if (dCache != null) {
-                    ArchetypeDescriptor descriptor
-                            = (ArchetypeDescriptor) entity;
-                    dCache.addArchetypeDescriptor(descriptor, true);
-                }
-            } else if (entity instanceof AssertionTypeDescriptor) {
-                if (dCache != null) {
-                    AssertionTypeDescriptor descriptor
-                            = (AssertionTypeDescriptor) entity;
-                    dCache.addAssertionTypeDescriptor(descriptor, true);
-                }
+            if (entity instanceof ArchetypeDescriptor
+                    || entity instanceof AssertionTypeDescriptor) {
+                updateCache(entity);
             }
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
@@ -592,7 +554,6 @@ public class ArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException if an object can't be saved
      * @throws ValidationException       if an object can't be validated
      */
-    @Deprecated
     public void save(Collection<IMObject> objects, boolean validate) {
         if (dao == null) {
             throw new ArchetypeServiceException(
@@ -1082,6 +1043,48 @@ public class ArchetypeService implements IArchetypeService {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Updates the descriptor cache. If a transaction is in progress, the
+     * cache will only be updated on transaction commit. This means that the
+     * descriptor will only be available via the <em>get*Descriptor</em> methods
+     * on successful commit.
+     *
+     * @param object the object to add to the cache
+     */
+    private void updateCache(final IMObject object) {
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            // update the cache when the transaction commits
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronizationAdapter() {
+                        @Override
+                        public void afterCompletion(int status) {
+                            if (status == STATUS_COMMITTED) {
+                                addToCache(object);
+                            }
+                        }
+                    });
+        } else {
+            addToCache(object);
+        }
+    }
+
+    /**
+     * Adds a descriptor to the cache.
+     *
+     * @param object the object to add to the cache
+     */
+    private void addToCache(IMObject object) {
+        if (object instanceof ArchetypeDescriptor) {
+            ArchetypeDescriptor descriptor
+                    = (ArchetypeDescriptor) object;
+            dCache.addArchetypeDescriptor(descriptor, true);
+        } else if (object instanceof AssertionTypeDescriptor) {
+            AssertionTypeDescriptor descriptor
+                    = (AssertionTypeDescriptor) object;
+            dCache.addAssertionTypeDescriptor(descriptor, true);
         }
     }
 

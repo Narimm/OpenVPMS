@@ -105,7 +105,8 @@ public class ArchetypeServiceSortTestCase extends
                 continue;
             }
             rhs = object;
-            if (lhs.getName().compareTo(rhs.getName()) == 1) {
+            if (lhs.getName() != null && rhs.getName() != null
+                    && lhs.getName().compareTo(rhs.getName()) == 1) {
                 fail("The objects are not in ascending order lhs="
                         + lhs.getName() + " rhs=" + rhs.getName());
             }
@@ -134,7 +135,8 @@ public class ArchetypeServiceSortTestCase extends
                 continue;
             }
             rhs = object;
-            if (lhs.getName().compareTo(rhs.getName()) == -1) {
+            if (lhs.getName() != null && rhs.getName() != null
+                    && lhs.getName().compareTo(rhs.getName()) == -1) {
                 fail("The objects are not in descending order lhs="
                         + lhs.getName() + " rhs=" + rhs.getName());
             }
