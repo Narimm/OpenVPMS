@@ -18,14 +18,21 @@
 
 package org.openvpms.component.business.service.ruleengine;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.Date;
 
@@ -43,9 +50,14 @@ public class DroolsRuleEngineTestCase
         extends AbstractDependencyInjectionSpringContextTests {
 
     /**
-     * Holds a reference to the entity service.
+     * The archetype service.
      */
     private IArchetypeService archetype;
+
+    /**
+     * The transaction manager.
+     */
+    private PlatformTransactionManager txnManager;
 
 
     /**
@@ -99,6 +111,63 @@ public class DroolsRuleEngineTestCase
         archetype.save(personB);
     }
 
+    /**
+     * Verifies that when a rule throws an exception, it is propagated, and
+     * no changes are saved.
+     * This requires that:
+     * <ul>
+     * <li><em>the archetypeService.save.act.simple.before</em> rule throws an
+     * IllegalStateException when the act status is "EXCEPTION_BEFORE"
+     * <li><em>the archetypeService.save.act.simple.after</em> rule throws an
+     * IllegalStateException when the act status is "EXCEPTION_AFTER"
+     * <li>both rules set the act reason to the act status when they throw.
+     * </ul>
+     */
+    public void testException() {
+        Act act = (Act) archetype.create("act.simple");
+        checkException(act, null);
+        checkException(act, "EXCEPTION_BEFORE");
+        checkException(act, "EXCEPTION_AFTER");
+    }
+
+    /**
+     * Verifies that if a rule throws an exception, all changes are rolled
+     * back.
+     */
+    public void testTransactionRollbackOnException() {
+        Party person = createPerson("MR", "T", "Anderson");
+        Act act = (Act) archetype.create("act.simple");
+        archetype.save(person);
+        archetype.save(act);
+
+        // start a new transaction
+        TransactionStatus status = txnManager.getTransaction(
+                new DefaultTransactionDefinition());
+
+        // change some details
+        person.getDetails().put("lastName", "Foo");
+
+        archetype.save(person);
+
+        try {
+            // make the act.simple.after save rule throw an exception
+            act.setStatus("EXCEPTION_AFTER");
+            archetype.save(act);
+            fail("Expected save to fail");
+        } catch (Exception expected) {
+        }
+        try {
+            txnManager.commit(status);
+            fail("Expected commit to fail");
+        } catch (TransactionException expected) {
+            // verify that no changes are made persistent
+            person = reload(person);
+            act = reload(act);
+            assertEquals(person.getName(), "Anderson,T");
+            assertNull(act.getStatus());
+        }
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -117,8 +186,61 @@ public class DroolsRuleEngineTestCase
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        this.archetype = (IArchetypeService) applicationContext
-                .getBean("archetypeService");
+        archetype = (IArchetypeService) applicationContext.getBean(
+                "archetypeService");
+        txnManager = (PlatformTransactionManager) applicationContext.getBean(
+                "txManager");
+    }
+
+    /**
+     * Tests the behaviour of rules throwing exceptions.
+     *
+     * @param act the act
+     * @param status the act status
+     * @see #testException()
+     */
+    private void checkException(Act act, String status) {
+        long version = act.getVersion();
+        try {
+            act.setStatus(status);
+            archetype.save(act);
+            if (status != null) {
+                fail("Expected save of act.simple to fail");
+            }
+        } catch (Throwable exception) {
+            if (status == null) {
+                fail("Expected save of act.simple to succeed");
+            } else {
+                // verify that the correct rule threw the exception
+                assertEquals(status, act.getReason());
+
+                // verify that an IllegalStateException is the root cause
+                while (exception.getCause() != null) {
+                    exception = exception.getCause();
+                }
+                if (!(exception instanceof IllegalStateException)) {
+                    fail("Expected rule to throw IllegalStateException");
+                }
+
+                if (!act.isNew()) {
+                    // verify that the changes weren't saved
+                    Act original = reload(act);
+                    assertEquals(version, original.getVersion());
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper to reload an object.
+     *
+     * @param object the object to reload
+     * @return the reloaded object
+     */
+    @SuppressWarnings("unchecked")
+    private <T extends IMObject> T reload(T object) {
+        return (T) ArchetypeQueryHelper.getByObjectReference(
+                archetype, object.getObjectReference());
     }
 
     /**
@@ -189,11 +311,9 @@ public class DroolsRuleEngineTestCase
                 shortName);
 
         rel.setActiveStartTime(new Date());
-        rel.setSequence(1);
         rel.setSource(source.getObjectReference());
         rel.setTarget(target.getObjectReference());
 
         return rel;
-
     }
 }

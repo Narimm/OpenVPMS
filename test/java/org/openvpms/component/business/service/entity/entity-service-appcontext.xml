@@ -100,14 +100,21 @@
     </property>
   </bean>
 
-  <!--  The IMObject DAO bean -->
-  <bean id="imObjectDao"
-    class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
-    <property name="sessionFactory">
-      <ref local="sessionFactory" />
-    </property>
-  </bean>
+   <bean id="txManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
 
+    <!--  The IMObject DAO bean -->
+    <bean id="imObjectDao"
+          class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
+        <property name="sessionFactory">
+            <ref local="sessionFactory"/>
+        </property>
+        <property name="transactionManager">
+            <ref local="txManager"/>
+        </property>
+    </bean>
+    
   <!--  The Archetype Descriptor Cache -->
   <bean id="archetypeDescriptorCache"
     class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">

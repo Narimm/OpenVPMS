@@ -28,7 +28,6 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StaleObjectStateException;
-import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
@@ -38,26 +37,33 @@ import org.openvpms.component.business.dao.im.common.ResultCollectorFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
- * This is an implementation of the IMObject DAO for hibernate. It uses the
- * Spring Framework's template classes.
+ * This is an implementation of the IMObject DAO for hibernate.
+ * It participaties
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public class IMObjectDAOHibernate extends HibernateDaoSupport
         implements IMObjectDAO {
+
     /**
      * The result collector factory.
      */
@@ -70,27 +76,25 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             = Logger.getLogger(IMObjectDAOHibernate.class);
 
     /**
+     * Transaction helper.
+     */
+    private TransactionTemplate txnTemplate;
+
+
+    /**
      * Default constructor.
      */
     public IMObjectDAOHibernate() {
         collectorFactory = new HibernateResultCollectorFactory();
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Sets the transaction manager.
      *
-     * @see org.springframework.orm.hibernate3.support.HibernateDaoSupport#createHibernateTemplate(org.hibernate.SessionFactory)
+     * @param manager the transaction manager
      */
-    @Override
-    protected HibernateTemplate createHibernateTemplate(
-            SessionFactory sessionFactory) {
-        HibernateTemplate template = super
-                .createHibernateTemplate(sessionFactory);
-        template.setCacheQueries(true);
-        //template.setAllowCreate(true);
-        //template.setFlushMode(HibernateTemplate.FLUSH_NEVER);
-
-        return template;
+    public void setTransactionManager(PlatformTransactionManager manager) {
+        txnTemplate = new TransactionTemplate(manager);
     }
 
     /*
@@ -98,65 +102,36 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      *
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#save(org.openvpms.component.business.domain.im.common.IMObject)
      */
-    public void save(IMObject object) {
-        Session session = getHibernateTemplate().getSessionFactory().openSession();
-        Transaction tx = session.beginTransaction();
+    public void save(final IMObject object) {
         try {
-            MergeHandler handler = null;
-            IMObject source = null;
-            if (object.isNew()) {
-                session.saveOrUpdate(object);
-            } else {
-                handler = MergeHandlerFactory.getHandler(object);
-                source = handler.merge(object, session);
-            }
-            tx.commit();
-            if (handler != null) {
-                handler.update(object, source);
-            }
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-
+            update(new HibernateCallback() {
+                public Object doInHibernate(Session session)
+                        throws HibernateException {
+                    save(object, session);
+                    return null;
+                }
+            });
+        } catch (Throwable exception) {
             throw new IMObjectDAOException(FailedToSaveIMObject, exception,
                                            object.getUid());
-        } finally {
-            clearCache();
-            session.close();
         }
     }
 
     /* (non-Javadoc)
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#save(java.util.Collection)
      */
-    public void save(Collection<IMObject> objects) {
-        Session session = getHibernateTemplate().getSessionFactory().openSession();
-        Transaction tx = session.beginTransaction();
-        Map<IMObject, IMObject> merged = new HashMap<IMObject, IMObject>();
+    public void save(final Collection<IMObject> objects) {
         try {
-            for (IMObject object : objects) {
-                MergeHandler handler = MergeHandlerFactory.getHandler(object);
-                merged.put(object, handler.merge(object, session));
-            }
-            tx.commit();
-            for (Map.Entry<IMObject, IMObject> entry : merged.entrySet()) {
-                IMObject target = entry.getKey();
-                IMObject source = entry.getValue();
-                MergeHandler handler = MergeHandlerFactory.getHandler(target);
-                handler.update(target, source);
-            }
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
+            update(new HibernateCallback() {
+                public Object doInHibernate(Session session)
+                        throws HibernateException {
+                    save(objects, session);
+                    return null;
+                }
+            });
+        } catch (Throwable exception) {
             throw new IMObjectDAOException(FailedToSaveCollectionOfObjects,
                                            exception);
-
-        } finally {
-            merged.clear();
-            clearCache();
-            session.close();
         }
     }
 
@@ -165,23 +140,18 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      *
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#delete(org.openvpms.component.business.domain.im.common.IMObject)
      */
-    public void delete(IMObject object) {
-        Session session = getHibernateTemplate().getSessionFactory().openSession();
-        Transaction tx = session.beginTransaction();
+    public void delete(final IMObject object) {
         try {
-            session.delete(object);
-            tx.commit();
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-
+            update(new HibernateCallback() {
+                public Object doInHibernate(Session session)
+                        throws HibernateException {
+                    session.delete(object);
+                    return null;
+                }
+            });
+        } catch (Throwable exception) {
             throw new IMObjectDAOException(FailedToDeleteIMObject, exception,
                                            object.getUid());
-
-        } finally {
-            clearCache();
-            session.close();
         }
     }
 
@@ -192,33 +162,18 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param objects the objects to delete
      * @throws IMObjectDAOException if the request cannot complete
      */
-    public void delete(Collection<IMObject> objects) {
-        Session session = getHibernateTemplate().getSessionFactory().openSession();
-        Transaction tx = session.beginTransaction();
+    public void delete(final Collection<IMObject> objects) {
         try {
-            for (IMObject object : objects) {
-                if (!object.isNew()) {
-                    // detached objects must be reloaded into the current
-                    // session, in order to avoid NonUniqueObjectException
-                    // errors.
-                    object = reload(object, session);
+            update(new HibernateCallback() {
+                public Object doInHibernate(Session session)
+                        throws HibernateException {
+                    delete(objects, session);
+                    return null;
                 }
-                if (object != null) {
-                    session.delete(object);
-                }
-            }
-            tx.commit();
+            });
         } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-
             throw new IMObjectDAOException(FailedToDeleteCollectionOfObjects,
                                            exception);
-
-        } finally {
-            clearCache();
-            session.close();
         }
     }
 
@@ -436,32 +391,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getById(org.openvpms.component.business.domain.archetype.ArchetypeId,
      *      long)
      */
-    public IMObject getById(String clazz, long id) {
+    public IMObject getById(String clazz, final long id) {
         if (StringUtils.isEmpty(clazz)) {
             throw new IMObjectDAOException(ClassNameMustBeSpecified);
         }
         try {
-            StringBuffer queryString = new StringBuffer();
-
-            queryString.append("select entity from ");
-            queryString.append(clazz);
-            queryString.append(" as entity where entity.id = :uid");
-
-            // let's use the session directly
-            Session session = getHibernateTemplate().getSessionFactory()
-                    .openSession();
-            try {
-                Query query = session.createQuery(queryString.toString());
-                query.setParameter("uid", id);
-                List result = query.list();
-                if (result.size() == 0) {
-                    return null;
-                } else {
-                    return (IMObject) result.get(0);
-                }
-            } finally {
-                session.close();
-            }
+            return get(clazz, "id", id);
         } catch (Exception exception) {
             throw new IMObjectDAOException(FailedToFindIMObject, exception);
         }
@@ -478,27 +413,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             throw new IMObjectDAOException(ClassNameMustBeSpecified);
         }
         try {
-            StringBuffer queryString = new StringBuffer();
-
-            queryString.append("select entity from ");
-            queryString.append(clazz);
-            queryString.append(" as entity where entity.linkId = :linkId");
-
-            // let's use the session directly
-            Session session = getHibernateTemplate().getSessionFactory()
-                    .openSession();
-            try {
-                Query query = session.createQuery(queryString.toString());
-                query.setParameter("linkId", linkId);
-                List result = query.list();
-                if (result.size() == 0) {
-                    return null;
-                } else {
-                    return (IMObject) result.get(0);
-                }
-            } finally {
-                session.close();
-            }
+            return get(clazz, "linkId", linkId);
         } catch (Exception exception) {
             throw new IMObjectDAOException(FailedToFindIMObjectReference,
                                            exception);
@@ -531,6 +446,22 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         }
     }
 
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.springframework.orm.hibernate3.support.HibernateDaoSupport#createHibernateTemplate(org.hibernate.SessionFactory)
+    */
+    @Override
+    protected HibernateTemplate createHibernateTemplate(
+            SessionFactory sessionFactory) {
+        HibernateTemplate template
+                = super.createHibernateTemplate(sessionFactory);
+        template.setCacheQueries(true);
+        template.setFlushMode(HibernateTemplate.FLUSH_COMMIT);
+
+        return template;
+    }
+
     /**
      * This method will execute a query and paginate the result set.
      *
@@ -541,58 +472,61 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param maxResults  the number of rows to return
      * @param count       if <code>true</code>
      */
-    private void executeQuery(String queryString, Params params,
-                              ResultCollector collector, int firstResult,
-                              int maxResults, boolean count)
+    private void executeQuery(final String queryString, final Params params,
+                              final ResultCollector collector,
+                              final int firstResult,
+                              final int maxResults, final boolean count)
             throws Exception {
-        Session session = getHibernateTemplate().getSessionFactory().openSession();
-        try {
-            session.setFlushMode(FlushMode.MANUAL);
+        execute(new HibernateCallback() {
 
-            collector.setFirstResult(firstResult);
-            collector.setPageSize(maxResults);
+            public Object doInHibernate(Session session) throws
+                                                         HibernateException {
+//             session.setFlushMode(FlushMode.MANUAL);
+                collector.setFirstResult(firstResult);
+                collector.setPageSize(maxResults);
 
-            if (maxResults == 0 && count) {
-                // only want a count of the results matching the criteria
-                int rowCount = count(queryString, params, session);
-                collector.setTotalResults(rowCount);
-            } else {
-                Query query = session.createQuery(queryString);
-                params.setParameters(query);
-
-                // set the first result
-                if (firstResult != 0) {
-                    query.setFirstResult(firstResult);
-                }
-
-                // set the maximum number of rows
-                if (maxResults != ArchetypeQuery.ALL_RESULTS) {
-                    query.setMaxResults(maxResults);
-                    logger.debug("The maximum number of rows is " + maxResults);
-                }
-
-                query.setCacheable(true);
-
-                List rows = query.list();
-                if (maxResults == ArchetypeQuery.ALL_RESULTS) {
-                    collector.setTotalResults(rows.size());
-                } else if (count) {
+                if (maxResults == 0 && count) {
+                    // only want a count of the results matching the criteria
                     int rowCount = count(queryString, params, session);
-                    if (rowCount < rows.size()) {
-                        // rows deleted since initial query
-                        rowCount = rows.size();
-                    }
                     collector.setTotalResults(rowCount);
                 } else {
-                    collector.setTotalResults(-1);
+                    Query query = session.createQuery(queryString);
+                    params.setParameters(query);
+
+                    // set the first result
+                    if (firstResult != 0) {
+                        query.setFirstResult(firstResult);
+                    }
+
+                    // set the maximum number of rows
+                    if (maxResults != ArchetypeQuery.ALL_RESULTS) {
+                        query.setMaxResults(maxResults);
+                        logger.debug("The maximum number of rows is "
+                                + maxResults);
+                    }
+
+                    query.setCacheable(true);
+
+                    List rows = query.list();
+                    if (maxResults == ArchetypeQuery.ALL_RESULTS) {
+                        collector.setTotalResults(rows.size());
+                    } else if (count) {
+                        int rowCount = count(queryString, params, session);
+                        if (rowCount < rows.size()) {
+                            // rows deleted since initial query
+                            rowCount = rows.size();
+                        }
+                        collector.setTotalResults(rowCount);
+                    } else {
+                        collector.setTotalResults(-1);
+                    }
+                    for (Object object : rows) {
+                        collector.collect(object);
+                    }
                 }
-                for (Object object : rows) {
-                    collector.collect(object);
-                }
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
             }
-        } finally {
-            session.close();
-        }
+        });
     }
 
     /**
@@ -606,50 +540,52 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param count     if <code>true</code> counts the total no. of rows,
      *                  returning it in {@link IPage#getTotalResults()}
      */
-    @SuppressWarnings("unchecked")
-    private void executeNamedQuery(String name, Map<String, Object> params,
-                                   int firstRow, int numOfRows,
-                                   ResultCollector collector,
-                                   boolean count) throws Exception {
-        Session session = getHibernateTemplate().getSessionFactory().openSession();
-        try {
-            session.setFlushMode(FlushMode.MANUAL);
-            Query query = session.getNamedQuery(name);
-            Params p = new Params(params);
-            p.setParameters(query);
+    private void executeNamedQuery(final String name,
+                                   final Map<String, Object> params,
+                                   final int firstRow, final int numOfRows,
+                                   final ResultCollector collector,
+                                   final boolean count) throws Exception {
+        execute(new HibernateCallback() {
+            @SuppressWarnings("unchecked")
+            public Object doInHibernate(Session session)
+                    throws HibernateException {
+                // session.setFlushMode(FlushMode.MANUAL);
+                Query query = session.getNamedQuery(name);
+                Params p = new Params(params);
+                p.setParameters(query);
 
-            // set first row
-            if (firstRow != 0) {
-                query.setFirstResult(firstRow);
-            }
-
-            // set maximum rows
-            if (numOfRows != ArchetypeQuery.ALL_RESULTS) {
-                query.setMaxResults(numOfRows);
-                logger.debug("The maximum number of rows is " + numOfRows);
-            }
-
-            List<Object> rows = query.list();
-            collector.setFirstResult(firstRow);
-            collector.setPageSize(numOfRows);
-            if (numOfRows == ArchetypeQuery.ALL_RESULTS) {
-                collector.setTotalResults(rows.size());
-            } else if (count) {
-                int rowCount = countNamedQuery(name, p, session);
-                if (rowCount < rows.size()) {
-                    // rows deleted since initial query
-                    rowCount = rows.size();
+                // set first row
+                if (firstRow != 0) {
+                    query.setFirstResult(firstRow);
                 }
-                collector.setTotalResults(rowCount);
-            } else {
-                collector.setTotalResults(-1);
+
+                // set maximum rows
+                if (numOfRows != ArchetypeQuery.ALL_RESULTS) {
+                    query.setMaxResults(numOfRows);
+                    logger.debug("The maximum number of rows is " + numOfRows);
+                }
+
+                List<Object> rows = query.list();
+                collector.setFirstResult(firstRow);
+                collector.setPageSize(numOfRows);
+                if (numOfRows == ArchetypeQuery.ALL_RESULTS) {
+                    collector.setTotalResults(rows.size());
+                } else if (count) {
+                    int rowCount = countNamedQuery(name, p, session);
+                    if (rowCount < rows.size()) {
+                        // rows deleted since initial query
+                        rowCount = rows.size();
+                    }
+                    collector.setTotalResults(rowCount);
+                } else {
+                    collector.setTotalResults(-1);
+                }
+                for (Object object : rows) {
+                    collector.collect(object);
+                }
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
             }
-            for (Object object : rows) {
-                collector.collect(object);
-            }
-        } finally {
-            session.close();
-        }
+        });
     }
 
     /**
@@ -701,25 +637,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             }
         }
         return result;
-    }
-
-    /**
-     * Clears the second level cache, to ensure that changes to the database
-     * are reflected in retrieved objects.
-     */
-    @SuppressWarnings("unchecked")
-    private void clearCache() {
-        try {
-            SessionFactory factory = getSessionFactory();
-            factory.evictQueries();
-            Map metaData = factory.getAllClassMetadata();
-            Set<String> entityNames = (Set<String>) metaData.keySet();
-            for (String entityName : entityNames) {
-                factory.evictEntity(entityName);
-            }
-        } catch (Throwable exception) {
-            logger.warn(exception, exception);
-        }
     }
 
     /**
@@ -785,6 +702,185 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         public Object[] getValues() {
             return values;
         }
+    }
+
+    /**
+     * Retrieves an object given its class, identity property name and identity
+     * value.
+     *
+     * @param clazz the object's class
+     * @param name  the identity property name
+     * @param value the identity property value
+     * @return the corresponding object, or <tt>null</tt> if none is found
+     */
+    private IMObject get(String clazz, final String name, final Object value) {
+        final StringBuffer queryString = new StringBuffer();
+
+        queryString.append("select entity from ");
+        queryString.append(clazz);
+        queryString.append(" as entity where entity.");
+        queryString.append(name);
+        queryString.append(" = :");
+        queryString.append(name);
+
+        return (IMObject) execute(new HibernateCallback() {
+            public Object doInHibernate(Session session)
+                    throws HibernateException {
+                Query query = session.createQuery(queryString.toString());
+                query.setParameter(name, value);
+                List result = query.list();
+                if (result.size() == 0) {
+                    return null;
+                } else {
+                    return (IMObject) result.get(0);
+                }
+            }
+        });
+    }
+
+    private void save(IMObject object, Session session) {
+        MergeHandler handler = null;
+        IMObject source = null;
+        if (object.isNew()) {
+            session.saveOrUpdate(object);
+        } else {
+            handler = MergeHandlerFactory.getHandler(object);
+            source = handler.merge(object, session);
+        }
+        if (handler != null) {
+            CommitSync sync = new CommitSync(handler, object, source);
+            TransactionSynchronizationManager.registerSynchronization(sync);
+            // registerFlush(sync, template);
+        }
+    }
+
+    private void save(Collection<IMObject> objects, Session session) {
+        CommitSync sync = new CommitSync();
+        for (IMObject object : objects) {
+            MergeHandler handler = MergeHandlerFactory.getHandler(
+                    object);
+            IMObject source = handler.merge(object, session);
+            sync.add(handler, object, source);
+        }
+        TransactionSynchronizationManager.registerSynchronization(sync);
+        // registerFlush(sync, template);
+    }
+
+    private void delete(Collection<IMObject> objects, Session session) {
+        for (IMObject object : objects) {
+            if (!object.isNew()) {
+                // detached objects must be reloaded into the current
+                // session, in order to avoid NonUniqueObjectException
+                // errors.
+                object = reload(object, session);
+            }
+            if (object != null) {
+                session.delete(object);
+            }
+        }
+    }
+
+    /**
+     * Check whether write operations are allowed on the given Session.
+     * <p>Default implementation throws an InvalidDataAccessApiUsageException
+     * in case of FlushMode.NEVER. Can be overridden in subclasses.
+     *
+     * @param session the current session
+     * @throws InvalidDataAccessApiUsageException
+     *          if write operations are not allowed
+     * @see HibernateTemplate#checkWriteOperationAllowed(Session)
+     */
+    private void checkWriteOperationAllowed(HibernateTemplate template,
+                                            Session session)
+            throws InvalidDataAccessApiUsageException {
+        if (template.isCheckWriteOperations()
+                && template.getFlushMode() != HibernateTemplate.FLUSH_EAGER
+                && FlushMode.MANUAL.equals(session.getFlushMode())) {
+            throw new InvalidDataAccessApiUsageException(
+                    "Write operations are not allowed in read-only mode "
+                            + "(FlushMode.MANUAL) - turn your Session into "
+                            + "FlushMode.AUTO or remove 'readOnly' marker from "
+                            + "transaction definition");
+        }
+    }
+
+    /**
+     * Executes an update within a transaction.
+     *
+     * @param callback the callback to execute
+     * @return the result of the callback
+     */
+    private Object update(final HibernateCallback callback) {
+        final HibernateTemplate template = getHibernateTemplate();
+        return txnTemplate.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                return template.execute(new HibernateCallback() {
+                    public Object doInHibernate(Session session)
+                            throws HibernateException {
+                        checkWriteOperationAllowed(template, session);
+                        return template.execute(callback);
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Executes an hibernate callback.
+     *
+     * @param callback the callback
+     * @return the result of the callback
+     */
+    private Object execute(HibernateCallback callback) {
+        final HibernateTemplate template = getHibernateTemplate();
+        return template.execute(callback);
+    }
+
+    private static class CommitSync extends TransactionSynchronizationAdapter {
+
+        private List<Sync> list = new ArrayList<Sync>();
+
+        public CommitSync() {
+        }
+
+        public CommitSync(MergeHandler handler, IMObject target,
+                          IMObject source) {
+            add(handler, target, source);
+        }
+
+        public void add(MergeHandler handler, IMObject target,
+                        IMObject source) {
+            list.add(new Sync(handler, target, source));
+        }
+
+        @Override
+        public void afterCompletion(int status) {
+            if (status == STATUS_COMMITTED) {
+                for (Sync sync : list) {
+                    sync.sync();
+                }
+            }
+        }
+
+        private static class Sync {
+
+            private final MergeHandler handler;
+            private final IMObject target;
+            private final IMObject source;
+
+            public Sync(MergeHandler handler, IMObject target,
+                        IMObject source) {
+                this.handler = handler;
+                this.target = target;
+                this.source = source;
+            }
+
+            public void sync() {
+                handler.update(target, source);
+            }
+
+        }
+
     }
 
 }
