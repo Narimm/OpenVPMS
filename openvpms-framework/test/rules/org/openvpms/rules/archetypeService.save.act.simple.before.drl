@@ -14,8 +14,24 @@
         </parameter>
         <java:condition>"EXCEPTION_BEFORE".equals(act.getStatus())</java:condition>
         <java:consequence>
-            act.setReason("EXCEPTION_BEFORE");
-            throw new IllegalStateException("For test purposes, can't save act.simple");
+            act.setReason(act.getStatus());
+            throw new IllegalStateException("For test purposes, can't save act when status=" + act.getStatus());
+        </java:consequence>
+    </rule>
+
+    <rule name="Insert a new act in isolated transaction, and throw an exception">
+       <parameter identifier="act">
+        	<java:class>org.openvpms.component.business.domain.im.act.Act</java:class>
+        </parameter>
+        <parameter identifier="service">
+        	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
+        </parameter>
+        <java:condition>"INSERT_NEW_AND_THROW".equals(act.getStatus())</java:condition>
+        <java:consequence>
+            import org.openvpms.component.business.service.ruleengine.ActSimpleRules;
+            act.setReason(act.getStatus());
+            ActSimpleRules.insertNewActInIsolation(act, service);
+            throw new IllegalStateException("For test purposes, can't save act when status=" + act.getStatus());
         </java:consequence>
     </rule>
 

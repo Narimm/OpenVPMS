@@ -19,9 +19,11 @@
 package org.openvpms.component.business.service.ruleengine;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -35,6 +37,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.Date;
+import java.util.Set;
 
 
 /**
@@ -168,6 +171,36 @@ public class DroolsRuleEngineTestCase
         }
     }
 
+    /**
+     * Verifies that a rule can establish its own isolated transaction.
+     * This saves an act.simple which triggers a rule which creates and saves a
+     * new act in a separate transaction, prior to throwing an exception. The
+     * new act should save, but the original act shouldn't.
+     *
+     * @see ActSimpleRules#insertNewActInIsolation
+     */
+    public void testTransactionIsolation() {
+        Act act = (Act) archetype.create("act.simple");
+        try {
+            ActSimpleRules.setTransactionManager(txnManager);
+            act.setStatus("INSERT_NEW_AND_THROW");
+            archetype.save(act);
+            fail("Expected save to throw exception");
+        } catch (Exception expected) {
+        }
+
+        // ensure the act has not been saved as the exception should have rolled
+        // back the transaction
+        assertTrue(act.isNew());
+
+        // verify that there is an associated act that did save
+        Set<ActRelationship> relationships = act.getActRelationships();
+        assertEquals(1, relationships.size());
+        ActRelationship relationship = relationships.iterator().next();
+        Act related = (Act) get(relationship.getSource());
+        assertNotNull(related);
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -195,7 +228,7 @@ public class DroolsRuleEngineTestCase
     /**
      * Tests the behaviour of rules throwing exceptions.
      *
-     * @param act the act
+     * @param act    the act
      * @param status the act status
      * @see #testException()
      */
@@ -232,6 +265,16 @@ public class DroolsRuleEngineTestCase
     }
 
     /**
+     * Helper to retrieve an object given its reference.
+     *
+     * @param ref the object reference
+     * @return the corresponding object or <tt>null</tt>
+     */
+    private IMObject get(IMObjectReference ref) {
+        return ArchetypeQueryHelper.getByObjectReference(archetype, ref);
+    }
+
+    /**
      * Helper to reload an object.
      *
      * @param object the object to reload
@@ -239,8 +282,7 @@ public class DroolsRuleEngineTestCase
      */
     @SuppressWarnings("unchecked")
     private <T extends IMObject> T reload(T object) {
-        return (T) ArchetypeQueryHelper.getByObjectReference(
-                archetype, object.getObjectReference());
+        return (T) get(object.getObjectReference());
     }
 
     /**
