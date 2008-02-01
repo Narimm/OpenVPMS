@@ -477,12 +477,6 @@
           </includes>
         </resource>
         <resource>
-          <directory>${basedir}/src/conf/hibernate</directory>
-          <includes>
-            <include>**/*.properties</include>
-          </includes>
-        </resource>
-        <resource>
           <directory>${basedir}/src/java</directory>
           <includes>
             <include>**/*.properties</include>

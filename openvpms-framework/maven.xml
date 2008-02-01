@@ -12,11 +12,36 @@
             types="j2"/>
   	</preGoal>
 
-	<preGoal name="hibernate:schema-export">
-    	<attainGoal name="java:compile"/>
-	    <attainGoal name="java:jar-resources"/>
-	</preGoal>
-	
+    <preGoal name="test:test">
+       <attainGoal name="generate-hibernate-properties"/>
+       <copy todir="${maven.test.dest}" file="${maven.hibernate.properties}"/>
+    </preGoal>
+
+    <preGoal name="hibernate:schema-export">
+        <attainGoal name="generate-hibernate-properties"/>
+    </preGoal>
+
+    <preGoal name="hibernate:schema-update">
+        <attainGoal name="generate-hibernate-properties"/>
+    </preGoal>
+
+    <goal name="generate-hibernate-properties">
+        <copy tofile="${maven.hibernate.properties}"
+              file="src/conf/hibernate/hibernate.properties">
+            <filterset>
+                <filter token="HIBERNATE_DIALECT" value="${hibernate.dialect}"/>
+                <filter token="JDBC_DRIVER"
+                        value="${hibernate.connection.driver_class}"/>
+                <filter token="JDBC_URL" value="${hibernate.connection.url}"/>
+                <filter token="JDBC_USERNAME"
+                        value="${hibernate.connection.username}"/>
+                <filter token="JDBC_PASSWORD"
+                        value="${hibernate.connection.password}"/>
+            </filterset>
+        </copy>
+    </goal>
+
+
 	<goal name="lookup:load" description="Load the Lookup Data from File">
     	<attainGoal name="java:compile"/>
 	    <attainGoal name="java:jar-resources"/>

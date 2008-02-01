@@ -2,10 +2,14 @@
 ========================
 Preparing your workspace
 ========================
-1. Copy the file src/conf/hibernate/hibernate.properties.sample to 
-   src/conf/hibernate/hibernate.properties and uncomment or set the 
-   appropriate propertis for the database. 
-   
+1. Edit/create build.properties and add properties for the database. E.g:
+
+hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
+hibernate.connection.driver_class=com.mysql.jdbc.Driver
+hibernate.connection.url=jdbc:mysql://localhost:3306/openvpms
+hibernate.connection.username=openvpms
+hibernate.connection.password=openvpms
+
 2. Copy the file test/conf/log4j/log4j.properties.sample to 
    test/conf/log4j/log4j.properties. You can then change this file to 
    suit your logging needs since it isn't under source control
@@ -23,6 +27,6 @@ Preparing the database
 ================
 Database Testing
 ================
-The opemnvpms-framework component has been tested with mysql v4.1.13a and the 
-associated driver jdbc driver 3.2.0-alpha-bin.   
+The opemnvpms-framework component has been tested with mysql 5.0.24 and the
+associated driver jdbc driver 5.0.0-beta-bin.
    
