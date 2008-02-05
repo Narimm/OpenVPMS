@@ -41,9 +41,7 @@ public class RelationshipStateFactory {
      * @param targetUID    the target entity UID
      * @param targetName   the target entity name
      * @param targetDesc   the target entity description
-     * @param active       determines if the relationship and entities are
-     *                     active. This may be independent of their respective
-     *                     active flags
+     * @param active       determines the entities are active
      * @return a new <tt>RelationshipState</tt>
      */
     public RelationshipState create(EntityRelationship relationship,

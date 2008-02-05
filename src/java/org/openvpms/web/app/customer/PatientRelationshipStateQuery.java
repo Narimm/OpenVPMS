@@ -102,7 +102,6 @@ class PatientRelationshipStateQuery extends RelationshipStateQuery {
                 for (RelationshipState state : states.values()) {
                     PatientRelationshipState pState
                             = (PatientRelationshipState) state;
-                    pState.setActive(false);
                     pState.setDeceased(true);
                 }
             }
@@ -130,7 +129,6 @@ class PatientRelationshipStateQuery extends RelationshipStateQuery {
                 if (deceased) {
                     long uid = (Long) set.get("uid");
                     PatientRelationshipState state = patients.get(uid);
-                    state.setActive(false);
                     state.setDeceased(true);
                 }
             }

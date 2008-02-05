@@ -241,7 +241,7 @@ public class RelationshipStateQuery {
                     }
                     RelationshipState state = factory.create(
                             r, sourceUID, sourceName, sourceDesc, targetUID,
-                            targetName, targetDesc, r.isActive() && active);
+                            targetName, targetDesc, active);
                     result.put(r, state);
                 } else {
                     // no corresponding EntityRelationship, so discard it
