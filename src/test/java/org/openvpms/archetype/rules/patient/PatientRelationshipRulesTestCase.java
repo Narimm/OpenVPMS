@@ -55,12 +55,16 @@ public class PatientRelationshipRulesTestCase extends ArchetypeServiceTest {
         save(patient);
 
         assertNotNull(r1.getActiveEndTime());
+        assertFalse(r1.isActive());
         assertNull(r2.getActiveEndTime());
+        assertTrue(r2.isActive());
 
         EntityRelationship r3 = rules.addPatientOwnerRelationship(owner3,
                                                                   patient);
         save(patient);
         assertNotNull(r2.getActiveEndTime());
+        assertFalse(r2.isActive());
         assertNull(r3.getActiveEndTime());
+        assertTrue(r3.isActive());
     }
 }

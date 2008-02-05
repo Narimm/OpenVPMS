@@ -37,6 +37,8 @@ public class PatientRelationshipRules {
     /**
      * Check the relationships for a patient, ensuring they are valid
      * and only one is active for each relationship type.
+     *
+     * @param patient the patient
      */
     public static void checkRelationships(Party patient) {
         Map<String, EntityRelationship> currentActives
@@ -46,54 +48,59 @@ public class PatientRelationshipRules {
         // Loop through all the patient relationships.
         // . If one is new then assume it is the active and set the
         //   activeEndTime on any others.
-        // . If more than 1 is new then set active to youngest
-        //   activeStartTime.
+        // . If more than 1 is new then set active to youngest activeStartTime.
         // . If no new relationship and more than one active relationship of
         //   same type then set the one with the youngest activeStartTime as
         //   active.
         for (EntityRelationship rel : patient.getEntityRelationships()) {
-            if (rel.getActiveEndTime() == null) {
-                String shortname = rel.getArchetypeId().getShortName();
-                currentActive = currentActives.get(shortname);
-                if (rel.isNew()) {
-                    if (currentActive == null) {
-                        currentActive = rel;
-                    } else if (currentActive.isNew()) {
-                        if (after(rel, currentActive)) {
+            if (rel.isActive()) {
+                if (rel.getActiveEndTime() == null) {
+                    String shortname = rel.getArchetypeId().getShortName();
+                    currentActive = currentActives.get(shortname);
+                    if (rel.isNew()) {
+                        if (currentActive == null) {
+                            currentActive = rel;
+                        } else if (currentActive.isNew()) {
+                            if (after(rel, currentActive)) {
+                                deactivate(currentActive);
+                                currentActive = rel;
+                            } else {
+                                deactivate(rel);
+                            }
+                        } else {
                             deactivate(currentActive);
                             currentActive = rel;
-                        } else {
-                            deactivate(rel);
                         }
                     } else {
-                        deactivate(currentActive);
-                        currentActive = rel;
+                        if (currentActive == null) {
+                            currentActive = rel;
+                        } else if (currentActive.isNew()) {
+                            deactivate(rel);
+                        } else if (after(rel, currentActive)) {
+                            deactivate(currentActive);
+                            currentActive = rel;
+                        } else if (after(currentActive, rel)) {
+                            deactivate(rel);
+                        }
                     }
+                    currentActives.put(shortname, currentActive);
                 } else {
-                    if (currentActive == null) {
-                        currentActive = rel;
-                    } else if (currentActive.isNew()) {
-                        deactivate(rel);
-                    } else if (after(rel, currentActive)) {
-                        deactivate(currentActive);
-                        currentActive = rel;
-                    } else if (after(currentActive, rel)) {
-                        deactivate(rel);
-                    }
+                    rel.setActive(false); // should be inactive
                 }
-                currentActives.put(shortname, currentActive);
             }
         }
     }
 
     /**
-     * Deactivates an relationship by setting its active end time.
+     * Deactivates an relationship by setting its active end time to
+     * <tt>now - 1 second</tt> and its active flag <tt>false</tt>.
      *
      * @param relationship the relationship
      */
     private static void deactivate(EntityRelationship relationship) {
         Date end = new Date(System.currentTimeMillis() - 1000);
         relationship.setActiveEndTime(end);
+        relationship.setActive(false);
     }
 
     /**
