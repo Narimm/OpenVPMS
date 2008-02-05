@@ -164,7 +164,7 @@ public class PatientRules {
      */
     public Party getOwner(Party patient) {
         EntityBean bean = new EntityBean(patient, service);
-        return (Party) bean.getSourceEntity(PATIENT_OWNER);
+        return (Party) bean.getNodeSourceEntity("customers", new Date());
     }
 
     /**
@@ -175,7 +175,9 @@ public class PatientRules {
      */
     public IMObjectReference getOwnerReference(Party patient) {
         EntityBean bean = new EntityBean(patient, service);
-        return bean.getSourceEntityRef(PATIENT_OWNER);
+        List<IMObjectReference> refs
+                = bean.getNodeSourceEntityRefs("customers", new Date());
+        return refs.isEmpty() ? null : refs.get(0);
     }
 
     /**

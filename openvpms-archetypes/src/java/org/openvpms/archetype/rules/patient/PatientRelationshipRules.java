@@ -84,23 +84,19 @@ public class PatientRelationshipRules {
                         }
                     }
                     currentActives.put(shortname, currentActive);
-                } else {
-                    rel.setActive(false); // should be inactive
                 }
             }
         }
     }
 
     /**
-     * Deactivates an relationship by setting its active end time to
-     * <tt>now - 1 second</tt> and its active flag <tt>false</tt>.
+     * Deactivates an relationship by setting its active end time.
      *
      * @param relationship the relationship
      */
     private static void deactivate(EntityRelationship relationship) {
         Date end = new Date(System.currentTimeMillis() - 1000);
         relationship.setActiveEndTime(end);
-        relationship.setActive(false);
     }
 
     /**
