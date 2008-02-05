@@ -56,10 +56,10 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
     /**
      * Sets the date part of the time.
      *
-     * @param date the date
+     * @param date the date. May be <tt>null</tt>
      */
     public void setDate(Date date) {
-        this.date = DateHelper.getDayMonthYear(date);
+        this.date = (date != null) ? DateHelper.getDayMonthYear(date) : null;
     }
 
     /**
@@ -76,7 +76,14 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
             if (object instanceof String) {
                 String value = (String) object;
                 if (StringUtils.isEmpty(value)) {
-                    result = null;
+                    Property property = getProperty();
+                    if (!property.isRequired()) {
+                        result = null;
+                    } else {
+                        String msg = Messages.get("property.error.required",
+                                                  property.getDisplayName());
+                        throw new PropertyException(property, msg);
+                    }
                 } else {
                     result = parse(value);
                 }

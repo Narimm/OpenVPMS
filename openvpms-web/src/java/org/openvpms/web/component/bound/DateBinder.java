@@ -81,7 +81,8 @@ class DateBinder extends Binder {
      * @return the value of the field
      */
     protected Date getFieldValue() {
-        return field.getDateChooser().getSelectedDate().getTime();
+        Calendar calendar = field.getDateChooser().getSelectedDate();
+        return (calendar != null) ? calendar.getTime() : null;
     }
 
     /**

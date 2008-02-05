@@ -21,6 +21,7 @@ package org.openvpms.web.component.util;
 import echopointng.DateField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.apache.commons.lang.StringUtils;
 
 import java.text.DateFormat;
 import java.text.FieldPosition;
@@ -42,7 +43,12 @@ import java.util.TimeZone;
 public class DateFieldImpl extends DateField {
 
     /**
-     * Constructs a new <code>DateFieldImpl</code>.
+     * Determines if null or empty strings may be entered.
+     */
+    private boolean allowNulls = false;
+
+    /**
+     * Constructs a new <tt>DateFieldImpl</tt>.
      */
     public DateFieldImpl() {
         DateFormat edit = DateHelper.getDateFormat(true);
@@ -59,14 +65,34 @@ public class DateFieldImpl extends DateField {
     }
 
     /**
+     * Determines if null or empty strings may be input.
+     * <p/>
+     * If <tt>true</tt>, null or empty strings may be input, otherwise they will
+     * be ignored, and the field will revert to the prior value.
+     * <p/>
+     * Defaults to <tt>false</tt>.
+     *
+     * @param allow if <tt>true</tt> null or empty strings may be input
+     */
+    public void setAllowNulls(boolean allow) {
+        this.allowNulls = allow;
+    }
+
+    /**
      * Called to update the calendar selection model from the current text
      * field contents. Only works if <code>isUpdateFromTextField()</code>
      * currently returns true.
      */
     @Override
     protected void updateDateFromText() {
-        super.updateDateFromText();
-        updateTextFromDate();
+        if (isUpdateFromTextField()) {
+            if (StringUtils.isEmpty(getText()) && allowNulls) {
+                getDateChooser().setSelectedDate(null);
+            } else {
+                super.updateDateFromText();
+            }
+            updateTextFromDate();
+        }
     }
 
     /**
