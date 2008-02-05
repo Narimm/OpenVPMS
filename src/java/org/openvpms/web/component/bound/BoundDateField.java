@@ -56,6 +56,7 @@ public class BoundDateField extends DateFieldImpl {
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
+        setAllowNulls(!property.isRequired());
     }
 
     /**
@@ -81,8 +82,8 @@ public class BoundDateField extends DateFieldImpl {
             @Override
             protected Date getFieldValue() {
                 Date date = super.getFieldValue();
-                if (includeTimeForToday) {
-                    return DateHelper.getDatetimeIfToday(date);
+                if (date != null && includeTimeForToday) {
+                    date = DateHelper.getDatetimeIfToday(date);
                 }
                 return date;
             }
