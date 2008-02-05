@@ -18,10 +18,12 @@
 
 package org.openvpms.web.component.im.relationship;
 
-import org.openvpms.web.component.im.layout.LayoutContext;
-
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 
 
 /**
@@ -33,7 +35,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 public class EntityRelationshipEditor extends AbstractRelationshipEditor {
 
     /**
-     * Construct a new <code>EntityRelationshipEditor</code>.
+     * Construct a new <tt>EntityRelationshipEditor</tt>.
      *
      * @param relationship the relationship
      * @param parent       the parent object
@@ -42,6 +44,28 @@ public class EntityRelationshipEditor extends AbstractRelationshipEditor {
     public EntityRelationshipEditor(EntityRelationship relationship,
                                     IMObject parent, LayoutContext context) {
         super(relationship, parent, context);
+        Property endTime = getProperty("activeEndTime");
+        if (endTime != null) {
+            endTime.addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    onEndTimeModified();
+                }
+            });
+        }
+    }
+
+    /**
+     * Updates the state of the active flag based on the <em>activeEndTime</em>
+     * property. If the <em>activeEndTime</em> is non-null, sets the active
+     * flag <tt>false</tt>, otherwise sets it <tt>true</tt>.
+     */
+    private void onEndTimeModified() {
+        EntityRelationship relationship = (EntityRelationship) getObject();
+        if (relationship.getActiveEndTime() == null) {
+            relationship.setActive(true);
+        } else {
+            relationship.setActive(false);
+        }
     }
 
 }
