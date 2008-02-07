@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.util.MacroCache;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.javamail.JavaMailSender;
 
@@ -56,10 +57,9 @@ public final class ServiceHelper {
      */
     public static IArchetypeService getArchetypeService(boolean rules) {
         if (rules) {
-            return getArchetypeService();
+            return (IArchetypeRuleService) getArchetypeService();
         }
-        return (IArchetypeService) getContext().getBean(
-                "archetypeService-norules");
+        return (IArchetypeService) getContext().getBean("archetypeService");
     }
 
     /**
