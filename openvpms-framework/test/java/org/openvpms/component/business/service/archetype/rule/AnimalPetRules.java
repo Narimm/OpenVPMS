@@ -17,47 +17,46 @@
  */
 
 
-package org.openvpms.component.business.service.ruleengine;
+package org.openvpms.component.business.service.archetype.rule;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.ruleengine.RuleEngineException;
 
 import java.util.Date;
 
-import org.apache.log4j.Logger;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 /**
  * These are rules specific to the animal.pet archetype.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class AnimalPetRules {
+
     /**
-     * Define a logger for this class
+     * The logger.
      */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(AnimalPetRules.class);
-    
+    private static final Log log = LogFactory.getLog(AnimalPetRules.class);
+
     /**
      * Set the active end date for all existing (i.e not new) entity
      * relationships.
-     * 
-     * @param service
-     *            the archetype service
-     * @param pet
-     *            the pet entity
-     * @throws RuleEngineException            
+     *
+     * @param pet the pet entity
+     * @throws RuleEngineException
      */
-    public static void setActiveEndDates(IArchetypeService service, Party pet) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Executing AnimalPetRules.setActiveEndDates");
+    public static void setActiveEndDates(Party pet) {
+        if (log.isDebugEnabled()) {
+            log.debug("Executing AnimalPetRules.setActiveEndDates");
         }
-        
+
         for (EntityRelationship rel : pet.getEntityRelationships()) {
             if (!rel.isNew()) {
-                rel.setActiveEndTime( new Date(System.currentTimeMillis() - 1000));
+                rel.setActiveEndTime(
+                        new Date(System.currentTimeMillis() - 1000));
             }
         }
     }

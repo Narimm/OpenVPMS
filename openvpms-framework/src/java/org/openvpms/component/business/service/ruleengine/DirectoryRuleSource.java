@@ -17,72 +17,68 @@
  */
 package org.openvpms.component.business.service.ruleengine;
 
-// java core
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import javax.rules.admin.RuleExecutionSet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
-// jsr94
-import javax.rules.admin.RuleExecutionSet;
-
-// spring-modules
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * This class will source rule-sets from one or more drl files stored in the
  * specified root directory. It will search all subdirectories and process and
- * rule files
- * 
+ * rule files.
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
 public class DirectoryRuleSource extends BaseRuleSource {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(DirectoryRuleSource.class);
 
     /**
-     * The root rule directory
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(DirectoryRuleSource.class);
+
+    /**
+     * The root rule directory.
      */
     private String directory;
 
     /**
-     * Caches the name of the various rule sets
+     * Caches the name of the various rule sets.
      */
-     private Map<String, String> ruleSetNames =
-         new HashMap<String, String>();
+    private Map<String, String> ruleSetNames =
+            new HashMap<String, String>();
 
-     /**
+    /**
      * Local Rule execution set provider properties -- passed to the
      * getLocalRuleExecutionSetProvider method. This field can be null.
-     * 
-     * @see javax.rules.admin.RuleAdministrator#getLocalRuleExecutionSetProvider(java.util.Map)
+     *
+     * @see javax.rules.admin.RuleAdministrator#getLocalRuleExecutionSetProvider(Map)
      */
     private Map providerProperties;
 
     /**
      * Local ruleset properties -- passed to the createRuleExecutionSet method
      * This field can be null.
-     * 
+     *
      * @see javax.rules.admin.LocalRuleExecutionSetProvider#createRuleExecutionSet(java.io.InputStream,
-     *      java.util.Map)
+     *      Map)
      */
     private Map rulesetProperties;
 
     /**
      * Rule execution set registration properties -- passed to the
      * registerRuleExecutionSet method This field can be null.
-     * 
-     * @see javax.rules.admin.RuleAdministrator#registerRuleExecutionSet(java.lang.String,
-     *      javax.rules.admin.RuleExecutionSet, java.util.Map)
+     *
+     * @see javax.rules.admin.RuleAdministrator#registerRuleExecutionSet(String,
+     *      RuleExecutionSet, Map)
      */
     private Map registrationProperties;
 
@@ -103,46 +99,35 @@ public class DirectoryRuleSource extends BaseRuleSource {
                 .getContextClassLoader().getResource(directory));
         if (dir == null) {
             throw new RuleEngineException(
-                    RuleEngineException.ErrorCode.InvalidDir,
-                    new Object[] { directory});
+                    RuleEngineException.ErrorCode.InvalidDir, directory);
         }
-        
-        if (logger.isDebugEnabled()) {
-            logger.debug("The base rules directory is " + dir.getAbsolutePath());
+
+        if (log.isDebugEnabled()) {
+            log.debug("The base rules directory is " + dir.getAbsolutePath());
         }
-        
+
         if (!dir.isDirectory()) {
             throw new RuleEngineException(
-                    RuleEngineException.ErrorCode.InvalidDir,
-                    new Object[] { directory });
+                    RuleEngineException.ErrorCode.InvalidDir, directory);
         }
 
         // process all the files in the directory, that match the filter
-        Collection collection = FileUtils.listFiles(dir, new String[] {"drl"}, true);
-        Iterator files = collection.iterator();
-        while (files.hasNext()) {
-            File afile = (File)files.next();
-            if (logger.isDebugEnabled()) {
-                logger.debug("Registeting the rule set in  " 
-                        + afile.getAbsolutePath());
+        Collection collection = FileUtils.listFiles(dir, new String[]{"drl"},
+                                                    true);
+        for (Object object : collection) {
+            File file = (File) object;
+            if (log.isDebugEnabled()) {
+                log.debug("Registering the rule set in "
+                        + file.getAbsolutePath());
             }
-            registerRuleExecutionSet(afile);
+            registerRuleExecutionSet(file);
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.springmodules.jsr94.support.AbstractRuleSource#initRuleSource()
-     */
-    protected void initRuleSource() throws Exception {
     }
 
     /**
      * Sets new value for field providerProperties
-     * 
-     * @param providerProperties
-     *            The providerProperties to set.
+     *
+     * @param providerProperties The providerProperties to set.
      */
     public void setProviderProperties(Map providerProperties) {
         this.providerProperties = providerProperties;
@@ -150,9 +135,8 @@ public class DirectoryRuleSource extends BaseRuleSource {
 
     /**
      * Sets new value for field registrationProperties
-     * 
-     * @param registrationProperties
-     *            The registrationProperties to set.
+     *
+     * @param registrationProperties The registrationProperties to set.
      */
     public void setRegistrationProperties(Map registrationProperties) {
         this.registrationProperties = registrationProperties;
@@ -160,9 +144,8 @@ public class DirectoryRuleSource extends BaseRuleSource {
 
     /**
      * Sets new value for field rulesetProperties
-     * 
-     * @param rulesetProperties
-     *            The rulesetProperties to set.
+     *
+     * @param rulesetProperties The rulesetProperties to set.
      */
     public void setRulesetProperties(Map rulesetProperties) {
         this.rulesetProperties = rulesetProperties;
@@ -183,45 +166,42 @@ public class DirectoryRuleSource extends BaseRuleSource {
     }
 
     /**
-     * Indicates whether there is a rule set defined for the specified 
+     * Indicates whether there is a rule set defined for the specified
      * uri
-     * 
-     * @param uri
-     *            the rule set uri
+     *
+     * @param uri the rule set uri
      */
     public boolean hasRuleExecutionSet(String uri) {
         return ruleSetNames.containsKey(uri);
     }
-    
+
     /**
      * Create and register a rule execution set
-     * 
-     * @param file
-     *            the file containing the rule set
-     * @throws RuleEngineException 
-     *            if it cannot create or register the rule set            
+     *
+     * @param file the file containing the rule set
+     * @throws RuleEngineException if it cannot create or register the rule set
      */
     private void registerRuleExecutionSet(File file) {
         // check that the file exists.
         if (!file.exists()) {
             throw new RuleEngineException(
-                    RuleEngineException.ErrorCode.InvalidFile,
-                    new Object[] {file.getName()});
+                    RuleEngineException.ErrorCode.InvalidFile, file.getName());
         }
-        
+
         // creater and register the rule execution set (i.e. rule set)
         try {
             RuleExecutionSet ruleExecutionSet = ruleAdministrator
-                .getLocalRuleExecutionSetProvider(providerProperties)
-                .createRuleExecutionSet(new FileInputStream(file), rulesetProperties);
+                    .getLocalRuleExecutionSetProvider(providerProperties)
+                    .createRuleExecutionSet(new FileInputStream(file),
+                                            rulesetProperties);
             String uri = ruleExecutionSet.getName();
             ruleAdministrator.registerRuleExecutionSet(uri, ruleExecutionSet,
-                    registrationProperties);
+                                                       registrationProperties);
             ruleSetNames.put(uri, file.getName());
         } catch (Exception exception) {
             throw new RuleEngineException(
                     RuleEngineException.ErrorCode.FailedToRegister,
-                    new Object[] {file.getName()}, exception);
+                    exception, file.getName());
         }
     }
 }

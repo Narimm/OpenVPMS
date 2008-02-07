@@ -131,20 +131,23 @@ public class ArchetypeServicePartyTestCase extends
         person1.addContact(createContact(classification));
         person1.addContact(createContact(classification1));
 
-        // check the initial values of the ids and versions
+        // check the initial values of the ids
         assertEquals(-1, person1.getUid());
-        assertEquals(0, person1.getVersion());
         assertEquals(-1, person2.getUid());
-        assertEquals(0, person2.getVersion());
 
-        // save the archetype descriptors
+        // save the collection
         Collection<IMObject> col = Arrays.asList((IMObject) person1, person2);
         service.save(col);
 
-        // verify the ids and versions have updated
+        // verify the ids have updated
         assertFalse(person1.getUid() == -1);
-        assertEquals(1, person1.getVersion());
         assertFalse(person2.getUid() == -1);
+        assertEquals(0, person1.getVersion());
+        assertEquals(0, person2.getVersion());
+
+        // now check that versions update when the objects are saved again
+        service.save(col);
+        assertEquals(1, person1.getVersion());
         assertEquals(1, person2.getVersion());
     }
 

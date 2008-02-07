@@ -287,22 +287,17 @@ public class LookupTestCase extends
         List<IMObject> objects = Arrays.asList((IMObject) cty, state1, state2,
                                                state3);
 
-        // verify the initial id and versions
+        // verify the initial id
         for (IMObject object : objects) {
             assertEquals(-1, object.getUid());
-            assertEquals(0, object.getVersion());
         }
 
         service.save(objects);
 
-        // verify the update id and versions
+        // verify the id's have updated
         for (IMObject object : objects) {
             assertFalse(object.getUid() == -1);
         }
-        assertEquals(1, cty.getVersion());
-        assertEquals(0, state1.getVersion());
-        assertEquals(0, state2.getVersion());
-        assertEquals(0, state3.getVersion());
     }
 
     /* (non-Javadoc)

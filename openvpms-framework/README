@@ -27,6 +27,6 @@ Preparing the database
 ================
 Database Testing
 ================
-The opemnvpms-framework component has been tested with mysql 5.0.24 and the
-associated driver jdbc driver 5.0.0-beta-bin.
+The openvpms-framework component has been tested with mysql 5.0.24 using the
+Connector/J 5.1.5-bin JDBC driver .
    

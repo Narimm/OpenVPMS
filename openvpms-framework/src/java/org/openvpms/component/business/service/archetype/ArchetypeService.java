@@ -38,7 +38,7 @@ import org.openvpms.component.business.service.archetype.descriptor.cache.IArche
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.query.QueryBuilder;
 import org.openvpms.component.business.service.archetype.query.QueryContext;
-import org.openvpms.component.business.service.ruleengine.IStatelessRuleEngineInvocation;
+import org.openvpms.component.business.service.ruleengine.IRuleEngine;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
@@ -87,7 +87,7 @@ public class ArchetypeService implements IArchetypeService {
      * The rule engine to use. If not specified then the service does
      * not support rule engine invocations.
      */
-    private IStatelessRuleEngineInvocation ruleEngine;
+    private IRuleEngine ruleEngine;
 
     /**
      * Control characters, excluding <em>'\n', '\r', '\t'</em>.
@@ -95,6 +95,7 @@ public class ArchetypeService implements IArchetypeService {
     private static final Pattern CNTRL_CHARS
             = Pattern.compile(".*[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F].*");
 
+    
     /**
      * Construct an instance of this service using the specified archetpe class by loading and parsing all the
      * descripor cache
@@ -132,7 +133,7 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @return the rule engine
      */
-    public IStatelessRuleEngineInvocation getRuleEngine() {
+    public IRuleEngine getRuleEngine() {
         return ruleEngine;
     }
 
@@ -141,7 +142,7 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @param ruleEngine the rule engine
      */
-    public void setRuleEngine(IStatelessRuleEngineInvocation ruleEngine) {
+    public void setRuleEngine(IRuleEngine ruleEngine) {
         this.ruleEngine = ruleEngine;
     }
 
@@ -634,7 +635,7 @@ public class ArchetypeService implements IArchetypeService {
                     ArchetypeServiceException.ErrorCode.RuleEngineNotSupported);
         }
         try {
-            return ruleEngine.executeRule(ruleUri, props, facts);
+            return ruleEngine.executeRules(ruleUri, props, facts);
         } catch (Exception exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToExecuteRule,

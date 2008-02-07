@@ -19,28 +19,21 @@
 
 package org.openvpms.component.business.service.ruleengine;
 
-// aop alliance
-import org.aopalliance.intercept.MethodInvocation;
-
-// commons-lang
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
- * This class holds utility methods for formulating rule set names. The rules 
- * are as follows.
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * This class holds utility methods for formulating rule set names URIs.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class RuleSetUriHelper {
+
     /**
      * This is appended to the rule set URI to form the name of the rules that
      * are executed before the method invocation
      */
     private static final String BEFORE_URI_FRAGMENT = "before";
-    
+
     /**
      * This is appended to the rule set URI to form the name of the rules that
      * are executed after the method invocation
@@ -48,46 +41,33 @@ public class RuleSetUriHelper {
     private static final String AFTER_URI_FRAGMENT = "after";
 
     /**
-     * Return the rule set URI for the specified method invocation. If the 
-     * before flag is set then we need to return the rule set name that is 
-     * used before the method invocation. 
-     * <p>
-     * This is how the URI is formulated.
-     * 
-     * 1. Get the short name of the service that is being invoked.
-     * 2. Append the name of the method that is being invoked.
-     * 3. If the first argument is an IMObject then extract the arch short name
-     * 4. Determine if this is a before or after method invocation
-     * 
-     * @param invocation
-     *            the method invocation
-     * @param before
-     *            indicates whether it is before the method invocation
-     * @return String
-     *            the rule set URI                        
+     * Returns the rule set URI for an service operation on an archetype.
+     * The URI is of the form:
+     * <p/>
+     * <em>service</em>.<em>operation</em>.<tt>&lt;before&gt;|&lt;after&gt;.</tt><em>shortName</em>
+     * <p/>
+     * E.g:
+     * <ul>
+     * <li>archetypeService.save.before.party.patientpet
+     * <li>archetypeService.remove.after.act.customerAccountChargesInvoice
+     * <ul>
+     *
+     * @param service   the service name
+     * @param operation the service operation
+     * @param before    if <tt>true</tt> create a <em>before</em> rule set URI,
+     *                  otherwise create an <em>after</em> URI
+     * @param shortName the archetype short name
+     * @return the rult set URI
      */
-    public static String getRuleSetURI(MethodInvocation invocation, boolean before) {
-        StringBuffer buf = new StringBuffer(ClassUtils.getShortClassName(
-                invocation.getThis(), ""));
-        buf.append(".");
-        buf.append(invocation.getMethod().getName());
-        
-        // check that the first argume nt in the invocation is a {@link IMObject}
-        // if it is then extract the short name
-        Object obj = invocation.getArguments()[0];
-        if (obj instanceof IMObject) {
-            buf.append(".");
-            buf.append(((IMObject)obj).getArchetypeId().getShortName());
-        }
-        
-        // now append the before or after string
-        buf.append(".");
+    public static String getRuleSetURI(String service, String operation,
+                                       boolean before, String shortName) {
+        StringBuffer result = new StringBuffer(service).append('.').append(
+                operation).append('.').append(shortName).append('.');
         if (before) {
-            buf.append(BEFORE_URI_FRAGMENT);
+            result.append(BEFORE_URI_FRAGMENT);
         } else {
-            buf.append(AFTER_URI_FRAGMENT);
+            result.append(AFTER_URI_FRAGMENT);
         }
-        
-        return StringUtils.uncapitalize(buf.toString());
+        return result.toString();
     }
 }

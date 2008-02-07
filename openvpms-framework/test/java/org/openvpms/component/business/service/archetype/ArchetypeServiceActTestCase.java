@@ -251,7 +251,7 @@ public class ArchetypeServiceActTestCase
         item.addActRelationship(relationship);
 
         List<IMObject> acts = Arrays.asList((IMObject) estimation, item);
-        checkSaveCollection(acts, 1);
+        checkSaveCollection(acts, 0);
 
         // reload the estimation and item. Each will have a separate copy of
         // the same persistent act relationship
@@ -264,7 +264,7 @@ public class ArchetypeServiceActTestCase
 
         // save the collection, and verify they have saved by checking the
         // versions.
-        checkSaveCollection(acts, 2);
+        checkSaveCollection(acts, 1);
 
         // now remove the relationship, and add a new one
         estimation.removeActRelationship(relationship);
@@ -277,7 +277,7 @@ public class ArchetypeServiceActTestCase
         estimation.addActRelationship(relationship2);
         item.addActRelationship(relationship2);
 
-        checkSaveCollection(acts, 3);
+        checkSaveCollection(acts, 2);
     }
 
     /**

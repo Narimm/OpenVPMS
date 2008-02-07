@@ -4,7 +4,20 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
     xs:schemaLocation="http://drools.org/rules rules.xsd
     				   http://drools.org/semantics/java java.xsd">
-    				   
+
+    <rule name="Set the act reason">
+       <parameter identifier="act">
+        	<java:class>org.openvpms.component.business.domain.im.act.Act</java:class>
+        </parameter>
+        <parameter identifier="service">
+        	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
+        </parameter>
+        <java:condition>true</java:condition>
+        <java:consequence>
+            act.setReason("TEST");
+        </java:consequence>
+    </rule>
+
     <rule name="Throw an exception if status is EXCEPTION_AFTER">
        <parameter identifier="act">
         	<java:class>org.openvpms.component.business.domain.im.act.Act</java:class>
