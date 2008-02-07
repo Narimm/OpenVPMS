@@ -14,7 +14,7 @@
         </parameter>
         <java:condition>pet.getEntityRelationships().size() > 0</java:condition>
         <java:consequence>
-            org.openvpms.component.business.service.ruleengine.AnimalPetRules.setActiveEndDates(service, pet);
+            org.openvpms.component.business.service.archetype.rule.AnimalPetRules.setActiveEndDates(service, pet);
         </java:consequence>
     </rule>
 

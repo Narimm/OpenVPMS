@@ -151,7 +151,7 @@
   </bean>
   
   <!--  The Archetype Service -->
-  <bean id="archetypeService"
+  <bean id="defaultArchetypeService"
     class="org.openvpms.component.business.service.archetype.ArchetypeService">
     <constructor-arg index="0">
       <ref local="archetypeDescriptorCache" />
@@ -162,6 +162,20 @@
     <property name="ruleEngine">
       <ref local="ruleEngine" />
     </property>
+  </bean>
+
+  <!--  The rule-based Archetype Service -->
+  <bean id="archetypeService"
+    class="org.openvpms.component.business.service.archetype.rule.ArchetypeRuleService">
+    <constructor-arg>
+      <ref local="defaultArchetypeService" />
+    </constructor-arg>
+    <constructor-arg>
+      <ref local="txManager" />
+    </constructor-arg>
+    <constructor-arg>
+      <ref local="ruleEngine" />
+    </constructor-arg>
   </bean>
 
   <!--  The Archetype Service Helper so others can reference the service statically -->
@@ -323,7 +337,7 @@
 
   <!--  The DroolsRileEngine interceptor -->
   <bean id="ruleEngine"
-    class="org.openvpms.component.business.service.ruleengine.DroolsRuleEngine">
+    class="org.openvpms.component.business.service.ruleengine.RuleEngine">
     <constructor-arg index="0">
       <ref local="ruleSource" />
     </constructor-arg>
@@ -332,31 +346,4 @@
     </property>
   </bean>
 
-  <!--  Create a proxy for the ArchetypeService bean -->
-  <bean id="ruleEngineProxyCreator"
-    class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-    <property name="beanNames">
-      <list>
-        <idref local="archetypeService" />
-      </list>
-    </property>
-    <property name="interceptorNames">
-      <list>
-        <value>ruleEngineAdvisor</value>
-      </list>
-    </property>
-  </bean>
-
-  <!-- The advisor  -->
-  <bean id="ruleEngineAdvisor"
-    class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
-    <property name="advice">
-      <ref local="ruleEngine" />
-    </property>
-    <property name="patterns">
-      <list>
-        <value>.*save</value>
-      </list>
-    </property>
-  </bean>
 </beans>

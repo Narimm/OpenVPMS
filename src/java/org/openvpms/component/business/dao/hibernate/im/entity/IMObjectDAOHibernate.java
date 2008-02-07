@@ -738,6 +738,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         });
     }
 
+    /**
+     * Save an object.
+     *
+     * @param object  the object to save
+     * @param session the session to use
+     */
     private void save(IMObject object, Session session) {
         MergeHandler handler = null;
         IMObject source = null;
@@ -750,22 +756,41 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         if (handler != null) {
             CommitSync sync = new CommitSync(handler, object, source);
             TransactionSynchronizationManager.registerSynchronization(sync);
-            // registerFlush(sync, template);
         }
     }
 
+    /**
+     * Save a collection of objects.
+     *
+     * @param objects the objects to save
+     * @param session the session to use
+     */
     private void save(Collection<IMObject> objects, Session session) {
-        CommitSync sync = new CommitSync();
+        CommitSync sync = null;
         for (IMObject object : objects) {
-            MergeHandler handler = MergeHandlerFactory.getHandler(
-                    object);
-            IMObject source = handler.merge(object, session);
-            sync.add(handler, object, source);
+            if (object.isNew()) {
+                session.saveOrUpdate(object);
+            } else {
+                MergeHandler handler = MergeHandlerFactory.getHandler(
+                        object);
+                IMObject source = handler.merge(object, session);
+                if (sync == null) {
+                    sync = new CommitSync();
+                }
+                sync.add(handler, object, source);
+            }
         }
-        TransactionSynchronizationManager.registerSynchronization(sync);
-        // registerFlush(sync, template);
+        if (sync != null) {
+            TransactionSynchronizationManager.registerSynchronization(sync);
+        }
     }
 
+    /**
+     * Delete a collection of objects.
+     *
+     * @param objects the objects to delete
+     * @param session the session to use
+     */
     private void delete(Collection<IMObject> objects, Session session) {
         for (IMObject object : objects) {
             if (!object.isNew()) {
@@ -836,18 +861,44 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         return template.execute(callback);
     }
 
+    /**
+     * Helper to update the ids and versions of a set of objects on
+     * transaction commit.
+     */
     private static class CommitSync extends TransactionSynchronizationAdapter {
 
+        /**
+         * A list of objects to update the ids and versions of at transaction
+         * commit.
+         */
         private List<Sync> list = new ArrayList<Sync>();
 
+        /**
+         * Creates a new <tt>CommitSync</tt>.
+         */
         public CommitSync() {
         }
 
+        /**
+         * Creates a new <tt>CommitSync</tt>, with an object to update at
+         * commit.
+         *
+         * @param handler the handler to perform the update
+         * @param target the object to update
+         * @param source the object to update from
+         */
         public CommitSync(MergeHandler handler, IMObject target,
                           IMObject source) {
             add(handler, target, source);
         }
 
+        /**
+         * Register an object to update at commit.
+         *
+         * @param handler the handler to perform the update
+         * @param target the object to update
+         * @param source the object to update from
+         */
         public void add(MergeHandler handler, IMObject target,
                         IMObject source) {
             list.add(new Sync(handler, target, source));
@@ -875,6 +926,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 this.source = source;
             }
 
+            /**
+             * Updates the target object with the identifier and version of the
+             * source, including any direct children.
+             */
             public void sync() {
                 handler.update(target, source);
             }

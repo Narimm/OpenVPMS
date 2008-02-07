@@ -26,11 +26,14 @@
         <parameter identifier="service">
         	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
         </parameter>
+        <parameter identifier="txnManager">
+        	<java:class>org.springframework.transaction.PlatformTransactionManager</java:class>
+        </parameter>
         <java:condition>"INSERT_NEW_AND_THROW".equals(act.getStatus())</java:condition>
         <java:consequence>
-            import org.openvpms.component.business.service.ruleengine.ActSimpleRules;
+            import org.openvpms.component.business.service.archetype.rule.ActSimpleRules;
             act.setReason(act.getStatus());
-            ActSimpleRules.insertNewActInIsolation(act, service);
+            ActSimpleRules.insertNewActInIsolation(act, service, txnManager);
             throw new IllegalStateException("For test purposes, can't save act when status=" + act.getStatus());
         </java:consequence>
     </rule>

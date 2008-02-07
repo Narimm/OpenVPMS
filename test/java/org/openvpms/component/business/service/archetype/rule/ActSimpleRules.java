@@ -16,20 +16,19 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.service.ruleengine;
+package org.openvpms.component.business.service.archetype.rule;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 
 /**
- * Test rules for {@link DroolsRuleEngineTestCase}.
+ * Test rules for {@link ArchetypeRuleServiceTestCase}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -37,32 +36,17 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class ActSimpleRules {
 
     /**
-     * The transaction template.
-     */
-    private static TransactionTemplate template;
-
-    /**
-     * Sets the transaction manager.
-     *
-     * @param manager the transaction manager
-     */
-    public static void setTransactionManager(
-            PlatformTransactionManager manager) {
-        template = new TransactionTemplate(manager);
-        template.setPropagationBehavior(
-                TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    }
-
-    /**
      * Creates and saves a new act in a new transaction, associating it
      * with the specified act as the source of the act relationship.
      *
-     * @param act the act
+     * @param act     the act
      * @param service the archetype service
-     * @see DroolsRuleEngineTestCase#testTransactionIsolation
+     * @param manager the transaction manager
+     * @see ArchetypeRuleServiceTestCase#testTransactionIsolation
      */
     public static void insertNewActInIsolation(Act act,
-                                               final IArchetypeService service) {
+                                               final IArchetypeService service,
+                                               PlatformTransactionManager manager) {
         final Act related = (Act) service.create("act.simple");
         ActRelationship relationship
                 = (ActRelationship) service.create("actRelationship.simple");
@@ -71,6 +55,10 @@ public class ActSimpleRules {
         relationship.setTarget(act.getObjectReference());
         related.addActRelationship(relationship);
         act.addActRelationship(relationship);
+
+        TransactionTemplate template = new TransactionTemplate(manager);
+        template.setPropagationBehavior(
+                TransactionTemplate.PROPAGATION_REQUIRES_NEW);
 
         // save the new act in a new transaction, suspending any current
         // transaction

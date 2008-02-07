@@ -16,7 +16,7 @@
  *  $Id: DroolsRuleEngineTestCase.java 328 2005-12-07 13:31:09Z jalateras $
  */
 
-package org.openvpms.component.business.service.ruleengine;
+package org.openvpms.component.business.service.archetype.rule;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -26,9 +26,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ValidationError;
-import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -36,26 +33,25 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
 
 /**
- * Test the
- * {@link org.openvpms.component.business.service.ruleengine.DroolsRuleEngine}
- * class.
+ * Tests the {@link ArchetypeRuleService} class.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
-@SuppressWarnings("HardCodedStringLiteral")
-public class DroolsRuleEngineTestCase
+public class ArchetypeRuleServiceTestCase
         extends AbstractDependencyInjectionSpringContextTests {
 
     /**
      * The archetype service.
      */
-    private IArchetypeService archetype;
+    private IArchetypeRuleService service;
 
     /**
      * The transaction manager.
@@ -64,20 +60,60 @@ public class DroolsRuleEngineTestCase
 
 
     /**
-     * Test that rule engine is called when this object is being saved.
+     * Verifies that rule engine is called when an object is being saved.
+     * If both the before and after rules execute, the object will have
+     * 'before' and 'after' properties set to <tt>true</tt>.
+     * <p/>
+     * Requires the <em>archetypeService.save.party.person.before</em> and
+     * <em>archetypeService.save.party.person.after</em> rules.
      */
-    public void testRuleEngineOnSave() throws Exception {
-        try {
-            Party person = createPerson("MR", "Jim", "Alateras");
-            archetype.save(person);
-        } catch (ValidationException exception) {
-            for (ValidationError error : exception.getErrors()) {
-                logger.error(error.toString());
-            }
+    public void testSave() {
+        Party person = createPerson("MR", "Jim", "Alateras");
+        service.save(person);
+        checkPerson(person);
+    }
 
-            //rethrow exception
-            throw exception;
-        }
+    /**
+     * Verifies that rule engine is called when objects are being saved.
+     * If both the before and after rules execute, the object will have
+     * 'before' and 'after' properties set to <tt>true</tt>.
+     * <p/>
+     * Requires the <em>archetypeService.save.party.person.before</em> and
+     * <em>archetypeService.save.party.person.after</em> rules.
+     */
+    public void testSaveCollection() {
+        Party person1 = createPerson("MR", "Jim", "Alateras");
+        Party person2 = createPerson("MR", "Tim", "Anderson");
+        Collection<IMObject> list = Arrays.asList((IMObject) person1, person2);
+        service.save(list);
+        checkPerson(person1);
+        checkPerson(person2);
+    }
+
+    /**
+     * Verifies that the rule engine is called when an object is removed.
+     * <p/>
+     * If both the before and after rules execute, the object will have
+     * 'remove_before' and 'remove_after' properties set to <tt>true</tt>.
+     * <p/>
+     * Requires the <em>archetypeService.remove.party.person.before</em> and
+     * <em>archetypeService.remove.party.person.after</em> rules.
+     */
+    public void testRemoveObject() {
+        Party person = createPerson("MR", "Tim", "Anderson");
+        service.remove(person);
+
+        // verify that the remove.before and after rules have been invoked
+        assertEquals(Boolean.TRUE, person.getDetails().get("remove_after"));
+        assertEquals(Boolean.TRUE, person.getDetails().get("remove_before"));
+
+        // the save.before and after rules should not have been invoked
+        assertNull(person.getDetails().get("before"));
+        assertNull(person.getDetails().get("after"));
+
+        // verify that the person has been removed
+        person = reload(person);
+        assertNull(person);
     }
 
     /**
@@ -85,33 +121,33 @@ public class DroolsRuleEngineTestCase
      */
     public void testOVPMS127() throws Exception {
         Party personA = createPerson("MR", "Jim", "Alateras");
-        archetype.save(personA);
+        service.save(personA);
         Party personB = createPerson("MR", "Oscar", "Alateras");
-        archetype.save(personB);
+        service.save(personB);
         Party pet = createAnimal("lucky");
-        archetype.save(pet);
+        service.save(pet);
 
         // create the entity relationships
-        EntityRelationship rel = createEntityRelationship(personA, pet,
-                                                          "entityRelationship.animalOwner");
+        EntityRelationship rel = createEntityRelationship(
+                personA, pet, "entityRelationship.animalOwner");
         pet.addEntityRelationship(rel);
-        archetype.save(pet);
-        assertTrue(rel.getActiveEndTime() == null);
+        service.save(pet);
+        assertNull(rel.getActiveEndTime());
 
-        EntityRelationship rel1 = createEntityRelationship(personB, pet,
-                                                           "entityRelationship.animalOwner");
+        EntityRelationship rel1 = createEntityRelationship(
+                personB, pet, "entityRelationship.animalOwner");
         pet.addEntityRelationship(rel1);
-        archetype.save(pet);
+        service.save(pet);
 
-        assertTrue(rel.getActiveEndTime() != null);
-        assertTrue(rel1.getActiveEndTime() == null);
+        assertNotNull(rel.getActiveEndTime());
+        assertNull(rel1.getActiveEndTime());
 
         pet = createAnimal("billy");
-        archetype.save(pet);
+        service.save(pet);
         rel = createEntityRelationship(personB, pet,
                                        "entityRelationship.animalOwner");
         personB.addEntityRelationship(rel);
-        archetype.save(personB);
+        service.save(personB);
     }
 
     /**
@@ -127,7 +163,7 @@ public class DroolsRuleEngineTestCase
      * </ul>
      */
     public void testException() {
-        Act act = (Act) archetype.create("act.simple");
+        Act act = (Act) service.create("act.simple");
         checkException(act, null);
         checkException(act, "EXCEPTION_BEFORE");
         checkException(act, "EXCEPTION_AFTER");
@@ -139,9 +175,9 @@ public class DroolsRuleEngineTestCase
      */
     public void testTransactionRollbackOnException() {
         Party person = createPerson("MR", "T", "Anderson");
-        Act act = (Act) archetype.create("act.simple");
-        archetype.save(person);
-        archetype.save(act);
+        Act act = (Act) service.create("act.simple");
+        service.save(person);
+        service.save(act);
 
         // start a new transaction
         TransactionStatus status = txnManager.getTransaction(
@@ -150,12 +186,12 @@ public class DroolsRuleEngineTestCase
         // change some details
         person.getDetails().put("lastName", "Foo");
 
-        archetype.save(person);
+        service.save(person);
 
         try {
             // make the act.simple.after save rule throw an exception
             act.setStatus("EXCEPTION_AFTER");
-            archetype.save(act);
+            service.save(act);
             fail("Expected save to fail");
         } catch (Exception expected) {
         }
@@ -180,11 +216,10 @@ public class DroolsRuleEngineTestCase
      * @see ActSimpleRules#insertNewActInIsolation
      */
     public void testTransactionIsolation() {
-        Act act = (Act) archetype.create("act.simple");
+        Act act = (Act) service.create("act.simple");
         try {
-            ActSimpleRules.setTransactionManager(txnManager);
             act.setStatus("INSERT_NEW_AND_THROW");
-            archetype.save(act);
+            service.save(act);
             fail("Expected save to throw exception");
         } catch (Exception expected) {
         }
@@ -208,7 +243,7 @@ public class DroolsRuleEngineTestCase
      */
     @Override
     protected String[] getConfigLocations() {
-        return new String[]{"org/openvpms/component/business/service/ruleengine/rule-engine-appcontext.xml"};
+        return new String[]{"org/openvpms/component/business/service/archetype/rule/rule-engine-appcontext.xml"};
     }
 
     /*
@@ -219,10 +254,39 @@ public class DroolsRuleEngineTestCase
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        archetype = (IArchetypeService) applicationContext.getBean(
+        service = (IArchetypeRuleService) applicationContext.getBean(
                 "archetypeService");
         txnManager = (PlatformTransactionManager) applicationContext.getBean(
-                "txManager");
+                "txnManager");
+    }
+
+    /**
+     * Verifies that the before and after rules have been invoked after a
+     * <em>party.person</em> has been saved/removed.
+     * If both rules execute, the object will have 'before' and 'after'
+     * properties set to <tt>true</tt>.
+     *
+     * @param person the person
+     */
+    private void checkPerson(Party person) {
+        assertEquals(Boolean.TRUE, person.getDetails().get("before"));
+        assertEquals(Boolean.TRUE, person.getDetails().get("after"));
+
+        person = reload(person);
+        assertNotNull(person);
+
+        // verify the persistent instance has the properties
+        assertEquals(Boolean.TRUE, person.getDetails().get("before"));
+
+        // the transaction is comitted on completion of the 'after' rule,
+        // so changes made to the object via the rule are also made persistent
+        // NOTE: this only occurs if the object is new. If it already
+        // exists only those changes applied on save() will be committed,
+        // and the following assertion would fail.
+        // TODO - how to make this consistent? The reason being that for new
+        // objects, saveOrUpdate() is used, whereas for persistent objects,
+        // merge() is used
+        assertEquals(Boolean.TRUE, person.getDetails().get("after"));
     }
 
     /**
@@ -236,7 +300,7 @@ public class DroolsRuleEngineTestCase
         long version = act.getVersion();
         try {
             act.setStatus(status);
-            archetype.save(act);
+            service.save(act);
             if (status != null) {
                 fail("Expected save of act.simple to fail");
             }
@@ -271,7 +335,7 @@ public class DroolsRuleEngineTestCase
      * @return the corresponding object or <tt>null</tt>
      */
     private IMObject get(IMObjectReference ref) {
-        return ArchetypeQueryHelper.getByObjectReference(archetype, ref);
+        return ArchetypeQueryHelper.getByObjectReference(service, ref);
     }
 
     /**
@@ -295,7 +359,7 @@ public class DroolsRuleEngineTestCase
      */
     private Party createPerson(String title, String firstName,
                                String lastName) {
-        Party person = (Party) archetype.create("party.person");
+        Party person = (Party) service.create("party.person");
         person.getDetails().put("lastName", lastName);
         person.getDetails().put("firstName", firstName);
         person.getDetails().put("title", title);
@@ -311,7 +375,7 @@ public class DroolsRuleEngineTestCase
      * @return Animal
      */
     private Party createAnimal(String name) {
-        Party pet = (Party) archetype.create("party.animalpet");
+        Party pet = (Party) service.create("party.animalpet");
         pet.setName(name);
         pet.getDetails().put("breed", "dog");
         pet.getDetails().put("colour", "brown");
@@ -329,7 +393,7 @@ public class DroolsRuleEngineTestCase
      * @return Contact
      */
     private Contact createPhoneContact() {
-        Contact contact = (Contact) archetype.create("contact.phoneNumber");
+        Contact contact = (Contact) service.create("contact.phoneNumber");
         contact.getDetails().put("areaCode", "03");
         contact.getDetails().put("telephoneNumber", "1234567");
         contact.getDetails().put("preferred", true);
@@ -349,7 +413,7 @@ public class DroolsRuleEngineTestCase
     private EntityRelationship createEntityRelationship(Entity source,
                                                         Entity target,
                                                         String shortName) {
-        EntityRelationship rel = (EntityRelationship) archetype.create(
+        EntityRelationship rel = (EntityRelationship) service.create(
                 shortName);
 
         rel.setActiveStartTime(new Date());

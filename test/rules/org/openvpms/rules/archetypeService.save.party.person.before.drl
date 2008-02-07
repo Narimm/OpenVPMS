@@ -5,16 +5,13 @@
     xs:schemaLocation="http://drools.org/rules rules.xsd
     				   http://drools.org/semantics/java java.xsd">
     				   
-    <rule name="Print If Name is Not Null">
+    <rule name="Update before">
         <parameter identifier="person">
-        	<java:class>org.openvpms.component.business.domain.im.party.Party</java:class>
+        	<class>org.openvpms.component.business.domain.im.party.Party</class>
         </parameter>
-        <parameter identifier="service">
-        	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
-        </parameter>
-        <java:condition>person.getName() != null</java:condition>
+        <java:condition>true</java:condition>
         <java:consequence>
-            org.openvpms.component.business.service.ruleengine.PartyPersonRules.onSaveMessage(service, person);
+            person.getDetails().put("before", Boolean.TRUE);
         </java:consequence>
     </rule>
 
@@ -27,7 +24,7 @@
         </parameter>
         <java:condition>person.getEntityRelationships().size() > 0</java:condition>
         <java:consequence>
-            org.openvpms.component.business.service.ruleengine.PartyPersonRules.setActiveEndDates(service, person);
+            org.openvpms.component.business.service.archetype.rule.PartyPersonRules.setActiveEndDates(service, person);
         </java:consequence>
     </rule>
 

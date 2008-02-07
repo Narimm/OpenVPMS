@@ -39,7 +39,7 @@ public class RuleDescriptor {
         public String toString() {
             return super.toString().toLowerCase();
         }
-    };
+    }
     
     /**
      * The source of the rule, which indicates if the path resolves to a classpath
@@ -93,7 +93,7 @@ public class RuleDescriptor {
             // throw an exception
             throw new RuleEngineException(
                     RuleEngineException.ErrorCode.InvalidSourceSpecified,
-                    new Object[] {source});
+                    source);
         }
     }
 
