@@ -168,32 +168,24 @@
   <!--  The AuditRecord DAO bean -->
   <bean id="auditDao"
     class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
-    <property name="sessionFactory">
-      <ref local="sessionFactory" />
-    </property>
+    <property name="sessionFactory" ref="sessionFactory" />
   </bean>
 
   <!--  The Archetype Descriptor Cache -->
   <bean id="archetypeDescriptorCache"
     class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheDB">
-    <constructor-arg index="0" ref="imObjectDao" />
+    <constructor-arg ref="imObjectDao" />
   </bean>
 
   <!--  The Archetype Service -->
   <bean id="archetypeService"
     class="org.openvpms.component.business.service.archetype.ArchetypeService">
-    <constructor-arg index="0">
-      <ref local="archetypeDescriptorCache" />
-    </constructor-arg>
-    <property name="dao">
-      <ref local="imObjectDao" />
-    </property>
+    <constructor-arg ref="archetypeDescriptorCache" />
+    <property name="dao" ref="imObjectDao" />
   </bean>
 
     <bean id="archetypeServiceHelper" class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
-	    <constructor-arg index="0">
-	      <ref local="archetypeService" />
-	    </constructor-arg>
+	    <constructor-arg ref="archetypeService" />
 	</bean>
 
     <!-- The JXPathHelper class, used to register extension functions -->

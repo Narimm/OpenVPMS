@@ -38,7 +38,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.ruleengine.DroolsRuleEngine;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -48,8 +48,6 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-import org.springframework.aop.Advisor;
-import org.springframework.aop.framework.Advised;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -153,15 +151,10 @@ public class CustomerBalanceGenerator {
      */
     public CustomerBalanceGenerator(IArchetypeService service,
                                     boolean posted, boolean unposted) {
-        if (service instanceof Advised) {
-            Advised advised = (Advised) service;
-            for (Advisor advisor : advised.getAdvisors()) {
-                if (advisor.getAdvice() instanceof DroolsRuleEngine) {
-                    throw new IllegalStateException(
-                            "Rules must be disabled to run "
-                                    + CustomerBalanceGenerator.class.getName());
-                }
-            }
+        if (service instanceof IArchetypeRuleService) {
+            throw new IllegalStateException(
+                    "Rules must be disabled to run "
+                            + CustomerBalanceGenerator.class.getName());
         }
         this.service = service;
         rules = new CustomerAccountRules(service);
