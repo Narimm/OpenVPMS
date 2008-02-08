@@ -57,12 +57,12 @@ public class AppointmentTableCellRenderer extends AbstractTableCellRenderer {
     /**
      * The style of the first block of hours.
      */
-    private static final String BLOCK_STYLE1 = "Table.EvenRow";
+    private static final String BLOCK_STYLE1 = "TaskTable.EvenRow";
 
     /**
      * The style of the second block of hours.
      */
-    private static final String BLOCK_STYLE2 = "Table.OddRow";
+    private static final String BLOCK_STYLE2 = "TaskTable.OddRow";
 
 
     /**
