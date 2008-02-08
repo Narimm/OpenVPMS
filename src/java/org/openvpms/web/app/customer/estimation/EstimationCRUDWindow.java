@@ -52,6 +52,7 @@ import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -177,11 +178,12 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
         IMObject object = getObject();
         try {
             IMObjectCopier copier = new IMObjectCopier(new ActCopyHandler());
-            Act act = (Act) copier.copy(object);
+            List<IMObject> objects = copier.apply(object);
+            Act act = (Act) objects.get(0);
             act.setStatus(IN_PROGRESS);
             act.setActivityStartTime(new Date());
             setPrintStatus(act, false);
-            SaveHelper.save(act);
+            SaveHelper.save(objects);
             setObject(act);
             CRUDWindowListener<Act> listener = getListener();
             if (listener != null) {
@@ -224,12 +226,13 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     private void invoice(Act estimation) {
         try {
             IMObjectCopier copier = new IMObjectCopier(new InvoiceHandler());
-            Act invoice = (Act) copier.copy(estimation);
+            List<IMObject> objects = copier.apply(estimation);
+            Act invoice = (Act) objects.get(0);
             invoice.setStatus(IN_PROGRESS);
             invoice.setActivityStartTime(new Date());
             setPrintStatus(invoice, false);
             calcAmount(invoice);
-            SaveHelper.save(invoice);
+            SaveHelper.save(objects);
 
             if (!INVOICED.equals(estimation.getStatus())) {
                 estimation.setStatus(INVOICED);

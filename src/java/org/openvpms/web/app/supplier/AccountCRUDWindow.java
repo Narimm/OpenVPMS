@@ -27,6 +27,7 @@ import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ShortNameList;
@@ -38,6 +39,7 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -180,11 +182,12 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
         try {
             IMObjectCopier copier
                     = new IMObjectCopier(new SupplierActReversalHandler(act));
-            Act reversal = (Act) copier.copy(act);
+            List<IMObject> objects = copier.apply(act);
+            Act reversal = (Act) objects.get(0);
             reversal.setStatus(IN_PROGRESS);
             reversal.setActivityStartTime(new Date());
             setPrintStatus(reversal, false);
-            SaveHelper.save(reversal);
+            SaveHelper.save(objects);
         } catch (OpenVPMSException exception) {
             String title = Messages.get("supplier.account.reverse.failed");
             ErrorHelper.show(title, exception);
