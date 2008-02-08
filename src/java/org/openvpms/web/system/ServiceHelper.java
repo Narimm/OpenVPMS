@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
@@ -105,6 +106,15 @@ public final class ServiceHelper {
      */
     public static MacroCache getMacroCache() {
         return (MacroCache) getContext().getBean("macroCache");
+    }
+
+    /**
+     * Helper to get the transaction manager.
+     *
+     * @return the transaction manager
+     */
+    public static PlatformTransactionManager getTransactionManager() {
+        return (PlatformTransactionManager) getContext().getBean("txnManager");
     }
 
     /**

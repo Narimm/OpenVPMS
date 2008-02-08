@@ -66,7 +66,9 @@ public final class IMObjectDeletor {
         try {
             if (object instanceof Entity) {
                 Entity entity = (Entity) object;
-                if (hasParticipations(entity) && !entity.getArchetypeId().getShortName().equals("entity.documentTemplate")) {
+                if (hasParticipations(
+                        entity) && !entity.getArchetypeId().getShortName().equals(
+                        "entity.documentTemplate")) {
                     if (object.isActive()) {
                         confirmDeactivate(object, listener);
                     } else {
@@ -150,7 +152,7 @@ public final class IMObjectDeletor {
                     try {
                         IMObjectEditor editor = IMObjectEditorFactory.create(
                                 object, new DefaultLayoutContext(true));
-                        if (editor.delete()) {
+                        if (SaveHelper.delete(editor)) {
                             listener.deleted(object);
                         }
                     } catch (OpenVPMSException exception) {
