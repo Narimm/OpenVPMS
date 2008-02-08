@@ -343,10 +343,11 @@ public class CustomerAccountRules {
     public FinancialAct reverse(FinancialAct act, Date startTime) {
         IMObjectCopier copier
                 = new IMObjectCopier(new CustomerActReversalHandler(act));
-        FinancialAct reversal = (FinancialAct) copier.copy(act);
+        List<IMObject> objects = copier.apply(act);
+        FinancialAct reversal = (FinancialAct) objects.get(0);
         reversal.setStatus(FinancialActStatus.POSTED);
         reversal.setActivityStartTime(startTime);
-        service.save(reversal);
+        service.save(objects);
         return reversal;
     }
 

@@ -127,7 +127,8 @@ public abstract class PartyMerger {
     protected void copyContacts(Party from, Party to) {
         Contact[] contacts = from.getContacts().toArray(new Contact[0]);
         for (Contact contact : contacts) {
-            Contact copy = (Contact) contactCopier.copy(contact);
+            List<IMObject> objects = contactCopier.apply(contact);
+            Contact copy = (Contact) objects.get(0);
             to.addContact(copy);
         }
     }
@@ -169,7 +170,7 @@ public abstract class PartyMerger {
      * will be replaced with the 'to' party; otherwise the target of the
      * relationship will be replaced with the 'to' party.
      *
-     * @param relationship the relationshi to copy
+     * @param relationship the relationship to copy
      * @param from         the party to copy from
      * @param to           the party to copy to
      * @return the copied relationship
@@ -180,8 +181,8 @@ public abstract class PartyMerger {
         IMObjectReference fromRef = from.getObjectReference();
         IMObjectReference toRef = to.getObjectReference();
 
-        EntityRelationship copy
-                = (EntityRelationship) relationshipCopier.copy(relationship);
+        List<IMObject> objects = relationshipCopier.apply(relationship);
+        EntityRelationship copy = (EntityRelationship) objects.get(0);
         if (copy.getSource().equals(fromRef)) {
             copy.setSource(toRef);
         } else {
@@ -200,7 +201,8 @@ public abstract class PartyMerger {
         IMObjectCopier copier = new IMObjectCopier(
                 new DefaultIMObjectCopyHandler(), service);
         for (EntityIdentity identity : from.getIdentities()) {
-            EntityIdentity copy = (EntityIdentity) copier.copy(identity);
+            List<IMObject> objects = copier.apply(identity);
+            EntityIdentity copy = (EntityIdentity) objects.get(0);
             to.addIdentity(copy);
         }
     }

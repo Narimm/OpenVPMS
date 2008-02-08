@@ -18,14 +18,14 @@
 
 package org.openvpms.archetype.rules.product;
 
-import org.openvpms.archetype.rules.act.FinancialActStatus;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DefaultIMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+
+import java.util.List;
 
 /**
  * Product rules.
@@ -60,17 +60,17 @@ public class ProductRules {
     /**
      * Copies a product.
      *
-     * @param product       the product to copy
+     * @param product the product to copy
      * @return a copy of <tt>product</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Product copy(Product product) {
-        IMObjectCopier copier
-                = new IMObjectCopier(new ProductCopyHandler());
-        Product copy = (Product) copier.copy(product);
-        String newName = "Copy Of " + copy.getName(); 
+        IMObjectCopier copier = new IMObjectCopier(new ProductCopyHandler());
+        List<IMObject> objects = copier.apply(product);
+        Product copy = (Product) objects.get(0);
+        String newName = "Copy Of " + copy.getName();
         copy.setName(newName);
-        service.save(copy);
+        service.save(objects);
         return copy;
     }
 
