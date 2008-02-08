@@ -43,8 +43,6 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Cancellable;
@@ -301,7 +299,7 @@ public abstract class AbstractIMObjectEditor
         if (cancelled) {
             return false;
         }
-        boolean result = false;
+        boolean result;
         for (Deletable deletable : editors.getDeletable()) {
             if (!deletable.delete()) {
                 return false;
@@ -311,15 +309,7 @@ public abstract class AbstractIMObjectEditor
         if (object.isNew()) {
             result = true;
         } else {
-            try {
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
-                service.remove(object);
-                result = true;
-            } catch (OpenVPMSException exception) {
-                String title = Messages.get("imobject.delete.failed.title");
-                ErrorHelper.show(title, exception);
-            }
+            result = SaveHelper.delete(object);
         }
         deleted |= result;
         return result;

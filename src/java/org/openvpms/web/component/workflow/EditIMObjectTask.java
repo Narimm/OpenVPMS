@@ -27,6 +27,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
@@ -267,7 +268,7 @@ public class EditIMObjectTask extends AbstractTask {
                 GlobalContext.getInstance().setCurrent(null);
                 edit(editor, context);
                 if (editor.isValid() || !showEditorOnError) {
-                    if (editor.save()) {
+                    if (SaveHelper.save(editor)) {
                         notifyCompleted();
                     } else {
                         if (deleteOnCancelOrSkip) {

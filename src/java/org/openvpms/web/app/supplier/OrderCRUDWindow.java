@@ -222,7 +222,6 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
             invoice.setStatus(IN_PROGRESS);
             invoice.setActivityStartTime(new Date());
             setPrintStatus(invoice, false);
-            // calcAmount(invoice);
             SaveHelper.save(objects);
 
             if (!POSTED.equals(order.getStatus())) {
