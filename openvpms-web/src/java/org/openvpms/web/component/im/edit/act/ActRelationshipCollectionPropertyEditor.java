@@ -186,8 +186,6 @@ public class ActRelationshipCollectionPropertyEditor
     protected boolean doSave() {
         boolean saved = super.doSave();
         if (saved) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
             IMObject[] toRemove = removed.toArray(new IMObject[0]);
             boolean deleted;
             for (IMObject object : toRemove) {
@@ -203,7 +201,7 @@ public class ActRelationshipCollectionPropertyEditor
                     // first.
                     IMObject toDelete = IMObjectHelper.reload(object);
                     if (toDelete != null) {
-                        deleted = SaveHelper.remove(toDelete, service);
+                        deleted = SaveHelper.delete(toDelete);
                     } else {
                         deleted = false;
                     }

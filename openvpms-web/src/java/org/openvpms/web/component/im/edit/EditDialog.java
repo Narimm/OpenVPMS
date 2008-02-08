@@ -147,7 +147,7 @@ public class EditDialog extends PopupDialog {
     protected boolean save() {
         boolean result = false;
         if (save) {
-            result = editor.save();
+            result = SaveHelper.save(editor);
         }
         return result;
     }

@@ -31,6 +31,7 @@ import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -154,7 +155,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<Act> {
         DocumentActEditor editor
                 = new DocumentActEditor(act, null, null);
         if (editor.refresh()) {
-            refreshed = editor.save();
+            refreshed = SaveHelper.save(editor);
             onSaved(act, false);
         }
         return refreshed;
