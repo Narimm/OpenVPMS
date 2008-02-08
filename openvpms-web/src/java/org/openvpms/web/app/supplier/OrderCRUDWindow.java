@@ -31,12 +31,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
@@ -48,10 +45,9 @@ import org.openvpms.web.component.im.edit.act.ActCopyHandler;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.system.ServiceHelper;
 
-import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -177,11 +173,12 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
         IMObject object = getObject();
         try {
             IMObjectCopier copier = new IMObjectCopier(new ActCopyHandler());
-            Act act = (Act) copier.copy(object);
+            List<IMObject> objects = copier.apply(object);
+            Act act = (Act) objects.get(0);
             act.setStatus(IN_PROGRESS);
             act.setActivityStartTime(new Date());
             setPrintStatus(act, false);
-            SaveHelper.save(act);
+            SaveHelper.save(objects);
             setObject(act);
             CRUDWindowListener<Act> listener = getListener();
             if (listener != null) {
@@ -220,12 +217,13 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
     private void invoice(Act order) {
         try {
             IMObjectCopier copier = new IMObjectCopier(new InvoiceHandler());
-            Act invoice = (Act) copier.copy(order);
+            List<IMObject> objects = copier.apply(order);
+            Act invoice = (Act) objects.get(0);
             invoice.setStatus(IN_PROGRESS);
             invoice.setActivityStartTime(new Date());
             setPrintStatus(invoice, false);
-            calcAmount(invoice);
-            SaveHelper.save(invoice);
+            // calcAmount(invoice);
+            SaveHelper.save(objects);
 
             if (!POSTED.equals(order.getStatus())) {
                 order.setStatus(POSTED);
@@ -240,31 +238,6 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
             String title = Messages.get("supplier.order.invoice.failed");
             ErrorHelper.show(title, exception);
         }
-    }
-
-    /**
-     * Calculate the act total.
-     *
-     * @param act the act
-     */
-    private void calcAmount(Act act) {
-        // todo - workaround for OVPMS-211
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        ArchetypeDescriptor invoiceDesc
-                = DescriptorHelper.getArchetypeDescriptor(INVOICE_TYPE);
-        ArchetypeDescriptor itemDesc
-                = DescriptorHelper.getArchetypeDescriptor(INVOICE_ITEM_TYPE);
-        NodeDescriptor itemTotalDesc = itemDesc.getNodeDescriptor("total");
-        NodeDescriptor totalDesc = invoiceDesc.getNodeDescriptor("amount");
-        BigDecimal total = BigDecimal.ZERO;
-        for (ActRelationship relationship : act.getSourceActRelationships()) {
-            Act item = (Act) ArchetypeQueryHelper.getByObjectReference(
-                    service, relationship.getTarget());
-            BigDecimal value = (BigDecimal) itemTotalDesc.getValue(item);
-            total = total.add(value);
-        }
-        // @todo - workaround for OBF-55
-        totalDesc.setValue(act, new Money(total.toString()));
     }
 
     private static class InvoiceHandler extends AbstractIMObjectCopyHandler {
@@ -287,12 +260,16 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
         @Override
         protected NodeDescriptor getTargetNode(NodeDescriptor source,
                                                ArchetypeDescriptor target) {
+            String name = source.getName();
             if (target.getShortName().equals(INVOICE_ITEM_TYPE)) {
-                String name = source.getName();
-                if (name.equals("highQty")) {
+                if (name.equals("qty")) {
                     return target.getNodeDescriptor("quantity");
-                } else if (name.equals("highUnitPrice")) {
-                    return target.getNodeDescriptor("unitPrice");
+                } else if (name.equals("total")) {
+                    return target.getNodeDescriptor("amount");
+                }
+            } else if (target.getShortName().equals(INVOICE_TYPE)) {
+                if (name.equals("total")) {
+                    return target.getNodeDescriptor("amount");
                 }
             }
             return super.getTargetNode(source, target);

@@ -198,7 +198,8 @@ public class ActRelationshipCollectionEditor
 
                 if (copy == null) {
                     // copy the act, and associate the product
-                    copy = (Act) copier.copy(act);
+                    List<IMObject> objects = copier.apply(act);
+                    copy = (Act) objects.get(0);
                     LayoutContext context = new DefaultLayoutContext();
                     context.setComponentFactory(
                             new ReadOnlyComponentFactory(context));
