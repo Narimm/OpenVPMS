@@ -328,22 +328,12 @@
     </property>
   </bean>
 
-  <!-- Jsr94Template -->
-  <bean id="jsr94Template" class="org.springmodules.jsr94.core.Jsr94Template">
-    <property name="ruleSource">
-      <ref local="ruleSource" />
-    </property>
-  </bean>
-
   <!--  The DroolsRileEngine interceptor -->
   <bean id="ruleEngine"
     class="org.openvpms.component.business.service.ruleengine.RuleEngine">
     <constructor-arg index="0">
       <ref local="ruleSource" />
     </constructor-arg>
-    <property name="template">
-      <ref local="jsr94Template" />
-    </property>
   </bean>
 
 </beans>
