@@ -95,11 +95,11 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        buttons.remove(copy);
-        if (enable) {
-            if (copy != null) {
-                buttons.add(copy);
-            }
+        if (copy != null) {
+            buttons.remove(copy);
+            if (enable) {
+               buttons.add(copy);
+            } 
         }
     }
 
