@@ -418,28 +418,7 @@
    <leftvalue>ITEM</leftvalue>
    <function>&lt;&gt;</function>
    <rightvalue/>
-   <value><name>constant</name><type>String</type><text>COMI</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
-  <condition>
-   <negated>N</negated>
-   <operator>AND</operator>
-   <leftvalue>ITEM</leftvalue>
-   <function>&lt;&gt;</function>
-   <rightvalue/>
-   <value><name>constant</name><type>String</type><text>COMP</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
-  <condition>
-   <negated>N</negated>
-   <operator>AND</operator>
-   <leftvalue>ITEM</leftvalue>
-   <function>&lt;&gt;</function>
-   <rightvalue/>
-   <value><name>constant</name><type>String</type><text>INCOMP</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
-  <condition>
-   <negated>N</negated>
-   <operator>AND</operator>
-   <leftvalue>ITEM</leftvalue>
-   <function>&lt;&gt;</function>
-   <rightvalue/>
-   <value><name>constant</name><type>String</type><text>COMH</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+   <value><name>constant</name><type>String</type><text>HCOM</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
   </conditions>
  </condition>
     </compare>
@@ -555,28 +534,7 @@
    <leftvalue>ITEM</leftvalue>
    <function>&lt;&gt;</function>
    <rightvalue/>
-   <value><name>constant</name><type>String</type><text>COMI</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
-  <condition>
-   <negated>N</negated>
-   <operator>AND</operator>
-   <leftvalue>ITEM</leftvalue>
-   <function>&lt;&gt;</function>
-   <rightvalue/>
-   <value><name>constant</name><type>String</type><text>COMP</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
-  <condition>
-   <negated>N</negated>
-   <operator>AND</operator>
-   <leftvalue>ITEM</leftvalue>
-   <function>&lt;&gt;</function>
-   <rightvalue/>
-   <value><name>constant</name><type>String</type><text>INCOMP</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
-  <condition>
-   <negated>N</negated>
-   <operator>AND</operator>
-   <leftvalue>ITEM</leftvalue>
-   <function>&lt;&gt;</function>
-   <rightvalue/>
-   <value><name>constant</name><type>String</type><text>COMH</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+   <value><name>constant</name><type>String</type><text>HCOM</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
   </conditions>
  </condition>
     </compare>

@@ -135,6 +135,13 @@
    <function>&lt;</function>
    <rightvalue/>
    <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PATIENTID</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text> 0</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
   </conditions>
  </condition>
     </compare>
@@ -173,6 +180,13 @@
    <negated>N</negated>
    <operator>AND</operator>
    <leftvalue>CLIENTID</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Integer</type><text> 0</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PATIENTID</leftvalue>
    <function>&lt;&gt;</function>
    <rightvalue/>
    <value><name>constant</name><type>Integer</type><text> 0</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
@@ -247,6 +261,10 @@
         <precision>-2</precision>
         </field>      <field>        <name>Comments</name>
         <rename>DESCRIPTION</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>PetNumber</name>
+        <rename>PATIENTID</rename>
         <length>-2</length>
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
