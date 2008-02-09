@@ -80,7 +80,7 @@
            </partitioning>
      <cluster_schema/>
     <GUI>
-      <xloc>342</xloc>
+      <xloc>343</xloc>
       <yloc>242</yloc>
       <draw>Y</draw>
       </GUI>
@@ -251,14 +251,15 @@ var TEXT
 
 if (SUMMARY.getString() != null &amp;&amp; SUMMARY.getString() != &quot;&quot;) {
 	TEXT = &quot;Summary: &quot; + SUMMARY.getString();
-}if (SYMPTOMS.getString() != null &amp;&amp; SYMPTOMS.getString() != &quot;&quot;) {
-	TEXT = &quot;Symptoms: &quot; + SYMPTOMS.getString();
+}
+if (SYMPTOMS.getString() != null &amp;&amp; SYMPTOMS.getString() != &quot;&quot;) {
+	TEXT = TEXT + &quot;\nSymptoms: &quot; + SYMPTOMS.getString();
 }
 if (DIAGNOSIS.getString() != null &amp;&amp; DIAGNOSIS.getString() != &quot;&quot;) {
-	TEXT = &quot;Diagnosis: &quot; + DIAGNOSIS.getString();
+	TEXT = TEXT + &quot;\nDiagnosis: &quot; + DIAGNOSIS.getString();
 }
 if (TREATMENT.getString() != null &amp;&amp; TREATMENT.getString() != &quot;&quot;) {
-	TEXT = &quot;Treatment: &quot; + TREATMENT.getString();
+	TEXT = TEXT + &quot;\nTreatment: &quot; + TREATMENT.getString();
 }
 </jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>ID</name>

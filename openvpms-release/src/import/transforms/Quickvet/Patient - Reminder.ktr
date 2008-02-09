@@ -167,6 +167,31 @@
     </step>
 
   <step>
+    <name>Table input</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <connection>Quickvet</connection>
+    <sql>select * from petrsys</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+     <cluster_schema/>
+    <GUI>
+      <xloc>106</xloc>
+      <yloc>138</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Transform Reminder Fields</name>
     <type>ScriptValueMod</type>
     <description/>
@@ -201,31 +226,6 @@ var STATUS = &quot;IN_PROGRESS&quot;</jsScript_script>
     <GUI>
       <xloc>435</xloc>
       <yloc>135</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Table input</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <connection>Quickvet</connection>
-    <sql>select * from petrsys</sql>
-    <limit>0</limit>
-    <lookup/>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
-     <cluster_schema/>
-    <GUI>
-      <xloc>106</xloc>
-      <yloc>138</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
