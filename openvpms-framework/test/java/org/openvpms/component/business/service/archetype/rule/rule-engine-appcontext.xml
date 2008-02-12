@@ -110,6 +110,7 @@
         class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
     <property name="sessionFactory" ref="sessionFactory"/>
     <property name="transactionManager" ref="txnManager"/>
+    <property name="archetypeDescriptorCache" ref="archetypeDescriptorCache"/>
   </bean>
 
   <!--  The Archetype Descriptor Cache -->

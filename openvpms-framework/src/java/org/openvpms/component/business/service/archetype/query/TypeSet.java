@@ -23,8 +23,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import static org.openvpms.component.business.service.archetype.query.QueryBuilderException.ErrorCode.*;
 import org.openvpms.component.system.common.query.ArchetypeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeIdConstraint;
@@ -56,7 +55,7 @@ class TypeSet {
      */
     private String alias;
 
-    
+
     /**
      * Constructs a new <code>TypeSet</code>.
      *
@@ -125,7 +124,7 @@ class TypeSet {
      */
     public Set<String> getShortNames() {
         Set<String> result = new HashSet<String>();
-        for (ArchetypeDescriptor descriptor :  descriptors) {
+        for (ArchetypeDescriptor descriptor : descriptors) {
             result.add(descriptor.getShortName());
         }
         return result;
@@ -135,15 +134,15 @@ class TypeSet {
      * Creates a new type set from an {@link ArchetypeIdConstraint}.
      *
      * @param constraint the constraint
+     * @param cache      the archetype descriptor cache
      * @return a new type set
      * @throws ArchetypeServiceException for any archetype service error
      * @throws QueryBuilderException     if there are no archetypes for the id
      */
-    public static TypeSet create(ArchetypeIdConstraint constraint) {
+    public static TypeSet create(ArchetypeIdConstraint constraint,
+                                 IArchetypeDescriptorCache cache) {
         ArchetypeId id = constraint.getArchetypeId();
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(id);
+        ArchetypeDescriptor descriptor = cache.getArchetypeDescriptor(id);
         if (descriptor == null) {
             throw new QueryBuilderException(NoArchetypesForId, id);
         }
@@ -159,13 +158,15 @@ class TypeSet {
      *
      * @param constraint the constraint
      * @param descriptor the node descriptor
+     * @param cache the archetype descriptor cache
      * @return a new type set
      * @throws ArchetypeServiceException for any archetype service error
      * @throws QueryBuilderException     if there are no matching archetypes for
      *                                   the constraint
      */
     public static TypeSet create(ArchetypeConstraint constraint,
-                                 NodeDescriptor descriptor) {
+                                 NodeDescriptor descriptor,
+                                 IArchetypeDescriptorCache cache) {
         String[] shortNames = descriptor.getArchetypeRange();
         if (shortNames == null || shortNames.length == 0) {
             if (descriptor.getFilter() == null) {
@@ -175,7 +176,8 @@ class TypeSet {
             shortNames = new String[]{descriptor.getFilter()};
         }
         Set<ArchetypeDescriptor> descriptors
-                = getDescriptors(shortNames, constraint.isPrimaryOnly());
+                = getDescriptors(shortNames, constraint.isPrimaryOnly(),
+                                 cache);
         if (descriptors.isEmpty()) {
             throw new QueryBuilderException(
                     NoMatchingArchetypesForShortName,
@@ -188,15 +190,17 @@ class TypeSet {
      * Creates a new type set from a {@link ShortNameConstraint}.
      *
      * @param constraint the constraint
+     * @param cache the archetype descriptor cache
      * @return a new type set
      * @throws ArchetypeServiceException for any archetype service error
      * @throws QueryBuilderException     if there are no matching archetypes for
      *                                   the constraint
      */
-    public static TypeSet create(ShortNameConstraint constraint) {
+    public static TypeSet create(ShortNameConstraint constraint,
+                                 IArchetypeDescriptorCache cache) {
         Set<ArchetypeDescriptor> descriptors
                 = getDescriptors(constraint.getShortNames(),
-                                 constraint.isPrimaryOnly());
+                                 constraint.isPrimaryOnly(), cache);
         // check that we have at least one match
         if (descriptors.isEmpty()) {
             throw new QueryBuilderException(
@@ -210,17 +214,20 @@ class TypeSet {
      * Creates a new type set from a {@link LongNameConstraint}.
      *
      * @param constraint the constraint
+     * @param cache the archetype descriptor cache
      * @return a new type set
      * @throws ArchetypeServiceException for any archetype service error
      * @throws QueryBuilderException     if there are no matching archetypes for
      *                                   the constraint
      */
     @Deprecated
-    public static TypeSet create(LongNameConstraint constraint) {
+    public static TypeSet create(LongNameConstraint constraint,
+                                 IArchetypeDescriptorCache cache) {
         Set<ArchetypeDescriptor> descriptors
                 = getDescriptors(constraint.getEntityName(),
                                  constraint.getConceptName(),
-                                 constraint.isPrimaryOnly());
+                                 constraint.isPrimaryOnly(),
+                                 cache);
 
         // check that we have at least one match
         if (descriptors.isEmpty()) {
@@ -236,16 +243,15 @@ class TypeSet {
      *
      * @param entityName  the archetype entity name. May be <code>null</code>
      * @param conceptName the archetype concept name. May be <code>null</code>
+     * @param cache       the archetype descriptor cache
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private static Set<ArchetypeDescriptor> getDescriptors(String entityName,
-                                                           String conceptName,
-                                                           boolean primaryOnly) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        List<String> shortNames = service.getArchetypeShortNames(
+    private static Set<ArchetypeDescriptor> getDescriptors(
+            String entityName, String conceptName, boolean primaryOnly,
+            IArchetypeDescriptorCache cache) {
+        List<String> shortNames = cache.getArchetypeShortNames(
                 entityName, conceptName, primaryOnly);
-        return getDescriptors(shortNames.toArray(new String[0]));
+        return getDescriptors(shortNames.toArray(new String[0]), cache);
     }
 
     /**
@@ -253,39 +259,37 @@ class TypeSet {
      *
      * @param shortNames  a list of short names to search against
      * @param primaryOnly determines whether to restrict processing to primary only
+     * @param cache       the archetype descriptor cache
      * @return matching archetypes
      * @throws ArchetypeServiceException for any archetype service error
      */
     private static Set<ArchetypeDescriptor> getDescriptors(
-            String[] shortNames, boolean primaryOnly) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-
+            String[] shortNames, boolean primaryOnly,
+            IArchetypeDescriptorCache cache) {
         // expand any wilcards
         Set<String> expanded = new HashSet<String>();
         for (String shortName : shortNames) {
-            List<String> matches = service.getArchetypeShortNames(shortName,
-                                                                  primaryOnly);
+            List<String> matches = cache.getArchetypeShortNames(shortName,
+                                                                primaryOnly);
             expanded.addAll(matches);
         }
-        return getDescriptors(expanded.toArray(new String[0]));
+        return getDescriptors(expanded.toArray(new String[0]), cache);
     }
 
     /**
      * Returns the distinct type that matches all short names.
      *
      * @param shortNames the short names. Must be expanded.
+     * @param cache      the archetype descriptor cache
      * @return a new <code>TypeSet</code>
      * @throws ArchetypeServiceException for any archetype service error
      */
     private static Set<ArchetypeDescriptor> getDescriptors(
-            String[] shortNames) {
+            String[] shortNames, IArchetypeDescriptorCache cache) {
         Set<ArchetypeDescriptor> result = new HashSet<ArchetypeDescriptor>();
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
         for (String shortName : shortNames) {
             ArchetypeDescriptor descriptor
-                    = service.getArchetypeDescriptor(shortName);
+                    = cache.getArchetypeDescriptor(shortName);
             result.add(descriptor);
         }
         return result;

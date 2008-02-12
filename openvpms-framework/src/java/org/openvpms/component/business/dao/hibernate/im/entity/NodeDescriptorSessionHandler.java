@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.hibernate.Session;
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -29,25 +30,34 @@ import java.util.Map;
 
 
 /**
- * Implementation of {@link MergeHandler} for {@link NodeDescriptor}s.
+ * Implementation of {@link IMObjectSessionHandler} for {@link NodeDescriptor}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class NodeDescriptorMergeHandler extends AbstractMergeHandler {
+class NodeDescriptorSessionHandler extends AbstractIMObjectSessionHandler {
 
     /**
-     * Merges an object.
+     * Creates a new <tt>NodeDescriptorSessionHandler<tt>.
+     *
+     * @param dao the DAO
+     */
+    public NodeDescriptorSessionHandler(IMObjectDAO dao) {
+        super(dao);
+    }
+
+    /**
+     * Saves an object.
      *
      * @param object  the object to merge
      * @param session the session to use
      * @return the result of <tt>Session.merge(object)</tt>
      */
     @Override
-    public IMObject merge(IMObject object, Session session) {
+    public IMObject save(IMObject object, Session session) {
         NodeDescriptor descriptor = (NodeDescriptor) object;
-        save(descriptor.getAssertionDescriptors().values(), session);
-        return super.merge(object, session);
+        saveNew(descriptor.getAssertionDescriptors().values(), session);
+        return super.save(object, session);
     }
 
     /**
@@ -57,12 +67,12 @@ class NodeDescriptorMergeHandler extends AbstractMergeHandler {
      * @param source the object to update from
      */
     @Override
-    public void update(IMObject target, IMObject source) {
+    public void updateIds(IMObject target, IMObject source) {
         NodeDescriptor targetDesc = (NodeDescriptor) target;
         NodeDescriptor sourceDesc = (NodeDescriptor) source;
         updateTypeDescriptors(targetDesc.getAssertionDescriptors().values(),
                               sourceDesc.getAssertionDescriptors().values());
-        super.update(target, source);
+        super.updateIds(target, source);
     }
 
     /**
@@ -84,7 +94,7 @@ class NodeDescriptorMergeHandler extends AbstractMergeHandler {
             for (AssertionDescriptor target : targets) {
                 AssertionDescriptor source = map.get(target.getName());
                 if (source != null) {
-                    super.update(target, source);
+                    super.updateIds(target, source);
                 }
             }
         }

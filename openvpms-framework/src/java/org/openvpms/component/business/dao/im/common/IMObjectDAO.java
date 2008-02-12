@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.im.common;
 
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.IPage;
 
 import java.util.Collection;
@@ -58,15 +59,6 @@ public interface IMObjectDAO {
      * @throws IMObjectDAOException if the request cannot complete
      */
     void delete(IMObject object);
-
-    /**
-     * Deletes a collection of objects.
-     * Deletion is performed in a single transaction.
-     *
-     * @param objects the objects to delete
-     * @throws IMObjectDAOException if the request cannot complete
-     */
-    void delete(Collection<IMObject> objects);
 
     /**
      * Execute a get using the specified query string, the query
@@ -180,6 +172,15 @@ public interface IMObjectDAO {
      * @throws IMObjectDAOException if the request cannot complete
      */
     public IMObject getByLinkId(String clazz, String linkId);
+
+    /**
+     * Returns an object with the specified object reference.
+     *
+     * @param reference the object reference
+     * @return the corresponding object, or <tt>null</tt> if none exists
+     * @throws IMObjectDAOException if the request cannot complete
+     */
+    IMObject getByReference(IMObjectReference reference);
 
     /**
      * Executes a get using the specified named query, the query

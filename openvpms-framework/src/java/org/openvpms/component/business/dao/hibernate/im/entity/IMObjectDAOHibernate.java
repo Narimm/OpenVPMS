@@ -19,7 +19,8 @@
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -27,14 +28,16 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.StaleObjectStateException;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.*;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.dao.im.common.ResultCollectorFactory;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -56,7 +59,6 @@ import java.util.Map;
 
 /**
  * This is an implementation of the IMObject DAO for hibernate.
- * It participaties
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -70,15 +72,26 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     private ResultCollectorFactory collectorFactory;
 
     /**
-     * The logger.
-     */
-    private static final Logger logger
-            = Logger.getLogger(IMObjectDAOHibernate.class);
-
-    /**
      * Transaction helper.
      */
     private TransactionTemplate txnTemplate;
+
+    /**
+     * The handler factory.
+     */
+    private final IMObjectSessionHandlerFactory handlerFactory;
+
+    /**
+     * The archetype descriptor cache.
+     * This is used to resolve {@link IMObjectReference}s.
+     */
+    private IArchetypeDescriptorCache cache;
+
+    /**
+     * The logger.
+     */
+    private static final Log log
+            = LogFactory.getLog(IMObjectDAOHibernate.class);
 
 
     /**
@@ -86,6 +99,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public IMObjectDAOHibernate() {
         collectorFactory = new HibernateResultCollectorFactory();
+        handlerFactory = new IMObjectSessionHandlerFactory(this);
     }
 
     /**
@@ -95,6 +109,15 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     public void setTransactionManager(PlatformTransactionManager manager) {
         txnTemplate = new TransactionTemplate(manager);
+    }
+
+    /**
+     * Sets the archetype descriptor cache.
+     *
+     * @param cache the archetype descriptor cache
+     */
+    public void setArchetypeDescriptorCache(IArchetypeDescriptorCache cache) {
+        this.cache = cache;
     }
 
     /*
@@ -145,35 +168,15 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             update(new HibernateCallback() {
                 public Object doInHibernate(Session session)
                         throws HibernateException {
-                    session.delete(object);
+                    IMObjectSessionHandler handler
+                            = handlerFactory.getHandler(object);
+                    handler.delete(object, session);
                     return null;
                 }
             });
         } catch (Throwable exception) {
             throw new IMObjectDAOException(FailedToDeleteIMObject, exception,
                                            object.getUid());
-        }
-    }
-
-    /**
-     * Deletes a collection of objects.
-     * Deletion is performed in a single transaction.
-     *
-     * @param objects the objects to delete
-     * @throws IMObjectDAOException if the request cannot complete
-     */
-    public void delete(final Collection<IMObject> objects) {
-        try {
-            update(new HibernateCallback() {
-                public Object doInHibernate(Session session)
-                        throws HibernateException {
-                    delete(objects, session);
-                    return null;
-                }
-            });
-        } catch (Exception exception) {
-            throw new IMObjectDAOException(FailedToDeleteCollectionOfObjects,
-                                           exception);
         }
     }
 
@@ -194,8 +197,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                     ResultCollector collector, int firstResult, int maxResults,
                     boolean count) {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("query=" + queryString
+            if (log.isDebugEnabled()) {
+                log.debug("query=" + queryString
                         + ", parameters=" + parameters);
             }
             executeQuery(queryString, new Params(parameters), collector,
@@ -368,8 +371,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 queryString.append(" entity.active = 1");
             }
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("Executing " + queryString + " with names "
+            if (log.isDebugEnabled()) {
+                log.debug("Executing " + queryString + " with names "
                         + names.toString() + " and params " + params.toString());
             }
 
@@ -418,6 +421,22 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             throw new IMObjectDAOException(FailedToFindIMObjectReference,
                                            exception);
         }
+    }
+
+    /**
+     * Returns an object with the specified object reference.
+     *
+     * @param reference the object reference
+     * @return the corresponding object, or <tt>null</tt> if none exists
+     * @throws IMObjectDAOException if the request cannot complete
+     */
+    public IMObject getByReference(IMObjectReference reference) {
+        ArchetypeDescriptor desc = cache.getArchetypeDescriptor(
+                reference.getArchetypeId());
+        if (desc != null) {
+            return getByLinkId(desc.getClassName(), reference.getLinkId());
+        }
+        return null;
     }
 
     /**
@@ -501,7 +520,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                     // set the maximum number of rows
                     if (maxResults != ArchetypeQuery.ALL_RESULTS) {
                         query.setMaxResults(maxResults);
-                        logger.debug("The maximum number of rows is "
+                        log.debug("The maximum number of rows is "
                                 + maxResults);
                     }
 
@@ -562,7 +581,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 // set maximum rows
                 if (numOfRows != ArchetypeQuery.ALL_RESULTS) {
                     query.setMaxResults(numOfRows);
-                    logger.debug("The maximum number of rows is " + numOfRows);
+                    log.debug("The maximum number of rows is " + numOfRows);
                 }
 
                 List<Object> rows = query.list();
@@ -583,7 +602,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 for (Object object : rows) {
                     collector.collect(object);
                 }
-                return null;  //To change body of implemented methods use File | Settings | File Templates.
+                return null;
             }
         });
     }
@@ -635,35 +654,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             if (results != null) {
                 results.close();
             }
-        }
-        return result;
-    }
-
-    /**
-     * Reloads an object into a session.
-     *
-     * @param object  the object to load
-     * @param session the session to use
-     * @return the reloaded object
-     * @throws StaleObjectStateException if the object has subsequently been
-     *                                   deleted/changed
-     * @throws HibernateException        for any other error
-     */
-    private IMObject reload(IMObject object, Session session) {
-        StringBuffer queryString = new StringBuffer("from ");
-        String clazz = object.getClass().getName();
-        queryString.append(clazz);
-        queryString.append(" as o where o.uid = :uid and o.version = :version");
-        Query query = session.createQuery(queryString.toString());
-        query.setParameter("uid", object.getUid());
-        query.setParameter("version", object.getVersion());
-        List rows = query.list();
-        if (rows.isEmpty()) {
-            throw new StaleObjectStateException(clazz, object.getUid());
-        }
-        IMObject result = (IMObject) rows.get(0);
-        if (result.getVersion() != object.getVersion()) {
-            throw new StaleObjectStateException(clazz, object.getUid());
         }
         return result;
     }
@@ -745,18 +735,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param session the session to use
      */
     private void save(IMObject object, Session session) {
-        MergeHandler handler = null;
-        IMObject source = null;
-        if (object.isNew()) {
-            session.saveOrUpdate(object);
-        } else {
-            handler = MergeHandlerFactory.getHandler(object);
-            source = handler.merge(object, session);
-        }
-        if (handler != null) {
-            CommitSync sync = new CommitSync(handler, object, source);
-            TransactionSynchronizationManager.registerSynchronization(sync);
-        }
+        IMObjectSessionHandler handler = handlerFactory.getHandler(object);
+        IMObject source = handler.save(object, session);
+        CommitSync sync = new CommitSync(handler, object, source);
+        TransactionSynchronizationManager.registerSynchronization(sync);
     }
 
     /**
@@ -766,43 +748,13 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param session the session to use
      */
     private void save(Collection<IMObject> objects, Session session) {
-        CommitSync sync = null;
+        CommitSync sync = new CommitSync();
         for (IMObject object : objects) {
-            if (object.isNew()) {
-                session.saveOrUpdate(object);
-            } else {
-                MergeHandler handler = MergeHandlerFactory.getHandler(
-                        object);
-                IMObject source = handler.merge(object, session);
-                if (sync == null) {
-                    sync = new CommitSync();
-                }
-                sync.add(handler, object, source);
-            }
+            IMObjectSessionHandler handler = handlerFactory.getHandler(object);
+            IMObject source = handler.save(object, session);
+            sync.add(handler, object, source);
         }
-        if (sync != null) {
-            TransactionSynchronizationManager.registerSynchronization(sync);
-        }
-    }
-
-    /**
-     * Delete a collection of objects.
-     *
-     * @param objects the objects to delete
-     * @param session the session to use
-     */
-    private void delete(Collection<IMObject> objects, Session session) {
-        for (IMObject object : objects) {
-            if (!object.isNew()) {
-                // detached objects must be reloaded into the current
-                // session, in order to avoid NonUniqueObjectException
-                // errors.
-                object = reload(object, session);
-            }
-            if (object != null) {
-                session.delete(object);
-            }
-        }
+        TransactionSynchronizationManager.registerSynchronization(sync);
     }
 
     /**
@@ -861,6 +813,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         return template.execute(callback);
     }
 
+
     /**
      * Helper to update the ids and versions of a set of objects on
      * transaction commit.
@@ -884,10 +837,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
          * commit.
          *
          * @param handler the handler to perform the update
-         * @param target the object to update
-         * @param source the object to update from
+         * @param target  the object to update
+         * @param source  the object to update from
          */
-        public CommitSync(MergeHandler handler, IMObject target,
+        public CommitSync(IMObjectSessionHandler handler, IMObject target,
                           IMObject source) {
             add(handler, target, source);
         }
@@ -896,10 +849,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
          * Register an object to update at commit.
          *
          * @param handler the handler to perform the update
-         * @param target the object to update
-         * @param source the object to update from
+         * @param target  the object to update
+         * @param source  the object to update from
          */
-        public void add(MergeHandler handler, IMObject target,
+        public void add(IMObjectSessionHandler handler, IMObject target,
                         IMObject source) {
             list.add(new Sync(handler, target, source));
         }
@@ -915,11 +868,11 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
         private static class Sync {
 
-            private final MergeHandler handler;
+            private final IMObjectSessionHandler handler;
             private final IMObject target;
             private final IMObject source;
 
-            public Sync(MergeHandler handler, IMObject target,
+            public Sync(IMObjectSessionHandler handler, IMObject target,
                         IMObject source) {
                 this.handler = handler;
                 this.target = target;
@@ -931,7 +884,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
              * source, including any direct children.
              */
             public void sync() {
-                handler.update(target, source);
+                handler.updateIds(target, source);
             }
 
         }

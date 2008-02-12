@@ -23,26 +23,28 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * Handles merging of {@link IMObject} object graphs using
- * <tt>Session.merge()</tt>, propagating the identifiers and versions of
- * the merged objects to their originals after commit.
+ * Handles hibernate <tt>Session</tt> operations on {@link IMObject}s.
+ * <p>
+ * In particular, it handles saving detached instances of {@link IMObject}
+ * object graphs, using <tt>Session.merge()</tt>, propagating the identifiers
+ * and versions of the merged objects to their originals after commit.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-interface MergeHandler {
+interface IMObjectSessionHandler {
 
     /**
-     * Merges an object.
+     * Saves an object.
      * <p>
      * This makes any transient children persistent prior to invoking
      * <tt>Session.merge()</tt> on the supplied object.
      *
-     * @param object the object to merge
+     * @param object the object to save
      * @param session the session to use
      * @return the result of <tt>Session.merge(object)</tt>
      */
-    IMObject merge(IMObject object, Session session);
+    IMObject save(IMObject object, Session session);
 
     /**
      * Updates the target object with the identifier and version of the source,
@@ -51,5 +53,13 @@ interface MergeHandler {
      * @param target the object to update
      * @param source the object to update from
      */
-    void update(IMObject target, IMObject source);
+    void updateIds(IMObject target, IMObject source);
+
+    /**
+     * Deletes an object.
+     *
+     * @param object the object to delete
+     * @param session
+     */
+    void delete(IMObject object, Session session);
 }

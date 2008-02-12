@@ -19,31 +19,41 @@
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.hibernate.Session;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.product.Product;
 
 
 /**
- * Implementation of {@link MergeHandler} for {@link Act}s.
+ * Implementation of {@link IMObjectSessionHandler} for {@link Product}
+ * instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ActMergeHandler extends AbstractMergeHandler {
+class ProductSessionHandler extends EntitySessionHandler {
 
     /**
-     * Merges an object.
+     * Creates a new <tt>ProductSessionHandler<tt>.
+     *
+     * @param dao the DAO
+     */
+    public ProductSessionHandler(IMObjectDAO dao) {
+        super(dao);
+    }
+
+    /**
+     * Saves an object.
      *
      * @param object  the object to merge
      * @param session the session to use
      * @return the result of <tt>Session.merge(object)</tt>
      */
     @Override
-    public IMObject merge(IMObject object, Session session) {
-        Act act = (Act) object;
-        save(act.getActRelationships(), session);
-        save(act.getParticipations(), session);
-        return super.merge(object, session);
+    public IMObject save(IMObject object, Session session) {
+        Product product = (Product) object;
+        saveNew(product.getProductPrices(), session);
+        return super.save(object, session);
     }
 
     /**
@@ -53,13 +63,12 @@ class ActMergeHandler extends AbstractMergeHandler {
      * @param source the object to update from
      */
     @Override
-    public void update(IMObject target, IMObject source) {
-        Act targetAct = (Act) target;
-        Act sourceAct = (Act) source;
-        update(targetAct.getActRelationships(),
-               sourceAct.getActRelationships());
-        update(targetAct.getParticipations(), sourceAct.getParticipations());
-        super.update(target, source);
+    public void updateIds(IMObject target, IMObject source) {
+        Product targetProduct = (Product) target;
+        Product sourceProduct = (Product) source;
+        update(targetProduct.getProductPrices(),
+               sourceProduct.getProductPrices());
+        super.updateIds(target, source);
     }
 
 }

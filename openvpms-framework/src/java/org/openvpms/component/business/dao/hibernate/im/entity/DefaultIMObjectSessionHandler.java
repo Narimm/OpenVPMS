@@ -18,13 +18,24 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
+
 
 /**
- * Default implementation of {@link MergeHandler}.
+ * Default implementation of {@link IMObjectSessionHandler}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class DefaultMergeHandler extends AbstractMergeHandler {
+class DefaultIMObjectSessionHandler extends AbstractIMObjectSessionHandler {
+
+    /**
+     * Creates a new <tt>DefaultIMObjectSessionHandler<tt>.
+     *
+     * @param dao the DAO
+     */
+    public DefaultIMObjectSessionHandler(IMObjectDAO dao) {
+        super(dao);
+    }
 
 }

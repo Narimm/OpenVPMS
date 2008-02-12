@@ -26,16 +26,12 @@ import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.dao.im.common.ResultCollector;
 import org.openvpms.component.business.dao.im.common.ResultCollectorFactory;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.query.QueryBuilder;
 import org.openvpms.component.business.service.archetype.query.QueryContext;
 import org.openvpms.component.business.service.ruleengine.IRuleEngine;
@@ -52,10 +48,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 
@@ -95,7 +89,7 @@ public class ArchetypeService implements IArchetypeService {
     private static final Pattern CNTRL_CHARS
             = Pattern.compile(".*[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F].*");
 
-    
+
     /**
      * Construct an instance of this service using the specified archetpe class by loading and parsing all the
      * descripor cache
@@ -476,18 +470,7 @@ public class ArchetypeService implements IArchetypeService {
         }
 
         try {
-            if (entity instanceof Act) {
-                Act parent = (Act) entity;
-                List<IMObject> acts = getChildren(parent);
-                if (!acts.isEmpty()) {
-                    acts.add(parent);
-                    dao.delete(acts);
-                } else {
-                    dao.delete(parent);
-                }
-            } else {
-                dao.delete(entity);
-            }
+            dao.delete(entity);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToDeleteObject,
@@ -1001,53 +984,6 @@ public class ArchetypeService implements IArchetypeService {
     }
 
     /**
-     * Returns all dependent children of the specified act. These are target
-     * acts in relationships whose
-     * {@link ActRelationship#isParentChildRelationship()} is <tt>true</tt>.
-     *
-     * @param act the act
-     * @return a list of the child acts
-     * @throws ArchetypeServiceException for any error
-     */
-    private List<IMObject> getChildren(Act act) {
-        Set<IMObjectReference> references = new HashSet<IMObjectReference>();
-        List<IMObject> targets = new ArrayList<IMObject>();
-        references.add(act.getObjectReference());
-        getChildren(act, references, targets);
-        return targets;
-    }
-
-    /**
-     * Recursively finds all dependent children of the specified act. These are
-     * target acts in relationships whose
-     * {@link ActRelationship#isParentChildRelationship()} is <tt>true</tt>.
-     *
-     * @param act        the act
-     * @param references references to acts that have been retrieved/attempted
-     *                   to be retrieved
-     * @param acts       the acts the have been retrieved
-     * @throws ArchetypeServiceException for any error
-     */
-    private void getChildren(Act act, Set<IMObjectReference> references,
-                             List<IMObject> acts) {
-        Act target;
-        for (ActRelationship relationhip : act.getSourceActRelationships()) {
-            if (relationhip.isParentChildRelationship()) {
-                IMObjectReference targetRef = relationhip.getTarget();
-                if (targetRef != null && !references.contains(targetRef)) {
-                    references.add(targetRef);
-                    target = (Act) ArchetypeQueryHelper.getByObjectReference(
-                            this, targetRef);
-                    if (target != null) {
-                        getChildren(target, references, acts);
-                        acts.add(target);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Updates the descriptor cache. If a transaction is in progress, the
      * cache will only be updated on transaction commit. This means that the
      * descriptor will only be available via the <em>get*Descriptor</em> methods
@@ -1128,7 +1064,7 @@ public class ArchetypeService implements IArchetypeService {
 
         public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
             ResultCollectorFactory factory = dao.getResultCollectorFactory();
-            QueryBuilder builder = new QueryBuilder();
+            QueryBuilder builder = new QueryBuilder(dCache);
             QueryContext context = builder.build((ArchetypeQuery) query);
             ResultCollector<ObjectSet> collector
                     = factory.createObjectSetCollector(context.getSelectNames(),
@@ -1138,7 +1074,7 @@ public class ArchetypeService implements IArchetypeService {
         }
 
         protected void get(IArchetypeQuery query, ResultCollector collector) {
-            QueryBuilder builder = new QueryBuilder();
+            QueryBuilder builder = new QueryBuilder(dCache);
             QueryContext context = builder.build((ArchetypeQuery) query);
             get(context, query, collector);
         }

@@ -21,7 +21,6 @@ package org.openvpms.component.business.service.archetype;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.FailedToDeleteCollectionOfObjects;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -39,12 +38,17 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -61,6 +65,11 @@ public class ArchetypeServiceActTestCase
      * The archetype service.
      */
     private IArchetypeService service;
+
+    /**
+     * The transaction template.
+     */
+    private TransactionTemplate template;
 
 
     /**
@@ -215,13 +224,16 @@ public class ArchetypeServiceActTestCase
         checkSaveCollection(acts, 0);
 
         // verify the acts can be re-saved
+        act1.setStatus("POSTED");
+        act2.setStatus("POSTED");
+        act3.setStatus("POSTED");
         checkSaveCollection(acts, 1);
 
         // now change the first act, and attempt to re-save the collection.
         // This should fail as the collection doesn't have the latest version
         // of act1
         act1 = reload(act1);
-        act1.setStatus("POSTED");
+        act1.setStatus("COMPLETED");
         service.save(act1);
         try {
             checkSaveCollection(acts, 2);
@@ -396,6 +408,8 @@ public class ArchetypeServiceActTestCase
         assertNotNull(reload(item3));
 
         // now remove the estimation and verify the remaining items are removed
+        estimation = reload(estimation);
+        assertNotNull(estimation);
         service.remove(estimation);
         assertNull(reload(estimation));
         assertNull(reload(item2));
@@ -522,11 +536,137 @@ public class ArchetypeServiceActTestCase
                     = (IMObjectDAOException) expected.getCause();
 
             // verify the cause comes from the DAO collection deletion method
-            assertEquals(FailedToDeleteCollectionOfObjects,
+            assertEquals(IMObjectDAOException.ErrorCode.FailedToDeleteIMObject,
                          cause.getErrorCode());
         }
     }
 
+    /**
+     * Creates a set of acts with non-parent/child relationships, and verifies
+     * that deleting one act doesn't cascade to the rest, within transactions.
+     *
+     * @throws Exception for any error
+     */
+    public void testPeerActRemovalInTxn() throws Exception {
+        final Act act1 = createSimpleAct("act1", "IN_PROGRESS");
+        final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+        final Act act3 = createSimpleAct("act3", "IN_PROGRESS");
+        ActBean bean1 = new ActBean(act1);
+        ActBean bean2 = new ActBean(act2);
+        ActBean bean3 = new ActBean(act3);
+
+        // create a relationship from act1 -> act2
+        final ActRelationship relAct1Act2 = bean1.addRelationship(
+                "actRelationship.simple", act2);
+        relAct1Act2.setName("act1->act2");
+        assertFalse(relAct1Act2.isParentChildRelationship());
+
+        // create a relationship from act2 -> act3
+        final ActRelationship relAct2Act3 = bean2.addRelationship(
+                "actRelationship.simple", act3);
+        relAct2Act3.setName("act2->act3");
+        assertFalse(relAct2Act3.isParentChildRelationship());
+
+        // create a relationship from act1 -> act3
+        final ActRelationship relAct1Act3 = bean3.addRelationship(
+                "actRelationship.simple", act3);
+        relAct1Act3.setName("act1->act3");
+        assertFalse(relAct1Act3.isParentChildRelationship());
+
+        service.save(act1);
+        service.save(act2);
+        service.save(act3);
+
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                service.remove(act1);
+                assertNotNull(reload(act1));  // can reload till commit
+
+                // reload act2 and verify that it no longer has a relationship
+                // to act1, and can be saved again
+                Act act2reloaded = reload(act2);
+                Set<ActRelationship> relationships
+                        = act2reloaded.getActRelationships();
+                assertFalse(relationships.contains(relAct1Act2));
+                assertTrue(relationships.contains(relAct2Act3));
+                act2reloaded.setStatus("POSTED");
+                service.save(act2reloaded);
+
+                // reload act3 and verify that it no longer has a relationship
+                // to act1, and can be saved again
+                Act act3reloaded = reload(act2);
+                relationships = act3reloaded.getActRelationships();
+                assertFalse(relationships.contains(relAct1Act3));
+                act3reloaded.setStatus("POSTED");
+                service.save(act3reloaded);
+                return null;
+            }
+        });
+        assertNull(reload(act1));
+        assertNotNull(reload(act2));
+        assertNotNull(reload(act3));
+
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                service.remove(act3);
+                assertNotNull(reload(act3));  // can reload till commit
+
+                // reload act2 and verify that it no longer has a relationship
+                // to act3, and can be saved again
+                Act act2reloaded = reload(act2);
+                assertFalse(act2reloaded.getActRelationships().contains(
+                        relAct2Act3));
+                assertEquals("POSTED", act2reloaded.getStatus());
+                return null;
+            }
+        });
+
+        assertNull(reload(act3));
+        assertNotNull(reload(act2));
+    }
+
+    /**
+     * Creates two acts, act1 and act2 with a relationship between them.
+     * In a transaction, deletes act2 and associates act1 with act3.
+     */
+    public void testActReplacementInTxn() {
+        final Act act1 = createSimpleAct("act1", "IN_PROGRESS");
+        final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+        final Act act3 = createSimpleAct("act3", "IN_PROGRESS");
+
+        final ActBean bean = new ActBean(act1);
+
+        // create a relationship from act1 -> act2
+        final ActRelationship relAct1Act2 = bean.addRelationship(
+                "actRelationship.simple", act2);
+        relAct1Act2.setName("act1->act2");
+
+        service.save(act1);
+        service.save(act2);
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                service.remove(act2);
+                Act reloaded = reload(act1);
+
+                // relationship should be removed
+                assertFalse(reloaded.getActRelationships().contains(
+                        relAct1Act2));
+
+                // add a new relationship
+                ActBean relBean = new ActBean(reloaded);
+                ActRelationship relAct1Act3 = relBean.addRelationship(
+                        "actRelationship.simple", act3);
+                relAct1Act3.setName("act2->act4");
+                service.save(reloaded);
+                service.save(act3);
+                return null;
+            }
+        });
+
+        Act reloaded = reload(act1);
+        ActBean relBean = new ActBean(reloaded);
+        assertTrue(relBean.getActs().contains(act3));
+    }
 
     /*
     * (non-Javadoc)
@@ -547,8 +687,12 @@ public class ArchetypeServiceActTestCase
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        this.service = (IArchetypeService) applicationContext.getBean(
+        service = (IArchetypeService) applicationContext.getBean(
                 "archetypeService");
+        PlatformTransactionManager txnManager
+                = (PlatformTransactionManager) applicationContext.getBean(
+                "txnManager");
+        template = new TransactionTemplate(txnManager);
     }
 
     /**

@@ -44,7 +44,6 @@ public class LookupServiceTestCase extends
      */
     private ILookupService lookupService;
 
-
     /**
      * Default constructor
      */
@@ -67,16 +66,15 @@ public class LookupServiceTestCase extends
      * Tests the {@link ILookupService#getLookup} method.
      */
     public void testGetLookup() throws Exception {
-        String code = "CANINE" + System.currentTimeMillis();
+        Lookup lookup = LookupUtil.createLookup(service, "lookup.breed",
+                                                "CANINE");
+        String code = lookup.getCode();
 
-        Lookup found;
-        found = lookupService.getLookup("lookup.breed", code);
+        Lookup found = lookupService.getLookup("lookup.breed", code);
         assertNull(found);
 
-        Lookup lookup = (Lookup) service.create("lookup.breed");
-
-        lookup.setCode(code);
         service.save(lookup);
+
         found = lookupService.getLookup("lookup.breed", code);
         assertNotNull(found);
         assertEquals(lookup.getObjectReference(), found.getObjectReference());
@@ -86,9 +84,8 @@ public class LookupServiceTestCase extends
      * Tests the {@link ILookupService#getLookups} method.
      */
     public void testGetLookups() throws Exception {
-        Lookup lookup = (Lookup) service.create("lookup.country");
-        String code = "AU" + System.currentTimeMillis();
-        lookup.setCode(code);
+        Lookup lookup = LookupUtil.createLookup(service, "lookup.country",
+                                                "AU");
 
         Collection<Lookup> lookups1
                 = lookupService.getLookups("lookup.country");
@@ -106,11 +103,7 @@ public class LookupServiceTestCase extends
         // clean out existing lookups
         Collection<Lookup> lookups = lookupService.getLookups("lookup.country");
         for (Lookup lookup : lookups) {
-            try {
             service.remove(lookup);
-            } catch (Throwable exThrowable) {
-                exThrowable.printStackTrace();
-            }
         }
         lookups = lookupService.getLookups("lookup.country");
         assertTrue(lookups.isEmpty());
@@ -140,6 +133,6 @@ public class LookupServiceTestCase extends
         service = (ArchetypeService) applicationContext.getBean(
                 "archetypeService");
         lookupService = new LookupService(service);
-    }
 
+    }
 }

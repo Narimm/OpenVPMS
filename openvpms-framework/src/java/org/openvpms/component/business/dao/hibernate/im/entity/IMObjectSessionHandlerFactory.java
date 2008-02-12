@@ -18,6 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -29,54 +30,68 @@ import org.openvpms.component.business.domain.im.product.Product;
 
 
 /**
- * Factory for {@link MergeHandler}s.
+ * Factory for {@link IMObjectSessionHandler}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class MergeHandlerFactory {
+class IMObjectSessionHandlerFactory {
 
     /**
-     * Merge handler for {@link ArchetypeDescriptor}s.
+     * Handler for {@link ArchetypeDescriptor}s.
      */
-    private static final MergeHandler ARCHETYPE
-            = new ArchetypeDescriptorMergeHandler();
+    private final IMObjectSessionHandler archetype;
 
     /**
-     * Merge handler for {@link NodeDescriptor}s.
+     * Handler for {@link NodeDescriptor}s.
      */
-    private static final MergeHandler NODE = new NodeDescriptorMergeHandler();
+    private final IMObjectSessionHandler node;
 
     /**
-     * Merge handler for {@link Act}s.
+     * Handler for {@link Act}s.
      */
-    private static final MergeHandler ACT = new ActMergeHandler();
+    private final IMObjectSessionHandler act;
 
     /**
-     * Merge handler for {@link Party} instances.
+     * Handler for {@link Party} instances.
      */
-    private static final MergeHandler PARTY = new PartyMergeHandler();
+    private final IMObjectSessionHandler party;
 
     /**
-     * Merge handler for {@link Product} instances.
+     * Handler for {@link Product} instances.
      */
-    private static final MergeHandler PRODUCT = new ProductMergeHandler();
+    private final IMObjectSessionHandler product;
 
     /**
-     * Merge handler for {@link Entity} instances.
+     * Handler for {@link Entity} instances.
      */
-    private static final MergeHandler ENTITY = new EntityMergeHandler();
+    private final IMObjectSessionHandler entity;
 
     /**
-     * Merge handler for {@link Lookup} instances.
+     * Handler for {@link Lookup} instances.
      */
-    private static final MergeHandler LOOKUP = new LookupMergeHandler();
+    private final IMObjectSessionHandler lookup;
 
     /**
-     * The default merge handler.
+     * The default Handler.
      */
-    protected static final MergeHandler DEFAULT = new DefaultMergeHandler();
+    private final IMObjectSessionHandler defaultHandler;
 
+    /**
+     * Creates a new <tt>IMObjectSessionHandlerFactory</tt>.
+     *
+     * @param dao the DAO
+     */
+    public IMObjectSessionHandlerFactory(IMObjectDAO dao) {
+        archetype = new ArchetypeDescriptorSessionHandler(dao);
+        node = new NodeDescriptorSessionHandler(dao);
+        act = new ActSessionHandler(dao);
+        party = new PartySessionHandler(dao);
+        product = new ProductSessionHandler(dao);
+        entity = new EntitySessionHandler(dao);
+        lookup = new LookupSessionHandler(dao);
+        defaultHandler = new DefaultIMObjectSessionHandler(dao);
+    }
 
     /**
      * Returns the appropriate handler for the supplied object.
@@ -84,23 +99,23 @@ class MergeHandlerFactory {
      * @param object the object
      * @return a handler for <tt>object</tt>
      */
-    public static MergeHandler getHandler(IMObject object) {
+    public IMObjectSessionHandler getHandler(IMObject object) {
         if (object instanceof Act) {
-            return ACT;
+            return act;
         } else if (object instanceof Party) {
-            return PARTY;
+            return party;
         } else if (object instanceof Product) {
-            return PRODUCT;
+            return product;
         } else if (object instanceof Entity) {
-            return ENTITY;
+            return entity;
         } else if (object instanceof Lookup) {
-            return LOOKUP;
+            return lookup;
         } else if (object instanceof ArchetypeDescriptor) {
-            return ARCHETYPE;
+            return archetype;
         } else if (object instanceof NodeDescriptor) {
-            return NODE;
+            return node;
         }
-        return DEFAULT;
+        return defaultHandler;
 
     }
 }
