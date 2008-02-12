@@ -19,32 +19,40 @@
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.hibernate.Session;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 
 
 /**
- * Implementation of {@link MergeHandler} for {@link Entity} instances.
- * x
+ * Implementation of {@link IMObjectSessionHandler} for {@link Party} instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class EntityMergeHandler extends AbstractMergeHandler {
+class PartySessionHandler extends EntitySessionHandler {
 
     /**
-     * Merges an object.
+     * Creates a new <tt>PartySessionHandler<tt>.
+     *
+     * @param dao the DAO
+     */
+    public PartySessionHandler(IMObjectDAO dao) {
+        super(dao);
+    }
+
+    /**
+     * Saves an object.
      *
      * @param object  the object to merge
      * @param session the session to use
      * @return the result of <tt>Session.merge(object)</tt>
      */
     @Override
-    public IMObject merge(IMObject object, Session session) {
-        Entity entity = (Entity) object;
-        save(entity.getEntityRelationships(), session);
-        save(entity.getIdentities(), session);
-        return super.merge(object, session);
+    public IMObject save(IMObject object, Session session) {
+        Party party = (Party) object;
+        saveNew(party.getContacts(), session);
+        return super.save(object, session);
     }
 
     /**
@@ -54,13 +62,11 @@ class EntityMergeHandler extends AbstractMergeHandler {
      * @param source the object to update from
      */
     @Override
-    public void update(IMObject target, IMObject source) {
-        Entity targetEntity = (Entity) target;
-        Entity sourceEntity = (Entity) source;
-        update(targetEntity.getEntityRelationships(),
-               sourceEntity.getEntityRelationships());
-        update(targetEntity.getIdentities(), sourceEntity.getIdentities());
-        super.update(target, source);
+    public void updateIds(IMObject target, IMObject source) {
+        Party targetParty = (Party) target;
+        Party sourceParty = (Party) source;
+        update(targetParty.getContacts(), sourceParty.getContacts());
+        super.updateIds(target, source);
     }
 
 }

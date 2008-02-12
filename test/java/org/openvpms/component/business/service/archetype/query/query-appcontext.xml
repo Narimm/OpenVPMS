@@ -113,6 +113,9 @@
     <property name="transactionManager">
       <ref local="txManager"/>
     </property>
+    <property name="archetypeDescriptorCache">
+      <ref local="archetypeDescriptorCache"/>
+    </property>
   </bean>
 
   <!--  The Archetype Descriptor Cache -->
@@ -149,7 +152,11 @@
 
   <!--  Instantiate the archetype service helper bean and inject their dependencies -->
   <bean id="queryBuilder"
-    class="org.openvpms.component.business.service.archetype.query.QueryBuilder" />
+    class="org.openvpms.component.business.service.archetype.query.QueryBuilder">
+      <constructor-arg>
+          <ref local="archetypeDescriptorCache"/>
+      </constructor-arg>
+    </bean>
 
   
 </beans>

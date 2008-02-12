@@ -19,36 +19,48 @@
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 import org.hibernate.Session;
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * Implementation of {@link MergeHandler} for {@link ArchetypeDescriptor}s.
+ * Implementation of {@link IMObjectSessionHandler} for
+ * {@link ArchetypeDescriptor}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class ArchetypeDescriptorMergeHandler extends AbstractMergeHandler {
+class ArchetypeDescriptorSessionHandler extends AbstractIMObjectSessionHandler {
 
     /**
      * Node descriptor merge handler.
      */
-    private static final MergeHandler NODE_HANDLER
-            = new NodeDescriptorMergeHandler();
+    private final IMObjectSessionHandler nodeHandler;
+
 
     /**
-     * Merges an object.
+     * Creates a new <tt>ArchetypeDescriptorSesionHandler<tt>.
+     *
+     * @param dao the DAO
+     */
+    public ArchetypeDescriptorSessionHandler(IMObjectDAO dao) {
+        super(dao);
+        nodeHandler = new NodeDescriptorSessionHandler(dao);
+    }
+
+    /**
+     * Saves an object.
      *
      * @param object  the object to merge
      * @param session the session to use
      * @return the result of <tt>Session.merge(object)</tt>
      */
     @Override
-    public IMObject merge(IMObject object, Session session) {
+    public IMObject save(IMObject object, Session session) {
         ArchetypeDescriptor descriptor = (ArchetypeDescriptor) object;
-        save(descriptor.getAllNodeDescriptors(), session);
-        return super.merge(object, session);
+        saveNew(descriptor.getAllNodeDescriptors(), session);
+        return super.save(object, session);
     }
 
     /**
@@ -58,12 +70,12 @@ class ArchetypeDescriptorMergeHandler extends AbstractMergeHandler {
      * @param source the object to update from
      */
     @Override
-    public void update(IMObject target, IMObject source) {
+    public void updateIds(IMObject target, IMObject source) {
         ArchetypeDescriptor targetDesc = (ArchetypeDescriptor) target;
         ArchetypeDescriptor sourceDesc = (ArchetypeDescriptor) source;
         update(targetDesc.getAllNodeDescriptors(),
-               sourceDesc.getAllNodeDescriptors(), NODE_HANDLER);
-        super.update(target, source);
+               sourceDesc.getAllNodeDescriptors(), nodeHandler);
+        super.updateIds(target, source);
     }
 
 }

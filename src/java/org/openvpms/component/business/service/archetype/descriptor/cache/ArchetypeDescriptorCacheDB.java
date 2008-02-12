@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.archetype.descriptor.cache;
 
 // java core
 import org.apache.log4j.Logger;
+import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -41,7 +42,7 @@ import java.util.List;
  */
 public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
     implements IArchetypeDescriptorCache {
-    /** 
+    /**
      * Define a logger for this class
      */
     @SuppressWarnings("unused")
@@ -51,14 +52,14 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
     /**
      * The DAO instance it will use
      */
-    private IMObjectDAO dao;
-    
-    
+    private final IMObjectDAO dao;
+
+
 
     /**
-     * Construct and instance of this cache and then proceed to load all 
+     * Construct and instance of this cache and then proceed to load all
      * the archetypes in the database.
-     * 
+     *
      * @param dao
      *            data access object
      * @throws ArchetypeDescriptorCacheException
@@ -66,13 +67,17 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
      */
     public ArchetypeDescriptorCacheDB(IMObjectDAO dao) {
         this.dao = dao;
+        if (dao instanceof IMObjectDAOHibernate) {
+            // todo - smelly
+            ((IMObjectDAOHibernate) dao).setArchetypeDescriptorCache(this);
+        }
         loadAssertionTypeDescriptors();
         loadArchetypeDescriptors();
     }
 
     /**
      * Return the {@link AssertionTypeDescriptors} in the specified file
-     * 
+     *
      * @throws ArchetypeDescriptorCacheException
      */
     private void loadAssertionTypeDescriptors() {
@@ -92,13 +97,13 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
             if (logger.isDebugEnabled()) {
                 logger.debug("Loaded assertion type " + descriptor.getName());
             }
-            
+
         }
     }
-    
+
     /**
      * Load the archetype descriptors from the database into the cache
-     * 
+     *
      * @throws ArchetypeDescriptorCacheException
      */
     private void loadArchetypeDescriptors() {
@@ -110,7 +115,7 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
 
     /**
      * Process all the archetype descriptors in the specified list
-     * 
+     *
      * @param descriptors
      *            the descriptors to process
      * @throws ArchetypeDescriptorCacheException
@@ -122,7 +127,7 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
                         + imobj.getClass().getName());
                 continue;
             }
-            
+
             ArchetypeDescriptor descriptor = (ArchetypeDescriptor)imobj;
             ArchetypeId archId = descriptor.getType();
 
@@ -158,7 +163,7 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
                     checkAssertionsInNode(descriptor.getNodeDescriptors());
                 }
             } catch (Exception exception) {
-                logger.warn("Failed to load descriptor " + descriptor.getName() 
+                logger.warn("Failed to load descriptor " + descriptor.getName()
                         + " b/c of error  [" + exception.toString() + "].");
             }
         }

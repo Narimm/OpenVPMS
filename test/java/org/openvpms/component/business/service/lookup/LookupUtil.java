@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.lookup;
 import junit.framework.Assert;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
@@ -81,15 +82,38 @@ public class LookupUtil extends Assert {
      * code.
      *
      * @param service the archetype service
+     * @param shortName the lookup short name
      * @param code    the lookup code
      * @param name    the lookup name
      * @return a new lookup
      */
     public static Lookup createLookup(IArchetypeService service,
-                                      String concept, String code,
+                                      String shortName, String code,
                                       String name) {
-        Lookup lookup = createLookup(service, concept, code);
+        Lookup lookup = createLookup(service, shortName, code);
         lookup.setName(name);
         return lookup;
+    }
+
+    /**
+     * Helper to create and add a relationship between two lookups.
+     *
+     * @param service the archetype service
+     * @param shortName the lookup relationship short name
+     * @param source the source lookup
+     * @param target the target lookup
+     * @return a new lookup relationship
+     */
+    public static LookupRelationship addRelationship(
+            IArchetypeService service, String shortName, Lookup source,
+            Lookup target) {
+        LookupRelationship relationship
+                = (LookupRelationship) service.create(shortName);
+        assertNotNull(relationship);
+        relationship.setSource(source.getObjectReference());
+        relationship.setTarget(target.getObjectReference());
+        source.addLookupRelationship(relationship);
+        target.addLookupRelationship(relationship);
+        return relationship;
     }
 }

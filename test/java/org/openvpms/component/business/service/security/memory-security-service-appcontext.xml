@@ -116,6 +116,9 @@
     <property name="transactionManager">
       <ref local="txManager"/>
     </property>
+    <property name="archetypeDescriptorCache">
+      <ref local="archetypeDescriptorCache"/>
+    </property>
   </bean>
 
   <!--  The AuditRecord DAO bean -->

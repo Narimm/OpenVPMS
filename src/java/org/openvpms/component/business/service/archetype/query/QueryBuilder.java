@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import static org.openvpms.component.business.service.archetype.query.QueryBuilderException.ErrorCode.*;
 import org.openvpms.component.business.service.archetype.query.QueryContext.LogicalOperator;
 import org.openvpms.component.system.common.query.AndConstraint;
@@ -65,6 +66,11 @@ import java.util.Set;
 public class QueryBuilder {
 
     /**
+     * The archetype descriptor cache.
+     */
+    private final IArchetypeDescriptorCache cache;
+
+    /**
      * List of select constraints encountered while processing the query.
      * These must be handled last in order to resolve types associated with
      * aliases.
@@ -74,9 +80,11 @@ public class QueryBuilder {
 
     /**
      * Create an instance of the builder.
+     *
+     * @param cache the archetype descriptor cache
      */
-    public QueryBuilder() {
-        // do nothing
+    public QueryBuilder(IArchetypeDescriptorCache cache) {
+        this.cache = cache;
     }
 
     /**
@@ -446,7 +454,7 @@ public class QueryBuilder {
         }
 
         ArchetypeId id = constraint.getArchetypeId();
-        TypeSet types = TypeSet.create(constraint);
+        TypeSet types = TypeSet.create(constraint, cache);
 
         context.pushLogicalOperator(LogicalOperator.And);
         context.pushTypeSet(types);
@@ -490,7 +498,7 @@ public class QueryBuilder {
                 = constraint.getArchetypeConstraint();
         if (archetypeConstraint instanceof ArchetypeConstraint) {
             types = TypeSet.create((ArchetypeConstraint) archetypeConstraint,
-                                   ndesc);
+                                   ndesc, cache);
         } else {
             types = getTypeSet(archetypeConstraint);
         }
@@ -622,11 +630,11 @@ public class QueryBuilder {
      */
     private TypeSet getTypeSet(BaseArchetypeConstraint constraint) {
         if (constraint instanceof ArchetypeIdConstraint) {
-            return TypeSet.create((ArchetypeIdConstraint) constraint);
+            return TypeSet.create((ArchetypeIdConstraint) constraint, cache);
         } else if (constraint instanceof ShortNameConstraint) {
-            return TypeSet.create((ShortNameConstraint) constraint);
+            return TypeSet.create((ShortNameConstraint) constraint, cache);
         } else if (constraint instanceof LongNameConstraint) {
-            return TypeSet.create((LongNameConstraint) constraint);
+            return TypeSet.create((LongNameConstraint) constraint, cache);
         }
 
         return null;
