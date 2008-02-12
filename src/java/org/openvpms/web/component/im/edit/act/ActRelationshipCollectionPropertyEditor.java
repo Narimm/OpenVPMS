@@ -41,7 +41,6 @@ import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.util.ErrorHelper;
 
@@ -91,7 +90,7 @@ public class ActRelationshipCollectionPropertyEditor
 
 
     /**
-     * Construct a new <code>ActRelationshipCollectionPropertyEditor</code>.
+     * Construct a new <tt>ActRelationshipCollectionPropertyEditor</tt>.
      *
      * @param property the property to edit
      * @param act      the parent act
@@ -162,6 +161,7 @@ public class ActRelationshipCollectionPropertyEditor
         Act act = (Act) object;
         ActRelationship relationship = getActs().remove(act);
         if (relationship != null) {
+            parent.removeActRelationship(relationship);
             getProperty().remove(relationship);
         }
         queueRemove(object);
@@ -180,12 +180,12 @@ public class ActRelationshipCollectionPropertyEditor
     /**
      * Saves the collection.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the save was successful
      */
     @Override
     protected boolean doSave() {
-        boolean saved = super.doSave();
-        if (saved) {
+        boolean saved = true;
+        if (!removed.isEmpty()) {
             IMObject[] toRemove = removed.toArray(new IMObject[0]);
             boolean deleted;
             for (IMObject object : toRemove) {
@@ -196,15 +196,7 @@ public class ActRelationshipCollectionPropertyEditor
                         setEditor(object, null);
                     }
                 } else {
-                    // reload the object to avoid hibernate stale object
-                    // exceptions. These will occur if the parent was saved
-                    // first.
-                    IMObject toDelete = IMObjectHelper.reload(object);
-                    if (toDelete != null) {
-                        deleted = SaveHelper.delete(toDelete);
-                    } else {
-                        deleted = false;
-                    }
+                    deleted = SaveHelper.delete(object);
                 }
                 if (deleted) {
                     removed.remove(object);
@@ -214,6 +206,9 @@ public class ActRelationshipCollectionPropertyEditor
                     break;
                 }
             }
+        }
+        if (saved) {
+            saved = super.doSave();
         }
         return saved;
     }
