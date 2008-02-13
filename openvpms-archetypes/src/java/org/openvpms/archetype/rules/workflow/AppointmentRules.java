@@ -25,14 +25,22 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NamedQuery;
+import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.util.Date;
 import java.util.List;
@@ -156,7 +164,7 @@ public class AppointmentRules {
      * <em>act.customerTask</em> to ensure that it has the same status
      * (where applicable).
      *
-     * @param act
+     * @param act the task
      * @throws OpenVPMSException for any error
      */
     public void updateAppointment(Act act) {
@@ -166,6 +174,33 @@ public class AppointmentRules {
             Act appointment = appointments.get(0);
             updateStatus(act, appointment);
         }
+    }
+
+    /**
+     * Determines if a patient has an active appointment.
+     *
+     * @param patient the patient
+     * @return an active appointment, or <tt>null</tt> if none exists
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Act getActiveAppointment(Party patient) {
+        ArchetypeQuery query = new ArchetypeQuery("act.customerAppointment",
+                                                  true, true);
+        CollectionNodeConstraint participation
+                = new CollectionNodeConstraint("patient")
+                .add(new ObjectRefNodeConstraint("entity",
+                                                 patient.getObjectReference()));
+        query.add(participation);
+        query.add(new NodeSortConstraint("startTime", false));
+        query.add(new NodeConstraint("status", RelationalOp.IN,
+                                     AppointmentStatus.CHECKED_IN,
+                                     AppointmentStatus.IN_PROGRESS,
+                                     AppointmentStatus.COMPLETED,
+                                     AppointmentStatus.BILLED));
+        query.setMaxResults(1);
+        IMObjectQueryIterator<Act> iter
+                = new IMObjectQueryIterator<Act>(service, query);
+        return (iter.hasNext()) ? iter.next() : null;
     }
 
     /**
