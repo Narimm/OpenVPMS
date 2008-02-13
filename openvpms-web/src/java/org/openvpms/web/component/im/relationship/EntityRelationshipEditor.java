@@ -18,10 +18,9 @@
 
 package org.openvpms.web.component.im.relationship;
 
-import org.openvpms.web.component.im.layout.LayoutContext;
-
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**

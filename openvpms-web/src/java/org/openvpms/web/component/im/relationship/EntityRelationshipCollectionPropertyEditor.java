@@ -166,8 +166,8 @@ public class EntityRelationshipCollectionPropertyEditor
     @Override
     public boolean add(IMObject object) {
         boolean added = super.add(object);
+        EntityRelationship relationship = (EntityRelationship) object;
         if (added) {
-            EntityRelationship relationship = (EntityRelationship) object;
             RelationshipState state = factory.create(getParent(), relationship,
                                                      parentIsSource);
             states.put(relationship, state);

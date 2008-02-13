@@ -94,12 +94,15 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
     /**
      * Sets the date portion of the date/time.
      *
-     * @param date the date
+     * @param date the date. May be <tt>null</tt>
      */
     public void setDate(Date date) {
         transformer.setDate(date);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+        Calendar calendar = null;
+        if (date != null) {
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+        }
         DateChooser chooser = getDateField().getDateChooser();
         chooser.setSelectedDate(calendar);
     }
@@ -107,11 +110,15 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
     /**
      * Returns the date portion of the date/time.
      *
-     * @return the date
+     * @return the date. May be <tt>null</tt>
      */
     public Date getDate() {
+        Date result = null;
         Calendar calendar = getDateField().getDateChooser().getSelectedDate();
-        return DateHelper.getDayMonthYear(calendar.getTime());
+        if (calendar != null) {
+            result = DateHelper.getDayMonthYear(calendar.getTime());
+        }
+        return result;
     }
 
     /**

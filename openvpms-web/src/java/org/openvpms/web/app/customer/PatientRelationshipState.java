@@ -25,7 +25,7 @@ import org.openvpms.web.component.im.relationship.RelationshipState;
 
 
 /**
- * Add description here.
+ * Patient entity relationship state.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -48,9 +48,7 @@ class PatientRelationshipState extends RelationshipState {
      * @param targetUID         the target entity UID
      * @param targetName        the target entity name
      * @param targetDescription the target entity description
-     * @param active            determines if the relationship and entities are
-     *                          active. This may be independent of their
-     *                          respective active flags
+     * @param active            determines the entities are active
      */
     public PatientRelationshipState(EntityRelationship relationship,
                                     long sourceUID, String sourceName,
@@ -93,5 +91,23 @@ class PatientRelationshipState extends RelationshipState {
      */
     public void setDeceased(boolean deceased) {
         this.deceased = deceased;
+    }
+
+    /**
+     * Determines if the relationship is active.
+     * It is active if:
+     * <ul>
+     * <li>the underlying {@link EntityRelationship} is active
+     * <li>the underlying entities are active
+     * <li>{@link EntityRelationship#getActiveEndTime} is null or greater than
+     * the current time
+     * <li>the patient isn't deceased
+     * </ul>
+     *
+     * @return <tt>true</tt> if this is active; otherwise <tt>false</tt>
+     */
+    @Override
+    public boolean isActive() {
+        return !deceased && super.isActive();
     }
 }

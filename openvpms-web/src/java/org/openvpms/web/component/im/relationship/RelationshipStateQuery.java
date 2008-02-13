@@ -32,7 +32,6 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -306,26 +305,6 @@ public class RelationshipStateQuery {
      */
     protected String[] getShortNames() {
         return shortNames;
-    }
-
-    /**
-     * Determines if a relationship state is active or inactive.
-     *
-     * @param relationship the relationship
-     * @param active       if <tt>true</tt> indicates that the secondary entity
-     *                     is active
-     * @return <tt>true</tt> if the relationship state is active, <tt>false</tt>
-     *         if it is inactive
-     */
-    protected boolean isActive(EntityRelationship relationship,
-                               boolean active) {
-        boolean result = false;
-        Date end = relationship.getActiveEndTime();
-        Date now = new Date();
-        if ((end == null || end.getTime() >= now.getTime()) && active) {
-            result = true;
-        }
-        return result;
     }
 
     /**

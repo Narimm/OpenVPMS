@@ -40,6 +40,10 @@
     </goal>
 
     <goal name="dev:install" prereqs="war:webapp">
+        <j:set var="mysqljar"
+               value="${pom.getDependency('mysql:mysql-connector-java').artifact}"/>
+        <ant:copy tofile="${tomcat.webapps.dir}/../shared/lib/${mysqljar}"
+                  file="${pom.getDependencyPath('mysql:mysql-connector-java')}"/>
         <ant:copy todir="${tomcat.webapps.dir}/${pom.artifactId}">
             <fileset dir="${maven.war.webapp.dir}"/>
         </ant:copy>

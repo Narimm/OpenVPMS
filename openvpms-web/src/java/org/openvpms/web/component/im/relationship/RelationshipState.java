@@ -28,6 +28,7 @@ import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
+import java.util.Date;
 import java.util.Iterator;
 
 
@@ -77,7 +78,6 @@ public class RelationshipState {
 
     /**
      * Determines if the relationship and corresponding entities are active.
-     * This may be independent of their respective active flags.
      */
     private boolean active;
 
@@ -92,9 +92,7 @@ public class RelationshipState {
      * @param targetUID         the target entity UID
      * @param targetName        the target entity name
      * @param targetDescription the target entity description
-     * @param active            determines if the relationship and entities are
-     *                          active. This may be independent of their
-     *                          respective active flags
+     * @param active            determines the entities are active
      */
     public RelationshipState(EntityRelationship relationship,
                              long sourceUID, String sourceName,
@@ -216,23 +214,27 @@ public class RelationshipState {
     }
 
     /**
-     * Determines if the relationship and entities are active.
-     * This may be independent of their respective active flags.
+     * Determines if the relationship is active.
+     * It is active if:
+     * <ul>
+     * <li>the underlying {@link EntityRelationship} is active
+     * <li>the underlying entities are active
+     * <li>{@link EntityRelationship#getActiveEndTime} is null or greater than
+     * the current time
+     * </ul>
      *
      * @return <tt>true</tt> if this is active; otherwise <tt>false</tt>
      */
     public boolean isActive() {
-        return active;
-    }
-
-    /**
-     * Determines if the relationship and entities are active.
-     * This may be independent of their respective active flags.
-     *
-     * @param active if <tt>true</tt> this is active, otherwise it is inactive
-     */
-    public void setActive(boolean active) {
-        this.active = active;
+        boolean result = false;
+        if (active && relationship.isActive()) {
+            Date endTime = relationship.getActiveEndTime();
+            if (endTime == null
+                    || endTime.getTime() > System.currentTimeMillis()) {
+                result = true;
+            }
+        }
+        return result;
     }
 
     /**

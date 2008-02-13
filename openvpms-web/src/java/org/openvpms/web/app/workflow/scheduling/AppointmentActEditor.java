@@ -92,19 +92,19 @@ public class AppointmentActEditor extends AbstractActEditor {
             }
         }
 
-        startTimeField = DateTimeFieldFactory.create(getProperty("startTime"));
-        endTimeField = DateTimeFieldFactory.create(getProperty("endTime"));
 
         Date startTime = getStartTime();
         if (startTime == null) {
             Date scheduleDate = context.getContext().getScheduleDate();
             startTime = getDefaultStartTime(scheduleDate);
 
+            setStartTime(startTime);
+        }
+
+        startTimeField = DateTimeFieldFactory.create(getProperty("startTime"));
+        endTimeField = DateTimeFieldFactory.create(getProperty("endTime"));
+        if (startTimeField.getDate() == null) {
             startTimeField.setDate(startTime); // set the date portion
-            setStartTime(startTime);           // set the time portion
-            // TODO - not ideal. Needs to be this way as the date and time
-            // fields are bound to the same property, which uses
-            // TimePropertyTransformer
         }
 
         getProperty("status").addModifiableListener(new ModifiableListener() {
@@ -158,7 +158,7 @@ public class AppointmentActEditor extends AbstractActEditor {
         try {
             Date now = DateHelper.getDayMonthYear(new Date());
             Date startDate = startTimeField.getDate();
-            if (startDate.compareTo(now) < 0) {
+            if (startDate != null && startDate.compareTo(now) < 0) {
                 // don't permit backdating of appointments
                 removeStartEndTimeListeners();
                 startTimeField.setDate(now);
