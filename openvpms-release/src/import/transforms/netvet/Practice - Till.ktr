@@ -46,6 +46,35 @@
   <hop> <from>Transform Till Fields</from><to>OpenVPMS Till Output</to><enabled>Y</enabled> </hop>  <hop> <from>Text file input</from><to>Select Till Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select Till Fields</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Add sequence</from><to>Transform Till Fields</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
+    <name>Add sequence</name>
+    <type>Sequence</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+      <valuename>TILLID</valuename>
+      <use_database>N</use_database>
+      <connection/>
+      <schema/>
+      <seqname>SEQ_</seqname>
+      <use_counter>Y</use_counter>
+      <counter_name/>
+      <start_at>1</start_at>
+      <increment_by>1</increment_by>
+      <max_value>9999999</max_value>
+     <cluster_schema/>
+    <GUI>
+      <xloc>362</xloc>
+      <yloc>252</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>OpenVPMS Till Output</name>
     <type>OpenVPMSLoaderPlugin</type>
     <description/>
@@ -270,35 +299,6 @@ var CLINIC = 1</jsScript_script>
         </field>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>456</xloc>
-      <yloc>252</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Add sequence</name>
-    <type>Sequence</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-      <valuename>TILLID</valuename>
-      <use_database>N</use_database>
-      <connection/>
-      <schema/>
-      <seqname>SEQ_</seqname>
-      <use_counter>Y</use_counter>
-      <counter_name/>
-      <start_at>1</start_at>
-      <increment_by>1</increment_by>
-      <max_value>9999999</max_value>
-     <cluster_schema/>
-    <GUI>
-      <xloc>362</xloc>
       <yloc>252</yloc>
       <draw>Y</draw>
       </GUI>

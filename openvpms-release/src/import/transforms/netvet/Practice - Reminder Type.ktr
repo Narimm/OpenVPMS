@@ -238,7 +238,7 @@
       </fields>
      <cluster_schema/>
     <GUI>
-      <xloc>489</xloc>
+      <xloc>488</xloc>
       <yloc>131</yloc>
       <draw>Y</draw>
       </GUI>
@@ -264,30 +264,32 @@ REMINDER.setString(replace(upper(REMINDER.getString()),&quot; &quot;,&apos;_&apo
 &#47;&#47; Transform into reminder types
 
 var REMCODE = REMINDER.getString()
-if (REMCODE == &quot;DHP&quot; || REMCODE == &quot;C3&quot; || REMCODE ==&quot;C4&quot; || REMCODE == &quot;C5&quot;) {
-	var REMTYPE = &quot;CA&quot;
+if (substr(REMCODE,0,4) == &quot;VACC&quot; &amp;&amp; REMCODE != &quot;VACCALI&quot;) {
+	var REMTYPE = &quot;CANINE&quot;
 }
-else if (REMCODE == &quot;DHP3Y&quot;) {
-	var REMTYPE = &quot;C3&quot;
+else if (substr(REMCODE,0,4) == &quot;VACF&quot;) {
+	var REMTYPE = &quot;FELINE&quot;
 }
-else if (REMCODE == &quot;BOPIV&quot; || REMCODE == &quot;BORD3N&quot; || REMCODE == &quot;BORDN&quot; || 
-	REMCODE == &quot;CANIGEN_KC&quot; || REMCODE == &quot;PI&quot; || REMCODE == &quot;BB&quot; || REMCODE == &quot;TRACGUARD&quot;) {
-	var REMTYPE = &quot;KC&quot;
+else if (REMCODE == &quot;CARTIN&quot;) {
+	var REMTYPE = &quot;CARTROPHEN&quot;
 }
-else if (REMCODE == &quot;MOXII10&quot;) {
-	var REMTYPE = &quot;CH&quot;
+else if (REMCODE == &quot;VACDHP&quot;) {
+	var REMTYPE = &quot;CANINE&quot;
 }
-else if (REMCODE == &quot;F3&quot; || REMCODE == &quot;F4&quot; || REMCODE == &quot;FELV&quot; || REMCODE == &quot;FE&quot; || REMCODE == &quot;FEVAC&quot;) {
-	var REMTYPE = &quot;FA&quot;
+else if (substr(REMCODE,0,3) == &quot;PRO&quot;) {
+	var REMTYPE = &quot;PROGRAM&quot;
 }
-else if (REMCODE == &quot;PROGIL&quot; || REMCODE == &quot;PROGIS&quot;) {
-	var REMTYPE = &quot;FF&quot;
+else if (REMCODE == &quot;VACCALI&quot;) {
+	var REMTYPE = &quot;RABBIT&quot;
 }
-else if (REMCODE == &quot;CYLAP&quot;) {
-	var REMTYPE = &quot;MA&quot;
+else if (REMCODE == &quot;VACGOAT&quot;) {
+	var REMTYPE = &quot;GOAT&quot;
 }
-else if (REMCODE == &quot;FRD&quot;) {
-	var REMTYPE = &quot;FR&quot;
+else if (REMCODE == &quot;HWRECALL&quot;) {
+	var REMTYPE = &quot;HEARTWORM&quot;
+}
+else if (substr(REMCODE,0,4) == &quot;DENT&quot;) {
+	var REMTYPE = &quot;DENTAL&quot;
 }
 else {
 	var REMTYPE = &quot;OTHER&quot;
@@ -306,7 +308,7 @@ else {
         </field>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>377</xloc>
-      <yloc>131</yloc>
+      <yloc>130</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

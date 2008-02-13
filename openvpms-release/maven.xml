@@ -48,8 +48,9 @@
             <include name="**/*.bat"/>
         </fixcrlf>
 
-        <!-- copy the dependencies -->
-        <deploy:copy-deps todir="${distDir}/lib"/>
+        <!-- copy the dependencies, exluding mysql as it is GPL'ed -->
+        <deploy:copy-deps todir="${distDir}/lib" 
+                          excludes="mysql-connector-java"/>
 
         <!-- move the webapp -->
         <mkdir dir="${distDir}/webapps"/>

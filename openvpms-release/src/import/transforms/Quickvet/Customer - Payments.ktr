@@ -108,7 +108,7 @@
    <leftvalue>AMOUNT</leftvalue>
    <function>&gt;</function>
    <rightvalue/>
-   <value><name>constant</name><type>BigNumber</type><text>0</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+   <value><name>constant</name><type>BigNumber</type><text>0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
   <condition>
    <negated>N</negated>
    <operator>AND</operator>
@@ -149,7 +149,7 @@
    <leftvalue>AMOUNT</leftvalue>
    <function>&lt;</function>
    <rightvalue/>
-   <value><name>constant</name><type>BigNumber</type><text>0</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
+   <value><name>constant</name><type>BigNumber</type><text>0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
   <condition>
    <negated>N</negated>
    <operator>AND</operator>
@@ -163,6 +163,30 @@
      <cluster_schema/>
     <GUI>
       <xloc>438</xloc>
+      <yloc>143</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Modified Java Script Value</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+AMOUNT.setNumber(abs(AMOUNT.getNumber()))</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>581</xloc>
       <yloc>143</yloc>
       <draw>Y</draw>
       </GUI>
@@ -250,6 +274,31 @@
     </step>
 
   <step>
+    <name>Table input</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <connection>Quickvet</connection>
+    <sql>select * from invoice</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+     <cluster_schema/>
+    <GUI>
+      <xloc>96</xloc>
+      <yloc>56</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Transform Fields</name>
     <type>ScriptValueMod</type>
     <description/>
@@ -277,55 +326,6 @@ TRANSTAT = &quot;POSTED&quot;
     <GUI>
       <xloc>323</xloc>
       <yloc>58</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Table input</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <connection>Quickvet</connection>
-    <sql>select * from invoice</sql>
-    <limit>0</limit>
-    <lookup/>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
-     <cluster_schema/>
-    <GUI>
-      <xloc>96</xloc>
-      <yloc>56</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Modified Java Script Value</name>
-    <type>ScriptValueMod</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <script/>
-    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
-        <jsScript_name>Script 1</jsScript_name>
-        <jsScript_script>&#47;&#47;Script here
-AMOUNT.setNumber(abs(AMOUNT.getNumber()))</jsScript_script>
-        </jsScript>     </jsScripts>    <fields>      </fields>     <cluster_schema/>
-    <GUI>
-      <xloc>581</xloc>
-      <yloc>143</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
