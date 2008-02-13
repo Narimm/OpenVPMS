@@ -215,7 +215,7 @@
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="font">
-                <font size="7pt" bold="true">
+                <font size="8pt" bold="true">
                     <typeface name="arial,sans-serif"/>
                 </font>
             </property>
@@ -501,13 +501,39 @@
     </style>
 
     <!--  Task table styles. -->
+    <style name="TaskTable.EvenRow" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="8px 2px"/>
+                        <property name="background" value="#d1d1d1"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="TaskTable.OddRow" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="8px 2px"/>
+                        <property name="background" value="#ffffff"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+    
     <style name="TaskTable.PENDING" type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#ffffff"/>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="8px 2px"/>
                         <!-- white -->
                     </properties>
                 </layout-data>
@@ -521,7 +547,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#FFCCCC"/>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="8px 2px"/>
                         <!-- pale red -->
                     </properties>
                 </layout-data>
@@ -535,7 +561,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#CCFFFF"/>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="8px 2px"/>
                         <!-- pale blue -->
                     </properties>
                 </layout-data>
@@ -549,7 +575,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#CC99FF"/>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="8px 2px"/>
                         <!-- pale dull violet -->
                     </properties>
                 </layout-data>
@@ -563,7 +589,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="#CCFFCC"/>
-                        <property name="insets" value="8px 1px"/>
+                        <property name="insets" value="8px 2px"/>
                         <!-- pale green -->
                     </properties>
                 </layout-data>
