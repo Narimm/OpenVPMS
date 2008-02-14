@@ -344,20 +344,12 @@ public class ArchetypeServiceActTestCase
         Act act1 = createSimpleAct("act1", "IN_PROGRESS");
         Act act2 = createSimpleAct("act2", "IN_PROGRESS");
         Act act3 = createSimpleAct("act3", "IN_PROGRESS");
-        ActBean bean1 = new ActBean(act1);
-        ActBean bean2 = new ActBean(act2);
 
         // create a relationship from act1 -> act2
-        ActRelationship r1 = bean1.addRelationship("actRelationship.simple",
-                                                   act2);
-        r1.setName("act1->act2");
-        assertFalse(r1.isParentChildRelationship());
+        addRelationship(act1, act2, "act1->act2");
 
         // create a relationship from act2 -> act3
-        ActRelationship r2 = bean2.addRelationship("actRelationship.simple",
-                                                   act3);
-        r2.setName("act2->act3");
-        assertFalse(r2.isParentChildRelationship());
+        addRelationship(act2, act3, "act2->act3");
 
         service.save(act1);
         service.save(act2);
@@ -380,10 +372,8 @@ public class ArchetypeServiceActTestCase
      * parent; and</li>
      * <li>deleting the parent causes deletion of the children</li>
      * </ul>
-     *
-     * @throws Exception
      */
-    public void testParentChildRemoval() throws Exception {
+    public void testParentChildRemoval() {
         Act estimation = (Act) service.create("act.customerEstimation");
         service.remove(estimation);
         estimation.setStatus("IN_PROGRESS");
@@ -429,27 +419,9 @@ public class ArchetypeServiceActTestCase
         Act act2 = createSimpleAct("act2", "IN_PROGRESS");
         Act act3 = createSimpleAct("act3", "IN_PROGRESS");
 
-        ActBean bean1 = new ActBean(act1);
-        ActRelationship r1 = bean1.addRelationship("actRelationship.simple",
-                                                   act2);
-        r1.setName("act1->act2");
-        r1.setParentChildRelationship(true);
-
-        ActBean bean2 = new ActBean(act2);
-        ActRelationship r2 = bean2.addRelationship("actRelationship.simple",
-                                                   act3);
-        r2.setName("act2->act3");
-        r2.setParentChildRelationship(true);
-
-        ActBean bean3 = new ActBean(act3);
-        ActRelationship r3 = bean3.addRelationship("actRelationship.simple",
-                                                   act1);
-        r3.setName("act3->act1");
-        r3.setParentChildRelationship(true);
-
-        bean1.save();
-        bean2.save();
-        bean3.save();
+        addRelationship(act1, act2, "act1->act2", true);
+        addRelationship(act2, act3, "act2->act3", true);
+        addRelationship(act3, act1, "act3->act1", true);
 
         // remove act2. The removal should cascade to include act3 and act1
         service.remove(act2);
@@ -474,16 +446,8 @@ public class ArchetypeServiceActTestCase
         Act act2 = createSimpleAct("act2", "IN_PROGRESS");
         Act act3 = createSimpleAct("act2", "IN_PROGRESS");
 
-        ActBean bean1 = new ActBean(act1);
-        ActRelationship r1 = bean1.addRelationship("actRelationship.simple",
-                                                   act2);
-        r1.setName("act1->act2");
-        r1.setParentChildRelationship(true);
-
-        ActRelationship r2 = bean1.addRelationship("actRelationship.simple",
-                                                   act3);
-        r2.setName("act1->act3");
-        r2.setParentChildRelationship(false);
+        addRelationship(act1, act2, "act1->act2", true);
+        addRelationship(act1, act3, "act1->act3", false);
 
         service.save(act1);
         service.save(act2);
@@ -509,23 +473,16 @@ public class ArchetypeServiceActTestCase
         Act act2 = createSimpleAct("act2", "IN_PROGRESS");
         Act act3 = createSimpleAct("act3", "IN_PROGRESS");
 
-        ActBean bean1 = new ActBean(act1);
-        ActRelationship r1 = bean1.addRelationship("actRelationship.simple",
-                                                   act2);
-        r1.setName("act1->act2");
-        r1.setParentChildRelationship(true);
-
+        addRelationship(act1, act2, "act1->act2", true);
         service.save(act1);
         service.save(act2);
         service.save(act3);
 
         Act stale = reload(act1);
 
-        ActRelationship r2 = bean1.addRelationship("actRelationship.simple",
-                                                   act3);
-        r2.setName("act2->act3");
-        r2.setParentChildRelationship(true);
-        bean1.save();
+        addRelationship(act1, act3, "act1->act3", true);
+        service.save(act1);
+        service.save(act3);
 
         try {
             service.remove(stale);
@@ -551,27 +508,18 @@ public class ArchetypeServiceActTestCase
         final Act act1 = createSimpleAct("act1", "IN_PROGRESS");
         final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
         final Act act3 = createSimpleAct("act3", "IN_PROGRESS");
-        ActBean bean1 = new ActBean(act1);
-        ActBean bean2 = new ActBean(act2);
-        ActBean bean3 = new ActBean(act3);
 
         // create a relationship from act1 -> act2
-        final ActRelationship relAct1Act2 = bean1.addRelationship(
-                "actRelationship.simple", act2);
-        relAct1Act2.setName("act1->act2");
-        assertFalse(relAct1Act2.isParentChildRelationship());
+        final ActRelationship relAct1Act2 = addRelationship(act1, act2,
+                                                            "act1->act2");
 
         // create a relationship from act2 -> act3
-        final ActRelationship relAct2Act3 = bean2.addRelationship(
-                "actRelationship.simple", act3);
-        relAct2Act3.setName("act2->act3");
-        assertFalse(relAct2Act3.isParentChildRelationship());
+        final ActRelationship relAct2Act3 = addRelationship(act2, act3,
+                                                            "act2->act3");
 
         // create a relationship from act1 -> act3
-        final ActRelationship relAct1Act3 = bean3.addRelationship(
-                "actRelationship.simple", act3);
-        relAct1Act3.setName("act1->act3");
-        assertFalse(relAct1Act3.isParentChildRelationship());
+        final ActRelationship relAct1Act3 = addRelationship(act1, act3,
+                                                            "act1->act3");
 
         service.save(act1);
         service.save(act2);
@@ -608,11 +556,12 @@ public class ArchetypeServiceActTestCase
 
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
-                service.remove(act3);
-                assertNotNull(reload(act3));  // can reload till commit
+                Act act3reloaded = reload(act3);
+                service.remove(act3reloaded);
+                assertNotNull(reload(act3reloaded));  // can reload till commit
 
                 // reload act2 and verify that it no longer has a relationship
-                // to act3, and can be saved again
+                // to act3
                 Act act2reloaded = reload(act2);
                 assertFalse(act2reloaded.getActRelationships().contains(
                         relAct2Act3));
@@ -634,12 +583,9 @@ public class ArchetypeServiceActTestCase
         final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
         final Act act3 = createSimpleAct("act3", "IN_PROGRESS");
 
-        final ActBean bean = new ActBean(act1);
-
         // create a relationship from act1 -> act2
-        final ActRelationship relAct1Act2 = bean.addRelationship(
-                "actRelationship.simple", act2);
-        relAct1Act2.setName("act1->act2");
+        final ActRelationship relAct1Act2 = addRelationship(act1, act2,
+                                                            "act1->act2");
 
         service.save(act1);
         service.save(act2);
@@ -653,10 +599,7 @@ public class ArchetypeServiceActTestCase
                         relAct1Act2));
 
                 // add a new relationship
-                ActBean relBean = new ActBean(reloaded);
-                ActRelationship relAct1Act3 = relBean.addRelationship(
-                        "actRelationship.simple", act3);
-                relAct1Act3.setName("act2->act4");
+                addRelationship(reloaded, act3, "act1->act3");
                 service.save(reloaded);
                 service.save(act3);
                 return null;
@@ -666,6 +609,58 @@ public class ArchetypeServiceActTestCase
         Act reloaded = reload(act1);
         ActBean relBean = new ActBean(reloaded);
         assertTrue(relBean.getActs().contains(act3));
+    }
+
+    /**
+     * Verifies that acts with peer and parent/child relationships are handled
+     * correctly at deletion in a transaction, i.e the deletion cascades to
+     * those target acts in parent/child relationships, and not those in peer
+     * relationships.
+     */
+    public void testPeerParentChildRemovalInTxn() {
+        // Create 4 acts with the following relationships:
+        // act1 -- (parent/child) --> act2 -- (peer) --> act 4
+        //   |---- (parent/child) --> act3 -- (peer) -----|
+        final Act act1 = createSimpleAct("act1", "IN_POGRESS");
+        final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+        final Act act3 = createSimpleAct("act3", "IN_PROGRESS");
+        final Act act4 = createSimpleAct("act4", "IN_PROGRESS");
+
+        addRelationship(act1, act2, "act1->act2", true);
+        addRelationship(act1, act3, "act1->act3", true);
+        final ActRelationship relAct2Act4
+                = addRelationship(act2, act4, "act2->act4", false);
+        final ActRelationship relAct3Act4
+                = addRelationship(act3, act4, "act3->act4", false);
+        service.save(act1);
+        service.save(act2);
+        service.save(act3);
+        service.save(act4);
+
+        assertTrue(act4.getActRelationships().contains(relAct2Act4));
+        assertTrue(act4.getActRelationships().contains(relAct3Act4));
+
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                service.remove(act1);
+
+                // reload act4 and verify it no longer has any relationships
+                Act reloaded = reload(act4);
+                assertTrue(reloaded.getActRelationships().isEmpty());
+
+                // verify it can be re-saved
+                reloaded.setName("A test");
+                service.save(reloaded);
+                return null;
+            }
+        });
+
+        assertNull(reload(act1)); // deletion of act1 should have cascaded to
+        assertNull(reload(act2)); // act2 and act3
+        assertNull(reload(act3));
+
+        Act reloaded = reload(act4);
+        assertTrue(reloaded.getActRelationships().isEmpty());
     }
 
     /*
@@ -780,4 +775,38 @@ public class ArchetypeServiceActTestCase
         return person;
     }
 
+    /**
+     * Helper to add a peer <em>actRelationship.simple</em> relationship
+     * between two acts.
+     *
+     * @param source the source act
+     * @param target that target act
+     * @param name   the relationship name
+     * @return the relationship
+     */
+    private ActRelationship addRelationship(Act source, Act target,
+                                            String name) {
+        return addRelationship(source, target, name, false);
+    }
+
+    /**
+     * Helper to add an <em>actRelationship.simple</em> relationship between two
+     * acts.
+     *
+     * @param source      the source act
+     * @param target      that target act
+     * @param name        the relationship name
+     * @param parentChild if <tt>true</tt> add a parent-child relationship,
+     *                    otherwise add a peer relationship
+     * @return the relationship
+     */
+    private ActRelationship addRelationship(Act source, Act target, String name,
+                                            boolean parentChild) {
+        ActBean bean = new ActBean(source);
+        ActRelationship result = bean.addRelationship("actRelationship.simple",
+                                                      target);
+        result.setName(name);
+        result.setParentChildRelationship(parentChild);
+        return result;
+    }
 }
