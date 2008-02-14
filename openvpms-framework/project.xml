@@ -10,7 +10,7 @@
   <inceptionYear>2005</inceptionYear>
   <name>openvpms</name>
   <artifactId>openvpms-framework</artifactId>
-  <currentVersion>1.1-beta-2-SNAPSHOT</currentVersion>
+  <currentVersion>1.2-SNAPSHOT</currentVersion>
   <package>org.openvpms</package>
   <url>http://www.openvpms.org/${pom.artifactId}</url>
   <issueTrackingUrl>
@@ -132,20 +132,6 @@
       <artifactId>junit</artifactId>
       <version>3.8.1</version>
       <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>easymock</groupId>
-      <artifactId>easymock</artifactId>
-      <version>2.0</version>
-      <type>jar</type>
-      <url>http://www.easymock.org</url>
-    </dependency>
-    <dependency>
-      <groupId>log4unit</groupId>
-      <artifactId>log4unit</artifactId>
-      <version>0.2.0</version>
-      <type>jar</type>
-      <url>http://www.openfuture.de/Log4Unit/</url>
     </dependency>
     <dependency>
       <groupId>jtestcase</groupId>
