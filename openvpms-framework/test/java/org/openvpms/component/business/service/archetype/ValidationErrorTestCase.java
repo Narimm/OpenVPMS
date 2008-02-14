@@ -491,17 +491,6 @@ public class ValidationErrorTestCase extends BaseTestCase {
     }
 
     /**
-     * Dump the errors in the validation exception.
-     *
-     * @param exception the validation exception
-     */
-    protected void dumpErrors(ValidationException exception) {
-        for (ValidationError error : exception.getErrors()) {
-            error(error);
-        }
-    }
-
-    /**
      * Verifies that a validation exception is thrown for invalid characters
      * present in a string.
      *

@@ -19,7 +19,7 @@
 
 package org.openvpms.component.business.service.archetype.descriptor;
 
-import junit.log4j.LoggedTestCase;
+import junit.framework.TestCase;
 import org.apache.commons.lang.StringUtils;
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.xml.Unmarshaller;
@@ -43,7 +43,7 @@ import java.util.List;
  * @version $LastChangedDate$
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class NodeDescriptorTestCase extends LoggedTestCase {
+public class NodeDescriptorTestCase extends TestCase {
 
     /**
      * The archetype descriptors.

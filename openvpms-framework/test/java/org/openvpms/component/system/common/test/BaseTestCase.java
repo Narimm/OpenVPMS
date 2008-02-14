@@ -19,14 +19,11 @@
 
 package org.openvpms.component.system.common.test;
 
-// log4unit
-import junit.log4j.LoggedTestCase;
 
 // commons-lang
-import org.apache.commons.lang.StringUtils;
-
-// jtestcase
+import junit.framework.TestCase;
 import net.wangs.jtestcase.JTestCase;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * This calss adds some additional features such as logging, etc which 
@@ -39,19 +36,19 @@ import net.wangs.jtestcase.JTestCase;
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public abstract class BaseTestCase extends LoggedTestCase {
+public abstract class BaseTestCase extends TestCase {
     /**
      * The name of the file that holds all the test data, which must
      * also reside in the same package as the test case using it
      */
     private static final String TEST_FILE = "test-data.xml";
-    
+
     /**
      * Data that is relevant to the test case is loaded using jtestcase
      * library.
      */
     protected JTestCase testData;
-    
+
     /**
      * Delegate to the base class
      */
@@ -90,21 +87,21 @@ public abstract class BaseTestCase extends LoggedTestCase {
     protected JTestCase getTestData() {
         return testData;
     }
-    
+
     /**
      * Return the path to the test data. This is required if the class is 
      * using data driven testing. The default location is a file called
      * test-data.xml, which resides in the same package as the class under
      * test.
      * 
-     * @return String 
+     * @return String
      */
     protected String getPathToTestData() {
         String className = this.getClass().getName();
-        String dataFile = className.substring(0, className.lastIndexOf(".") + 1); 
+        String dataFile = className.substring(0, className.lastIndexOf(".") + 1);
         return "target/test-classes/" + StringUtils.replaceChars(dataFile, '.', '/') + TEST_FILE;
     }
-    
+
     /**
      * Set up the test data file, if the file exists.
      * 
@@ -114,8 +111,6 @@ public abstract class BaseTestCase extends LoggedTestCase {
     protected void setUpTestData()
     throws Exception {
         String dataFile = getPathToTestData();
-        debug("Trying to open " + dataFile +  " for " + 
-                this.getClass().getSimpleName());
         testData = new JTestCase(dataFile, this.getClass().getSimpleName());
     }
 }

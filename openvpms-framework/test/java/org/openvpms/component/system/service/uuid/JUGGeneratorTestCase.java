@@ -19,88 +19,49 @@
 
 package org.openvpms.component.system.service.uuid;
 
-import org.openvpms.component.system.common.test.BaseTestCase;
-import org.openvpms.component.system.service.uuid.IUUIDGenerator;
-import org.openvpms.component.system.service.uuid.JUGGenerator;
+import junit.framework.TestCase;
 import org.safehaus.uuid.UUIDGenerator;
 
+import java.util.HashSet;
+import java.util.Set;
+
+
 /**
- * Exercise the {@link JUGGenerator}
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * Exercise the {@link JUGGenerator}.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class JUGGeneratorTestCase extends BaseTestCase {
-    /**
-     * A reference to the generator
-     */
-    private IUUIDGenerator generator;
-    
-    /**
-     * Main line routine 
-     * @param args
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(JUGGeneratorTestCase.class);
-    }
+public class JUGGeneratorTestCase extends TestCase {
 
     /**
-     * Constructor for JUGGeneratorTestCase.
-     * 
-     * @param name
-     *            The name of the test case
+     * Test the creation of multiple UUIDs.
      */
-    public JUGGeneratorTestCase(String name) {
-        super(name);
-    }
-
-    /*
-     * @see BaseTestCase#setUp()
-     */
-    protected void setUp() throws Exception {
-        super.setUp();
-        generator = new JUGGenerator(
+    public void testMultipleUUIDCreation() {
+        JUGGenerator generator = new JUGGenerator(
                 UUIDGenerator.getInstance().getDummyAddress().toString());
-    }
 
-    /**
-     * Test the creation of multiple UUIDs
-     */
-    public void testMultipleUUIDCreation()
-    throws Exception {
-        int count = ((Integer)this.getTestData().getTestCaseParameter(
-                "testMultipleUUIDCreation", "normal", "generateCount"))
-                .intValue();
-
-        for (int index = 0; index < count; index++) {
+        Set<String> ids = new HashSet<String>();
+        for (int index = 0; index < 1000; index++) {
             String id = generator.nextId();
-            debug("Generated id : " + id);
+            assertTrue(ids.add(id));
         }
     }
-    
-    /**
-     * Test the creation of multiple UUIDs with a specified prefix
-     */
-    public void testMultipleUUIDGeneratorWithPrefix()
-    throws Exception {
-        int count = ((Integer)this.getTestData().getTestCaseParameter(
-                "testMultipleUUIDGeneratorWithPrefix", "normal", "generateCount"))
-                .intValue();
-        String prefix = (String)this.getTestData().getTestCaseParameter(
-                "testMultipleUUIDGeneratorWithPrefix", "normal", "prefix");
 
-        for (int index = 0; index < count; index++) {
-            String id = generator.nextId(prefix);
-            debug("Generated id : " + id);
-        }
-    }
-    
-    /*
-     * @see BaseTestCase#tearDown()
+    /**
+     * Test the creation of UUIDs with a prefix.
      */
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        generator = null;
+    public void testPrefixGeneration() {
+        JUGGenerator generator = new JUGGenerator(
+                UUIDGenerator.getInstance().getDummyAddress().toString());
+
+        String prefix = "prefix:";
+        Set<String> ids = new HashSet<String>();
+        for (int index = 0; index < 1000; index++) {
+            String id = generator.nextId(prefix);
+            assertTrue(id.startsWith(prefix));
+            assertTrue(ids.add(id));
+        }
     }
 
 }
