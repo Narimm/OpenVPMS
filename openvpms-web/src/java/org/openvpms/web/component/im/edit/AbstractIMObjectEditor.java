@@ -483,6 +483,17 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
+     * Returns a property, given its node descriptor's name.
+     *
+     * @param name the descriptor's name
+     * @return the property corresponding to <tt>name</tt> or <tt>null</tt> if
+     *         none exists
+     */
+    public Property getProperty(String name) {
+        return properties.get(name);
+    }
+
+    /**
      * Save any edits.
      *
      * @return <code>true</code> if the save was successful
@@ -697,17 +708,6 @@ public abstract class AbstractIMObjectEditor
      */
     protected NodeDescriptor getDescriptor(String name) {
         return getArchetypeDescriptor().getNodeDescriptor(name);
-    }
-
-    /**
-     * Helper to return a property, given its descriptor's name.
-     *
-     * @param name the descriptor's name
-     * @return the property corresponding to <code>name</code> or
-     *         <code>null</code> if none exists
-     */
-    protected Property getProperty(String name) {
-        return properties.get(name);
     }
 
     /**

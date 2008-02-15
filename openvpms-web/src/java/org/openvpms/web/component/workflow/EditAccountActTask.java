@@ -20,11 +20,12 @@ package org.openvpms.web.component.workflow;
 
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.account.EditAccountActDialog;
 
 
 /**
- * A task for editing account acts that does not provide an Apply button,
- * as a workaround for OVPMS-733.
+ * A task for editing account acts that disables the Apply button for
+ * <em>POSTED<em> acts, as a workaround for OVPMS-733.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -61,7 +62,7 @@ public class EditAccountActTask extends EditIMObjectTask {
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor, boolean skip) {
-        return new EditDialog(editor, true, false, skip);
+        return new EditAccountActDialog(editor, true, skip);
     }
 
 }

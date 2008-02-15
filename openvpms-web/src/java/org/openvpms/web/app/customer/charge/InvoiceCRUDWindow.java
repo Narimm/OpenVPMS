@@ -26,6 +26,7 @@ import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.account.EditAccountActDialog;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.PrintActTask;
 import org.openvpms.web.component.workflow.ReloadTask;
@@ -110,13 +111,14 @@ public class InvoiceCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     }
 
     /**
-     * Creates a new edit dialog with no Apply button to fix OVPMS-733.
+     * Creates a new edit dialog with Apply button disabled for <em>POSTED</em>
+     * acts, to workaround OVPMS-733.
      *
      * @param editor the editor
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new EditDialog(editor, true, false, false);
+        return new EditAccountActDialog(editor);
     }
 
 }
