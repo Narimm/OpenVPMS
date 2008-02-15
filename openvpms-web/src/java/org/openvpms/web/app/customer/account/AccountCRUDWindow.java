@@ -38,6 +38,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -273,6 +274,16 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         if (editor.isSaved()) {
             onRefresh(getObject());
         }
+    }
+
+    /**
+     * Creates a new edit dialog with no Apply button to fix OVPMS-733.
+     *
+     * @param editor the editor
+     */
+    @Override
+    protected EditDialog createEditDialog(IMObjectEditor editor) {
+        return new EditDialog(editor, true, false, false);
     }
 
     /**

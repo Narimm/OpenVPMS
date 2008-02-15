@@ -31,7 +31,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
-import org.openvpms.web.component.workflow.EditIMObjectTask;
+import org.openvpms.web.component.workflow.EditAccountActTask;
 import org.openvpms.web.component.workflow.PrintIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -96,7 +96,7 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
         initial.setTill(global.getTill());
         initial.setLocation(global.getLocation());
 
-        EditIMObjectTask sale = new EditIMObjectTask(CHARGES_COUNTER, true);
+        EditAccountActTask sale = new EditAccountActTask(CHARGES_COUNTER, true);
         sale.setDeleteOnCancelOrSkip(true);
         addTask(sale);
         TaskProperties properties = new TaskProperties();
@@ -105,7 +105,8 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
                                                              properties);
         addTask(postSale);
 
-        EditIMObjectTask payment = new EditIMObjectTask(ACCOUNT_PAYMENT, true);
+        EditAccountActTask payment = new EditAccountActTask(ACCOUNT_PAYMENT,
+                                                            true);
         payment.setDeleteOnCancelOrSkip(true);
         payment.addTaskListener(new TaskListener() {
             public void taskEvent(TaskEvent event) {
