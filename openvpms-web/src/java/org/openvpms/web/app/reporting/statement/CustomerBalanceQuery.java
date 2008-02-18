@@ -22,10 +22,9 @@ import echopointng.DateChooser;
 import echopointng.DateField;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
@@ -46,12 +45,11 @@ import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ComponentHelper;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -205,23 +203,19 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
     protected void doLayout(Component container) {
         LookupListModel model = createAccountTypeModel();
 
+        Grid grid = GridFactory.create(6);
         accountType = SelectFieldFactory.create(model);
         accountType.setCellRenderer(new LookupListCellRenderer());
 
-        Row accountTypeRow = createRow(
-                "CellSpacing",
-                LabelFactory.create("reporting.statements.accountType"),
-                accountType);
+        Label accountTypeLabel = LabelFactory.create(
+                "reporting.statements.accountType");
 
         date = DateFieldFactory.create();
         date.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
             }
         });
-        Row statementDateRow = createRow(
-                "CellSpacing",
-                LabelFactory.create("reporting.statements.date"),
-                date);
+        Label dateLabel = LabelFactory.create("reporting.statements.date");
 
         balanceType = SelectFieldFactory.create(balanceTypeItems);
         balanceType.setCellRenderer(new BalanceTypeListCellRenderer());
@@ -230,13 +224,15 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
                 onBalanceTypeChanged();
             }
         });
-        Row balanceTypeRow = createRow(
-                "CellSpacing",
-                LabelFactory.create("reporting.statements.balancetypes"),
-                balanceType);
+        Label balanceTypeLabel = LabelFactory.create(
+                "reporting.statements.balancetypes");
 
-        excludeCredit = CheckBoxFactory.create(
-                "reporting.statements.excludeCredit", true);
+        grid.add(accountTypeLabel);
+        grid.add(accountType);
+        grid.add(dateLabel);
+        grid.add(date);
+        grid.add(balanceType);
+        grid.add(balanceTypeLabel);
 
         periodFromLabel = LabelFactory.create(
                 "reporting.statements.periodFrom");
@@ -254,11 +250,18 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
                     public void propertyChange(PropertyChangeEvent event) {
                     }
                 });
-        Row periodRange = createRow("CellSpacing",
-                                    periodFromLabel, periodFrom,
-                                    periodToLabel, periodTo);
-        Row balanceRow = createRow("ControlRow", accountTypeRow,
-                                   balanceTypeRow);
+
+        Label excludeCreditLabel
+                = LabelFactory.create("reporting.statements.excludeCredit");
+        excludeCredit = CheckBoxFactory.create(true);
+
+        grid.add(periodFromLabel);
+        grid.add(periodFrom);
+        grid.add(periodToLabel);
+        grid.add(periodTo);
+        grid.add(excludeCredit);
+        grid.add(excludeCreditLabel);
+
 
         Label customerFromLabel = LabelFactory.create(
                 "reporting.statements.customerFrom");
@@ -278,15 +281,12 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
                     }
                 });
 
-        Row firstRow = createRow("CellSpacing", accountTypeRow,
-                                 statementDateRow, balanceRow);
-        Row secondRow = createRow("CellSpacing", periodRange, excludeCredit);
-        Row thirdRow = createRow("CellSpacing", customerFromLabel, customerFrom,
-                                 customerToLabel, customerTo);
+        grid.add(customerFromLabel);
+        grid.add(customerFrom);
+        grid.add(customerToLabel);
+        grid.add(customerTo);
 
-        Column column = ColumnFactory.create("CellSpacing", firstRow, secondRow,
-                                             thirdRow);
-        container.add(column);
+        container.add(grid);
 
         FocusGroup group = getFocusGroup();
         group.add(accountType);
@@ -437,17 +437,6 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
         List<Lookup> lookups = FastLookupHelper.getLookups(
                 "lookup.customerAccountType");
         return new LookupListModel(lookups, true);
-    }
-
-    /**
-     * Helper to create a row containing a set of components.
-     *
-     * @param style      the style name
-     * @param components the components
-     * @return a row containing the components
-     */
-    private Row createRow(String style, Component ... components) {
-        return RowFactory.create(style, components);
     }
 
     /**
