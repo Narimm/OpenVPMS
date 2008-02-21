@@ -84,13 +84,13 @@ public class Entity extends IMObject {
 
     /**
      * Constructs an instance of a base entity.
-     * 
+     *
      * @param archetypeId
      *            the archetype id constraining this object
      * @param name
-     *            the name of the entity.            
+     *            the name of the entity.
      * @param description
-     *            the description of the archetype            
+     *            the description of the archetype
      * @param details
      *            dynamic details of the act.
      */
@@ -108,7 +108,7 @@ public class Entity extends IMObject {
 
     /**
      * Add a new {@link EntityIdentity}
-     * 
+     *
      * @param identity
      *            the entity identity to add
      */
@@ -119,7 +119,7 @@ public class Entity extends IMObject {
 
     /**
      * Remove the specified {@link EntityIdentity}
-     * 
+     *
      * @param identity
      *          the identity to remove
      * @return boolean
@@ -131,7 +131,7 @@ public class Entity extends IMObject {
 
     /**
      * Return the {@link EntityIdentity} as an array
-     * 
+     *
      * @return EntityIdentity[]
      */
     public Set<EntityIdentity> getIdentities() {
@@ -139,10 +139,21 @@ public class Entity extends IMObject {
     }
 
     /**
-     * @return Returns the sourceEntityRelationships.
+     * Returns the relationships where this is the source entity.
+     *
+     * @return the source entity relationships
      */
-    protected Set<EntityRelationship> getSourceEntityRelationships() {
+    public Set<EntityRelationship> getSourceEntityRelationships() {
         return sourceEntityRelationships;
+    }
+
+    /**
+     * Returns the relationships where this is the target entity.
+     *
+     * @return the target entity relationships
+     */
+    public Set<EntityRelationship> getTargetEntityRelationships() {
+        return targetEntityRelationships;
     }
 
     /**
@@ -154,7 +165,7 @@ public class Entity extends IMObject {
 
     /**
      * Add a source {@link EntityRelationship} to this entity
-     * 
+     *
      * @param entityRel
      *            the entity relationship to add
      */
@@ -164,20 +175,12 @@ public class Entity extends IMObject {
 
     /**
      * Remove the source {@link EntityRelationship} from this entity
-     * 
+     *
      * @param entityRel
      *            the entity relationship to remove
      */
     private void removeSourceEntityRelationship(EntityRelationship entityRel) {
         this.sourceEntityRelationships.remove(entityRel);
-    }
-
-
-    /**
-     * @return Returns the targetEntityRelationships.
-     */
-    protected Set<EntityRelationship> getTargetEntityRelationships() {
-        return targetEntityRelationships;
     }
 
     /**
@@ -189,7 +192,7 @@ public class Entity extends IMObject {
 
     /**
      * Add a tarrget {@link EntityRelationship} to this entity
-     * 
+     *
      * @param entityRel
      *            the entity relationship to add
      */
@@ -199,7 +202,7 @@ public class Entity extends IMObject {
 
     /**
      * Remove the tarrget {@link EntityRelationship} from this entity
-     * 
+     *
      * @param entityRel
      *            the entity relationship to remove
      */
@@ -210,13 +213,13 @@ public class Entity extends IMObject {
 
 
     /**
-     * Add a relationship to this entity. It will determine whether it is a 
+     * Add a relationship to this entity. It will determine whether it is a
      * source or target relationship before adding it.
-     * 
+     *
      * @param entityRel
      *            the entity relationship to add
      * @throws EntityException
-     *            if this relationship cannot be added to this entity            
+     *            if this relationship cannot be added to this entity
      */
     public void addEntityRelationship(EntityRelationship entityRel) {
         for (EntityRelationship rel : this.getEntityRelationships()) {
@@ -244,9 +247,9 @@ public class Entity extends IMObject {
     }
 
     /**
-     * Remove a relationship to this entity. It will determine whether it is a 
+     * Remove a relationship to this entity. It will determine whether it is a
      * source or target relationship before removing it.
-     * 
+     *
      * @param entityRel
      *            the entity relationship to remove
      */
@@ -265,10 +268,10 @@ public class Entity extends IMObject {
     }
 
     /**
-     * Return all the entity relationships. Do not use the returned set to 
+     * Return all the entity relationships. Do not use the returned set to
      * add and remove entity relationships. Instead use {@link #addEntityRelationship(EntityRelationship)}
      * and {@link #removeEntityRelationship(EntityRelationship)} repsectively.
-     * 
+     *
      * @return Set<EntityRelationship>
      */
     public Set<EntityRelationship> getEntityRelationships() {
@@ -281,7 +284,7 @@ public class Entity extends IMObject {
 
     /**
      * Adds a classification to this entity.
-     * 
+     *
      * @param classification the classification to add
      */
     public void addClassification(Lookup classification) {
@@ -290,7 +293,7 @@ public class Entity extends IMObject {
 
     /**
      * Removes a classification from this entity.
-     * 
+     *
      * @param classification the classification to remove
      */
     public void removeClassification(Lookup classification) {
@@ -299,7 +302,7 @@ public class Entity extends IMObject {
 
     /**
      * Returns the classifications for this entity.
-     * 
+     *
      * @return the classifications
      */
     public Set<Lookup> getClassifications() {

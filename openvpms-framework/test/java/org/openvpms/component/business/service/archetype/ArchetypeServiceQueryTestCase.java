@@ -22,12 +22,15 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSet;
@@ -171,10 +174,7 @@ public class ArchetypeServiceQueryTestCase
 
         contact.addClassification(purpose);
 
-        Party person = (Party) service.create("party.person");
-        person.getDetails().put("lastName", "Anderson");
-        person.getDetails().put("firstName", "Tim");
-        person.getDetails().put("title", "MR");
+        Party person = createPerson();
         person.addContact(contact);
         service.save(person);
 
@@ -229,10 +229,7 @@ public class ArchetypeServiceQueryTestCase
 
         contact.addClassification(purpose);
 
-        Party person = (Party) service.create("party.person");
-        person.getDetails().put("lastName", "Anderson");
-        person.getDetails().put("firstName", "Tim");
-        person.getDetails().put("title", "MR");
+        Party person = createPerson();
         person.addContact(contact);
         service.save(person);
 
@@ -276,10 +273,7 @@ public class ArchetypeServiceQueryTestCase
      * {@link ObjectRefConstraint}.
      */
     public void testOBF155() {
-        Party person = (Party) service.create("party.person");
-        person.getDetails().put("lastName", "Anderson");
-        person.getDetails().put("firstName", "Tim");
-        person.getDetails().put("title", "MR");
+        Party person = createPerson();
         service.save(person);
 
         ArchetypeQuery query = new ArchetypeQuery(person.getObjectReference());
@@ -294,11 +288,61 @@ public class ArchetypeServiceQueryTestCase
         assertEquals(0, page.getResults().size());
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+    /**
+     * Verfies that relationships between entities can be queried.
      */
+    public void testOBF178() {
+        Party person = createPerson();
+        EntityBean bean = new EntityBean(person);
+
+        Party pet = (Party) service.create("party.animalpet");
+        IMObjectBean petBean = new IMObjectBean(pet);
+        String petName = "Mutt-" + System.currentTimeMillis();
+        petBean.setValue("name", petName);
+        petBean.setValue("species", "CANINE");
+        petBean.setValue("breed", "Australian Terrier");
+        bean.addRelationship("entityRelationship.animalOwner", pet);
+
+        bean.save();
+        petBean.save();
+
+        ShortNameConstraint partyPerson
+                = new ShortNameConstraint("person", "party.person");
+        ShortNameConstraint animalPet
+                = new ShortNameConstraint("pet", "party.animalpet");
+        ShortNameConstraint relationship
+                = new ShortNameConstraint("rel",
+                                          "entityRelationship.animalOwner*");
+
+        ArchetypeQuery sourceQuery = new ArchetypeQuery(partyPerson);
+        sourceQuery.add(new CollectionNodeConstraint("patients", relationship));
+        sourceQuery.add(animalPet);
+        sourceQuery.add(new IdConstraint("rel.source", "person"));
+        sourceQuery.add(new IdConstraint("rel.target", "pet"));
+        sourceQuery.add(new NodeConstraint("pet.name", petName));
+
+        // verify that the page only has a single element
+        IPage<IMObject> page = service.get(sourceQuery);
+        assertEquals(1, page.getResults().size());
+
+        ArchetypeQuery targetQuery = new ArchetypeQuery(animalPet);
+        targetQuery.add(
+                new CollectionNodeConstraint("customers", relationship));
+        targetQuery.add(partyPerson);
+        targetQuery.add(new IdConstraint("rel.source", "person"));
+        targetQuery.add(new IdConstraint("rel.target", "pet"));
+        targetQuery.add(new NodeConstraint("pet.name", petName));
+
+        // verify that the page only has a single element
+        page = service.get(targetQuery);
+        assertEquals(1, page.getResults().size());
+    }
+
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+    */
     @Override
     protected String[] getConfigLocations() {
         return new String[]{
@@ -315,6 +359,20 @@ public class ArchetypeServiceQueryTestCase
 
         this.service = (IArchetypeService) applicationContext.getBean(
                 "archetypeService");
+    }
+
+    /**
+     * Helper to create a party of type <em>party.person</em>.
+     *
+     * @return a new party
+     */
+    private Party createPerson() {
+        Party person = (Party) service.create("party.person");
+        IMObjectBean bean = new IMObjectBean(person);
+        bean.setValue("firstName", "Tim");
+        bean.setValue("lastName", "Anderson");
+        bean.setValue("title", "MR");
+        return person;
     }
 
 }
