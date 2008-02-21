@@ -57,7 +57,7 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
      *                                 archetypes
      */
     public ProductQuery(String[] shortNames) {
-        super(shortNames);
+        super(shortNames, Product.class);
     }
 
     /**
@@ -83,6 +83,20 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
             result = filterOnSpecies(result);
         }
         return result;
+    }
+
+    /**
+     * Creates the result set.
+     *
+     * @param sort the sort criteria. May be <tt>null</tt>
+     * @return a new result set
+     */
+    protected ResultSet<Product> createResultSet(SortConstraint[] sort) {
+        return new EntityResultSet<Product>(getArchetypeConstraint(), getName(),
+                                            isIdentitySearch(),
+                                            getConstraints(),
+                                            sort, getMaxResults(),
+                                            isDistinct());
     }
 
     /**

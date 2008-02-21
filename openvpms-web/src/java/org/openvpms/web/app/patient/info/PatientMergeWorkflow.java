@@ -74,7 +74,8 @@ class PatientMergeWorkflow extends MergeWorkflow<Party> {
     @Override
     protected SelectIMObjectTask<Party> createSelectTask(Context context) {
         String[] shortNames = {getObject().getArchetypeId().getShortName()};
-        Query<Party> query = QueryFactory.create(shortNames, context);
+        Query<Party> query = QueryFactory.create(shortNames, context,
+                                                 Party.class);
         if (query instanceof PatientQuery) {
             ((PatientQuery) query).setShowAllPatients(true);
         }

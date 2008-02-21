@@ -59,7 +59,8 @@ public class IncompleteChargesQuery extends DateRangeActQuery<Act> {
      * Creates a new <tt>IncompleteChargesQuery</tt>.
      */
     public IncompleteChargesQuery() {
-        super(null, null, null, SHORT_NAMES, getLookups(), ActStatus.POSTED);
+        super(null, null, null, SHORT_NAMES, getLookups(), ActStatus.POSTED,
+              Act.class);
         setDefaultSortConstraint(DEFAULT_SORT);
     }
 

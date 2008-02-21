@@ -1,5 +1,19 @@
-/**
- * 
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id: QueryFactory.java 2534 2007-12-18 22:56:19Z tony $
  */
 package org.openvpms.web.app.reporting;
 
@@ -29,26 +43,30 @@ import org.openvpms.web.component.util.SelectFieldFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
- * @author tony
+ * Report query.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ReportQuery extends AbstractIMObjectQuery<Entity> {
 
     /**
      * The user to use to limit acces to reports.
      */
-    private final Entity _user;
+    private final Entity user;
 
     /**
      * The selected report type. If <code>null</code> indicates to
      * query using all matching types.
      */
-    private String _reportType;
+    private String reportType;
 
     /**
      * The status dropdown.
      */
-    private SelectField _typeSelector;
+    private SelectField typeSelector;
 
     /**
      * Type label id.
@@ -63,8 +81,8 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
      * @param user the user. May be <tt>null</tt>
      */
     public ReportQuery(Entity user) {
-        super(new String[]{"entity.documentTemplate"});
-        _user = user;
+        super(new String[]{"entity.documentTemplate"}, Entity.class);
+        this.user = user;
     }
 
     /**
@@ -86,9 +104,9 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
         List<Lookup> lookups = FastLookupHelper.getLookups(
                 "entity.documentTemplate", "reportType");
         LookupListModel model = new LookupListModel(lookups, true);
-        _typeSelector = SelectFieldFactory.create(model);
-        _typeSelector.setCellRenderer(new LookupListCellRenderer());
-        _typeSelector.addActionListener(new ActionListener() {
+        typeSelector = SelectFieldFactory.create(model);
+        typeSelector.setCellRenderer(new LookupListCellRenderer());
+        typeSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onTypeChanged();
             }
@@ -96,15 +114,15 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
 
         Label typeLabel = LabelFactory.create(TYPE_ID);
         container.add(typeLabel);
-        container.add(_typeSelector);
-        getFocusGroup().add(_typeSelector);
+        container.add(typeSelector);
+        getFocusGroup().add(typeSelector);
     }
 
     /**
      * Invoked when a status is selected.
      */
     private void onTypeChanged() {
-        String value = (String) _typeSelector.getSelectedItem();
+        String value = (String) typeSelector.getSelectedItem();
         setReportType(value);
     }
 
@@ -130,10 +148,10 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
         getComponent();  // ensure the component is rendered
 
         // Get the current users reportlevel
-        if (_user == null) {
+        if (user == null) {
             userReportLevel = 0;
         } else {
-            EntityBean userBean = new EntityBean(_user);
+            EntityBean userBean = new EntityBean(user);
             userReportLevel = userBean.getInt("userLevel", 0);
         }
         // Do the initial archetype query
@@ -168,7 +186,6 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
         return new IMObjectListResultSet<Entity>(result, getMaxResults());
     }
 
-
     /**
      * Determines if the query should be run automatically.
      *
@@ -177,15 +194,25 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
      */
     @Override
     public boolean isAuto() {
-        return (_user != null);
+        return (user != null);
     }
 
+    /**
+     * Returns the report type.
+     *
+     * @return the report type
+     */
     public String getReportType() {
-        return _reportType;
+        return reportType;
     }
 
+    /**
+     * Sets the report type.
+     *
+     * @param type the report type
+     */
     public void setReportType(String type) {
-        _reportType = type;
+        reportType = type;
     }
 
 }

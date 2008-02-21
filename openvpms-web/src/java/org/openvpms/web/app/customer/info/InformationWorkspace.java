@@ -19,7 +19,6 @@
 package org.openvpms.web.app.customer.info;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.subsystem.CRUDWindow;
@@ -41,7 +40,8 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
      * Construct a new <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
-        super("customer", "info", new ShortNameList("party.customer*"));
+        super("customer", "info", new ShortNameList("party.customer*"),
+              Party.class);
     }
 
     /**
@@ -54,23 +54,6 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
         super.setObject(object);
         ContextHelper.setCustomer(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
-    }
-
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object. May be <tt>null</tt>
-     */
-    public void setIMObject(IMObject object) {
-        if (object == null || object instanceof Party) {
-            setObject((Party) object);
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + Party.class.getName());
-        }
     }
 
     /**
@@ -116,7 +99,7 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
      */
     @Override
     protected CRUDWindow<Party> createCRUDWindow() {
-        return new InformationCRUDWindow(getType(), getShortNames());
+        return new InformationCRUDWindow(getTypeName(), getShortNames());
     }
 
 }

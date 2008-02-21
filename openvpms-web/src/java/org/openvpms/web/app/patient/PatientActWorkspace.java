@@ -20,7 +20,6 @@ package org.openvpms.web.app.patient;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.app.patient.summary.PatientSummary;
@@ -50,7 +49,7 @@ public abstract class PatientActWorkspace<T extends Act>
      */
     public PatientActWorkspace(String subsystemId, String workspaceId,
                                ShortNames shortNames) {
-        super(subsystemId, workspaceId, shortNames);
+        super(subsystemId, workspaceId, shortNames, Party.class);
     }
 
     /**
@@ -65,23 +64,6 @@ public abstract class PatientActWorkspace<T extends Act>
         layoutWorkspace(object);
         initQuery(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
-    }
-
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object. May be <tt>null</tt>
-     */
-    public void setIMObject(IMObject object) {
-        if (object == null || object instanceof Party) {
-            setObject((Party) object);
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + Party.class.getName());
-        }
     }
 
     /**

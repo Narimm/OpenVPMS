@@ -96,7 +96,6 @@ public class PatientReferenceEditor
      * Creates a query to select objects.
      *
      * @param name a name to filter on. May be <code>null</code>
-     * @param name
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes

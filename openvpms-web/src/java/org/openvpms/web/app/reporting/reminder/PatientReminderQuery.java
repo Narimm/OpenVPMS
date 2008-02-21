@@ -77,7 +77,7 @@ public class PatientReminderQuery extends AbstractQuery<Act> {
      *                                 archetypes
      */
     public PatientReminderQuery() {
-        super(new String[]{"act.patientReminder"});
+        super(new String[]{"act.patientReminder"}, Act.class);
         QueryFactory.initialise(this);
     }
 

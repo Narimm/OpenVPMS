@@ -46,7 +46,7 @@ public class TaskTypeQuery extends AbstractIMObjectQuery<Entity> {
     /**
      * The work list to constraint task types to.
      */
-    private final Party _workList;
+    private final Party workList;
 
 
     /**
@@ -56,8 +56,8 @@ public class TaskTypeQuery extends AbstractIMObjectQuery<Entity> {
      * @param workList the schedule. May be <tt>null</tt>
      */
     public TaskTypeQuery(Party workList) {
-        super(new String[]{"entity.taskType"});
-        _workList = workList;
+        super(new String[]{"entity.taskType"}, Entity.class);
+        this.workList = workList;
     }
 
     /**
@@ -71,7 +71,7 @@ public class TaskTypeQuery extends AbstractIMObjectQuery<Entity> {
     public ResultSet<Entity> query(SortConstraint[] sort) {
         getComponent();  // ensure the component is rendered
         ResultSet<Entity> result;
-        if (_workList == null) {
+        if (workList == null) {
             result = super.query(sort);
         } else {
             List<Entity> objects = filterForWorkList();
@@ -95,7 +95,7 @@ public class TaskTypeQuery extends AbstractIMObjectQuery<Entity> {
      */
     @Override
     public boolean isAuto() {
-        return (_workList != null);
+        return (workList != null);
     }
 
     /**
@@ -105,7 +105,7 @@ public class TaskTypeQuery extends AbstractIMObjectQuery<Entity> {
      *         the specified criteria
      */
     private List<Entity> filterForWorkList() {
-        List<Entity> types = getTaskTypes(_workList);
+        List<Entity> types = getTaskTypes(workList);
         String name = getName();
         types = IMObjectHelper.findByName(name, types);
         List<Entity> result = new ArrayList<Entity>();

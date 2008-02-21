@@ -19,7 +19,6 @@
 package org.openvpms.web.app.admin.template;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.app.subsystem.ShortNameList;
 
@@ -37,23 +36,7 @@ public class DocumentTemplateWorkspace extends CRUDWorkspace<Entity> {
      */
     public DocumentTemplateWorkspace() {
         super("admin", "documentTemplate",
-              new ShortNameList("entity.documentTemplate"));
+              new ShortNameList("entity.documentTemplate"), Entity.class);
     }
 
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object. May be <tt>null</tt>
-     */
-    public void setIMObject(IMObject object) {
-        if (object == null || object instanceof Entity) {
-            setObject((Entity) object);
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + Entity.class.getName());
-        }
-    }
 }

@@ -26,9 +26,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -40,8 +38,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractEntityQuery<T extends Entity>
-        extends AbstractIMObjectQuery<T> {
+public abstract class AbstractEntityQuery<T> extends AbstractQuery<T> {
 
     /**
      * The identity search check box. If selected, name searches will be
@@ -56,7 +53,7 @@ public abstract class AbstractEntityQuery<T extends Entity>
 
 
     /**
-     * Construct a new <code>AbstractEntityQuery</code> that queries Entity
+     * Construct a new <tt>AbstractEntityQuery</tt> that queries Entity
      * instances with the specified short names.
      *
      * @param shortNames the short names
@@ -64,37 +61,37 @@ public abstract class AbstractEntityQuery<T extends Entity>
      *                                 archetypes
      */
     public AbstractEntityQuery(String[] shortNames) {
-        super(shortNames);
+        super(shortNames, true);
+        QueryFactory.initialise(this);
+    }
+
+    /**
+     * Construct a new <tt>AbstractEntityQuery</tt> that queries Entity
+     * instances with the specified short names.
+     *
+     * @param shortNames the short names
+     * @param type       the type that this query returns
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
+     */
+    public AbstractEntityQuery(String[] shortNames, Class type) {
+        super(shortNames, type);
         QueryFactory.initialise(this);
     }
 
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <code>null</code>
+     * @param sort the sort constraint. May be <tt>null</tt>
      * @return the query result set
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
     public ResultSet<T> query(SortConstraint[] sort) {
-        String type = getShortName();
-        String name = getName();
-        boolean activeOnly = !includeInactive();
         ResultSet<T> result;
 
         if (canQueryOnName()) {
-            ShortNameConstraint archetypes;
-            if (type == null || type.equals(ShortNameListModel.ALL)) {
-                archetypes = getArchetypes();
-                archetypes.setActiveOnly(activeOnly);
-            } else {
-                archetypes = new ShortNameConstraint(type, true, activeOnly);
-            }
-            result = new EntityResultSet<T>(archetypes, name,
-                                            isIdentitySearch(),
-                                            getConstraints(),
-                                            sort, getMaxResults(),
-                                            isDistinct());
+            result = createResultSet(sort);
         } else {
             ErrorHelper.show(Messages.get("entityquery.error.nameLength",
                                           getNameMinLength()));
@@ -108,7 +105,7 @@ public abstract class AbstractEntityQuery<T extends Entity>
      * If an identity search, the name is used to search for entities
      * with a matching {@link EntityIdentity}.
      *
-     * @return <code>true</code> if the query should be an identity search
+     * @return <tt>true</tt> if the query should be an identity search
      */
     protected boolean isIdentitySearch() {
         return getIdentitySearch().isSelected();

@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 
 /**
@@ -32,7 +33,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 public class EntityQuery extends AbstractEntityQuery<Entity> {
 
     /**
-     * Construct a new <code>EntityQuery</code> that queries entities
+     * Construct a new <tt>EntityQuery</tt> that queries entities
      * with the specified short names.
      *
      * @param shortNames the short names
@@ -43,4 +44,15 @@ public class EntityQuery extends AbstractEntityQuery<Entity> {
         super(shortNames);
     }
 
+    /**
+     * Creates the result set.
+     *
+     * @param sort the sort criteria. May be <tt>null</tt>
+     * @return a new result set
+     */
+    protected ResultSet<Entity> createResultSet(SortConstraint[] sort) {
+        return new EntityResultSet<Entity>(getArchetypeConstraint(), getName(),
+                                           isIdentitySearch(), getConstraints(),
+                                           sort, getMaxResults(), isDistinct());
+    }
 }

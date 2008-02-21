@@ -18,6 +18,10 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -38,15 +42,15 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * specified.
      */
     public void testDefaultQuery() {
-        checkCreate("lookup.*", DefaultQuery.class);
+        checkCreate("lookup.*", DefaultQuery.class, Lookup.class);
     }
 
     /**
-     * Verifies that a {@link EntityQuery} is returned for
+     * Verifies that a {@link CustomerQuery} is returned for
      * <em>party.customer*</em> short names.
      */
-    public void testCustomerEntityQuery() {
-        checkCreate("party.customer*", EntityQuery.class);
+    public void testCustomerQuery() {
+        checkCreate("party.customer*", CustomerQuery.class, Party.class);
     }
 
     /**
@@ -54,7 +58,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * <em>party.patient*</em> short names.
      */
     public void testPatientQuery() {
-        checkCreate("party.patient*", PatientQuery.class);
+        checkCreate("party.patient*", PatientQuery.class, Party.class);
     }
 
     /**
@@ -67,9 +71,9 @@ public class QueryFactoryTestCase extends AbstractAppTest {
                 = DescriptorHelper.getShortNames("party.organisation*");
         for (String shortName : shortNames) {
             if (shortName.equals("party.organisationOTC")) {
-                checkCreate(shortName, EntityQuery.class);
+                checkCreate(shortName, EntityQuery.class, Party.class);
             } else {
-                checkCreate(shortName, AutoQuery.class);
+                checkCreate(shortName, AutoQuery.class, Party.class);
             }
         }
     }
@@ -79,7 +83,8 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * <em>entity.documentTemplate*</em> short names.
      */
     public void testDocumentTemplate() {
-        checkCreate("entity.documentTemplate*", DocumentTemplateQuery.class);
+        checkCreate("entity.documentTemplate*", DocumentTemplateQuery.class,
+                    Entity.class);
     }
 
     /**
@@ -87,7 +92,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * <em>party.supplier*</em> short names.
      */
     public void testSupplierEntityQuery() {
-        checkCreate("party.supplier*", EntityQuery.class);
+        checkCreate("party.supplier*", EntityQuery.class, Party.class);
     }
 
     /**
@@ -95,7 +100,7 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * <em>product.**</em> short names.
      */
     public void testProductQuery() {
-        checkCreate("product.*", ProductQuery.class);
+        checkCreate("product.*", ProductQuery.class, Product.class);
     }
 
     /**
@@ -105,11 +110,12 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * @param shortName the archetype short name. May contain wildcards
      * @param type      the expected query class
      */
-    private void checkCreate(String shortName, Class type) {
+    private void checkCreate(String shortName, Class type, Class resultType) {
         String[] shortNames = {shortName};
         Context context = new LocalContext();
-        Query query = QueryFactory.create(shortNames, context);
+        Query query = QueryFactory.create(shortNames, context, resultType);
         assertNotNull("Failed to create Query", query);
         assertEquals(type, query.getClass());
+        assertEquals(resultType, query.getType());
     }
 }

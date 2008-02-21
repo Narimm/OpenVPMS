@@ -52,10 +52,11 @@ public abstract class CRUDWorkspace<T extends IMObject>
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identfifier
      * @param shortNames  the archetype short names that this operates on
+     * @param type        the type that this operates on
      */
     public CRUDWorkspace(String subsystemId, String workspaceId,
-                         ShortNames shortNames) {
-        super(subsystemId, workspaceId, shortNames);
+                         ShortNames shortNames, Class<T> type) {
+        super(subsystemId, workspaceId, shortNames, type);
     }
 
     /**
@@ -101,7 +102,7 @@ public abstract class CRUDWorkspace<T extends IMObject>
         try {
             final Browser<T> browser = createBrowser();
 
-            String title = Messages.get("imobject.select.title", getType());
+            String title = Messages.get("imobject.select.title", getTypeName());
             final BrowserDialog<T> popup = new BrowserDialog<T>(
                     title, browser, true);
 
@@ -172,7 +173,7 @@ public abstract class CRUDWorkspace<T extends IMObject>
      * @return a new CRUD window
      */
     protected CRUDWindow<T> createCRUDWindow() {
-        return new DefaultCRUDWindow<T>(getType(), getShortNames());
+        return new DefaultCRUDWindow<T>(getTypeName(), getShortNames());
     }
 
 }

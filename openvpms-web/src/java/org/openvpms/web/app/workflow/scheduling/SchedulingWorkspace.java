@@ -79,7 +79,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      */
     public SchedulingWorkspace() {
         super("workflow", "scheduling",
-              new ShortNameList("party.organisationSchedule"));
+              new ShortNameList("party.organisationSchedule"), Party.class);
     }
 
     /**
@@ -93,23 +93,6 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
         GlobalContext.getInstance().setSchedule(object);
         layoutWorkspace(object);
         initQuery(object);
-    }
-
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object. May be <tt>null</tt>
-     */
-    public void setIMObject(IMObject object) {
-        if (object == null || object instanceof Party) {
-            setObject((Party) object);
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + Party.class.getName());
-        }
     }
 
     /**

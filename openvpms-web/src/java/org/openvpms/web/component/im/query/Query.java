@@ -43,6 +43,13 @@ public interface Query<T> extends Iterable<T> {
     Component getComponent();
 
     /**
+     * Returns the type that this query returns.
+     *
+     * @return the type
+     */
+    Class getType();
+
+    /**
      * Sets the maximum no. of results to return per page.
      *
      * @param maxResults the maximum no. of results per page

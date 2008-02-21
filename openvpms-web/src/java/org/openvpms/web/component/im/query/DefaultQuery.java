@@ -36,11 +36,12 @@ public class DefaultQuery<T extends IMObject> extends AbstractIMObjectQuery<T> {
      * specified short names.
      *
      * @param shortNames the short names
+     * @param type       the type that this query returns
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    public DefaultQuery(String[] shortNames) {
-        super(shortNames);
+    public DefaultQuery(String[] shortNames, Class<T> type) {
+        super(shortNames, type);
     }
 
 }

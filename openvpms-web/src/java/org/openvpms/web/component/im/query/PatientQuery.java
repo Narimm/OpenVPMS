@@ -97,7 +97,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
      *                                 archetypes
      */
     public PatientQuery(String[] shortNames, Party customer) {
-        super(shortNames);
+        super(shortNames, Party.class);
         this.customer = customer;
     }
 
@@ -157,6 +157,18 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
     @Override
     public boolean isAuto() {
         return (customer != null);
+    }
+
+    /**
+     * Creates the result set.
+     *
+     * @param sort the sort criteria. May be <tt>null</tt>
+     * @return a new result set
+     */
+    protected ResultSet<Party> createResultSet(SortConstraint[] sort) {
+        return new EntityResultSet<Party>(getArchetypeConstraint(), getName(),
+                                          isIdentitySearch(), getConstraints(),
+                                          sort, getMaxResults(), isDistinct());
     }
 
     /**

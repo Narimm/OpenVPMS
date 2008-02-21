@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -88,7 +89,30 @@ public final class QueryFactory {
      */
     public static <T extends IMObject> Query<T> create(String shortName,
                                                        Context context) {
-        return create(new String[]{shortName}, context);
+        return create(new String[]{shortName}, context, IMObject.class);
+    }
+
+    /**
+     * Construct a new {@link Query}. Query implementations must provide at
+     * least one constructor accepting the following arguments, invoked in the
+     * order:
+     * <ul>
+     * <li>(String[] shortNames, Context context)</li>
+     * <li>(String[] shortNames)</li>
+     * <li>default constructor</li>
+     * </ul>
+     *
+     * @param shortName the archetype short name to query on. May contain
+     *                  wildcards
+     * @param context   the context
+     * @param type      the type that the query returns
+     * @return a new query
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
+     */
+    public static <T> Query<T> create(String shortName, Context context,
+                                      Class type) {
+        return create(new String[]{shortName}, context, type);
     }
 
     /**
@@ -110,12 +134,63 @@ public final class QueryFactory {
      */
     public static <T extends IMObject> Query<T> create(String[] shortNames,
                                                        Context context) {
+        return create(shortNames, context, IMObject.class);
+    }
+
+    /**
+     * Construct a new {@link Query}. Query implementations must provide at
+     * least constructor one accepting the following arguments, invoked in the
+     * order:
+     * <ul>
+     * <li>(String[] shortNames, Context context)</li>
+     * <li>(String[] shortNames)</li>
+     * <li>default constructor</li>
+     * </ul>
+     *
+     * @param shortNames the archetype short names to query on. May contain
+     *                   wildcards
+     * @param context    the current context
+     * @param type       the type that the query returns
+     * @return a new query
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
+     * @throws QueryException          if no query supports the supplied short
+     *                                 names and type
+     */
+    public static <T> Query<T> create(String[] shortNames, Context context,
+                                      Class type) {
+        Query<T> query;
         shortNames = DescriptorHelper.getShortNames(shortNames);
         ArchetypeHandler<Query> handler = getQueries().getHandler(shortNames);
         if (handler == null) {
-            return new DefaultQuery<T>(shortNames);
+            query = createDefaultQuery(shortNames, type);
+        } else {
+            query = create(handler, shortNames, context, type);
         }
-        return create(handler, shortNames, context);
+        if (query == null) {
+            throw new QueryException(QueryException.ErrorCode.NoQuery,
+                                     StringUtils.join(shortNames, ", "),
+                                     type.getName());
+        }
+        return query;
+    }
+
+    /**
+     * Initialise a query.
+     *
+     * @param query the query to initialise
+     */
+    public static <T> void initialise(Query<T> query) {
+        ArchetypeHandler<Query> handler = getQueries().getHandler(
+                query.getShortNames());
+        if (handler != null && handler.getType().isAssignableFrom(
+                query.getClass())) {
+            try {
+                handler.initialise(query);
+            } catch (Throwable exception) {
+                log.error(exception);
+            }
+        }
     }
 
     /**
@@ -129,47 +204,52 @@ public final class QueryFactory {
      * @param handler    the {@link Query} implementation
      * @param shortNames the archerype short names to query on
      * @param context    the context
-     * @return a new query, or <code>null</code> if no appropriate constructor
+     * @param type       the type that the query returns
+     * @return a new query, or <tt>null</tt> if no appropriate constructor
      *         can be found or construction fails
      */
     @SuppressWarnings("unchecked")
-    private static <T extends IMObject> Query<T> create(
-            ArchetypeHandler<Query> handler, String[] shortNames,
-            Context context) {
-        Query<T> result = null;
+    private static <T> Query<T> create(ArchetypeHandler<Query> handler,
+                                       String[] shortNames, Context context,
+                                       Class type) {
+        Query result = null;
         try {
             try {
                 Object[] args = new Object[]{shortNames, context};
-                result = (Query<T>) handler.create(args);
+                result = handler.create(args);
             } catch (NoSuchMethodException exception) {
                 try {
                     Object[] args = new Object[]{shortNames};
-                    result = (Query<T>) handler.create(args);
+                    result = handler.create(args);
                 } catch (NoSuchMethodException nested) {
-                    result = (Query<T>) handler.create();
+                    result = handler.create();
                 }
+            }
+            if (!type.isAssignableFrom(result.getType())) {
+                result = null;
             }
         } catch (Throwable throwable) {
             log.error(throwable, throwable);
         }
-        return result;
+        return (Query<T>) result;
     }
 
     /**
-     * Initialise a query.
+     * Creates a new default query for the supplied archetype short names and
+     * type.
      *
-     * @param query the query to initialise
+     * @param shortNames the archetype short names to query
+     * @param type       the type that the query returns
+     * @return a new query, or <tt>null</tt> if there is no default query for
+     *         the specified type
      */
-    public static <T extends IMObject> void initialise(Query<T> query) {
-        ArchetypeHandler<Query> handler = getQueries().getHandler(query.getShortNames());
-        if (handler != null && handler.getType().isAssignableFrom(
-                query.getClass())) {
-            try {
-                handler.initialise(query);
-            } catch (Throwable exception) {
-                log.error(exception);
-            }
+    @SuppressWarnings("unchecked")
+    private static <T>Query<T> createDefaultQuery(String[] shortNames,
+                                                  Class type) {
+        if (IMObject.class.isAssignableFrom(type)) {
+            return new DefaultQuery(shortNames, type);
         }
+        return null;
     }
 
     /**
@@ -184,6 +264,5 @@ public final class QueryFactory {
         }
         return queries;
     }
-
 
 }

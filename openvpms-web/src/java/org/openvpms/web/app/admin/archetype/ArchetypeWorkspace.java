@@ -19,7 +19,6 @@
 package org.openvpms.web.app.admin.archetype;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.app.subsystem.ShortNameList;
@@ -37,24 +36,8 @@ public class ArchetypeWorkspace extends CRUDWorkspace<ArchetypeDescriptor> {
      * Constructs a new <tt>ArchetypeWorkspace</tt>.
      */
     public ArchetypeWorkspace() {
-        super("admin", "archetype", new ShortNameList("descriptor.*"));
-    }
-
-    /**
-     * Sets the current object.
-     * This is analagous to {@link #setObject} but performs a safe cast to the
-     * required type.
-     *
-     * @param object the current object. May be <tt>null</tt>
-     */
-    public void setIMObject(IMObject object) {
-        if (object == null || object instanceof ArchetypeDescriptor) {
-            setObject((ArchetypeDescriptor) object);
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + ArchetypeDescriptor.class.getName());
-        }
+        super("admin", "archetype", new ShortNameList("descriptor.*"),
+              ArchetypeDescriptor.class);
     }
 
     /**
@@ -64,7 +47,7 @@ public class ArchetypeWorkspace extends CRUDWorkspace<ArchetypeDescriptor> {
      */
     @Override
     protected CRUDWindow<ArchetypeDescriptor> createCRUDWindow() {
-        return new ArchetypeCRUDWindow(getType(), getShortNames());
+        return new ArchetypeCRUDWindow(getTypeName(), getShortNames());
     }
 
 }

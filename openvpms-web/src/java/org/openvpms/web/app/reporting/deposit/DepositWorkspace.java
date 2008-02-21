@@ -21,7 +21,6 @@ package org.openvpms.web.app.reporting.deposit;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.finance.deposit.DepositStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.ActWorkspace;
@@ -50,7 +49,7 @@ public class DepositWorkspace extends ActWorkspace<Party, FinancialAct> {
      */
     public DepositWorkspace() {
         super("reporting", "deposit",
-              new ShortNameList("party.organisationDeposit"));
+              new ShortNameList("party.organisationDeposit"), Party.class);
     }
 
     /**
@@ -63,23 +62,6 @@ public class DepositWorkspace extends ActWorkspace<Party, FinancialAct> {
         super.setObject(object);
         layoutWorkspace(object);
         initQuery(object);
-    }
-
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object. May be <tt>null</tt>
-     */
-    public void setIMObject(IMObject object) {
-        if (object == null || object instanceof Party) {
-            setObject((Party) object);
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + Party.class.getName());
-        }
     }
 
     /**

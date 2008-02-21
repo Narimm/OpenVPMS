@@ -19,16 +19,11 @@
 package org.openvpms.web.app.product;
 
 import nextapp.echo2.app.Component;
-
-import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.web.app.customer.account.AccountCRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -43,7 +38,7 @@ public class InformationWorkspace extends CRUDWorkspace<Product> {
      * Construct a new <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
-        super("product", "info", new ShortNameList("product.*"));
+        super("product", "info", new ShortNameList("product.*"), Product.class);
     }
 
     /**
@@ -55,23 +50,6 @@ public class InformationWorkspace extends CRUDWorkspace<Product> {
     public void setObject(Product object) {
         super.setObject(object);
         GlobalContext.getInstance().setProduct(object);
-    }
-
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object. May be <tt>null</tt>
-     */
-    public void setIMObject(IMObject object) {
-        if (object == null || object instanceof Product) {
-            setObject((Product) object);
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + Product.class.getName());
-        }
     }
 
     /**
@@ -87,13 +65,14 @@ public class InformationWorkspace extends CRUDWorkspace<Product> {
             setObject(product);
         }
     }
+
     /**
      * Creates a new CRUD window for viewing and editing Products.
      *
      * @return a new CRUD window
      */
     protected CRUDWindow<Product> createCRUDWindow() {
-        return new ProductCRUDWindow(getType(), getShortNames());
+        return new ProductCRUDWindow(getTypeName(), getShortNames());
     }
 
 }

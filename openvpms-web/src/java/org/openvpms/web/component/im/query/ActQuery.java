@@ -96,11 +96,11 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      *
      * @param shortNames the act short names to query. Must be primary
      *                   archetypes
-     * @param statuses   the act statuses to search on. May be
-     *                   <tt>empty</tt>
+     * @param statuses   the act statuses to search on. May be <tt>empty</tt>
+     * @param type       the type that this query returns
      */
-    public ActQuery(String[] shortNames, String[] statuses) {
-        this(null, null, null, shortNames, true, statuses);
+    public ActQuery(String[] shortNames, String[] statuses, Class type) {
+        this(null, null, null, shortNames, true, statuses, type);
     }
 
     /**
@@ -110,10 +110,11 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      * @param primaryOnly if <tt>true</tt> only primary archetypes will be
      *                    queried
      * @param statuses    the act statuses to search on. May be <tt>empty</tt>
+     * @param type        the type that this query returns
      */
     public ActQuery(String[] shortNames, boolean primaryOnly,
-                    String[] statuses) {
-        this(null, null, null, shortNames, primaryOnly, statuses);
+                    String[] statuses, Class type) {
+        this(null, null, null, shortNames, primaryOnly, statuses, type);
     }
 
     /**
@@ -126,11 +127,12 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      * @param shortNames    the act short names
      * @param statusLookups the act status lookups
      * @param excludeStatus to exclude. May be <tt>null</tt>
+     * @param type          the type that this query returns
      */
     public ActQuery(Entity entity, String participant, String participation,
                     String[] shortNames, List<Lookup> statusLookups,
-                    String excludeStatus) {
-        super(shortNames);
+                    String excludeStatus, Class type) {
+        super(shortNames, type);
         setEntity(entity);
         this.participant = participant;
         this.participation = participation;
@@ -148,10 +150,13 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      *                      <tt>null</tt>
      * @param shortNames    the act short names
      * @param statuses      the act statuses to search on. May be <tt>empty</tt>
+     * @param type          the type that this query returns
      */
     public ActQuery(Entity entity, String participant, String participation,
-                    String[] shortNames, String[] statuses) {
-        this(entity, participant, participation, shortNames, true, statuses);
+                    String[] shortNames, String[] statuses,
+                    Class type) {
+        this(entity, participant, participation, shortNames, true, statuses,
+             type);
     }
 
     /**
@@ -165,11 +170,12 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      * @param primaryOnly   if <tt>true</tt> only primary archetypes will be
      *                      queried
      * @param statuses      the act statuses to search on. May be <tt>empty</tt>
+     * @param type          the type that this query returns
      */
     public ActQuery(Entity entity, String participant, String participation,
                     String[] shortNames, boolean primaryOnly,
-                    String[] statuses) {
-        super(shortNames, primaryOnly);
+                    String[] statuses, Class type) {
+        super(shortNames, primaryOnly, type);
         setEntity(entity);
         this.participant = participant;
         this.participation = participation;

@@ -42,7 +42,20 @@ public abstract class AbstractIMObjectQuery<T extends IMObject>
      *                                 archetypes
      */
     public AbstractIMObjectQuery(String[] shortNames) {
-        super(shortNames);
+        super(shortNames, true);
+    }
+
+    /**
+     * Constructs a new <tt>AbstractIMObjectQuery</tt> that queries IMObjects
+     * with the specified short names.
+     *
+     * @param shortNames the short names
+     * @param type       the type that this query returns
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
+     */
+    public AbstractIMObjectQuery(String[] shortNames, Class type) {
+        super(shortNames, type);
     }
 
     /**

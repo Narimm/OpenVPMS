@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.supplier;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.app.subsystem.ShortNameList;
@@ -37,7 +36,8 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
      * Construct a new <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
-        super("supplier", "info", new ShortNameList("party.supplier*"));
+        super("supplier", "info", new ShortNameList("party.supplier*"),
+              Party.class);
     }
 
     /**
@@ -50,23 +50,5 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
         super.setObject(object);
         GlobalContext.getInstance().setSupplier(object);
     }
-
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object. May be <tt>null</tt>
-     */
-    public void setIMObject(IMObject object) {
-        if (object == null || object instanceof Party) {
-            setObject((Party) object);
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + Party.class.getName());
-        }
-    }
-
 
 }
