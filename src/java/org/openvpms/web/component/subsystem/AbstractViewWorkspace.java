@@ -35,7 +35,7 @@ import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.BasicSelector;
@@ -62,7 +62,12 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     private final ShortNames shortNames;
 
     /**
-     * The current object. May be <code>null</code>.
+     * The type of the objects that this operates on.
+     */
+    private final Class<T> type;
+
+    /**
+     * The current object. May be <tt>null</tt>.
      */
     private T object;
 
@@ -74,7 +79,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     /**
      * Localised type display name (e.g, Customer, Product).
      */
-    private final String type;
+    private final String typeName;
 
     /**
      * The root component.
@@ -88,15 +93,17 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identfifier
      * @param shortNames  the archetype short names that this operates on
+     * @param type        the type that this operates on
      */
     public AbstractViewWorkspace(String subsystemId, String workspaceId,
-                                 ShortNames shortNames) {
+                                 ShortNames shortNames, Class<T> type) {
         super(subsystemId, workspaceId);
         this.shortNames = shortNames;
+        this.type = type;
         selector = new BasicSelector<T>();
 
         String id = getSubsystemId() + "." + getWorkspaceId();
-        type = Messages.get(id + ".type");
+        typeName = Messages.get(id + ".type");
 
         selector.getSelect().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -109,8 +116,8 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      * Determines if the workspace supports an archetype.
      *
      * @param shortName the archetype's short name
-     * @return <code>true</code> if the workspace can handle the archetype;
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the workspace can handle the archetype;
+     *         otherwise <tt>false</tt>
      */
     public boolean canHandle(String shortName) {
         boolean result = false;
@@ -125,7 +132,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     public void setObject(T object) {
         this.object = object;
@@ -135,7 +142,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     /**
      * Returns the current object.
      *
-     * @return the current object. May be <code>null</code>
+     * @return the current object. May be <tt>null</tt>
      */
     public T getObject() {
         return object;
@@ -199,12 +206,21 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     }
 
     /**
+     * Returns the class type that this operates on.
+     *
+     * @return the class type that this operates on
+     */
+    protected Class<T> getType() {
+        return type;
+    }
+
+    /**
      * Returns a localised type display name.
      *
      * @return a localised type display name
      */
-    protected String getType() {
-        return type;
+    protected String getTypeName() {
+        return typeName;
     }
 
     /**
@@ -226,7 +242,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     protected Browser<T> createBrowser() {
         Query<T> query = createQuery();
         SortConstraint[] sort = {new NodeSortConstraint("name", true)};
-        return IMObjectTableBrowserFactory.create(query, sort);
+        return BrowserFactory.create(query, sort);
     }
 
     /**
@@ -238,7 +254,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      */
     protected Query<T> createQuery() {
         return QueryFactory.create(shortNames.getShortNames(),
-                                   GlobalContext.getInstance());
+                                   GlobalContext.getInstance(), type);
     }
 
     /**
@@ -249,7 +265,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
         try {
             final Browser<T> browser = createBrowser();
 
-            String title = Messages.get("imobject.select.title", type);
+            String title = Messages.get("imobject.select.title", typeName);
             final BrowserDialog<T> popup = new BrowserDialog<T>(
                     title, browser);
 

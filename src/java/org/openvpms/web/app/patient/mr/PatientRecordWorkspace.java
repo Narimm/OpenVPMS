@@ -22,7 +22,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -91,7 +90,8 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      * Constructs a new <tt>PatientRecordWorkspace</tt>.
      */
     public PatientRecordWorkspace() {
-        super("patient", "record", new ShortNameList("party.patient*"));
+        super("patient", "record", new ShortNameList("party.patient*"),
+              Party.class);
     }
 
     /**
@@ -106,23 +106,6 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
         layoutWorkspace(object);
         initQuery(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
-    }
-
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object. May be <code>null</code>
-     */
-    public void setIMObject(IMObject object) {
-        if (object == null || object instanceof Party) {
-            setObject((Party) object);
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + Party.class.getName());
-        }
     }
 
     /**

@@ -19,11 +19,7 @@
 package org.openvpms.web.component.im.query;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -44,7 +40,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class NameResultSet<T extends IMObject>
+public abstract class NameResultSet<T>
         extends AbstractArchetypeServiceResultSet<T> {
 
     /**
@@ -57,27 +53,23 @@ public abstract class NameResultSet<T extends IMObject>
      */
     private final String instanceName;
 
-    /**
-     * The logger.
-     */
-    private final Log log = LogFactory.getLog(NameResultSet.class);
-
 
     /**
-     * Construct a new <code>NameResultSet</code>.
+     * Construct a new <tt>NameResultSet</tt>.
      *
      * @param archetypes   the archetypes to query
      * @param instanceName the instance name
      * @param constraints  additional query constraints. May be
-     *                     <code<null</code>
-     * @param sort         the sort criteria. May be <code>null</code>
+     *                     <code<null</tt>
+     * @param sort         the sort criteria. May be <tt>null</tt>
      * @param rows         the maximum no. of rows per page
-     * @param distinct     if <code>true</code> filter duplicate rows
+     * @param distinct     if <tt>true</tt> filter duplicate rows
      */
     public NameResultSet(ShortNameConstraint archetypes,
                          String instanceName, IConstraint constraints,
-                         SortConstraint[] sort, int rows, boolean distinct) {
-        super(constraints, rows, sort);
+                         SortConstraint[] sort, int rows, boolean distinct,
+                         QueryExecutor<T> executor) {
+        super(constraints, rows, sort, executor);
         this.archetypes = archetypes;
         this.instanceName = instanceName;
         setDistinct(distinct);
@@ -138,29 +130,6 @@ public abstract class NameResultSet<T extends IMObject>
         }
 
         return result;
-    }
-
-    /**
-     * Determines if a node can be sorted on.
-     *
-     * @param node the node
-     * @return <code>true</code> if the node can be sorted on, otherwise
-     *         <code>false</code>
-     */
-    private boolean isValidSortNode(String node) {
-        List<ArchetypeDescriptor> archetypes = getArchetypes(this.archetypes);
-        NodeDescriptor descriptor;
-
-        for (ArchetypeDescriptor archetype : archetypes) {
-            descriptor = archetype.getNodeDescriptor(node);
-            if (descriptor == null) {
-                log.warn("Can't sort results on node=" + node
-                        + ". Node not supported by archetype="
-                        + archetype.getName());
-                return false;
-            }
-        }
-        return true;
     }
 
 }

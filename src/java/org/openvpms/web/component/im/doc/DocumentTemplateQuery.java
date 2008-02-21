@@ -60,7 +60,7 @@ public class DocumentTemplateQuery extends AbstractIMObjectQuery<Entity> {
      *                                 archetypes
      */
     public DocumentTemplateQuery() {
-        super(new String[]{"entity.documentTemplate"});
+        super(new String[]{"entity.documentTemplate"}, Entity.class);
         QueryFactory.initialise(this);
     }
 

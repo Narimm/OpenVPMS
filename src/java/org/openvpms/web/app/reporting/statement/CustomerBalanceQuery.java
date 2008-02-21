@@ -150,7 +150,7 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
      *                                 archetypes
      */
     public CustomerBalanceQuery() {
-        super(new String[]{"party.customer*"});
+        super(new String[]{"party.customer*"}, ObjectSet.class);
         balanceTypeItems = new String[]{
                 Messages.get("reporting.statements.balancetype.all"),
                 Messages.get("reporting.statements.balancetype.overdue"),
@@ -316,11 +316,10 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
             int from = overdue ? getNumber(periodFrom) : -1;
             int to = overdue ? getNumber(periodTo) : -1;
             boolean credit = excludeCredit.isSelected();
-            query = new CustomerBalanceSummaryQuery(getDate(), nonOverdue, from,
-                                                    to, credit,
-                                                    getAccountType(),
-                                                    getName(customerFrom),
-                                                    getName(customerTo));
+            query = new CustomerBalanceSummaryQuery(
+                    getDate(), nonOverdue, from, to, credit, getAccountType(),
+                    getWildcardedText(customerFrom),
+                    getWildcardedText(customerTo));
             while (query.hasNext()) {
                 sets.add(query.next());
             }
@@ -397,23 +396,6 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
             }
         }
         return from;
-    }
-
-    /**
-     * Helper to return a customer name with wildcard appended from a text
-     * field, if the content is not empty.
-     *
-     * @param field the text field
-     * @return the customer name with wildcard, or <tt>null</tt>
-     */
-    private String getName(TextField field) {
-        String result = field.getText();
-        if (!StringUtils.isEmpty(result)) {
-            result = result + "*";
-        } else {
-            result = null;
-        }
-        return result;
     }
 
     /**

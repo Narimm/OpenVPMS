@@ -53,7 +53,8 @@ public class CustomerAppointmentQuery extends WorkflowQuery<ObjectSet> {
      */
     public CustomerAppointmentQuery(Party schedule) {
         super(schedule, "schedule", "participation.schedule",
-              new String[]{CUSTOMER_APPOINTMENT}, new String[0]);
+              new String[]{CUSTOMER_APPOINTMENT}, new String[0],
+              ObjectSet.class);
     }
 
     /**

@@ -56,7 +56,7 @@ public class MessageQuery extends DateRangeActQuery<Act> {
      */
     public MessageQuery(Entity user) {
         super(user, "to", "participation.user", new String[]{"act.userMessage"},
-              getLookups(), null);
+              getLookups(), null, Act.class);
         setStatus("PENDING");
 
         clinician = new IMObjectSelector<Entity>(Messages.get("messaging.user"),

@@ -51,7 +51,7 @@ public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
                         String[] statuses, int pageSize,
                         SortConstraint[] sort) {
         super(archetypes, participant, from, to, statuses, false, null,
-              pageSize, sort);
+              pageSize, sort, new DefaultQueryExecutor<T>());
     }
 
     /**
@@ -76,7 +76,7 @@ public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
                         IConstraint constraints, int pageSize,
                         SortConstraint[] sort) {
         super(archetypes, participant, from, to, statuses, exclude, constraints,
-              pageSize, sort);
+              pageSize, sort, new DefaultQueryExecutor<T>());
     }
 
     /**
@@ -101,7 +101,7 @@ public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
                         IConstraint constraints, int pageSize,
                         SortConstraint[] sort) {
         super(archetypes, participants, from, to, statuses, exclude,
-              constraints, pageSize, sort);
+              constraints, pageSize, sort, new DefaultQueryExecutor<T>());
     }
 
     /**
@@ -123,7 +123,7 @@ public class ActResultSet<T extends Act> extends AbstractActResultSet<T> {
                         IConstraint constraints, int pageSize,
                         SortConstraint[] sort) {
         super(archetypes, participants, times, statuses, exclude, constraints,
-              pageSize, sort);
+              pageSize, sort, new DefaultQueryExecutor<T>());
     }
 
 }

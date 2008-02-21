@@ -100,6 +100,24 @@ public abstract class AbstractWorkspace<T extends IMObject>
     }
 
     /**
+     * Sets the current object.
+     * This is analagous to {@link #setObject} but performs a safe cast
+     * to the required type.
+     *
+     * @param object the current object. May be <tt>null</tt>
+     */
+    public void setIMObject(IMObject object) {
+        Class<T> type = getType();
+        if (object == null || type.isAssignableFrom(object.getClass())) {
+            setObject(type.cast(object));
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'object' must be an instance of "
+                            + type.getName());
+        }
+    }
+
+    /**
      * Add a property change listener.
      *
      * @param name     the property name to listen on
@@ -142,6 +160,13 @@ public abstract class AbstractWorkspace<T extends IMObject>
                                                       newValue);
         }
     }
+
+    /**
+     * Returns the class type that this operates on.
+     *
+     * @return the class type that this operates on
+     */
+    protected abstract Class<T> getType();
 
     /**
      * Lays out the component.

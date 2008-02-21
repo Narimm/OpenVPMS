@@ -74,10 +74,12 @@ public abstract class AbstractActResultSet<T>
      * @param archetypes the act archetype constraint
      * @param pageSize   the maximum no. of results per page
      * @param sort       the sort criteria. May be <tt>null</tt>
+     * @param executor   the query executor
      */
     public AbstractActResultSet(ShortNameConstraint archetypes,
-                                int pageSize, SortConstraint[] sort) {
-        this(archetypes, null, null, null, null, pageSize, sort);
+                                int pageSize, SortConstraint[] sort,
+                                QueryExecutor<T> executor) {
+        this(archetypes, null, null, null, null, pageSize, sort, executor);
     }
 
     /**
@@ -90,15 +92,17 @@ public abstract class AbstractActResultSet<T>
      * @param statuses    the act statuses. If empty, indicates all acts
      * @param pageSize    the maximum no. of results per page
      * @param sort        the sort criteria. May be <tt>null</tt>
+     * @param executor    the query executor
      */
     public AbstractActResultSet(ShortNameConstraint archetypes,
                                 ParticipantConstraint participant,
                                 Date from,
                                 Date to,
                                 String[] statuses, int pageSize,
-                                SortConstraint[] sort) {
+                                SortConstraint[] sort,
+                                QueryExecutor<T> executor) {
         this(archetypes, participant, from, to, statuses, false, null, pageSize,
-             sort);
+             sort, executor);
     }
 
     /**
@@ -115,6 +119,7 @@ public abstract class AbstractActResultSet<T>
      *                    <code<null</tt>
      * @param pageSize    the maximum no. of results per page
      * @param sort        the sort criteria. May be <tt>null</tt>
+     * @param executor    the query executor
      */
     public AbstractActResultSet(ShortNameConstraint archetypes,
                                 ParticipantConstraint participant,
@@ -122,10 +127,12 @@ public abstract class AbstractActResultSet<T>
                                 Date to,
                                 String[] statuses, boolean exclude,
                                 IConstraint constraints, int pageSize,
-                                SortConstraint[] sort) {
+                                SortConstraint[] sort,
+                                QueryExecutor<T> executor) {
         this(archetypes, (participant != null)
                 ? new ParticipantConstraint[]{participant} : null,
-             from, to, statuses, exclude, constraints, pageSize, sort);
+             from, to, statuses, exclude, constraints, pageSize, sort,
+             executor);
     }
 
     /**
@@ -142,6 +149,7 @@ public abstract class AbstractActResultSet<T>
      *                     <code<null</tt>
      * @param pageSize     the maximum no. of results per page
      * @param sort         the sort criteria. May be <tt>null</tt>
+     * @param executor     the query executor
      */
     public AbstractActResultSet(ShortNameConstraint archetypes,
                                 ParticipantConstraint[] participants,
@@ -149,9 +157,10 @@ public abstract class AbstractActResultSet<T>
                                 Date to,
                                 String[] statuses, boolean exclude,
                                 IConstraint constraints, int pageSize,
-                                SortConstraint[] sort) {
+                                SortConstraint[] sort,
+                                QueryExecutor<T> executor) {
         this(archetypes, participants, createTimeConstraint(from, to),
-             statuses, exclude, constraints, pageSize, sort);
+             statuses, exclude, constraints, pageSize, sort, executor);
     }
 
     /**
@@ -167,13 +176,15 @@ public abstract class AbstractActResultSet<T>
      *                     <code<null</tt>
      * @param pageSize     the maximum no. of results per page
      * @param sort         the sort criteria. May be <tt>null</tt>
+     * @param executor     the query executor
      */
     public AbstractActResultSet(ShortNameConstraint archetypes,
                                 ParticipantConstraint[] participants,
                                 IConstraint times, String[] statuses,
                                 boolean exclude, IConstraint constraints,
-                                int pageSize, SortConstraint[] sort) {
-        super(constraints, pageSize, sort);
+                                int pageSize, SortConstraint[] sort,
+                                QueryExecutor<T> executor) {
+        super(constraints, pageSize, sort, executor);
         this.participants = participants;
         this.archetypes = archetypes;
 

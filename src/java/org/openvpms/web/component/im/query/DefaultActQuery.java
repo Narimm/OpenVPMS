@@ -112,7 +112,7 @@ public class DefaultActQuery<T extends Act> extends DateRangeActQuery<T> {
                            String participation, String[] acts,
                            List<Lookup> statusLookups, String excludeStatus) {
         super(entity, participant, participation, acts, statusLookups,
-              excludeStatus);
+              excludeStatus, Act.class);
     }
 
     /**
@@ -161,7 +161,8 @@ public class DefaultActQuery<T extends Act> extends DateRangeActQuery<T> {
     public DefaultActQuery(Entity entity, String participant,
                            String participation, String[] acts,
                            boolean primaryOnly, String[] statuses) {
-        super(entity, participant, participation, acts, primaryOnly, statuses);
+        super(entity, participant, participation, acts, primaryOnly, statuses,
+              Act.class);
     }
 
 }

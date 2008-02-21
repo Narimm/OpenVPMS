@@ -21,7 +21,6 @@ package org.openvpms.web.app.reporting.till;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.finance.till.TillBalanceStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.ActWorkspace;
@@ -50,7 +49,8 @@ public class TillWorkspace extends ActWorkspace<Party, FinancialAct> {
      * Constructs a new <tt>TillWorkspace</tt>.
      */
     public TillWorkspace() {
-        super("reporting", "till", new ShortNameList("party.organisationTill"));
+        super("reporting", "till", new ShortNameList("party.organisationTill"),
+              Party.class);
     }
 
     /**
@@ -64,23 +64,6 @@ public class TillWorkspace extends ActWorkspace<Party, FinancialAct> {
         GlobalContext.getInstance().setTill(object);
         layoutWorkspace(object);
         initQuery(object);
-    }
-
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object. May be <code>null</code>
-     */
-    public void setIMObject(IMObject object) {
-        if (object == null || object instanceof Party) {
-            setObject((Party) object);
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + Party.class.getName());
-        }
     }
 
     /**

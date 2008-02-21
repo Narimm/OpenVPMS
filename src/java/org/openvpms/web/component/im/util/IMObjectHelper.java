@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -28,6 +29,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -45,8 +47,10 @@ import org.openvpms.web.component.app.GlobalContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.PatternSyntaxException;
 
 
@@ -355,6 +359,43 @@ public class IMObjectHelper {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the nearest common superclass for a set of archetype short names.
+     *
+     * @param shortNames the archetype short names
+     * @return the common implementation class type
+     */
+    public static Class getType(String[] shortNames) {
+        Class result = null;
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        Set<Class> classes = new HashSet<Class>();
+        for (String shortName : shortNames) {
+            ArchetypeDescriptor archetype
+                    = DescriptorHelper.getArchetypeDescriptor(shortName);
+            try {
+                Class clazz = loader.loadClass(archetype.getClassName());
+                classes.add(clazz);
+            } catch (ClassNotFoundException exception) {
+                log.error(exception, exception);
+            }
+        }
+        for (Class clazz : classes) {
+            if (result == null) {
+                result = clazz;
+            } else {
+                while (!result.isAssignableFrom(clazz)) {
+                    result = result.getSuperclass();
+                }
+            }
+            if (result == Object.class) {
+                // shouldn't be the case, default to something sensible
+                result = IMObject.class;
+                break;
+            }
+        }
+        return (result == null) ? IMObject.class : result;
     }
 
     /**

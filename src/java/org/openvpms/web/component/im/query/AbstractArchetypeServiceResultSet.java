@@ -31,9 +31,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.system.ServiceHelper;
 
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -61,6 +59,11 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * The sort criteria. May be <tt>null</tt>.
      */
     private SortConstraint[] sort;
+
+    /**
+     * The query executor.
+     */
+    private final QueryExecutor<T> executor;
 
     /**
      * A cache of retrieved pages. These are referenced via soft references,
@@ -96,10 +99,12 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      *
      * @param pageSize the maximum no. of results per page
      * @param sort     the sort criteria. May be <tt>null</tt>
+     * @param executor the query executor
      */
     public AbstractArchetypeServiceResultSet(int pageSize,
-                                             SortConstraint[] sort) {
-        this(null, pageSize, sort);
+                                             SortConstraint[] sort,
+                                             QueryExecutor<T> executor) {
+        this(null, pageSize, sort, executor);
     }
 
     /**
@@ -108,12 +113,15 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * @param constraints query constraints. May be <tt>null</tt>
      * @param pageSize    the maximum no. of results per page
      * @param sort        the sort criteria. May be <tt>null</tt>
+     * @param executor    the query executor
      */
     public AbstractArchetypeServiceResultSet(IConstraint constraints,
                                              int pageSize,
-                                             SortConstraint[] sort) {
+                                             SortConstraint[] sort,
+                                             QueryExecutor<T> executor) {
         super(pageSize);
         this.constraints = constraints;
+        this.executor = executor;
         setSortConstraint(sort);
     }
 
@@ -249,7 +257,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * Returns a new archetype query.
      * This implementation delegates creation to {@link #createQuery},
      * before adding any {@link #getConstraints()} and
-     * {@link #getSortConstraints()}.
+     * invoking {@link #addSortConstraints}.
      *
      * @param firstResult the first result of the page to retrieve
      * @param maxResults  the maximun no of results in the page
@@ -265,10 +273,21 @@ public abstract class AbstractArchetypeServiceResultSet<T>
         if (constraints != null) {
             query.add(constraints);
         }
+        addSortConstraints(query);
+        return query;
+    }
+
+    /**
+     * Adds sort constraints.
+     * This implementation adds all those returned by
+     * {@link #getSortConstraints()}.
+     *
+     * @param query the query to add the constraints to
+     */
+    protected void addSortConstraints(ArchetypeQuery query) {
         for (SortConstraint sort : getSortConstraints()) {
             query.add(sort);
         }
-        return query;
     }
 
     /**
@@ -305,21 +324,15 @@ public abstract class AbstractArchetypeServiceResultSet<T>
             pages = prefetchPages;
         }
         try {
-            IArchetypeService service = ServiceHelper.getArchetypeService();
             ArchetypeQuery query = createQuery(firstResult, maxResults);
             String[] nodes = getNodes();
-            IPage<IMObject> matches;
-            if (nodes == null || nodes.length == 0) {
-                matches = service.get(query);
-            } else {
-                matches = service.get(query, Arrays.asList(nodes));
-            }
+            IPage<T> matches = executor.query(query, nodes);
 
-            List<IMObject> results = matches.getResults();
+            List<T> results = matches.getResults();
             if (results.isEmpty()) {
                 cache.remove(page);
             } else if (pages == 1) {
-                result = convert(matches);
+                result = matches;
                 cache.put(page, result);
             } else {
                 // need to split the matches into multiple pages.
@@ -333,12 +346,12 @@ public abstract class AbstractArchetypeServiceResultSet<T>
                         } else {
                             to = from + pageSize;
                         }
-                        List<IMObject> subResults = results.subList(from, to);
-                        IPage<IMObject> subPage = new Page<IMObject>(
+                        List<T> subResults = results.subList(from, to);
+                        IPage<T> subPage = new Page<T>(
                                 subResults, firstResult + from, pageSize,
                                 count);
                         if (i == 0) {
-                            result = convert(subPage);
+                            result = subPage;
                         }
                         cache.put(page + i, subPage);
                     } else {
@@ -369,15 +382,4 @@ public abstract class AbstractArchetypeServiceResultSet<T>
         return result;
     }
 
-    /**
-     * Helper to convert a page from one type to another. <strong>Use with
-     * caution</strong>: No attempt is made to verify the contents of the page.
-     *
-     * @param page the page to convert
-     * @return the converted page
-     */
-    @SuppressWarnings("unchecked")
-    protected final <K, T> IPage<K> convert(IPage<T> page) {
-        return (IPage<K>) page;
-    }
 }

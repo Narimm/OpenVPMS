@@ -52,9 +52,10 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * Constructs a new <tt>DateRangeActQuery</tt>.
      *
      * @param shortNames the act short names to query
+     * @param type       the type that this query returns
      */
-    public DateRangeActQuery(String[] shortNames) {
-        this(null, null, null, shortNames, true, new String[0]);
+    public DateRangeActQuery(String[] shortNames, Class type) {
+        this(null, null, null, shortNames, true, new String[0], type);
     }
 
     /**
@@ -66,14 +67,16 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param shortNames    the act short names
      * @param statusLookups the act status lookups
      * @param excludeStatus to exclude. May be <tt>null</tt>
+     * @param type          the type that this query returns
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
     public DateRangeActQuery(Entity entity, String participant,
                              String participation, String[] shortNames,
-                             List<Lookup> statusLookups, String excludeStatus) {
+                             List<Lookup> statusLookups, String excludeStatus,
+                             Class type) {
         super(entity, participant, participation, shortNames, statusLookups,
-              excludeStatus);
+              excludeStatus, type);
         selectType = true;
         QueryFactory.initialise(this);
     }
@@ -87,11 +90,13 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param shortNames    the act short names
      * @param statuses      the act statuses to search on. May be
      *                      <tt>empty</tt>
+     * @param type          the type that this query returns
      */
     public DateRangeActQuery(Entity entity, String participant,
                              String participation, String[] shortNames,
-                             String[] statuses) {
-        this(entity, participant, participation, shortNames, true, statuses);
+                             String[] statuses, Class type) {
+        this(entity, participant, participation, shortNames, true, statuses,
+             type);
     }
 
     /**
@@ -105,12 +110,14 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      *                      queried
      * @param statuses      the act statuses to search on. May be
      *                      <tt>empty</tt>
+     * @param type          the type that this query returns
      */
     public DateRangeActQuery(Entity entity, String participant,
                              String participation, String[] shortNames,
-                             boolean primaryOnly, String[] statuses) {
+                             boolean primaryOnly, String[] statuses,
+                             Class type) {
         super(entity, participant, participation, shortNames, primaryOnly,
-              statuses);
+              statuses, type);
         selectType = true;
         QueryFactory.initialise(this);
     }

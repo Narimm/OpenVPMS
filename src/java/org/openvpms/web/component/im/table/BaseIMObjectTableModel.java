@@ -22,7 +22,6 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
@@ -122,15 +121,6 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
             model.addColumn(createTableColumn(i, COLUMNS[i]));
         }
         return model;
-    }
-
-    /**
-     * @see TableModel#getColumnName
-     */
-    public String getColumnName(int column) {
-        TableColumn col = getColumn(column);
-        Object value = col.getHeaderValue();
-        return (value != null) ? value.toString() : null;
     }
 
     /**

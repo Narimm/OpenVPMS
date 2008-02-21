@@ -26,8 +26,10 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.lang.CharSetUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
@@ -37,6 +39,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -58,6 +61,11 @@ import java.util.List;
 public abstract class AbstractQuery<T> implements Query<T> {
 
     /**
+     * The type that this query returns.
+     */
+    private final Class type;
+
+    /**
      * The archetypes to query.
      */
     private final ShortNameConstraint archetypes;
@@ -68,13 +76,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     private final String[] shortNames;
 
     /**
-     * Archetype reference model name. May be <code>null</code>
-     */
-    private final String refModelName;
-
-    /**
-     * Additional constraints to associate with the query. May be
-     * <code>null</code>
+     * Additional constraints to associate with the query. May be <tt>null</tt>.
      */
     private IConstraint constraints;
 
@@ -89,7 +91,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     private boolean distinct;
 
     /**
-     * The instance name field. If the text is <code>null</code> or empty, indicates
+     * The instance name field. If the text is <tt>null</tt> or empty, indicates
      * to query all instances.
      */
     private TextField instanceName;
@@ -106,7 +108,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     private CheckBox inactive;
 
     /**
-     * The selected archetype short name. If <code>null</code>, or {@link
+     * The selected archetype short name. If <tt>null</tt>, or {@link
      * ArchetypeShortNameListModel#ALL}, indicates to query using all matching
      * short names.
      */
@@ -159,22 +161,52 @@ public abstract class AbstractQuery<T> implements Query<T> {
 
 
     /**
-     * Construct a new <code>AbstractQuery</code> that queries objects with
+     * Construct a new <tt>AbstractQuery</tt> that queries objects with
      * the specified primary short names.
      *
-     * @param shortNames the short names
+     * @param shortNames the archetype short names
+     * @param type       the type that this query returns
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    public AbstractQuery(String[] shortNames) {
-        this(shortNames, true);
+    public AbstractQuery(String[] shortNames, Class type) {
+        this(shortNames, true, type);
     }
 
     /**
-     * Construct a new <code>AbstractQuery</code> that queries objects with
+     * Construct a new <tt>AbstractQuery</tt> that queries objects with
      * the specified short names.
      *
-     * @param shortNames  the short names
+     * @param shortNames  the archetype short names
+     * @param primaryOnly if <tt>true</tt> only include primary archetypes
+     * @param type        the type that this query returns
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
+     */
+    @SuppressWarnings("unchecked")
+    public AbstractQuery(String[] shortNames, boolean primaryOnly,
+                         Class type) {
+        this.shortNames = DescriptorHelper.getShortNames(shortNames,
+                                                         primaryOnly);
+        archetypes = new ShortNameConstraint(shortNames, primaryOnly, true);
+        this.type = type;
+        if (IMObject.class.isAssignableFrom(type)) {
+            // verify that the specified type matches what the query actually
+            // returns
+            Class actual = IMObjectHelper.getType(this.shortNames);
+            if (!type.isAssignableFrom(actual)) {
+                throw new QueryException(QueryException.ErrorCode.InvalidType,
+                                         type, actual);
+
+            }
+        }
+    }
+
+    /**
+     * Construct a new <tt>AbstractQuery</tt> that queries objects with
+     * the specified short names.
+     *
+     * @param shortNames  the archetype short names
      * @param primaryOnly if <tt>true</tt> only include primary archetypes
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
@@ -183,7 +215,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
         this.shortNames = DescriptorHelper.getShortNames(shortNames,
                                                          primaryOnly);
         archetypes = new ShortNameConstraint(shortNames, primaryOnly, true);
-        refModelName = null;
+        this.type = IMObjectHelper.getType(this.shortNames);
     }
 
     /**
@@ -193,10 +225,19 @@ public abstract class AbstractQuery<T> implements Query<T> {
      */
     public Component getComponent() {
         if (component == null) {
-            component = RowFactory.create(ROW_STYLE);
+            component = createContainer();
             doLayout(component);
         }
         return component;
+    }
+
+    /**
+     * Returns the type that this query returns.
+     *
+     * @return the type
+     */
+    public Class getType() {
+        return type;
     }
 
     /**
@@ -248,7 +289,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <code>null</code>
+     * @param sort the sort constraint. May be <tt>null</tt>
      * @return the query result set
      */
     public ResultSet<T> query(SortConstraint[] sort) {
@@ -291,7 +332,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Sets the name to query on.
      *
-     * @param name the name. May contain wildcards, or be <code>null</code>
+     * @param name the name. May contain wildcards, or be <tt>null</tt>
      */
     public void setName(String name) {
         getInstanceName().setText(name);
@@ -300,19 +341,10 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Returns the name being queried on.
      *
-     * @return the name. May contain wildcards, or be <code>null</code>
+     * @return the name. May contain wildcards, or be <tt>null</tt>
      */
     public String getName() {
-        final String wildcard = "*";
-        String name = getInstanceName().getText();
-        if (!StringUtils.isEmpty(name)) {
-            // if entered name contains a wildcard then leave alone else
-            // add one to end
-            if (!name.contains(wildcard)) {
-                name = name + wildcard;
-            }
-        }
-        return name;
+        return getWildcardedText(getInstanceName());
     }
 
     /**
@@ -336,7 +368,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @param auto if <code>true</code> the query should be run automatically
+     * @param auto if <tt>true</tt> the query should be run automatically
      */
     public void setAuto(boolean auto) {
         this.auto = auto;
@@ -345,8 +377,8 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @return <code>true</code> if the query should be run automaticaly;
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the query should be run automatically;
+     *         otherwise <tt>false</tt>
      */
     public boolean isAuto() {
         return auto;
@@ -364,8 +396,8 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Determines if duplicate rows should be filtered.
      *
-     * @return <code>true</code> if duplicate rows should be removed;
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if duplicate rows should be removed;
+     *         otherwise <tt>false</tt>
      */
     public boolean isDistinct() {
         return distinct;
@@ -392,7 +424,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Set query constraints.
      *
-     * @param constraints the constraints
+     * @param constraints the constraints. May be <tt>null</tt>
      */
     public void setConstraints(IConstraint constraints) {
         this.constraints = constraints;
@@ -401,7 +433,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Returns query contraints.
      *
-     * @return the constraints
+     * @return the constraints. May be <tt>null</tt>
      */
     public IConstraint getConstraints() {
         return constraints;
@@ -426,15 +458,6 @@ public abstract class AbstractQuery<T> implements Query<T> {
     }
 
     /**
-     * Returns the archetype reference model name.
-     *
-     * @return the archetype reference model name. May be <code>null</code>
-     */
-    public String getRefModelName() {
-        return refModelName;
-    }
-
-    /**
      * Returns the focus group for the component.
      *
      * @return the focus group
@@ -446,7 +469,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Creates the result set.
      *
-     * @param sort the sort criteria. May be <code>null</code>
+     * @param sort the sort criteria. May be <tt>null</tt>
      * @return a new result set
      */
     protected abstract ResultSet<T> createResultSet(SortConstraint[] sort);
@@ -473,8 +496,8 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Determines if inactive instances should be returned.
      *
-     * @return <code>true</code> if inactive instances should be retured;
-     *         <code>false</code>
+     * @return <tt>true</tt> if inactive instances should be returned;
+     *         otherwise <tt>false</tt>
      */
     protected boolean includeInactive() {
         return (inactive != null && inactive.isSelected());
@@ -483,7 +506,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Returns the selected archetype short name.
      *
-     * @return the archetype short name. May be <code>null</code>
+     * @return the archetype short name. May be <tt>null</tt>
      */
     protected String getShortName() {
         return shortName;
@@ -492,11 +515,22 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Set the archetype short name.
      *
-     * @param name the archetype short name. If <code>null</code>, indicates to
+     * @param name the archetype short name. If <tt>null</tt>, indicates to
      *             query using all matching short names.
      */
     protected void setShortName(String name) {
         shortName = name;
+    }
+
+    /**
+     * Creates a container component to lay out the query component in.
+     * This implementation returns a new <tt>Row</tt>.
+     *
+     * @return a new container
+     * @see #doLayout(Component)
+     */
+    protected Component createContainer() {
+        return RowFactory.create(ROW_STYLE);
     }
 
     /**
@@ -616,13 +650,56 @@ public abstract class AbstractQuery<T> implements Query<T> {
      * A query can be performed on name if the length of the name
      * (minus wildcards) &gt;= {@link #getNameMinLength()}
      *
-     * @return <code>true</code> if a query may be performed on name;
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if a query may be performed on name;
+     *         otherwise <tt>false</tt>
      */
     protected boolean canQueryOnName() {
         String name = getName();
-        int length = CharSetUtils.delete(name, "*").length();
+        int length = 0;
+        if (name != null) {
+            length = CharSetUtils.delete(name, "*").length();
+        }
         return (length >= getNameMinLength());
+    }
+
+    /**
+     * Helper to return the text of the supplied field with a wildcard
+     * (<em>*</em>) appended, if it is not empty and doesn't already contain
+     * one.
+     *
+     * @param field the text field
+     * @return the wildcarded field text, or <tt>null</tt> if the field is empty
+     */
+    protected String getWildcardedText(TextComponent field) {
+        return getWildcardedText(field, false);
+    }
+
+    /**
+     * Helper to return the text of the supplied field with a wildcard
+     * (<em>*</em>) appended, if it is not empty and doesn't already contain
+     * one.
+     *
+     * @param field     the text field
+     * @param substring if <tt>true</tt>, also prepend a wildcard if one is
+     *                  appended, to support substring matches
+     * @return the wildcarded field text, or <tt>null</tt> if the field is empty
+     */
+    protected String getWildcardedText(TextComponent field, boolean substring) {
+        String text = field.getText();
+        final String wildcard = "*";
+        if (!StringUtils.isEmpty(text)) {
+            // if entered name contains a wildcard then leave alone else
+            // add one to end
+            if (!text.contains(wildcard)) {
+                text = text + wildcard;
+                if (substring) {
+                    text = wildcard + text;
+                }
+            }
+        } else {
+            text = null;
+        }
+        return text;
     }
 
 }

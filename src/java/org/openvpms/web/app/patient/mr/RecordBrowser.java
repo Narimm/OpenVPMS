@@ -25,11 +25,10 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
-import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
-import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.TabPaneModel;
@@ -67,22 +66,22 @@ public class RecordBrowser implements Browser<Act> {
     /**
      * The problems browser.
      */
-    private TableBrowser<Act> problems;
+    private Browser<Act> problems;
 
     /**
      * The reminders/alerts browser.
      */
-    private TableBrowser<Act> reminderAlert;
+    private Browser<Act> reminderAlert;
 
     /**
      * The documents browser.
      */
-    private TableBrowser<Act> document;
+    private Browser<Act> document;
 
     /**
      * The charges browser.
      */
-    private TableBrowser<Act> charges;
+    private Browser<Act> charges;
 
     /**
      * The event listener.
@@ -121,7 +120,7 @@ public class RecordBrowser implements Browser<Act> {
                          Query<Act> reminderAlert, Query<Act> document,
                          Query<Act> charges) {
         this.summary = new SummaryTableBrowser(summary);
-        this.problems = IMObjectTableBrowserFactory.create(problems, null);
+        this.problems = BrowserFactory.create(problems);
 
         // todo - should be able to register ReminderActTableModel in
         // IMObjectTableFactory.properties for act.patientReminder and
@@ -130,11 +129,11 @@ public class RecordBrowser implements Browser<Act> {
                 reminderAlert.getShortNames());
         this.reminderAlert = new DefaultIMObjectTableBrowser<Act>(reminderAlert,
                                                                   model);
-        this.document = IMObjectTableBrowserFactory.create(document, null);
+        this.document = BrowserFactory.create(document);
         IMObjectTableModel<Act> chargeModel = new ChargesActTableModel(
                 charges.getShortNames());
         this.charges = new DefaultIMObjectTableBrowser<Act>(charges,
-                chargeModel);
+                                                            chargeModel);
     }
 
     /**
@@ -240,8 +239,8 @@ public class RecordBrowser implements Browser<Act> {
                 result = document;
                 break;
             case CHARGES:
-            	result = charges;
-            	break;
+                result = charges;
+                break;
             default:
                 result = summary;
         }
@@ -266,8 +265,8 @@ public class RecordBrowser implements Browser<Act> {
                 result = View.DOCUMENTS;
                 break;
             case 4:
-            	result = View.CHARGES;
-            	break;
+                result = View.CHARGES;
+                break;
             default:
                 result = View.SUMMARY;
         }

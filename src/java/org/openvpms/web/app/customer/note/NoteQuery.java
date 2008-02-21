@@ -68,7 +68,7 @@ public class NoteQuery extends DateRangeActQuery<Act> {
      */
     public NoteQuery(Party customer) {
         super(customer, "customer", "participation.customer",
-              new String[]{"act.customerNote"}, new String[0]);
+              new String[]{"act.customerNote"}, new String[0], Act.class);
 
         List<Lookup> lookups = FastLookupHelper.getLookups(
                 "lookup.customerNoteCategory");

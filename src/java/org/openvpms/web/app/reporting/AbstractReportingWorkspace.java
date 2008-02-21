@@ -101,20 +101,12 @@ public abstract class AbstractReportingWorkspace<T extends IMObject>
     }
 
     /**
-     * Sets the current object.
-     * This is analagous to {@link #setObject} but performs a safe cast
-     * to the required type.
+     * Returns the class type that this operates on.
      *
-     * @param object the current object. May be <tt>null</tt>
+     * @return the class type that this operates on
      */
-    public void setIMObject(IMObject object) {
-        if (object == null || type.isAssignableFrom(object.getClass())) {
-            setObject(type.cast(object));
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + type.getName());
-        }
+    protected Class<T> getType() {
+        return type;
     }
 
     /**

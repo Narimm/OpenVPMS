@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.admin;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.app.subsystem.ShortNameList;
@@ -36,24 +35,8 @@ public class RoleWorkspace extends CRUDWorkspace<SecurityRole> {
      * Constructs a new <tt>RoleWorkspace</tt>.
      */
     public RoleWorkspace() {
-        super("admin", "role", new ShortNameList("security.role"));
-    }
-
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object. May be <tt>null</tt>
-     */
-    public void setIMObject(IMObject object) {
-        if (object == null || object instanceof SecurityRole) {
-            setObject((SecurityRole) object);
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + SecurityRole.class.getName());
-        }
+        super("admin", "role", new ShortNameList("security.role"),
+              SecurityRole.class);
     }
 
 }

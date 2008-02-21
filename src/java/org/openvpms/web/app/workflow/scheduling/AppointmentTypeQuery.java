@@ -50,20 +50,20 @@ public class AppointmentTypeQuery extends AbstractIMObjectQuery<Entity> {
 
 
     /**
-     * Construct a new <code>AppointmentTypeQuery</code> that queries IMObjects
+     * Construct a new <tt>AppointmentTypeQuery</tt> that queries IMObjects
      * with the specified criteria.
      *
-     * @param schedule the schedule. May be <code>null</code>
+     * @param schedule the schedule. May be <tt>null</tt>
      */
     public AppointmentTypeQuery(Party schedule) {
-        super(new String[]{"entity.appointmentType"});
+        super(new String[]{"entity.appointmentType"}, Entity.class);
         _schedule = schedule;
     }
 
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <code>null</code>
+     * @param sort the sort constraint. May be <tt>null</tt>
      * @return the query result set
      * @throws ArchetypeServiceException if the query fails
      */
@@ -90,8 +90,8 @@ public class AppointmentTypeQuery extends AbstractIMObjectQuery<Entity> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @return <code>true</code> if the query should be run automaticaly;
-     *         otherwie <code>false</code>
+     * @return <tt>true</tt> if the query should be run automaticaly;
+     *         otherwie <tt>false</tt>
      */
     @Override
     public boolean isAuto() {
@@ -121,7 +121,7 @@ public class AppointmentTypeQuery extends AbstractIMObjectQuery<Entity> {
      * Returns the appointment types associated with a schedule.
      *
      * @param schedule the schedule
-     * @return a list of appointment types associated with <code>schedule</code>
+     * @return a list of appointment types associated with <tt>schedule</tt>
      */
     private List<Entity> getAppointmentTypes(Party schedule) {
         List<Entity> result = new ArrayList<Entity>();

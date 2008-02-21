@@ -30,9 +30,8 @@ import org.openvpms.web.component.subsystem.AbstractWorkspace;
  */
 public class DummyWorkspace extends AbstractWorkspace<IMObject> {
 
-
     /**
-     * Construct a new <code>DummyWorkspace</code>.
+     * Construct a new <tt>DummyWorkspace</tt>.
      *
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identfifier
@@ -46,8 +45,8 @@ public class DummyWorkspace extends AbstractWorkspace<IMObject> {
      * Determines if the workspace supports an archetype.
      *
      * @param shortName the archetype's short name
-     * @return <code>true</code> if the workspace can handle the archetype;
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the workspace can handle the archetype;
+     *         otherwise <tt>false</tt>
      */
     public boolean canHandle(String shortName) {
         return false;
@@ -67,7 +66,7 @@ public class DummyWorkspace extends AbstractWorkspace<IMObject> {
     /**
      * Sets the object to be viewed/edited by the workspace.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     public void setObject(IMObject object) {
         // no-op
@@ -76,9 +75,18 @@ public class DummyWorkspace extends AbstractWorkspace<IMObject> {
     /**
      * Returns the object to to be viewed/edited by the workspace.
      *
-     * @return the the object. May be <oode>null</code>
+     * @return the the object. May be <oode>null</tt>
      */
     public IMObject getObject() {
         return null;
+    }
+
+    /**
+     * Returns the class type that this operates on.
+     *
+     * @return the class type that this operates on
+     */
+    protected Class<IMObject> getType() {
+        return IMObject.class;
     }
 }

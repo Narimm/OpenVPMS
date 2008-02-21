@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 
 
@@ -28,7 +29,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AutoQuery extends AbstractIMObjectQuery {
+public class AutoQuery extends AbstractIMObjectQuery<IMObject> {
 
     /**
      * Constructs a new <tt>AutoQuery</tt> that queries IMObjects with the

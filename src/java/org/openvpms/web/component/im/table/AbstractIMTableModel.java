@@ -74,6 +74,18 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
     }
 
     /**
+     * Returns the name of the specified column number.
+     *
+     * @param column the column index (0-based)
+     * @return the column name
+     */
+    public String getColumnName(int column) {
+        TableColumn col = getColumn(column);
+        Object value = col.getHeaderValue();
+        return (value != null) ? value.toString() : null;
+    }
+
+    /**
      * Returns the number of rows in the table.
      *
      * @return the row count

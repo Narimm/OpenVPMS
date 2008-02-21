@@ -29,9 +29,8 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
-import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -175,8 +174,8 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
      * @param query the entity query
      * @return a new act browser
      */
-    private TableBrowser<Entity> createBrowser(ReportQuery query) {
-        return IMObjectTableBrowserFactory.create(query);
+    private Browser<Entity> createBrowser(ReportQuery query) {
+        return BrowserFactory.create(query);
     }
 
     /**

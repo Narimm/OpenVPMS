@@ -22,7 +22,6 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.subsystem.CRUDWindow;
@@ -30,10 +29,9 @@ import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
-import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
@@ -121,24 +119,6 @@ public class MessagingWorkspace extends AbstractWorkspace<User> {
     }
 
     /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object. May be <code>null</code>
-     */
-    public void setIMObject(IMObject object) {
-        if (object == null || object instanceof User) {
-            setObject((User) object);
-        } else {
-            throw new IllegalArgumentException(
-                    "Argument 'object' must be an instance of "
-                            + User.class.getName());
-        }
-    }
-
-
-    /**
      * Lays out the component.
      *
      * @return the component
@@ -176,6 +156,15 @@ public class MessagingWorkspace extends AbstractWorkspace<User> {
     @Override
     protected User getLatest() {
         return super.getLatest(GlobalContext.getInstance().getUser());
+    }
+
+    /**
+     * Returns the class type that this operates on.
+     *
+     * @return the class type that this operates on
+     */
+    protected Class<User> getType() {
+        return User.class;
     }
 
     /**
@@ -258,8 +247,8 @@ public class MessagingWorkspace extends AbstractWorkspace<User> {
      * @param query the act query
      * @return a new act browser
      */
-    private TableBrowser<Act> createBrowser(Query<Act> query) {
-        return IMObjectTableBrowserFactory.create(query);
+    private Browser<Act> createBrowser(Query<Act> query) {
+        return BrowserFactory.create(query);
     }
 
     /**

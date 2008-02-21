@@ -47,7 +47,8 @@ public class DefaultResultSet<T extends IMObject> extends NameResultSet<T> {
     public DefaultResultSet(ShortNameConstraint archetypes,
                             String instanceName, IConstraint constraints,
                             SortConstraint[] sort, int rows, boolean distinct) {
-        super(archetypes, instanceName, constraints, sort, rows, distinct);
+        super(archetypes, instanceName, constraints, sort, rows, distinct,
+              new DefaultQueryExecutor<T>());
     }
 
 }

@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.IMObjectTableBrowserFactory;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -73,10 +73,11 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identfifier
      * @param shortNames  the archetype short names that this operates on
+     * @param type        the type that this operates on
      */
     public ActWorkspace(String subsystemId, String workspaceId,
-                        ShortNames shortNames) {
-        super(subsystemId, workspaceId, shortNames);
+                        ShortNames shortNames, Class<T> type) {
+        super(subsystemId, workspaceId, shortNames, type);
     }
 
     /**
@@ -188,8 +189,7 @@ public abstract class ActWorkspace<T extends IMObject, A extends Act>
      * @return a new browser
      */
     protected Browser<A> createBrowser(ActQuery<A> query) {
-        return IMObjectTableBrowserFactory.create(query, null,
-                                                  createTableModel());
+        return BrowserFactory.create(query, null, createTableModel());
     }
 
     /**
