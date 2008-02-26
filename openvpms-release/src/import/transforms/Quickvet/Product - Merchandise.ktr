@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Product - Medications</name>
+    <name>Product - Merchandise</name>
     <directory>&#47;</directory>
     <log>
       <read/>
@@ -65,10 +65,10 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Select Inventory Fields</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Table input</from><to>Select Inventory Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Product Medication</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Select Inventory Fields</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Table input</from><to>Select Inventory Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Product Merchandise</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
-    <name>Product Medication</name>
+    <name>Product Merchandise</name>
     <type>OpenVPMSLoaderPlugin</type>
     <description/>
     <distribute>Y</distribute>
@@ -78,9 +78,9 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>CODE</idColumn><mapping><source>NAME</source><target>&lt;product.medication>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNTTYP</source><target>&lt;product.medication>dispensingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNTTYP</source><target>&lt;product.medication>sellingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.medication>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRICE1</source><target>&lt;product.medication>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNTCST</source><target>&lt;product.medication>prices[0]&lt;productPrice.unitPrice>cost</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNTTYP</source><target>&lt;product.medication>prices[0]&lt;productPrice.unitPrice>uom</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MARKUP</source><target>&lt;product.medication>prices[0]&lt;productPrice.unitPrice>markup</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MARKUP</source><target>&lt;product.medication>prices[0]&lt;productPrice.unitPrice>quantity</target><excludeNull>false</excludeNull><value>9999</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DISFEE</source><target>&lt;product.medication>prices[1]&lt;productPrice.fixedPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;product.medication>identities[0]&lt;entityIdentity.code>code</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>GROUP</source><target>&lt;product.medication>classifications[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.productGroup>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;entityRelationship.productTypeProduct>source</target><excludeNull>true</excludeNull><value>&lt;entity.productType>MEDICATION</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;entityRelationship.productTypeProduct>target</target><excludeNull>true</excludeNull><value>&lt;product.medication>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>CODE</idColumn><mapping><source>NAME</source><target>&lt;product.merchandise>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNTTYP</source><target>&lt;product.merchandise>sellingUnits</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.merchandise>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>MARKUP</source><target>&lt;product.merchandise>prices[0]&lt;productPrice.unitPrice>markup</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRICE1</source><target>&lt;product.merchandise>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNTCST</source><target>&lt;product.merchandise>prices[0]&lt;productPrice.unitPrice>cost</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNTTYP</source><target>&lt;product.merchandise>prices[0]&lt;productPrice.unitPrice>uom</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>UNTTYP</source><target>&lt;product.merchandise>prices[0]&lt;productPrice.unitPrice>quantity</target><excludeNull>false</excludeNull><value>9999</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;product.merchandise>identities[0]&lt;entityIdentity.code>code</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>GROUP</source><target>&lt;product.merchandise>classifications[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.productGroup>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;entityRelationship.productTypeProduct>source</target><excludeNull>true</excludeNull><value>&lt;entity.productType>MERCHANDISE</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;entityRelationship.productTypeProduct>target</target><excludeNull>true</excludeNull><value>&lt;product.merchandise>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>false</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>485</xloc>
+      <xloc>487</xloc>
       <yloc>119</yloc>
       <draw>Y</draw>
       </GUI>
@@ -97,20 +97,16 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-    <fields>      <field>        <name>Drug Code</name>
+    <fields>      <field>        <name>Item Number</name>
         <rename>CODE</rename>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>Drug Name</name>
+        </field>      <field>        <name>Description</name>
         <rename>NAME</rename>
         <length>-2</length>
         <precision>-2</precision>
         </field>      <field>        <name>Category</name>
         <rename>GROUP</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>Unit</name>
-        <rename>UNTTYP</rename>
         <length>-2</length>
         <precision>-2</precision>
         </field>      <field>        <name>Cost</name>
@@ -121,25 +117,25 @@
         <rename>PRICE1</rename>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>Bottling Fee</name>
-        <rename>DISFEE</rename>
+        </field>      <field>        <name>Profit Margin</name>
+        <rename>MARKUP</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Unit</name>
+        <rename>UNTTYP</rename>
         <length>-2</length>
         <precision>-2</precision>
         </field>      <field>        <name>Active</name>
         <rename>ACTIVEFLAG</rename>
         <length>-2</length>
         <precision>-2</precision>
-        </field>      <field>        <name>Qty Per Unit</name>
+        </field>      <field>        <name>Qty per Unit</name>
         <rename>PACKSIZE</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-        </field>      <field>        <name>Profit Margin</name>
-        <rename>MARKUP</rename>
         <length>-2</length>
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>216</xloc>
+      <xloc>215</xloc>
       <yloc>120</yloc>
       <draw>Y</draw>
       </GUI>
@@ -157,7 +153,7 @@
            <schema_name/>
            </partitioning>
     <connection>Quickvet</connection>
-    <sql>select * from druginv
+    <sql>select * from stockINV
 </sql>
     <limit>0</limit>
     <lookup/>
@@ -165,7 +161,7 @@
     <variables_active>N</variables_active>
      <cluster_schema/>
     <GUI>
-      <xloc>104</xloc>
+      <xloc>105</xloc>
       <yloc>122</yloc>
       <draw>Y</draw>
       </GUI>
@@ -190,7 +186,8 @@
 var ACTIVE = true
 var UNTCST = 0.0
 
-CODE.setString(&quot;DRUG&quot; + replace(upper(CODE.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
+
+CODE.setString(&quot;MERCH&quot; + replace(upper(CODE.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
 if (CODE.getString() == null || CODE.getString() == &quot;&quot;)
 	CODE.setString(&quot;NOCODE&quot;)
 
@@ -207,6 +204,7 @@ if (PRICE1.getNumber() == null)
 
 if (PACKSIZE.getNumber() != null)
 	UNTCST = PACKCOST.getNumber()&#47;PACKSIZE.getNumber();
+
 if (UNTTYP.getString() == null || UNTTYP.getString() == &quot;&quot;)
 	UNTTYP.setString(&quot;Unit&quot;);</jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>ACTIVE</name>
