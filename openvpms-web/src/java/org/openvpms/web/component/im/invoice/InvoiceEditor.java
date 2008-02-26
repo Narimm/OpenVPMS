@@ -20,7 +20,7 @@ package org.openvpms.web.component.im.invoice;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.edit.act.ActEditor;
+import org.openvpms.web.component.im.edit.account.AccountActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -39,10 +39,10 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public abstract class InvoiceEditor extends ActEditor {
+public abstract class InvoiceEditor extends AccountActEditor {
 
     /**
-     * Construct a new <code>InvoiceEditor</code>.
+     * Construct a new <tt>InvoiceEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <code>null</code>

@@ -22,7 +22,7 @@ import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.edit.act.ActEditor;
+import org.openvpms.web.component.im.edit.account.AccountActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -39,7 +39,7 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AdjustmentActEditor extends ActEditor {
+public class AdjustmentActEditor extends AccountActEditor {
 
     /**
      * Construct a new <code>AdjustmentActEditor</code>.

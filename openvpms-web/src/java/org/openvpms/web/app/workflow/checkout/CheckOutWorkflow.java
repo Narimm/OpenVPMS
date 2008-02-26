@@ -176,6 +176,11 @@ public class CheckOutWorkflow extends WorkflowImpl {
         Tasks postTasks = new Tasks();
         TaskProperties invoiceProps = new TaskProperties();
         invoiceProps.add("status", FinancialActStatus.POSTED);
+        invoiceProps.add(new Variable("startTime") {
+            public Object getValue(TaskContext context) {
+                return new Date(); // workaround for OVPMS-734. todo
+            }
+        });
         postTasks.addTask(
                 new UpdateIMObjectTask(INVOICE_SHORTNAME, invoiceProps));
         postTasks.setRequired(false);

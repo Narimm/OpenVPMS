@@ -20,7 +20,7 @@ package org.openvpms.web.component.im.edit.payment;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.edit.act.ActEditor;
+import org.openvpms.web.component.im.edit.account.AccountActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
@@ -36,7 +36,7 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public abstract class PaymentEditor extends ActEditor {
+public abstract class PaymentEditor extends AccountActEditor {
 
     /**
      * Construct a new <code>PaymentEditor</code>.

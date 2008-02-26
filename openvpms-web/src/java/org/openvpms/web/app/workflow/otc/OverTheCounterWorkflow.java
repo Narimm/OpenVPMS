@@ -39,8 +39,11 @@ import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
+import org.openvpms.web.component.workflow.Variable;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.Date;
 
 
 /**
@@ -101,6 +104,11 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
         addTask(sale);
         TaskProperties properties = new TaskProperties();
         properties.add("status", ActStatus.POSTED);
+        properties.add(new Variable("startTime") {
+            public Object getValue(TaskContext context) {
+                return new Date(); // workaround for OVPMS-734. todo
+            }
+        });
         UpdateIMObjectTask postSale = new UpdateIMObjectTask(CHARGES_COUNTER,
                                                              properties);
         addTask(postSale);

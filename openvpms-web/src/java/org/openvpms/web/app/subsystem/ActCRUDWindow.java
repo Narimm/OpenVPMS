@@ -27,6 +27,7 @@ import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -39,6 +40,8 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
+
+import java.util.Date;
 
 
 /**
@@ -318,6 +321,10 @@ public abstract class ActCRUDWindow<T extends Act>
         String status = act.getStatus();
         if (!POSTED.equals(status)) {
             act.setStatus(POSTED);
+            // todo - workaround for OVPMS-734
+            if (TypeHelper.isA(act, "act.customerAccount*")) {
+                act.setActivityStartTime(new Date());
+            }
             return SaveHelper.save(act);
         }
         return false;
