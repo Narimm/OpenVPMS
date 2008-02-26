@@ -78,9 +78,9 @@
            <field_name/>
            <schema_name/>
            </partitioning>
-<mappings><connection>openvpms</connection><idColumn>CODE</idColumn><mapping><source>NAME</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.service>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRICE1</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;product.service>identities[0]&lt;entityIdentity.code>code</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>false</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+<mappings><connection>openvpms</connection><idColumn>CODE</idColumn><mapping><source>NAME</source><target>&lt;product.service>name</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>ACTIVE</source><target>&lt;product.service>active</target><excludeNull>false</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRICE1</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>price</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRICE1</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>uom</target><excludeNull>true</excludeNull><value>Unit</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRICE1</source><target>&lt;product.service>prices[0]&lt;productPrice.unitPrice>quantity</target><excludeNull>false</excludeNull><value>9999</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;product.service>identities[0]&lt;entityIdentity.code>code</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>GROUP</source><target>&lt;product.service>classifications[0]</target><excludeNull>true</excludeNull><value>&lt;lookup.productGroup>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;entityRelationship.productTypeProduct>source</target><excludeNull>true</excludeNull><value>&lt;entity.productType>SERVICE</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CODE</source><target>&lt;entityRelationship.productTypeProduct>target</target><excludeNull>true</excludeNull><value>&lt;product.service>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>false</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>542</xloc>
+      <xloc>503</xloc>
       <yloc>121</yloc>
       <draw>Y</draw>
       </GUI>
@@ -113,10 +113,39 @@
         <rename>ACTIVEFLAG</rename>
         <length>-2</length>
         <precision>-2</precision>
+        </field>      <field>        <name>Category</name>
+        <rename>GROUP</rename>
+        <length>-2</length>
+        <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
       <xloc>215</xloc>
       <yloc>118</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Table input</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <connection>Quickvet</connection>
+    <sql>select * from procedre</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+     <cluster_schema/>
+    <GUI>
+      <xloc>85</xloc>
+      <yloc>117</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -143,9 +172,11 @@ if (NAME.getString() == &quot;&quot; || NAME.getString() == null) {
 	NAME.setString(&quot;No Product Name&quot;)
 }
 
-CODE.setString(replace(upper(CODE.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
+CODE.setString(&quot;SERV&quot; + replace(upper(CODE.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
 if (CODE.getString() == null || CODE.getString() == &quot;&quot;)
 	CODE.setString(&quot;NOCODE&quot;)
+
+GROUP.setString(replace(trim(upper(GROUP.getString())),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
 
 if (ACTIVEFLAG.getString() == &quot;NO&quot; || ACTIVEFLAG.getString() == &quot;No&quot;) {
 	ACTIVE = false
@@ -157,33 +188,8 @@ if (ACTIVEFLAG.getString() == &quot;NO&quot; || ACTIVEFLAG.getString() == &quot;
         <precision>-1</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>353</xloc>
+      <xloc>352</xloc>
       <yloc>121</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Table input</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <field_name/>
-           <schema_name/>
-           </partitioning>
-    <connection>Quickvet</connection>
-    <sql>select * from procedre</sql>
-    <limit>0</limit>
-    <lookup/>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
-     <cluster_schema/>
-    <GUI>
-      <xloc>85</xloc>
-      <yloc>117</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
