@@ -65,7 +65,7 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Add sequence</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Drug Input</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Procedure Input</from><to>Select values 2</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Select values 2</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Invoice</from><to>Invoice Service</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Filter Credits</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Transform Invoice</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Transform Credit</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Credit</from><to>Credit Service</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Add sequence</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Select values 2</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Invoice</from><to>Invoice Service</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Filter Credits</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Transform Invoice</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Transform Credit</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Credit</from><to>Credit Service</to><enabled>Y</enabled> </hop>  <hop> <from>Select values 3</from><to>Add sequence</to><enabled>Y</enabled> </hop>  <hop> <from>Drug Input</from><to>Transform ID1</to><enabled>Y</enabled> </hop>  <hop> <from>Transform ID1</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Procedure Input</from><to>Transform ID2</to><enabled>Y</enabled> </hop>  <hop> <from>Transform ID2</from><to>Select values 2</to><enabled>Y</enabled> </hop>  <hop> <from>Stock Input</from><to>Transform ID3</to><enabled>Y</enabled> </hop>  <hop> <from>Transform ID3</from><to>Select values 3</to><enabled>Y</enabled> </hop>  </order>
 
   <step>
     <name>Add sequence</name>
@@ -134,8 +134,8 @@
     <variables_active>N</variables_active>
      <cluster_schema/>
     <GUI>
-      <xloc>54</xloc>
-      <yloc>78</yloc>
+      <xloc>19</xloc>
+      <yloc>77</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -281,7 +281,7 @@
     <variables_active>N</variables_active>
      <cluster_schema/>
     <GUI>
-      <xloc>55</xloc>
+      <xloc>23</xloc>
       <yloc>229</yloc>
       <draw>Y</draw>
       </GUI>
@@ -336,8 +336,8 @@
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>163</xloc>
-      <yloc>73</yloc>
+      <xloc>201</xloc>
+      <yloc>78</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -391,8 +391,8 @@
         <precision>-2</precision>
         </field>      </fields>     <cluster_schema/>
     <GUI>
-      <xloc>163</xloc>
-      <yloc>229</yloc>
+      <xloc>206</xloc>
+      <yloc>228</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -441,8 +441,6 @@ DISCOUNT.setNumber(abs(DISCOUNT.getNumber()))
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
-PRODUCTID.setString(replace(upper(PRODUCTID.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
-
 var ID = num2str(ACCOUNTID.getNumber()) + &quot;.&quot; + num2str(PATIENTID.getNumber())
 var DISCOUNT = 0.0
 
@@ -497,6 +495,209 @@ DISCOUNT.setNumber(abs(DISCOUNT.getNumber()))
     <GUI>
       <xloc>702</xloc>
       <yloc>81</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Stock Input</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <connection>Quickvet</connection>
+    <sql>SELECT
+  [Visit Number]
+, [Line Number]
+, [DATE]
+, [Item Number]
+, [DESCRIPTION]
+, Qty
+, Price
+, SubTotal
+, [Lot Number]
+, AccountNumber
+, PetNumber
+, Assisting
+, [Tax Rate]
+, Tax
+, [Inv Loc]
+, Completed
+FROM Invstock
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+     <cluster_schema/>
+    <GUI>
+      <xloc>24</xloc>
+      <yloc>356</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select values 3</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>Visit Number</name>
+        <rename>VISITID</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>DATE</name>
+        <rename>DATE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Item Number</name>
+        <rename>PRODUCTID</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Qty</name>
+        <rename>QUANTITY</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Price</name>
+        <rename>UNITPRICE</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>AccountNumber</name>
+        <rename>ACCOUNTID</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>PetNumber</name>
+        <rename>PATIENTID</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>Tax</name>
+        <rename>TAXAMT</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      <field>        <name>SubTotal</name>
+        <rename>TOTAL</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>203</xloc>
+      <yloc>356</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform ID1</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+PRODUCTID.setString(&quot;DRUG&quot; + replace(upper(PRODUCTID.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
+</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>ID</name>
+        <rename>ID</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>DISCOUNT</name>
+        <rename>DISCOUNT</rename>
+        <type>Number</type>
+        <length>16</length>
+        <precision>2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>112</xloc>
+      <yloc>78</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform ID2</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+PRODUCTID.setString(&quot;SERV&quot; + replace(upper(PRODUCTID.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
+</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>ID</name>
+        <rename>ID</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>DISCOUNT</name>
+        <rename>DISCOUNT</rename>
+        <type>Number</type>
+        <length>16</length>
+        <precision>2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>109</xloc>
+      <yloc>226</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Transform ID3</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+    <script/>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47;Script here
+PRODUCTID.setString(&quot;MERCH&quot; + replace(upper(PRODUCTID.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
+</jsScript_script>
+        </jsScript>     </jsScripts>    <fields>      <field>        <name>ID</name>
+        <rename>ID</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        </field>      <field>        <name>DISCOUNT</name>
+        <rename>DISCOUNT</rename>
+        <type>Number</type>
+        <length>16</length>
+        <precision>2</precision>
+        </field>      </fields>     <cluster_schema/>
+    <GUI>
+      <xloc>107</xloc>
+      <yloc>357</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
