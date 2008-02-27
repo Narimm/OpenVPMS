@@ -30,6 +30,8 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.layout.SplitPaneLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -42,6 +44,7 @@ import org.openvpms.web.app.supplier.SupplierSubsystem;
 import org.openvpms.web.app.workflow.WorkflowSubsystem;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.subsystem.Subsystem;
 import org.openvpms.web.component.subsystem.Workspace;
@@ -51,6 +54,7 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ContentPaneFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.resource.util.Styles;
 
 import java.beans.PropertyChangeEvent;
@@ -309,7 +313,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         ButtonRow logoutRow = new ButtonRow(null, BUTTON_STYLE);
         logoutRow.addButton("logout", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                OpenVPMSApp.getInstance().logout();
+                onLogout();
             }
         });
 
@@ -337,6 +341,30 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         } else {
             this.summary = null;
         }
+    }
+
+    /**
+     * Invoked when the 'logout' button is pressed.
+     */
+    private void onLogout() {
+        final OpenVPMSApp app = OpenVPMSApp.getInstance();
+        int count = app.getActiveWindowCount();
+        String msg;
+        if (count > 1) {
+            msg = Messages.get("logout.activewindows.message", count);
+        } else {
+            msg = Messages.get("logout.message");
+        }
+        String title = Messages.get("logout.title");
+        final ConfirmationDialog dialog = new ConfirmationDialog(title, msg);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    app.logout();
+                }
+            }
+        });
+        dialog.show();
     }
 
 }

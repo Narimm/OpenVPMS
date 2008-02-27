@@ -33,6 +33,7 @@ import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.resource.util.Styles;
+import org.openvpms.web.servlet.ServletHelper;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -128,13 +129,23 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     }
 
     /**
+     * Determines the no. of browser windows/tabs currently active.
+     *
+     * @return the no. of browser windows/tabs currently active
+     */
+    public int getActiveWindowCount() {
+        return ServletHelper.getApplicationInstanceCount("app");
+    }
+
+    /**
      * Logout the current user.
      */
     public void logout() {
         getDefaultWindow().removeAll();
         clearContext();
         setContextChangeListener(null);
-        Command redirect = new BrowserRedirectCommand("logout");
+        Command redirect = new BrowserRedirectCommand(
+                ServletHelper.getRedirectURI("logout"));
         enqueueCommand(redirect);
     }
 

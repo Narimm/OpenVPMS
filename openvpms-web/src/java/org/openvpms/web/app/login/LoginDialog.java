@@ -32,6 +32,7 @@ import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.servlet.ServletHelper;
 
 
 /**
@@ -125,10 +126,10 @@ public class LoginDialog extends PopupDialog {
         String name = username.getText();
         String pass = password.getText();
 
-        // @todo need to encode
         Command redirect = new BrowserRedirectCommand(
-                "j_acegi_security_check?j_username=" + name
-                        + "&j_password=" + pass);
+                ServletHelper.getRedirectURI(
+                        "j_acegi_security_check?j_username=" + name
+                                + "&j_password=" + pass));
         ApplicationInstance.getActive().enqueueCommand(redirect);
     }
 

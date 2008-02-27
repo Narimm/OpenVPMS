@@ -18,7 +18,6 @@
 
 package org.openvpms.web.servlet;
 
-import nextapp.echo2.webrender.ContentType;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint;
 
@@ -31,13 +30,13 @@ import java.io.IOException;
 
 
 /**
- * An <code>AuthenticationEntryPoint</code> for use with echo2.
+ * An <tt>AuthenticationEntryPoint</tt> for use with echo2.
  * <p/>
  * This redirects the caller to the login form. However if the caller is
  * an echo2 client, the redirection is initiated by sending an
- * <code>HttpServletResponse.SC_BAD_REQUEST</code> status. The echo2 client
+ * <tt>HttpServletResponse.SC_BAD_REQUEST</tt> status. The echo2 client
  * interprets this as a redirection if
- * <code>ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI</code>
+ * <tt>ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI</tt>
  * has been configured.
  * <br/>
  * This is required as the echo2 client has no way of detecting that
@@ -54,9 +53,9 @@ public class EchoAuthenticationEntryPoint
      * Commences an authentication scheme.
      * <p/>
      * This implemenation simply sends an
-     * <code>HttpServletResponse.SC_BAD_REQUEST</code> in the response.
+     * <tt>HttpServletResponse.SC_BAD_REQUEST</tt> in the response.
      *
-     * @param request       that resulted in an <code>AuthenticationException</code>
+     * @param request       that resulted in an <tt>AuthenticationException</tt>
      * @param response      so that the user agent can begin authentication
      * @param authException that caused the invocation
      */
@@ -64,15 +63,8 @@ public class EchoAuthenticationEntryPoint
                          AuthenticationException authException) throws
                                                                 IOException,
                                                                 ServletException {
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse resp = (HttpServletResponse) response;
-        String query = req.getQueryString();
-        if (query != null && query.contains("service")) {
-            // probably an echo2 client
-            resp.setContentType(ContentType.TEXT_HTML.getMimeType());
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("Session Expired");
-            resp.flushBuffer();
+        if (ServletHelper.isEchoRequest((HttpServletRequest) request)) {
+            ServletHelper.forceExpiry(((HttpServletResponse) response));
         } else {
             super.commence(request, response, authException);
         }
