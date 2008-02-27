@@ -33,7 +33,7 @@
             <value>
                 CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
                 PATTERN_TYPE_APACHE_ANT
-                /**=httpSessionContextIntegrationFilter,authenticationProcessingFilter,anonymousProcessingFilter,securityEnforcementFilter
+                /**=httpSessionContextIntegrationFilter,authenticationProcessingFilter,anonymousProcessingFilter,securityEnforcementFilter,skipLoginFilter
             </value>
         </property>
     </bean>
@@ -100,7 +100,8 @@
             <value>
                 CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
                 PATTERN_TYPE_APACHE_ANT
-                /login*=IS_AUTHENTICATED_FULLY,IS_AUTHENTICATED_ANONYMOUSLY
+                /login*=IS_AUTHENTICATED_ANONYMOUSLY
+                /login/**=IS_AUTHENTICATED_ANONYMOUSLY
                 /**=IS_AUTHENTICATED_FULLY
             </value>
         </property>
@@ -136,6 +137,10 @@
         <property name="forceHttps">
             <value>false</value>
         </property>
+    </bean>
+
+    <bean id="skipLoginFilter" class="org.openvpms.web.servlet.SkipLoginFilter">
+
     </bean>
 
     <!-- ================================================================== -->

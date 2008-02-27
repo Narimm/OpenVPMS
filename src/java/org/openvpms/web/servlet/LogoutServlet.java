@@ -18,14 +18,14 @@
 
 package org.openvpms.web.servlet;
 
-import java.io.IOException;
+import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
+import java.io.IOException;
 
 
 /**
@@ -46,14 +46,16 @@ public class LogoutServlet extends HttpServlet {
      * @throws IOException      for any I/O error
      */
     @Override
-    protected void service(HttpServletRequest request, HttpServletResponse response)
+    protected void service(HttpServletRequest request,
+                           HttpServletResponse response)
             throws ServletException, IOException {
         request.getSession().invalidate();
         Cookie terminate = new Cookie(
-                TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY, null);
+                TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY,
+                null);
         terminate.setMaxAge(0);
         response.addCookie(terminate);
-        response.sendRedirect("login");
+        response.sendRedirect(ServletHelper.getRedirectURI(request, "logout"));
     }
 
 }
