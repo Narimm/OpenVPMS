@@ -25,7 +25,9 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
@@ -49,6 +51,7 @@ import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.subsystem.Subsystem;
 import org.openvpms.web.component.subsystem.Workspace;
 import org.openvpms.web.component.util.ButtonColumn;
+import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ContentPaneFactory;
@@ -93,7 +96,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
     private ButtonColumn subMenu;
 
     /**
-     * Workspace summary group box. May be <code>null</code>.
+     * Workspace summary group box. May be <tt>null</tt>.
      */
     private GroupBox summary;
 
@@ -139,9 +142,21 @@ public class MainPane extends SplitPane implements ContextChangeListener,
     private static final String LEFTPANE_STYLE = "MainPane.Left";
     private static final String RIGHTPANE_STYLE = "MainPane.Right";
 
+    /**
+     * New window icon resource path.
+     */
+    private static final String NEW_WINDOW_PATH
+            = "/org/openvpms/web/resource/image/newwindow.gif";
 
     /**
-     * Construct a new <code>MainPane</code>.
+     * Reference to the new window icon.
+     */
+    private ImageReference NEW_WINDOW
+            = new ResourceImageReference(NEW_WINDOW_PATH);
+
+
+    /**
+     * Construct a new <tt>MainPane</tt>.
      */
     public MainPane() {
         super(ORIENTATION_HORIZONTAL);
@@ -184,7 +199,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
                 new HelpDialog().show();
             }
         });
-        menu.add(getLogoutRow());
+        menu.add(getManagementRow());
 
         SplitPane left = SplitPaneFactory.create(ORIENTATION_VERTICAL,
                                                  LEFTPANE_STYLE);
@@ -305,13 +320,22 @@ public class MainPane extends SplitPane implements ContextChangeListener,
     }
 
     /**
-     * Creates a row containing a right justified logout button.
+     * Creates a row containing right justified new window and logout buttons.
      *
-     * @return the logout row
+     * @return the row
      */
-    private Row getLogoutRow() {
-        ButtonRow logoutRow = new ButtonRow(null, BUTTON_STYLE);
-        logoutRow.addButton("logout", new ActionListener() {
+    private Row getManagementRow() {
+        ButtonRow row = new ButtonRow(null, BUTTON_STYLE);
+        Button newWindow = ButtonFactory.create(null, BUTTON_STYLE);
+        newWindow.setIcon(NEW_WINDOW);
+        newWindow.setToolTipText(Messages.get("newwindow.tooltip"));
+        newWindow.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onNewWindow();
+            }
+        });
+        row.addButton(newWindow);
+        row.addButton("logout", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onLogout();
             }
@@ -321,8 +345,8 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         rightAlign.setAlignment(
                 new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
         rightAlign.setWidth(new Extent(100, Extent.PERCENT));
-        logoutRow.setLayoutData(rightAlign);
-        return logoutRow;
+        row.setLayoutData(rightAlign);
+        return row;
     }
 
     /**
@@ -341,6 +365,13 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         } else {
             this.summary = null;
         }
+    }
+
+    /**
+     * Invoked when the 'new window' button is pressed.
+     */
+    private void onNewWindow() {
+        OpenVPMSApp.getInstance().createWindow();
     }
 
     /**

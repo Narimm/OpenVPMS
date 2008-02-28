@@ -23,6 +23,7 @@ import nextapp.echo2.app.Command;
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.webcontainer.ContainerContext;
+import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
 import nextapp.echo2.webcontainer.command.BrowserRedirectCommand;
 import nextapp.echo2.webrender.ClientConfiguration;
 import nextapp.echo2.webrender.Connection;
@@ -126,6 +127,16 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      */
     public ContentPane getContent() {
         return window.getContent();
+    }
+
+    /**
+     * Creates a new browser window.
+     */
+    public void createWindow() {
+        Command open = new BrowserOpenWindowCommand(
+                ServletHelper.getRedirectURI("app"), "_blank",
+                "menubar=yes,toolbar=yes,location=yes");
+        enqueueCommand(open);
     }
 
     /**
