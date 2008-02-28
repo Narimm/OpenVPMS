@@ -28,6 +28,7 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
@@ -51,16 +52,16 @@ public class EntityResultSet<T extends Entity> extends NameResultSet<T> {
 
 
     /**
-     * Construct a new <code>EntityResultSet</code>.
+     * Construct a new <tt>EntityResultSet</tt>.
      *
      * @param archetypes       the archetypes to query
-     * @param instanceName     the instance name. May be <code>null</code>
-     * @param searchIdentities if <code>true</code> search on identity name
+     * @param instanceName     the instance name. May be <tt>null</tt>
+     * @param searchIdentities if <tt>true</tt> search on identity name
      * @param constraints      additional query constraints. May be
-     *                         <code<null</code>
-     * @param sort             the sort criteria. May be <code>null</code>
+     *                         <tt>null</tt>
+     * @param sort             the sort criteria. May be <tt>null</tt>
      * @param rows             the maximum no. of rows per page
-     * @param distinct         if <code>true</code> filter duplicate rows
+     * @param distinct         if <tt>true</tt> filter duplicate rows
      */
     public EntityResultSet(ShortNameConstraint archetypes,
                            String instanceName, boolean searchIdentities,
@@ -106,14 +107,21 @@ public class EntityResultSet<T extends Entity> extends NameResultSet<T> {
         if (!StringUtils.isEmpty(name)) {
             NodeConstraint nameConstraint = new NodeConstraint("name", name);
             if (identityShortNames != null) {
-                // querying on identity
+                // querying on identity as well. Need to do a left outer
+                // join on identities node, and select all entities that
+                // have a name or identity name matching that specified
+                ShortNameConstraint ident
+                        = new ShortNameConstraint("ident", identityShortNames,
+                                                  false, true);
                 CollectionNodeConstraint idConstraint
-                        = new CollectionNodeConstraint("identities",
-                                                       identityShortNames,
-                                                       false, true);
+                        = new CollectionNodeConstraint("identities", ident);
                 idConstraint.setJoinType(JoinConstraint.JoinType.LeftOuterJoin);
-                idConstraint.add(nameConstraint);
                 query.add(idConstraint);
+
+                OrConstraint or = new OrConstraint();
+                or.add(nameConstraint);
+                or.add(new NodeConstraint("ident.name", name));
+                query.add(or);
             } else {
                 query.add(nameConstraint);
             }
