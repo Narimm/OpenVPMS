@@ -39,6 +39,7 @@ import org.openvpms.web.component.util.LabelFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -54,7 +55,7 @@ import java.util.Set;
 public class PatientQuery extends AbstractEntityQuery<Party> {
 
     /**
-     * The customer to limit the search to. If <code>null</code>, indicates to
+     * The customer to limit the search to. If <tt>null</tt>, indicates to
      * query all patients.
      */
     private final Party customer;
@@ -77,7 +78,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
 
 
     /**
-     * Construct a new <code>PatientQuery</code> that queries IMObjects with the
+     * Construct a new <tt>PatientQuery</tt> that queries IMObjects with the
      * specified short names, and using the current customer, if set.
      *
      * @param shortNames the patient archetype short names
@@ -88,11 +89,11 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
     }
 
     /**
-     * Construct a new <code>PatientQuery</code> that queries IMObjects with the
+     * Construct a new <tt>PatientQuery</tt> that queries IMObjects with the
      * specified short names, and customer.
      *
      * @param shortNames the patient archetype short names
-     * @param customer   the customer. May be <code>null</code>
+     * @param customer   the customer. May be <tt>null</tt>
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
@@ -104,7 +105,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
     /**
      * Determines if the 'all patients' checkbox should be displayed.
      *
-     * @param show if <code>true</code>, display the 'all patients' checkbox
+     * @param show if <tt>true</tt>, display the 'all patients' checkbox
      */
     public void setShowAllPatients(boolean show) {
         showAllPatients = show;
@@ -113,7 +114,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
     /**
      * Determines if the all patients checbox is selected.
      *
-     * @return <code>true</code> if the 'all patients' checkbox is selected
+     * @return <tt>true</tt> if the 'all patients' checkbox is selected
      */
     public boolean isAllPatientsSelected() {
         return allPatients != null && allPatients.isSelected();
@@ -122,7 +123,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <code>null</code>
+     * @param sort the sort constraint. May be <tt>null</tt>
      * @return the query result set
      * @throws ArchetypeServiceException if the query fails
      */
@@ -151,8 +152,8 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @return <code>true</code> if the query should be run automaticaly;
-     *         otherwie <code>false</code>
+     * @return <tt>true</tt> if the query should be run automaticaly;
+     *         otherwise <tt>false</tt>
      */
     @Override
     public boolean isAuto() {
@@ -228,20 +229,21 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
      * @param objects    the objects to filter
      * @param shortName  the archetype shortname to matches on
      * @param name       the object instance name to matches on
-     * @param activeOnly if <code>true</code>, only include active objects
+     * @param idSearch   if <tt>true</tt>, search identities as well
+     * @param activeOnly if <tt>true</tt>, only include active objects
      * @return a list of objects that matches the specified criteria
      */
     private List<Party> filter(List<Party> objects, String shortName,
                                String name, boolean idSearch,
                                boolean activeOnly) {
+        Set<Party> matches = new HashSet<Party>();
+        matches.addAll(IMObjectHelper.findEntityByName(name, objects));
         if (idSearch) {
-            objects = IMObjectHelper.findEntityByIdentity(name, objects);
-        } else {
-            objects = IMObjectHelper.findEntityByName(name, objects);
+            matches.addAll(IMObjectHelper.findEntityByIdentity(name, objects));
         }
 
         List<Party> result = new ArrayList<Party>();
-        for (Party object : objects) {
+        for (Party object : matches) {
             ArchetypeId id = object.getArchetypeId();
             if (!TypeHelper.matches(id, shortName)) {
                 continue;
@@ -259,7 +261,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
      * Returns the patients associated with a customer.
      *
      * @param customer the customer
-     * @return a list of patients associated with <code>nustomer</code>
+     * @return a list of patients associated with <tt>nustomer</tt>
      */
     private List<Party> getPatients(Party customer) {
         List<Party> result = new ArrayList<Party>();
