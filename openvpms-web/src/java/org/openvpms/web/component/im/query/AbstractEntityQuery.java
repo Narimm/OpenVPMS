@@ -104,9 +104,20 @@ public abstract class AbstractEntityQuery<T extends Entity>
     }
 
     /**
-     * Determines if the query should be an identity search or name search.
-     * If an identity search, the name is used to search for entities
-     * with a matching {@link EntityIdentity}.
+     * Sets the name to query on.
+     *
+     * @param name the name. May contain wildcards, or be <code>null</code>
+     */
+    @Override
+    public void setName(String name) {
+        super.setName(name);
+        checkIdentityName(name);
+    }
+
+    /**
+     * Determines if the query should perform identity searches as well
+     * as name searches. If an identity search, the name is used to search for
+     * entities with a matching {@link EntityIdentity}.
      *
      * @return <code>true</code> if the query should be an identity search
      */
@@ -160,10 +171,20 @@ public abstract class AbstractEntityQuery<T extends Entity>
     @Override
     protected void onInstanceNameChanged() {
         String name = getName();
+        checkIdentityName(name);
+        super.onInstanceNameChanged();
+    }
+
+    /**
+     * Determines if a name may be an identity (i.e contains a number).
+     * If so, selects * the 'identity search' box.
+     *
+     * @param name the name
+     */
+    private void checkIdentityName(String name) {
         if (name != null && name.matches(".*\\d+.*")) {
             getIdentitySearch().setSelected(true);
         }
-        super.onInstanceNameChanged();
     }
 
 }
