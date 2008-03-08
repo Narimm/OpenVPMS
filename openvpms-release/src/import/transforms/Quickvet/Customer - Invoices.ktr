@@ -65,7 +65,26 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Select Transaction Fields</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Filter Invoices</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Invoices</from><to>Invoice Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Invoices</from><to>Filter Credits</to><enabled>Y</enabled> </hop>  <hop> <from>Table input</from><to>Select Transaction Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Transform Credits</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Credits</from><to>Credit Output</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Select Transaction Fields</from><to>Transform Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Fields</from><to>Filter Invoices</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Invoices</from><to>Invoice Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Invoices</from><to>Filter Credits</to><enabled>Y</enabled> </hop>  <hop> <from>Table input</from><to>Select Transaction Fields</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Transform Credits</to><enabled>Y</enabled> </hop>  <hop> <from>Transform Credits</from><to>Credit Output</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Credits</from><to>Filter Counter sales</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Counter sales</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter Counter sales</from><to>Counter Sales</to><enabled>Y</enabled> </hop>  </order>
+
+  <step>
+    <name>Counter Sales</name>
+    <type>OpenVPMSLoaderPlugin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<mappings><connection>openvpms</connection><idColumn>VISITID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountChargesCounter>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSTAT</source><target>&lt;act.customerAccountChargesCounter>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountChargesCounter>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAXAMT</source><target>&lt;act.customerAccountChargesCounter>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLIENTID</source><target>&lt;act.customerAccountChargesCounter>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;act.customerAccountChargesCounter>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesCounter>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
+    <GUI>
+      <xloc>746</xloc>
+      <yloc>247</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
 
   <step>
     <name>Credit Output</name>
@@ -80,7 +99,7 @@
            </partitioning>
 <mappings><connection>openvpms</connection><idColumn>VISITID</idColumn><mapping><source>DATE</source><target>&lt;act.customerAccountChargesCredit>startTime</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TRANSTAT</source><target>&lt;act.customerAccountChargesCredit>status</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>AMOUNT</source><target>&lt;act.customerAccountChargesCredit>amount</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>TAXAMT</source><target>&lt;act.customerAccountChargesCredit>tax</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>DESCRIPTION</source><target>&lt;act.customerAccountChargesCredit>notes</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>PRINTED</source><target>&lt;act.customerAccountChargesCredit>printed</target><excludeNull>true</excludeNull><value></value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>CLIENTID</source><target>&lt;act.customerAccountChargesCredit>customer[0]&lt;participation.customer>entity</target><excludeNull>true</excludeNull><value>&lt;party.customerperson>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><mapping><source>VISITID</source><target>&lt;act.customerAccountChargesCredit>customer[0]&lt;participation.customer>act</target><excludeNull>true</excludeNull><value>&lt;act.customerAccountChargesCredit>$value</value><removeDefaultObjects>false</removeDefaultObjects></mapping><generateLookups>true</generateLookups><skipProcessed>true</skipProcessed><batchSize>1000</batchSize></mappings>     <cluster_schema/>
     <GUI>
-      <xloc>752</xloc>
+      <xloc>748</xloc>
       <yloc>143</yloc>
       <draw>Y</draw>
       </GUI>
@@ -99,8 +118,56 @@
            </partitioning>
      <cluster_schema/>
     <GUI>
-      <xloc>454</xloc>
-      <yloc>263</yloc>
+      <xloc>453</xloc>
+      <yloc>382</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter Counter sales</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <field_name/>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Counter Sales</send_true_to>
+<send_false_to>Dummy (do nothing)</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>CLIENTID</leftvalue>
+   <function>&lt;&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>PATIENTID</leftvalue>
+   <function>=</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>AMOUNT</leftvalue>
+   <function>&gt;</function>
+   <rightvalue/>
+   <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+    <GUI>
+      <xloc>453</xloc>
+      <yloc>247</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -117,7 +184,7 @@
            <schema_name/>
            </partitioning>
 <send_true_to>Transform Credits</send_true_to>
-<send_false_to>Dummy (do nothing)</send_false_to>
+<send_false_to>Filter Counter sales</send_false_to>
     <compare>
 <condition>
  <negated>N</negated>
@@ -135,20 +202,13 @@
    <function>&lt;</function>
    <rightvalue/>
    <value><name>constant</name><type>Number</type><text>0.0</text><length>-1</length><precision>-1</precision><isnull>N</isnull></value>   </condition>
-  <condition>
-   <negated>N</negated>
-   <operator>AND</operator>
-   <leftvalue>PATIENTID</leftvalue>
-   <function>&lt;&gt;</function>
-   <rightvalue/>
-   <value><name>constant</name><type>Integer</type><text> 0</text><length>-1</length><precision>0</precision><isnull>N</isnull></value>   </condition>
   </conditions>
  </condition>
     </compare>
      <cluster_schema/>
     <GUI>
-      <xloc>455</xloc>
-      <yloc>145</yloc>
+      <xloc>453</xloc>
+      <yloc>152</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -195,7 +255,7 @@
     </compare>
      <cluster_schema/>
     <GUI>
-      <xloc>454</xloc>
+      <xloc>453</xloc>
       <yloc>57</yloc>
       <draw>Y</draw>
       </GUI>

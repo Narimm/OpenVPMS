@@ -153,7 +153,7 @@
            <schema_name/>
            </partitioning>
     <connection>Quickvet</connection>
-    <sql>select * from stockINV
+    <sql>select * from stock
 </sql>
     <limit>0</limit>
     <lookup/>
