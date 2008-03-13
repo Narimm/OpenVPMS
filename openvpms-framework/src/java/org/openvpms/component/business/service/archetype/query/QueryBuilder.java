@@ -38,6 +38,7 @@ import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IdConstraint;
+import static org.openvpms.component.system.common.query.JoinConstraint.JoinType.LeftOuterJoin;
 import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -174,14 +175,21 @@ public class QueryBuilder {
         ArchetypeId id = constraint.getArchetypeId();
         String alias = constraint.getAlias();
 
-        context.addWhereConstraint(alias, "archetypeId.shortName",
-                                   RelationalOp.EQ,
-                                   id.getShortName());
+        boolean leftOuterJoin = context.peekJoinType() == LeftOuterJoin;
+        if (leftOuterJoin) {
+            context.pushLogicalOperator(LogicalOperator.Or);
+            context.addWhereConstraint(alias, "archetypeId.shortName",
+                                       RelationalOp.EQ,  id.getShortName());
+            context.addWhereConstraint(alias, "archetypeId.shortName",
+                                       RelationalOp.IsNULL, null);
+            context.popLogicalOperator();
+        } else {
+            context.addWhereConstraint(alias, "archetypeId.shortName",
+                                       RelationalOp.EQ, id.getShortName());
+        }
 
         // process the active flag
-        if (constraint.isActiveOnly()) {
-            context.addWhereConstraint(alias, "active", RelationalOp.EQ, true);
-        }
+        addActiveConstraint(constraint, context);
 
         // process the embedded constraints.
         for (IConstraint oc : constraint.getConstraints()) {
@@ -226,7 +234,8 @@ public class QueryBuilder {
 
         String alias = constraint.getAlias();
         String[] shortNames = constraint.getShortNames();
-        if (shortNames.length > 1) {
+        boolean leftOuterJoin = context.peekJoinType() == LeftOuterJoin;
+        if (shortNames.length > 1 || leftOuterJoin) {
             context.pushLogicalOperator(LogicalOperator.Or);
         }
 
@@ -241,19 +250,40 @@ public class QueryBuilder {
                                            RelationalOp.EQ, shortName);
             }
         }
+        if (leftOuterJoin) {
+            context.addWhereConstraint(alias, "archetypeId.shortName",
+                                       RelationalOp.IsNULL, null);
+        }
 
-        if (shortNames.length > 1) {
+        if (shortNames.length > 1 || leftOuterJoin) {
             context.popLogicalOperator();
         }
 
         // process the active flag
-        if (constraint.isActiveOnly()) {
-            context.addWhereConstraint(alias, "active", RelationalOp.EQ, true);
-        }
+        addActiveConstraint(constraint, context);
 
         // process the embedded constraints.
         for (IConstraint oc : constraint.getConstraints()) {
             processConstraint(oc, context);
+        }
+    }
+
+    private void addActiveConstraint(BaseArchetypeConstraint constraint,
+                                     QueryContext context) {
+        boolean leftOuterJoin = context.peekJoinType() == LeftOuterJoin;
+        if (constraint.isActiveOnly()) {
+            String alias = constraint.getAlias();
+            if (leftOuterJoin) {
+                context.pushLogicalOperator(LogicalOperator.Or);
+                context.addWhereConstraint(alias, "active", RelationalOp.EQ,
+                                           true);
+                context.addWhereConstraint(alias, "active", RelationalOp.IsNULL,
+                                           null);
+                context.popLogicalOperator();
+            } else {
+                context.addWhereConstraint(alias, "active", RelationalOp.EQ,
+                                           true);
+            }
         }
     }
 
@@ -265,12 +295,8 @@ public class QueryBuilder {
      */
     private void processArchetypeConstraint(ArchetypeConstraint constraint,
                                             QueryContext context) {
-
         // process the active flag
-        if (constraint.isActiveOnly()) {
-            context.addWhereConstraint(constraint.getAlias(), "active",
-                                       RelationalOp.EQ, true);
-        }
+        addActiveConstraint(constraint, context);
 
         // process the embedded constraints.
         for (IConstraint oc : constraint.getConstraints()) {
