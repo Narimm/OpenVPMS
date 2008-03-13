@@ -436,7 +436,7 @@ public class QueryBuilderTestCase
     }
 
     /**
-     * Tests queries
+     * Tests IN queries.
      */
     public void testIn() {
         final String expected = "select documentAct0 from "
@@ -453,6 +453,52 @@ public class QueryBuilderTestCase
                                      d1.getObjectReference(),
                                      d2.getObjectReference()));
         checkQuery(query, expected);
+    }
+
+    /**
+     * Verifies that archetype constraints in left outer joins generate
+     * is null clauses.
+     */
+    public void testLeftJoin() {
+        final String expected = "select product0 "
+                + "from " + Product.class.getName() + " as product0 "
+                + "left outer join product0.classifications as classifications0 "
+                + "where (product0.archetypeId.shortName = :shortName0 and "
+                + "(classifications0.archetypeId.shortName = :shortName1 or "
+                + "classifications0.archetypeId.shortName is NULL) and "
+                + "(classifications0.active = :active0 or " +
+                "classifications0.active is NULL) and " +
+                "(classifications0.name = :name0 or " +
+                "classifications0.name is NULL))";
+
+        // test production when ArchetypeId is used to specify the collection
+        // archetype
+        ArchetypeQuery query1 = new ArchetypeQuery(
+                new ShortNameConstraint("product.product", false, false))
+                .add(new CollectionNodeConstraint(
+                        "classifications", new ArchetypeId("lookup.species"),
+                        true)
+                        .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
+                        .add(new OrConstraint()
+                        .add(new NodeConstraint("name", RelationalOp.EQ,
+                                                "Canine"))
+                        .add(new NodeConstraint("name", RelationalOp.IsNULL))));
+        checkQuery(query1, expected);
+
+        // test production when ShortNameConstraint is used to specify the
+        // collection archetype
+        ArchetypeQuery query2 = new ArchetypeQuery(
+                new ShortNameConstraint("product.product", false, false))
+                .add(new CollectionNodeConstraint("classifications",
+                                                  new ShortNameConstraint(
+                                                          "lookup.species",
+                                                          true))
+                        .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
+                        .add(new OrConstraint()
+                        .add(new NodeConstraint("name", RelationalOp.EQ,
+                                                "Canine"))
+                        .add(new NodeConstraint("name", RelationalOp.IsNULL))));
+        checkQuery(query2, expected);
     }
 
     /*

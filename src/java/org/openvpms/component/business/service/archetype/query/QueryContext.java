@@ -89,6 +89,9 @@ public class QueryContext {
      */
     private Stack<LogicalOpCounter> opStack = new Stack<LogicalOpCounter>();
 
+    private Stack<JoinConstraint.JoinType> joinStack
+            = new Stack<JoinConstraint.JoinType>();
+
     /**
      * Holds a reference to the parameters and the values used to process
      */
@@ -226,6 +229,7 @@ public class QueryContext {
 
         typeStack.push(types);
         varStack.push(alias);
+        joinStack.push(JoinConstraint.JoinType.InnerJoin);
         return this;
     }
 
@@ -272,6 +276,7 @@ public class QueryContext {
 
         typeStack.push(types);
         varStack.push(alias);
+        joinStack.push(joinType);
         return this;
     }
 
@@ -283,6 +288,7 @@ public class QueryContext {
      */
     TypeSet popTypeSet() {
         varStack.pop();
+        joinStack.pop();
         return typeStack.pop();
     }
 
@@ -293,6 +299,15 @@ public class QueryContext {
      */
     TypeSet peekTypeSet() {
         return typeStack.peek();
+    }
+
+    /**
+     * Look at the join type that is currently on the stack.
+     *
+     * @return the join type
+     */
+    JoinConstraint.JoinType peekJoinType() {
+        return joinStack.peek();
     }
 
     /**
