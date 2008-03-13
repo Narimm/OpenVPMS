@@ -211,8 +211,8 @@ public class TimePropertyTransformer extends AbstractPropertyTransformer {
         GregorianCalendar timeCal = new GregorianCalendar();
         timeCal.setTime(time);
 
-        dateCal.add(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
-        dateCal.add(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
+        dateCal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
+        dateCal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
         return dateCal.getTime();
     }
 
