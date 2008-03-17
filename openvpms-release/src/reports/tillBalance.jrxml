@@ -494,7 +494,7 @@
 			</band>
 		</lastPageFooter>
 		<summary>
-			<band height="237"  isSplitAllowed="true" >
+			<band height="279"  isSplitAllowed="true" >
 				<staticText>
 					<reportElement
 						x="148"
@@ -636,12 +636,12 @@
 					<textElement textAlignment="Right">
 						<font pdfFontName="Helvetica-Bold" isBold="true"/>
 					</textElement>
-				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TOTAL_PAYMENT_CHEQUE}]]></textFieldExpression>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$V{TOTAL_PAYMENT_CHEQUE}.add($V{TOTAL_REFUND_CHEQUE})]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement
 						x="5"
-						y="174"
+						y="176"
 						width="111"
 						height="16"
 						key="staticText-26"/>
@@ -654,7 +654,7 @@
 				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="124"
-						y="173"
+						y="175"
 						width="100"
 						height="18"
 						key="textField"/>
@@ -667,7 +667,7 @@
 				<staticText>
 					<reportElement
 						x="5"
-						y="195"
+						y="197"
 						width="111"
 						height="16"
 						key="staticText-27"/>
@@ -680,7 +680,7 @@
 				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="125"
-						y="194"
+						y="196"
 						width="100"
 						height="18"
 						key="textField"/>
@@ -693,7 +693,7 @@
 				<staticText>
 					<reportElement
 						x="5"
-						y="214"
+						y="216"
 						width="111"
 						height="16"
 						key="staticText-28"/>
@@ -706,7 +706,7 @@
 				<textField isStretchWithOverflow="false" pattern="##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="126"
-						y="213"
+						y="215"
 						width="100"
 						height="18"
 						key="textField"/>
