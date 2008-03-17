@@ -91,6 +91,11 @@ class InvoiceItemSaveRules {
      */
     private List<Act> newDocs = new ArrayList<Act>();
 
+    /**
+     * The reminder rules object
+     */
+    private final ReminderRules reminderRules;
+
 
     /**
      * Creates a new <tt>InvoiceItemSaveRules</tt>.
@@ -109,6 +114,7 @@ class InvoiceItemSaveRules {
         if (product != null) {
             productBean = new EntityBean(product, service);
         }
+        reminderRules = new ReminderRules(service);
     }
 
     /**
@@ -134,8 +140,15 @@ class InvoiceItemSaveRules {
             }
             toSave.add(item); // need to save the item as well
         }
-        if (!toSave.isEmpty()) {
-            service.save(toSave);
+        // Now save all the acts.  
+        // TODO:  Modified due to batch save not working with rules in 1.1 version and rules not
+        // being triggered in rules causing reminders completions not to work.  
+        // Need to modify back when this fixed in 1.2.
+        for (IMObject object : toSave) {
+            if (TypeHelper.isA(object, "act.patientReminder")) {
+                reminderRules.markMatchingRemindersCompleted((Act)object); 
+            }
+            service.save(object);
         }
 
         addEventRelationships();

@@ -145,7 +145,7 @@ public class ReminderProcessor
             throw new ReminderProcessorException(NoReminderType);
         }
         Date dueDate = reminder.getActivityEndTime();
-        if (reminderType.shouldCancel(dueDate, processingDate)) {
+        if (rules.shouldCancel(reminder, processingDate)) {
             cancel(reminder, reminderType.getEntity());
         } else {
             int reminderCount = bean.getInt("reminderCount");

@@ -396,7 +396,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
             }
             query.setParameter("accountType", accountType.getLinkId());
         }
-        query.setParameter("startTime", date);
+        query.setParameter("startTime", this.date);
         query.setMaxResults(1000);
         iterator = new ObjectSetQueryIterator(service, query);
         balanceCalc = new BalanceCalculator(service);

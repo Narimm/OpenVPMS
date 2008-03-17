@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -189,10 +190,13 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         bean.addRelationship("actRelationship.customerAppointmentTask", task);
         save(appointment);
 
+        task = get(task); // need to reload as relationship has been added
+        assertEquals(ActStatus.IN_PROGRESS, task.getStatus());
+
         checkStatus(appointment, WorkflowStatus.PENDING, task,
-                    WorkflowStatus.PENDING);
+                    WorkflowStatus.IN_PROGRESS); // no change
         checkStatus(appointment, AppointmentStatus.CHECKED_IN, task,
-                    WorkflowStatus.PENDING);
+                    WorkflowStatus.IN_PROGRESS);
         checkStatus(appointment, WorkflowStatus.IN_PROGRESS, task,
                     WorkflowStatus.IN_PROGRESS);
         checkStatus(appointment, WorkflowStatus.COMPLETED, task,
@@ -225,7 +229,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         task = get(task); // need to reload as relationship has been added
 
         checkStatus(task, WorkflowStatus.PENDING, appointment,
-                    WorkflowStatus.PENDING);
+                    WorkflowStatus.IN_PROGRESS);
         checkStatus(task, WorkflowStatus.IN_PROGRESS, appointment,
                     WorkflowStatus.IN_PROGRESS);
         checkStatus(task, TaskStatus.BILLED, appointment,
