@@ -27,7 +27,7 @@
               derivedValue="concat(openvpms:lookup(.,'creditCard'), ' ')"/>
         <node name="startTime" displayName="Date" path="/activityStartTime"
               type="java.util.Date" hidden="true" minCardinality="0"
-              defaultValue="java.util.Date.new()"/>
+              defaultValue="java.util.Date.new()" readOnly="true"/>
         <node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="true()" readOnly="true" hidden="true"/>

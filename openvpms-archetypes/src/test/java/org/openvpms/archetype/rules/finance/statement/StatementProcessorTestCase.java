@@ -194,6 +194,62 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         checkAct(acts.get(2), "act.customerAccountDebitAdjust", feeAmount);
     }
 
+    public void testBackDatedStatements() {
+        Party customer = getCustomer();
+
+        // create an invoice
+        Money amount = new Money(950);
+        FinancialAct invoice1 = createChargesInvoice(amount);
+        invoice1.setActivityStartTime(getDatetime("2007-12-29 10:00:00"));
+        save(invoice1);
+
+        // run EOP for 31/12/2007.
+        Date statementDate1 = getDate("2007-12-31");
+        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate1,
+                                                            true);
+        eop.process(customer);
+
+        // create a payment for 14/1/2008
+        FinancialAct payment = createPayment(amount);
+        payment.setActivityStartTime(getDatetime("2008-01-14 14:52:00"));
+        save(payment);
+
+        // backdate the statement to 1/1/2008. Should only include the
+        // opening balance
+        Date statementDate3 = getDate("2008-1-1");
+        List<Act> acts = processStatement(statementDate3, customer);
+        assertEquals(1, acts.size());
+        checkAct(acts.get(0), "act.customerAccountOpeningBalance", amount);
+
+        // now forward to the payment date. Statement should include opening
+        // balance and payment
+        Date statementDate4 = getDate("2008-1-14");
+        acts = processStatement(statementDate4, customer);
+        assertEquals(2, acts.size());
+        checkAct(acts.get(0), "act.customerAccountOpeningBalance", amount);
+        checkAct(acts.get(1), "act.customerAccountPayment", amount);
+
+        // run EOP for the 31/1
+        Date statementDate5 = getDate("2008-1-31");
+        eop = new EndOfPeriodProcessor(statementDate5, true);
+        eop.process(customer);
+
+        // check statement for 1/2. Balance should  be zero.
+        Date statementDate6 = getDate("2008-2-1");
+        acts = processStatement(statementDate6, customer);
+        assertEquals(1, acts.size());
+        checkAct(acts.get(0), "act.customerAccountOpeningBalance",
+                 BigDecimal.ZERO);
+
+        // backdate the statement to 14/1/2008. Should only include the
+        // opening balance and payment
+        processStatement(statementDate4, customer);
+        acts = processStatement(statementDate4, customer);
+        assertEquals(2, acts.size());
+        checkAct(acts.get(0), "act.customerAccountOpeningBalance", amount);
+        checkAct(acts.get(1), "act.customerAccountPayment", amount);
+    }
+
     /**
      * Helper to process a statement for a customer.
      *

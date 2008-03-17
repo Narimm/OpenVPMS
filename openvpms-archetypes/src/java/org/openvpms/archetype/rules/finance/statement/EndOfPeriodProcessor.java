@@ -60,19 +60,14 @@ import java.util.Date;
 public class EndOfPeriodProcessor implements Processor<Party> {
 
     /**
-     * The statement date.
+     * The statement date timestamp.
      */
-    private final Date statementDate;
+    private final Date timestamp;
 
     /**
      * If <tt>true</tt>, post completed charges.
      */
     private final boolean postCompletedCharges;
-
-    /**
-     * The statement timestamp.
-     */
-    private final Date timetamp;
 
     /**
      * The archetype service.
@@ -131,9 +126,8 @@ public class EndOfPeriodProcessor implements Processor<Party> {
         acts = new StatementActHelper(service);
         account = new CustomerAccountRules(service);
         statement = new StatementRules(service);
-        this.statementDate = statementDate;
+        timestamp = acts.getStatementTimestamp(statementDate);
         this.postCompletedCharges = postCompletedCharges;
-        timetamp = acts.getStatementTimestamp(statementDate);
     }
 
     /**
@@ -143,11 +137,11 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      * @throws OpenVPMSException for any error
      */
     public void process(Party customer) {
-        if (!acts.hasStatement(customer, statementDate)) {
+        if (!acts.hasStatement(customer, timestamp)) {
             Period period = new Period(customer);
             boolean needStatement = false;
             if (postCompletedCharges) {
-                for (Act act : acts.getCompletedCharges(customer, statementDate,
+                for (Act act : acts.getCompletedCharges(customer, timestamp,
                                                         period.getOpen(),
                                                         period.getClose())) {
                     post(act);
@@ -155,7 +149,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
                 }
             }
             if (!needStatement) {
-                BigDecimal balance = account.getBalance(customer, timetamp);
+                BigDecimal balance = account.getBalance(customer, timestamp);
                 if (balance.compareTo(BigDecimal.ZERO) == 0) {
                     if (acts.hasAccountActivity(customer, period.getOpen(),
                                                 period.getClose())) {
@@ -167,7 +161,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
                 }
             }
             if (needStatement) {
-                BigDecimal fee = statement.getAccountFee(customer, timetamp);
+                BigDecimal fee = statement.getAccountFee(customer, timestamp);
                 if (fee.compareTo(BigDecimal.ZERO) != 0) {
                     Date feeStartTime = getTimestamp(1);
                     statement.applyAccountingFee(customer, fee, feeStartTime);
@@ -199,7 +193,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      */
     private Date getTimestamp(int addSeconds) {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(timetamp);
+        calendar.setTime(timestamp);
         calendar.add(Calendar.SECOND, addSeconds);
         return calendar.getTime();
     }
@@ -229,9 +223,8 @@ public class EndOfPeriodProcessor implements Processor<Party> {
         }
 
         private void init() {
-            open = acts.getOpeningBalanceTimestamp(customer, statementDate);
-            close = acts.getClosingBalanceTimestamp(customer, statementDate,
-                                                    open);
+            open = acts.getOpeningBalanceTimestamp(customer, timestamp);
+            close = acts.getClosingBalanceTimestamp(customer, timestamp, open);
             init = true;
         }
     }

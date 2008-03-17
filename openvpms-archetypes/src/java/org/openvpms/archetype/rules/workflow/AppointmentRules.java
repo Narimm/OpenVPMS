@@ -333,8 +333,8 @@ public class AppointmentRules {
      */
     private void updateStatus(Act act, Act linked) {
         String status = act.getStatus();
-        if (WorkflowStatus.PENDING.equals(status)
-                || WorkflowStatus.IN_PROGRESS.equals(status)
+        // Only update the linked appointment status if workflow status not pending.
+        if (WorkflowStatus.IN_PROGRESS.equals(status)
                 || WorkflowStatus.COMPLETED.equals(status)
                 || WorkflowStatus.CANCELLED.equals(status)) {
             if (!status.equals(linked.getStatus())) {

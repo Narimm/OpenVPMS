@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.finance.statement;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.component.processor.AbstractProcessor;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -98,9 +99,9 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
             throw new StatementProcessorException(InvalidStatementDate,
                                                   statementDate);
         }
-        this.statementDate = statementDate;
         rules = new StatementRules(service);
         actHelper = new StatementActHelper(service);
+        this.statementDate = actHelper.getStatementTimestamp(statementDate);
     }
 
     /**
@@ -133,6 +134,12 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
         if (closeState != null) {
             close = closeState.getStartTime();
             printed = closeState.isPrinted();
+
+            // only include those acts up to the statement date to support
+            // back-dated statements
+            if (getDate(close).compareTo(getDate(statementDate)) > 0) {
+                close = statementDate;
+            }
         }
         if (!printed || reprint) {
             Iterable<Act> acts;
@@ -225,5 +232,16 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
             }
         }
     }
+
+    /**
+     * Returns the day/month/year part of a date-time.
+     *
+     * @param datetime the date/time
+     * @return the day/month/year part of the date
+     */
+    private Date getDate(Date datetime) {
+        return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);
+    }
+
 
 }

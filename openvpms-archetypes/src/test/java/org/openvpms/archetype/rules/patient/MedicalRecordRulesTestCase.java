@@ -19,6 +19,8 @@
 package org.openvpms.archetype.rules.patient;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -171,6 +173,110 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         // In some cases, it is present, in others it is 00:00:00.
 
         checkEvent(jan2, event1);
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#addToEvent} method where no event
+     * exists for the patient. A new one will be created with COMPLETED status,
+     * and the specified startTime.
+     */
+    public void testAddToEventForNonExistentEvent() {
+        Date date = getDate("2007-04-05");
+        Act medication = createMedication(patient);
+        save(medication);
+
+        rules.addToEvent(medication, date);
+        Act event = rules.getEvent(patient);
+        assertTrue(ActStatus.COMPLETED.equals(event.getStatus()));
+        assertEquals(date, event.getActivityStartTime());
+        checkContains(event, medication);
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#addToEvent} method where there is
+     * an existing IN_PROGRESS event that has a startTime < 7 days prior to
+     * that specified. The medication should be added to it.
+     */
+    public void testAddToEventForExistingInProgressEvent() {
+        Date date = getDate("2007-04-05");
+        Act medication = createMedication(patient);
+        save(medication);
+
+        Act expected = createEvent(date);
+        save(expected);
+
+        rules.addToEvent(medication, date);
+        Act event = rules.getEvent(patient);
+        checkContains(event, medication);
+        assertEquals(expected, event);
+        assertTrue(ActStatus.IN_PROGRESS.equals(event.getStatus()));
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#addToEvent} method where
+     * there is an IN_PROGRESS event that has a startTime > 7 days prior to
+     * the specified startTime. A new COMPLETED event should be created.
+     */
+    public void testAddToEventForExistingOldInProgressEvent() {
+        Date date = getDate("2007-04-05");
+        Act medication = createMedication(patient);
+        save(medication);
+
+        Date old = DateRules.getDate(date, -8, DateUnits.DAYS);
+        Act oldEvent = createEvent(old);
+        save(oldEvent);
+
+        rules.addToEvent(medication, date);
+        Act event = rules.getEvent(patient);
+        checkContains(event, medication);
+        assertFalse(oldEvent.equals(event));
+        assertEquals(date, event.getActivityStartTime());
+        assertTrue(ActStatus.COMPLETED.equals(event.getStatus()));
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#addToEvent} method where
+     * there is a COMPLETTED event that has a startTime and endTime that
+     * overlaps the specified start time. The medication should be added to it.
+     */
+    public void testAddToEventForExistingCompletedEvent() {
+        Date date = getDate("2007-04-05");
+        Act medication = createMedication(patient);
+        save(medication);
+
+        Act completed = createEvent(getDate("2007-04-03"));
+        completed.setActivityEndTime(getDate("2007-04-06"));
+        completed.setStatus(ActStatus.COMPLETED);
+        save(completed);
+
+        rules.addToEvent(medication, date);
+        Act event = rules.getEvent(patient);
+        checkContains(event, medication);
+        assertEquals(completed, event);
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#addToEvent} method where
+     * there is a COMPLETTED event that has a startTime and endTime that
+     * DOESN'T overlap the specified start time. The medication should be added
+     * to a new COMPLETED event whose startTime equals that specified.
+     */
+    public void testAddToEventForExistingNonOverlappingCompletedEvent() {
+        Date date = getDate("2007-04-05");
+        Act medication = createMedication(patient);
+        save(medication);
+
+        Act completed = createEvent(getDate("2007-04-03"));
+        completed.setActivityEndTime(getDate("2007-04-04"));
+        completed.setStatus(ActStatus.COMPLETED);
+        save(completed);
+
+        rules.addToEvent(medication, date);
+        Act event = rules.getEvent(patient);
+        checkContains(event, medication);
+        assertFalse(completed.equals(event));
+        assertEquals(date, event.getActivityStartTime());
+        assertTrue(ActStatus.COMPLETED.equals(event.getStatus()));
     }
 
     /**

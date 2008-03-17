@@ -20,6 +20,8 @@ package org.openvpms.archetype.rules.patient;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -125,13 +127,23 @@ public class MedicalRecordRules {
 
     /**
      * Adds an <em>act.patientMedication</em>/<em>act.patientInvestigation*</em>
-     * to the most recent <em>act.patientClinicalEvent</em>
-     * associated with the act's patient. If no <em>IN_PROGRESS</em> event
-     * exists, one will be created with the specified start time.
-     * If a relationship exists, it will be ignored.
+     * to an <em>act.patientClinicalEvent</em> associated with the act's
+     * patient.
+     * <p/>
+     * The <em>act.patientClinicalEvent</em> is selected as follows:
+     * <ol>
+     * <li>find the most recent event for the patient
+     * <li>if it is an <em>IN_PROGRESS</em> and
+     * <pre>event.startTime &gt;= (startTime - 1 week)</pre>
+     * use it
+     * <li>if it is <em>COMPLETED</em> and
+     * <pre>startTime &gt;= event.startTime && startTime <= event.endTime</pre>
+     * use it; otherwise
+     * <li>create a new event, with <em>COMPLETED</em> status and startTime
+     * </ol>
      *
      * @param act       the act to add
-     * @param startTime the timestamp to assign the event, if it is created
+     * @param startTime the startTime used to select the event
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void addToEvent(Act act, Date startTime) {
@@ -141,25 +153,51 @@ public class MedicalRecordRules {
     /**
      * Adds a list of <em>act.patientMedication</em>,
      * <em>act.patientInvestigation*</em> and <em>act.patientDocument*</em> acts
-     * to the most recent <em>act.patientClinicalEvent</em>
-     * associated with each act's patient. If no <em>IN_PROGRESS</em> event
-     * exists, one will be created with the specified start time.
-     * If a relationship exists, it will be ignored.
+     * to an <em>act.patientClinicalEvent</em> associated with each act's
+     * patient.
+     * <p/>
+     * The <em>act.patientClinicalEvent</em> is selected as follows:
+     * <ol>
+     * <li>find the most recent event for the patient
+     * <li>if it is an <em>IN_PROGRESS</em> and
+     * <pre>event.startTime &gt;= (startTime - 1 week)</pre>
+     * use it
+     * <li>if it is <em>COMPLETED</em> and
+     * <pre>startTime &gt;= event.startTime && startTime <= event.endTime</pre>
+     * use it; otherwise
+     * <li>create a new event, with <em>COMPLETED</em> status and startTime
+     * </ol>
      *
      * @param acts      the acts to add
-     * @param startTime the timestamp to assign the event, if it is created
+     * @param startTime the startTime used to select the event
      */
     public void addToEvents(List<Act> acts, Date startTime) {
         Map<IMObjectReference, List<Act>> map = getByPatient(acts);
         for (Map.Entry<IMObjectReference, List<Act>> entry : map.entrySet()) {
             IMObjectReference patient = entry.getKey();
             Act event = getEvent(patient);
-            if (event == null || !ActStatus.IN_PROGRESS.equals(
-                    event.getStatus())) {
+            if (event != null) {
+                Date eventStart = event.getActivityStartTime();
+                Date eventEnd = event.getActivityEndTime();
+                if (ActStatus.IN_PROGRESS.equals(event.getStatus())) {
+                    Date date = DateRules.getDate(startTime,
+                                                  -1, DateUnits.WEEKS);
+                    if (eventStart.before(date)) {
+                        event = null; // need to create a new event
+                    }
+                } else {  // COMPLETED
+                    if (startTime.before(eventStart)
+                           || (eventEnd != null && startTime.after(eventEnd))) {
+                        event = null; // need to create a new event
+                    }
+                }
+            }
+            if (event == null) {
                 event = (Act) service.create(CLINICAL_EVENT);
                 event.setActivityStartTime(startTime);
                 ActBean eventBean = new ActBean(event, service);
                 eventBean.addParticipation(PARTICIPATION_PATIENT, patient);
+                event.setStatus(ActStatus.COMPLETED);
             }
             boolean save = false;
             ActBean bean = new ActBean(event, service);
