@@ -40,7 +40,7 @@ public class EntityResultSet<T extends Entity>
      * @param instanceName     the instance name. May be <tt>null</tt>
      * @param searchIdentities if <tt>true</tt> search on identity name
      * @param constraints      additional query constraints. May be
-     *                         <code<null</tt>
+     *                         <tt>null</tt>
      * @param sort             the sort criteria. May be <tt>null</tt>
      * @param rows             the maximum no. of rows per page
      * @param distinct         if <tt>true</tt> filter duplicate rows

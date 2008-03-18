@@ -24,6 +24,7 @@ import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.property.Property;
 
 import java.beans.PropertyChangeListener;
 
@@ -101,6 +102,15 @@ public interface IMObjectEditor extends Editor, Saveable, Deletable,
      * @return <code>true</code> if editing was cancelled
      */
     boolean isCancelled();
+
+    /**
+     * Returns a property, given its node descriptor's name.
+     *
+     * @param name the descriptor's name
+     * @return the property corresponding to <tt>name</tt> or <tt>null</tt> if
+     *         none exists
+     */
+    Property getProperty(String name);
 
     /**
      * Add a property change listener.
