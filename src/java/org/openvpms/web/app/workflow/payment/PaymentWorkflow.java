@@ -23,7 +23,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
-import org.openvpms.web.component.workflow.EditIMObjectTask;
+import org.openvpms.web.component.workflow.EditAccountActTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
@@ -104,7 +104,8 @@ public class PaymentWorkflow extends WorkflowImpl {
     public void start(TaskContext context) {
         String payTitle = Messages.get("workflow.payment.payaccount.title");
         String payMsg = Messages.get("workflow.payment.payaccount.message");
-        Task edit = new EditIMObjectTask(CustomerAccountActTypes.PAYMENT, true);
+        Task edit = new EditAccountActTask(CustomerAccountActTypes.PAYMENT,
+                                           true);
         boolean displayNo = !isRequired();
         addTask(new ConditionalTask(
                 new ConfirmationTask(payTitle, payMsg, displayNo),

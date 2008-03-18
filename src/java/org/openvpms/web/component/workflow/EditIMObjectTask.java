@@ -247,7 +247,6 @@ public class EditIMObjectTask extends AbstractTask {
         }
     }
 
-
     /**
      * Edits an object.
      *
@@ -305,7 +304,7 @@ public class EditIMObjectTask extends AbstractTask {
      * @param editor the editor
      */
     protected void show(final IMObjectEditor editor) {
-        final EditDialog dialog = new EditDialog(editor, true, skip);
+        final EditDialog dialog = createEditDialog(editor, skip);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 if (EditDialog.SKIP_ID.equals(dialog.getAction())) {
@@ -320,6 +319,17 @@ public class EditIMObjectTask extends AbstractTask {
 
         });
         dialog.show();
+    }
+
+    /**
+     * Creates a new edit dialog.
+     *
+     * @param editor the editor
+     * @param skip   if <tt>true</tt>, editing may be skipped
+     * @return a new edit dialog
+     */
+    protected EditDialog createEditDialog(IMObjectEditor editor, boolean skip) {
+        return new EditDialog(editor, true, skip);
     }
 
     /**

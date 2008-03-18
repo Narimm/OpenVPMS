@@ -167,7 +167,7 @@ public class ShortcutButtons implements KeyStrokeHandler {
         String command = event.getActionCommand();
         if (command != null) {
             Button button = buttons.get(command);
-            if (button != null) {
+            if (button != null && button.isEnabled()) {
                 ActionEvent buttonEvent = new ActionEvent(button, command);
                 button.fireActionPerformed(buttonEvent);
             } else {

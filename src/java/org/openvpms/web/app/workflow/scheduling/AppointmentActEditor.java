@@ -274,7 +274,9 @@ public class AppointmentActEditor extends AbstractActEditor {
             AppointmentRules rules = new AppointmentRules();
             Date end = rules.calculateEndTime(start, schedule, appointmentType);
 
+            removeStartEndTimeListeners();
             endTimeField.setDate(end); // set the date portion
+            addStartEndTimeListeners();
             setEndTime(end);           // set the time portion
             // TODO - not ideal. Needs to be this way as the date and time
             // fields are bound to the same property, which uses

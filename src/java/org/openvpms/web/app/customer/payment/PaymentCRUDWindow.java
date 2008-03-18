@@ -23,6 +23,9 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.account.EditAccountActDialog;
 
 
 /**
@@ -72,6 +75,17 @@ public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         } else {
             buttons.add(getCreateButton());
         }
+    }
+
+    /**
+     * Creates a new edit dialog with Apply button disabled for <em>POSTED</em>
+     * acts, to workaround OVPMS-733.
+     *
+     * @param editor the editor
+     */
+    @Override
+    protected EditDialog createEditDialog(IMObjectEditor editor) {
+        return new EditAccountActDialog(editor);
     }
 
 }
