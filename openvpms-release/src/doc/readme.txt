@@ -1,4 +1,4 @@
-OpenVPMS 1.0 Release
+OpenVPMS 1.1 Release
 ====================
 
 1. Installation Notes
@@ -28,7 +28,7 @@ OpenVPMS 1.0 Release
 1.2 Directory structure
 
  The OpenVPMS installation has a single top-level directory named
- openvpms-release-1.0 (this will be referred to as <OPENVPMS_HOME> in the
+ openvpms-release-1.1 (this will be referred to as <OPENVPMS_HOME> in the
  reminder of this document). This has the following sub-directories:
 
  - bin     contains a number of tool scripts used to load data into OpenVPMS
