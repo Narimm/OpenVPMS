@@ -1,0 +1,220 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
+package org.openvpms.archetype.rules.supplier;
+
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+
+import java.math.BigDecimal;
+
+
+/**
+ * Wrapper for <em>entityRelationship.productSupplier</em> relationships.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ */
+public class ProductSupplier {
+
+    /**
+     * Bean wrapper for the relationship.
+     */
+    private final IMObjectBean bean;
+
+    /**
+     * Creates a new <tt>ProductSupplier</em>.
+     *
+     * @param relationship the relationship
+     */
+    public ProductSupplier(EntityRelationship relationship) {
+        this(relationship, ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Creates a new <tt>ProductSupplier</em>.
+     *
+     * @param relationship the relationship
+     * @param service      the archetype service
+     */
+    public ProductSupplier(EntityRelationship relationship,
+                           IArchetypeService service) {
+        bean = new IMObjectBean(relationship, service);
+    }
+
+    /**
+     * Returns the product.
+     *
+     * @return the product, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Product getProduct() {
+        return (Product) bean.getObject("source");
+    }
+
+    /**
+     * Returns the supplier.
+     *
+     * @return the supplier, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Party getSupplier() {
+        return (Party) bean.getObject("target");
+    }
+
+    /**
+     * Sets the reorder code.
+     *
+     * @param code the reorder code. May be <tt>null</tt>
+     */
+    public void setReorderCode(String code) {
+        bean.setValue("reorderCode", code);
+    }
+
+    /**
+     * Returns the reorder code.
+     *
+     * @return the reorder code. May be <tt>null</tt>
+     */
+    public String getReorderCode() {
+        return bean.getString("reorderCode");
+    }
+
+    /**
+     * Sets the reorder description.
+     *
+     * @param description the reorder description. May be <tt>null</tt>
+     */
+    public void setReorderDescription(String description) {
+        bean.setValue("reorderDescription", description);
+    }
+
+    /**
+     * Returns the reorder description.
+     *
+     * @return the reorder description. May be <tt>null</tt>
+     */
+    public String getReorderDescription() {
+        return bean.getString("reorderDescription");
+    }
+
+    /**
+     * Sets the bar code.
+     *
+     * @param barCode the bar code. May be <tt>null</tt>
+     */
+    public void setBarCode(String barCode) {
+        bean.setValue("barCode", barCode);
+    }
+
+    /**
+     * Returns the bar code.
+     *
+     * @return the bar code. May be <tt>null</tt>
+     */
+    public String getBarCode() {
+        return bean.getString("barCode");
+    }
+
+    /**
+     * Sets the package size.
+     *
+     * @param size the package size
+     */
+    public void setPackageSize(int size) {
+        bean.setValue("packageSize", size);
+    }
+
+    /**
+     * Returns the package size.
+     *
+     * @return the package size
+     */
+    public int getPackageSize() {
+        return bean.getInt("packageSize");
+    }
+
+    /**
+     * Sets the package units.
+     *
+     * @param units the package units. May be <tt>null</tt>
+     */
+    public void setPackageUnits(String units) {
+        bean.setValue("packageUnits", units);
+    }
+
+    /**
+     * Returns the package units.
+     *
+     * @return the package units
+     */
+    public String getPackageUnits() {
+        return bean.getString("packageUnits");
+    }
+
+    /**
+     * Sets the list price.
+     *
+     * @param price the list price. May be <tt>null</tt>
+     */
+    public void setListPrice(BigDecimal price) {
+        bean.setValue("listPrice", price);
+    }
+
+    /**
+     * Returns the list price.
+     *
+     * @return the list price. May be <tt>null</tt>
+     */
+    public BigDecimal getListPrice() {
+        return bean.getBigDecimal("listPrice");
+    }
+
+    /**
+     * Sets the nett price.
+     *
+     * @param price the nett price. MAy be <tt>null</tt>
+     */
+    public void setNettPrice(BigDecimal price) {
+        bean.setValue("nettPrice", price);
+    }
+
+    /**
+     * Returns the nett price.
+     *
+     * @return the nett price
+     */
+    public BigDecimal getNettPrice() {
+        return bean.getBigDecimal("nettPrice");
+    }
+
+    /**
+     * Saves the underlying relationship.
+     *
+     * @throws ArchetypeServiceException if the object can't be saved
+     */
+    public void save() {
+        bean.save();
+    }
+
+}

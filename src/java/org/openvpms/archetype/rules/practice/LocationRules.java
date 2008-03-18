@@ -98,4 +98,15 @@ public class LocationRules {
                 location, "workLists", service);
     }
 
+    /**
+     * Returns the default stock location associated with a location.
+     *
+     * @param location the location
+     * @return the default location or <tt>null</tt> if none is found
+     */
+    public Party getDefaultStockLocation(Party location) {
+        return (Party) EntityRelationshipHelper.getDefaultTarget(
+                location, "stockLocations", service);
+    }
+
 }
