@@ -29,6 +29,7 @@ import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Validator;
 
+import java.util.Collection;
 import java.util.List;
 
 
@@ -87,6 +88,16 @@ public interface CollectionPropertyEditor extends Saveable {
      * @return the associated editor, or <code>null</code> if none is found
      */
     IMObjectEditor getEditor(IMObject object);
+
+    /**
+     * Returns the editors.
+     * <p/>
+     * There may be fewer editors than there are objects in the collection,
+     * as objects may not have an associated editor.
+     *
+     * @return the editors
+     */
+    Collection<IMObjectEditor> getEditors();
 
     /**
      * Determines if the collection has been modified.

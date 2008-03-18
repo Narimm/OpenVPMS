@@ -18,7 +18,11 @@
 
 package org.openvpms.web.component.util;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+
 import java.lang.reflect.Array;
+import java.util.Collection;
 
 
 /**
@@ -43,11 +47,28 @@ public class CollectionHelper {
      * Concatenates a string array with strings.
      *
      * @param array the string array
-     * @param elts the elements to add
+     * @param elts  the elements to add
      * @return the concatenation of the arguments
      */
     public static String[] concat(String[] array, String ... elts) {
         return concat(String.class, array, elts);
+    }
+
+    /**
+     * Finds the first element in the given collection which matches the given
+     * predicate.
+     * <p/>
+     * If the input collection or predicate is null, or no element of the
+     * collection matches the predicate, null is returned.
+     *
+     * @param collection the collection to search. May be <tt>null</tt>
+     * @param predicate  the predicate to use. May be <tt>null</tt>
+     * @return the first element of the collection which matches the predicate
+     *         or <Tt>null</tt> if none could be found
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T find(Collection<T> collection, Predicate predicate) {
+        return (T) CollectionUtils.find(collection, predicate);
     }
 
     /**

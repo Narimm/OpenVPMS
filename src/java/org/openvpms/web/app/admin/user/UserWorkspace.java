@@ -19,8 +19,7 @@
 package org.openvpms.web.app.admin.user;
 
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 
 
 /**
@@ -29,13 +28,14 @@ import org.openvpms.web.app.subsystem.ShortNameList;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class UserWorkspace extends CRUDWorkspace<User> {
+public class UserWorkspace extends BasicCRUDWorkspace<User> {
 
     /**
      * Constructs a new <tt>UserWorkspace</tt>.
      */
     public UserWorkspace() {
-        super("admin", "user", new ShortNameList("security.user*"), User.class);
+        super("admin", "user");
+        setArchetypes(User.class, "security.user*");
     }
 
 }

@@ -21,8 +21,7 @@ package org.openvpms.web.app.admin.lookup;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -33,13 +32,14 @@ import org.openvpms.web.system.ServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class LookupWorkspace extends CRUDWorkspace<Lookup> {
+public class LookupWorkspace extends BasicCRUDWorkspace<Lookup> {
 
     /**
      * Construct a new <tt>LookupWorkspace</tt>.
      */
     public LookupWorkspace() {
-        super("admin", "lookup", new ShortNameList("lookup.*"), Lookup.class);
+        super("admin", "lookup");
+        setArchetypes(Lookup.class, "lookup.*");
     }
 
     /**

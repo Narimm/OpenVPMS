@@ -29,9 +29,6 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -40,6 +37,7 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.BasicSelector;
 import org.openvpms.web.component.im.select.Selector;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.RowFactory;
@@ -48,7 +46,8 @@ import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Workspace that provides a selector to select an object for viewing.
+ * Workspace that provides an optional selector to select the object for
+ * viewing.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -57,29 +56,14 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
         extends AbstractWorkspace<T> {
 
     /**
-     * The archetype short names that this may process.
+     * The archetypes that this may process.
      */
-    private final ShortNames shortNames;
-
-    /**
-     * The type of the objects that this operates on.
-     */
-    private final Class<T> type;
-
-    /**
-     * The current object. May be <tt>null</tt>.
-     */
-    private T object;
+    private Archetypes<T> archetypes;
 
     /**
      * The selector.
      */
     private Selector<T> selector;
-
-    /**
-     * Localised type display name (e.g, Customer, Product).
-     */
-    private final String typeName;
 
     /**
      * The root component.
@@ -89,27 +73,70 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
 
     /**
      * Constructs a new <tt>AbstractViewWorkspace</tt>.
+     * <p/>
+     * The {@link #setArchetypes} method must be invoked to set archetypes
+     * that the workspace supports, before performing any operations.
      *
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identfifier
-     * @param shortNames  the archetype short names that this operates on
-     * @param type        the type that this operates on
+     */
+    public AbstractViewWorkspace(String subsystemId, String workspaceId) {
+        this(subsystemId, workspaceId, null);
+    }
+
+    /**
+     * Constructs a new <tt>AbstractViewWorkspace</tt>.
+     * <p/>
+     * If no archetypes are supplied, the {@link #setArchetypes} method must
+     * before performing any operations.
+     *
+     * @param subsystemId the subsystem localisation identifier
+     * @param workspaceId the workspace localisation identfifier
+     * @param archetypes  the archetype that this operates on.
+     *                    May be <tt>null</tt>
      */
     public AbstractViewWorkspace(String subsystemId, String workspaceId,
-                                 ShortNames shortNames, Class<T> type) {
+                                 Archetypes<T> archetypes) {
+        this(subsystemId, workspaceId, archetypes, true);
+    }
+
+    /**
+     * Constructs a new <tt>AbstractViewWorkspace</tt>.
+     * <p/>
+     * If no archetypes are supplied, the {@link #setArchetypes} method must
+     * before performing any operations.
+     *
+     * @param subsystemId  the subsystem localisation identifier
+     * @param workspaceId  the workspace localisation identfifier
+     * @param archetypes   the archetype that this operates on.
+     *                     May be <tt>null</tt>
+     * @param showSelector if <tt>true</tt>, show the selector
+     */
+    public AbstractViewWorkspace(String subsystemId, String workspaceId,
+                                 Archetypes<T> archetypes,
+                                 boolean showSelector) {
         super(subsystemId, workspaceId);
-        this.shortNames = shortNames;
-        this.type = type;
-        selector = new BasicSelector<T>();
+        this.archetypes = archetypes;
+        if (showSelector) {
+            selector = new BasicSelector<T>();
+            selector.getSelect().addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent actionEvent) {
+                    onSelect();
+                }
+            });
+        }
+    }
 
-        String id = getSubsystemId() + "." + getWorkspaceId();
-        typeName = Messages.get(id + ".type");
-
-        selector.getSelect().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                onSelect();
-            }
-        });
+    /**
+     * Sets the current object, updating the selector if present.
+     *
+     * @param object the object. May be <tt>null</tt>
+     */
+    public void setObject(T object) {
+        super.setObject(object);
+        if (selector != null) {
+            selector.setObject(object);
+        }
     }
 
     /**
@@ -120,32 +147,49 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      *         otherwise <tt>false</tt>
      */
     public boolean canHandle(String shortName) {
-        boolean result = false;
-        try {
-            result = shortNames.contains(shortName);
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-        return result;
+        return archetypes.contains(shortName);
     }
 
     /**
-     * Sets the current object.
+     * Returns the class type that this operates on.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @return the class type that this operates on
      */
-    public void setObject(T object) {
-        this.object = object;
-        selector.setObject(object);
+    protected Class<T> getType() {
+        return archetypes.getType();
     }
 
     /**
-     * Returns the current object.
+     * Sets the archetypes that this operates on.
      *
-     * @return the current object. May be <tt>null</tt>
+     * @param archetypes the archetypes
      */
-    public T getObject() {
-        return object;
+    protected void setArchetypes(Archetypes<T> archetypes) {
+        this.archetypes = archetypes;
+    }
+
+    /**
+     * Sets the archetypes that this operates on.
+     * <p/>
+     * The archetypes are assigned a localised display name using the
+     * resource bundle key:
+     * <em>&lt;subsystemId&gt;.&lt;workspaceId&gt;.type</em>
+     *
+     * @param type       the type that the short names represent
+     * @param shortNames the archetype short names
+     */
+    protected void setArchetypes(Class<T> type, String ... shortNames) {
+        String key = getSubsystemId() + "." + getWorkspaceId() + ".type";
+        setArchetypes(Archetypes.create(shortNames, type, Messages.get(key)));
+    }
+
+    /**
+     * Returns the archetype this operates on.
+     *
+     * @return the archetypes, or <tt>null</tt> if none has been set
+     */
+    protected Archetypes<T> getArchetypes() {
+        return archetypes;
     }
 
     /**
@@ -157,11 +201,14 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     protected Component doLayout() {
         root = createRootComponent();
         Component heading = super.doLayout();
-        Component select = selector.getComponent();
-        Row wrapper = RowFactory.create("AbstractViewWorkspace.Selector",
-                                        select);
+        Column top = ColumnFactory.create(heading);
+        if (selector != null) {
+            Component select = selector.getComponent();
+            Row wrapper = RowFactory.create("AbstractViewWorkspace.Selector",
+                                            select);
+            top.add(wrapper);
+        }
 
-        Column top = ColumnFactory.create(heading, wrapper);
         root.add(top);
         doLayout(root);
         return root;
@@ -185,8 +232,11 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      * @return a root split pane
      */
     protected SplitPane createRootComponent() {
-        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                                       "AbstractViewWorkspace.Layout");
+        int orientation = SplitPane.ORIENTATION_VERTICAL;
+        String style = (selector != null)
+                ? "AbstractViewWorkspace.Layout"
+                : "AbstractViewWorkspace.LayoutNoSelector";
+        return SplitPaneFactory.create(orientation, style);
     }
 
     /**
@@ -197,75 +247,15 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     protected abstract void doLayout(Component container);
 
     /**
-     * Returns the archetype short names that this operates on.
-     *
-     * @return the archetype short names
-     */
-    protected ShortNames getShortNames() {
-        return shortNames;
-    }
-
-    /**
-     * Returns the class type that this operates on.
-     *
-     * @return the class type that this operates on
-     */
-    protected Class<T> getType() {
-        return type;
-    }
-
-    /**
-     * Returns a localised type display name.
-     *
-     * @return a localised type display name
-     */
-    protected String getTypeName() {
-        return typeName;
-    }
-
-    /**
-     * Returns the selector.
-     *
-     * @return the selector
-     */
-    protected Selector getSelector() {
-        return selector;
-    }
-
-    /**
-     * Create a new browser.
-     *
-     * @return a new browser
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
-     */
-    protected Browser<T> createBrowser() {
-        Query<T> query = createQuery();
-        SortConstraint[] sort = {new NodeSortConstraint("name", true)};
-        return BrowserFactory.create(query, sort);
-    }
-
-    /**
-     * Create a new query.
-     *
-     * @return a new query
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
-     */
-    protected Query<T> createQuery() {
-        return QueryFactory.create(shortNames.getShortNames(),
-                                   GlobalContext.getInstance(), type);
-    }
-
-    /**
      * Invoked when the 'select' button is pressed. This pops up an {@link
      * Browser} to select an object.
      */
     protected void onSelect() {
         try {
-            final Browser<T> browser = createBrowser();
+            final Browser<T> browser = createSelectBrowser();
 
-            String title = Messages.get("imobject.select.title", typeName);
+            String title = Messages.get("imobject.select.title",
+                                        getArchetypes().getDisplayName());
             final BrowserDialog<T> popup = new BrowserDialog<T>(
                     title, browser);
 
@@ -291,6 +281,29 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
      */
     protected void onSelected(T object) {
         setObject(object);
+    }
+
+    /**
+     * Creates a new browser to select an object.
+     *
+     * @return a new browser
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
+     */
+    protected Browser<T> createSelectBrowser() {
+        return BrowserFactory.create(createSelectQuery());
+    }
+
+    /**
+     * Creates a new query to select an object.
+     *
+     * @return a new query
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
+     */
+    protected Query<T> createSelectQuery() {
+        return QueryFactory.create(getArchetypes().getShortNames(),
+                                   GlobalContext.getInstance(), getType());
     }
 
 }

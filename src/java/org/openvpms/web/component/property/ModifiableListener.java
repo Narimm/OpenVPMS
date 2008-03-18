@@ -13,7 +13,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id:ModifiableListener.java 2147 2007-06-21 04:16:11Z tanderson $
  */
 
 package org.openvpms.web.component.property;
@@ -25,7 +25,7 @@ import java.util.EventListener;
  * Listener for {@link Modifiable} events.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate:2007-06-21 04:16:11Z $
  */
 public interface ModifiableListener extends EventListener {
 

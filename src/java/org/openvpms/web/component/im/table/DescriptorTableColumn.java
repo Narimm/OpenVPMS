@@ -18,9 +18,17 @@
 
 package org.openvpms.web.component.im.table;
 
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.QueryHelper;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.property.IMObjectProperty;
+import org.openvpms.web.component.property.Property;
 
 import java.util.Map;
 
@@ -76,12 +84,13 @@ public class DescriptorTableColumn extends TableColumn {
     /**
      * Returns the value of the cell.
      *
-     * @param context the context
+     * @param object the context
      * @return the value of the cell
      */
-    public Object getValue(IMObject context) {
-        NodeDescriptor descriptor = getDescriptor(context);
-        return (descriptor != null) ? descriptor.getValue(context) : null;
+    public Component getValue(IMObject object, LayoutContext context) {
+        IMObjectComponentFactory factory = context.getComponentFactory();
+        Property property = new IMObjectProperty(object, descriptor);
+        return factory.create(property, object).getComponent();
     }
 
     /**
@@ -103,6 +112,29 @@ public class DescriptorTableColumn extends TableColumn {
         String shortName = object.getArchetypeId().getShortName();
         NodeDescriptor result = descriptors.get(shortName);
         return (result != null) ? result : descriptor;
+    }
+
+    /**
+     * Determines if this column can be sorted on.
+     *
+     * @return <tt>true</tt> if this column can be sorted on, otherwise
+     *         <tt>false</tt>
+     */
+    public boolean isSortable() {
+        // can only sort on top-level or participation nodes
+        return (!descriptor.isCollection() &&
+                descriptor.getPath().lastIndexOf("/") <= 0)
+                || QueryHelper.isParticipationNode(descriptor);
+    }
+
+    /**
+     * Creates a new sort constraint for this column.
+     *
+     * @param ascending whether to sort in ascending or descending order
+     * @return a new sort cosntraint
+     */
+    public SortConstraint createSortConstraint(boolean ascending) {
+        return new NodeSortConstraint(descriptor.getName(), ascending);
     }
 
 }

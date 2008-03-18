@@ -20,13 +20,16 @@ package org.openvpms.web.app.supplier;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -35,7 +38,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PaymentWorkspace extends SupplierFinancialActWorkspace {
+public class PaymentWorkspace extends SupplierActWorkspace<FinancialAct> {
 
     /**
      * Payment and refund shortnames supported by the workspace.
@@ -49,6 +52,7 @@ public class PaymentWorkspace extends SupplierFinancialActWorkspace {
      */
     public PaymentWorkspace() {
         super("supplier", "payment");
+        setChildArchetypes(FinancialAct.class, SHORT_NAMES);
     }
 
     /**
@@ -57,20 +61,18 @@ public class PaymentWorkspace extends SupplierFinancialActWorkspace {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        String type = Messages.get("supplier.payment.createtype");
-        return new PaymentCRUDWindow(type, SHORT_NAMES);
+        return new PaymentCRUDWindow(getChildArchetypes());
     }
 
     /**
      * Creates a new query.
      *
-     * @param customer the customer to query acts for
      * @return a new query
      */
-    protected ActQuery<FinancialAct> createQuery(Party customer) {
+    protected ActQuery<FinancialAct> createQuery() {
         String[] statuses = {FinancialActStatus.IN_PROGRESS,
                              FinancialActStatus.ON_HOLD};
-        return new DefaultActQuery<FinancialAct>(customer, "supplier",
+        return new DefaultActQuery<FinancialAct>(getObject(), "supplier",
                                                  "participation.supplier",
                                                  SHORT_NAMES, statuses);
     }
@@ -85,17 +87,24 @@ public class PaymentWorkspace extends SupplierFinancialActWorkspace {
     protected void onSaved(FinancialAct object, boolean isNew) {
         super.onSaved(object, isNew);
         if (FinancialActStatus.POSTED.equals(object.getStatus())) {
-            actSelected(null);
+            onBrowserSelected(null);
         }
     }
 
+
     /**
-     * Creates a new table model to display acts.
+     * Creates a new browser to query and display acts.
+     * Default sort order is by descending starttime.
      *
-     * @return a new table model.
+     * @param query the query
+     * @return a new browser
      */
-    protected IMObjectTableModel<FinancialAct> createTableModel() {
-        return new ActAmountTableModel<FinancialAct>(true, true);
+    @Override
+    protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
+        SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
+        IMObjectTableModel<FinancialAct> model
+                = new ActAmountTableModel<FinancialAct>(true, true);
+        return BrowserFactory.create(query, sort, model);
     }
 
 }

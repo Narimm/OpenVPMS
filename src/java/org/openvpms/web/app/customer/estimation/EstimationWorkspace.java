@@ -20,13 +20,11 @@ package org.openvpms.web.app.customer.estimation;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.util.FastLookupHelper;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
@@ -44,6 +42,7 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
      */
     public EstimationWorkspace() {
         super("customer", "estimation");
+        setChildArchetypes(Act.class, "act.customerEstimation");
     }
 
 
@@ -53,22 +52,20 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        String type = Messages.get("customer.estimation.createtype");
-        return new EstimationCRUDWindow(type, "act.customerEstimation");
+        return new EstimationCRUDWindow(getChildArchetypes());
     }
 
     /**
      * Creates a new query.
      *
-     * @param customer the customer to query acts for
      * @return a new query
      */
-    protected ActQuery<Act> createQuery(Party customer) {
+    protected ActQuery<Act> createQuery() {
         List<Lookup> lookups = FastLookupHelper.getLookups(
                 "act.customerEstimation", "status");
-        return new DefaultActQuery<Act>(customer, "customer",
+        return new DefaultActQuery<Act>(getObject(), "customer",
                                         "participation.customer",
-                                        new String[]{"act.customerEstimation"},
+                                        getChildArchetypes().getShortNames(),
                                         lookups);
     }
 }

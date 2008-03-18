@@ -33,11 +33,11 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.doc.UploadDialog;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -91,14 +91,10 @@ public class ArchetypeCRUDWindow
     /**
      * Constructs a new <tt>ArchetypeCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create.
-     *                   If <code>null</code> subclass must override
-     *                   {@link #getShortNames}
+     * @param archetypes the archetypes that this may create.
      */
-    public ArchetypeCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public ArchetypeCRUDWindow(Archetypes<ArchetypeDescriptor> archetypes) {
+        super(archetypes);
     }
 
     /**

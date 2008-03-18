@@ -20,9 +20,8 @@ package org.openvpms.web.app.product;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 
 
@@ -32,13 +31,14 @@ import org.openvpms.web.component.app.GlobalContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InformationWorkspace extends CRUDWorkspace<Product> {
+public class InformationWorkspace extends BasicCRUDWorkspace<Product> {
 
     /**
      * Construct a new <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
-        super("product", "info", new ShortNameList("product.*"), Product.class);
+        super("product", "info");
+        setArchetypes(Product.class, "product.*");
     }
 
     /**
@@ -72,7 +72,7 @@ public class InformationWorkspace extends CRUDWorkspace<Product> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Product> createCRUDWindow() {
-        return new ProductCRUDWindow(getTypeName(), getShortNames());
+        return new ProductCRUDWindow(getArchetypes());
     }
 
 }

@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -41,6 +40,7 @@ import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.account.EditAccountActDialog;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -115,12 +115,10 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     /**
      * Create a new <tt>AccountCRUDWindow</tt>.
      *
-     * @param type      display name for the types of objects that this may
-     *                  create
-     * @param shortName the archetype short name
+     * @param archetypes the archetypes that this may create
      */
-    public AccountCRUDWindow(String type, String shortName) {
-        super(type, new ShortNameList(shortName));
+    public AccountCRUDWindow(Archetypes<FinancialAct> archetypes) {
+        super(archetypes);
     }
 
     /**
@@ -219,8 +217,10 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
                                "act.customerAccountCreditAdjust",
                                "act.customerAccountInitialBalance",
                                "act.customerAccountBadDebt"};
-        onCreate(Messages.get("customer.account.createtype"),
-                 new ShortNameList(shortNames));
+        Archetypes<FinancialAct> archetypes = Archetypes.create(
+                shortNames, FinancialAct.class,
+                Messages.get("customer.account.createtype"));
+        onCreate(archetypes);
     }
 
     /**

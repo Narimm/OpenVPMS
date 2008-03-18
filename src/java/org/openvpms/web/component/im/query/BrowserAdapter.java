@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.focus.FocusGroup;
 
 import java.util.ArrayList;
@@ -81,7 +80,7 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
      *
      * @param object the object to select
      */
-    public void setSelected(Party object) {
+    public void setSelected(T object) {
         if (object == null) {
             browser.setSelected(null);
         } else {

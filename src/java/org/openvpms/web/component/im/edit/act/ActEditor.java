@@ -40,43 +40,44 @@ public abstract class ActEditor extends AbstractActEditor {
     /**
      * The act item editor.
      */
-    private ActRelationshipCollectionEditor _editor;
+    private ActRelationshipCollectionEditor editor;
 
 
     /**
-     * Construct a new <code>ActEditor</code>.
+     * Construct a new <tt>ActEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>
+     * @param parent  the parent object. May be <tt>null</tt>
+     * @param context the layout context. May be <tt>null</tt>
      */
     protected ActEditor(Act act, IMObject parent, LayoutContext context) {
         this(act, parent, true, context);
     }
 
     /**
-     * Construct a new <code>ActEditor</code>.
+     * Construct a new <tt>ActEditor</tt>.
      *
      * @param act       the act to edit
-     * @param parent    the parent object. May be <code>null</code>
-     * @param editItems if <code>true</code> create an editor for any items node
-     * @param context   the layout context. May be <code>null</code>
+     * @param parent    the parent object. May be <tt>null</tt>
+     * @param editItems if <tt>true</tt> create an editor for any items node
+     * @param context   the layout context. May be <tt>null</tt>
      */
     protected ActEditor(Act act, IMObject parent, boolean editItems,
                         LayoutContext context) {
         super(act, parent, context);
         if (editItems) {
-            CollectionProperty items = (CollectionProperty) getProperty(
-                    "items");
+            CollectionProperty items
+                    = (CollectionProperty) getProperty("items");
             if (items != null && !items.isHidden()) {
-                _editor = (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(
-                        items, act, getLayoutContext());
-                _editor.addModifiableListener(new ModifiableListener() {
+                editor = (ActRelationshipCollectionEditor)
+                        IMObjectCollectionEditorFactory.create(
+                                items, act, getLayoutContext());
+                editor.addModifiableListener(new ModifiableListener() {
                     public void modified(Modifiable modifiable) {
-                        updateTotals();
+                        onItemsChanged();
                     }
                 });
-                getEditors().add(_editor);
+                getEditors().add(editor);
             }
         }
     }
@@ -84,10 +85,10 @@ public abstract class ActEditor extends AbstractActEditor {
     /**
      * Returns the act collection editor.
      *
-     * @return the act collection editor. May be <code>null</code>
+     * @return the act collection editor. May be <tt>null</tt>
      */
     protected ActRelationshipCollectionEditor getEditor() {
-        return _editor;
+        return editor;
     }
 
     /**
@@ -97,17 +98,19 @@ public abstract class ActEditor extends AbstractActEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        if (_editor != null) {
-            return new ActLayoutStrategy(_editor);
+        if (editor != null) {
+            return new ActLayoutStrategy(editor);
         }
         return new ActLayoutStrategy(false);
     }
 
     /**
-     * Update totals when an act item changes.
+     * Invoked when an act item changes.
      * <p/>
-     * todo - workaround for OVPMS-211
+     * This implementation is a no-op.
      */
-    protected abstract void updateTotals();
+    protected void onItemsChanged() {
+
+    }
 
 }

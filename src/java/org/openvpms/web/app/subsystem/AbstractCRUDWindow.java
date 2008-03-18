@@ -39,6 +39,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
@@ -64,14 +65,9 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
     private T object;
 
     /**
-     * Short names of archetypes that this may create.
+     * The archetypes that this may create.
      */
-    private final ShortNames shortNames;
-
-    /**
-     * Localised type display name (e.g, Customer, Product).
-     */
-    private final String type;
+    private final Archetypes<T> archetypes;
 
     /**
      * The listener.
@@ -130,17 +126,12 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
 
 
     /**
-     * Constructs a new <code>AbstractCRUDWindow</code>.
+     * Constructs a new <tt>AbstractCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create.
-     *                   If <code>null</code> subclass must override
-     *                   {@link #getShortNames}
+     * @param archetypes the archetypes that this may create
      */
-    public AbstractCRUDWindow(String type, ShortNames shortNames) {
-        this.type = type;
-        this.shortNames = shortNames;
+    public AbstractCRUDWindow(Archetypes<T> archetypes) {
+        this.archetypes = archetypes;
     }
 
     /**
@@ -176,7 +167,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
     /**
      * Sets the object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     public void setObject(T object) {
         this.object = object;
@@ -192,7 +183,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
     /**
      * Returns the object.
      *
-     * @return the object, or <code>null</code> if there is none set
+     * @return the object, or <tt>null</tt> if there is none set
      */
     public T getObject() {
         return object;
@@ -201,7 +192,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
     /**
      * Returns the object's archetype descriptor.
      *
-     * @return the object's archetype descriptor or <code>null</code> if there
+     * @return the object's archetype descriptor or <tt>null</tt> if there
      *         is no object set
      */
     public ArchetypeDescriptor getArchetypeDescriptor() {
@@ -217,25 +208,16 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * Invoked when the 'new' button is pressed.
      */
     public void onCreate() {
-        onCreate(type, getShortNames());
+        onCreate(getArchetypes());
     }
 
     /**
-     * Returns display name for the types of objects that this may create.
+     * Returns the archetypes that this may create.
      *
-     * @return the display name for the types of objects that this may create
+     * @return the archetypes
      */
-    protected String getTypeDisplayName() {
-        return type;
-    }
-
-    /**
-     * Returns the short names of the archetypes that this may create.
-     *
-     * @return the short names
-     */
-    protected ShortNames getShortNames() {
-        return shortNames;
+    protected Archetypes getArchetypes() {
+        return archetypes;
     }
 
     /**
@@ -356,10 +338,9 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
     /**
      * Invoked when the 'new' button is pressed.
      *
-     * @param type       localised type display name
-     * @param shortNames the short names
+     * @param archetypes the archetypes
      */
-    protected void onCreate(String type, ShortNames shortNames) {
+    protected void onCreate(Archetypes archetypes) {
         IMObjectCreatorListener listener = new IMObjectCreatorListener() {
             public void created(IMObject object) {
                 onCreated((T) object);
@@ -370,7 +351,8 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
             }
         };
 
-        IMObjectCreator.create(type, shortNames.getShortNames(), listener);
+        IMObjectCreator.create(archetypes.getDisplayName(),
+                               archetypes.getShortNames(), listener);
     }
 
     /**
@@ -395,7 +377,8 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
                 // make sure the latest instance is being used.
                 object = IMObjectHelper.reload(object);
                 if (object == null) {
-                    ErrorDialog.show(Messages.get("imobject.noexist"), type);
+                    ErrorDialog.show(Messages.get("imobject.noexist"),
+                                     archetypes.getDisplayName());
                 } else {
                     edit(object);
                 }
@@ -435,7 +418,8 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
     protected void onDelete() {
         T object = IMObjectHelper.reload(getObject());
         if (object == null) {
-            ErrorDialog.show(Messages.get("imobject.noexist"), type);
+            ErrorDialog.show(Messages.get("imobject.noexist"),
+                             archetypes.getDisplayName());
         } else {
             IMObjectDeletor.delete(object, new IMObjectDeletorListener<T>() {
                 public void deleted(T object) {
@@ -456,7 +440,7 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      * Invoked when the 'print' button is pressed.
      */
     protected void onPrint() {
-    	print(getObject());
+        print(getObject());
     }
 
     /**

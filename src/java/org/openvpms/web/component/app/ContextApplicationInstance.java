@@ -153,23 +153,36 @@ public abstract class ContextApplicationInstance
             location = practiceRules.getDefaultLocation(practice);
         }
 
-        // If no location then return
-        if (location == null) {
-            return;
-        }
         context.setLocation(location);
-
         updateLocation(location);
     }
 
+    /**
+     * Updates the context when the location changes.
+     *
+     * @param location the location. May be <tt>null</tt>
+     */
     private void updateLocation(Party location) {
-        LocationRules rules = new LocationRules();
+        Party deposit = null;
+        Party till = null;
+        Party schedule = null;
+        Party workList = null;
+        Party stockLocation = null;
 
-        // initialise the defaults for the location
-        context.setDeposit(rules.getDefaultDepositAccount(location));
-        context.setTill(rules.getDefaultTill(location));
-        context.setSchedule(rules.getDefaultSchedule(location));
-        context.setWorkList(rules.getDefaultWorkList(location));
+        if (location != null) {
+            // initialise the defaults for the location
+            LocationRules rules = new LocationRules();
+            deposit = rules.getDefaultDepositAccount(location);
+            till = rules.getDefaultTill(location);
+            schedule = rules.getDefaultSchedule(location);
+            workList = rules.getDefaultWorkList(location);
+            stockLocation = rules.getDefaultStockLocation(location);
+        }
+        context.setDeposit(deposit);
+        context.setTill(till);
+        context.setSchedule(schedule);
+        context.setWorkList(workList);
+        context.setStockLocation(stockLocation);
     }
 
 }

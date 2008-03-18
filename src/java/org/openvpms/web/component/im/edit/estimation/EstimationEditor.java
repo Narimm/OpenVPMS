@@ -61,8 +61,7 @@ public class EstimationEditor extends ActEditor {
     /**
      * Update totals when an act item changes.
      */
-    protected void updateTotals() {
-        // @todo - workaround for OVPMS-211
+    protected void onItemsChanged() {
         Property highTotal = getProperty("highTotal");
         Property lowTotal = getProperty("lowTotal");
 

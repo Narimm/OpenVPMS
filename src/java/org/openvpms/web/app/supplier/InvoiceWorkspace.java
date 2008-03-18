@@ -21,14 +21,15 @@ package org.openvpms.web.app.supplier;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.im.util.FastLookupHelper;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
@@ -39,13 +40,14 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InvoiceWorkspace extends SupplierFinancialActWorkspace {
+public class InvoiceWorkspace extends SupplierActWorkspace<FinancialAct> {
 
     /**
      * Constructs a new <tt>InvoiceWorkspace</tt>.
      */
     public InvoiceWorkspace() {
         super("supplier", "invoice");
+        setChildArchetypes(FinancialAct.class, "act.supplierAccountCharges*");
     }
 
     /**
@@ -54,22 +56,20 @@ public class InvoiceWorkspace extends SupplierFinancialActWorkspace {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        String type = Messages.get("supplier.invoice.createtype");
-        return new InvoiceCRUDWindow(type, "act.supplierAccountCharges*");
+        return new InvoiceCRUDWindow(getChildArchetypes());
     }
 
     /**
      * Creates a new query.
      *
-     * @param customer the customer to query acts for
      * @return a new query
      */
-    protected ActQuery<FinancialAct> createQuery(Party customer) {
+    protected ActQuery<FinancialAct> createQuery() {
         List<Lookup> lookups = FastLookupHelper.getLookups(
                 "act.supplierAccountChargesInvoice", "status");
         return new DefaultActQuery<FinancialAct>(
-                customer, "supplier", "participation.supplier",
-                "act.supplierAccountCharges*", lookups, POSTED);
+                getObject(), "supplier", "participation.supplier",
+                getChildArchetypes().getShortNames(), lookups, POSTED);
     }
 
     /**
@@ -82,16 +82,21 @@ public class InvoiceWorkspace extends SupplierFinancialActWorkspace {
     protected void onSaved(FinancialAct object, boolean isNew) {
         super.onSaved(object, isNew);
         if (POSTED.equals(object.getStatus())) {
-            actSelected(null);
+            onBrowserSelected(null);
         }
     }
 
     /**
-     * Creates a new table model to display acts.
+     * Creates a new browser to query and display acts.
      *
-     * @return a new table model.
+     * @param query the query
+     * @return a new browser
      */
-    protected IMObjectTableModel<FinancialAct> createTableModel() {
-        return new ActAmountTableModel<FinancialAct>(true, true);
+    @Override
+    protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
+        IMObjectTableModel<FinancialAct> model
+                = new ActAmountTableModel<FinancialAct>(true, true);
+        return BrowserFactory.create(query, null, model);
     }
+
 }

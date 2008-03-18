@@ -21,15 +21,9 @@ package org.openvpms.web.app.supplier;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.app.subsystem.ActWorkspace;
-import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.app.subsystem.ShortNames;
+import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserFactory;
+import org.openvpms.web.component.im.util.Archetypes;
 
 
 /**
@@ -39,7 +33,7 @@ import org.openvpms.web.component.im.query.BrowserFactory;
  * @version $LastChangedDate$
  */
 public abstract class SupplierActWorkspace<T extends Act>
-        extends ActWorkspace<Party, T> {
+        extends BrowserCRUDWorkspace<Party, T> {
 
     /**
      * Constructs a new <tt>SupplierActWorkspace</tt>.
@@ -48,7 +42,7 @@ public abstract class SupplierActWorkspace<T extends Act>
      * @param workspaceId the workspace localisation identfifier
      */
     public SupplierActWorkspace(String subsystemId, String workspaceId) {
-        this(subsystemId, workspaceId, new ShortNameList("party.supplier*"));
+        this(subsystemId, workspaceId, null);
     }
 
     /**
@@ -56,11 +50,12 @@ public abstract class SupplierActWorkspace<T extends Act>
      *
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identfifier
-     * @param shortNames  the archetype short names that this operates on
+     * @param archetypes  the archetype short names that this operates on
      */
     public SupplierActWorkspace(String subsystemId, String workspaceId,
-                                ShortNames shortNames) {
-        super(subsystemId, workspaceId, shortNames, Party.class);
+                                Archetypes<T> archetypes) {
+        super(subsystemId, workspaceId, null, archetypes);
+        setArchetypes(Party.class, "party.supplier*");
     }
 
     /**
@@ -72,8 +67,6 @@ public abstract class SupplierActWorkspace<T extends Act>
     public void setObject(Party object) {
         super.setObject(object);
         GlobalContext.getInstance().setSupplier(object);
-        layoutWorkspace(object);
-        initQuery(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -97,32 +90,6 @@ public abstract class SupplierActWorkspace<T extends Act>
     @Override
     protected Party getLatest() {
         return getLatest(GlobalContext.getInstance().getSupplier());
-    }
-
-    /**
-     * Lays out the component.
-     *
-     * @param container the container
-     */
-    @Override
-    protected void doLayout(Component container) {
-        Party latest = getLatest();
-        if (latest != getObject()) {
-            setObject(latest);
-        }
-    }
-
-    /**
-     * Creates a new browser to query and display acts.
-     * Default sort order is by descending starttime.
-     *
-     * @param query the query
-     * @return a new browser
-     */
-    @Override
-    protected Browser<T> createBrowser(ActQuery<T> query) {
-        SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
-        return BrowserFactory.create(query, sort, createTableModel());
     }
 
 }

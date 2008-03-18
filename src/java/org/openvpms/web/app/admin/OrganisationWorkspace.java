@@ -20,8 +20,7 @@ package org.openvpms.web.app.admin;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
 
 
@@ -31,14 +30,14 @@ import org.openvpms.web.component.app.GlobalContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class OrganisationWorkspace extends CRUDWorkspace<Party> {
+public class OrganisationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
      * Constructs a new <tt>OrganisationWorkspace</tt>.
      */
     public OrganisationWorkspace() {
-        super("admin", "organisation",
-              new ShortNameList("party.organisation*"), Party.class);
+        super("admin", "organisation");
+        setArchetypes(Party.class, "party.organisation*");
     }
 
     /**
@@ -61,6 +60,5 @@ public class OrganisationWorkspace extends CRUDWorkspace<Party> {
             GlobalContext.getInstance().setTill(object);
         }
     }
-
 
 }

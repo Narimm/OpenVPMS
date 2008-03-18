@@ -27,17 +27,18 @@ import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
+
 /**
- * CRUD window for invoices.
+ * CRUD window for products.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-11-15 17:59:45 +1100 (Thu, 15 Nov 2007) $
@@ -58,12 +59,10 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
     /**
      * Creates a new <tt>ProductCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the archetype short names
+     * @param archetypes the archetypes that thi may create
      */
-    public ProductCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public ProductCRUDWindow(Archetypes<Product> archetypes) {
+        super(archetypes);
     }
 
     /**
@@ -98,8 +97,8 @@ public class ProductCRUDWindow extends AbstractViewCRUDWindow<Product> {
         if (copy != null) {
             buttons.remove(copy);
             if (enable) {
-               buttons.add(copy);
-            } 
+                buttons.add(copy);
+            }
         }
     }
 

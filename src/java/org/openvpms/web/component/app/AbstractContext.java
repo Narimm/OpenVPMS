@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.app;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -65,7 +66,7 @@ public abstract class AbstractContext implements Context {
             CUSTOMER_SHORTNAME, PATIENT_SHORTNAME, SUPPLIER_SHORTNAME,
             PRODUCT_SHORTNAME, TILL_SHORTNAME, CLINICIAN_SHORTNAME,
             SCHEDULE_SHORTNAME, WORKLIST_SHORTNAME, LOCATION_SHORTNAME,
-            DEPOSIT_SHORTNAME};
+            STOCK_LOCATION_SHORTNAME, DEPOSIT_SHORTNAME};
 
     /**
      * The current schedule date.
@@ -151,6 +152,25 @@ public abstract class AbstractContext implements Context {
      */
     public Party getLocation() {
         return (Party) getObject(LOCATION_SHORTNAME);
+    }
+
+    /**
+     * Sets the current stock location.
+     *
+     * @param location the current location
+     */
+    public void setStockLocation(Party location) {
+        setObject(STOCK_LOCATION_SHORTNAME, location);
+    }
+
+    /**
+     * Returns the current stock location.
+     *
+     * @return the current stock location, or <tt>null</tt> if there is no
+     *         current location
+     */
+    public Party getStockLocation() {
+        return (Party) getObject(STOCK_LOCATION_SHORTNAME);
     }
 
     /**
@@ -384,7 +404,15 @@ public abstract class AbstractContext implements Context {
      * @param object the object to remove
      */
     public void removeObject(IMObject object) {
-        objects.values().remove(object);
+        if (object != null) {
+            objects.values().remove(object);
+            if (ObjectUtils.equals(object, user)) {
+                user = null;
+            }
+            if (ObjectUtils.equals(object, current)) {
+                current = null;
+            }
+        }
     }
 
     /**

@@ -22,16 +22,15 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
-import org.openvpms.web.app.subsystem.ActWorkspace;
+import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -40,7 +39,7 @@ import org.openvpms.web.component.util.SplitPaneFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class WorkListWorkspace extends ActWorkspace<Party, Act> {
+public class WorkListWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Short name of acts that this may create.
@@ -53,7 +52,10 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
      */
     public WorkListWorkspace() {
         super("workflow", "worklist",
-              new ShortNameList("party.organisationWorkList"), Party.class);
+              Archetypes.create("party.organisationWorkList", Party.class,
+                                Messages.get("workflow.worklist.type")),
+              Archetypes.create(ACT_SHORTNAME, Act.class,
+                                Messages.get("workflow.worklist.createtype")));
     }
 
     /**
@@ -65,8 +67,6 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
     public void setObject(Party object) {
         super.setObject(object);
         GlobalContext.getInstance().setWorkList(object);
-        layoutWorkspace(object);
-        initQuery(object);
         TaskQuery query = (TaskQuery) getQuery();
         if (query != null) {
             GlobalContext.getInstance().setWorkListDate(query.getDate());
@@ -118,7 +118,7 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
      */
     @Override
     protected Component createWorkspace() {
-        Component acts = getActs(getBrowser());
+        Component acts = GroupBoxFactory.create(getBrowser().getComponent());
         Component window = getCRUDWindow().getComponent();
         return SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
@@ -131,27 +131,23 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        String type = DescriptorHelper.getDisplayName(ACT_SHORTNAME);
-        ShortNameList shortNames = new ShortNameList(ACT_SHORTNAME);
-        return new TaskCRUDWindow(type, shortNames);
+        return new TaskCRUDWindow(getChildArchetypes());
     }
 
     /**
      * Creates a new query.
      *
-     * @param party the party to query acts for
      * @return a new query
      */
-    protected ActQuery<Act> createQuery(Party party) {
-        return new TaskQuery(party);
+    protected ActQuery<Act> createQuery() {
+        return new TaskQuery(getObject());
     }
 
     /**
      * Invoked when acts are queried. Selects the first available act, if any.
      */
     @Override
-    protected void onQuery() {
-        super.onQuery();
+    protected void onBrowserQuery() {
         TaskQuery query = (TaskQuery) getQuery();
         if (query != null) {
             GlobalContext.getInstance().setWorkListDate(query.getDate());
@@ -165,41 +161,9 @@ public class WorkListWorkspace extends ActWorkspace<Party, Act> {
      * @param act the act
      */
     @Override
-    protected void actSelected(Act act) {
-        super.actSelected(act);
+    protected void onBrowserSelected(Act act) {
+        super.onBrowserSelected(act);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
-    /**
-     * Creates a new table model to display acts.
-     *
-     * @return a new table model.
-     */
-    @Override
-    protected IMObjectTableModel<Act> createTableModel() {
-        // todo - replace this method with call to IMObjectTableModelFactory
-        return new TaskTableModel();
-    }
-
-    /**
-     * Lays out the component.
-     *
-     * @param container the container
-     */
-    protected void doLayout(Component container) {
-        Party latest = getLatest();
-        if (latest != getObject()) {
-            setObject(latest);
-        } else {
-            Browser<Act> browser = getBrowser();
-            if (browser != null) {
-                browser.query();
-            }
-            // need to add the existing workspace to the container
-            Component workspace = getWorkspace();
-            if (workspace != null) {
-                container.add(workspace);
-            }
-        }
-    }
 }

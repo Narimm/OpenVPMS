@@ -48,6 +48,12 @@ public interface Context {
             = "party.organisationLocation";
 
     /**
+     * Stock location short name.
+     */
+    public static final String STOCK_LOCATION_SHORTNAME
+            = "party.organisationStockLocation";
+
+    /**
      * Customer short name.
      */
     public static final String CUSTOMER_SHORTNAME = "party.customer*";
@@ -99,14 +105,14 @@ public interface Context {
      * Sets the current object being viewed/edited.
      *
      * @param object the current object being viewed/edited. May be
-     *               <code>null</code>
+     *               <tt>null</tt>
      */
     void setCurrent(IMObject object);
 
     /**
      * Returns the current object being viewed/edited.
      *
-     * @return the object being viewed/edited, or <code>null</code> if there is
+     * @return the object being viewed/edited, or <tt>null</tt> if there is
      *         no current object
      */
     IMObject getCurrent();
@@ -154,16 +160,31 @@ public interface Context {
     Party getLocation();
 
     /**
+     * Sets the current stock location.
+     *
+     * @param location the current location
+     */
+    void setStockLocation(Party location);
+
+    /**
+     * Returns the current stock location.
+     *
+     * @return the current stock location, or <tt>null</tt> if there is no
+     *         current location
+     */
+    Party getStockLocation();
+
+    /**
      * Sets the current customer.
      *
-     * @param customer the current customer. May be <code>null</code>
+     * @param customer the current customer. May be <tt>null</tt>
      */
     void setCustomer(Party customer);
 
     /**
      * Returns the current customer.
      *
-     * @return the current customer, or <code>null</code> if there is no current
+     * @return the current customer, or <tt>null</tt> if there is no current
      *         customer
      */
     Party getCustomer();
@@ -171,14 +192,14 @@ public interface Context {
     /**
      * Sets the current patient.
      *
-     * @param patient the current patient. May be <code>null</code>
+     * @param patient the current patient. May be <tt>null</tt>
      */
     void setPatient(Party patient);
 
     /**
      * Returns the current patient.
      *
-     * @return the current patient, or <code>null</code> if there is no current
+     * @return the current patient, or <tt>null</tt> if there is no current
      *         patient
      */
     Party getPatient();
@@ -186,14 +207,14 @@ public interface Context {
     /**
      * Sets the current supplier.
      *
-     * @param supplier the current supplier. May be <code>null</code>
+     * @param supplier the current supplier. May be <tt>null</tt>
      */
     void setSupplier(Party supplier);
 
     /**
      * Returns the current suppller.
      *
-     * @return the current supplier, or <code>null</code> if there is no current
+     * @return the current supplier, or <tt>null</tt> if there is no current
      *         supplier
      */
     Party getSupplier();
@@ -208,7 +229,7 @@ public interface Context {
     /**
      * Returns the current product.
      *
-     * @return the current product, or <code>null</code> if there is no current
+     * @return the current product, or <tt>null</tt> if there is no current
      *         product
      */
     Product getProduct();
@@ -223,7 +244,7 @@ public interface Context {
     /**
      * Returns the current deposit.
      *
-     * @return the current deposit, or <code>null</code> if there is no current
+     * @return the current deposit, or <tt>null</tt> if there is no current
      *         deposit
      */
     Party getDeposit();
@@ -238,7 +259,7 @@ public interface Context {
     /**
      * Returns the current till.
      *
-     * @return the current till, or <code>null</code> if there is no current
+     * @return the current till, or <tt>null</tt> if there is no current
      *         till
      */
     Party getTill();
@@ -253,7 +274,7 @@ public interface Context {
     /**
      * Returns the current clinician.
      *
-     * @return the current clinician, or <code>null</code> if there is no current
+     * @return the current clinician, or <tt>null</tt> if there is no current
      *         clinician
      */
     User getClinician();
@@ -332,8 +353,8 @@ public interface Context {
      * Returns an object for the specified key.
      *
      * @param key the context key
-     * @return the object corresponding to <code>key</code> or
-     *         <code>null</code> if none is found
+     * @return the object corresponding to <tt>key</tt> or
+     *         <tt>null</tt> if none is found
      */
     IMObject getObject(String key);
 
@@ -341,8 +362,8 @@ public interface Context {
      * Returns a context object that matches the specified archetype range.
      *
      * @param range the archetype range
-     * @return a context object whose short name is in <code>range</code> or
-     *         <code>null</code> if none exists
+     * @return a context object whose short name is in <tt>range</tt> or
+     *         <tt>null</tt> if none exists
      */
     IMObject getObject(String[] range);
 
@@ -350,8 +371,8 @@ public interface Context {
      * Returns a context object that matches the specified reference.
      *
      * @param reference the object reference
-     * @return the context object whose reference matches <code>reference</code>,
-     *         or <code>null</code> if there is no matches
+     * @return the context object whose reference matches <tt>reference</tt>,
+     *         or <tt>null</tt> if there is no matches
      */
     IMObject getObject(IMObjectReference reference);
 

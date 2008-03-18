@@ -19,8 +19,7 @@
 package org.openvpms.web.app.admin;
 
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 
 
 /**
@@ -30,15 +29,15 @@ import org.openvpms.web.app.subsystem.ShortNameList;
  * @version $LastChangedDate$
  */
 public class AuthorityWorkspace
-        extends CRUDWorkspace<ArchetypeAwareGrantedAuthority> {
+        extends BasicCRUDWorkspace<ArchetypeAwareGrantedAuthority> {
 
     /**
      * Constructs a new <tt>AuthorityWorkspace</tt>.
      */
     public AuthorityWorkspace() {
-        super("admin", "authority",
-              new ShortNameList("security.archetypeAuthority"),
-              ArchetypeAwareGrantedAuthority.class);
+        super("admin", "authority");
+        setArchetypes(ArchetypeAwareGrantedAuthority.class,
+                      "security.archetypeAuthority");
     }
 
 }

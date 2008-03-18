@@ -85,7 +85,10 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
      * @param object the object to select
      */
     public void setSelected(T object) {
-        getComponent();
+        Component component = getComponent();
+        if (table == null) {
+            doLayout(component);
+        }
         table.getTable().setSelected(object);
     }
 

@@ -35,6 +35,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -75,22 +76,20 @@ public abstract class ActCRUDWindow<T extends Act>
 
 
     /**
-     * Create a new <code>ActCRUDWindow</code>.
+     * Create a new <tt>ActCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create
+     * @param archetypes the archetypes that this may create
      */
-    public ActCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public ActCRUDWindow(Archetypes<T> archetypes) {
+        super(archetypes);
     }
 
     /**
      * Determines if an act can be edited.
      *
      * @param act the act
-     * @return <code>true</code> if the act can be edited, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the act can be edited, otherwise
+     *         <tt>false</tt>
      */
     protected boolean canEdit(Act act) {
         String status = act.getStatus();
@@ -101,8 +100,8 @@ public abstract class ActCRUDWindow<T extends Act>
      * Determines if an act can be deleted.
      *
      * @param act the act
-     * @return <code>true</code> if the act can be deleted, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the act can be deleted, otherwise
+     *         <tt>false</tt>
      */
     protected boolean canDelete(Act act) {
         String status = act.getStatus();
@@ -144,7 +143,7 @@ public abstract class ActCRUDWindow<T extends Act>
     protected void onPost() {
         try {
             final T act = getObject();
-            String displayName = getTypeDisplayName();
+            String displayName = getArchetypes().getDisplayName();
             String title = Messages.get("act.post.title", displayName);
             String message = Messages.get("act.post.message", displayName);
             final ConfirmationDialog dialog = new ConfirmationDialog(
@@ -250,8 +249,8 @@ public abstract class ActCRUDWindow<T extends Act>
      *
      * @param act     the act
      * @param printed the print status
-     * @return <code>true</code> if the print status was changed,
-     *         <code>false</code> if the act doesn't have a 'printed' node or
+     * @return <tt>true</tt> if the print status was changed,
+     *         <tt>false</tt> if the act doesn't have a 'printed' node or
      *         its value is the same as that supplied
      */
     protected boolean setPrintStatus(Act act, boolean printed) {

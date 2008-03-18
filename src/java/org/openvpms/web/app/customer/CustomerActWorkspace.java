@@ -21,16 +21,10 @@ package org.openvpms.web.app.customer;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.app.subsystem.ActWorkspace;
-import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.app.subsystem.ShortNames;
+import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserFactory;
+import org.openvpms.web.component.im.util.Archetypes;
 
 
 /**
@@ -40,7 +34,7 @@ import org.openvpms.web.component.im.query.BrowserFactory;
  * @version $LastChangedDate$
  */
 public abstract class CustomerActWorkspace<T extends Act>
-        extends ActWorkspace<Party, T> {
+        extends BrowserCRUDWorkspace<Party, T> {
 
     /**
      * Constructs a new <tt>CustomerActWorkspace</tt>.
@@ -49,19 +43,35 @@ public abstract class CustomerActWorkspace<T extends Act>
      * @param workspaceId the workspace localisation identfifier
      */
     public CustomerActWorkspace(String subsystemId, String workspaceId) {
-        this(subsystemId, workspaceId, new ShortNameList("party.customer*"));
+        this(subsystemId, workspaceId, null);
+    }
+
+
+    /**
+     * Constructs a new <tt>CustomerActWorkspace</tt>.
+     *
+     * @param subsystemId   the subsystem localisation identifier
+     * @param workspaceId   the workspace localisation identfifier
+     * @param actArchetypes the act archetypes that this operates on
+     */
+    public CustomerActWorkspace(String subsystemId, String workspaceId,
+                                Archetypes<T> actArchetypes) {
+        super(subsystemId, workspaceId, null, actArchetypes);
+        setArchetypes(Party.class, "party.customer*");
     }
 
     /**
      * Constructs a new <tt>CustomerActWorkspace</tt>.
      *
-     * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identfifier
-     * @param shortNames  the archetype short names that this operates on
+     * @param subsystemId     the subsystem localisation identifier
+     * @param workspaceId     the workspace localisation identfifier
+     * @param partyArchetypes the party archetypes that this operates on
+     * @param actArchetypes   the act archetypes that this operates on
      */
     public CustomerActWorkspace(String subsystemId, String workspaceId,
-                                ShortNames shortNames) {
-        super(subsystemId, workspaceId, shortNames, Party.class);
+                                Archetypes<Party> partyArchetypes,
+                                Archetypes<T> actArchetypes) {
+        super(subsystemId, workspaceId, partyArchetypes, actArchetypes);
     }
 
     /**
@@ -73,8 +83,6 @@ public abstract class CustomerActWorkspace<T extends Act>
     public void setObject(Party object) {
         super.setObject(object);
         ContextHelper.setCustomer(object);
-        layoutWorkspace(object);
-        initQuery(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -98,31 +106,6 @@ public abstract class CustomerActWorkspace<T extends Act>
     @Override
     protected Party getLatest() {
         return getLatest(GlobalContext.getInstance().getCustomer());
-    }
-
-    /**
-     * Lays out the component.
-     *
-     * @param container the container
-     */
-    protected void doLayout(Component container) {
-        Party latest = getLatest();
-        if (latest != getObject()) {
-            setObject(latest);
-        }
-    }
-
-    /**
-     * Creates a new browser to query and display acts.
-     * Default sort order is by descending starttime.
-     *
-     * @param query the query
-     * @return a new browser
-     */
-    @Override
-    protected Browser<T> createBrowser(ActQuery<T> query) {
-        SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
-        return BrowserFactory.create(query, sort, createTableModel());
     }
 
 

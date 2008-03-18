@@ -18,21 +18,21 @@
 
 package org.openvpms.web.app.reporting.till;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.finance.till.TillBalanceStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.subsystem.ActWorkspace;
+import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.im.util.FastLookupHelper;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
@@ -43,14 +43,15 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-19 07:20:38Z $
  */
-public class TillWorkspace extends ActWorkspace<Party, FinancialAct> {
+public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
 
     /**
      * Constructs a new <tt>TillWorkspace</tt>.
      */
     public TillWorkspace() {
-        super("reporting", "till", new ShortNameList("party.organisationTill"),
-              Party.class);
+        super("reporting", "till");
+        setArchetypes(Party.class, "party.organisationTill");
+        setChildArchetypes(FinancialAct.class, "act.tillBalance");
     }
 
     /**
@@ -62,8 +63,6 @@ public class TillWorkspace extends ActWorkspace<Party, FinancialAct> {
     public void setObject(Party object) {
         super.setObject(object);
         GlobalContext.getInstance().setTill(object);
-        layoutWorkspace(object);
-        initQuery(object);
     }
 
     /**
@@ -72,41 +71,35 @@ public class TillWorkspace extends ActWorkspace<Party, FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        String type = Messages.get("reporting.till.createtype");
-        return new TillCRUDWindow(type, "act.tillBalanceAdjustment");
+        return new TillCRUDWindow(getChildArchetypes());
     }
 
     /**
      * Creates a new query.
      *
-     * @param till the till to query acts for
      * @return a new query
      */
-    protected ActQuery<FinancialAct> createQuery(Party till) {
+    protected ActQuery<FinancialAct> createQuery() {
         List<Lookup> lookups = FastLookupHelper.getLookups("act.tillBalance",
                                                            "status");
         ActQuery<FinancialAct> query = new DefaultActQuery<FinancialAct>(
-                till, "till", "participation.till", "act.tillBalance", lookups);
+                getObject(), "till", "participation.till",
+                getChildArchetypes().getShortNames(), lookups);
         query.setStatus(TillBalanceStatus.UNCLEARED);
         return query;
     }
 
     /**
-     * Lays out the component.
+     * Creates a new browser to query and display acts.
      *
-     * @param container the container
+     * @param query the query
+     * @return a new browser
      */
-    protected void doLayout(Component container) {
-        Party latest = getLatest();
-        if (latest != getObject()) {
-            setObject(latest);
-        } else {
-            // need to add the existing workspace to the container
-            Component workspace = getWorkspace();
-            if (workspace != null) {
-                container.add(workspace);
-            }
-        }
+    @Override
+    protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
+        IMObjectTableModel<FinancialAct> model
+                = new ActAmountTableModel<FinancialAct>(true, true);
+        return BrowserFactory.create(query, null, model);
     }
 
     /**
@@ -118,15 +111,6 @@ public class TillWorkspace extends ActWorkspace<Party, FinancialAct> {
     @Override
     protected Party getLatest() {
         return getLatest(GlobalContext.getInstance().getTill());
-    }
-
-    /**
-     * Creates a new table model to display acts.
-     *
-     * @return a new table model.
-     */
-    protected IMObjectTableModel<FinancialAct> createTableModel() {
-        return new ActAmountTableModel<FinancialAct>(true, true);
     }
 
 }

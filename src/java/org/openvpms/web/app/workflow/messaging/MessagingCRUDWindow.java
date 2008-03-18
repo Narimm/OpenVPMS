@@ -29,9 +29,9 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -58,16 +58,12 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
 
 
     /**
-     * Constructs a new <code>MessagingCRUDWindow</code>.
+     * Constructs a new <tt>MessagingCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create.
-     *                   If <code>null</code> subclass must override
-     *                   {@link #getShortNames}
+     * @param archetypes the archetypes that this may create
      */
-    public MessagingCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public MessagingCRUDWindow(Archetypes<Act> archetypes) {
+        super(archetypes);
     }
 
     /**

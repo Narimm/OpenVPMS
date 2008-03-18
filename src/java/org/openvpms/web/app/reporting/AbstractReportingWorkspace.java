@@ -38,11 +38,6 @@ public abstract class AbstractReportingWorkspace<T extends IMObject>
         extends AbstractWorkspace<T> {
 
     /**
-     * The selected object. May be <tt>null</tt>.
-     */
-    private T object;
-
-    /**
      * The supported workspace type.
      */
     private Class<T> type;
@@ -66,38 +61,17 @@ public abstract class AbstractReportingWorkspace<T extends IMObject>
     }
 
     /**
-     * Determines if the workspace supports an archetype.
-     * This implementation returns <tt>false</tt> as typically don't want
-     * this workspace participating in context changes,
-     *
-     * @param shortName the archetype's short name
-     * @return <tt>false</t>
-     */
-    public boolean canHandle(String shortName) {
-        return false;
-    }
-
-    /**
      * Sets the object to be viewed/edited by the workspace.
      *
      * @param object the object. May be <tt>null</tt>
      */
     public void setObject(T object) {
-        this.object = object;
+        super.setObject(object);
         if (object != null) {
             enableButtons(buttons.getButtons(), true);
         } else {
             enableButtons(buttons.getButtons(), false);
         }
-    }
-
-    /**
-     * Returns the object to to be viewed/edited by the workspace.
-     *
-     * @return the the object. May be <oode>null</code>
-     */
-    public T getObject() {
-        return object;
     }
 
     /**

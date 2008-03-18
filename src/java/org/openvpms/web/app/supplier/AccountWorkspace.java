@@ -20,13 +20,9 @@ package org.openvpms.web.app.supplier;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -35,13 +31,14 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AccountWorkspace extends SupplierFinancialActWorkspace {
+public class AccountWorkspace extends SupplierActWorkspace<FinancialAct> {
 
     /**
      * Constructs a new <tt>AccountWorkspace</tt>.
      */
     public AccountWorkspace() {
         super("supplier", "account");
+        setChildArchetypes(FinancialAct.class, "act.supplierAccount*");
     }
 
     /**
@@ -50,34 +47,22 @@ public class AccountWorkspace extends SupplierFinancialActWorkspace {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        String type = Messages.get("supplier.account.createtype");
-        return new AccountCRUDWindow(type, "act.supplierAccount*");
+        return new AccountCRUDWindow(getChildArchetypes());
     }
 
     /**
      * Creates a new query.
      *
-     * @param party the party to query acts for
      * @return a new query
      */
-    protected ActQuery<FinancialAct> createQuery(Party party) {
+    protected ActQuery<FinancialAct> createQuery() {
         String[] shortNames = {"act.supplierAccountCharges*",
                                "act.supplierAccountPayment",
                                "act.supplierAccountRefund"};
         String[] statuses = {FinancialActStatus.POSTED};
-        return new DefaultActQuery<FinancialAct>(party, "supplier",
+        return new DefaultActQuery<FinancialAct>(getObject(), "supplier",
                                                  "participation.supplier",
                                                  shortNames, statuses);
-    }
-
-    /**
-     * Creates a new table model to display acts.
-     *
-     * @return a new table model.
-     */
-    @Override
-    protected IMObjectTableModel<FinancialAct> createTableModel() {
-        return new ActAmountTableModel<FinancialAct>(false, true);
     }
 
 }

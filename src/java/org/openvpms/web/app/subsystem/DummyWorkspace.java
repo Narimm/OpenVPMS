@@ -40,47 +40,6 @@ public class DummyWorkspace extends AbstractWorkspace<IMObject> {
         super(subsystemId, workspaceId);
     }
 
-
-    /**
-     * Determines if the workspace supports an archetype.
-     *
-     * @param shortName the archetype's short name
-     * @return <tt>true</tt> if the workspace can handle the archetype;
-     *         otherwise <tt>false</tt>
-     */
-    public boolean canHandle(String shortName) {
-        return false;
-    }
-
-    /**
-     * Sets the current object.
-     * This is analagous to  {@link #setObject} but performs a safe cast
-     * to the required type.
-     *
-     * @param object the current object
-     */
-    public void setIMObject(IMObject object) {
-        setObject(object);
-    }
-
-    /**
-     * Sets the object to be viewed/edited by the workspace.
-     *
-     * @param object the object. May be <tt>null</tt>
-     */
-    public void setObject(IMObject object) {
-        // no-op
-    }
-
-    /**
-     * Returns the object to to be viewed/edited by the workspace.
-     *
-     * @return the the object. May be <oode>null</tt>
-     */
-    public IMObject getObject() {
-        return null;
-    }
-
     /**
      * Returns the class type that this operates on.
      *
@@ -89,4 +48,5 @@ public class DummyWorkspace extends AbstractWorkspace<IMObject> {
     protected Class<IMObject> getType() {
         return IMObject.class;
     }
+
 }

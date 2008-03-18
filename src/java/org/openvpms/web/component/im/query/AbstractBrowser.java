@@ -149,7 +149,7 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
                 onQuery();
             }
         });
-        this.component = ColumnFactory.create(STYLE, row);
+        setComponent(ColumnFactory.create(STYLE, row));
 
         if (query.isAuto()) {
             query();
@@ -183,6 +183,15 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
         for (QueryBrowserListener<T> listener : listeners) {
             listener.selected(selected);
         }
+    }
+
+    /**
+     * Registers the browser component.
+     *
+     * @param component the component
+     */
+    protected void setComponent(Component component) {
+        this.component = component;
     }
 
     /**

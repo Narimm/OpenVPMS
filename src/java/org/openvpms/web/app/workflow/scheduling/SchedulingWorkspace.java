@@ -28,7 +28,6 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.app.workflow.WorkflowQuery;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -36,11 +35,11 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
@@ -79,7 +78,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      */
     public SchedulingWorkspace() {
         super("workflow", "scheduling",
-              new ShortNameList("party.organisationSchedule"), Party.class);
+              Archetypes.create("party.organisationSchedule", Party.class));
     }
 
     /**
@@ -339,9 +338,7 @@ public class SchedulingWorkspace extends AbstractViewWorkspace<Party> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        String type = Messages.get("workflow.scheduling.createtype");
-        ShortNameList shortNames = new ShortNameList("act.customerAppointment");
-        return new AppointmentCRUDWindow(type, shortNames);
+        return new AppointmentCRUDWindow();
     }
 
     /**

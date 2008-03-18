@@ -18,79 +18,87 @@
 
 package org.openvpms.web.app.subsystem;
 
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.select.IMObjectSelector;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Generic CRUD workspace.
+ * Basic CRUD workspace.
+ * <p/>
+ * Provides an {@link IMObjectSelector selector} to select objects and
+ * {@link CRUDWindow CRUD window}. The selector is optional.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class CRUDWorkspace<T extends IMObject>
-        extends AbstractViewWorkspace<T> {
+public abstract class BasicCRUDWorkspace<T extends IMObject>
+        extends AbstractCRUDWorkspace<T, T> {
 
     /**
-     * The CRUD window.
-     */
-    private CRUDWindow<T> window;
-
-
-    /**
-     * Constructs a new <tt>CRUDWorkspace</tt>.
+     * Constructs a new <tt>BasicCRUDWorkspace</tt>, with a selector for
+     * the object.
+     * <p/>
+     * The {@link #setArchetypes} method must be invoked to set the archetypes
+     * that the workspace supports, before performing any operations.
      *
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identfifier
-     * @param shortNames  the archetype short names that this operates on
-     * @param type        the type that this operates on
      */
-    public CRUDWorkspace(String subsystemId, String workspaceId,
-                         ShortNames shortNames, Class<T> type) {
-        super(subsystemId, workspaceId, shortNames, type);
+    public BasicCRUDWorkspace(String subsystemId, String workspaceId) {
+        this(subsystemId, workspaceId, null);
+    }
+
+    /**
+     * Constructs a new <tt>BasicCRUDWorkspace</tt>, with a selector for
+     * the object.
+     *
+     * @param subsystemId the subsystem localisation identifier
+     * @param workspaceId the workspace localisation identfifier
+     * @param archetypes  the archetypes that this operates on.
+     *                    If <tt>null</tt>, the {@link #setArchetypes}
+     *                    method must be invoked to set a non-null value
+     *                    before performing any operation
+     */
+    public BasicCRUDWorkspace(String subsystemId, String workspaceId,
+                              Archetypes<T> archetypes) {
+        super(subsystemId, workspaceId, archetypes, archetypes);
+    }
+
+    /**
+     * Constructs a new <tt>BasicCRUDWorkspace</tt>.
+     *
+     * @param subsystemId  the subsystem localisation identifier
+     * @param workspaceId  the workspace localisation identfifier
+     * @param archetypes   the archetypes that this operates on.
+     *                     If <tt>null</tt>, the {@link #setArchetypes}
+     *                     method must be invoked to set a non-null value
+     *                     before performing any operation
+     * @param showSelector if <tt>true</tt>, show a selector to select the
+     *                     object
+     */
+    public BasicCRUDWorkspace(String subsystemId, String workspaceId,
+                              Archetypes<T> archetypes, boolean showSelector) {
+        super(subsystemId, workspaceId, archetypes, archetypes, showSelector);
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     @Override
     public void setObject(T object) {
         super.setObject(object);
         getCRUDWindow().setObject(object);
-    }
-
-    /**
-     * Lays out the component.
-     *
-     * @param container the container
-     */
-    protected void doLayout(Component container) {
-        CRUDWindow<T> window = getCRUDWindow();
-        container.add(window.getComponent());
-        window.setListener(new CRUDWindowListener<T>() {
-            public void saved(T object, boolean isNew) {
-                onSaved(object, isNew);
-            }
-
-            public void deleted(T object) {
-                onDeleted(object);
-            }
-
-            public void refresh(T object) {
-                onRefresh(object);
-            }
-        });
     }
 
     /**
@@ -100,9 +108,10 @@ public abstract class CRUDWorkspace<T extends IMObject>
     @Override
     protected void onSelect() {
         try {
-            final Browser<T> browser = createBrowser();
+            final Browser<T> browser = createSelectBrowser();
 
-            String title = Messages.get("imobject.select.title", getTypeName());
+            String title = Messages.get("imobject.select.title",
+                                        getArchetypes().getDisplayName());
             final BrowserDialog<T> popup = new BrowserDialog<T>(
                     title, browser, true);
 
@@ -156,24 +165,14 @@ public abstract class CRUDWorkspace<T extends IMObject>
     }
 
     /**
-     * Returns the CRUD window, creating it if it doesn't exist.
+     * Sets the archetypes that this operates on.
      *
-     * @return the CRUD window
+     * @param archetypes the archetypes
      */
-    protected CRUDWindow<T> getCRUDWindow() {
-        if (window == null) {
-            window = createCRUDWindow();
-        }
-        return window;
-    }
-
-    /**
-     * Creates a new CRUD window.
-     *
-     * @return a new CRUD window
-     */
-    protected CRUDWindow<T> createCRUDWindow() {
-        return new DefaultCRUDWindow<T>(getTypeName(), getShortNames());
+    @Override
+    protected void setArchetypes(Archetypes<T> archetypes) {
+        super.setArchetypes(archetypes);
+        setChildArchetypes(archetypes);
     }
 
 }

@@ -19,6 +19,7 @@
 package org.openvpms.web.app.supplier;
 
 import org.openvpms.web.app.supplier.document.SupplierDocumentWorkspace;
+import org.openvpms.web.app.supplier.order.OrderWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 

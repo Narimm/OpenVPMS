@@ -16,11 +16,11 @@
  *  $Id:InvoiceEditor.java 2287 2007-08-13 07:56:33Z tanderson $
  */
 
-package org.openvpms.web.component.im.invoice;
+package org.openvpms.web.component.im.account;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.edit.account.AccountActEditor;
+import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -39,10 +39,10 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public abstract class InvoiceEditor extends AccountActEditor {
+public abstract class InvoiceEditor extends ActEditor {
 
     /**
-     * Construct a new <tt>InvoiceEditor</tt>.
+     * Construct a new <code>InvoiceEditor</code>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <code>null</code>
@@ -69,8 +69,7 @@ public abstract class InvoiceEditor extends AccountActEditor {
     /**
      * Update totals when an act item changes.
      */
-    protected void updateTotals() {
-        // @todo - workaround for OVPMS-211
+    protected void onItemsChanged() {
         Property amount = getProperty("amount");
         BigDecimal value = ActHelper.sum((Act) getObject(),
                                          getEditor().getActs(), "total");

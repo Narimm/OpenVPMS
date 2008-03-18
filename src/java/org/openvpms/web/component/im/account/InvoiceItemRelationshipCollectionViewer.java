@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.invoice;
+package org.openvpms.web.component.im.account;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -34,7 +34,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * Sorts the items on descending start time.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @version $LastChangedDate$
  */
 public class InvoiceItemRelationshipCollectionViewer
         extends ActRelationshipCollectionViewer {

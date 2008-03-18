@@ -36,6 +36,11 @@ public abstract class AbstractWorkspace<T extends IMObject>
         implements Workspace<T> {
 
     /**
+     * The current object. May be <tt>null</tt>.
+     */
+    private T object;
+
+    /**
      * The workspace component.
      */
     private Component component;
@@ -100,15 +105,50 @@ public abstract class AbstractWorkspace<T extends IMObject>
     }
 
     /**
+     * Sets the object to be viewed/edited by the workspace.
+     *
+     * @param object the object. May be <tt>null</tt>
+     */
+    public void setObject(T object) {
+        this.object = object;
+    }
+
+    /**
+     * Returns the object to to be viewed/edited by the workspace.
+     *
+     * @return the the object. May be <oode>null</tt>
+     */
+    public T getObject() {
+        return object;
+    }
+
+    /**
+     * Determines if the workspace supports an archetype.
+     *
+     * @param shortName the archetype's short name
+     * @return <code>true</code> if the workspace can handle the archetype;
+     *         otherwise <code>false</code>
+     */
+    public boolean canHandle(String shortName) {
+        return false;
+    }
+
+    /**
      * Sets the current object.
+     * <p/>
      * This is analagous to {@link #setObject} but performs a safe cast
      * to the required type.
+     * <p/>
+     * If the current object is the same instance as that supplied, no changes
+     * will be made.
      *
      * @param object the current object. May be <tt>null</tt>
      */
     public void setIMObject(IMObject object) {
         Class<T> type = getType();
-        if (object == null || type.isAssignableFrom(object.getClass())) {
+        if (object == getObject()) {
+            // no-op
+        } else if (object == null || type.isAssignableFrom(object.getClass())) {
             setObject(type.cast(object));
         } else {
             throw new IllegalArgumentException(

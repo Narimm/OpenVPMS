@@ -119,7 +119,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
             public void selected(T object) {
                 inListener = true;
                 try {
-                    setObject(object);
+                    onSelected(object);
                 } finally {
                     inListener = false;
                 }
@@ -221,8 +221,10 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
 
     /**
      * Invoked when an object is selected.
+     * <p/>
+     * This implementation simply invokes {@link #setObject}.
      *
-     * @param object the selected object
+     * @param object the selected object. May be <tt>null</tt>
      */
     protected void onSelected(T object) {
         setObject(object);

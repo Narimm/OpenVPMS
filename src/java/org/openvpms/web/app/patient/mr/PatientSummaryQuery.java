@@ -25,8 +25,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
@@ -53,12 +51,6 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
      */
     private String[] itemShortNames;
 
-    /**
-     * The default sort constraint.
-     */
-    private static final SortConstraint[] DEFAULT_SORT
-            = new SortConstraint[]{new NodeSortConstraint("startTime", false)};
-
 
     /**
      * Constructs a new <tt>PatientSummaryQuery</tt>.
@@ -73,7 +65,7 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
                 PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM);
 
         itemShortNames = allShortNames;
-        setDefaultSortConstraint(DEFAULT_SORT);
+        setAuto(true);
     }
 
     /**

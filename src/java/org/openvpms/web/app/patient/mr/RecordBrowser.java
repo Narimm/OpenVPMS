@@ -320,10 +320,19 @@ public class RecordBrowser implements Browser<Act> {
      * @param browser  the browser to add
      */
     private void addTab(int shortcut, String button, DefaultTabModel model,
-                        Browser browser) {
+                        Browser<Act> browser) {
         String text = "&" + shortcut + " " + Messages.get(button);
         Component component = browser.getComponent();
         component = ColumnFactory.create("Inset", component);
         model.addTab(text, component);
+
+        // select the first available act, if any
+        if (browser.getSelected() == null) {
+            List<Act> objects = browser.getObjects();
+            if (!objects.isEmpty()) {
+                Act current = objects.get(0);
+                browser.setSelected(current);
+            }
+        }
     }
 }

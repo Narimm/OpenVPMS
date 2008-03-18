@@ -54,8 +54,9 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param shortNames the act short names to query
      * @param type       the type that this query returns
      */
-    public DateRangeActQuery(String[] shortNames, Class type) {
-        this(null, null, null, shortNames, true, new String[0], type);
+    public DateRangeActQuery(String[] shortNames, List<Lookup> statusLookups,
+                             Class type) {
+        this(null, null, null, shortNames, statusLookups, null, type);
     }
 
     /**
@@ -135,9 +136,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
         }
 
         addStatusSelector(container);
-
-        dateRange = new ActDateRange(getFocusGroup());
-        container.add(dateRange.getComponent());
+        addDateRange(container);
     }
 
     /**
@@ -193,5 +192,14 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
                                    getMaxResults(), sort);
     }
 
+    /**
+     * Adds a date range to the container.
+     *
+     * @param container the container
+     */
+    protected void addDateRange(Component container) {
+        dateRange = new ActDateRange(getFocusGroup());
+        container.add(dateRange.getComponent());
+    }
 
 }

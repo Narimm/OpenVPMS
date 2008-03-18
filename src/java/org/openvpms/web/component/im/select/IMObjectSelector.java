@@ -240,7 +240,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      *
      * @return the type display name
      */
-    protected String getType() {
+    public String getType() {
         return type;
     }
 
