@@ -49,7 +49,7 @@
         </fixcrlf>
 
         <!-- copy the dependencies, exluding mysql as it is GPL'ed -->
-        <deploy:copy-deps todir="${distDir}/lib" 
+        <deploy:copy-deps todir="${distDir}/lib"
                           excludes="mysql-connector-java"/>
 
         <!-- move the webapp -->

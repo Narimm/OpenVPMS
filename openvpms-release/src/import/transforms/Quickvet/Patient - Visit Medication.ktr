@@ -284,7 +284,7 @@
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;Script here
 
-CODE.setString(replace(upper(CODE.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
+CODE.setString(&quot;DRUG&quot; + replace(upper(CODE.getString()),&quot;[^A-Z0-9]+&quot;,&apos;_&apos;))
 var ID = num2str(ACCOUNTID.getNumber()) + &quot;.&quot; + num2str(PATIENTID.getNumber())
 </jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>ID</name>

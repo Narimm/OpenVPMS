@@ -298,11 +298,11 @@ else {
 
 
 var DECEASEDFLAG = false
-var ACTIVE = true
+var ACTIVE = false
+if (STATUS.getString() == &quot;ALIVE&quot;)
+	ACTIVE = true
 if (STATUS.getString() == &quot;DECEASED&quot;)
 	DECEASEDFLAG = true
-if (STATUS.getString() == &quot;PTS&quot;)
-	ACTIVE = false
 </jsScript_script>
         </jsScript>     </jsScripts>    <fields>      <field>        <name>DESEXFLAG</name>
         <rename>DESEXFLAG</rename>
