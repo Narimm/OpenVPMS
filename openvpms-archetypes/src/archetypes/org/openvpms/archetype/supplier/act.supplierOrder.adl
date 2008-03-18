@@ -17,7 +17,7 @@
 -->
 <archetypes>
     <archetype name="act.supplierOrder.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.act.Act" displayName="Order">
+               type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Order">
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
@@ -25,20 +25,36 @@
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/title, ' ')"/>
+        <node name="supplier" path="/participations" type="java.util.HashSet"
+              minCardinality="1" maxCardinality="1"
+              filter="participation.supplier" readOnly="true"/>
         <node name="startTime" path="/activityStartTime"
               type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
         <node name="title" path="/title" type="java.lang.String" minCardinality="1" maxLength="30" defaultValue="'Enter a title ...'"/>
-        <node name="total" path="/details/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              defaultValue="'0.0'" minCardinality="1" readOnly="true"/>
+        <node name="amount" path="/total"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" readOnly="true">
+        </node>
         <node name="printed" path="/details/printed" type="java.lang.Boolean" defaultValue="false()" minCardinality="1"/>
         <node name="status" path="/status" type="java.lang.String"
-              minCardinality="1">
+              minCardinality="1" defaultValue="'IN_PROGRESS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="IN_PROGRESS" value="In Progress"/>
                     <property name="COMPLETED" value="Completed"/>
                     <property name="CANCELLED" value="Cancelled"/>
                     <property name="POSTED" value="Posted"/>
+                </propertyList>
+                <errorMessage>An error message</errorMessage>
+            </assertion>
+        </node>
+        <node name="deliveryStatus" path="/details/deliveryStatus" type="java.lang.String"
+              minCardinality="1" defaultValue="'PENDING'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="PENDING" value="Pending"/>
+                    <property name="PART" value="Part"/>
+                    <property name="FULL" value="Full"/>
                 </propertyList>
                 <errorMessage>An error message</errorMessage>
             </assertion>
@@ -55,9 +71,9 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="supplier" path="/participations" type="java.util.HashSet"
+        <node name="stockLocation" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
-              filter="participation.supplier" hidden="true"/>
+              filter="participation.stockLocation"/>
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
