@@ -20,10 +20,14 @@ package org.openvpms.web.component.im.edit.order;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 
 import java.math.BigDecimal;
@@ -52,18 +56,42 @@ public class OrderEditor extends ActEditor {
             throw new IllegalArgumentException(
                     "Invalid act type: " + act.getArchetypeId().getShortName());
         }
+        initParticipant("stockLocation",
+                        context.getContext().getStockLocation());
     }
 
     /**
      * Update totals when an act item changes.
      */
-    protected void updateTotals() {
-        Property total = getProperty("total");
-        // @todo - workaround for OVPMS-211
-
+    protected void onItemsChanged() {
+        Property total = getProperty("amount");
         List<Act> acts = getEditor().getActs();
         BigDecimal value = ActHelper.sum((Act) getObject(), acts, "total");
         total.setValue(value);
+    }
+
+    /**
+     * Invoked when layout has completed.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        getEditor("stockLocation").addModifiableListener(
+                new ModifiableListener() {
+                    public void modified(Modifiable modifiable) {
+                        onStockLocationChanged();
+                    }
+                });
+    }
+
+    /**
+     * Invoked when the stock location changes.
+     */
+    private void onStockLocationChanged() {
+        Party location = (Party) getParticipant("stockLocation");
+        for (IMObjectEditor editor : getEditor().getCurrentEditors()) {
+            OrderItemEditor itemEditor = (OrderItemEditor) editor;
+            itemEditor.setStockLocation(location);
+        }
     }
 
 }

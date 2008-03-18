@@ -22,8 +22,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
@@ -43,16 +43,14 @@ public class FinancialActCRUDWindow
         extends AbstractViewCRUDWindow<FinancialAct> {
 
     /**
-     * Create a new <code>FinancialActCRUDWindow</code>.
+     * Create a new <tt>FinancialActCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create.
-     *                   If <code>null</code> subclass must override
-     *                   {@link #getShortNames}
+     * @param archetypes the archetypes that this may create.
+     *                   If <tt>null</tt>, the subclass must override
+     *                   {@link #getArchetypes}
      */
-    public FinancialActCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public FinancialActCRUDWindow(Archetypes<FinancialAct> archetypes) {
+        super(archetypes);
     }
 
     /**
@@ -68,7 +66,7 @@ public class FinancialActCRUDWindow
     /**
      * Invoked when a child act is selected/deselected.
      *
-     * @param child the child act. May be <code>null</code>
+     * @param child the child act. May be <tt>null</tt>
      */
     protected void onChildActSelected(FinancialAct child) {
     }
@@ -84,7 +82,7 @@ public class FinancialActCRUDWindow
          * @param property the property
          * @param parent   the parent object
          * @param context  the layout context
-         * @return a component to display <code>property</code>
+         * @return a component to display <tt>property</tt>
          */
         @Override
         protected ComponentState createItems(Property property, IMObject parent,
@@ -102,7 +100,7 @@ public class FinancialActCRUDWindow
     private class Viewer extends ActRelationshipCollectionViewer {
 
         /**
-         * Construct a new <code>Viewer</code>.
+         * Construct a new <tt>Viewer</tt>.
          *
          * @param property the collection to view
          * @param parent   the parent object

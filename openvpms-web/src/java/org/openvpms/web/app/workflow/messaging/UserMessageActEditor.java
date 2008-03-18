@@ -59,15 +59,6 @@ public class UserMessageActEditor extends ActEditor {
     }
 
     /**
-     * Update totals when an act item changes.
-     * <p/>
-     * todo - workaround for OVPMS-211
-     */
-    protected void updateTotals() {
-        // no-op
-    }
-
-    /**
      * Invoked when layout has completed. All editors have been created.
      */
     @Override

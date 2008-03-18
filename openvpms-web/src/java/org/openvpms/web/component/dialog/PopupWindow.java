@@ -26,6 +26,7 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.util.ButtonRow;
+import org.openvpms.web.component.util.KeyStrokeHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Styles;
 
@@ -196,4 +197,20 @@ public abstract class PopupWindow extends WindowPane {
         return focusGroup;
     }
 
+    /**
+     * Notifies <tt>WindowPaneListener</tt>s that the user has requested
+     * to close this <tt>WindowPane</tt>.
+     * <p/>
+     * This implementation re-registers keystroke listeners as a workaround
+     * to bugs in Firefox.
+     *
+     * @see KeyStrokeHelper#reregisterKeyStrokeListeners
+     */
+    @Override
+    protected void fireWindowClosing() {
+        // re-register listeners for Firefox
+        KeyStrokeHelper.reregisterKeyStrokeListeners();
+
+        super.fireWindowClosing();    //To change body of overridden methods use File | Settings | File Templates.
+    }
 }

@@ -18,18 +18,14 @@
 
 package org.openvpms.web.app.supplier.document;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.supplier.SupplierActWorkspace;
 import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.util.FastLookupHelper;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
@@ -40,7 +36,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class SupplierDocumentWorkspace extends SupplierActWorkspace<Act> {
+public class SupplierDocumentWorkspace
+        extends SupplierActWorkspace<DocumentAct> {
 
     /**
      * Supplier Document shortnames supported by the workspace.
@@ -54,6 +51,7 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace<Act> {
      */
     public SupplierDocumentWorkspace() {
         super("supplier", "document");
+        setChildArchetypes(DocumentAct.class, SHORT_NAMES);
     }
 
     /**
@@ -61,23 +59,21 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace<Act> {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow<Act> createCRUDWindow() {
-        String type = Messages.get("supplier.document.createtype");
-        return new DocumentCRUDWindow(type, SHORT_NAMES);
+    protected CRUDWindow<DocumentAct> createCRUDWindow() {
+        return new DocumentCRUDWindow(getChildArchetypes());
     }
 
     /**
      * Creates a new query.
      *
-     * @param supplier the customer to query acts for
      * @return a new query
      */
-    protected ActQuery<Act> createQuery(Party supplier) {
+    protected ActQuery<DocumentAct> createQuery() {
         List<Lookup> lookups = FastLookupHelper.getLookups(
                 "act.supplierDocumentLetter", "status");
-        return new DefaultActQuery<Act>(supplier, "supplier",
-                                        "participation.supplier",
-                                        SHORT_NAMES, lookups);
+        return new DefaultActQuery<DocumentAct>(getObject(), "supplier",
+                                                "participation.supplier",
+                                                SHORT_NAMES, lookups);
     }
 
     /**
@@ -87,17 +83,8 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace<Act> {
      * @param isNew  determines if the object is a new instance
      */
     @Override
-    protected void onSaved(Act object, boolean isNew) {
+    protected void onSaved(DocumentAct object, boolean isNew) {
         super.onSaved(object, isNew);
-    }
-
-    /**
-     * Creates a new table model to display acts.
-     *
-     * @return a new table model.
-     */
-    protected IMObjectTableModel<Act> createTableModel() {
-        return IMObjectTableModelFactory.create(SHORT_NAMES, null);
     }
 
 }

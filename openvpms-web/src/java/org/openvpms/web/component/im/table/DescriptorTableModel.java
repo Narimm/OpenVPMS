@@ -26,16 +26,12 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
-import org.openvpms.web.component.property.IMObjectProperty;
-import org.openvpms.web.component.property.Property;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,9 +60,23 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * The column model must be set using {@link #setTableColumnModel}.
      */
     public DescriptorTableModel() {
-        context = new DefaultLayoutContext();
-        TableComponentFactory factory = new TableComponentFactory(context);
-        context.setComponentFactory(factory);
+        this((LayoutContext) null);
+    }
+
+
+    /**
+     * Creates a new <code>DescriptorTableModel</code>.
+     * The column model must be set using {@link #setTableColumnModel}.
+     *
+     * @param context the layout context. May be <tt>null</tt>
+     */
+    public DescriptorTableModel(LayoutContext context) {
+        if (context == null) {
+            context = new DefaultLayoutContext();
+            TableComponentFactory factory = new TableComponentFactory(context);
+            context.setComponentFactory(factory);
+        }
+        this.context = context;
     }
 
     /**
@@ -125,15 +135,10 @@ public abstract class DescriptorTableModel<T extends IMObject>
         SortConstraint[] result;
         TableColumn col = getColumn(column);
         if (col instanceof DescriptorTableColumn) {
-            NodeDescriptor descriptor
-                    = ((DescriptorTableColumn) col).getDescriptor();
-            if ((!descriptor.isCollection() &&
-                    descriptor.getPath().lastIndexOf("/") <= 0)
-                    || QueryHelper.isParticipationNode(descriptor)) {
-                // can only sort on top level or participation nodes
-                result = new SortConstraint[]{
-                        new NodeSortConstraint(descriptor.getName(), ascending)
-                };
+            DescriptorTableColumn descCol = (DescriptorTableColumn) col;
+            if (descCol.isSortable()) {
+                SortConstraint sort = descCol.createSortConstraint(ascending);
+                result = new SortConstraint[]{sort};
             } else {
                 result = null;
             }
@@ -169,12 +174,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * @return the value for the column
      */
     protected Object getValue(T object, DescriptorTableColumn column) {
-        Object result;
-        IMObjectComponentFactory factory = context.getComponentFactory();
-        NodeDescriptor descriptor = column.getDescriptor(object);
-        Property property = new IMObjectProperty(object, descriptor);
-        result = factory.create(property, object).getComponent();
-        return result;
+        return column.getValue(object, context);
     }
 
     /**
@@ -312,7 +312,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
                                               LayoutContext context) {
         List<String> result = new ArrayList<String>();
         String[] names = getDescriptorNames();
-        if (names != null) {
+        if (names != null && names.length != 0) {
             for (String name : names) {
                 NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
                 if (descriptor != null) {

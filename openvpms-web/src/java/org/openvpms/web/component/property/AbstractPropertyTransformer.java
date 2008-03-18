@@ -13,7 +13,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id:AbstractPropertyTransformer.java 2147 2007-06-21 04:16:11Z tanderson $
  */
 
 package org.openvpms.web.component.property;
@@ -23,7 +23,7 @@ package org.openvpms.web.component.property;
  * being set on {@link Property}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate:2007-06-21 04:16:11Z $
  */
 public abstract class AbstractPropertyTransformer
         implements PropertyTransformer {

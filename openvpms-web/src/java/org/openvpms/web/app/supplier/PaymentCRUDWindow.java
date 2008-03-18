@@ -19,8 +19,8 @@
 package org.openvpms.web.app.supplier;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.util.Archetypes;
 
 
 /**
@@ -32,14 +32,12 @@ import org.openvpms.web.component.button.ButtonSet;
 public class PaymentCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
     /**
-     * Create a new <code>ActCRUDWindow</code>.
+     * Create a new <tt>PaymentCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create
+     * @param archetypes the archetypes that this may create
      */
-    public PaymentCRUDWindow(String type, String[] shortNames) {
-        super(type, new ShortNameList(shortNames));
+    public PaymentCRUDWindow(Archetypes<FinancialAct> archetypes) {
+        super(archetypes);
     }
 
     /**

@@ -20,9 +20,12 @@ package org.openvpms.web.component.im.query;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IPage;
@@ -43,13 +46,18 @@ import java.util.List;
 public class ProductQuery extends AbstractEntityQuery<Product> {
 
     /**
-     * The species to constrain the query to. May be <code>null</code>.
+     * The species to constrain the query to. May be <tt>null</tt>.
      */
     private String species;
 
+    /**
+     * The stock location to constrain the query to. May be <tt>null</tt>.
+     */
+    private Party location;
+
 
     /**
-     * Construct a new <code>DefaultQuery</code> that queries IMObjects with the
+     * Construct a new <tt>ProductQuery</tt> that queries products with the
      * specified short names.
      *
      * @param shortNames the short names
@@ -70,15 +78,27 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
     }
 
     /**
+     * Sets the stock location to constrain the query to.
+     *
+     * @param location the stock location
+     */
+    public void setStockLocation(Party location) {
+        this.location = location;
+    }
+
+    /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <code>null</code>
+     * @param sort the sort constraint. May be <tt>null</tt>
      * @return the query result set
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
     public ResultSet<Product> query(SortConstraint[] sort) {
         ResultSet<Product> result = super.query(sort);
+        if (location != null) {
+            result = filterOnLocation(result);
+        }
         if (!StringUtils.isEmpty(species)) {
             result = filterOnSpecies(result);
         }
@@ -97,6 +117,31 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
                                             getConstraints(),
                                             sort, getMaxResults(),
                                             isDistinct());
+    }
+
+    /**
+     * Filters products to include only those that either have no stock location
+     * or have a location matching that specified.
+     * TODO: could do this in HQL, but requires use of WITH clause
+     *
+     * @param set the set to filter
+     * @return the filtered set
+     */
+    private ResultSet<Product> filterOnLocation(ResultSet<Product> set) {
+        List<Product> matches = new ArrayList<Product>();
+        IMObjectReference ref = location.getObjectReference();
+        while (set.hasNext()) {
+            IPage<Product> page = set.next();
+            for (Product product : page.getResults()) {
+                EntityBean bean = new EntityBean(product);
+                List<IMObjectReference> locations
+                        = bean.getNodeTargetEntityRefs("stockLocations");
+                if (locations.isEmpty() || locations.contains(ref)) {
+                    matches.add(product);
+                }
+            }
+        }
+        return new IMObjectListResultSet<Product>(matches, getMaxResults());
     }
 
     /**

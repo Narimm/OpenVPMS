@@ -22,10 +22,7 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.app.WindowPane;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.util.KeyStrokeHelper;
 
 
 /**
@@ -72,18 +69,6 @@ public class DialogManager {
             group.reindex(lastIndex + 1000);
             // give the parent dialog room to grow.
         }
-
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            /**
-             * Invoked when a user attempts to close a <code>WindowPane</code>.
-             *
-             * @param e the <code>WindowPaneEvent</code> describing the change
-             */
-            public void windowPaneClosing(WindowPaneEvent e) {
-                // re-register listeners for Firefox
-                KeyStrokeHelper.reregisterKeyStrokeListeners();
-            }
-        });
 
         root.getContent().add(dialog);
     }

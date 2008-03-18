@@ -21,14 +21,10 @@ package org.openvpms.web.app.customer.account;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.customer.CustomerFinancialActWorkspace;
+import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.component.im.query.Query;
 
 
 /**
@@ -37,8 +33,12 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AccountWorkspace extends CustomerFinancialActWorkspace {
+public class AccountWorkspace
+        extends CustomerActWorkspace<FinancialAct> {
 
+    /**
+     * The customer archetype short names.
+     */
     private static final String[] CUSTOMER_SHORT_NAMES = {
             "party.customer*", "party.organisationOTC"
     };
@@ -48,7 +48,9 @@ public class AccountWorkspace extends CustomerFinancialActWorkspace {
      * Constructs a new <tt>AccountWorkspace</tt>.
      */
     public AccountWorkspace() {
-        super("customer", "account", new ShortNameList(CUSTOMER_SHORT_NAMES));
+        super("customer", "account");
+        setArchetypes(Party.class, CUSTOMER_SHORT_NAMES);
+        setChildArchetypes(FinancialAct.class, "act.customerAccount*");
     }
 
     /**
@@ -57,17 +59,15 @@ public class AccountWorkspace extends CustomerFinancialActWorkspace {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        String type = Messages.get("customer.account.createtype");
-        return new AccountCRUDWindow(type, "act.customerAccount*");
+        return new AccountCRUDWindow(getChildArchetypes());
     }
 
     /**
      * Creates a new query.
      *
-     * @param customer the customer to query acts for
      * @return a new query
      */
-    protected ActQuery<FinancialAct> createQuery(Party customer) {
+    protected Query<FinancialAct> createQuery() {
         String[] shortNames = {"act.customerAccountCharges*",
                                "act.customerAccountPayment",
                                "act.customerAccountRefund",
@@ -79,19 +79,10 @@ public class AccountWorkspace extends CustomerFinancialActWorkspace {
                                "act.customerAccountBadDebt"};
         String[] statuses = {FinancialActStatus.POSTED};
 
+        Party customer = getObject();
         return new DefaultActQuery<FinancialAct>(customer, "customer",
                                                  "participation.customer",
                                                  shortNames, statuses);
-    }
-
-    /**
-     * Creates a new table model to display acts.
-     *
-     * @return a new table model.
-     */
-    @Override
-    protected IMObjectTableModel<FinancialAct> createTableModel() {
-        return new ActAmountTableModel<FinancialAct>(false, true);
     }
 
 }

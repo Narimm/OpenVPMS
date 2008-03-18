@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.app;
 
+import org.apache.commons.beanutils.MethodUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -53,7 +54,7 @@ public class LocalContext implements Context {
 
 
     /**
-     * Constructs a new <code>LocalContext</code>, with the
+     * Constructs a new <tt>LocalContext</tt>, with the
      * {@link GlobalContext} as the immediate parent.
      */
     public LocalContext() {
@@ -61,7 +62,7 @@ public class LocalContext implements Context {
     }
 
     /**
-     * Constructs a new <code>LocalContext</code>, with the specified parent
+     * Constructs a new <tt>LocalContext</tt>, with the specified parent
      * context.
      *
      * @param parent the parent context. May be <tt>null</tt>
@@ -72,10 +73,19 @@ public class LocalContext implements Context {
     }
 
     /**
+     * Returns the parent context.
+     *
+     * @return the parent context, or <tt>null</tt> if there is none
+     */
+    public Context getParent() {
+        return parent;
+    }
+
+    /**
      * Sets the current object being viewed/edited.
      *
      * @param object the current object being viewed/edited. May be
-     *               <code>null</code>
+     *               <tt>null</tt>
      */
     public void setCurrent(IMObject object) {
         local.setCurrent(object);
@@ -84,15 +94,11 @@ public class LocalContext implements Context {
     /**
      * Returns the current object being viewed/edited.
      *
-     * @return the object being viewed/edited, or <code>null</code> if there is
+     * @return the object being viewed/edited, or <tt>null</tt> if there is
      *         no current object
      */
     public IMObject getCurrent() {
-        IMObject current = local.getCurrent();
-        if (current == null && parent != null) {
-            current = parent.getCurrent();
-        }
-        return current;
+        return get("getCurrent");
     }
 
     /**
@@ -110,11 +116,7 @@ public class LocalContext implements Context {
      * @return the current user
      */
     public User getUser() {
-        User user = local.getUser();
-        if (user == null && parent != null) {
-            user = parent.getUser();
-        }
-        return user;
+        return get("getUser");
     }
 
     /**
@@ -132,11 +134,7 @@ public class LocalContext implements Context {
      * @return the current practice
      */
     public Party getPractice() {
-        Party practice = local.getPractice();
-        if (practice == null && parent != null) {
-            practice = parent.getPractice();
-        }
-        return practice;
+        return get("getPractice");
     }
 
     /**
@@ -154,17 +152,32 @@ public class LocalContext implements Context {
      * @return the current location
      */
     public Party getLocation() {
-        Party location = local.getLocation();
-        if (location == null && parent != null) {
-            location = parent.getLocation();
-        }
-        return location;
+        return get("getLocation");
+    }
+
+    /**
+     * Sets the current stock location.
+     *
+     * @param location the current location
+     */
+    public void setStockLocation(Party location) {
+        local.setStockLocation(location);
+    }
+
+    /**
+     * Returns the current stock location.
+     *
+     * @return the current stock location, or <tt>null</tt> if there is no
+     *         current location
+     */
+    public Party getStockLocation() {
+        return get("getStockLocation");
     }
 
     /**
      * Sets the current customer.
      *
-     * @param customer the current customer. May be <code>null</code>
+     * @param customer the current customer. May be <tt>null</tt>
      */
     public void setCustomer(Party customer) {
         local.setCustomer(customer);
@@ -173,21 +186,17 @@ public class LocalContext implements Context {
     /**
      * Returns the current customer.
      *
-     * @return the current customer, or <code>null</code> if there is no current
+     * @return the current customer, or <tt>null</tt> if there is no current
      *         customer
      */
     public Party getCustomer() {
-        Party customer = local.getCustomer();
-        if (customer == null && parent != null) {
-            customer = parent.getCustomer();
-        }
-        return customer;
+        return get("getCustomer");
     }
 
     /**
      * Sets the current patient.
      *
-     * @param patient the current patient. May be <code>null</code>
+     * @param patient the current patient. May be <tt>null</tt>
      */
     public void setPatient(Party patient) {
         local.setPatient(patient);
@@ -196,21 +205,17 @@ public class LocalContext implements Context {
     /**
      * Returns the current patient.
      *
-     * @return the current patient, or <code>null</code> if there is no current
+     * @return the current patient, or <tt>null</tt> if there is no current
      *         patient
      */
     public Party getPatient() {
-        Party patient = local.getPatient();
-        if (patient == null && parent != null) {
-            patient = parent.getPatient();
-        }
-        return patient;
+        return get("getPatient");
     }
 
     /**
      * Sets the current supplier.
      *
-     * @param supplier the current supplier. May be <code>null</code>
+     * @param supplier the current supplier. May be <tt>null</tt>
      */
     public void setSupplier(Party supplier) {
         local.setSupplier(supplier);
@@ -219,15 +224,11 @@ public class LocalContext implements Context {
     /**
      * Returns the current suppller.
      *
-     * @return the current supplier, or <code>null</code> if there is no current
+     * @return the current supplier, or <tt>null</tt> if there is no current
      *         supplier
      */
     public Party getSupplier() {
-        Party supplier = local.getSupplier();
-        if (supplier == null && parent != null) {
-            supplier = parent.getSupplier();
-        }
-        return supplier;
+        return get("getSupplier");
     }
 
     /**
@@ -242,15 +243,11 @@ public class LocalContext implements Context {
     /**
      * Returns the current product.
      *
-     * @return the current product, or <code>null</code> if there is no current
+     * @return the current product, or <tt>null</tt> if there is no current
      *         product
      */
     public Product getProduct() {
-        Product product = local.getProduct();
-        if (product == null && parent != null) {
-            product = parent.getProduct();
-        }
-        return product;
+        return get("getProduct");
     }
 
     /**
@@ -265,15 +262,11 @@ public class LocalContext implements Context {
     /**
      * Returns the current deposit.
      *
-     * @return the current deposit, or <code>null</code> if there is no current
+     * @return the current deposit, or <tt>null</tt> if there is no current
      *         deposit
      */
     public Party getDeposit() {
-        Party deposit = local.getDeposit();
-        if (deposit == null && parent != null) {
-            deposit = parent.getDeposit();
-        }
-        return deposit;
+        return get("getDeposit");
     }
 
     /**
@@ -288,15 +281,11 @@ public class LocalContext implements Context {
     /**
      * Returns the current till.
      *
-     * @return the current till, or <code>null</code> if there is no current
+     * @return the current till, or <tt>null</tt> if there is no current
      *         till
      */
     public Party getTill() {
-        Party till = local.getTill();
-        if (till == null && parent != null) {
-            till = parent.getTill();
-        }
-        return till;
+        return get("getTill");
     }
 
     /**
@@ -315,11 +304,7 @@ public class LocalContext implements Context {
      *         clinician
      */
     public User getClinician() {
-        User clinician = local.getClinician();
-        if (clinician == null && parent != null) {
-            clinician = parent.getClinician();
-        }
-        return clinician;
+        return get("getClinician");
     }
 
     /**
@@ -337,11 +322,7 @@ public class LocalContext implements Context {
      * @return the current schedule
      */
     public Party getSchedule() {
-        Party schedule = local.getSchedule();
-        if (schedule == null && parent != null) {
-            schedule = parent.getSchedule();
-        }
-        return schedule;
+        return get("getSchedule");
     }
 
     /**
@@ -359,11 +340,7 @@ public class LocalContext implements Context {
      * @return the current schedule date
      */
     public Date getScheduleDate() {
-        Date date = local.getScheduleDate();
-        if (date == null && parent != null) {
-            date = parent.getScheduleDate();
-        }
-        return date;
+        return get("getScheduleDate");
     }
 
     /**
@@ -381,11 +358,7 @@ public class LocalContext implements Context {
      * @return the current work list
      */
     public Party getWorkList() {
-        Party workList = local.getWorkList();
-        if (workList == null && parent != null) {
-            workList = parent.getWorkList();
-        }
-        return workList;
+        return get("getWorkList");
     }
 
     /**
@@ -433,8 +406,8 @@ public class LocalContext implements Context {
      * Returns a context object that matches the specified archetype range.
      *
      * @param range the archetype range
-     * @return a context object whose short name is in <code>range</code> or
-     *         <code>null</code> if none exists
+     * @return a context object whose short name is in <tt>range</tt> or
+     *         <tt>null</tt> if none exists
      */
     public IMObject getObject(String[] range) {
         IMObject object = local.getObject(range);
@@ -448,8 +421,8 @@ public class LocalContext implements Context {
      * Returns a context object that matches the specified reference.
      *
      * @param reference the object reference
-     * @return the context object whose reference matches <code>reference</code>,
-     *         or <code>null</code> if there is no matches
+     * @return the context object whose reference matches <tt>reference</tt>,
+     *         or <tt>null</tt> if there is no matches
      */
     public IMObject getObject(IMObjectReference reference) {
         IMObject object = local.getObject(reference);
@@ -473,8 +446,8 @@ public class LocalContext implements Context {
      * Returns an object for the specified key.
      *
      * @param key the context key
-     * @return the object corresponding to <code>key</code> or
-     *         <code>null</code> if none is found
+     * @return the object corresponding to <tt>key</tt> or
+     *         <tt>null</tt> if none is found
      */
     public IMObject getObject(String key) {
         IMObject result = local.getObject(key);
@@ -498,6 +471,22 @@ public class LocalContext implements Context {
         return objects.toArray(new IMObject[0]);
     }
 
+    @SuppressWarnings("unchecked")
+    private <T> T get(String methodName) {
+        Object result;
+        try {
+            result = MethodUtils.invokeMethod(local, methodName, null);
+            if (result == null && parent != null) {
+                result = MethodUtils.invokeMethod(parent, methodName, null);
+            }
+        } catch (Exception exception) {
+            throw new RuntimeException("Failed to invoke " + methodName,
+                                       exception);
+        }
+        return (T) result;
+    }
+
     private static final class DefaultContext extends AbstractContext {
     }
+
 }

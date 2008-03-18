@@ -18,14 +18,19 @@
 
 package org.openvpms.web.component.im.edit.order;
 
+import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.supplier.OrderRules;
+import org.openvpms.archetype.rules.supplier.ProductSupplier;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
+import org.openvpms.web.component.im.edit.act.ProductParticipationEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -49,11 +54,11 @@ public class OrderItemEditor extends ActItemEditor {
      * selected.
      */
     private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
-            "qty", "unitCost", "total");
+            "quantity", "nettPrice", "total");
 
 
     /**
-     * Construct a new <code>EstimationItemEdtor</code>.
+     * Construct a new <tt>OrderItemEdtor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent act
@@ -74,7 +79,44 @@ public class OrderItemEditor extends ActItemEditor {
      * @param quantity the product quantity
      */
     public void setQuantity(BigDecimal quantity) {
-        getProperty("qty").setValue(quantity);
+        getProperty("quantity").setValue(quantity);
+    }
+
+    /**
+     * Sets the product supplier.
+     *
+     * @param supplier the product supplier. May be <tt>null</tt>
+     */
+    public void setSupplier(Party supplier) {
+        getProductEditor().setSupplier(supplier);
+    }
+
+    /**
+     * Sets the stock location.
+     *
+     * @param location the stock location. May be <tt>null</tt>
+     */
+    public void setStockLocation(Party location) {
+        getProductEditor().setStockLocation(location);
+    }
+
+    /**
+     * Save any edits.
+     *
+     * @return <code>true</code> if the save was successful
+     */
+    @Override
+    protected boolean doSave() {
+        if (getObject().isNew()) {
+            ProductParticipationEditor editor = getProductEditor();
+            Party supplier = editor.getSupplier();
+            Product product = editor.getEntity();
+            if (supplier != null && product != null) {
+                updateProductSupplierRelationship(product, supplier);
+            }
+
+        }
+        return super.doSave();
     }
 
     /**
@@ -91,20 +133,118 @@ public class OrderItemEditor extends ActItemEditor {
                 if (getFilter() != TEMPLATE_FILTER) {
                     changeLayout(TEMPLATE_FILTER);
                 }
-                // zero out the unit cost
-                Property unitCost = getProperty("unitCost");
-                unitCost.setValue(BigDecimal.ZERO);
             } else {
                 if (getFilter() != null) {
                     changeLayout(null);
                 }
-                Property unitCost = getProperty("unitCost");
-                ProductPrice unit = getPrice("productPrice.unitPrice", product);
-                if (unit != null) {
-                    unitCost.setValue(unit.getPrice());
+                ProductParticipationEditor editor = getProductEditor();
+                ProductSupplier ps = editor.getProductSupplier();
+                if (ps != null) {
+                    Property reorderCode = getProperty("reorderCode");
+                    reorderCode.setValue(ps.getReorderCode());
+                    getProperty("reorderDescription").setValue(
+                            ps.getReorderDescription());
+                    getProperty("packageSize").setValue(ps.getPackageSize());
+                    getProperty("packageUnits").setValue(ps.getPackageUnits());
+                    getProperty("listPrice").setValue(ps.getListPrice());
+                    getProperty("nettPrice").setValue(ps.getNettPrice());
                 }
             }
         }
     }
 
+    /**
+     * Invoked when layout has completed.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        Act parent = (Act) getParent();
+        if (parent != null) {
+            // propagate the parent's supplier and stock location. Can only do
+            // this once the product editor is created
+            ActBean bean = new ActBean(parent);
+            Party supplier = (Party) bean.getNodeParticipant("supplier");
+            Party location = (Party) bean.getNodeParticipant("stockLocation");
+            setSupplier(supplier);
+            setStockLocation(location);
+        }
+    }
+
+    /**
+     * @param product
+     * @param supplier
+     */
+    private void updateProductSupplierRelationship(Product product,
+                                                   Party supplier) {
+        OrderRules rules = new OrderRules();
+        int size = getPackageSize();
+        String units = getPackageUnits();
+        ProductSupplier ps = rules.getProductSupplier(product, supplier,
+                                                      size, units);
+        boolean save = false;
+        String reorderDesc = getReorderDescription();
+        String reorderCode = getReorderCode();
+        BigDecimal listPrice = getListPrice();
+        BigDecimal nettPrice = getNettPrice();
+        if (ps == null) {
+            ps = rules.createProductSupplier(product, supplier);
+            ps.setPackageSize(size);
+            ps.setPackageUnits(units);
+            ps.setReorderCode(reorderCode);
+            ps.setReorderDescription(reorderDesc);
+            ps.setListPrice(listPrice);
+            ps.setNettPrice(nettPrice);
+            save = true;
+        } else {
+            if (!equals(listPrice, ps.getListPrice())
+                    || !equals(nettPrice, ps.getNettPrice())
+                    || !ObjectUtils.equals(ps.getReorderCode(),
+                                           reorderCode)
+                    || !ObjectUtils.equals(ps.getReorderDescription(),
+                                           reorderDesc)) {
+                ps.setReorderCode(reorderCode);
+                ps.setReorderDescription(reorderDesc);
+                ps.setListPrice(listPrice);
+                ps.setNettPrice(nettPrice);
+                save = true;
+            }
+        }
+        if (save) {
+            ps.save();
+        }
+    }
+
+
+    private int getPackageSize() {
+        Integer value = (Integer) getProperty("packageSize").getValue();
+        return (value != null) ? value : 0;
+    }
+
+    private String getPackageUnits() {
+        return (String) getProperty("packageUnits").getValue();
+    }
+
+    private String getReorderCode() {
+        return (String) getProperty("reorderCode").getValue();
+    }
+
+    private String getReorderDescription() {
+        return (String) getProperty("reorderDescription").getValue();
+    }
+
+    private BigDecimal getListPrice() {
+        return (BigDecimal) getProperty("listPrice").getValue();
+    }
+
+    private BigDecimal getNettPrice() {
+        return (BigDecimal) getProperty("nettPrice").getValue();
+    }
+
+    private boolean equals(BigDecimal lhs, BigDecimal rhs) {
+        if (lhs != null && rhs != null) {
+            return lhs.compareTo(rhs) == 0;
+        }
+        return ObjectUtils.equals(lhs, rhs);
+    }
 }

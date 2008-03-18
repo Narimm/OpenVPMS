@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -31,9 +32,8 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
-import org.openvpms.web.app.subsystem.ActWorkspace;
+import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
@@ -42,8 +42,8 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.FastLookupHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -56,7 +56,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
+public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Patient Document shortnames supported by the workspace.
@@ -85,13 +85,19 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      */
     private static final SortConstraint[] DEFAULT_SORT
             = new SortConstraint[]{new NodeSortConstraint("startTime", false)};
+    private Archetypes<DocumentAct> docArchetypes;
 
     /**
      * Constructs a new <tt>PatientRecordWorkspace</tt>.
      */
     public PatientRecordWorkspace() {
-        super("patient", "record", new ShortNameList("party.patient*"),
-              Party.class);
+        super("patient", "record");
+        setArchetypes(Party.class, "party.patient*");
+        setChildArchetypes(Act.class, "act.patientClinicalEvent");
+
+        docArchetypes = Archetypes.create(
+                DOCUMENT_SHORT_NAMES, DocumentAct.class,
+                Messages.get("patient.document.createtype"));
     }
 
     /**
@@ -103,8 +109,6 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
     public void setObject(Party object) {
         super.setObject(object);
         ContextHelper.setPatient(object);
-        layoutWorkspace(object);
-        initQuery(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -131,19 +135,6 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
     }
 
     /**
-     * Lays out the component.
-     *
-     * @param container the container
-     */
-    protected void doLayout(Component container) {
-        Party patient = GlobalContext.getInstance().getPatient();
-        patient = IMObjectHelper.reload(patient);
-        if (!IMObjectHelper.isSame(getObject(), patient)) {
-            setObject(patient);
-        }
-    }
-
-    /**
      * Create a new query.
      *
      * @return a new query
@@ -151,23 +142,12 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      *                                 archetypes
      */
     @Override
-    protected Query<Party> createQuery() {
-        Query<Party> query = super.createQuery();
+    protected Query<Party> createSelectQuery() {
+        Query<Party> query = super.createSelectQuery();
         if (query instanceof PatientQuery) {
             ((PatientQuery) query).setShowAllPatients(true);
         }
         return query;
-    }
-
-    /**
-     * Returns a component representing the acts.
-     *
-     * @param acts the act browser
-     * @return a component representing the acts
-     */
-    @Override
-    protected Component getActs(Browser acts) {
-        return acts.getComponent();
     }
 
     /**
@@ -199,7 +179,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        SummaryCRUDWindow window = new SummaryCRUDWindow();
+        SummaryCRUDWindow window = new SummaryCRUDWindow(getChildArchetypes());
         window.setQuery((PatientSummaryQuery) getQuery());
         return window;
     }
@@ -207,11 +187,10 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
     /**
      * Creates a new query for the visits view.
      *
-     * @param party the party to query acts for
      * @return a new query
      */
-    protected ActQuery<Act> createQuery(Party party) {
-        return new PatientSummaryQuery(party);
+    protected ActQuery<Act> createQuery() {
+        return new PatientSummaryQuery(getObject());
     }
 
     /**
@@ -221,7 +200,7 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      * @return a new browser
      */
     @Override
-    protected Browser<Act> createBrowser(ActQuery<Act> query) {
+    protected Browser<Act> createBrowser(Query<Act> query) {
         RecordBrowser browser = new RecordBrowser((PatientSummaryQuery) query,
                                                   createProblemsQuery(),
                                                   createReminderAlertQuery(),
@@ -241,8 +220,8 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
      * @param act the act
      */
     @Override
-    protected void actSelected(Act act) {
-        super.actSelected(act);
+    protected void onBrowserSelected(Act act) {
+        super.onBrowserSelected(act);
         CRUDWindow<Act> window = getCRUDWindow();
         if (window instanceof PatientRecordCRUDWindow) {
             Act event = getEvent(act);
@@ -269,8 +248,8 @@ public class PatientRecordWorkspace extends ActWorkspace<Party, Act> {
             w.setEvent(event);
             window = (CRUDWindow<Act>) w;
         } else if (view == RecordBrowser.View.DOCUMENTS) {
-            String type = Messages.get("patient.document.createtype");
-            window = new DocumentCRUDWindow(type, DOCUMENT_SHORT_NAMES);
+            CRUDWindow w = new DocumentCRUDWindow(docArchetypes);
+            window = (CRUDWindow<Act>) w;  // todo
         } else if (view == RecordBrowser.View.REMINDER_ALERT) {
             window = new ReminderCRUDWindow();
         } else {

@@ -13,10 +13,10 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id:SupplierInvoiceItemEditor.java 2287 2007-08-13 07:56:33Z tanderson $
  */
 
-package org.openvpms.web.component.im.invoice;
+package org.openvpms.web.component.im.account;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;

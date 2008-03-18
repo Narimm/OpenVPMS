@@ -18,27 +18,26 @@
 
 package org.openvpms.web.app.customer.document;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.util.FastLookupHelper;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
+
 /**
+ * Workspace for <em>act.customerDocument*</em> acts.
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-
-public class CustomerDocumentWorkspace extends CustomerActWorkspace {
+public class CustomerDocumentWorkspace
+        extends CustomerActWorkspace<DocumentAct> {
 
     /**
      * Customer Document shortnames supported by the workspace.
@@ -53,6 +52,7 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
      */
     public CustomerDocumentWorkspace() {
         super("customer", "document");
+        setChildArchetypes(DocumentAct.class, SHORT_NAMES);
     }
 
     /**
@@ -60,32 +60,21 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow<Act> createCRUDWindow() {
-        String type = Messages.get("customer.document.createtype");
-        return new DocumentCRUDWindow(type, SHORT_NAMES);
+    protected CRUDWindow<DocumentAct> createCRUDWindow() {
+        return new DocumentCRUDWindow(getChildArchetypes());
     }
 
     /**
      * Creates a new query.
      *
-     * @param customer the customer to query acts for
      * @return a new query
      */
-    protected ActQuery<Act> createQuery(Party customer) {
+    protected ActQuery<DocumentAct> createQuery() {
         List<Lookup> lookups = FastLookupHelper.getLookups(
                 "act.customerDocumentLetter", "status");
-        return new DefaultActQuery<Act>(customer, "customer",
-                                        "participation.customer",
-                                        SHORT_NAMES, lookups);
-    }
-
-    /**
-     * Creates a new table model to display acts.
-     *
-     * @return a new table model.
-     */
-    protected IMObjectTableModel<Act> createTableModel() {
-        return IMObjectTableModelFactory.create(SHORT_NAMES, null);
+        return new DefaultActQuery<DocumentAct>(getObject(), "customer",
+                                                "participation.customer",
+                                                SHORT_NAMES, lookups);
     }
 
 }

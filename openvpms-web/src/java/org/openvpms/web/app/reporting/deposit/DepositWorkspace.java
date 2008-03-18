@@ -18,20 +18,15 @@
 
 package org.openvpms.web.app.reporting.deposit;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.finance.deposit.DepositStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.subsystem.ActWorkspace;
+import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.im.util.FastLookupHelper;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
@@ -42,26 +37,16 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-19 07:20:38Z $
  */
-public class DepositWorkspace extends ActWorkspace<Party, FinancialAct> {
+public class DepositWorkspace
+        extends BrowserCRUDWorkspace<Party, FinancialAct> {
 
     /**
      * Construct a new <tt>DepositWorkspace</tt>.
      */
     public DepositWorkspace() {
-        super("reporting", "deposit",
-              new ShortNameList("party.organisationDeposit"), Party.class);
-    }
-
-    /**
-     * Sets the current object.
-     *
-     * @param object the object. May be <tt>null</tt>
-     */
-    @Override
-    public void setObject(Party object) {
-        super.setObject(object);
-        layoutWorkspace(object);
-        initQuery(object);
+        super("reporting", "deposit");
+        setArchetypes(Party.class, "party.organisationDeposit");
+        setChildArchetypes(FinancialAct.class, "act.bankDeposit");
     }
 
     /**
@@ -70,41 +55,22 @@ public class DepositWorkspace extends ActWorkspace<Party, FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        String type = Messages.get("reporting.deposit.createtype");
-        return new DepositCRUDWindow(type, "act.bankDeposit");
+        return new DepositCRUDWindow(getChildArchetypes());
     }
 
     /**
      * Creates a new query.
      *
-     * @param till the till to query acts for
      * @return a new query
      */
-    protected ActQuery<FinancialAct> createQuery(Party till) {
+    protected ActQuery<FinancialAct> createQuery() {
         List<Lookup> lookups = FastLookupHelper.getLookups("act.bankDeposit",
                                                            "status");
         ActQuery<FinancialAct> query = new DefaultActQuery<FinancialAct>(
-                till, "depositAccount", "participation.deposit",
+                getObject(), "depositAccount", "participation.deposit",
                 "act.bankDeposit", lookups);
         query.setStatus(DepositStatus.UNDEPOSITED);
         return query;
-    }
-
-    /**
-     * Lays out the component.
-     *
-     * @param container the container
-     */
-    protected void doLayout(Component container) {
-    }
-
-    /**
-     * Creates a new table model to display acts.
-     *
-     * @return a new table model.
-     */
-    protected IMObjectTableModel<FinancialAct> createTableModel() {
-        return new ActAmountTableModel<FinancialAct>(true, true);
     }
 
 }

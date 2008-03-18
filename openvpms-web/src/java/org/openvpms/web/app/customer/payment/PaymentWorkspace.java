@@ -21,14 +21,14 @@ package org.openvpms.web.app.customer.payment;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.customer.CustomerFinancialActWorkspace;
+import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -37,7 +37,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PaymentWorkspace extends CustomerFinancialActWorkspace {
+public class PaymentWorkspace extends CustomerActWorkspace<FinancialAct> {
 
     /**
      * Payment and refund shortnames supported by the workspace.
@@ -51,6 +51,7 @@ public class PaymentWorkspace extends CustomerFinancialActWorkspace {
      */
     public PaymentWorkspace() {
         super("customer", "payment");
+        setChildArchetypes(FinancialAct.class, SHORT_NAMES);
     }
 
     /**
@@ -59,20 +60,18 @@ public class PaymentWorkspace extends CustomerFinancialActWorkspace {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        String type = Messages.get("customer.payment.createtype");
-        return new PaymentCRUDWindow(type, SHORT_NAMES);
+        return new PaymentCRUDWindow(getChildArchetypes());
     }
 
     /**
      * Creates a new query.
      *
-     * @param customer the customer to query acts for
      * @return a new query
      */
-    protected ActQuery<FinancialAct> createQuery(Party customer) {
+    protected Query<FinancialAct> createQuery() {
         String[] statuses = {FinancialActStatus.IN_PROGRESS,
                              FinancialActStatus.ON_HOLD};
-        return new DefaultActQuery<FinancialAct>(customer, "customer",
+        return new DefaultActQuery<FinancialAct>(getObject(), "customer",
                                                  "participation.customer",
                                                  SHORT_NAMES, statuses);
     }
@@ -87,17 +86,21 @@ public class PaymentWorkspace extends CustomerFinancialActWorkspace {
     protected void onSaved(FinancialAct object, boolean isNew) {
         super.onSaved(object, isNew);
         if (FinancialActStatus.POSTED.equals(object.getStatus())) {
-            actSelected(null);
+            onBrowserSelected(null);
         }
     }
 
     /**
-     * Creates a new table model to display acts.
+     * Creates a new browser to query and display acts.
      *
-     * @return a new table model.
+     * @param query the query
+     * @return a new browser
      */
-    protected IMObjectTableModel<FinancialAct> createTableModel() {
-        return new ActAmountTableModel<FinancialAct>(true, true);
+    @Override
+    protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
+        IMObjectTableModel<FinancialAct> model
+                = new ActAmountTableModel<FinancialAct>(true, true);
+        return BrowserFactory.create(query, null, model);
     }
 
 }

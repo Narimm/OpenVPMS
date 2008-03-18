@@ -16,34 +16,48 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.supplier;
+package org.openvpms.web.app.supplier.order;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.rules.act.ActStatus;
 import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
+import org.openvpms.archetype.rules.supplier.DeliveryStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
-import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActCopyHandler;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.workflow.DefaultTaskContext;
+import org.openvpms.web.component.workflow.EditIMObjectTask;
+import org.openvpms.web.component.workflow.SelectIMObjectTask;
+import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.component.workflow.TaskEvent;
+import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
@@ -56,17 +70,17 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
+public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
     /**
      * The copy button.
      */
-    private Button _copy;
+    private Button copy;
 
     /**
      * The invoice button.
      */
-    private Button _invoice;
+    private Button invoice;
 
     /**
      * Copy button identifier.
@@ -116,12 +130,10 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
     /**
      * Create a new <tt>OrderCRUDWindow</tt>.
      *
-     * @param type      display name for the types of objects that this may
-     *                  create
-     * @param shortName the archetype short name
+     * @param archetypes the archetypes that this may create
      */
-    public OrderCRUDWindow(String type, String shortName) {
-        super(type, new ShortNameList(shortName));
+    public OrderCRUDWindow(Archetypes<FinancialAct> archetypes) {
+        super(archetypes);
     }
 
     /**
@@ -131,17 +143,17 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        _copy = ButtonFactory.create(COPY_ID, new ActionListener() {
+        copy = ButtonFactory.create(COPY_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onCopy();
             }
         });
-        _invoice = ButtonFactory.create(INVOICE_ID, new ActionListener() {
+        invoice = ButtonFactory.create(INVOICE_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onInvoice();
             }
         });
-        enableButtons(buttons, true);
+        enableButtons(buttons, false);
     }
 
     /**
@@ -154,16 +166,57 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.removeAll();
         if (enable) {
-            buttons.add(getEditButton());
+            ActBean bean = new ActBean(getObject());
+            if (DeliveryStatus.FULL.equals(bean.getString("deliveryStatus"))) {
+                buttons.add(getEditButton());
+            }
             buttons.add(getCreateButton());
-            buttons.add(getDeleteButton());
+            if (!ActStatus.POSTED.equals(bean.getStatus())) {
+                buttons.add(getDeleteButton());
+            }
             buttons.add(getPostButton());
             buttons.add(getPreviewButton());
-            buttons.add(_copy);
-            buttons.add(_invoice);
+            buttons.add(copy);
+            buttons.add(invoice);
         } else {
             buttons.add(getCreateButton());
         }
+    }
+
+    /**
+     * Invoked when a new order has been created.
+     * <p/>
+     * This implementation pops up browser to select the supplier, then displays
+     * an edit dialog for the order.
+     *
+     * @param act the new order
+     */
+    @Override
+    protected void onCreated(final FinancialAct act) {
+        String shortName = "party.supplier*";
+        final TaskContext initial = new DefaultTaskContext();
+        Query<Party> query = QueryFactory.create(shortName, initial,
+                                                 Party.class);
+        EditIMObjectTask editor = new EditIMObjectTask(shortName, true);
+        SelectIMObjectTask<Party> select = new SelectIMObjectTask<Party>(
+                Messages.get("supplier.order.type"), query, editor);
+        select.start(initial);
+        select.addTaskListener(new TaskListener() {
+            public void taskEvent(TaskEvent event) {
+                if (event.getType().equals(TaskEvent.Type.COMPLETED)) {
+                    Party s = initial.getSupplier();
+                    if (s != null) {
+                        try {
+                            ActBean bean = new ActBean(act);
+                            bean.addParticipation("participation.supplier", s);
+                            edit(act);
+                        } catch (OpenVPMSException exception) {
+                            ErrorHelper.show(exception);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -174,13 +227,13 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
         try {
             IMObjectCopier copier = new IMObjectCopier(new ActCopyHandler());
             List<IMObject> objects = copier.apply(object);
-            Act act = (Act) objects.get(0);
+            FinancialAct act = (FinancialAct) objects.get(0);
             act.setStatus(IN_PROGRESS);
             act.setActivityStartTime(new Date());
             setPrintStatus(act, false);
             SaveHelper.save(objects);
             setObject(act);
-            CRUDWindowListener<Act> listener = getListener();
+            CRUDWindowListener<FinancialAct> listener = getListener();
             if (listener != null) {
                 listener.saved(act, false);
             }
@@ -194,7 +247,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
      * Invoked when the 'invoice' button is pressed.
      */
     protected void onInvoice() {
-        final Act act = getObject();
+        final FinancialAct act = getObject();
         String title = Messages.get("supplier.order.invoice.title");
         String message = Messages.get("supplier.order.invoice.message");
         final ConfirmationDialog dialog
@@ -214,11 +267,11 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
      *
      * @param order the order
      */
-    private void invoice(Act order) {
+    private void invoice(FinancialAct order) {
         try {
             IMObjectCopier copier = new IMObjectCopier(new InvoiceHandler());
             List<IMObject> objects = copier.apply(order);
-            Act invoice = (Act) objects.get(0);
+            FinancialAct invoice = (FinancialAct) objects.get(0);
             invoice.setStatus(IN_PROGRESS);
             invoice.setActivityStartTime(new Date());
             setPrintStatus(invoice, false);
@@ -228,7 +281,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<Act> {
                 order.setStatus(POSTED);
                 SaveHelper.save(order);
                 setObject(order);
-                CRUDWindowListener<Act> listener = getListener();
+                CRUDWindowListener<FinancialAct> listener = getListener();
                 if (listener != null) {
                     listener.saved(order, false);
                 }

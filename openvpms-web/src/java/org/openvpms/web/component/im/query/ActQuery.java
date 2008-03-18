@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
@@ -53,12 +54,12 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * The participant node name.
      */
-    private final String participant;
+    private String participant;
 
     /**
      * The entity participation short name. May be <tt>null</tt>
      */
-    private final String participation;
+    private String participation;
 
     /**
      * The id of the entity to search for.
@@ -90,6 +91,13 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      */
     private SelectField statusSelector;
 
+    /**
+     * The default sort constraint.
+     */
+    private static final SortConstraint[] DEFAULT_SORT = {
+            new NodeSortConstraint("startTime", false)
+    };
+
 
     /**
      * Constructs a new <tt>ActQuery</tt>.
@@ -101,6 +109,18 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      */
     public ActQuery(String[] shortNames, String[] statuses, Class type) {
         this(null, null, null, shortNames, true, statuses, type);
+    }
+
+    /**
+     * Constructs a new <tt>ActQuery</tt>.
+     *
+     * @param shortNames    the act short names to query
+     * @param statusLookups the act status lookups
+     * @param type          the type that this query returns
+     */
+    public ActQuery(String[] shortNames, List<Lookup> statusLookups,
+                    Class type) {
+        this(null, null, null, shortNames, statusLookups, null, type);
     }
 
     /**
@@ -126,19 +146,18 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      *                      May be <tt>null</tt>
      * @param shortNames    the act short names
      * @param statusLookups the act status lookups
-     * @param excludeStatus to exclude. May be <tt>null</tt>
+     * @param excludeStatus to act status to exclude. May be <tt>null</tt>
      * @param type          the type that this query returns
      */
     public ActQuery(Entity entity, String participant, String participation,
                     String[] shortNames, List<Lookup> statusLookups,
                     String excludeStatus, Class type) {
         super(shortNames, type);
-        setEntity(entity);
-        this.participant = participant;
-        this.participation = participation;
+        setParticipantConstraint(entity, participant, participation);
         this.excludeStatus = excludeStatus;
         this.statusLookups = getStatusLookups(statusLookups, excludeStatus);
         statuses = new String[0];
+        setDefaultSortConstraint(DEFAULT_SORT);
     }
 
     /**
@@ -176,12 +195,11 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
                     String[] shortNames, boolean primaryOnly,
                     String[] statuses, Class type) {
         super(shortNames, primaryOnly, type);
-        setEntity(entity);
-        this.participant = participant;
-        this.participation = participation;
+        setParticipantConstraint(entity, participant, participation);
         this.statuses = statuses;
         statusLookups = null;
         excludeStatus = null;
+        setDefaultSortConstraint(DEFAULT_SORT);
     }
 
     /**
@@ -191,16 +209,6 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      */
     public void setEntity(Entity entity) {
         entityId = (entity != null) ? entity.getObjectReference() : null;
-    }
-
-    /**
-     * Determines if the query should be run automatically.
-     *
-     * @return <tt>true</tt> if the query should be run automatically;
-     *         otherwise <tt>false</tt>
-     */
-    public boolean isAuto() {
-        return false;
     }
 
     /**
@@ -300,6 +308,22 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
         }
         archetypes.setAlias("act");
         return archetypes;
+    }
+
+    /**
+     * Sets the participation constraint. This may be used to only return
+     * acts for a particular entity, or if <tt>null</tt>, all entities.
+     *
+     * @param entity    the entity. May be <tt>null</tt>
+     * @param nodeName  the participation node. If <tt>null</tt>, indicates to
+     *                  not constrain acts to an entity
+     * @param shortName the participation archetype short name. May be <tt>null</tt>
+     */
+    protected void setParticipantConstraint(Entity entity, String nodeName,
+                                            String shortName) {
+        setEntity(entity);
+        participant = nodeName;
+        participation = shortName;
     }
 
     /**

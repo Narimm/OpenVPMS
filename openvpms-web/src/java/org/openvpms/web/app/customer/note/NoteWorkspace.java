@@ -19,13 +19,9 @@
 package org.openvpms.web.app.customer.note;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -47,6 +43,7 @@ public class NoteWorkspace extends CustomerActWorkspace<Act> {
      */
     public NoteWorkspace() {
         super("customer", "note");
+        setChildArchetypes(Act.class, SHORT_NAME);
     }
 
     /**
@@ -55,27 +52,16 @@ public class NoteWorkspace extends CustomerActWorkspace<Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        String type = Messages.get("customer.note.createtype");
-        return new NoteCRUDWindow(type, SHORT_NAME);
+        return new NoteCRUDWindow(getChildArchetypes());
     }
 
     /**
      * Creates a new query.
      *
-     * @param customer the party to query acts for
      * @return a new query
      */
-    protected ActQuery<Act> createQuery(Party customer) {
-        return new NoteQuery(customer);
+    protected ActQuery<Act> createQuery() {
+        return new NoteQuery(getObject());
     }
 
-    /**
-     * Creates a new table model to display acts.
-     *
-     * @return a new table model.
-     */
-    @Override
-    protected IMObjectTableModel<Act> createTableModel() {
-        return IMObjectTableModelFactory.create(new String[]{SHORT_NAME}, null);
-    }
 }

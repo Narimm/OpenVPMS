@@ -21,11 +21,11 @@ package org.openvpms.web.app.customer.payment;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.account.EditAccountActDialog;
+import org.openvpms.web.component.im.util.Archetypes;
 
 
 /**
@@ -39,12 +39,10 @@ public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     /**
      * Create a new <tt>PaymentCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create
+     * @param archetypes the archetypes that this may create
      */
-    public PaymentCRUDWindow(String type, String[] shortNames) {
-        super(type, new ShortNameList(shortNames));
+    public PaymentCRUDWindow(Archetypes<FinancialAct> archetypes) {
+        super(archetypes);
     }
 
     /**

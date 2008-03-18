@@ -146,6 +146,18 @@ public abstract class AbstractCollectionPropertyEditor
     }
 
     /**
+     * Returns the editors.
+     * <p/>
+     * There may be fewer editors than there are objects in the collection,
+     * as objects may not have an associated editor.
+     *
+     * @return the editors
+     */
+    public Collection<IMObjectEditor> getEditors() {
+        return editors.values();
+    }
+
+    /**
      * Removes an object from the collection.
      * This removes any associated editor.
      *

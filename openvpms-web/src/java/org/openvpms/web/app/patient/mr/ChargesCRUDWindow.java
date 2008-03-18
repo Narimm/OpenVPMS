@@ -19,12 +19,11 @@
 package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.resource.util.Messages;
+
 
 /**
  * @author tony
@@ -34,15 +33,16 @@ public class ChargesCRUDWindow extends ActCRUDWindow<Act> {
     /**
      * Reminder and alert shortnames supported by the workspace.
      */
-    private static final String[] SHORT_NAMES = {"act.customerAccountInvoiceItem",
-                                                 "act.customerAccountCreditItem"};
+    private static final String[] SHORT_NAMES =
+            {"act.customerAccountInvoiceItem",
+             "act.customerAccountCreditItem"};
 
     /**
-     * Create a new <code>ChargesCRUDWindow</code>.
+     * Create a new <tt>ChargesCRUDWindow</tt>.
      */
     public ChargesCRUDWindow() {
-        super(Messages.get("patient.charges.createtype"),
-              new ShortNameList(SHORT_NAMES));
+        super(Archetypes.create(SHORT_NAMES, Act.class,
+                                Messages.get("patient.charges.createtype")));
     }
 
     /**
@@ -64,19 +64,5 @@ public class ChargesCRUDWindow extends ActCRUDWindow<Act> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
     }
-
-    /**
-     * Invoked when the 'print' button is pressed.
-     * This implementation prints the current rather than
-     * the selected item.
-     */
-    @Override
-    protected void onPrint() {
-        try {
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
 
 }

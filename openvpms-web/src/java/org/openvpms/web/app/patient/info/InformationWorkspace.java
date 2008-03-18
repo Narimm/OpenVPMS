@@ -22,9 +22,8 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
+import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.PatientQuery;
@@ -37,14 +36,14 @@ import org.openvpms.web.component.im.query.Query;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InformationWorkspace extends CRUDWorkspace<Party> {
+public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
      * Constructs a new <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
-        super("patient", "info", new ShortNameList("party.patient*"),
-              Party.class);
+        super("patient", "info");
+        setArchetypes(Party.class, "party.patient*");
     }
 
     /**
@@ -102,7 +101,7 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
      */
     @Override
     protected CRUDWindow<Party> createCRUDWindow() {
-        return new InformationCRUDWindow(getTypeName(), getShortNames());
+        return new InformationCRUDWindow(getArchetypes());
     }
 
     /**
@@ -113,8 +112,8 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
      *                                 archetypes
      */
     @Override
-    protected Query<Party> createQuery() {
-        Query<Party> query = super.createQuery();
+    protected Query<Party> createSelectQuery() {
+        Query<Party> query = super.createSelectQuery();
         if (query instanceof PatientQuery) {
             ((PatientQuery) query).setShowAllPatients(true);
         }

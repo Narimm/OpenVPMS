@@ -21,13 +21,13 @@ package org.openvpms.web.app.patient.mr;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.medication.PatientMedicationActLayoutStrategy;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 
 
@@ -49,10 +49,10 @@ public class MedicationRecordCRUDWindow extends AbstractViewCRUDWindow<Act> {
 
 
     /**
-     * Create a new <code>MedicationRecordCRUDWindow</code>.
+     * Create a new <tt>MedicationRecordCRUDWindow</tt>.
      */
     public MedicationRecordCRUDWindow() {
-        super(null, new ShortNameList("act.patientMedication"));
+        super(Archetypes.create("act.patientMedication", Act.class));
     }
 
     /**
@@ -102,7 +102,7 @@ public class MedicationRecordCRUDWindow extends AbstractViewCRUDWindow<Act> {
          * Creates a new layout strategy for an object.
          *
          * @param object the object to create the layout strategy for
-         * @param parent the parent object. May be <code>null</code>
+         * @param parent the parent object. May be <tt>null</tt>
          */
         @Override
         public IMObjectLayoutStrategy create(IMObject object, IMObject parent) {

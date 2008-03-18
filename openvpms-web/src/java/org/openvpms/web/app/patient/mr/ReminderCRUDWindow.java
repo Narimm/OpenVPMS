@@ -25,9 +25,9 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -48,11 +48,11 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
                                                  "act.patientAlert"};
 
     /**
-     * Create a new <code>ReminderCRUDWindow</code>.
+     * Create a new <tt>ReminderCRUDWindow</tt>.
      */
     public ReminderCRUDWindow() {
-        super(Messages.get("patient.reminder.createtype"),
-              new ShortNameList(SHORT_NAMES));
+        super(Archetypes.create(SHORT_NAMES, Act.class,
+                                Messages.get("patient.reminder.createtype")));
     }
 
     /**

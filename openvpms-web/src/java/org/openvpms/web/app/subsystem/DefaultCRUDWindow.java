@@ -19,6 +19,7 @@
 package org.openvpms.web.app.subsystem;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.util.Archetypes;
 
 
 /**
@@ -31,15 +32,11 @@ public class DefaultCRUDWindow<T extends IMObject>
         extends AbstractViewCRUDWindow<T> {
 
     /**
-     * Create a new <code>DefaultCRUDWindow</code>.
+     * Create a new <tt>DefaultCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create.
-     *                   If <code>null</code> subclass must override
-     *                   {@link #getShortNames}
+     * @param archetypes the archetypes that this may create.
      */
-    public DefaultCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public DefaultCRUDWindow(Archetypes<T> archetypes) {
+        super(archetypes);
     }
 }

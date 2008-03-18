@@ -27,8 +27,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ErrorHelper;
 
 
@@ -50,12 +50,10 @@ public abstract class CustomerActCRUDWindow<T extends Act>
     /**
      * Create a new <tt>CustomerActCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create
+     * @param archetypes the archetypes that this may create
      */
-    public CustomerActCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public CustomerActCRUDWindow(Archetypes<T> archetypes) {
+        super(archetypes);
     }
 
     /**

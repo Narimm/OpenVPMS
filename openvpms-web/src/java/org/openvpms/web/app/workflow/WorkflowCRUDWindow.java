@@ -23,12 +23,12 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.checkout.CheckOutWorkflow;
 import org.openvpms.web.app.workflow.consult.ConsultWorkflow;
 import org.openvpms.web.app.workflow.otc.OverTheCounterWorkflow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ProtectedListener;
@@ -78,16 +78,12 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow<Act> {
 
 
     /**
-     * Constructs a new <code>WorkflowCRUDWindow</code>.
+     * Constructs a new <tt>WorkflowCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create.
-     *                   If <code>null</code> subclass must override
-     *                   {@link #getShortNames}
+     * @param archetypes the archetypes that this may create
      */
-    public WorkflowCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public WorkflowCRUDWindow(Archetypes<Act> archetypes) {
+        super(archetypes);
     }
 
     /**

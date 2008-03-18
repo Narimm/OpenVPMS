@@ -20,7 +20,7 @@ package org.openvpms.web.app.customer.note;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.im.util.Archetypes;
 
 
 /**
@@ -34,12 +34,10 @@ public class NoteCRUDWindow extends AbstractViewCRUDWindow<Act> {
     /**
      * Constructs a new <tt>NoteCRUDWindow</tt>.
      *
-     * @param type      display name for the types of objects that this may
-     *                  create
-     * @param shortName the short name of the archetypes that this may create.
+     * @param archetypes the archetypes that this may create.
      */
-    public NoteCRUDWindow(String type, String shortName) {
-        super(type, new ShortNameList(shortName));
+    public NoteCRUDWindow(Archetypes<Act> archetypes) {
+        super(archetypes);
     }
 
 }

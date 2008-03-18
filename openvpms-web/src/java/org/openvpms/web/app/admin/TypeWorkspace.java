@@ -19,8 +19,7 @@
 package org.openvpms.web.app.admin;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 
 
 /**
@@ -29,13 +28,14 @@ import org.openvpms.web.app.subsystem.ShortNameList;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class TypeWorkspace extends CRUDWorkspace<Entity> {
+public class TypeWorkspace extends BasicCRUDWorkspace<Entity> {
 
     /**
      * Constructs a new <tt>TypeWorkspace</tt>.
      */
     public TypeWorkspace() {
-        super("admin", "type", new ShortNameList("entity.*Type"), Entity.class);
+        super("admin", "type");
+        setArchetypes(Entity.class, "entity.*Type");
     }
 
 }

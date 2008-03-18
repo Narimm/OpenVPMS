@@ -21,6 +21,7 @@ package org.openvpms.web.app.subsystem;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
@@ -38,7 +39,7 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
     /**
      * The selected object container.
      */
-    private Component _objectContainer;
+    private Component objectContainer;
 
     /**
      * The style name.
@@ -47,29 +48,26 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
 
 
     /**
-     * Constructs a new <code>AbstractCRUDWindow</code>.
+     * Constructs a new <tt>AbstractViewCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create.
-     *                   If <code>null</code> subclass must override
-     *                   {@link #getShortNames}
+     * @param archetypes the archetypes that this may create. If <tt>null</tt>
+     *                   the subclass must override {@link #getArchetypes}
      */
-    public AbstractViewCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public AbstractViewCRUDWindow(Archetypes<T> archetypes) {
+        super(archetypes);
     }
 
     /**
      * Sets the object.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
      */
     public void setObject(T object) {
         super.setObject(object);
-        _objectContainer.removeAll();
+        objectContainer.removeAll();
         if (object != null) {
             IMObjectViewer viewer = createViewer(object);
-            _objectContainer.add(viewer.getComponent());
+            objectContainer.add(viewer.getComponent());
         }
     }
 
@@ -88,9 +86,9 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
     @Override
     protected Component doLayout() {
         super.doLayout();
-        _objectContainer = ColumnFactory.create();
+        objectContainer = ColumnFactory.create();
         return SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                STYLE, getButtons().getContainer(), _objectContainer);
+                STYLE, getButtons().getContainer(), objectContainer);
     }
 }

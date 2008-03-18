@@ -24,11 +24,11 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -57,16 +57,12 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
 
 
     /**
-     * Creates a new <code>InformationCRUDWindow</code>.
+     * Creates a new <tt>InformationCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create.
-     *                   If <code>null</code> subclass must override
-     *                   {@link #getShortNames}
+     * @param archetypes the archetypes that this may create
      */
-    public InformationCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public InformationCRUDWindow(Archetypes<Party> archetypes) {
+        super(archetypes);
     }
 
     /**

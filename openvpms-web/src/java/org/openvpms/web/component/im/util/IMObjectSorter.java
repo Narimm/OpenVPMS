@@ -88,7 +88,7 @@ public class IMObjectSorter {
      * @param sort        the sort criteria
      * @param transformer a transformer to return the underlying IMObject.
      */
-    public static <T extends IMObject> void sort(
+    public static <T> void sort(
             List<T> objects, SortConstraint[] sort, Transformer transformer) {
         ComparatorChain comparator = new ComparatorChain();
         for (SortConstraint constraint : sort) {

@@ -22,7 +22,6 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
 import org.openvpms.web.component.app.Context;
@@ -32,11 +31,13 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ProtectedListener;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.TaskListener;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -59,16 +60,12 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
 
 
     /**
-     * Constructs a new <code>AppointmentCRUDWindow</code>.
-     *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create.
-     *                   If <code>null</code> subclass must override
-     *                   {@link #getShortNames}
+     * Constructs a new <tt>AppointmentCRUDWindow</tt>.
      */
-    public AppointmentCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public AppointmentCRUDWindow() {
+        super(Archetypes.create(
+                "act.customerAppointment", Act.class,
+                Messages.get("workflow.scheduling.createtype")));
     }
 
     /**

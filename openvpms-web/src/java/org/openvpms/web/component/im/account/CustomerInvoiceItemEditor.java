@@ -16,7 +16,7 @@
  *  $Id:CustomerInvoiceItemEditor.java 2287 2007-08-13 07:56:33Z tanderson $
  */
 
-package org.openvpms.web.component.im.invoice;
+package org.openvpms.web.component.im.account;
 
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;

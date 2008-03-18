@@ -27,9 +27,9 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -61,8 +61,8 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
      * Constructs a new <tt>ProblemRecordCRUDWindow</tt>.
      */
     public ProblemRecordCRUDWindow() {
-        super(Messages.get("patient.record.createtype"),
-              new ShortNameList(CLINICAL_PROBLEM));
+        super(Archetypes.create(CLINICAL_PROBLEM, Act.class,
+                                Messages.get("patient.record.createtype")));
         clinicalEventItems = ActHelper.getTargetShortNames(
                 RELATIONSHIP_CLINICAL_EVENT_ITEM);
     }

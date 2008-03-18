@@ -21,9 +21,8 @@ package org.openvpms.web.app.customer.info;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerSummary;
+import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 
@@ -34,14 +33,14 @@ import org.openvpms.web.component.app.GlobalContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InformationWorkspace extends CRUDWorkspace<Party> {
+public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
      * Construct a new <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
-        super("customer", "info", new ShortNameList("party.customer*"),
-              Party.class);
+        super("customer", "info");
+        setArchetypes(Party.class, "party.customer*");
     }
 
     /**
@@ -99,7 +98,7 @@ public class InformationWorkspace extends CRUDWorkspace<Party> {
      */
     @Override
     protected CRUDWindow<Party> createCRUDWindow() {
-        return new InformationCRUDWindow(getTypeName(), getShortNames());
+        return new InformationCRUDWindow(getArchetypes());
     }
 
 }

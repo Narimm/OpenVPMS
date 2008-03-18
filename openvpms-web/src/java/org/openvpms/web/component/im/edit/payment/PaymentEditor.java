@@ -39,10 +39,10 @@ import java.math.BigDecimal;
 public abstract class PaymentEditor extends AccountActEditor {
 
     /**
-     * Construct a new <code>PaymentEditor</code>.
+     * Construct a new <tt>PaymentEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <code>null</code>
+     * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context
      */
     public PaymentEditor(Act act, IMObject parent,
@@ -53,8 +53,7 @@ public abstract class PaymentEditor extends AccountActEditor {
     /**
      * Update totals when an act item changes.
      */
-    protected void updateTotals() {
-        // @todo - workaround for OVPMS-211
+    protected void onItemsChanged() {
         Property amount = getProperty("amount");
         BigDecimal value = ActHelper.sum((Act) getObject(),
                                          getEditor().getActs(), "amount");

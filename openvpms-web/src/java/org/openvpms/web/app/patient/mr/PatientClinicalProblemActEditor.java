@@ -77,14 +77,6 @@ public class PatientClinicalProblemActEditor extends ActEditor {
     }
 
     /**
-     * Update totals when an act item changes.
-     * <p/>
-     * todo - workaround for OVPMS-211
-     */
-    protected void updateTotals() {
-    }
-
-    /**
      * Invoked when the status changes. Sets the end time to today if the
      * status is 'RESOLVED', otherwise <code>null</code>.
      */

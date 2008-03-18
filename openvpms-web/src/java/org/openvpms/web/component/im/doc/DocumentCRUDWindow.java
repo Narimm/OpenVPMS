@@ -28,10 +28,10 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -42,7 +42,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DocumentCRUDWindow extends ActCRUDWindow<Act> {
+public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
 
 
     /**
@@ -59,12 +59,10 @@ public class DocumentCRUDWindow extends ActCRUDWindow<Act> {
     /**
      * Create a new <code>DocumentCRUDWindow</code>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create
+     * @param archetypes the archetypes that this may create
      */
-    public DocumentCRUDWindow(String type, String[] shortNames) {
-        super(type, new ShortNameList(shortNames));
+    public DocumentCRUDWindow(Archetypes<DocumentAct> archetypes) {
+        super(archetypes);
     }
 
     /**
@@ -113,7 +111,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<Act> {
     @Override
     protected void onPrint() {
         boolean print = true;
-        DocumentAct act = (DocumentAct) getObject();
+        DocumentAct act = getObject();
         if (act.getDocReference() == null) {
             if (canRefresh()) {
                 if (!refresh()) {
@@ -151,7 +149,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<Act> {
      */
     private boolean refresh() {
         boolean refreshed = false;
-        DocumentAct act = (DocumentAct) getObject();
+        DocumentAct act = getObject();
         DocumentActEditor editor
                 = new DocumentActEditor(act, null, null);
         if (editor.refresh()) {

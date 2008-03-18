@@ -51,12 +51,4 @@ public class DefaultActEditor extends ActEditor {
         initParticipant("author", context.getContext().getUser());
     }
 
-    /**
-     * Update totals when an act item changes.
-     * <p/>
-     * todo - workaround for OVPMS-211
-     */
-    protected void updateTotals() {
-        // no-op
-    }
 }

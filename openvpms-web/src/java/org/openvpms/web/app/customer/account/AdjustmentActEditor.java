@@ -42,11 +42,11 @@ import java.math.BigDecimal;
 public class AdjustmentActEditor extends AccountActEditor {
 
     /**
-     * Construct a new <code>AdjustmentActEditor</code>.
+     * Construct a new <tt>AdjustmentActEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>
+     * @param parent  the parent object. May be <tt>null</tt>
+     * @param context the layout context. May be <tt>null</tt>
      */
     public AdjustmentActEditor(Act act, IMObject parent,
                                LayoutContext context) {
@@ -57,17 +57,9 @@ public class AdjustmentActEditor extends AccountActEditor {
         Property amount = getProperty("amount");
         amount.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                updateTotals();
+                recalculateTax();
             }
         });
-    }
-
-    /**
-     * Update the tax amount when the amount changes.
-     */
-    @Override
-    protected void updateTotals() {
-        recalculateTax();
     }
 
     /**

@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.relationship;
 
 import org.apache.commons.collections.Transformer;
-import org.apache.commons.collections.comparators.ComparatorChain;
 import org.apache.commons.collections.comparators.TransformingComparator;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -41,6 +40,9 @@ import java.util.List;
 class RelationshipStateResultSet
         extends AbstractListResultSet<RelationshipState> {
 
+    /**
+     * Determines if the parent of the relationship is the source or target.
+     */
     private final boolean source;
 
     /**
@@ -58,11 +60,12 @@ class RelationshipStateResultSet
      * Constructs a new <tt>RelationshipStateResultSet</tt>.
      *
      * @param objects  the objects
+     * @param source   determines if the parent of the relationship is the
+     *                 source or target
      * @param pageSize the maximum no. of results per page
      */
     public RelationshipStateResultSet(List<RelationshipState> objects,
-                                      boolean source,
-                                      int pageSize) {
+                                      boolean source, int pageSize) {
         super(objects, pageSize);
         this.source = source;
     }
@@ -75,17 +78,25 @@ class RelationshipStateResultSet
     public void sort(SortConstraint[] sort) {
         if (sort != null && sort.length != 0 && !getObjects().isEmpty()) {
             sortAscending = sort[0].isAscending();
-            ComparatorChain comparator = new ComparatorChain();
-            for (SortConstraint constraint : sort) {
-                if (constraint instanceof NodeSortConstraint) {
-                    Comparator node = getComparator(
-                            (NodeSortConstraint) constraint);
-                    if (node != null) {
-                        comparator.addComparator(node);
-                    }
+            SortConstraint s = sort[0];
+            if (s instanceof NodeSortConstraint) {
+                NodeSortConstraint n = (NodeSortConstraint) s;
+                String name = n.getNodeName();
+                if (name.equals(RelationshipStateTableModel.NAME_NODE)
+                        || name.equals(
+                        RelationshipStateTableModel.DESCRIPTION_NODE)
+                        || name.equals(RelationshipStateTableModel.DETAIL_NODE))
+                {
+                    Collections.sort(getObjects(), getComparator(n));
+                } else {
+                    Transformer transformer = new Transformer() {
+                        public Object transform(Object input) {
+                            return ((RelationshipState) input).getRelationship();
+                        }
+                    };
+                    IMObjectSorter.sort(getObjects(), sort, transformer);
                 }
             }
-            Collections.sort(getObjects(), comparator);
             this.sort = sort;
         }
         reset();

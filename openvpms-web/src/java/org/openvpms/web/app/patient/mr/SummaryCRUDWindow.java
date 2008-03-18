@@ -22,11 +22,11 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -54,10 +54,11 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
 
     /**
      * Creates a new <tt>SummaryCRUDWindow</tt>.
+     *
+     * @param archetypes the archetypes
      */
-    public SummaryCRUDWindow() {
-        super(Messages.get("patient.record.createtype"),
-              new ShortNameList("act.patientClinicalEvent"));
+    public SummaryCRUDWindow(Archetypes<Act> archetypes) {
+        super(archetypes);
     }
 
     /**

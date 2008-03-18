@@ -101,7 +101,7 @@ public class AccessKeyButtonPeer extends PushButtonPeer {
                                        iconTextMargin);
 
                 renderCellText(rc, tct, textNode, button, fallbackStyle);
-                renderCellIcon(tct, iconElement, 1, fallbackStyle);
+                renderCellIcon(rc, tct, iconElement, 1, fallbackStyle);
 
                 Element tableElement = tct.getTableElement();
                 tableElement.setAttribute("id", elementId + "_table");

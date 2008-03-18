@@ -13,7 +13,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id:NumericPropertyTransformerTestCase.java 2147 2007-06-21 04:16:11Z tanderson $
  */
 
 package org.openvpms.web.component.property;
@@ -33,7 +33,7 @@ import java.math.BigDecimal;
  * {@link NumericPropertyTransformer} test case.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate:2007-06-21 04:16:11Z $
  */
 public class NumericPropertyTransformerTestCase
         extends AbstractAppTest {

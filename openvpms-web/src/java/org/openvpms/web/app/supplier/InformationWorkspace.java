@@ -19,9 +19,10 @@
 package org.openvpms.web.app.supplier;
 
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -30,14 +31,15 @@ import org.openvpms.web.component.app.GlobalContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InformationWorkspace extends CRUDWorkspace<Party> {
+public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
      * Construct a new <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
-        super("supplier", "info", new ShortNameList("party.supplier*"),
-              Party.class);
+        super("supplier", "info",
+              Archetypes.create("party.supplier*", Party.class,
+                                Messages.get("supplier.info.type")));
     }
 
     /**

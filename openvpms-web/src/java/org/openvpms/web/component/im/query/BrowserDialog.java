@@ -32,7 +32,7 @@ import org.openvpms.web.component.util.RowFactory;
 
 
 /**
- * Displays an {@link TableBrowser} in a popup dialog.
+ * Displays a {@link Browser} in a popup dialog.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$

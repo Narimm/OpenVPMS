@@ -19,16 +19,13 @@
 package org.openvpms.web.app.supplier;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -41,14 +38,12 @@ public abstract class SupplierActCRUDWindow<T extends Act>
         extends ActCRUDWindow<T> {
 
     /**
-     * Create a new <code>CustomerActCRUDWindow</code>.
+     * Create a new <tt>SupplierActCRUDWindow</tt>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create
+     * @param archetypes the archetypes that this may create
      */
-    public SupplierActCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public SupplierActCRUDWindow(Archetypes<T> archetypes) {
+        super(archetypes);
     }
 
     /**
@@ -57,18 +52,12 @@ public abstract class SupplierActCRUDWindow<T extends Act>
      * @param act the new act
      */
     @Override
-    protected void onCreated(T act) {
+    protected void onCreated(final T act) {
         Party supplier = GlobalContext.getInstance().getSupplier();
         if (supplier != null) {
             try {
-                IArchetypeService service
-                        = ServiceHelper.getArchetypeService();
-                Participation participation
-                        = (Participation) service.create(
-                        "participation.supplier");
-                participation.setEntity(new IMObjectReference(supplier));
-                participation.setAct(new IMObjectReference(act));
-                act.addParticipation(participation);
+                ActBean bean = new ActBean(act);
+                bean.addParticipation("participation.supplier", supplier);
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);
             }

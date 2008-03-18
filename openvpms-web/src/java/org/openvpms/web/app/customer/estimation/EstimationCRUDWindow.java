@@ -40,12 +40,12 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
-import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActCopyHandler;
 import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -121,12 +121,10 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     /**
      * Create a new <tt>EstimationCRUDWindow</tt>.
      *
-     * @param type      display name for the types of objects that this may
-     *                  create
-     * @param shortName the archetype short name
+     * @param archetypes the archetypes that this may create
      */
-    public EstimationCRUDWindow(String type, String shortName) {
-        super(type, new ShortNameList(shortName));
+    public EstimationCRUDWindow(Archetypes<Act> archetypes) {
+        super(archetypes);
     }
 
     /**
