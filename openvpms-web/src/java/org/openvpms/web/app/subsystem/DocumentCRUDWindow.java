@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.doc;
+package org.openvpms.web.app.subsystem;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
@@ -27,9 +27,9 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.im.doc.DocumentActEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -150,8 +150,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     private boolean refresh() {
         boolean refreshed = false;
         DocumentAct act = getObject();
-        DocumentActEditor editor
-                = new DocumentActEditor(act, null, null);
+        DocumentActEditor editor = new DocumentActEditor(act, null, null);
         if (editor.refresh()) {
             refreshed = SaveHelper.save(editor);
             onSaved(act, false);

@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.product;
+package org.openvpms.web.component.im.product;
 
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -42,7 +42,7 @@ public class ProductSupplierTableModel
      */
     private static final String[] NODES = {"description", "preferred",
                                            "packageSize", "packageUnits",
-                                           "listPrice"};
+                                           "listPrice", "nettPrice"};
 
     /**
      * Creates a new <tt>ProductSupplierTableModel</tt>.
@@ -70,5 +70,17 @@ public class ProductSupplierTableModel
     @Override
     protected String[] getDescriptorNames() {
         return nodes;
+    }
+
+    /**
+     * Determines if selection should be enabled. This implementation returns
+     * <tt>true</tt> if in edit mode.
+     *
+     * @return <tt>true</tt> if selection should be enabled; otherwise
+     *         <tt>false</tt>
+     */
+    @Override
+    public boolean getEnableSelection() {
+        return getLayoutContext().isEdit();
     }
 }

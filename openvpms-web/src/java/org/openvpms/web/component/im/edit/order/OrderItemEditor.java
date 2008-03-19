@@ -30,10 +30,10 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
-import org.openvpms.web.component.im.edit.act.ProductParticipationEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
 
@@ -54,11 +54,12 @@ public class OrderItemEditor extends ActItemEditor {
      * selected.
      */
     private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
-            "quantity", "nettPrice", "total");
+            "nettPrice", "total", "reorderCode", "reorderDescription",
+            "quantity", "listPrice", "packageSize", "packageUnits");
 
 
     /**
-     * Construct a new <tt>OrderItemEdtor</tt>.
+     * Construct a new <tt>OrderItemEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent act
@@ -68,8 +69,7 @@ public class OrderItemEditor extends ActItemEditor {
         super(act, parent, context);
         if (!TypeHelper.isA(act, "act.supplierOrderItem")) {
             throw new IllegalArgumentException(
-                    "Invalid act type: "
-                            + act.getArchetypeId().getShortName());
+                    "Invalid act type: " + act.getArchetypeId().getShortName());
         }
     }
 
@@ -112,9 +112,8 @@ public class OrderItemEditor extends ActItemEditor {
             Party supplier = editor.getSupplier();
             Product product = editor.getEntity();
             if (supplier != null && product != null) {
-                updateProductSupplierRelationship(product, supplier);
+                checkProductSupplier(product, supplier);
             }
-
         }
         return super.doSave();
     }
@@ -134,11 +133,15 @@ public class OrderItemEditor extends ActItemEditor {
                     changeLayout(TEMPLATE_FILTER);
                 }
             } else {
-                if (getFilter() != null) {
-                    changeLayout(null);
-                }
                 ProductParticipationEditor editor = getProductEditor();
                 ProductSupplier ps = editor.getProductSupplier();
+                if (getFilter() != null) {
+                    // need to change the layout. This recreates the product
+                    // editor, so preserve any product-supplier relationship
+                    changeLayout(null);
+                    editor = getProductEditor();
+                    editor.setProductSupplier(ps);
+                }
                 if (ps != null) {
                     Property reorderCode = getProperty("reorderCode");
                     reorderCode.setValue(ps.getReorderCode());
@@ -172,11 +175,19 @@ public class OrderItemEditor extends ActItemEditor {
     }
 
     /**
-     * @param product
-     * @param supplier
+     * Checks the product supplier relationship for the specified product
+     * and supplier.
+     * <p/>
+     * If no relationship exists with the same package size and units, a new one
+     * will be added.
+     * <p/>
+     * If a relationship exists but the list price, nett price, reorder code
+     * or description have changed, it will be updated.
+     *
+     * @param product  the product
+     * @param supplier the supplier
      */
-    private void updateProductSupplierRelationship(Product product,
-                                                   Party supplier) {
+    private void checkProductSupplier(Product product, Party supplier) {
         OrderRules rules = new OrderRules();
         int size = getPackageSize();
         String units = getPackageUnits();
@@ -195,12 +206,12 @@ public class OrderItemEditor extends ActItemEditor {
             ps.setReorderDescription(reorderDesc);
             ps.setListPrice(listPrice);
             ps.setNettPrice(nettPrice);
+            ps.setPreferred(true);
             save = true;
         } else {
             if (!equals(listPrice, ps.getListPrice())
                     || !equals(nettPrice, ps.getNettPrice())
-                    || !ObjectUtils.equals(ps.getReorderCode(),
-                                           reorderCode)
+                    || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
                     || !ObjectUtils.equals(ps.getReorderDescription(),
                                            reorderDesc)) {
                 ps.setReorderCode(reorderCode);
@@ -215,32 +226,68 @@ public class OrderItemEditor extends ActItemEditor {
         }
     }
 
-
+    /**
+     * Returns the package size.
+     *
+     * @return the package size
+     */
     private int getPackageSize() {
         Integer value = (Integer) getProperty("packageSize").getValue();
         return (value != null) ? value : 0;
     }
 
+    /**
+     * Returns the package units.
+     *
+     * @return the package units
+     */
     private String getPackageUnits() {
         return (String) getProperty("packageUnits").getValue();
     }
 
+    /**
+     * Returns the reorder code.
+     *
+     * @return the reorder code
+     */
     private String getReorderCode() {
         return (String) getProperty("reorderCode").getValue();
     }
 
+    /**
+     * Returns the reorder description.
+     *
+     * @return the reorder description
+     */
     private String getReorderDescription() {
         return (String) getProperty("reorderDescription").getValue();
     }
 
+    /**
+     * Returns the list price.
+     *
+     * @return the list price
+     */
     private BigDecimal getListPrice() {
         return (BigDecimal) getProperty("listPrice").getValue();
     }
 
+    /**
+     * Returns the nett price.
+     *
+     * @return the nett price
+     */
     private BigDecimal getNettPrice() {
         return (BigDecimal) getProperty("nettPrice").getValue();
     }
 
+    /**
+     * Helper to determine if two decimals are equal.
+     *
+     * @param lhs the left-hand side. May be <tt>null</tt>
+     * @param rhs right left-hand side. May be <tt>null</tt>
+     * @return <tt>true</t> if they are equal, otherwise <tt>false</tt>
+     */
     private boolean equals(BigDecimal lhs, BigDecimal rhs) {
         if (lhs != null && rhs != null) {
             return lhs.compareTo(rhs) == 0;

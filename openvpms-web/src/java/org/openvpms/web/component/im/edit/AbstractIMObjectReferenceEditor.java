@@ -136,7 +136,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
 
         propertyListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                updateSelector();
+                onUpdate();
             }
         };
         addModifiableListener(propertyListener);
@@ -231,6 +231,16 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     }
 
     /**
+     * Invoked when the underlying property updates.
+     * <p/>
+     * This implementation is a no-op.
+     *
+     * @param object the updated object. May be <tt>null</tt>
+     */
+    protected void onUpdated(T object) {
+    }
+
+    /**
      * Invoked to create a new object.
      */
     protected void onCreate() {
@@ -300,17 +310,31 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     }
 
     /**
+     * Invoked when the property updates. Updates the selector and invokes
+     * {@link #onUpdated}.
+     */
+    private void onUpdate() {
+        T object = updateSelector();
+        onUpdated(object);
+    }
+
+    /**
      * Updates the selector from the property.
+     *
+     * @return the current object, or <tt>null</tt> if there is none
      */
     @SuppressWarnings("unchecked")
-    private void updateSelector() {
+    private T updateSelector() {
         Property property = getProperty();
         IMObjectReference reference = (IMObjectReference) property.getValue();
+        T object = null;
         if (reference != null) {
-            T object = (T) IMObjectHelper.getObject(
-                    reference, property.getArchetypeRange(), context);
-            selector.setObject(object);
+            object = (T) IMObjectHelper.getObject(reference,
+                                                  property.getArchetypeRange(),
+                                                  context);
         }
+        selector.setObject(object);
+        return object;
     }
 
     /**
