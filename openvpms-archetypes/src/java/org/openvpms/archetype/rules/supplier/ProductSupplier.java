@@ -166,7 +166,7 @@ public class ProductSupplier {
     /**
      * Returns the package units.
      *
-     * @return the package units
+     * @return the package units. May be <tt>null</tt>
      */
     public String getPackageUnits() {
         return bean.getString("packageUnits");
@@ -206,6 +206,26 @@ public class ProductSupplier {
      */
     public BigDecimal getNettPrice() {
         return bean.getBigDecimal("nettPrice");
+    }
+
+    /**
+     * Indicates if this is the preferred relatiobship for the supplier
+     * and product.
+     *
+     * @param preferred if <tt>true</tt>, this is the preferred relationship
+     */
+    public void setPreferred(boolean preferred) {
+        bean.setValue("preferred", preferred);
+    }
+
+    /**
+     * Determines if this is the preferred relationship for the supplier
+     * and product.
+     *
+     * @return <tt>true</tt> if this is the preferred relationship
+     */
+    public boolean isPreferred() {
+        return bean.getBoolean("preferred");
     }
 
     /**
