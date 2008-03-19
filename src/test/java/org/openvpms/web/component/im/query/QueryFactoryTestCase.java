@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
+import org.openvpms.web.component.im.product.ProductQuery;
 import org.openvpms.web.test.AbstractAppTest;
 
 

@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.query;
+package org.openvpms.web.component.im.product;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -30,6 +30,10 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.query.AbstractEntityQuery;
+import org.openvpms.web.component.im.query.EntityResultSet;
+import org.openvpms.web.component.im.query.IMObjectListResultSet;
+import org.openvpms.web.component.im.query.ResultSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -134,11 +138,16 @@ public class ProductQuery extends AbstractEntityQuery<Product> {
             IPage<Product> page = set.next();
             for (Product product : page.getResults()) {
                 EntityBean bean = new EntityBean(product);
-                List<IMObjectReference> locations
-                        = bean.getNodeTargetEntityRefs("stockLocations");
-                if (locations.isEmpty() || locations.contains(ref)) {
+                if (bean.hasNode("stockLocations")) {
+                    List<IMObjectReference> locations
+                            = bean.getNodeTargetEntityRefs("stockLocations");
+                    if (locations.isEmpty() || locations.contains(ref)) {
+                        matches.add(product);
+                    }
+                } else {
                     matches.add(product);
                 }
+
             }
         }
         return new IMObjectListResultSet<Product>(matches, getMaxResults());

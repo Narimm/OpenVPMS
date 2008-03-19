@@ -29,6 +29,7 @@ import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -233,7 +234,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     @Override
     protected void onLayoutCompleted() {
         final ProductParticipationEditor product = getProductEditor();
-        PatientParticipationEditor patient = getPatientEditor();
+        final PatientParticipationEditor patient = getPatientEditor();
         if (product != null) {
             final Participation participant = product.getParticipation();
             product.addModifiableListener(new ModifiableListener() {
@@ -242,8 +243,12 @@ public abstract class ActItemEditor extends AbstractActEditor {
                 }
             });
         }
-        if (product != null && patient != null) {
-            product.setPatient(patient.getProperty());
+        if (patient != null && product != null) {
+            patient.getEditor().addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    product.setPatient(patient.getEntity());
+                }
+            });
         }
     }
 
