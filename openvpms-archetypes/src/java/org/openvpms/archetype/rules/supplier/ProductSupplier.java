@@ -42,6 +42,7 @@ public class ProductSupplier {
      */
     private final IMObjectBean bean;
 
+
     /**
      * Creates a new <tt>ProductSupplier</em>.
      *
