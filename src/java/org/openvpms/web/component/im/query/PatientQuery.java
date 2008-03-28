@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.query;
 
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -31,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
@@ -187,7 +187,7 @@ public class PatientQuery extends AbstractEntityQuery<Party> {
             addAllPatients(container);
         }
         addInactive(container);
-        ApplicationInstance.getActive().setFocusedComponent(getInstanceName());
+        FocusHelper.setFocus(getInstanceName());
     }
 
     /**

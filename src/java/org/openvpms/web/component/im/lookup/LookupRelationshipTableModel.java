@@ -44,24 +44,15 @@ public class LookupRelationshipTableModel
 
 
     /**
-     * Construct a new <code>EntityRelationshipTableModel</code>.
+     * Construct a new <tt>LookupRelationshipTableModel</tt>.
+     * <p/>
+     * Enables selection if the context is in edit mode.
      *
      * @param context layout context
      */
     public LookupRelationshipTableModel(LayoutContext context) {
         layoutContext = context;
-    }
-
-    /**
-     * Determines if selection should be enabled. This implementation returns
-     * <code>true</code> if in edit mode.
-     *
-     * @return <code>true</code> if selection should be enabled; otherwise
-     *         <code>false</code>
-     */
-    @Override
-    public boolean getEnableSelection() {
-        return layoutContext.isEdit();
+        setEnableSelection(layoutContext.isEdit());
     }
 
     /**

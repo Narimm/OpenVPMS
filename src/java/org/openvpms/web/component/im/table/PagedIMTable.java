@@ -18,9 +18,9 @@
 
 package org.openvpms.web.component.im.table;
 
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.table.PageListener;
 import org.openvpms.web.component.table.SortableTableHeaderRenderer;
@@ -134,7 +134,7 @@ public class PagedIMTable<T> extends Column {
             }
 
             // refocus on the table
-            ApplicationInstance.getActive().setFocusedComponent(table);
+            FocusHelper.setFocus(table);
         }
     }
 

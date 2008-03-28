@@ -20,7 +20,6 @@ package org.openvpms.web.app.login;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Command;
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextField;
@@ -131,15 +130,6 @@ public class LoginDialog extends PopupDialog {
                         "j_acegi_security_check?j_username=" + name
                                 + "&j_password=" + pass));
         ApplicationInstance.getActive().enqueueCommand(redirect);
-    }
-
-    /**
-     * Helper to set the focus.
-     *
-     * @param component the component to focus on
-     */
-    protected void setFocus(Component component) {
-        ApplicationInstance.getActive().setFocusedComponent(component);
     }
 
 }

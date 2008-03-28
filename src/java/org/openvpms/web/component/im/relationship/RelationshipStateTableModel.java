@@ -56,11 +56,6 @@ public class RelationshipStateTableModel
     public static final String DETAIL_NODE = "detail";
 
     /**
-     * The layout context.
-     */
-    private final LayoutContext layoutContext;
-
-    /**
      * If <tt>true</tt> displays the target of the relationship; otherwise
      * displays the source.
      */
@@ -84,6 +79,8 @@ public class RelationshipStateTableModel
 
     /**
      * Construct a new <tt>RelationshipStateTableModel</tt>.
+     * <p/>
+     * Enables selection if the context is in edit mode.
      *
      * @param context       layout context
      * @param displayTarget if <tt>true</tt> display the relationship target,
@@ -91,9 +88,9 @@ public class RelationshipStateTableModel
      */
     public RelationshipStateTableModel(LayoutContext context,
                                        boolean displayTarget) {
-        layoutContext = context;
         this.displayTarget = displayTarget;
         setTableColumnModel(createTableColumnModel());
+        setEnableSelection(context.isEdit());
     }
 
     /**
@@ -116,18 +113,6 @@ public class RelationshipStateTableModel
             result = new NodeSortConstraint(DETAIL_NODE, ascending);
         }
         return (result != null) ? new SortConstraint[]{result} : null;
-    }
-
-    /**
-     * Determines if selection should be enabled. This implementation returns
-     * <tt>true</tt> if in edit mode.
-     *
-     * @return <tt>true</tt> if selection should be enabled; otherwise
-     *         <tt>false</tt>
-     */
-    @Override
-    public boolean getEnableSelection() {
-        return layoutContext.isEdit();
     }
 
     /**

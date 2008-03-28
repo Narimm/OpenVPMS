@@ -53,8 +53,7 @@ public class KeyStrokeHelper {
 
         // force the focus back onto the first available component,
         // otherwise Firefox doesn't forward key events to the app
-        Component focusable = FocusHelper.getFocusable(root);
-        ApplicationInstance.getActive().setFocusedComponent(focusable);
+        FocusHelper.setFocus(root);
     }
 
     /**

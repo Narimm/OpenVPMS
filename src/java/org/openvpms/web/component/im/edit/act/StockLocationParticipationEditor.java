@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -42,7 +41,7 @@ import org.openvpms.web.component.property.Property;
  * @version $LastChangedDate$
  */
 public class StockLocationParticipationEditor
-        extends AbstractParticipationEditor<Product> {
+        extends AbstractParticipationEditor<Party> {
 
     /**
      * Constructs a new <tt>StockLocationParticipationEditor</tt>.
@@ -68,7 +67,7 @@ public class StockLocationParticipationEditor
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor<Product> createObjectReferenceEditor(
+    protected IMObjectReferenceEditor<Party> createObjectReferenceEditor(
             Property property) {
         return new LocationReferenceEditor(property);
     }
@@ -77,7 +76,7 @@ public class StockLocationParticipationEditor
      * Editor for stock location {@link IMObjectReference}s.
      */
     private class LocationReferenceEditor
-            extends AbstractIMObjectReferenceEditor<Product> {
+            extends AbstractIMObjectReferenceEditor<Party> {
 
         public LocationReferenceEditor(Property property) {
             super(property, getParent(), getLayoutContext());
@@ -93,8 +92,8 @@ public class StockLocationParticipationEditor
          *                                 archetypes
          */
         @Override
-        protected Query<Product> createQuery(String name) {
-            Query<Product> query = super.createQuery(name);
+        protected Query<Party> createQuery(String name) {
+            Query<Party> query = super.createQuery(name);
             Context context = getLayoutContext().getContext();
             Party location = context.getLocation();
             if (location != null) {

@@ -34,30 +34,23 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActCopyHandler;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.workflow.DefaultTaskContext;
-import org.openvpms.web.component.workflow.EditIMObjectTask;
-import org.openvpms.web.component.workflow.SelectIMObjectTask;
-import org.openvpms.web.component.workflow.TaskContext;
-import org.openvpms.web.component.workflow.TaskEvent;
-import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
@@ -166,15 +159,15 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.removeAll();
         if (enable) {
-            ActBean bean = new ActBean(getObject());
-            if (DeliveryStatus.FULL.equals(bean.getString("deliveryStatus"))) {
+            FinancialAct object = getObject();
+            if (canEdit(object)) {
                 buttons.add(getEditButton());
             }
             buttons.add(getCreateButton());
-            if (!ActStatus.POSTED.equals(bean.getStatus())) {
+            if (!ActStatus.POSTED.equals(object.getStatus())) {
                 buttons.add(getDeleteButton());
+                buttons.add(getPostButton());
             }
-            buttons.add(getPostButton());
             buttons.add(getPreviewButton());
             buttons.add(copy);
             buttons.add(invoice);
@@ -186,37 +179,33 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
     /**
      * Invoked when a new order has been created.
      * <p/>
-     * This implementation pops up browser to select the supplier, then displays
-     * an edit dialog for the order.
+     * This implementation pops up a dialog to select the supplier and stock
+     * location, then displays an edit dialog for the order.
      *
      * @param act the new order
      */
     @Override
     protected void onCreated(final FinancialAct act) {
-        String shortName = "party.supplier*";
-        final TaskContext initial = new DefaultTaskContext();
-        Query<Party> query = QueryFactory.create(shortName, initial,
-                                                 Party.class);
-        EditIMObjectTask editor = new EditIMObjectTask(shortName, true);
-        SelectIMObjectTask<Party> select = new SelectIMObjectTask<Party>(
-                Messages.get("supplier.order.type"), query, editor);
-        select.start(initial);
-        select.addTaskListener(new TaskListener() {
-            public void taskEvent(TaskEvent event) {
-                if (event.getType().equals(TaskEvent.Type.COMPLETED)) {
-                    Party s = initial.getSupplier();
-                    if (s != null) {
-                        try {
-                            ActBean bean = new ActBean(act);
-                            bean.addParticipation("participation.supplier", s);
-                            edit(act);
-                        } catch (OpenVPMSException exception) {
-                            ErrorHelper.show(exception);
-                        }
+        final SelectOrderDetailsDialog dialog = new SelectOrderDetailsDialog(
+                Messages.get("supplier.order.selectdetails.title"),
+                GlobalContext.getInstance());
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                if (SelectOrderDetailsDialog.OK_ID.equals(dialog.getAction())) {
+                    try {
+                        ActBean bean = new ActBean(act);
+                        bean.addParticipation("participation.supplier",
+                                              dialog.getSupplier());
+                        bean.addParticipation("participation.stockLocation",
+                                              dialog.getStockLocation());
+                        edit(act);
+                    } catch (OpenVPMSException exception) {
+                        ErrorHelper.show(exception);
                     }
                 }
             }
         });
+        dialog.show();
     }
 
     /**
@@ -260,6 +249,19 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
             }
         });
         dialog.show();
+    }
+
+    /**
+     * Determines if an act can be edited.
+     *
+     * @param act the act
+     * @return <tt>true</tt> if the act can be edited, otherwise
+     *         <tt>false</tt>
+     */
+    @Override
+    protected boolean canEdit(Act act) {
+        IMObjectBean bean = new IMObjectBean(act);
+        return !DeliveryStatus.FULL.equals(bean.getString("deliveryStatus"));
     }
 
     /**

@@ -110,8 +110,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * @param allowCreate determines if objects may be created
      */
     public IMObjectSelector(Property property, boolean allowCreate) {
-        this(property.getDisplayName(), property.getArchetypeRange(),
-             allowCreate);
+        this(property.getDisplayName(), allowCreate);
     }
 
     /**
@@ -120,19 +119,19 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * @param type       display name for the types of objects this may select
      * @param shortNames the archetype short names to query
      */
-    public IMObjectSelector(String type, String[] shortNames) {
-        this(type, shortNames, false);
+    public IMObjectSelector(String type, String ... shortNames) {
+        this(type, false, shortNames);
     }
 
     /**
      * Constructs a new <tt>IMObjectSelector</tt>.
      *
      * @param type        display name for the types of objects this may select
-     * @param shortNames  the archetype short names to query
      * @param allowCreate determines if objects may be created
+     * @param shortNames  the archetype short names to query
      */
-    public IMObjectSelector(String type, String[] shortNames,
-                            boolean allowCreate) {
+    public IMObjectSelector(String type, boolean allowCreate,
+                            String ... shortNames) {
         super(ButtonStyle.RIGHT_NO_ACCEL, true);
         setFormat(Format.NAME);
         this.type = type;

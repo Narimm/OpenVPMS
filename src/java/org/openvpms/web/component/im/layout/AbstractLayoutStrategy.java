@@ -20,7 +20,6 @@ package org.openvpms.web.component.im.layout;
 
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.TabModel;
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
@@ -427,10 +426,33 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param components the components
      */
     protected void setFocus(List<ComponentState> components) {
-        Component focusable = FocusHelper.getFocusable(components);
-        if (focusable != null) {
-            ApplicationInstance.getActive().setFocusedComponent(focusable);
+        Component focusable = getFocusable(components);
+        FocusHelper.setFocus(focusable);
+    }
+
+    /**
+     * Returns the first focusable component, selecting invalid properties
+     * in preference to other components.
+     *
+     * @param components the components
+     * @return the first focusable component
+     */
+    protected Component getFocusable(List<ComponentState> components) {
+        Component result = null;
+        for (ComponentState state : components) {
+            Component child = state.getFocusable();
+            if (child != null) {
+                Property property = state.getProperty();
+                if (property != null && !property.isValid()) {
+                    result = child;
+                    break;
+                }
+                if (result == null) {
+                    result = child;
+                }
+            }
         }
+        return result;
     }
 
     /**

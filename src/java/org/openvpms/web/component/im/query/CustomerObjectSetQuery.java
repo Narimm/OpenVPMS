@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.query;
 
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
@@ -27,6 +26,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
@@ -128,7 +128,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
         addInactive(container);
         addPatientName(container);
         addContact(container);
-        ApplicationInstance.getActive().setFocusedComponent(getInstanceName());
+        FocusHelper.setFocus(getInstanceName());
     }
 
     /**

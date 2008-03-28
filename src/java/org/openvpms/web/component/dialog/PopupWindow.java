@@ -18,13 +18,14 @@
 
 package org.openvpms.web.component.dialog;
 
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.KeyStrokeHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
@@ -109,7 +110,7 @@ public abstract class PopupWindow extends WindowPane {
         if (defaultButton != null) {
             Button button = getButtons().getButton(defaultButton);
             if (button != null) {
-                ApplicationInstance.getActive().setFocusedComponent(button);
+                FocusHelper.setFocus(button);
             }
         }
     }
@@ -211,6 +212,16 @@ public abstract class PopupWindow extends WindowPane {
         // re-register listeners for Firefox
         KeyStrokeHelper.reregisterKeyStrokeListeners();
 
-        super.fireWindowClosing();    //To change body of overridden methods use File | Settings | File Templates.
+        super.fireWindowClosing();
     }
+
+    /**
+     * Helper to set the focus.
+     *
+     * @param component the component to focus on
+     */
+    protected void setFocus(Component component) {
+        FocusHelper.setFocus(component);
+    }
+
 }

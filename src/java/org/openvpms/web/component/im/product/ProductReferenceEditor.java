@@ -269,7 +269,6 @@ class ProductReferenceEditor
                     = new ProductSupplierBrowser(query);
             final BrowserDialog<EntityRelationship> dialog
                     = new BrowserDialog<EntityRelationship>(title, browser);
-            browser.setSelected(preferred);
 
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
@@ -283,6 +282,7 @@ class ProductReferenceEditor
                 }
             });
             browser.query();
+            browser.setSelected(preferred);
             dialog.show();
         }
     }

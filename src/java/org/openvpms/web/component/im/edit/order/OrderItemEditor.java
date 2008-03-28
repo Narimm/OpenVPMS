@@ -175,7 +175,7 @@ public class OrderItemEditor extends ActItemEditor {
     }
 
     /**
-     * Checks the product supplier relationship for the specified product
+     * Checks the product-supplier relationship for the specified product
      * and supplier.
      * <p/>
      * If no relationship exists with the same package size and units, a new one
@@ -193,12 +193,13 @@ public class OrderItemEditor extends ActItemEditor {
         String units = getPackageUnits();
         ProductSupplier ps = rules.getProductSupplier(product, supplier,
                                                       size, units);
-        boolean save = false;
+        boolean save = true;
         String reorderDesc = getReorderDescription();
         String reorderCode = getReorderCode();
         BigDecimal listPrice = getListPrice();
         BigDecimal nettPrice = getNettPrice();
         if (ps == null) {
+            // no product-supplier relationship, so create a new one
             ps = rules.createProductSupplier(product, supplier);
             ps.setPackageSize(size);
             ps.setPackageUnits(units);
@@ -207,19 +208,22 @@ public class OrderItemEditor extends ActItemEditor {
             ps.setListPrice(listPrice);
             ps.setNettPrice(nettPrice);
             ps.setPreferred(true);
-            save = true;
+        } else if (size != ps.getPackageSize()
+                || !ObjectUtils.equals(units, ps.getPackageUnits())
+                || !equals(listPrice, ps.getListPrice())
+                || !equals(nettPrice, ps.getNettPrice())
+                || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
+                || !ObjectUtils.equals(ps.getReorderDescription(),
+                                       reorderDesc)) {
+            // properties are different to an existing relationship
+            ps.setPackageSize(size);
+            ps.setPackageUnits(units);
+            ps.setReorderCode(reorderCode);
+            ps.setReorderDescription(reorderDesc);
+            ps.setListPrice(listPrice);
+            ps.setNettPrice(nettPrice);
         } else {
-            if (!equals(listPrice, ps.getListPrice())
-                    || !equals(nettPrice, ps.getNettPrice())
-                    || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
-                    || !ObjectUtils.equals(ps.getReorderDescription(),
-                                           reorderDesc)) {
-                ps.setReorderCode(reorderCode);
-                ps.setReorderDescription(reorderDesc);
-                ps.setListPrice(listPrice);
-                ps.setNettPrice(nettPrice);
-                save = true;
-            }
+            save = false;
         }
         if (save) {
             ps.save();

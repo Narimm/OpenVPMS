@@ -48,6 +48,11 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      */
     private List<T> objects = new ArrayList<T>();
 
+    /**
+     * Determines if selection should be enabled.
+     */
+    private boolean enableSelection = true;
+
 
     /**
      * Creates a new <tt>AbstractIMTableModel</tt>.
@@ -117,7 +122,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      * Return the object at the given row.
      *
      * @param row the row
-     * @return the object at <code>row</code>
+     * @return the object at <tt>row</tt>
      */
     public T getObject(int row) {
         return objects.get(row);
@@ -161,12 +166,24 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
 
     /**
      * Determines if selection should be enabled.
+     * <p/>
+     * This implementation defaults to <tt>true</tt>.
      *
-     * @return <code>true</code> if selection should be enabled; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if selection should be enabled; otherwise
+     *         <tt>false</tt>
      */
     public boolean getEnableSelection() {
-        return true;
+        return enableSelection;
+    }
+
+    /**
+     * Determines if selection should be enabled.
+     *
+     * @param enable if <tt>true</tt> selection should be enabled; otherwise
+     *               it should be disabled
+     */
+    public void setEnableSelection(boolean enable) {
+        enableSelection = enable;
     }
 
     /**
@@ -212,7 +229,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      * Returns a column offset given its model index.
      *
      * @param column the columjn index
-     * @return the column offset, or <code>-1</code> if a column with the
+     * @return the column offset, or <tt>-1</tt> if a column with the
      *         specified index doesn't exist
      */
     protected int getColumnOffset(int column) {
@@ -224,7 +241,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      *
      * @param model  the model
      * @param column the column index
-     * @return the column offset, or <code>-1</code> if a column with the
+     * @return the column offset, or <tt>-1</tt> if a column with the
      *         specified index doesn't exist
      */
     protected int getColumnOffset(TableColumnModel model, int column) {

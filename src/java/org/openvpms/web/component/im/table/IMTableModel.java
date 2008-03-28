@@ -58,9 +58,9 @@ public interface IMTableModel<T> extends TableModel {
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
-     * @return the sort criteria, or <code>null</code> if the column isn't
+     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
+     *                  sort in <tt>descending</tt> order
+     * @return the sort criteria, or <tt>null</tt> if the column isn't
      *         sortable
      */
     SortConstraint[] getSortConstraints(int column, boolean ascending);
@@ -68,8 +68,16 @@ public interface IMTableModel<T> extends TableModel {
     /**
      * Determines if selection should be enabled.
      *
-     * @return <code>true</code> if selection should be enabled; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if selection should be enabled; otherwise
+     *         <tt>false</tt>
      */
     boolean getEnableSelection();
+
+    /**
+     * Determines if selection should be enabled.
+     *
+     * @param enable if <tt>true</tt> selection should be enabled; otherwise
+     *               it should be disabled
+     */
+    void setEnableSelection(boolean enable);
 }

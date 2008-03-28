@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.customer.note;
 
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
@@ -30,6 +29,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
@@ -109,7 +109,7 @@ public class NoteQuery extends DateRangeActQuery<Act> {
         container.add(categories);
         getFocusGroup().add(categories);
         super.doLayout(container);
-        ApplicationInstance.getActive().setFocusedComponent(categories);
+        FocusHelper.setFocus(categories);
     }
 
     /**

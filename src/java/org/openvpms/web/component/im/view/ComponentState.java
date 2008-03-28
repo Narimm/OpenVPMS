@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.property.Property;
 
 
@@ -37,18 +38,18 @@ public class ComponentState {
     private final Component component;
 
     /**
-     * The component's property. May be <code>null</code>
+     * The component's property. May be <tt>null</tt>
      */
     private final Property property;
 
     /**
-     * The component's focus group. May be <code>null</code>
+     * The component's focus group. May be <tt>null</tt>
      */
     private final FocusGroup focusGroup;
 
 
     /**
-     * Constructs a new <code>ComponentState</code> for a component
+     * Constructs a new <tt>ComponentState</tt> for a component
      * that may not receive focus and is not associated with a node.
      *
      * @param component the component
@@ -58,10 +59,10 @@ public class ComponentState {
     }
 
     /**
-     * Constructs a new <code>ComponentState</code>, not associated with a node.
+     * Constructs a new <tt>ComponentState</tt>, not associated with a node.
      *
      * @param component  the component
-     * @param focusGroup the component's focus group, or <code>null</code>
+     * @param focusGroup the component's focus group, or <tt>null</tt>
      *                   if the component is a simple component or doesn't
      *                   receive focus
      */
@@ -70,11 +71,11 @@ public class ComponentState {
     }
 
     /**
-     * Constructs a new <code>ComponentState</code> not associated with
+     * Constructs a new <tt>ComponentState</tt> not associated with
      * a focus group.
      *
      * @param component the component
-     * @param property  the property, or <code>null</code> if the component
+     * @param property  the property, or <tt>null</tt> if the component
      *                  isn't associated with a node
      */
     public ComponentState(Component component, Property property) {
@@ -82,12 +83,12 @@ public class ComponentState {
     }
 
     /**
-     * Constructs a new <code>ComponentState</code>.
+     * Constructs a new <tt>ComponentState</tt>.
      *
      * @param component  the component
-     * @param property   the property, or <code>null</code> if the component
+     * @param property   the property, or <tt>null</tt> if the component
      *                   isn't associated with a node
-     * @param focusGroup the component's focus group, or <code>null</code>
+     * @param focusGroup the component's focus group, or <tt>null</tt>
      *                   if the component is a simple component or doesn't
      *                   receive focus
      */
@@ -110,7 +111,7 @@ public class ComponentState {
     /**
      * The property associated with the component.
      *
-     * @return the property associated with the component, or <code>null</code>
+     * @return the property associated with the component, or <tt>null</tt>
      *         if the component isn't associated with a node
      */
     public Property getProperty() {
@@ -120,11 +121,27 @@ public class ComponentState {
     /**
      * Returns the component's focus group.
      *
-     * @return the component's focus group, or <code>null</code> if the
+     * @return the component's focus group, or <tt>null</tt> if the
      *         component is a simple component or doesn't receive focus
      */
     public FocusGroup getFocusGroup() {
         return focusGroup;
+    }
+
+    /**
+     * Returns the first component that may have focus set.
+     *
+     * @return the first component that may have focus set, or
+     *         <tt>null</tt> if none may have focus set
+     */
+    public Component getFocusable() {
+        Component result;
+        if (focusGroup != null) {
+            result = focusGroup.getFocusable();
+        } else {
+            result = FocusHelper.getFocusable(component);
+        }
+        return result;
     }
 
 }
