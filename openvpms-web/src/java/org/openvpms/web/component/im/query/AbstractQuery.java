@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.query;
 
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -37,6 +36,7 @@ import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -543,7 +543,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
         addShortNameSelector(container);
         addInstanceName(container);
         addInactive(container);
-        ApplicationInstance.getActive().setFocusedComponent(getInstanceName());
+        FocusHelper.setFocus(getInstanceName());
     }
 
     /**

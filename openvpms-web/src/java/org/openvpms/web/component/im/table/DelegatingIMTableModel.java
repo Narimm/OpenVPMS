@@ -29,7 +29,7 @@ import java.util.List;
 
 
 /**
- * An <code>IMTableModel</code> that delegates to another.
+ * An <tt>IMTableModel</tt> that delegates to another.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -43,14 +43,14 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel
     private IMTableModel<K> model;
 
     /**
-     * Constructs a new <code>DelegatingIMTableModel</code>.
+     * Constructs a new <tt>DelegatingIMTableModel</tt>.
      */
     public DelegatingIMTableModel() {
         this(null);
     }
 
     /**
-     * Constructs a new <code>DelegatingIMTableModel</code>.
+     * Constructs a new <tt>DelegatingIMTableModel</tt>.
      *
      * @param model the model
      */
@@ -157,9 +157,9 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
-     * @return the sort criteria, or <code>null</code> if the column isn't
+     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
+     *                  sort in <tt>descending</tt> order
+     * @return the sort criteria, or <tt>null</tt> if the column isn't
      *         sortable
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
@@ -169,11 +169,21 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel
     /**
      * Determines if selection should be enabled.
      *
-     * @return <code>true</code> if selection should be enabled; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if selection should be enabled; otherwise
+     *         <tt>false</tt>
      */
     public boolean getEnableSelection() {
         return model.getEnableSelection();
+    }
+
+    /**
+     * Determines if selection should be enabled.
+     *
+     * @param enable if <tt>true</tt> selection should be enabled; otherwise
+     *               it should be disabled
+     */
+    public void setEnableSelection(boolean enable) {
+        model.setEnableSelection(enable);
     }
 
     /**

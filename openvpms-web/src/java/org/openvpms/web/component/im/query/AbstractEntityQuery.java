@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.query;
 
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -28,6 +27,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -168,7 +168,7 @@ public abstract class AbstractEntityQuery<T> extends AbstractQuery<T> {
         addInstanceName(container);
         addIdentitySearch(container);
         addInactive(container);
-        ApplicationInstance.getActive().setFocusedComponent(getInstanceName());
+        FocusHelper.setFocus(getInstanceName());
     }
 
     /**

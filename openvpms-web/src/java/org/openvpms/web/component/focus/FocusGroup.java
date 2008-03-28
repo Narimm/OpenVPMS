@@ -36,12 +36,12 @@ import java.util.List;
 public class FocusGroup {
 
     /**
-     * The symbolic name for the group. May be <code>null</code>.
+     * The symbolic name for the group. May be <tt>null</tt>.
      */
     private final String name;
 
     /**
-     * The parent. May be <code>null</code>.
+     * The parent. May be <tt>null</tt>.
      */
     private FocusGroup parent;
 
@@ -67,7 +67,7 @@ public class FocusGroup {
 
 
     /**
-     * Construct a new <code>FocusGroup</code>.
+     * Construct a new <tt>FocusGroup</tt>.
      *
      * @param name a symbolic name for the group
      */
@@ -76,7 +76,7 @@ public class FocusGroup {
     }
 
     /**
-     * Construct a new <code>FocusGroup</code>.
+     * Construct a new <tt>FocusGroup</tt>.
      *
      * @param name  a symbolic name for the group
      * @param first the first focus traversal index
@@ -89,7 +89,7 @@ public class FocusGroup {
     /**
      * Returns a symbolic name for the group.
      *
-     * @return a symbolic name for the group. May be <code>null</code>
+     * @return a symbolic name for the group. May be <tt>null</tt>
      */
     public String getName() {
         return name;
@@ -98,7 +98,7 @@ public class FocusGroup {
     /**
      * Sets the parent group.
      *
-     * @param group the parent group. May be <code>null</code>
+     * @param group the parent group. May be <tt>null</tt>
      */
     public void setParent(FocusGroup group) {
         parent = group;
@@ -108,7 +108,7 @@ public class FocusGroup {
     /**
      * Returns the parent group.
      *
-     * @return the parent group. May be <code>null</code>
+     * @return the parent group. May be <tt>null</tt>
      */
     public FocusGroup getParent() {
         return parent;
@@ -117,8 +117,8 @@ public class FocusGroup {
     /**
      * Determines if reindexing is required.
      *
-     * @return <Code>true</code> if reindexing is required, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if reindexing is required, otherwise
+     *         <tt>false</tt>
      */
     public boolean isDirty() {
         return dirty;
@@ -127,7 +127,7 @@ public class FocusGroup {
     /**
      * Sets the dirty flag.
      *
-     * @param dirty if <code>true</code>  indicates reindexing is required
+     * @param dirty if <tt>true</tt>  indicates reindexing is required
      */
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
@@ -189,7 +189,7 @@ public class FocusGroup {
      * Returns the index of a focus group.
      *
      * @param group the group
-     * @return the index of the group, or <code>-1</code> if it doesn't exist
+     * @return the index of the group, or <tt>-1</tt> if it doesn't exist
      */
     public int indexOf(FocusGroup group) {
         return components.indexOf(group);
@@ -218,7 +218,7 @@ public class FocusGroup {
     /**
      * Returns the components.
      *
-     * @return a list containing <code>Component</code> and {@link FocusGroup}
+     * @return a list containing <tt>Component</tt> and {@link FocusGroup}
      *         instances.
      */
     public List<Object> getComponents() {
@@ -228,7 +228,7 @@ public class FocusGroup {
     /**
      * Returns the first focus traversal index.
      *
-     * @return the first focus traversal index, or <code>-1</code> if there are
+     * @return the first focus traversal index, or <tt>-1</tt> if there are
      *         no indexes
      */
     public int getFirst() {
@@ -238,7 +238,7 @@ public class FocusGroup {
     /**
      * Returns the last focus traversal index.
      *
-     * @return the last focus traversal index, or <code>-1</code> if there are
+     * @return the last focus traversal index, or <tt>-1</tt> if there are
      *         no indexes
      */
     public int getLast() {
@@ -287,6 +287,34 @@ public class FocusGroup {
             index = getLast();
         }
         return index;
+    }
+
+    /**
+     * Returns the first component that may have focus set.
+     *
+     * @return the first component that may have focus set, or
+     *         <tt>null</tt> if none may have focus set
+     */
+    public Component getFocusable() {
+        Component result = null;
+        for (Object object : getComponents()) {
+            if (object instanceof Component) {
+                result = FocusHelper.getFocusable((Component) object);
+            } else {
+                result = ((FocusGroup) object).getFocusable();
+            }
+            if (result != null) {
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Sets the focus on the first component that may have focus set.
+     */
+    public void setFocus() {
+        FocusHelper.setFocus(getFocusable());
     }
 
     /**

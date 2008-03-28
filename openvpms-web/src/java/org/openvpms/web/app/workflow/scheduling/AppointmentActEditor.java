@@ -18,8 +18,6 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
-import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
@@ -367,11 +365,8 @@ public class AppointmentActEditor extends AbstractActEditor {
             for (ComponentState state : components) {
                 Property property = state.getProperty();
                 if (property != null && "customer".equals(property.getName())) {
-                    Component focusable = FocusHelper.getFocusable(state);
-                    if (focusable != null) {
-                        ApplicationInstance.getActive().setFocusedComponent(
-                                focusable);
-                    }
+                    FocusHelper.setFocus(state.getFocusable());
+                    break;
                 }
             }
         }

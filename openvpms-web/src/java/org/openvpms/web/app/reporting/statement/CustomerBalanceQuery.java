@@ -20,7 +20,6 @@ package org.openvpms.web.app.reporting.statement;
 
 import echopointng.DateChooser;
 import echopointng.DateField;
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
@@ -37,6 +36,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
@@ -298,7 +298,7 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
         group.add(customerFrom);
         group.add(customerTo);
 
-        ApplicationInstance.getActive().setFocusedComponent(getInstanceName());
+        FocusHelper.setFocus(getInstanceName());
     }
 
     /**

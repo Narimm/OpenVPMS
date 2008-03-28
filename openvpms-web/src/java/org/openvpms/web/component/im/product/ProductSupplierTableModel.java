@@ -46,6 +46,8 @@ public class ProductSupplierTableModel
 
     /**
      * Creates a new <tt>ProductSupplierTableModel</tt>.
+     * <p/>
+     * Enables selection if the context is in edit mode, or <tt>null</tt>
      *
      * @param shortNames    the archetype short names
      * @param context       the layout context. May be <tt>null</tt>
@@ -55,11 +57,30 @@ public class ProductSupplierTableModel
     public ProductSupplierTableModel(String[] shortNames,
                                      LayoutContext context,
                                      boolean displayTarget) {
+        this(shortNames, context, displayTarget,
+             (context == null) || context.isEdit());
+    }
+
+    /**
+     * Creates a new <tt>ProductSupplierTableModel</tt>.
+     *
+     * @param shortNames      the archetype short names
+     * @param context         the layout context. May be <tt>null</tt>
+     * @param displayTarget   if <tt>true</tt> display the target node,
+     *                        otherwise display the source node
+     * @param enableSelection if <tt>true</tt>, enable selection, otherwise
+     *                        disable it
+     */
+    public ProductSupplierTableModel(String[] shortNames,
+                                     LayoutContext context,
+                                     boolean displayTarget,
+                                     boolean enableSelection) {
         super(context);
         nodes = new String[NODES.length + 1];
         nodes[0] = (displayTarget) ? "target" : "source";
         System.arraycopy(NODES, 0, nodes, 1, NODES.length);
         setTableColumnModel(createColumnModel(shortNames, getLayoutContext()));
+        setEnableSelection(enableSelection);
     }
 
     /**
@@ -72,15 +93,4 @@ public class ProductSupplierTableModel
         return nodes;
     }
 
-    /**
-     * Determines if selection should be enabled. This implementation returns
-     * <tt>true</tt> if in edit mode.
-     *
-     * @return <tt>true</tt> if selection should be enabled; otherwise
-     *         <tt>false</tt>
-     */
-    @Override
-    public boolean getEnableSelection() {
-        return getLayoutContext().isEdit();
-    }
 }
