@@ -119,6 +119,10 @@ public class OrderRules {
     /**
      * Returns an <em>entityRelationship.productSupplier</em> relationship
      * for a supplier, product and package size and units.
+     * <p/>
+     * If there is a match on supplier and product, but no match on package
+     * size, but there is a relationship where the size is <tt>0</tt>, then
+     * this will be returned.
      *
      * @param product      the product
      * @param supplier     the supplier
@@ -134,6 +138,8 @@ public class OrderRules {
             if (ps.getPackageSize() == packageSize
                     && ObjectUtils.equals(ps.getPackageUnits(),
                                           packageUnits)) {
+                return ps;
+            } else if (ps.getPackageSize() == 0) {
                 return ps;
             }
         }
