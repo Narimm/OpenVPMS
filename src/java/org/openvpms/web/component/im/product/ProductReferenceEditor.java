@@ -29,9 +29,10 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
+import org.openvpms.component.business.service.archetype.functor.NodeEquals;
+import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import static org.openvpms.component.business.service.archetype.helper.EntityBean.RefEquals;
-import org.openvpms.component.business.service.archetype.helper.NodePredicate;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
@@ -235,7 +236,7 @@ class ProductReferenceEditor
      */
     private Entity getSupplier(Product product) {
         EntityBean bean = new EntityBean(product);
-        return bean.getNodeTargetEntity("suppliers", EntityBean.ACTIVE);
+        return bean.getNodeTargetEntity("suppliers");
     }
 
     /**
@@ -298,7 +299,7 @@ class ProductReferenceEditor
             List<EntityRelationship> relationships) {
         EntityRelationship result = null;
         if (!relationships.isEmpty()) {
-            Predicate preferred = new NodePredicate("preferred", true);
+            Predicate preferred = new NodeEquals("preferred", true);
             result = CollectionHelper.find(relationships, preferred);
             if (result == null) {
                 result = relationships.get(0);
@@ -318,7 +319,8 @@ class ProductReferenceEditor
         EntityBean bean = new EntityBean(product);
         Party supplier = editor.getSupplier();
         Predicate predicate = new AndPredicate(
-                EntityBean.ACTIVE, RefEquals.getTargetEquals(supplier));
+                IsActiveRelationship.ACTIVE_NOW,
+                RefEquals.getTargetEquals(supplier));
         return bean.getNodeRelationships("suppliers", predicate);
     }
 
