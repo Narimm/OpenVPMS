@@ -16,8 +16,9 @@
  *  $Id$
  */
 
-package org.openvpms.archetype.rules.party;
+package org.openvpms.archetype.rules.supplier;
 
+import org.openvpms.archetype.rules.party.SupplierRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -52,17 +53,13 @@ public class SupplierRulesTestCase extends ArchetypeServiceTest {
         EntityBean bean = new EntityBean(practice);
         bean.addRelationship("entityRelationship.practiceVeterinarians", vet);
         bean.save();
-        vet = (Party) get(vet); // reload to get relationship update
+        vet = get(vet); // reload to get relationship update
         EntityRelationship relationship
                 = vet.getEntityRelationships().iterator().next();
 
         // verify the practice is returned for a time > the default start time
         Party practice2 = rules.getReferralVetPractice(vet, new Date());
         assertEquals(practice, practice2);
-
-        // verify no practice returned if the relationship has no start time
-        relationship.setActiveStartTime(null);
-        assertNull(rules.getReferralVetPractice(vet, new Date()));
 
         // now set the start and end time and verify that there is no practice
         // for a later time (use time addition due to system clock granularity)

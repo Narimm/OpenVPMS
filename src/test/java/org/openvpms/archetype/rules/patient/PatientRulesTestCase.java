@@ -130,10 +130,6 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         Party vet2 = rules.getReferralVet(patient, new Date());
         assertEquals(vet, vet2);
 
-        // verify no vet returned if the relationship has no start time
-        referral.setActiveStartTime(null);
-        assertNull(rules.getReferralVet(patient, new Date()));
-
         // now set the start and end time and verify that there is no referrer
         // for a later time (use time addition due to system clock granularity)
         Date start = new Date();
@@ -233,6 +229,11 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         for (EntityRelationship relationship
                 : bean.getRelationships(PatientRules.PATIENT_OWNER)) {
             relationship.setActive(false);
+        }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ignore) {
+            // do nothing
         }
     }
 
