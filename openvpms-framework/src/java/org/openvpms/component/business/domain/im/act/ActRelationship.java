@@ -19,22 +19,18 @@
 
 package org.openvpms.component.business.domain.im.act;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.openvpms.component.business.domain.im.common.PeriodRelationship;
 
 
 /**
  * A class that represents the directed association between two {@link Act}s.
+ * In parent/child act relationships, the source act is the parent, the target
+ * act is the child.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActRelationship extends IMObject {
+public class ActRelationship extends PeriodRelationship {
 
     /**
      * Serialisation version identifier.
@@ -55,45 +51,12 @@ public class ActRelationship extends IMObject {
      */
     private boolean parentChildRelationship;
 
-    /**
-     * Holds dynamic details about the act relationship.
-     */
-    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
-
-    /**
-     * Reference to the source {@link Act} reference.
-     */
-    private IMObjectReference source;
-
-    /**
-     * Reference to the target {@link Act} reference.
-     */
-    private IMObjectReference target;
-
 
     /**
      * Default constructor.
      */
     public ActRelationship() {
         // do nothing
-    }
-
-    /**
-     * Returns the relationship details.
-     *
-     * @return the details
-     */
-    public Map<String, Object> getDetails() {
-        return new TypedValueMap(details);
-    }
-
-    /**
-     * Sets the relationship details.
-     *
-     * @param details the details to set
-     */
-    public void setDetails(Map<String, Object> details) {
-        this.details = TypedValueMap.create(details);
     }
 
     /**
@@ -112,44 +75,6 @@ public class ActRelationship extends IMObject {
     @Deprecated
     public void setSequence(int sequence) {
         this.sequence = sequence;
-    }
-
-    /**
-     * Returns the source act reference. If this is a parent/child relationship,
-     * then the source act represents the parent.
-     *
-     * @return the source act reference
-     */
-    public IMObjectReference getSource() {
-        return source;
-    }
-
-    /**
-     * Sets the source act reference.
-     *
-     * @param source a reference to the source act
-     */
-    public void setSource(IMObjectReference source) {
-        this.source = source;
-    }
-
-    /**
-     * Returns the target act reference, If this is a parent/child relationship,
-     * then the target act represents the child.
-     *
-     * @return the target act reference
-     */
-    public IMObjectReference getTarget() {
-        return target;
-    }
-
-    /**
-     * Sets the target act reference.
-     *
-     * @param target a reference to the target act
-     */
-    public void setTarget(IMObjectReference target) {
-        this.target = target;
     }
 
     /**
@@ -181,23 +106,6 @@ public class ActRelationship extends IMObject {
      */
     public boolean isParentChildRelationship() {
         return parentChildRelationship;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
-     */
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        ActRelationship copy = (ActRelationship) super.clone();
-        copy.details = (details == null) ? null
-                : new HashMap<String, TypedValue>(details);
-        copy.parentChildRelationship = this.parentChildRelationship;
-
-        // no need to clone the source and target act
-        copy.source = this.source;
-        copy.target = this.target;
-
-        return copy;
     }
 
 }

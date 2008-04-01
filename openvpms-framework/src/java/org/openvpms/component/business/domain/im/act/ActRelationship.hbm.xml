@@ -38,7 +38,6 @@
     <property name="name" access="property" column="name" type="string" />
     <property name="description" access="property" column="description"
       type="string" />
-    <property name="active" access="property" column="active" type="boolean" />
     <property name="parentChildRelationship" type="boolean"
       column="parent_child_relationship" />
     <component name="source">

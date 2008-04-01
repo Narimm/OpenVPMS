@@ -20,12 +20,6 @@ package org.openvpms.component.business.domain.im.common;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
-import org.openvpms.component.business.domain.im.datatypes.basic.TypedValueMap;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -34,27 +28,12 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityRelationship extends IMObject {
+public class EntityRelationship extends PeriodRelationship {
 
     /**
-     * Generated SUID
+     * Serialisation version identifier.
      */
     private static final long serialVersionUID = 1L;
-
-    /**
-     * Indicates the active end time for this relationship
-     */
-    private Date activeEndTime;
-
-    /**
-     * Indicates the active start time for this relationship
-     */
-    private Date activeStartTime;
-
-    /**
-     * Records details of the relationship between the entities.
-     */
-    private Map<String, TypedValue> details = new HashMap<String, TypedValue>();
 
     /**
      * A relationship may also have an associated entity identity
@@ -72,87 +51,25 @@ public class EntityRelationship extends IMObject {
     private int sequence;
 
     /**
-     * Record the source entity reference in the relationship
-     */
-    private IMObjectReference source;
-
-    /**
-     * Record the target entity reference in the relationship
-     */
-    private IMObjectReference target;
-
-    /**
-     * Default constructor
+     * Default constructor.
      */
     public EntityRelationship() {
         // do nothing
     }
 
     /**
-     * Constructs a valid intance of an entity relationship
-     * 
-     * @param archetypeId
-     *            the archetype id constraining this object
-     * @param source
-     *            the relationship source
-     * @param target
-     *            the relationship target
-     * @param details
-     *            The details of the address object
-     * @throws IllegalArgumentException
-     *             if the constructor pre-conditions are not satisfied.
+     * Creates a new <tt>EntityRelationship</tt>.
+     *
+     * @param archetypeId the archetype id constraining this object
+     * @param source      the relationship source
+     * @param target      the relationship target
      */
     public EntityRelationship(ArchetypeId archetypeId,
-                              IMObjectReference source, IMObjectReference target,
-                              Map<String, Object> details) {
+                              IMObjectReference source,
+                              IMObjectReference target) {
         super(archetypeId);
-
-        this.source = source;
-        this.target = target;
-        this.details = TypedValueMap.create(details);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
-     */
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        EntityRelationship copy = (EntityRelationship) super.clone();
-        copy.activeEndTime = (Date) (this.activeEndTime == null ? null
-                : this.activeEndTime.clone());
-        copy.activeStartTime = (Date) (this.activeStartTime == null ? null
-                : this.activeStartTime.clone());
-        copy.details = (details == null) ? null : new HashMap<String, TypedValue>(details);
-        copy.identity = this.identity;
-        copy.reason = this.reason;
-        copy.sequence = this.sequence;
-        copy.source = (IMObjectReference) this.source.clone();
-        copy.target = (IMObjectReference) this.target.clone();
-
-        return copy;
-    }
-
-    /**
-     * @return Returns the activeEndTime.
-     */
-    public Date getActiveEndTime() {
-        return activeEndTime;
-    }
-
-    /**
-     * @return Returns the activeStartTime.
-     */
-    public Date getActiveStartTime() {
-        return activeStartTime;
-    }
-
-    /**
-     * @return Returns the details.
-     */
-    public Map<String, Object> getDetails() {
-        return new TypedValueMap(details);
+        setSource(source);
+        setTarget(target);
     }
 
     /**
@@ -181,54 +98,14 @@ public class EntityRelationship extends IMObject {
     }
 
     /**
-     * @return Returns the sourceEntity.
-     */
-    public IMObjectReference getSource() {
-        return source;
-    }
-
-    /**
-     * @return Returns the target.
-     */
-    public IMObjectReference getTarget() {
-        return target;
-    }
-
-    /**
-     * @param activeEndTime
-     *            The activeEndTime to set.
-     */
-    public void setActiveEndTime(Date activeEndTime) {
-        this.activeEndTime = activeEndTime;
-    }
-
-    /**
-     * @param activeStartTime
-     *            The activeStartTime to set.
-     */
-    public void setActiveStartTime(Date activeStartTime) {
-        this.activeStartTime = activeStartTime;
-    }
-
-    /**
-     * @param details
-     *            The details to set.
-     */
-    public void setDetails(Map<String, Object> details) {
-        this.details = TypedValueMap.create(details);
-    }
-
-    /**
-     * @param identity
-     *            The identity to set.
+     * @param identity The identity to set.
      */
     public void setIdentity(EntityIdentity identity) {
         this.identity = identity;
     }
 
     /**
-     * @param reason
-     *            The reason to set.
+     * @param reason The reason to set.
      * @deprecated no replacement
      */
     @Deprecated
@@ -237,29 +114,12 @@ public class EntityRelationship extends IMObject {
     }
 
     /**
-     * @param sequence
-     *            The sequence to set.
+     * @param sequence The sequence to set.
      * @deprecated no replacement
      */
     @Deprecated
     public void setSequence(int sequence) {
         this.sequence = sequence;
-    }
-
-    /**
-     * @param source
-     *            The source to set.
-     */
-    public void setSource(IMObjectReference source) {
-        this.source = source;
-    }
-
-    /**
-     * @param target
-     *            The target to set.
-     */
-    public void setTarget(IMObjectReference target) {
-        this.target = target;
     }
 
     /* (non-Javadoc)
@@ -269,10 +129,8 @@ public class EntityRelationship extends IMObject {
     @SuppressWarnings("HardCodedStringLiteral")
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(null)
-            .append("source", source)
-            .append("target", target)
-            .append("identity", identity)
-            .toString();
+                .appendSuper(null)
+                .append("identity", identity)
+                .toString();
     }
 }

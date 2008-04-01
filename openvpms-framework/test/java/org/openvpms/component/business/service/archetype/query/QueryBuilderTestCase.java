@@ -314,12 +314,11 @@ public class QueryBuilderTestCase
                 + "participation.archetypeId.shortName = :shortName1 and "
                 + "participation.active = :active1 and "
                 + "act.linkId = participation.act.linkId and "
-                + "(owner.archetypeId.shortName = :shortName2 and "
-                + "owner.active = :active2) and "
+                + "(owner.archetypeId.shortName = :shortName2) and "
                 + "(patient.archetypeId.shortName = :shortName3 and "
-                + "patient.active = :active3) and "
+                + "patient.active = :active2) and "
                 + "(customer.archetypeId.shortName like :shortName4 and "
-                + "customer.active = :active4) and "
+                + "customer.active = :active3) and "
                 + "participation.entity.linkId = patient.linkId and "
                 + "patient.linkId = owner.target.linkId and "
                 + "customer.linkId = owner.source.linkId) " +
@@ -367,9 +366,8 @@ public class QueryBuilderTestCase
                 + "where (estimation.archetypeId.shortName = :shortName0 and "
                 + "estimation.active = :active0 and "
                 + "items.archetypeId.shortName = :shortName1 and "
-                + "items.active = :active1 and "
                 + "(estimationItem.archetypeId.shortName = :shortName2 and "
-                + "estimationItem.active = :active2) and "
+                + "estimationItem.active = :active1) and "
                 + "items.source.linkId = estimation.linkId and "
                 + "items.target.linkId = estimationItem.linkId)";
         ShortNameConstraint estimation = new ShortNameConstraint(
