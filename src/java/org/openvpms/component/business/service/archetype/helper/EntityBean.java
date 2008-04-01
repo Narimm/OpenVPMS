@@ -1138,11 +1138,7 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private Entity getEntity(IMObjectReference ref) {
-        if (ref != null) {
-            return (Entity) ArchetypeQueryHelper.getByObjectReference(
-                    getArchetypeService(), ref);
-        }
-        return null;
+        return (Entity) resolve(ref);
     }
 
     /**

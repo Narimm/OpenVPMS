@@ -188,6 +188,25 @@ public class ActBeanTestCase
     }
 
     /**
+     * Tests the {@link ActBean#getNodeParticipant(String)} and
+     * {@link ActBean#getNodeParticipantRef(String)} method.
+     */
+    public void testGetNodeParticipant() {
+        ActBean bean = createBean("act.customerEstimation");
+        Party customer = createCustomer();
+        ArchetypeServiceHelper.getArchetypeService().save(customer);
+
+        assertNull(bean.getNodeParticipantRef("customer"));
+        assertNull(bean.getNodeParticipant("customer"));
+
+        bean.addParticipation("participation.customer", customer);
+        assertEquals(customer.getObjectReference(),
+                     bean.getNodeParticipantRef("customer"));
+
+        assertEquals(customer, bean.getNodeParticipant("customer"));
+    }
+
+    /**
      * Verifies that an act relationship matches that expected.
      *
      * @param relationship the relationship
