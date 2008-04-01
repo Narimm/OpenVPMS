@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.PeriodRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import static org.openvpms.component.business.service.archetype.query.QueryBuilderException.ErrorCode.*;
@@ -179,7 +180,7 @@ public class QueryBuilder {
         if (leftOuterJoin) {
             context.pushLogicalOperator(LogicalOperator.Or);
             context.addWhereConstraint(alias, "archetypeId.shortName",
-                                       RelationalOp.EQ,  id.getShortName());
+                                       RelationalOp.EQ, id.getShortName());
             context.addWhereConstraint(alias, "archetypeId.shortName",
                                        RelationalOp.IsNULL, null);
             context.popLogicalOperator();
@@ -273,16 +274,35 @@ public class QueryBuilder {
         boolean leftOuterJoin = context.peekJoinType() == LeftOuterJoin;
         if (constraint.isActiveOnly()) {
             String alias = constraint.getAlias();
-            if (leftOuterJoin) {
-                context.pushLogicalOperator(LogicalOperator.Or);
-                context.addWhereConstraint(alias, "active", RelationalOp.EQ,
-                                           true);
-                context.addWhereConstraint(alias, "active", RelationalOp.IsNULL,
-                                           null);
-                context.popLogicalOperator();
-            } else {
-                context.addWhereConstraint(alias, "active", RelationalOp.EQ,
-                                           true);
+            TypeSet set = context.getTypeSet(alias);
+            boolean add = true;
+            if (set != null) {
+                // determine if the object has an active flag
+                try {
+                    Thread thread = Thread.currentThread();
+                    ClassLoader loader = thread.getContextClassLoader();
+                    Class type = loader.loadClass(set.getClassName());
+                    if (PeriodRelationship.class.isAssignableFrom(type)) {
+                        // no active flag
+                        add = false;
+                    }
+                } catch (ClassNotFoundException ignore) {
+                    // do nothing
+                }
+            }
+            if (add) {
+                if (leftOuterJoin) {
+                    context.pushLogicalOperator(LogicalOperator.Or);
+                    context.addWhereConstraint(alias, "active", RelationalOp.EQ,
+                                               true);
+                    context.addWhereConstraint(alias, "active",
+                                               RelationalOp.IsNULL,
+                                               null);
+                    context.popLogicalOperator();
+                } else {
+                    context.addWhereConstraint(alias, "active", RelationalOp.EQ,
+                                               true);
+                }
             }
         }
     }
@@ -351,9 +371,7 @@ public class QueryBuilder {
                                    RelationalOp.EQ,
                                    shortName.toString().replace("*", "%"));
         // process the active flag
-        if (constraint.isActiveOnly()) {
-            context.addWhereConstraint(alias, "active", RelationalOp.EQ, true);
-        }
+        addActiveConstraint(constraint, context);
 
         // process the embedded constraints.
         for (IConstraint oc : constraint.getConstraints()) {

@@ -499,7 +499,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
         return new EntityRelationship(
                 new ArchetypeId("entity.basicEntityRel.1.0"),
                 source.getObjectReference(),
-                target.getObjectReference(), null);
+                target.getObjectReference());
     }
 
     /**
