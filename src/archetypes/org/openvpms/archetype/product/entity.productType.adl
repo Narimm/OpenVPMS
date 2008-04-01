@@ -47,6 +47,9 @@
                  </propertyList>
                  <errorMessage>errorMessage</errorMessage>
              </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active discount product type relationship</errorMessage>
+            </assertion>
          </node>
 	</archetype>
 </archetypes>

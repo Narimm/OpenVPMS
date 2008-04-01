@@ -79,6 +79,9 @@
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active organisations relationship</errorMessage>
+            </assertion>
         </node>
         <node name="type" displayName="Account Type" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1"

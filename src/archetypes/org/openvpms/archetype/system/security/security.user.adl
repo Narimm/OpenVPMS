@@ -93,6 +93,9 @@
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active location relationship</errorMessage>
+            </assertion>
         </node>
     </archetype>
 </archetypes>

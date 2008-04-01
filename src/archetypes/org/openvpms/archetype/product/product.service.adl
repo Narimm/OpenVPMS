@@ -73,6 +73,9 @@
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active product reminder relationship</errorMessage>
+            </assertion>
         </node>
         <node name="documents" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
@@ -85,6 +88,9 @@
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
+            </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active product document relationship</errorMessage>
             </assertion>
         </node>
         <node name="updates" path="/classifications" parentChild="false"
@@ -124,6 +130,9 @@
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active product discount relationship</errorMessage>
+            </assertion>
         </node>
         <node name="type" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
@@ -136,6 +145,9 @@
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
+            </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active product type relationship</errorMessage>
             </assertion>
         </node>
         <node name="species" path="/classifications" parentChild="false"

@@ -85,6 +85,9 @@
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active customer relationship</errorMessage>
+            </assertion>
         </node>
         <node name="identities" path="/identities"
               type="java.util.HashSet" baseName="Identity" minCardinality="0"
