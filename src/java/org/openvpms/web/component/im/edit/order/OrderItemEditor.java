@@ -189,10 +189,12 @@ public class OrderItemEditor extends ActItemEditor {
      */
     private void checkProductSupplier(Product product, Party supplier) {
         OrderRules rules = new OrderRules();
+        ProductSupplier ps = getProductEditor().getProductSupplier();
         int size = getPackageSize();
         String units = getPackageUnits();
-        ProductSupplier ps = rules.getProductSupplier(product, supplier,
-                                                      size, units);
+        if (ps == null) {
+            ps = rules.getProductSupplier(supplier, product, size, units);
+        }
         boolean save = true;
         String reorderDesc = getReorderDescription();
         String reorderCode = getReorderCode();

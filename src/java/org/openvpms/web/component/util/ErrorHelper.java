@@ -18,6 +18,9 @@
 
 package org.openvpms.web.component.util;
 
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Window;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,28 +50,38 @@ public class ErrorHelper {
 
 
     /**
-     * Display and log an error.
+     * Display and log an error. If an error dialog is already displayed,
+     * this method will not pop up a new one, to avoid multiple dialogs
+     * related to the same error.
      *
      * @param error the error
      */
     public static void show(String error) {
         log.error(error);
-        ErrorDialog.show(error);
+        if (!inError()) {
+            ErrorDialog.show(error);
+        }
     }
 
     /**
-     * Display and log an error.
+     * Display and log an error. If an error dialog is already displayed,
+     * this method will not pop up a new one, to avoid multiple dialogs
+     * related to the same error.
      *
      * @param title the title
      * @param error the error
      */
     public static void show(String title, String error) {
         log.error(error);
-        ErrorDialog.show(title, error);
+        if (!inError()) {
+            ErrorDialog.show(title, error);
+        }
     }
 
     /**
-     * Display and log an error.
+     * Display and log an error. If an error dialog is already displayed,
+     * this method will not pop up a new one, to avoid multiple dialogs
+     * related to the same error.
      *
      * @param title the title
      * @param error the error
@@ -78,7 +91,9 @@ public class ErrorHelper {
     }
 
     /**
-     * Display and log an error.
+     * Display and log an error. If an error dialog is already displayed,
+     * this method will not pop up a new one, to avoid multiple dialogs
+     * related to the same error.
      *
      * @param title       the title
      * @param displayName the display name to include in the error message.
@@ -88,18 +103,24 @@ public class ErrorHelper {
     public static void show(String title, String displayName, Throwable error) {
         String message = getError(error, displayName);
         log.error(message, error);
-        ErrorDialog.show(title, message);
+        if (!inError()) {
+            ErrorDialog.show(title, message);
+        }
     }
 
     /**
-     * Display and log an error.
+     * Display and log an error. If an error dialog is already displayed,
+     * this method will not pop up a new one, to avoid multiple dialogs
+     * related to the same error.
      *
      * @param error the error
      */
     public static void show(Throwable error) {
         String message = getError(error);
         log.error(message, error);
-        ErrorDialog.show(message);
+        if (!inError()) {
+            ErrorDialog.show(message);
+        }
     }
 
     /**
@@ -205,6 +226,21 @@ public class ErrorHelper {
             return getRootCause(exception.getCause());
         }
         return exception;
+    }
+
+    /**
+     * Determines if an error dialog is already being displayed.
+     *
+     * @return <tt>true</tt> if an error dialog is already being displayed
+     */
+    private static boolean inError() {
+        Window root = ApplicationInstance.getActive().getDefaultWindow();
+        for (Component component : root.getContent().getComponents()) {
+            if (component instanceof ErrorDialog) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
