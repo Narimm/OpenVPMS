@@ -325,6 +325,35 @@ public class IMObjectBean {
     }
 
     /**
+     * Returns the reference value of a node.
+     *
+     * @param node the node name
+     * @return the node value
+     */
+    public IMObjectReference getReference(String node) {
+        return (IMObjectReference) getValue(node);
+    }
+
+    /**
+     * Returns the object at the specified node.
+     * <p/>
+     * If the named object is an {@link IMObjectReference}, it will be
+     * resolved.
+     *
+     * @param node the node name
+     * @return the node value
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getObject(String node) {
+        Object value = getValue(node);
+        if (value instanceof IMObjectReference) {
+            return ArchetypeQueryHelper.getByObjectReference(
+                    getArchetypeService(), (IMObjectReference) value);
+        }
+        return (IMObject) value;
+    }
+
+    /**
      * Returns the value of a node.
      *
      * @param name the node name
