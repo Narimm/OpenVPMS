@@ -99,12 +99,12 @@ public class OrderRules {
      * Returns all active <em>entityRelationship.productSupplier</em>
      * relationships for a particular supplier and product.
      *
-     * @param product  the product
      * @param supplier the supplier
+     * @param product  the product
      * @return the relationships, wrapped in {@link ProductSupplier} instances
      */
-    public List<ProductSupplier> getProductSuppliers(Product product,
-                                                     Party supplier) {
+    public List<ProductSupplier> getProductSuppliers(Party supplier,
+                                                     Product product) {
         List<ProductSupplier> result = new ArrayList<ProductSupplier>();
         EntityBean bean = new EntityBean(supplier, service);
         Predicate predicate = AndPredicate.getInstance(
@@ -126,17 +126,17 @@ public class OrderRules {
      * size, but there is a relationship where the size is <tt>0</tt>, then
      * this will be returned.
      *
-     * @param product      the product
      * @param supplier     the supplier
+     * @param product      the product
      * @param packageSize  the package size
      * @param packageUnits the package units
      * @return the relationship, wrapped in a {@link ProductSupplier}, or
      *         <tt>null</tt> if none is found
      */
-    public ProductSupplier getProductSupplier(Product product, Party supplier,
+    public ProductSupplier getProductSupplier(Party supplier, Product product,
                                               int packageSize,
                                               String packageUnits) {
-        for (ProductSupplier ps : getProductSuppliers(product, supplier)) {
+        for (ProductSupplier ps : getProductSuppliers(supplier, product)) {
             if (ps.getPackageSize() == packageSize
                     && ObjectUtils.equals(ps.getPackageUnits(),
                                           packageUnits)) {

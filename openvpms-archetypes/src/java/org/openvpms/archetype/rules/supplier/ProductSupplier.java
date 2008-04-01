@@ -230,12 +230,50 @@ public class ProductSupplier {
     }
 
     /**
+     * Returns the underlying relationship.
+     *
+     * @return the underlying relationship
+     */
+    public EntityRelationship getRelationship() {
+        return (EntityRelationship) bean.getObject();
+    }
+
+    /**
      * Saves the underlying relationship.
      *
      * @throws ArchetypeServiceException if the object can't be saved
      */
     public void save() {
         bean.save();
+    }
+
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     *
+     * @param other the reference object with which to compare
+     * @return <tt>true</tt> if other is a <tt>ProductSupplier</tt> whose
+     *         underlying {@link EntityRelationship} equals this one.
+     */
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (other instanceof ProductSupplier) {
+            ProductSupplier p = ((ProductSupplier) other);
+            return p.bean.getObject().equals(bean.getObject());
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for the object.
+     *
+     * @return a hash code value for this object.
+     */
+    @Override
+    public int hashCode() {
+        return bean.getObject().hashCode();
     }
 
 }
