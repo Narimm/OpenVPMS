@@ -347,8 +347,7 @@ public class IMObjectBean {
     public IMObject getObject(String node) {
         Object value = getValue(node);
         if (value instanceof IMObjectReference) {
-            return ArchetypeQueryHelper.getByObjectReference(
-                    getArchetypeService(), (IMObjectReference) value);
+            return resolve((IMObjectReference) value);
         }
         return (IMObject) value;
     }
@@ -454,6 +453,22 @@ public class IMObjectBean {
     protected Object getValue(String name, Object defaultValue, Class type) {
         Object value = getValue(name);
         return (value != null) ? CONVERTER.convert(value, type) : defaultValue;
+    }
+
+    /**
+     * Helper to resolve a reference.
+     *
+     * @param ref the reference. May be <tt>null</tt>
+     * @return the object corresponding to the reference or <tt>null</tt> if
+     *         none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected IMObject resolve(IMObjectReference ref) {
+        if (ref != null) {
+            return ArchetypeQueryHelper.getByObjectReference(
+                    getArchetypeService(), ref);
+        }
+        return null;
     }
 
     /**

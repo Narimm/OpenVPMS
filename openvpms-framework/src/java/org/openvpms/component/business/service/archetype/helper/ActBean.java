@@ -195,14 +195,9 @@ public class ActBean extends IMObjectBean {
         List<Act> result = new ArrayList<Act>();
         Act act = getAct();
         for (ActRelationship r : act.getSourceActRelationships()) {
-            IMObjectReference target = r.getTarget();
-            if (target != null) {
-                IArchetypeService service = getArchetypeService();
-                Act child = (Act) ArchetypeQueryHelper.getByObjectReference(
-                        service, target);
-                if (child != null) {
-                    result.add(child);
-                }
+            Act child = (Act) resolve(r.getTarget());
+            if (child != null) {
+                result.add(child);
             }
         }
         return result;
@@ -222,9 +217,7 @@ public class ActBean extends IMObjectBean {
         for (ActRelationship r : act.getSourceActRelationships()) {
             IMObjectReference target = r.getTarget();
             if (TypeHelper.isA(target, shortName)) {
-                IArchetypeService service = getArchetypeService();
-                Act child = (Act) ArchetypeQueryHelper.getByObjectReference(
-                        service, target);
+                Act child = (Act) resolve(target);
                 if (child != null) {
                     result.add(child);
                 }
@@ -307,7 +300,7 @@ public class ActBean extends IMObjectBean {
     /**
      * Removes a participation.
      *
-     * @param shortName the participation shortName
+     * @param shortName the participation short name
      */
     public Participation removeParticipation(String shortName) {
         Participation p = getParticipation(shortName);
@@ -320,6 +313,9 @@ public class ActBean extends IMObjectBean {
     /**
      * Returns a reference to the participant of the first participation
      * matching the specified type.
+     *
+     * @param shortName the participation short name
+     * @return the entity reference, or <tt>null</tt> if none is found
      */
     public IMObjectReference getParticipantRef(String shortName) {
         Participation p = getParticipation(shortName);
@@ -335,13 +331,8 @@ public class ActBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getParticipant(String shortName) {
-        Entity result = null;
         IMObjectReference ref = getParticipantRef(shortName);
-        if (ref != null) {
-            result = (Entity) ArchetypeQueryHelper.getByObjectReference(
-                    getArchetypeService(), ref);
-        }
-        return result;
+        return (Entity) resolve(ref);
     }
 
     /**
@@ -378,6 +369,35 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
+     * Returns a reference to the participant of the first participation
+     * for the specified node.
+     *
+     * @param name the node name
+     * @return the entity reference, or <tt>null</tt> if none is found
+     */
+    public IMObjectReference getNodeParticipantRef(String name) {
+        for (Participation p : getValues(name, Participation.class)) {
+            if (p.getEntity() != null) {
+                return p.getEntity();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the participant of the first participation for the specified
+     * node.
+     *
+     * @param name the participation short name
+     * @return the entity, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Entity getNodeParticipant(String name) {
+        IMObjectReference ref = getNodeParticipantRef(name);
+        return (Entity) resolve(ref);
+    }
+
+    /**
      * Returns the source or target of a relationship that is not the same
      * as the supplied reference.
      *
@@ -398,9 +418,7 @@ public class ActBean extends IMObjectBean {
             }
         }
         if (child != null) {
-            IArchetypeService service = getArchetypeService();
-            return (Act) ArchetypeQueryHelper.getByObjectReference(
-                    service, child);
+            return (Act) resolve(child);
         }
         return null;
     }
