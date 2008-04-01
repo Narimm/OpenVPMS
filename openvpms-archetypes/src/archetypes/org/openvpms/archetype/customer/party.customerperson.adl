@@ -63,6 +63,9 @@
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active patient relationship</errorMessage>
+            </assertion>
         </node>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*"
@@ -131,6 +134,9 @@
                  </propertyList>
                  <errorMessage>errorMessage</errorMessage>
              </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active discount customer relationship</errorMessage>
+            </assertion>
          </node>
         <node name="taxes" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"

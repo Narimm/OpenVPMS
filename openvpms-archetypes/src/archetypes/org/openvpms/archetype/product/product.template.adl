@@ -37,6 +37,9 @@
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active product includes relationship</errorMessage>
+            </assertion>
         </node>
         <node name="species" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
@@ -97,6 +100,9 @@
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active product type relationship</errorMessage>
+            </assertion>
         </node>
         <node name="identities" path="/identities"
               type="java.util.HashSet" baseName="Identity" minCardinality="0"
@@ -135,6 +141,9 @@
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
+            </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active product discount relationship</errorMessage>
             </assertion>
         </node>
         <node name="sourceRelationships" path="/sourceEntityRelationships"

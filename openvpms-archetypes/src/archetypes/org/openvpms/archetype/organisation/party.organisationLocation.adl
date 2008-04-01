@@ -64,6 +64,9 @@
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active practice location relationship</errorMessage>
+            </assertion>
 		</node>
 		<node name="tills" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
@@ -77,6 +80,9 @@
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active till relationship</errorMessage>
+            </assertion>
 		</node>
 		<node name="depositAccounts" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
@@ -90,6 +96,9 @@
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active deposit account relationship</errorMessage>
+            </assertion>
 		</node>
 		<node name="schedules" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
@@ -103,6 +112,9 @@
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active location schedule relationship</errorMessage>
+            </assertion>
 		</node>
 		<node name="workLists" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
@@ -116,6 +128,9 @@
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active location worklist relationship</errorMessage>
+            </assertion>
 		</node>
 		<node name="stockLocations" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
@@ -129,6 +144,9 @@
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active stock location relationship</errorMessage>
+            </assertion>
 		</node>
         <node name="OTC" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"

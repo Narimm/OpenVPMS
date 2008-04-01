@@ -82,4 +82,10 @@
                     className="org.openvpms.component.business.service.archetype.assertion.NumericAssertions"
                     methodName="nonNegative"/>
     </assertionType>
+    <assertionType name="uniqueEntityRelationship"
+                   propertyArchetype="assertion.uniqueEntityRelationship.1.0">
+        <actionType name="validate"
+                    className="org.openvpms.component.business.service.archetype.assertion.EntityRelationshipAssertions"
+                    methodName="validate"/>
+    </assertionType>
 </assertionTypes>
