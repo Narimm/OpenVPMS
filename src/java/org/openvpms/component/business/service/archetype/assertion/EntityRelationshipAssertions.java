@@ -21,46 +21,61 @@ package org.openvpms.component.business.service.archetype.assertion;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+
 /**
- * Add description here.
+ * Assertions for {@link EntityRelationship}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class EntityRelationshipAssertions {
 
-
     /**
-     * This will iterate through the collection for the specified node
-     * descriptor and check that each element is in the archetype range.
+     * Validates an entity relationship assertion.
      *
      * @param target    the target object
      * @param node      the node descriptor for this assertion
-     * @param assertion the particular assertion
+     * @param assertion the assertion descriptor
      */
     public static boolean validate(Object target, NodeDescriptor node,
                                    AssertionDescriptor assertion) {
-        // first check to see if the object is of a collection type
-        Collection<EntityRelationship> entries = getRelationships(target);
-        if (entries == null) {
-            return false;
+        boolean result = false;
+        if (assertion.getName().equals("uniqueEntityRelationship")) {
+            Collection<EntityRelationship> entries = getRelationships(target);
+            if (entries != null) {
+                result = validateUnique(entries);
+            }
         }
+        return result;
+    }
+
+    /**
+     * Validates that each active entity relationship is unique.
+     *
+     * @param entries the relationships to validate
+     * @return <tt>true</tt> if the relationships are unique,
+     *         otherwise <tt>false</tt>
+     */
+    private static boolean validateUnique(
+            Collection<EntityRelationship> entries) {
         if (entries.size() > 1) {
             Date now = new Date();
             List<EntityRelationship> active
                     = new ArrayList<EntityRelationship>();
             for (EntityRelationship entry : entries) {
                 if (entry.isActive(now)) {
+                    IMObjectReference source = entry.getSource();
+                    IMObjectReference target = entry.getTarget();
                     for (EntityRelationship other : active) {
-                        if (entry.getSource().equals(other.getSource())
-                                && entry.getTarget().equals(other.getTarget()))
-                        {
+                        if (source.equals(other.getSource())
+                                && target.equals(other.getTarget())) {
                             return false;
                         }
                     }
@@ -71,16 +86,22 @@ public class EntityRelationshipAssertions {
         return true;
     }
 
+    /**
+     * Helper to verify that an object is a collection of entity relationships.
+     *
+     * @param object the object to check
+     * @return the collection, or <tt>null</tt>, if <tt>object</tt> is invalid
+     */
     private static Collection<EntityRelationship>
-            getRelationships(Object target) {
-        if (target instanceof Collection) {
-            Collection list = (Collection) target;
-            for (Object object : list) {
-                if (!(object instanceof EntityRelationship)) {
+            getRelationships(Object object) {
+        if (object instanceof Collection) {
+            Collection list = (Collection) object;
+            for (Object element : list) {
+                if (!(element instanceof EntityRelationship)) {
                     return null;
                 }
             }
-            return (Collection<EntityRelationship>) target;
+            return (Collection<EntityRelationship>) object;
         }
         return null;
     }
