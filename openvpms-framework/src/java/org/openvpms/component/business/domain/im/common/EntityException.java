@@ -47,7 +47,6 @@ public class EntityException extends OpenVPMSException {
         FailedToRemoveEntityRelationship,
         FailedToAddActRelationship,
         FailedToRemoveActRelationship,
-        DuplicateEntityRelationship
     }
 
     /**
@@ -81,7 +80,7 @@ public class EntityException extends OpenVPMSException {
      * 
      * @param errorCode
      *            the error code
-     * @param parama
+     * @param params
      *            the parameters used to render the message associated with the
      *            error code
      */
