@@ -263,13 +263,32 @@ public class DescriptorHelperTestCase
      * Tests the {@link DescriptorHelper#getDisplayName(IMObject, String)}
      * method.
      */
-    public void testGetDisplayNameForNode() {
+    public void testGetDisplayNameForObjectNode() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         IMObject object = service.create("act.customerAccountPayment");
         assertNotNull(object);
         String name = DescriptorHelper.getDisplayName(object, "startTime");
         assertEquals("Date", name);
+
+        // check a non existent node
+        assertNull(DescriptorHelper.getDisplayName(object, "foo"));
+    }
+
+    /**
+     * Tests the {@link DescriptorHelper#getDisplayName(String, String)} method.
+     */
+    public void testGetDisplayNameForArchetypeNode() {
+        String name = DescriptorHelper.getDisplayName(
+                "act.customerAccountPayment", "startTime");
+        assertEquals("Date", name);
+
+        // check a non existent node
+        assertNull(DescriptorHelper.getDisplayName("act.customerAccountPayment",
+                                                   "foo"));
+
+        // check a non-existent archetype
+        assertNull(DescriptorHelper.getDisplayName("foo", "foo"));
     }
 
     /**
@@ -286,7 +305,7 @@ public class DescriptorHelperTestCase
         nodeShortNames = DescriptorHelper.getNodeShortNames(shortNames,
                                                             "source");
         assertEquals(2, nodeShortNames.length);
-        List<String> list =Arrays.asList(nodeShortNames);
+        List<String> list = Arrays.asList(nodeShortNames);
         assertTrue(list.contains("party.person"));
         assertTrue(list.contains("organization.organization"));
     }

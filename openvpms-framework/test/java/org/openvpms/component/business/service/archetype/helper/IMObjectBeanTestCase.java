@@ -310,7 +310,35 @@ public class IMObjectBeanTestCase
     }
 
     /**
-     * Tests {@link IMObjectBean#save}.
+     * Tests the {@link IMObjectBean#getReference(String)} method.
+     */
+    public void testGetReferenceNode() {
+        IMObjectBean bean = createBean("actRelationship.simple");
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        Act act = (Act) service.create("act.simple");
+        bean.setValue("source", act.getObjectReference());
+        assertEquals(act.getObjectReference(), bean.getReference("source"));
+    }
+
+    /**
+     * Tests the {@link IMObjectBean#getObject(String)} method.
+     */
+    public void testGetObjectNode() {
+        IMObjectBean bean = createBean("actRelationship.simple");
+        assertNull(bean.getObject("source"));
+
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        Act act = (Act) service.create("act.simple");
+        bean.setValue("source", act.getObjectReference());
+
+        service.save(act);
+        assertEquals(act, bean.getObject("source"));
+    }
+
+    /**
+     * Tests the {@link IMObjectBean#save} method.
      */
     public void testSave() {
         IMObjectBean bean = createBean("act.types");

@@ -519,8 +519,37 @@ public final class DescriptorHelper {
      */
     public static String getDisplayName(IMObject object, String node,
                                         IArchetypeService service) {
+        return getDisplayName(object.getArchetypeId().getShortName(), node,
+                              service);
+    }
+
+    /**
+     * Returns the display name for a node.
+     *
+     * @param shortName the archetype short name
+     * @param node      the node
+     * @return a display name for the node, or <code>null</code> if none eixsts
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String getDisplayName(String shortName, String node) {
+        return getDisplayName(shortName, node,
+                              ArchetypeServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns the display name for a node.
+     *
+     * @param shortName the archetype short name
+     * @param node      the node
+     * @param service   the archetype service
+     * @return a display name for the node, or <code>null</code> if none eixsts
+     * @throws ArchetypeServiceException for any error
+     */
+    public static String getDisplayName(String shortName, String node,
+                                        IArchetypeService service) {
         String result = null;
-        ArchetypeDescriptor archetype = getArchetypeDescriptor(object, service);
+        ArchetypeDescriptor archetype
+                = getArchetypeDescriptor(shortName, service);
         if (archetype != null) {
             NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
             if (descriptor != null) {
@@ -529,4 +558,5 @@ public final class DescriptorHelper {
         }
         return result;
     }
+
 }
