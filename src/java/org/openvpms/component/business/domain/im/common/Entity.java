@@ -222,17 +222,6 @@ public class Entity extends IMObject {
      *            if this relationship cannot be added to this entity
      */
     public void addEntityRelationship(EntityRelationship entityRel) {
-        for (EntityRelationship rel : this.getEntityRelationships()) {
-            if (rel.getSource().getLinkId().equals(entityRel.getSource().getLinkId()) &&
-                rel.getTarget().getLinkId().equals(entityRel.getTarget().getLinkId()) &&
-                rel.getArchetypeId().equals(entityRel.getArchetypeId()) &&
-                rel.getActiveEndTime() == null &&
-                entityRel.getActiveEndTime() == null) {
-                throw new EntityException(
-                        EntityException.ErrorCode.DuplicateEntityRelationship,
-                        new Object[] { entityRel.getArchetypeId().getShortName()});
-            }
-        }
         if ((entityRel.getSource().getLinkId().equals(this.getLinkId())) &&
             (entityRel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
             addSourceEntityRelationship(entityRel);
