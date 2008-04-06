@@ -25,21 +25,8 @@ package org.openvpms.archetype.rules.supplier;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DeliveryStatus {
+public enum DeliveryStatus {
 
-    /**
-     * Pending delivery status.
-     */
-    public static final String PENDING = "PENDING";
-
-    /**
-     * Part delivery status.
-     */
-    public static final String PART = "PART";
-
-    /**
-     * Full delivery status.
-     */
-    public static final String FULL = "FULL";
+    PENDING, PART, FULL
 
 }

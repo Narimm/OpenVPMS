@@ -20,9 +20,14 @@ package org.openvpms.archetype.rules.supplier;
 
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 
+import java.math.BigDecimal;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
 import java.util.List;
 
 
@@ -156,7 +161,7 @@ public class OrderRulesTestCase extends ArchetypeServiceTest {
         assertEquals(p1rel2, rules.getProductSupplier(supplier, product1, 3,
                                                       "AMPOULE"));
         assertEquals(p2rel, rules.getProductSupplier(supplier, product2, 4,
-                                                      "PACKET"));
+                                                     "PACKET"));
 
         // verify that nothing is returned if there is no direct match
         assertNull(rules.getProductSupplier(supplier, product1, 5, "BOX"));
@@ -192,6 +197,23 @@ public class OrderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link OrderRules#getDeliveryStatus(FinancialAct)} method.
+     */
+    public void testGetDeliveryStatus() {
+        BigDecimal two = new BigDecimal("2.0");
+        BigDecimal three = new BigDecimal("3.0");
+
+        FinancialAct act = (FinancialAct) create("act.supplierOrderItem");
+        assertEquals(DeliveryStatus.PENDING, rules.getDeliveryStatus(act));
+
+        checkDeliveryStatus(act, three, ZERO, ZERO, DeliveryStatus.PENDING);
+        checkDeliveryStatus(act, three, three, ZERO, DeliveryStatus.FULL);
+        checkDeliveryStatus(act, three, two, ZERO, DeliveryStatus.PART);
+        checkDeliveryStatus(act, three, two, ONE, DeliveryStatus.FULL);
+        checkDeliveryStatus(act, three, ZERO, three, DeliveryStatus.FULL);
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -200,6 +222,26 @@ public class OrderRulesTestCase extends ArchetypeServiceTest {
     protected void onSetUp() throws Exception {
         super.onSetUp();
         rules = new OrderRules(getArchetypeService());
+    }
+
+    /**
+     * Verifies the delivery status matches that expected for the supplied
+     * values.
+     *
+     * @param quantity  the quantity
+     * @param received  the received quantity
+     * @param cancelled the cancelled quantity
+     * @param expected  the expected delivery status
+     */
+    private void checkDeliveryStatus(FinancialAct act,
+                                     BigDecimal quantity, BigDecimal received,
+                                     BigDecimal cancelled,
+                                     DeliveryStatus expected) {
+        ActBean bean = new ActBean(act);
+        bean.setValue("quantity", quantity);
+        bean.setValue("receivedQuantity", received);
+        bean.setValue("cancelledQuantity", cancelled);
+        assertEquals(expected, rules.getDeliveryStatus(act));
     }
 
     /**
