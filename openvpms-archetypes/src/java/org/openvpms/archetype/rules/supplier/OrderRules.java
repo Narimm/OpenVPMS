@@ -21,6 +21,7 @@ package org.openvpms.archetype.rules.supplier;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -29,7 +30,9 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -182,6 +185,40 @@ public class OrderRules {
         EntityRelationship rel = bean.addRelationship(
                 "entityRelationship.productSupplier", supplier);
         return new ProductSupplier(rel, service);
+    }
+
+    /**
+     * Determines the delivery status of an order item.
+     *
+     * @param orderItem an <em>act.supplierOrderItem</em>
+     * @return the delivery status
+     */
+    public DeliveryStatus getDeliveryStatus(FinancialAct orderItem) {
+        DeliveryStatus result = DeliveryStatus.PENDING;
+        IMObjectBean bean = new IMObjectBean(orderItem, service);
+        BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
+        BigDecimal received = bean.getBigDecimal("receivedQuantity",
+                                                 BigDecimal.ZERO);
+        BigDecimal cancelled = bean.getBigDecimal("cancelledQuantity",
+                                                  BigDecimal.ZERO);
+        if (quantity.compareTo(BigDecimal.ZERO) != 0) {
+            // can only be PART or FULL delivery status if there is an expected
+            // quantity
+            BigDecimal sum = received.add(cancelled);
+            if (sum.compareTo(BigDecimal.ZERO) != 0) {
+                int status = sum.compareTo(quantity);
+                if (status == -1) {
+                    if (received.compareTo(BigDecimal.ZERO) != 0) {
+                        result = DeliveryStatus.PART;
+                    }
+                } else if (status == 0) {
+                    result = DeliveryStatus.FULL;
+                } else {
+                    // the sum should never be greater than the quantity
+                }
+            }
+        }
+        return result;
     }
 
 }
