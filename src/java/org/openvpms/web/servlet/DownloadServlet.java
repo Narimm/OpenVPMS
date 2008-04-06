@@ -89,9 +89,15 @@ public class DownloadServlet extends HttpServlet {
         }
         String qname = document.getArchetypeId().getQualifiedName();
         String linkId = document.getLinkId();
-        String uri = "download?qname=" + qname + "&linkId=" + linkId;
+        StringBuffer uri = new StringBuffer();
+        uri.append(ServletHelper.getRedirectURI("download"));
+        uri.append("?qname=");
+        uri.append(qname);
+        uri.append("&linkId=");
+        uri.append(linkId);
         Command command = new BrowserOpenWindowCommand(
-                uri, null, "width=800,height=600,resizable=yes,scrollbars=yes");
+                uri.toString(), null,
+                "width=800,height=600,resizable=yes,scrollbars=yes");
         OpenVPMSApp.getInstance().enqueueCommand(command);
     }
 
