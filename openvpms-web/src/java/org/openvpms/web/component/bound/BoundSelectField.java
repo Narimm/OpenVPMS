@@ -19,10 +19,7 @@
 package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.list.ListModel;
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.property.Property;
 
@@ -36,75 +33,18 @@ import org.openvpms.web.component.property.Property;
 public class BoundSelectField extends SelectField {
 
     /**
-     * The property binder.
-     */
-    private final Binder binder;
-
-    /**
-     * Checkbox listener.
-     */
-    private final ActionListener listener;
-
-
-    /**
-     * Construct a new <code>BoundSelectField</code>.
+     * Construct a new <tt>BoundSelectField</tt>.
      *
      * @param property the property to bind
      * @param model    the list model
      */
     public BoundSelectField(final Property property, final ListModel model) {
         super(model);
-        listener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                binder.setProperty();
-            }
-        };
-        addActionListener(listener);
-
-        binder = new Binder(property) {
-            protected Object getFieldValue() {
-                return getSelectedItem();
-            }
-
-            protected void setFieldValue(Object value) {
-                if (value != null) {
-                    removeActionListener(listener);
-                    int index = setSelected(value);
-                    if (index == -1 && model.size() != 0) {
-                        // current value not in the list, so default it to the first
-                        // list value.
-                        setSelectedIndex(0);
-                        property.setValue(getSelectedItem());
-                    }
-                    addActionListener(listener);
-                }
-            }
-        };
+        Binder binder = new SelectFieldBinder(this, property);
         binder.setField();
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
-
-    }
-
-    /**
-     * Sets the selected object based on the supplied value.
-     *
-     * @param value the value
-     * @return the selected index, or <code>-1</code> if the value wasn't found
-     *         in the list
-     */
-    private int setSelected(Object value) {
-        int result = -1;
-        ListModel model = getModel();
-        for (int i = 0; i < model.size(); ++i) {
-            if (ObjectUtils.equals(model.get(i), value)) {
-                setSelectedIndex(i);
-                result = i;
-                break;
-            }
-        }
-        return result;
     }
 
 }

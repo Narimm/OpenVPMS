@@ -20,9 +20,6 @@ package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.list.ListModel;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -36,8 +33,7 @@ import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.doc.DocumentEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
-import org.openvpms.web.component.im.list.LookupListCellRenderer;
-import org.openvpms.web.component.im.list.LookupListModel;
+import org.openvpms.web.component.im.lookup.BoundLookupField;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -45,10 +41,8 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.palette.Palette;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
 
 import java.util.List;
 
@@ -180,11 +174,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * @return a new editor for <tt>property</tt>
      */
     protected Editor createLookupEditor(Property property, IMObject context) {
-        IMObjectProperty p = (IMObjectProperty) property;
-        ListModel model = new LookupListModel(context, p.getDescriptor());
-        SelectField field = SelectFieldFactory.create(property, model);
-        field.setCellRenderer(new LookupListCellRenderer());
-        return createPropertyEditor(property, field);
+        Component component = new BoundLookupField(property, context);
+        return createPropertyEditor(property, component);
     }
 
     /**
@@ -219,11 +210,9 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     protected Editor createCollectionEditor(CollectionProperty property,
                                             IMObject object) {
         Editor editor = null;
-        IMObjectProperty p = (IMObjectProperty) property;
-        NodeDescriptor descriptor = p.getDescriptor();
-        if (descriptor.isParentChild()) {
-            if (descriptor.getMinCardinality() == 1
-                    && descriptor.getMaxCardinality() == 1) {
+        if (property.isParentChild()) {
+            if (property.getMinCardinality() == 1
+                    && property.getMaxCardinality() == 1) {
                 // handle the special case of a collection of one element.
                 // This can be edited inline
                 String[] range = property.getArchetypeRange();
@@ -252,8 +241,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         } else {
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
-            List<IMObject> identifiers
-                    = ArchetypeQueryHelper.getCandidates(service, descriptor);
+            List<IMObject> identifiers = ArchetypeQueryHelper.getCandidates(
+                    service, property.getDescriptor());
             Palette palette = new BoundPalette(identifiers, property);
             palette.setCellRenderer(new IMObjectListCellRenderer());
             editor = createPropertyEditor(property, palette);

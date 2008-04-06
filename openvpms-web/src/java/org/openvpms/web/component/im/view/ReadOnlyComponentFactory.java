@@ -20,8 +20,10 @@ package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.text.TextComponent;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateHelper;
@@ -60,7 +62,10 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
         int length = property.getMaxLength();
         int columns = (length < maxDisplayLength) ? length : maxDisplayLength;
         result = TextComponentFactory.create(columns);
-        result.setText(getLookupName(property, context));
+        NodeDescriptor descriptor = property.getDescriptor();
+        if (descriptor != null) {
+            result.setText(FastLookupHelper.getLookupName(descriptor, context));
+        }
         return result;
     }
 

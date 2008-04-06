@@ -20,21 +20,18 @@ package org.openvpms.web.app.reporting.till;
 
 import org.openvpms.archetype.rules.finance.till.TillBalanceStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.component.im.util.FastLookupHelper;
-
-import java.util.List;
 
 
 /**
@@ -44,6 +41,13 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-19 07:20:38Z $
  */
 public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
+
+    /**
+     * The act statuses to query.
+     */
+    private static final ActStatuses STATUSES = new ActStatuses(
+            "act.tillBalance");
+
 
     /**
      * Constructs a new <tt>TillWorkspace</tt>.
@@ -80,11 +84,9 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
      * @return a new query
      */
     protected ActQuery<FinancialAct> createQuery() {
-        List<Lookup> lookups = FastLookupHelper.getLookups("act.tillBalance",
-                                                           "status");
         ActQuery<FinancialAct> query = new DefaultActQuery<FinancialAct>(
                 getObject(), "till", "participation.till",
-                getChildArchetypes().getShortNames(), lookups);
+                getChildArchetypes().getShortNames(), STATUSES);
         query.setStatus(TillBalanceStatus.UNCLEARED);
         return query;
     }

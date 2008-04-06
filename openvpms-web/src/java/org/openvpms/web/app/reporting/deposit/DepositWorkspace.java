@@ -20,15 +20,12 @@ package org.openvpms.web.app.reporting.deposit;
 
 import org.openvpms.archetype.rules.finance.deposit.DepositStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DefaultActQuery;
-import org.openvpms.web.component.im.util.FastLookupHelper;
-
-import java.util.List;
 
 
 /**
@@ -39,6 +36,13 @@ import java.util.List;
  */
 public class DepositWorkspace
         extends BrowserCRUDWorkspace<Party, FinancialAct> {
+
+    /**
+     * The act statuses to query.
+     */
+    private static final ActStatuses STATUSES
+            = new ActStatuses("act.bankDeposit");
+
 
     /**
      * Construct a new <tt>DepositWorkspace</tt>.
@@ -64,11 +68,9 @@ public class DepositWorkspace
      * @return a new query
      */
     protected ActQuery<FinancialAct> createQuery() {
-        List<Lookup> lookups = FastLookupHelper.getLookups("act.bankDeposit",
-                                                           "status");
         ActQuery<FinancialAct> query = new DefaultActQuery<FinancialAct>(
                 getObject(), "depositAccount", "participation.deposit",
-                "act.bankDeposit", lookups);
+                "act.bankDeposit", STATUSES);
         query.setStatus(DepositStatus.UNDEPOSITED);
         return query;
     }

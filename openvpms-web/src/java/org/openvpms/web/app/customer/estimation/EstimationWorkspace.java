@@ -19,14 +19,11 @@
 package org.openvpms.web.app.customer.estimation;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DefaultActQuery;
-import org.openvpms.web.component.im.util.FastLookupHelper;
-
-import java.util.List;
 
 
 /**
@@ -36,6 +33,12 @@ import java.util.List;
  * @version $LastChangedDate$
  */
 public class EstimationWorkspace extends CustomerActWorkspace<Act> {
+
+    /**
+     * The act statuses.
+     */
+    private static final ActStatuses STATUSES
+            = new ActStatuses("act.customerEstimation");
 
     /**
      * Constructs a new <tt>EstimationWorkspace</tt>.
@@ -61,11 +64,9 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery() {
-        List<Lookup> lookups = FastLookupHelper.getLookups(
-                "act.customerEstimation", "status");
         return new DefaultActQuery<Act>(getObject(), "customer",
                                         "participation.customer",
                                         getChildArchetypes().getShortNames(),
-                                        lookups);
+                                        STATUSES);
     }
 }

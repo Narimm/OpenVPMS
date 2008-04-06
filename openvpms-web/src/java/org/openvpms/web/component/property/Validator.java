@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.property;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +51,20 @@ public class Validator {
     }
 
     /**
-     * Adds validation errors for an object.
+     * Adds a validation error for an object. This replaces any existing
+     * errors for the object.
+     *
+     * @param modifiable the object
+     * @param error      the validation error
+     */
+    public void add(Modifiable modifiable, ValidatorError error) {
+        List<ValidatorError> errors = Arrays.asList(error);
+        add(modifiable, errors);
+    }
+
+    /**
+     * Adds validation errors for an object. This replaces any existing
+     * errors for the object.
      *
      * @param modifiable the object
      * @param errors     the validation errors

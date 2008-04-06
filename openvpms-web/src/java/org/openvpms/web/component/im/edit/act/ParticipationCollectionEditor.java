@@ -49,7 +49,7 @@ public class ParticipationCollectionEditor
 
 
     /**
-     * Constructs a new <code>ParticipationCollectionEditor</code>.
+     * Constructs a new <tt>ParticipationCollectionEditor</tt>.
      *
      * @param property the collection property
      * @param object   the parent object
@@ -88,6 +88,24 @@ public class ParticipationCollectionEditor
     }
 
     /**
+     * Determines if items can be added and removed.
+     *
+     * @param readOnly if <tt>true</tt> items cannot be added or removed
+     */
+    public void setCardinalityReadOnly(boolean readOnly) {
+        editor.setCardinalityReadOnly(readOnly);
+    }
+
+    /**
+     * Determines if items can be added or removed.
+     *
+     * @return <tt>true</tt> if items can't be added or removed.
+     */
+    public boolean isCardinalityReadOnly() {
+        return editor.isCardinalityReadOnly();
+    }
+
+    /**
      * Returns the property being edited.
      *
      * @return the property being edited
@@ -108,7 +126,7 @@ public class ParticipationCollectionEditor
     /**
      * Determines if the object has been modified.
      *
-     * @return <code>true</code> if the object has been modified
+     * @return <tt>true</tt> if the object has been modified
      */
     public boolean isModified() {
         return editor.isModified();
@@ -142,8 +160,8 @@ public class ParticipationCollectionEditor
     /**
      * Determines if the object is valid.
      *
-     * @return <code>true</code> if the object is valid; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the object is valid; otherwise
+     *         <tt>false</tt>
      */
     public boolean isValid() {
         return editor.isValid();
@@ -153,8 +171,8 @@ public class ParticipationCollectionEditor
      * Validates the object.
      *
      * @param validator the validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the object and its descendents are valid
+     *         otherwise <tt>false</tt>
      */
     public boolean validate(Validator validator) {
         return editor.validate(validator);
@@ -163,7 +181,7 @@ public class ParticipationCollectionEditor
     /**
      * Save any edits.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the save was successful
      */
     public boolean save() {
         return editor.save();
@@ -172,7 +190,7 @@ public class ParticipationCollectionEditor
     /**
      * Determines if any edits have been saved.
      *
-     * @return <code>true</code> if edits have been saved.
+     * @return <tt>true</tt> if edits have been saved.
      */
     public boolean isSaved() {
         return editor.isSaved();
@@ -181,7 +199,7 @@ public class ParticipationCollectionEditor
     /**
      * Returns the current editor.
      *
-     * @return the current editor, or <code>null</code> if there is no current
+     * @return the current editor, or <tt>null</tt> if there is no current
      *         editor
      */
     public IMObjectEditor getCurrentEditor() {
@@ -191,7 +209,7 @@ public class ParticipationCollectionEditor
     /**
      * Returns the focus group.
      *
-     * @return the focus group, or <code>null</code> if the editor hasn't been
+     * @return the focus group, or <tt>null</tt> if the editor hasn't been
      *         rendered
      */
     public FocusGroup getFocusGroup() {

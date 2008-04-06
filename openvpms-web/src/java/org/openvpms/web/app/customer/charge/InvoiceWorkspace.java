@@ -20,19 +20,16 @@ package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.component.im.util.FastLookupHelper;
-
-import java.util.List;
 
 
 /**
@@ -42,6 +39,13 @@ import java.util.List;
  * @version $LastChangedDate$
  */
 public class InvoiceWorkspace extends CustomerActWorkspace<FinancialAct> {
+
+    /**
+     * The act statuses to query, excluding POSTED.
+     */
+    private static final ActStatuses STATUSES = new ActStatuses(
+            "act.customerAccountChargesInvoice", FinancialActStatus.POSTED);
+
 
     /**
      * Constructs a new <tt>InvoiceWorkspace</tt>.
@@ -66,12 +70,9 @@ public class InvoiceWorkspace extends CustomerActWorkspace<FinancialAct> {
      * @return a new query
      */
     protected ActQuery<FinancialAct> createQuery() {
-        List<Lookup> lookups = FastLookupHelper.getLookups(
-                "act.customerAccountChargesInvoice", "status");
         return new DefaultActQuery<FinancialAct>(
                 getObject(), "customer", "participation.customer",
-                getChildArchetypes().getShortNames(), lookups,
-                FinancialActStatus.POSTED);
+                getChildArchetypes().getShortNames(), STATUSES);
     }
 
     /**

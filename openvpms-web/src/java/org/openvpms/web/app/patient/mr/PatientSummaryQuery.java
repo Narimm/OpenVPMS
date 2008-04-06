@@ -59,8 +59,7 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
      */
     public PatientSummaryQuery(Party patient) {
         super(patient, "patient", "participation.patient",
-              new String[]{PatientRecordTypes.CLINICAL_EVENT}, new String[0],
-              Act.class);
+              new String[]{PatientRecordTypes.CLINICAL_EVENT}, Act.class);
         allShortNames = ActHelper.getTargetShortNames(
                 PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM);
 

@@ -19,15 +19,12 @@
 package org.openvpms.web.app.customer.document;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DefaultActQuery;
-import org.openvpms.web.component.im.util.FastLookupHelper;
-
-import java.util.List;
 
 
 /**
@@ -45,6 +42,12 @@ public class CustomerDocumentWorkspace
     private static final String[] SHORT_NAMES = {
             "act.customerDocumentForm", "act.customerDocumentLetter",
             "act.customerDocumentAttachment"};
+
+    /**
+     * The act statuses.
+     */
+    private static final ActStatuses STATUSES
+            = new ActStatuses("act.customerDocumentLetter");
 
 
     /**
@@ -70,11 +73,9 @@ public class CustomerDocumentWorkspace
      * @return a new query
      */
     protected ActQuery<DocumentAct> createQuery() {
-        List<Lookup> lookups = FastLookupHelper.getLookups(
-                "act.customerDocumentLetter", "status");
         return new DefaultActQuery<DocumentAct>(getObject(), "customer",
                                                 "participation.customer",
-                                                SHORT_NAMES, lookups);
+                                                SHORT_NAMES, STATUSES);
     }
 
 }

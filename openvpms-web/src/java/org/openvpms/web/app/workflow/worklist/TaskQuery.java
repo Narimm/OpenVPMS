@@ -49,7 +49,7 @@ public class TaskQuery extends WorkflowQuery<Act> {
      */
     public TaskQuery(Party schedule) {
         super(schedule, "worklist", "participation.worklist",
-              new String[]{"act.customerTask"}, new String[0], Act.class);
+              new String[]{"act.customerTask"}, Act.class);
     }
 
     /**

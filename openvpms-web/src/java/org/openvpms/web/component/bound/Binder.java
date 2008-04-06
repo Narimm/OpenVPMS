@@ -30,7 +30,7 @@ import org.openvpms.web.component.property.Property;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-abstract class Binder {
+public abstract class Binder {
 
     /**
      * The property.

@@ -21,12 +21,10 @@ package org.openvpms.web.component.im.query;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -54,9 +52,9 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param shortNames the act short names to query
      * @param type       the type that this query returns
      */
-    public DateRangeActQuery(String[] shortNames, List<Lookup> statusLookups,
+    public DateRangeActQuery(String[] shortNames, ActStatuses statusLookups,
                              Class type) {
-        this(null, null, null, shortNames, statusLookups, null, type);
+        this(null, null, null, shortNames, statusLookups, type);
     }
 
     /**
@@ -66,20 +64,33 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param participant   the partcipant node name
      * @param participation the entity participation short name
      * @param shortNames    the act short names
-     * @param statusLookups the act status lookups
-     * @param excludeStatus to exclude. May be <tt>null</tt>
+     * @param statuses      the act status lookups
      * @param type          the type that this query returns
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
     public DateRangeActQuery(Entity entity, String participant,
                              String participation, String[] shortNames,
-                             List<Lookup> statusLookups, String excludeStatus,
-                             Class type) {
-        super(entity, participant, participation, shortNames, statusLookups,
-              excludeStatus, type);
+                             ActStatuses statuses, Class type) {
+        super(entity, participant, participation, shortNames, statuses, type);
         selectType = true;
         QueryFactory.initialise(this);
+    }
+
+    /**
+     * Constructs a new <tt>DateRangeActQuery</tt>.
+     *
+     * @param entity        the entity to search for
+     * @param participant   the partcipant node name
+     * @param participation the entity participation short name
+     * @param shortNames    the act short names
+     * @param type          the type that this query returns
+     */
+    public DateRangeActQuery(Entity entity, String participant,
+                             String participation, String[] shortNames,
+                             Class type) {
+        this(entity, participant, participation, shortNames, true,
+             new String[0], type);
     }
 
     /**

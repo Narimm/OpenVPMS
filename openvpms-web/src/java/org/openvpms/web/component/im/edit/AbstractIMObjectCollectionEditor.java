@@ -42,42 +42,47 @@ public abstract class AbstractIMObjectCollectionEditor
     /**
      * The collection.
      */
-    private final CollectionPropertyEditor _collection;
+    private final CollectionPropertyEditor collection;
 
     /**
      * The parent object.
      */
-    private final IMObject _object;
+    private final IMObject object;
 
 
     /**
      * The layout context.
      */
-    private final LayoutContext _context;
+    private final LayoutContext context;
 
     /**
      * The component representing this.
      */
-    private Component _component;
+    private Component component;
 
     /**
      * The current editor.
      */
-    private IMObjectEditor _editor;
+    private IMObjectEditor editor;
+
+    /**
+     * Determines if elements may be added/removed.
+     */
+    private boolean cardinalityReadOnly = false;
 
     /**
      * The event listeners.
      */
-    private final ModifiableListeners _listeners = new ModifiableListeners();
+    private final ModifiableListeners listeners = new ModifiableListeners();
 
     /**
      * Event broadcaster.
      */
-    private final ModifiableListener _broadcaster;
+    private final ModifiableListener broadcaster;
 
 
     /**
-     * Construct a new <code>AbstractIMObjectCollectionEditor</code>.
+     * Construct a new <tt>AbstractIMObjectCollectionEditor</tt>.
      *
      * @param editor  the collection property
      * @param object  the object being edited
@@ -90,7 +95,7 @@ public abstract class AbstractIMObjectCollectionEditor
     }
 
     /**
-     * Construct a new <code>AbstractIMObjectCollectionEditor</code>.
+     * Construct a new <tt>AbstractIMObjectCollectionEditor</tt>.
      *
      * @param editor  the collection property editor
      * @param object  the object being edited
@@ -99,15 +104,33 @@ public abstract class AbstractIMObjectCollectionEditor
     protected AbstractIMObjectCollectionEditor(CollectionPropertyEditor editor,
                                                IMObject object,
                                                LayoutContext context) {
-        _collection = editor;
-        _object = object;
-        _context = context;
-        _broadcaster = new ModifiableListener() {
+        collection = editor;
+        this.object = object;
+        this.context = context;
+        broadcaster = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                _listeners.notifyListeners(modifiable);
+                listeners.notifyListeners(modifiable);
             }
         };
-        _collection.getProperty().addModifiableListener(_broadcaster);
+        collection.getProperty().addModifiableListener(broadcaster);
+    }
+
+    /**
+     * Determines if items can be added and removed.
+     *
+     * @param readOnly if <tt>true</tt> items can't be added and removed
+     */
+    public void setCardinalityReadOnly(boolean readOnly) {
+        cardinalityReadOnly = readOnly;
+    }
+
+    /**
+     * Determines if items can be added or removed.
+     *
+     * @return <tt>true</tt> if items can't be added or removed.
+     */
+    public boolean isCardinalityReadOnly() {
+        return cardinalityReadOnly;
     }
 
     /**
@@ -116,7 +139,7 @@ public abstract class AbstractIMObjectCollectionEditor
      * @return the property being edited
      */
     public Property getProperty() {
-        return _collection.getProperty();
+        return collection.getProperty();
     }
 
     /**
@@ -125,10 +148,10 @@ public abstract class AbstractIMObjectCollectionEditor
      * @return the rendered collection
      */
     public Component getComponent() {
-        if (_component == null) {
-            _component = doLayout(_context);
+        if (component == null) {
+            component = doLayout(context);
         }
-        return _component;
+        return component;
     }
 
     /**
@@ -137,7 +160,7 @@ public abstract class AbstractIMObjectCollectionEditor
      * @return the object being edited
      */
     public IMObject getObject() {
-        return _object;
+        return object;
     }
 
     /**
@@ -146,18 +169,18 @@ public abstract class AbstractIMObjectCollectionEditor
      * @return the collection property
      */
     public CollectionProperty getCollection() {
-        return _collection.getProperty();
+        return collection.getProperty();
     }
 
     /**
      * Determines if the object has been modified.
      *
-     * @return <code>true</code> if the object has been modified
+     * @return <tt>true</tt> if the object has been modified
      */
     public boolean isModified() {
-        boolean modified = _collection.isModified();
-        if (!modified && _editor != null) {
-            modified = _editor.isModified();
+        boolean modified = collection.isModified();
+        if (!modified && editor != null) {
+            modified = editor.isModified();
         }
         return modified;
     }
@@ -166,10 +189,10 @@ public abstract class AbstractIMObjectCollectionEditor
      * Clears the modified status of the object.
      */
     public void clearModified() {
-        if (_editor != null) {
-            _editor.clearModified();
+        if (editor != null) {
+            editor.clearModified();
         }
-        _collection.clearModified();
+        collection.clearModified();
     }
 
     /**
@@ -178,7 +201,7 @@ public abstract class AbstractIMObjectCollectionEditor
      * @param listener the listener to add
      */
     public void addModifiableListener(ModifiableListener listener) {
-        _listeners.addListener(listener);
+        listeners.addListener(listener);
     }
 
     /**
@@ -187,13 +210,13 @@ public abstract class AbstractIMObjectCollectionEditor
      * @param listener the listener to remove
      */
     public void removeModifiableListener(ModifiableListener listener) {
-        _listeners.removeListener(listener);
+        listeners.removeListener(listener);
     }
 
     /**
      * Save any edits.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the save was successful
      */
     public boolean save() {
         boolean saved;
@@ -211,17 +234,17 @@ public abstract class AbstractIMObjectCollectionEditor
     /**
      * Determines if any edits have been saved.
      *
-     * @return <code>true</code> if edits have been saved.
+     * @return <tt>true</tt> if edits have been saved.
      */
     public boolean isSaved() {
-        return _collection.isSaved();
+        return collection.isSaved();
     }
 
     /**
      * Determines if the object is valid.
      *
-     * @return <code>true</code> if the object is valid; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the object is valid; otherwise
+     *         <tt>false</tt>
      */
     public boolean isValid() {
         Validator validator = new Validator();
@@ -234,16 +257,16 @@ public abstract class AbstractIMObjectCollectionEditor
      * collection.
      *
      * @param validator the validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the object and its descendents are valid
+     *         otherwise <tt>false</tt>
      */
     public boolean validate(Validator validator) {
         boolean valid = true;
-        if (_editor != null) {
+        if (editor != null) {
             valid = addCurrentEdits(validator);
         }
         if (valid) {
-            valid = _collection.validate(validator);
+            valid = collection.validate(validator);
         }
         return valid;
     }
@@ -251,10 +274,10 @@ public abstract class AbstractIMObjectCollectionEditor
     /**
      * Returns the current editor.
      *
-     * @return the current editor. May be <code>null</code>
+     * @return the current editor. May be <tt>null</tt>
      */
     public IMObjectEditor getCurrentEditor() {
-        return _editor;
+        return editor;
     }
 
     /**
@@ -271,7 +294,7 @@ public abstract class AbstractIMObjectCollectionEditor
      * @return the layout context
      */
     protected LayoutContext getContext() {
-        return _context;
+        return context;
     }
 
     /**
@@ -280,16 +303,16 @@ public abstract class AbstractIMObjectCollectionEditor
      * @return the collection property editor
      */
     protected CollectionPropertyEditor getCollectionPropertyEditor() {
-        return _collection;
+        return collection;
     }
 
     /**
      * Sets the current editor.
      *
-     * @param editor the editor. May be <code>null</code>
+     * @param editor the editor. May be <tt>null</tt>
      */
     protected void setCurrentEditor(IMObjectEditor editor) {
-        _editor = editor;
+        this.editor = editor;
     }
 
     /**
@@ -299,14 +322,14 @@ public abstract class AbstractIMObjectCollectionEditor
      * @return an editor for the object
      */
     protected IMObjectEditor getEditor(IMObject object) {
-        IMObjectEditor editor = _collection.getEditor(object);
+        IMObjectEditor editor = collection.getEditor(object);
         if (editor == null) {
             LayoutContext context = new DefaultLayoutContext(getContext());
             // increase the layout depth for collection items
 
             editor = createEditor(object, context);
-            editor.addModifiableListener(_broadcaster);
-            _collection.setEditor(object, editor);
+            editor.addModifiableListener(broadcaster);
+            collection.setEditor(object, editor);
         }
         return editor;
     }
@@ -316,26 +339,26 @@ public abstract class AbstractIMObjectCollectionEditor
      *
      * @param object  the object to edit
      * @param context the layout context
-     * @return an editor to edit <code>object</code>
+     * @return an editor to edit <tt>object</tt>
      */
     protected IMObjectEditor createEditor(IMObject object,
                                           LayoutContext context) {
-        return IMObjectEditorFactory.create(object, _object, context);
+        return IMObjectEditorFactory.create(object, this.object, context);
     }
 
     /**
      * Adds any object being edited to the collection, if it is valid.
      *
      * @param validator the validator
-     * @return <code>true</code> if the object is valid,
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the object is valid,
+     *         otherwise <tt>false</tt>
      */
     protected boolean addCurrentEdits(Validator validator) {
         boolean valid = true;
-        if (_editor != null) {
-            valid = validator.validate(_editor);
+        if (editor != null) {
+            valid = validator.validate(editor);
             if (valid) {
-                addEdited(_editor);
+                addEdited(editor);
             }
         }
         return valid;
@@ -345,12 +368,12 @@ public abstract class AbstractIMObjectCollectionEditor
      * Adds the object being edited to the collection, if it doesn't exist.
      *
      * @param editor the editor
-     * @return <code>true</code> if the object was added, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the object was added, otherwise
+     *         <tt>false</tt>
      */
     protected boolean addEdited(IMObjectEditor editor) {
         IMObject object = editor.getObject();
-        return _collection.add(object);
+        return collection.add(object);
     }
 
     /**
@@ -359,20 +382,20 @@ public abstract class AbstractIMObjectCollectionEditor
      * @return the listeners
      */
     protected ModifiableListeners getListeners() {
-        return _listeners;
+        return listeners;
     }
 
     /**
      * Saves any current edits.
      *
-     * @return <code>true</code> if edits were saved successfully, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if edits were saved successfully, otherwise
+     *         <tt>false</tt>
      */
     protected boolean doSave() {
-        if (_editor != null) {
-            addEdited(_editor);
+        if (editor != null) {
+            addEdited(editor);
         }
-        return _collection.save();
+        return collection.save();
     }
 
     /**

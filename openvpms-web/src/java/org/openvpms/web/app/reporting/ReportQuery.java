@@ -19,26 +19,23 @@ package org.openvpms.web.app.reporting;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.list.LookupListCellRenderer;
-import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.list.ShortNameListModel;
+import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupQuery;
+import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.EntityResultSet;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,9 +61,9 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
     private String reportType;
 
     /**
-     * The status dropdown.
+     * The report type selector.
      */
-    private SelectField typeSelector;
+    private LookupField typeSelector;
 
     /**
      * Type label id.
@@ -101,11 +98,9 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
      * @param container the container
      */
     protected void addReportTypeSelector(Component container) {
-        List<Lookup> lookups = FastLookupHelper.getLookups(
-                "entity.documentTemplate", "reportType");
-        LookupListModel model = new LookupListModel(lookups, true);
-        typeSelector = SelectFieldFactory.create(model);
-        typeSelector.setCellRenderer(new LookupListCellRenderer());
+        LookupQuery source
+                = new NodeLookupQuery("entity.documentTemplate", "reportType");
+        typeSelector = new LookupField(source, true);
         typeSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onTypeChanged();
@@ -122,8 +117,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
      * Invoked when a status is selected.
      */
     private void onTypeChanged() {
-        String value = (String) typeSelector.getSelectedItem();
-        setReportType(value);
+        setReportType(typeSelector.getSelectedCode());
     }
 
 

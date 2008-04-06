@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.property;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
 
@@ -193,5 +194,13 @@ public interface Property extends Modifiable {
      * Notify any listeners that they need to refresh and marks this modified.
      */
     void refresh();
+
+    /**
+     * Returns the property descriptor.
+     *
+     * @return the property descriptor, or <tt>null</tt> if the property has
+     *         no descriptor
+     */
+    NodeDescriptor getDescriptor();
 
 }

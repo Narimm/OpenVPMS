@@ -40,10 +40,11 @@ import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
+import org.openvpms.web.component.im.lookup.ArchetypeLookupQuery;
+import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.query.AbstractQuery;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.ComponentHelper;
 import org.openvpms.web.component.util.DateFieldFactory;
@@ -73,7 +74,7 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
     /**
      * The account type selector.
      */
-    private SelectField accountType;
+    private LookupField accountType;
 
     /**
      * The balance type list items.
@@ -161,13 +162,9 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
      */
     public void refreshAccountTypes() {
         if (accountType != null) {
-            String selected = (String) accountType.getSelectedItem();
-            LookupListModel model = createAccountTypeModel();
-            accountType.setModel(model);
-            int index = model.indexOf(selected);
-            if (index != -1) {
-                accountType.setSelectedIndex(index);
-            }
+            Lookup selected = accountType.getSelected();
+            accountType.refresh();
+            accountType.setSelected(selected);
         }
     }
 
@@ -201,10 +198,8 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
      */
     @Override
     protected void doLayout(Component container) {
-        LookupListModel model = createAccountTypeModel();
-
         Grid grid = GridFactory.create(6);
-        accountType = SelectFieldFactory.create(model);
+        accountType = new LookupField(new ArchetypeLookupQuery("lookup"));
         accountType.setCellRenderer(new LookupListCellRenderer());
 
         Label accountTypeLabel = LabelFactory.create(
@@ -370,13 +365,8 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
      *         types
      */
     private Lookup getAccountType() {
-        int index = accountType.getSelectedIndex();
-        if (index != -1) {
-            LookupListModel model = (LookupListModel) accountType.getModel();
-            Lookup lookup = model.getLookup(index);
-            return (LookupListModel.ALL == lookup) ? null : lookup;
-        }
-        return null;
+        Lookup lookup = accountType.getSelected();
+        return (LookupListModel.ALL == lookup) ? null : lookup;
     }
 
     /**
@@ -408,17 +398,6 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
         ComponentHelper.enable(periodFrom, enabled);
         ComponentHelper.enable(periodToLabel, enabled);
         ComponentHelper.enable(periodTo, enabled);
-    }
-
-    /**
-     * Creates the lookup list model of account types.
-     *
-     * @return a new lookup list model
-     */
-    private LookupListModel createAccountTypeModel() {
-        List<Lookup> lookups = FastLookupHelper.getLookups(
-                "lookup.customerAccountType");
-        return new LookupListModel(lookups, true);
     }
 
     /**

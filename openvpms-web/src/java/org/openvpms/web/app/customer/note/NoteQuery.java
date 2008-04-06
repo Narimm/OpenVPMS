@@ -19,25 +19,22 @@
 package org.openvpms.web.app.customer.note;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusHelper;
-import org.openvpms.web.component.im.list.LookupListCellRenderer;
-import org.openvpms.web.component.im.list.LookupListModel;
+import org.openvpms.web.component.im.lookup.ArchetypeLookupQuery;
+import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupQuery;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +51,7 @@ public class NoteQuery extends DateRangeActQuery<Act> {
     /**
      * The note categories.
      */
-    private final SelectField categories;
+    private final LookupField categories;
 
     /**
      * The selected note category. If <tt>null</tt>, indicates to display
@@ -68,13 +65,11 @@ public class NoteQuery extends DateRangeActQuery<Act> {
      */
     public NoteQuery(Party customer) {
         super(customer, "customer", "participation.customer",
-              new String[]{"act.customerNote"}, new String[0], Act.class);
+              new String[]{"act.customerNote"}, Act.class);
 
-        List<Lookup> lookups = FastLookupHelper.getLookups(
-                "lookup.customerNoteCategory");
-        LookupListModel model = new LookupListModel(lookups, true);
-        categories = SelectFieldFactory.create(model);
-        categories.setCellRenderer(new LookupListCellRenderer());
+        LookupQuery source
+                = new ArchetypeLookupQuery("lookup.customerNoteCategory");
+        categories = new LookupField(source, true);
         categories.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCategoryChanged();
@@ -143,7 +138,7 @@ public class NoteQuery extends DateRangeActQuery<Act> {
      * Invoked when the category changes.
      */
     private void onCategoryChanged() {
-        category = (String) categories.getSelectedItem();
+        category = categories.getSelectedCode();
         onQuery();
     }
 

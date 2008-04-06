@@ -104,12 +104,12 @@ public abstract class IMTableCollectionEditor<T>
     /**
      * Listener for component change events.
      */
-    protected final PropertyChangeListener componentListener;
+    private final PropertyChangeListener componentListener;
 
     /**
      * The listener for editor events.
      */
-    protected final ModifiableListener editorListener;
+    private final ModifiableListener editorListener;
 
     /**
      * The column style.
@@ -230,8 +230,11 @@ public abstract class IMTableCollectionEditor<T>
     protected Component doLayout(LayoutContext context) {
         container = ColumnFactory.create(COLUMN_STYLE);
         focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
-        Row row = createControls(focusGroup);
-        container.add(row);
+
+        if (!isCardinalityReadOnly()) {
+            Row row = createControls(focusGroup);
+            container.add(row);
+        }
 
         table = new PagedIMTable<T>(createTableModel(context));
         table.getTable().addActionListener(new ActionListener() {

@@ -23,7 +23,6 @@ import nextapp.echo2.app.SplitPane;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
@@ -38,12 +37,12 @@ import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -85,7 +84,24 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     private static final SortConstraint[] DEFAULT_SORT
             = new SortConstraint[]{new NodeSortConstraint("startTime", false)};
+
+    /**
+     * The document archetypes.
+     */
     private Archetypes<DocumentAct> docArchetypes;
+
+    /**
+     * The reminder statuses to query.
+     */
+    private static final ActStatuses STATUSES
+            = new ActStatuses("act.patientReminder");
+
+    /**
+     * The document statuses to query
+     */
+    private static final ActStatuses DOC_STATUSES
+            = new ActStatuses("act.patientDocumentLetter");
+
 
     /**
      * Constructs a new <tt>PatientRecordWorkspace</tt>.
@@ -271,10 +287,8 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     private DefaultActQuery<Act> createProblemsQuery() {
         String[] shortNames = {CLINICAL_PROBLEM};
-        String[] statuses = {};
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
-                getObject(), "patient", "participation.patient", shortNames,
-                statuses);
+                getObject(), "patient", "participation.patient", shortNames);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         return query;
     }
@@ -286,11 +300,9 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     private Query<Act> createReminderAlertQuery() {
         String[] shortNames = {"act.patientReminder", "act.patientAlert"};
-        List<Lookup> lookups = FastLookupHelper.getLookups(
-                "act.patientReminder", "status");
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
                 getObject(), "patient", "participation.patient", shortNames,
-                lookups);
+                STATUSES);
         query.setStatus(ActStatus.IN_PROGRESS);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         return query;
@@ -302,11 +314,9 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new query
      */
     private Query<Act> createDocumentQuery() {
-        List<Lookup> lookups = FastLookupHelper.getLookups(
-                "act.patientDocumentLetter", "status");
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
                 getObject(), "patient", "participation.patient",
-                DOCUMENT_SHORT_NAMES, lookups);
+                DOCUMENT_SHORT_NAMES, DOC_STATUSES);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         return query;
     }
