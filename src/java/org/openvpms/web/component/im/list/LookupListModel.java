@@ -22,11 +22,9 @@ import nextapp.echo2.app.list.AbstractListModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.im.util.FastLookupHelper;
+import org.openvpms.web.component.im.lookup.LookupQuery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,14 +64,9 @@ public class LookupListModel extends AbstractListModel {
     private boolean none;
 
     /**
-     * The source object. May be <code>null</code>.
+     * The lookup source. May be <tt>null</tt>.
      */
-    private IMObject object;
-
-    /**
-     * The lookup node descriptor. May be <code>null</code>.
-     */
-    private NodeDescriptor descriptor;
+    private LookupQuery source;
 
 
     /**
@@ -83,26 +76,36 @@ public class LookupListModel extends AbstractListModel {
 
 
     /**
-     * Construct a new <code>LookupListModel</code>.
+     * Constructs a new <tt>LookupListModel</tt>.
      *
-     * @param lookups the lookups to populate the list with.
-     * @param all     if <code>true</code>, add a localised "All"
+     * @param source the lookup source
      */
-    public LookupListModel(List<Lookup> lookups, boolean all) {
-        this.all = all;
-        this.lookups = getLookups(lookups);
+    public LookupListModel(LookupQuery source) {
+        this(source, false);
+    }
+
+
+    /**
+     * Constructs a new <tt>LookupListModel</tt>. This may be refreshed.
+     *
+     * @param source the lookup source
+     * @param all    if <tt>true</tt>, add a localised "All"
+     */
+    public LookupListModel(LookupQuery source, boolean all) {
+        this(source, all, false);
     }
 
     /**
-     * Construct a new <code>LookupListModel</code>. This may be refreshed.
+     * Constructs a new <tt>LookupListModel</tt>. This may be refreshed.
      *
-     * @param object     the source object
-     * @param descriptor the lookup node descriptor
+     * @param source the lookup source
+     * @param all    if <tt>true</tt>, add a localised "All"
+     * @param none   if <tt>true</tt>, add a localised "None"
      */
-    public LookupListModel(IMObject object, NodeDescriptor descriptor) {
-        this.object = object;
-        this.descriptor = descriptor;
-        none = !descriptor.isRequired();
+    public LookupListModel(LookupQuery source, boolean all, boolean none) {
+        this.source = source;
+        this.all = all;
+        this.none = none;
         lookups = getLookups();
     }
 
@@ -139,7 +142,7 @@ public class LookupListModel extends AbstractListModel {
      * Returns the index of the specified lookup.
      *
      * @param lookup the lookup
-     * @return the index of <code>lookup</code>, or <code>-1</code> if it
+     * @return the index of <tt>lookup</tt>, or <tt>-1</tt> if it
      *         doesn't exist
      */
     public int indexOf(String lookup) {
@@ -157,7 +160,7 @@ public class LookupListModel extends AbstractListModel {
      * Refreshes the model, if needed.
      */
     public void refresh() {
-        if (object != null) {
+        if (source != null) {
             List<Lookup> lookups = getLookups();
             if (!this.lookups.equals(lookups)) {
                 this.lookups = lookups;
@@ -168,14 +171,13 @@ public class LookupListModel extends AbstractListModel {
     }
 
     /**
-     * Retrieves the lookups from the lookup service.
+     * Retrieves the lookups from the lookup source.
      *
      * @return a list of lookups
      */
     protected List<Lookup> getLookups() {
         try {
-            List<Lookup> lookups = FastLookupHelper.getLookups(descriptor,
-                                                               object);
+            List<Lookup> lookups = source.getLookups();
             return getLookups(lookups);
         } catch (OpenVPMSException exception) {
             log.error(exception, exception);
@@ -187,7 +189,7 @@ public class LookupListModel extends AbstractListModel {
      * Helper to prepend the lookups "all" or "none" when required.
      *
      * @param lookups the lookups
-     * @return a copy of <code>lookups</code> preprended with "all" and/or
+     * @return a copy of <tt>lookups</tt> preprended with "all" and/or
      *         "none" added when required
      */
     protected List<Lookup> getLookups(List<Lookup> lookups) {

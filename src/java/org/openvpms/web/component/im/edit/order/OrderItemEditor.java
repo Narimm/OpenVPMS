@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.edit.order;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.archetype.rules.supplier.ProductSupplier;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -32,10 +33,17 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
 
@@ -48,6 +56,12 @@ import java.math.BigDecimal;
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public class OrderItemEditor extends ActItemEditor {
+
+    /**
+     * Determines if the act was posted at construction. If so, only a limited
+     * set of properties may be edited.
+     */
+    private final boolean posted;
 
     /**
      * Node filter, used to disable properties when a product template is
@@ -71,6 +85,7 @@ public class OrderItemEditor extends ActItemEditor {
             throw new IllegalArgumentException(
                     "Invalid act type: " + act.getArchetypeId().getShortName());
         }
+        posted = ActStatus.POSTED.equals(parent.getStatus());
     }
 
     /**
@@ -88,7 +103,10 @@ public class OrderItemEditor extends ActItemEditor {
      * @param supplier the product supplier. May be <tt>null</tt>
      */
     public void setSupplier(Party supplier) {
-        getProductEditor().setSupplier(supplier);
+        ProductParticipationEditor editor = getProductEditor();
+        if (editor != null) {
+            editor.setSupplier(supplier);
+        }
     }
 
     /**
@@ -97,13 +115,16 @@ public class OrderItemEditor extends ActItemEditor {
      * @param location the stock location. May be <tt>null</tt>
      */
     public void setStockLocation(Party location) {
-        getProductEditor().setStockLocation(location);
+        ProductParticipationEditor editor = getProductEditor();
+        if (editor != null) {
+            editor.setStockLocation(location);
+        }
     }
 
     /**
      * Save any edits.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the save was successful
      */
     @Override
     protected boolean doSave() {
@@ -116,6 +137,33 @@ public class OrderItemEditor extends ActItemEditor {
             }
         }
         return super.doSave();
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the object and its descendents are valid
+     *         otherwise <tt>false</tt>
+     */
+    @Override
+    public boolean validate(Validator validator) {
+        boolean valid = super.validate(validator);
+        if (valid) {
+            BigDecimal quantity = getQuantity();
+            BigDecimal received = getReceivedQuantity();
+            BigDecimal cancelled = getCancelledQuantity();
+            BigDecimal sum = received.add(cancelled);
+            if (sum.compareTo(quantity) > 0) {
+                valid = false;
+                Property property = getProperty("quantity");
+                String message = Messages.get("supplier.order.invalidQuantity",
+                                              quantity, sum);
+                ValidatorError error = new ValidatorError(property, message);
+                validator.add(property, error);
+            }
+        }
+        return valid;
     }
 
     /**
@@ -157,6 +205,44 @@ public class OrderItemEditor extends ActItemEditor {
     }
 
     /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new AbstractLayoutStrategy() {
+
+            /**
+             * Creates a component for a property.
+             *
+             * @param property the property
+             * @param parent   the parent object
+             * @param context  the layout context
+             * @return a component to display <tt>property</tt>
+             */
+            @Override
+            protected ComponentState createComponent(Property property,
+                                                     IMObject parent,
+                                                     LayoutContext context) {
+                if (posted) {
+                    String name = property.getName();
+                    if (!name.equals("status")
+                            && !name.equals("cancelledQuantity")) {
+                        property = new DelegatingProperty(property) {
+                            @Override
+                            public boolean isReadOnly() {
+                                return true;
+                            }
+                        };
+                    }
+                }
+                return super.createComponent(property, parent, context);
+            }
+        };
+    }
+
+    /**
      * Invoked when layout has completed.
      */
     @Override
@@ -189,7 +275,7 @@ public class OrderItemEditor extends ActItemEditor {
      */
     private void checkProductSupplier(Product product, Party supplier) {
         OrderRules rules = new OrderRules();
-        ProductSupplier ps = getProductEditor().getProductSupplier();
+        ProductSupplier ps = getProductSupplier();
         int size = getPackageSize();
         String units = getPackageUnits();
         if (ps == null) {
@@ -230,6 +316,43 @@ public class OrderItemEditor extends ActItemEditor {
         if (save) {
             ps.save();
         }
+    }
+
+    /**
+     * Returns the quantity.
+     *
+     * @return the quantity
+     */
+    private BigDecimal getQuantity() {
+        return (BigDecimal) getProperty("quantity").getValue();
+    }
+
+    /**
+     * Returns the received quantity.
+     *
+     * @return the received quantity
+     */
+    private BigDecimal getReceivedQuantity() {
+        return (BigDecimal) getProperty("receivedQuantity").getValue();
+    }
+
+    /**
+     * Returns the cancelled quantity.
+     *
+     * @return the cancelled quantity
+     */
+    private BigDecimal getCancelledQuantity() {
+        return (BigDecimal) getProperty("cancelledQuantity").getValue();
+    }
+
+    /**
+     * Returns the product supplier relationship.
+     *
+     * @return the relationship. May be <tt>null</tt>
+     */
+    private ProductSupplier getProductSupplier() {
+        ProductParticipationEditor editor = getProductEditor();
+        return (editor != null) ? editor.getProductSupplier() : null;
     }
 
     /**

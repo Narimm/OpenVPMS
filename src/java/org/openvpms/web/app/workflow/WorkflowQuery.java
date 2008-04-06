@@ -119,20 +119,19 @@ public abstract class WorkflowQuery<T> extends ActQuery<T> {
      * @param participant   the partcipant node name
      * @param participation the entity participation short name
      * @param shortNames    the act short names
-     * @param statuses      the act statuses to search on. May be empty
      * @param type          the type that this query returns
      */
     public WorkflowQuery(Entity entity, String participant,
                          String participation, String[] shortNames,
-                         String[] statuses, Class<T> type) {
-        super(entity, participant, participation, shortNames, statuses, type);
+                         Class<T> type) {
+        super(entity, participant, participation, shortNames, type);
         statusRangeListener = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onStatusRangeChanged();
             }
         };
         clinician = new IMObjectSelector<User>(Messages.get("label.clinician"),
-                                               new String[]{"security.user"});
+                                               "security.user");
         clinician.setListener(new IMObjectSelectorListener<User>() {
             public void selected(User object) {
                 onQuery();

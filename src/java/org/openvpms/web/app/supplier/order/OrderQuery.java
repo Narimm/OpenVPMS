@@ -21,29 +21,26 @@ package org.openvpms.web.app.supplier.order;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.SelectField;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.list.LookupListCellRenderer;
-import org.openvpms.web.component.im.list.LookupListModel;
+import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.ActResultSet;
+import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.select.IMObjectSelectorListener;
-import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
@@ -72,7 +69,13 @@ public class OrderQuery extends DateRangeActQuery<FinancialAct> {
     /**
      * The delivery status selector.
      */
-    private SelectField deliveryStatus;
+    private LookupField deliveryStatus;
+
+    /**
+     * The act statuses.
+     */
+    private static final ActStatuses STATUSES
+            = new ActStatuses("act.supplierOrder");
 
 
     /**
@@ -81,13 +84,10 @@ public class OrderQuery extends DateRangeActQuery<FinancialAct> {
      * @param shortNames the act short names to query
      */
     public OrderQuery(String[] shortNames) {
-        super(shortNames,
-              FastLookupHelper.getLookups("act.supplierOrder", "status"),
-              FinancialAct.class);
+        super(shortNames, STATUSES, FinancialAct.class);
 
         supplier = new IMObjectSelector<Party>(
-                Messages.get("supplier.order.type"),
-                new String[]{"party.supplier*"});
+                Messages.get("supplier.order.type"), "party.supplier*");
         supplier.setListener(new IMObjectSelectorListener<Party>() {
             public void selected(Party object) {
                 if (object == null) {
@@ -108,7 +108,7 @@ public class OrderQuery extends DateRangeActQuery<FinancialAct> {
 
         stockLocation = new IMObjectSelector<Party>(
                 Messages.get("supplier.order.location"),
-                new String[]{"party.organisationStockLocation"});
+                "party.organisationStockLocation");
         stockLocation.setListener(new IMObjectSelectorListener<Party>() {
             public void selected(Party object) {
                 onQuery();
@@ -220,16 +220,7 @@ public class OrderQuery extends DateRangeActQuery<FinancialAct> {
      *         selected
      */
     private String getDeliveryStatus() {
-        String result = null;
-        int index = deliveryStatus.getSelectedIndex();
-        if (index != -1) {
-            LookupListModel model = (LookupListModel) deliveryStatus.getModel();
-            Lookup lookup = model.getLookup(index);
-            if (LookupListModel.ALL != lookup) {
-                result = lookup.getCode();
-            }
-        }
-        return result;
+        return deliveryStatus.getSelectedCode();
     }
 
     /**
@@ -253,15 +244,13 @@ public class OrderQuery extends DateRangeActQuery<FinancialAct> {
      * @param container the container
      */
     private void addDeliveryStatus(Component container) {
-        List<Lookup> lookups = FastLookupHelper.getLookups("act.supplierOrder",
-                                                           "deliveryStatus");
-        LookupListModel model = new LookupListModel(lookups, true);
         Label label = LabelFactory.create();
         String displayName = DescriptorHelper.getDisplayName(
                 "act.supplierOrder", "deliveryStatus");
         label.setText(displayName);
-        deliveryStatus = SelectFieldFactory.create(model);
-        deliveryStatus.setCellRenderer(new LookupListCellRenderer());
+        NodeLookupQuery source = new NodeLookupQuery("act.supplierOrder",
+                                                     "deliveryStatus");
+        deliveryStatus = new LookupField(source, true);
         getFocusGroup().add(deliveryStatus);
         container.add(label);
         container.add(deliveryStatus);

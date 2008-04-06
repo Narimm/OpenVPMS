@@ -37,7 +37,6 @@ package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -56,7 +55,7 @@ import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.list.LookupListModel;
+import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
@@ -119,7 +118,7 @@ public abstract class AbstractIMObjectEditor
     /**
      * Lookup fields. These may beed to be refreshed.
      */
-    private List<SelectField> lookups = new ArrayList<SelectField>();
+    private List<LookupField> lookups = new ArrayList<LookupField>();
 
     /**
      * The layout context.
@@ -664,11 +663,10 @@ public abstract class AbstractIMObjectEditor
         }
     }
 
-    protected void refreshLookups(SelectField source) {
-        for (SelectField lookup : lookups) {
+    protected void refreshLookups(LookupField source) {
+        for (LookupField lookup : lookups) {
             if (source != lookup) {
-                LookupListModel model = (LookupListModel) lookup.getModel();
-                model.refresh();
+                lookup.refresh();
             }
         }
     }
@@ -740,10 +738,10 @@ public abstract class AbstractIMObjectEditor
         protected Editor createLookupEditor(Property property,
                                             IMObject context) {
             Editor editor = super.createLookupEditor(property, context);
-            SelectField lookup = (SelectField) editor.getComponent();
+            LookupField lookup = (LookupField) editor.getComponent();
             lookup.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
-                    refreshLookups((SelectField) event.getSource());
+                    refreshLookups((LookupField) event.getSource());
                 }
             });
             lookups.add(lookup);

@@ -64,4 +64,12 @@ public interface CollectionProperty extends Property {
      */
     int getMaxCardinality();
 
+    /**
+     * Determines the relationship of the elements of the collection to the
+     * object.
+     *
+     * @return <tt>true</tt> if the objects are children of the parent object,
+     *         or <tt>false</tt> if they are its peer
+     */
+    boolean isParentChild();
 }

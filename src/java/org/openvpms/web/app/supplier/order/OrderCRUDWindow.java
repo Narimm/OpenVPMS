@@ -164,7 +164,9 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
                 buttons.add(getEditButton());
             }
             buttons.add(getCreateButton());
-            if (!ActStatus.POSTED.equals(object.getStatus())) {
+            String status = object.getStatus();
+            if (!ActStatus.POSTED.equals(status) &&
+                    !ActStatus.CANCELLED.equals(status)) {
                 buttons.add(getDeleteButton());
                 buttons.add(getPostButton());
             }

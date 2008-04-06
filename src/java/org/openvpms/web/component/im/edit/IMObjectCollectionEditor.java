@@ -46,4 +46,19 @@ public interface IMObjectCollectionEditor extends PropertyEditor, Saveable {
      */
     IMObject getObject();
 
+    /**
+     * Determines if items can be added and removed.
+     *
+     * @param readOnly if <tt>true</tt> items can't be added and removed
+     */
+    void setCardinalityReadOnly(boolean readOnly);
+
+    /**
+     * Determines if items can be added or removed.
+     *
+     * @return <tt>true</tt> if items can't be added or removed.
+     */
+    boolean isCardinalityReadOnly();
+
+
 }

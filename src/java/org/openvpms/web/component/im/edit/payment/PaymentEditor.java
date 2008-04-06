@@ -56,7 +56,8 @@ public abstract class PaymentEditor extends AccountActEditor {
     protected void onItemsChanged() {
         Property amount = getProperty("amount");
         BigDecimal value = ActHelper.sum((Act) getObject(),
-                                         getEditor().getActs(), "amount");
+                                         getEditor().getCurrentActs(),
+                                         "amount");
         amount.setValue(value);
     }
 

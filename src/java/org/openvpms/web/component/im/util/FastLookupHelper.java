@@ -57,7 +57,6 @@ public class FastLookupHelper {
      */
     private static final List<String> NODES = Arrays.asList("code", "name");
 
-
     /**
      * Returns a list of lookups for the specified short name.
      *
@@ -127,6 +126,25 @@ public class FastLookupHelper {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         return filter(LookupHelper.get(service, descriptor, context, NODES));
+    }
+
+    /**
+     * Helper to return a lookup name.
+     *
+     * @param descriptor the node descriptor
+     * @param context    the context object
+     * @return the lookup name, or <tt>null</tt> if it can't be found
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws LookupHelperException     if the lookup is incorrectly specified
+     */
+    public static String getLookupName(NodeDescriptor descriptor,
+                                       IMObject context) {
+        if (descriptor != null) {
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            return LookupHelper.getName(service, descriptor, context);
+        }
+        return null;
     }
 
     /**

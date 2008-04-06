@@ -21,13 +21,10 @@ package org.openvpms.web.app.reporting.wip;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
-import org.openvpms.web.component.im.util.FastLookupHelper;
-
-import java.util.List;
 
 
 /**
@@ -54,23 +51,20 @@ public class IncompleteChargesQuery extends DateRangeActQuery<Act> {
             new NodeSortConstraint("customer")
     };
 
+    /**
+     * The act statuses, excluding POSTED.
+     */
+    private static final ActStatuses STATUSES
+            = new ActStatuses(CustomerAccountActTypes.CHARGES_INVOICE,
+                              ActStatus.POSTED);
+
 
     /**
      * Creates a new <tt>IncompleteChargesQuery</tt>.
      */
     public IncompleteChargesQuery() {
-        super(null, null, null, SHORT_NAMES, getLookups(), ActStatus.POSTED,
-              Act.class);
+        super(null, null, null, SHORT_NAMES, STATUSES, Act.class);
         setDefaultSortConstraint(DEFAULT_SORT);
     }
 
-    /**
-     * Helper to return the status lookups.
-     *
-     * @return the status lookups
-     */
-    private static List<Lookup> getLookups() {
-        return FastLookupHelper.getLookups(
-                CustomerAccountActTypes.CHARGES_INVOICE, "status");
-    }
 }

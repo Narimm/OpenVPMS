@@ -21,20 +21,14 @@ package org.openvpms.web.component.im.view;
 import echopointng.RichTextArea;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.LabelFactory;
 
@@ -186,23 +180,5 @@ public abstract class AbstractReadOnlyComponentFactory
         }
         return result;
     }
-
-    /**
-     * Helper to return a lookup name, given its code.
-     *
-     * @param property the property to use
-     * @param context  the context object
-     * @return the lookup name, or <tt>null</tt> if it can't be found
-     * @throws OpenVPMSException for any error
-     */
-    protected String getLookupName(Property property, IMObject context) {
-        NodeDescriptor descriptor
-                = ((IMObjectProperty) property).getDescriptor();
-
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        return LookupHelper.getName(service, descriptor, context);
-    }
-
 
 }

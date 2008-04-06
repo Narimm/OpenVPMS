@@ -20,18 +20,15 @@ package org.openvpms.web.app.supplier;
 
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.component.im.util.FastLookupHelper;
-
-import java.util.List;
 
 
 /**
@@ -41,6 +38,13 @@ import java.util.List;
  * @version $LastChangedDate$
  */
 public class InvoiceWorkspace extends SupplierActWorkspace<FinancialAct> {
+
+    /**
+     * The act statuses to query, excluding POSTED.
+     */
+    private static final ActStatuses STATUSES = new ActStatuses(
+            "act.supplierAccountChargesInvoice", POSTED);
+
 
     /**
      * Constructs a new <tt>InvoiceWorkspace</tt>.
@@ -65,11 +69,9 @@ public class InvoiceWorkspace extends SupplierActWorkspace<FinancialAct> {
      * @return a new query
      */
     protected ActQuery<FinancialAct> createQuery() {
-        List<Lookup> lookups = FastLookupHelper.getLookups(
-                "act.supplierAccountChargesInvoice", "status");
         return new DefaultActQuery<FinancialAct>(
                 getObject(), "supplier", "participation.supplier",
-                getChildArchetypes().getShortNames(), lookups, POSTED);
+                getChildArchetypes().getShortNames(), STATUSES);
     }
 
     /**

@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -80,6 +81,25 @@ public class ActRelationshipCollectionEditor
             result.add((Act) object);
         }
         return result;
+    }
+
+    /**
+     * Returns the set of acts being edited, including that of the
+     * {@link #getCurrentEditor()}.
+     *
+     * @return the set of acts being edited
+     */
+    public List<Act> getCurrentActs() {
+        ActRelationshipCollectionPropertyEditor collection = getEditor();
+        Set<Act> result = new LinkedHashSet<Act>();
+        for (IMObject object : collection.getObjects()) {
+            result.add((Act) object);
+        }
+        IMObjectEditor current = getCurrentEditor();
+        if (current != null) {
+            result.add((Act) current.getObject());
+        }
+        return new ArrayList<Act>(result);
     }
 
     /**

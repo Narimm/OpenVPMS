@@ -21,6 +21,7 @@ package org.openvpms.web.component.property;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -400,6 +401,15 @@ public class SimpleProperty extends AbstractProperty {
      */
     public void setRequired(boolean required) {
         this.required = required;
+    }
+
+    /**
+     * Returns the property descriptor.
+     *
+     * @return <tt>null</tt>
+     */
+    public NodeDescriptor getDescriptor() {
+        return null;
     }
 
     /**

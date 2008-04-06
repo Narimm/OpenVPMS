@@ -65,7 +65,7 @@ public class EstimationEditor extends ActEditor {
         Property highTotal = getProperty("highTotal");
         Property lowTotal = getProperty("lowTotal");
 
-        List<Act> acts = getEditor().getActs();
+        List<Act> acts = getEditor().getCurrentActs();
         BigDecimal low = ActHelper.sum((Act) getObject(), acts, "lowTotal");
         BigDecimal high = ActHelper.sum((Act) getObject(), acts, "highTotal");
         lowTotal.setValue(low);

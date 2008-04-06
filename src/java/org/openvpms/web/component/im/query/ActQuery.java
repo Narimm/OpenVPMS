@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -30,16 +29,12 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.list.LookupListCellRenderer;
-import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.list.ShortNameListModel;
+import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.util.CollectionHelper;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -79,17 +74,12 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * The act status lookups. May be <tt>null</tt>
      */
-    private final List<Lookup> statusLookups;
-
-    /**
-     * Status to exclude. May be <tt>null</tt>
-     */
-    private final String excludeStatus;
+    private final ActStatuses statusLookups;
 
     /**
      * The status dropdown.
      */
-    private SelectField statusSelector;
+    private LookupField statusSelector;
 
     /**
      * The default sort constraint.
@@ -102,61 +92,20 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * Constructs a new <tt>ActQuery</tt>.
      *
-     * @param shortNames the act short names to query. Must be primary
-     *                   archetypes
-     * @param statuses   the act statuses to search on. May be <tt>empty</tt>
-     * @param type       the type that this query returns
-     */
-    public ActQuery(String[] shortNames, String[] statuses, Class type) {
-        this(null, null, null, shortNames, true, statuses, type);
-    }
-
-    /**
-     * Constructs a new <tt>ActQuery</tt>.
-     *
-     * @param shortNames    the act short names to query
-     * @param statusLookups the act status lookups
-     * @param type          the type that this query returns
-     */
-    public ActQuery(String[] shortNames, List<Lookup> statusLookups,
-                    Class type) {
-        this(null, null, null, shortNames, statusLookups, null, type);
-    }
-
-    /**
-     * Constructs a new <tt>ActQuery</tt>.
-     *
-     * @param shortNames  the act short names to query
-     * @param primaryOnly if <tt>true</tt> only primary archetypes will be
-     *                    queried
-     * @param statuses    the act statuses to search on. May be <tt>empty</tt>
-     * @param type        the type that this query returns
-     */
-    public ActQuery(String[] shortNames, boolean primaryOnly,
-                    String[] statuses, Class type) {
-        this(null, null, null, shortNames, primaryOnly, statuses, type);
-    }
-
-    /**
-     * Constructs a new <tt>ActQuery</tt>.
-     *
      * @param entity        the entity to search for. May be <tt>null</tt>
      * @param participant   the partcipant node name. May be <tt>null</tt>
      * @param participation the entity participation short name.
      *                      May be <tt>null</tt>
      * @param shortNames    the act short names
-     * @param statusLookups the act status lookups
-     * @param excludeStatus to act status to exclude. May be <tt>null</tt>
+     * @param statuses      the act status lookups
      * @param type          the type that this query returns
      */
     public ActQuery(Entity entity, String participant, String participation,
-                    String[] shortNames, List<Lookup> statusLookups,
-                    String excludeStatus, Class type) {
+                    String[] shortNames, ActStatuses statuses, Class type) {
         super(shortNames, type);
         setParticipantConstraint(entity, participant, participation);
-        this.excludeStatus = excludeStatus;
-        this.statusLookups = getStatusLookups(statusLookups, excludeStatus);
-        statuses = new String[0];
+        this.statusLookups = statuses;
+        this.statuses = new String[0];
         setDefaultSortConstraint(DEFAULT_SORT);
     }
 
@@ -168,14 +117,12 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      * @param participation the entity participation short name. May be
      *                      <tt>null</tt>
      * @param shortNames    the act short names
-     * @param statuses      the act statuses to search on. May be <tt>empty</tt>
      * @param type          the type that this query returns
      */
     public ActQuery(Entity entity, String participant, String participation,
-                    String[] shortNames, String[] statuses,
-                    Class type) {
-        this(entity, participant, participation, shortNames, true, statuses,
-             type);
+                    String[] shortNames, Class type) {
+        this(entity, participant, participation, shortNames, true,
+             new String[0], type);
     }
 
     /**
@@ -198,7 +145,6 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
         setParticipantConstraint(entity, participant, participation);
         this.statuses = statuses;
         statusLookups = null;
-        excludeStatus = null;
         setDefaultSortConstraint(DEFAULT_SORT);
     }
 
@@ -394,7 +340,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      * @return the act status lookups. May be <tt>null</tt>
      */
     protected List<Lookup> getStatusLookups() {
-        return statusLookups;
+        return (statusLookups != null) ? statusLookups.getLookups() : null;
     }
 
     /**
@@ -404,8 +350,10 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      */
     protected String[] getStatuses() {
         String[] statuses = this.statuses;
-        if (statuses.length == 0 && excludeStatus != null) {
-            statuses = new String[]{excludeStatus};
+        if (statuses.length == 0 && statusLookups != null) {
+            if (statusLookups.getExcluded() != null) {
+                statuses = new String[]{statusLookups.getExcluded()};
+            }
         }
         return statuses;
     }
@@ -418,15 +366,18 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      */
     protected boolean excludeStatuses() {
         String[] statuses = getStatuses();
-        return (statuses.length == 1 && statuses[0].equals(excludeStatus));
+        if (statuses.length == 1 && statusLookups != null) {
+            String excluded = statusLookups.getExcluded();
+            return statuses[0].equals(excluded);
+        }
+        return false;
     }
 
     /**
      * Invoked when a status is selected.
      */
     protected void onStatusChanged() {
-        String value = (String) statusSelector.getSelectedItem();
-        setStatus(value);
+        setStatus(statusSelector.getSelectedCode());
     }
 
     /**
@@ -438,9 +389,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     protected void addStatusSelector(Component container) {
         List<Lookup> lookups = getStatusLookups();
         if (lookups != null) {
-            LookupListModel model = new LookupListModel(lookups, true);
-            statusSelector = SelectFieldFactory.create(model);
-            statusSelector.setCellRenderer(new LookupListCellRenderer());
+            statusSelector = new LookupField(lookups, true);
             statusSelector.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     onStatusChanged();
@@ -474,44 +423,12 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     /**
      * Sets the selected status in the status selector, if it exists.
      *
-     * @param status the status to selecte
+     * @param status the status to select
      */
     private void updateStatusSelector(String status) {
         if (statusSelector != null) {
-            LookupListModel model
-                    = (LookupListModel) statusSelector.getModel();
-            int index = model.indexOf(status);
-            if (index != -1) {
-                statusSelector.setSelectedIndex(index);
-            }
+            statusSelector.setSelected(status);
         }
     }
 
-    /**
-     * Helper to return a list of status lookups with, with the lookup with
-     * the specified code removed.
-     *
-     * @param lookups the lookups
-     * @param code    the code of the lookup to be removed.
-     *                May be <tt>null</tt>
-     * @return a copy of the source list with the code removed, or the source
-     *         list if <tt>code>code> is null
-     */
-    private List<Lookup> getStatusLookups(List<Lookup> lookups,
-                                          String code) {
-        List<Lookup> result;
-        if (code != null) {
-            result = new ArrayList<Lookup>(lookups);
-            for (Iterator<Lookup> i = result.listIterator(); i.hasNext();) {
-                Lookup lookup = i.next();
-                if (lookup.getCode().equals(code)) {
-                    i.remove();
-                    break;
-                }
-            }
-        } else {
-            result = lookups;
-        }
-        return result;
-    }
 }

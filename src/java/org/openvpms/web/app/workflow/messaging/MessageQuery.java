@@ -21,20 +21,17 @@ package org.openvpms.web.app.workflow.messaging;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.ActResultSet;
+import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.select.IMObjectSelectorListener;
-import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.List;
 
 
 /**
@@ -50,17 +47,23 @@ public class MessageQuery extends DateRangeActQuery<Act> {
      */
     private final IMObjectSelector<Entity> clinician;
 
+    /**
+     * The act statuses.
+     */
+    private static final ActStatuses STATUSES
+            = new ActStatuses("act.userMessage");
+
 
     /**
-     * Constructs a new <code>MessageQuery</code>.
+     * Constructs a new <tt>MessageQuery</tt>.
      */
     public MessageQuery(Entity user) {
         super(user, "to", "participation.user", new String[]{"act.userMessage"},
-              getLookups(), null, Act.class);
+              STATUSES, Act.class);
         setStatus("PENDING");
 
         clinician = new IMObjectSelector<Entity>(Messages.get("messaging.user"),
-                                                 new String[]{"security.user"});
+                                                 "security.user");
         clinician.setListener(new IMObjectSelectorListener<Entity>() {
             public void selected(Entity object) {
                 setEntity(object);
@@ -77,8 +80,8 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <code>null</code>
-     * @return the query result set. May be <code>null</code>
+     * @param sort the sort constraint. May be <tt>null</tt>
+     * @return the query result set. May be <tt>null</tt>
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
@@ -115,10 +118,4 @@ public class MessageQuery extends DateRangeActQuery<Act> {
         container.add(clinician.getComponent());
         getFocusGroup().add(clinician.getFocusGroup());
     }
-
-    private static List<Lookup> getLookups() {
-        String shortName = "act.userMessage";
-        return FastLookupHelper.getLookups(shortName, "status");
-    }
-
 }

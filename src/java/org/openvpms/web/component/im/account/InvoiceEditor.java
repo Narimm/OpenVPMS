@@ -72,7 +72,7 @@ public abstract class InvoiceEditor extends ActEditor {
     protected void onItemsChanged() {
         Property amount = getProperty("amount");
         BigDecimal value = ActHelper.sum((Act) getObject(),
-                                         getEditor().getActs(), "total");
+                                         getEditor().getCurrentActs(), "total");
         amount.setValue(value);
         calculateTax();
     }
