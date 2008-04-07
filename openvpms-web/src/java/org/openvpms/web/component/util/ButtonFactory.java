@@ -52,21 +52,36 @@ public final class ButtonFactory extends ComponentFactory {
 
     /**
      * Create a new button with a localised text message, and default style.
-     * The button will be parsed for shortcuts.
+     * <p/>
+     * The returned button supports shortcuts.
+     * <p/>
      * If non-null, the key is also used as the button identifier and action
      * command ({@link Button#getId} and {@link Button#getActionCommand()}).
      *
-     * @param key the resource bundle key. May be <code>null</code>.
+     * @param key the resource bundle key. May be <tt>null</tt>.
      * @return a new button
      */
     public static Button create(String key) {
-        Button button;
+        return create(key, true);
+    }
+
+    /**
+     * Create a new button with a localised text message, and default style.
+     * <p/>
+     * If non-null, the key is also used as the button identifier and action
+     * command ({@link Button#getId} and {@link Button#getActionCommand()}).
+     *
+     * @param key             the resource bundle key. May be <tt>null</tt>.
+     * @param enableShortcuts if <tt>true</tt>, enable shortcuts
+     * @return a new button
+     */
+    public static Button create(String key, boolean enableShortcuts) {
+        Button button = (enableShortcuts) ? new ShortcutButton()
+                : new Button();
         if (key != null) {
-            button = new ShortcutButton(getString(TYPE, key, false));
+            button.setText(getString(TYPE, key, false));
             button.setId(key);
             button.setActionCommand(key);
-        } else {
-            button = new ShortcutButton();
         }
         setDefaultStyle(button);
         return button;
@@ -86,9 +101,12 @@ public final class ButtonFactory extends ComponentFactory {
 
     /**
      * Create a new button with a localised text message, default style, and
-     * listener. The button will be parsed for shortcuts.
+     * listener.
+     * <p/>
+     * The returned button supports shortcuts.
+     * <p/>
      *
-     * @param key      the resource bundle key. May be <code>null</code>
+     * @param key      the resource bundle key. May be <tt>null</tt>
      * @param listener the listener
      * @return a new button
      */
@@ -100,14 +118,29 @@ public final class ButtonFactory extends ComponentFactory {
 
     /**
      * Create a new button with a localised text message and style.
-     * The button will be parsed for shortcuts.
+     * <p/>
+     * The returned button supports shortcuts.
+     * <p/>
      *
-     * @param key   the resource bundle key. May be <code>null</code>
+     * @param key   the resource bundle key. May be <tt>null</tt>
      * @param style the style name
      * @return a new button
      */
     public static Button create(String key, String style) {
-        Button button = create(key);
+        return create(key, style, true);
+    }
+
+    /**
+     * Create a new button with a localised text message and style.
+     *
+     * @param key             the resource bundle key. May be <tt>null</tt>
+     * @param style           the style name
+     * @param enableShortcuts if <tt>true</tt>, enable shortcuts
+     * @return a new button
+     */
+    public static Button create(String key, String style,
+                                boolean enableShortcuts) {
+        Button button = create(key, enableShortcuts);
         setStyle(button, style);
         return button;
     }
@@ -115,27 +148,36 @@ public final class ButtonFactory extends ComponentFactory {
     /**
      * Create a new button with a localised text message, specific style, and
      * listener.
+     * <p/>
+     * The returned button supports shortcuts.
+     * <p/>
      *
-     * @param key      the resource bundle key. May be <code>null</code>
+     * @param key      the resource bundle key. May be <tt>null</tt>
      * @param style    the style name
      * @param listener the listener
      * @return a new button
      */
     public static Button create(String key, String style,
                                 ActionListener listener) {
-        Button button = create(key, style);
-        button.addActionListener(listener);
-        return button;
+        return create(key, style, true, listener);
     }
 
     /**
-     * Helper to return localised text for a button.
+     * Create a new button with a localised text message, specific style, and
+     * listener.
      *
-     * @param key the resource bundle key
-     * @return the localised string corresponding to <code>id</code>
+     * @param key             the resource bundle key. May be <tt>null</tt>
+     * @param style           the style name
+     * @param enableShortcuts if <tt>true</tt>, enable shortcuts
+     * @param listener        the listener
+     * @return a new button
      */
-    public static String getString(String key) {
-        return getString(TYPE, key, false);
+    public static Button create(String key, String style,
+                                boolean enableShortcuts,
+                                ActionListener listener) {
+        Button button = create(key, style, enableShortcuts);
+        button.addActionListener(listener);
+        return button;
     }
 
     /**

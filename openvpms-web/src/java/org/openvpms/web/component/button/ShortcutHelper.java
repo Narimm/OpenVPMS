@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.button;
 
+import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -99,16 +100,16 @@ public class ShortcutHelper {
         while ((index = text.indexOf("&", lastIndex)) != -1) {
             int keyIndex = index + 1;
             if (keyIndex < text.length()) {
-                buf.append(text.substring(lastIndex, index));
+                buf.append(escapeHtml(text.substring(lastIndex, index)));
                 buf.append("<span xmlns=\"http://www.w3.org/1999/xhtml\" ");
                 buf.append("style=\"text-decoration:underline\">");
-                buf.append(text.substring(keyIndex, keyIndex + 1));
+                buf.append(escapeHtml(text.substring(keyIndex, keyIndex + 1)));
                 buf.append("</span>");
                 index = keyIndex;
             }
             lastIndex = index + 1;
         }
-        buf.append(text.substring(lastIndex));
+        buf.append(escapeHtml(text.substring(lastIndex)));
         return buf.toString();
 
     }
