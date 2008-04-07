@@ -31,6 +31,7 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.util.CollectionHelper;
 import org.openvpms.web.component.util.LabelFactory;
 
@@ -389,7 +390,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
     protected void addStatusSelector(Component container) {
         List<Lookup> lookups = getStatusLookups();
         if (lookups != null) {
-            statusSelector = new LookupField(lookups, true);
+            statusSelector = LookupFieldFactory.create(lookups, true);
             statusSelector.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     onStatusChanged();
