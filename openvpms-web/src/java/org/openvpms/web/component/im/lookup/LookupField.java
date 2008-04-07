@@ -81,7 +81,6 @@ public class LookupField extends SelectField {
      */
     public LookupField(LookupListModel model) {
         super(model);
-        setStyleName("default");
         setCellRenderer(new LookupListCellRenderer());
     }
 

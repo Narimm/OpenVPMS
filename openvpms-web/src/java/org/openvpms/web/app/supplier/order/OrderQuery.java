@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ActStatuses;
@@ -250,7 +251,7 @@ public class OrderQuery extends DateRangeActQuery<FinancialAct> {
         label.setText(displayName);
         NodeLookupQuery source = new NodeLookupQuery("act.supplierOrder",
                                                      "deliveryStatus");
-        deliveryStatus = new LookupField(source, true);
+        deliveryStatus = LookupFieldFactory.create(source, true);
         getFocusGroup().add(deliveryStatus);
         container.add(label);
         container.add(deliveryStatus);

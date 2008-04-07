@@ -30,6 +30,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.lookup.ArchetypeLookupQuery;
 import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.LookupQuery;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
@@ -69,7 +70,7 @@ public class NoteQuery extends DateRangeActQuery<Act> {
 
         LookupQuery source
                 = new ArchetypeLookupQuery("lookup.customerNoteCategory");
-        categories = new LookupField(source, true);
+        categories = LookupFieldFactory.create(source, true);
         categories.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCategoryChanged();

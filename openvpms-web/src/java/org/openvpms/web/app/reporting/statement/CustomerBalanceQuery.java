@@ -42,6 +42,7 @@ import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.lookup.ArchetypeLookupQuery;
 import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.query.AbstractQuery;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -199,7 +200,8 @@ public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
     @Override
     protected void doLayout(Component container) {
         Grid grid = GridFactory.create(6);
-        accountType = new LookupField(new ArchetypeLookupQuery("lookup"));
+        accountType = LookupFieldFactory.create(
+                new ArchetypeLookupQuery("lookup"));
         accountType.setCellRenderer(new LookupListCellRenderer());
 
         Label accountTypeLabel = LabelFactory.create(

@@ -29,6 +29,7 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.LookupQuery;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
@@ -100,7 +101,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
     protected void addReportTypeSelector(Component container) {
         LookupQuery source
                 = new NodeLookupQuery("entity.documentTemplate", "reportType");
-        typeSelector = new LookupField(source, true);
+        typeSelector = LookupFieldFactory.create(source, true);
         typeSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onTypeChanged();
