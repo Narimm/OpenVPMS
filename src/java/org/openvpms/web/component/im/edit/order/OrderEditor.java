@@ -32,7 +32,8 @@ import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.lookup.BoundLookupField;
+import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.LookupFilter;
 import org.openvpms.web.component.im.lookup.LookupQuery;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
@@ -171,7 +172,7 @@ public class OrderEditor extends ActEditor {
                             parent, property.getDescriptor());
                     query = new LookupFilter(query, true, "POSTED",
                                              "CANCELLED");
-                    BoundLookupField field = new BoundLookupField(property,
+                    LookupField field = LookupFieldFactory.create(property,
                                                                   query);
                     state = new ComponentState(field, property);
                 } else {

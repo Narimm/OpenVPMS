@@ -18,7 +18,9 @@
 
 package org.openvpms.web.component.im.lookup;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ComponentFactory;
 
 import java.util.List;
@@ -72,6 +74,31 @@ public class LookupFieldFactory extends ComponentFactory {
         if (field.getModel().size() != 0) {
             field.setSelectedIndex(0);
         }
+        return field;
+    }
+
+    /**
+     * Creates a new <tt>LookupField</tt>, bound to a property.
+     *
+     * @param property the property to bind
+     * @param parent   the parent object
+     * @return a new bound field
+     */
+    public static LookupField create(Property property, IMObject parent) {
+        LookupField field = new BoundLookupField(property, parent);
+        setDefaultStyle(field);
+        return field;
+    }
+
+    /**
+     * Creates a new <tt>LookupField</tt>, bound to a property.
+     *
+     * @param property the property to bind
+     * @param source   the lookup source
+     */
+    public static LookupField create(Property property, LookupQuery source) {
+        LookupField field = new BoundLookupField(property, source);
+        setDefaultStyle(field);
         return field;
     }
 }
