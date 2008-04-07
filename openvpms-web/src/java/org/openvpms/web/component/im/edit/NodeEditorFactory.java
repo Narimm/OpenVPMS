@@ -33,7 +33,7 @@ import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.doc.DocumentEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
-import org.openvpms.web.component.im.lookup.BoundLookupField;
+import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -174,7 +174,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * @return a new editor for <tt>property</tt>
      */
     protected Editor createLookupEditor(Property property, IMObject context) {
-        Component component = new BoundLookupField(property, context);
+        Component component = LookupFieldFactory.create(property, context);
         return createPropertyEditor(property, component);
     }
 
