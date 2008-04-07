@@ -133,19 +133,7 @@ public class ButtonSet implements KeyStrokeHandler {
      * @return a new button
      */
     public Button add(String id, boolean disableShortcut) {
-        Button button;
-        if (disableShortcut) {
-            button = ButtonFactory.create(null, style);
-            if (id != null) {
-                String text = ShortcutHelper.getText(
-                        ButtonFactory.getString(id));
-                button.setText(text);
-            }
-        } else {
-            button = ButtonFactory.create(id, style);
-        }
-        button.setId(id);
-        button.setActionCommand(id);
+        Button button = ButtonFactory.create(id, style, !disableShortcut);
         return add(button);
     }
 
@@ -179,8 +167,8 @@ public class ButtonSet implements KeyStrokeHandler {
     /**
      * Adds a button, and registers an event listener.
      *
-     * @param id       the button id, used to identify the button and as a resource
-     *                 bundle key. May be <tt>null</tt>
+     * @param id       the button id, used to identify the button and as a
+     *                 resource bundle key. May be <tt>null</tt>
      * @param listener the listener to add
      * @return a new button
      */
@@ -191,8 +179,8 @@ public class ButtonSet implements KeyStrokeHandler {
     /**
      * Adds a button, and registers an event listener.
      *
-     * @param id              the button id, used to identify the button and as a resource
-     *                        bundle key. May be <tt>null</tt>
+     * @param id              the button id, used to identify the button and as
+     *                        a resource bundle key. May be <tt>null</tt>
      * @param listener        the listener to add
      * @param disableShortcut if <tt>true</tt> disable any keyboard shortcut
      * @return a new button

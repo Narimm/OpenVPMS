@@ -28,7 +28,7 @@ import org.openvpms.web.component.util.KeyStrokeHelper;
  * A button that renders its access key with an underline.
  * Unlike {@link AccessKeyButton} this button does not use the standard
  * browser 'accesskey', but must instead be used in conjunction with
- * EchoPointNG's <code>KeyStrokeListener</code> class.
+ * EchoPointNG's <tt>KeyStrokeListener</tt> class.
  * The {@link ButtonSet} class provides a convenient way of receiving
  * keystroke notification.
  *
@@ -43,13 +43,13 @@ public class ShortcutButton extends ButtonEx {
     String key;
 
     /**
-     * Constructs a new <code>ShortcutButton</code>.
+     * Constructs a new <tt>ShortcutButton</tt>.
      */
     public ShortcutButton() {
     }
 
     /**
-     * Constructs a new <code>ShortcutButton</code>.
+     * Constructs a new <tt>ShortcutButton</tt>.
      *
      * @param text the button text
      */
@@ -78,7 +78,7 @@ public class ShortcutButton extends ButtonEx {
     /**
      * Returns the keycode for this button.
      *
-     * @return the keycode for this button, or <code>-1</code> if none is
+     * @return the keycode for this button, or <tt>-1</tt> if none is
      *         present
      */
     public int getKeyCode() {
