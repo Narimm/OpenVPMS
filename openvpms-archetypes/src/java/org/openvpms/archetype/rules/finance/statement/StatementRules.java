@@ -142,7 +142,7 @@ public class StatementRules {
         AccountType accountType = getAccountType(customer);
         if (accountType != null) {
             Date feeDate = accountType.getAccountFeeDate(date);
-            BigDecimal overdue = account.getOverdueBalance(customer, feeDate);
+            BigDecimal overdue = account.getBalance(customer, feeDate);
             BigDecimal feeBalance = accountType.getAccountFeeBalance();
             if (overdue.compareTo(BigDecimal.ZERO) != 0
                     && overdue.compareTo(feeBalance) >= 0) {
