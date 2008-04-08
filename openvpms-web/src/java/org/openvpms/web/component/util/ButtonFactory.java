@@ -45,7 +45,7 @@ public final class ButtonFactory extends ComponentFactory {
      * @return a new button
      */
     public static Button create() {
-        Button button = new Button();
+        Button button = new ButtonEx();
         setDefaultStyle(button);
         return button;
     }
@@ -77,7 +77,7 @@ public final class ButtonFactory extends ComponentFactory {
      */
     public static Button create(String key, boolean enableShortcuts) {
         Button button = (enableShortcuts) ? new ShortcutButton()
-                : new Button();
+                : new ButtonEx();
         if (key != null) {
             button.setText(getString(TYPE, key, false));
             button.setId(key);
