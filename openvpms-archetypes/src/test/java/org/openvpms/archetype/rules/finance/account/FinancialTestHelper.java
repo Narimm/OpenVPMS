@@ -145,6 +145,24 @@ public class FinancialTestHelper extends TestHelper {
     public static Lookup createAccountType(int paymentTerms,
                                            DateUnits paymentUom,
                                            BigDecimal accountFeeAmount) {
+        return createAccountType(paymentTerms, paymentUom, accountFeeAmount, 0);
+    }
+
+
+    /**
+     * Helper to create and save a new <em>lookup.customerAccountType</em>
+     * classification.
+     *
+     * @param paymentTerms     the payment terms
+     * @param paymentUom       the payment units
+     * @param accountFeeAmount the account fee
+     * @param accountFeeDays   the account fee days
+     * @return a new classification
+     */
+    public static Lookup createAccountType(int paymentTerms,
+                                           DateUnits paymentUom,
+                                           BigDecimal accountFeeAmount,
+                                           int accountFeeDays) {
         Lookup lookup = (Lookup) create("lookup.customerAccountType");
         IMObjectBean bean = new IMObjectBean(lookup);
         bean.setValue("code", "XCUSTOMER_ACCOUNT_TYPE"
@@ -152,6 +170,7 @@ public class FinancialTestHelper extends TestHelper {
         bean.setValue("paymentTerms", paymentTerms);
         bean.setValue("paymentUom", paymentUom.toString());
         bean.setValue("accountFeeAmount", accountFeeAmount);
+        bean.setValue("accountFeeDays", accountFeeDays);
         save(lookup);
         return lookup;
     }

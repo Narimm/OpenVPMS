@@ -119,7 +119,7 @@ public class StatementRules {
      * <li>the customer has an account type
      * (<em>lookup.customerAccountType</em>);</li>
      * <li>there is a non-zero overdue balance for the account fee date
-     * (derived from the specified date + <tt>accountFeeDays</tt>);</li>
+     * (derived from the specified date - <tt>accountFeeDays</tt>);</li>
      * <li>the overdue balance is greater than <tt>accountFeeBalance</tt>; and
      * </li>
      * <li>the account fee is greater than <tt>accountFeeMinimum</tt>.
