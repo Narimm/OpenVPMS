@@ -19,7 +19,6 @@
 package org.openvpms.web.component.button;
 
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -31,54 +30,66 @@ import org.openvpms.web.resource.util.Messages;
 public class ShortcutHelper {
 
     /**
+     * The underline opening tag.
+     */
+    static final String UNDERLINE_OPEN
+            = "<span xmlns=\"http://www.w3.org/1999/xhtml\" "
+            + "style=\"text-decoration:underline\">";
+
+    /**
+     * The underline closing tag.
+     */
+    static final String UNDERLINE_CLOSE = "</span>";
+
+
+    /**
      * Returns the shortcut from a string.
      *
-     * @param text the string
-     * @return the first shortcut found in <code>text</code>, or
-     *         <code>null</code> if none is found
+     * @param text the string. May be <tt>null</tt>
+     * @return the first shortcut found in <tt>text</tt>, or <tt>null</tt> if
+     *         none is found
      */
     public static String getShortcut(String text) {
-        int index = 0;
         if (text == null) {
             return null;
         }
         String result = null;
+        int index = 0;
         while ((index = text.indexOf("&", index)) != -1) {
             int keyIndex = index + 1;
             if (keyIndex < text.length()) {
                 if (text.charAt(keyIndex) != '&') {
                     result = Character.toString(text.charAt(keyIndex));
                     break;
+                } else {
+                    index++;
                 }
             }
+            index++;
         }
         return result;
-    }
-
-    /**
-     * Returns localised text minus any shortcut indicators (single ampersands).
-     *
-     * @param key the key of the text to be returned
-     * @return the text
-     */
-    public static String getLocalisedText(String key) {
-        return getText(Messages.get(key));
     }
 
     /**
      * Returns a string minus any shortcut indicators (single ampersands).
      * Multiple ampersands are replaced with a single one.
      *
-     * @param text the string
+     * @param text the string. May be <tt>null</tt>
      * @return the text
      */
     public static String getText(String text) {
+        if (text == null) {
+            return "";
+        }
         int lastIndex = 0;
         int index;
         StringBuffer buf = new StringBuffer();
         while ((index = text.indexOf("&", lastIndex)) != -1) {
             int keyIndex = index + 1;
             if (keyIndex < text.length()) {
+                if (text.charAt(keyIndex) == '&') {
+                    index = keyIndex;
+                }
                 buf.append(text.substring(lastIndex, index));
             }
             lastIndex = index + 1;
@@ -90,21 +101,40 @@ public class ShortcutHelper {
     /**
      * Returns XHTML underlining the shortcut in a string.
      *
-     * @param text the string containing the shortcut
+     * @param text the string containing the shortcut. May be <tt>null</tt>
      * @return an XHTML string with any shortcut underlined
      */
     public static String getHTML(String text) {
+        if (text == null) {
+            return "";
+        }
         int lastIndex = 0;
         int index;
         StringBuffer buf = new StringBuffer();
+        boolean first = true;
         while ((index = text.indexOf("&", lastIndex)) != -1) {
             int keyIndex = index + 1;
             if (keyIndex < text.length()) {
-                buf.append(escapeHtml(text.substring(lastIndex, index)));
-                buf.append("<span xmlns=\"http://www.w3.org/1999/xhtml\" ");
-                buf.append("style=\"text-decoration:underline\">");
-                buf.append(escapeHtml(text.substring(keyIndex, keyIndex + 1)));
-                buf.append("</span>");
+                if (text.charAt(keyIndex) == '&') {
+                    // double ampersand
+                    index = keyIndex;
+                    buf.append(escapeHtml(text.substring(lastIndex, index)));
+                } else {
+                    buf.append(escapeHtml(text.substring(lastIndex, index)));
+                    if (first) {
+                        buf.append(UNDERLINE_OPEN);
+                        buf.append(
+                                escapeHtml(text.substring(keyIndex,
+                                                          keyIndex + 1)));
+                        buf.append(UNDERLINE_CLOSE);
+                        first = false;
+                    } else {
+                        // only render one shortcut
+                        buf.append(
+                                escapeHtml(text.substring(keyIndex,
+                                                          keyIndex + 1)));
+                    }
+                }
                 index = keyIndex;
             }
             lastIndex = index + 1;
