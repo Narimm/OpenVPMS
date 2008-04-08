@@ -20,10 +20,12 @@ package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 
 import java.math.BigDecimal;
@@ -75,8 +77,9 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
     public void testProcessPreview() {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
-        customer.addClassification(createAccountType(30, DateUnits.DAYS,
-                                                     feeAmount));
+        Lookup accountType = FinancialTestHelper.createAccountType(
+                30, DateUnits.DAYS, feeAmount, 30);
+        customer.addClassification(accountType);
         save(customer);
 
         FinancialAct invoice1 = createChargesInvoice(new Money(100));

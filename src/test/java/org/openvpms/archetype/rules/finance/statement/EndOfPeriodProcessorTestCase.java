@@ -208,8 +208,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Party customer = getCustomer();
         BigDecimal feeAmount = new BigDecimal("25.00");
 
-        // 30 days payment terms, 30 days account fee days i.e 60 days
-        // before overdue fees are generated
+        // 30 days account fee days i.e 30 days before overdue fees are
+        // generated
         Lookup accountType = FinancialTestHelper.createAccountType(
                 30, DateUnits.DAYS, feeAmount, 30);
         customer.addClassification(accountType);
@@ -221,8 +221,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         invoice.setActivityStartTime(datetime);
         save(invoice);
 
-        // run end of period 30 days from when the invoice was posted
-        Date statementDate = DateRules.getDate(datetime, 30, DateUnits.DAYS);
+        // run end of period 29 days from when the invoice was posted
+        Date statementDate = DateRules.getDate(datetime, 29, DateUnits.DAYS);
 
         EndOfPeriodProcessor processor
                 = new EndOfPeriodProcessor(statementDate, true);
@@ -237,20 +237,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         checkAct(closing, CustomerAccountActTypes.CLOSING_BALANCE, amount);
         assertTrue(closing.isCredit());
 
-        // run end of period 60 days from when the invoice was posted
+        // run end of period 30 days from when the invoice was posted
         statementDate = DateRules.getDate(statementDate, 30, DateUnits.DAYS);
-        processor = new EndOfPeriodProcessor(statementDate, true);
-        processor.process(customer);
-
-        // verify there are 2 acts: an opening and closing balance
-        acts = getActs(customer, statementDate);
-        assertEquals(2, acts.size());
-
-        checkAct(acts.get(0), CustomerAccountActTypes.OPENING_BALANCE, amount);
-        checkAct(acts.get(1), CustomerAccountActTypes.CLOSING_BALANCE, amount);
-
-        // run end of period 61 days from when the invoice was posted
-        statementDate = DateRules.getDate(statementDate, 1, DateUnits.DAYS);
         processor = new EndOfPeriodProcessor(statementDate, true);
         processor.process(customer);
 
