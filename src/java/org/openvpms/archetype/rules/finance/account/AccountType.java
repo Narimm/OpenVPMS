@@ -174,7 +174,7 @@ public class AccountType {
 
     /**
      * Calculates an account fee date.
-     * This is the specified date + {@link #getAccountFeeDays}.
+     * This is the specified date - {@link #getAccountFeeDays}.
      *
      * @param date the date
      * @return the account fee date
@@ -182,7 +182,7 @@ public class AccountType {
     public Date getAccountFeeDate(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        calendar.add(Calendar.DAY_OF_MONTH, getAccountFeeDays());
+        calendar.add(Calendar.DAY_OF_MONTH, -getAccountFeeDays());
         return calendar.getTime();
     }
 
