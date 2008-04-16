@@ -18,8 +18,8 @@
 
 package org.openvpms.component.business.service.archetype.assertion;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ActionContext;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
@@ -40,15 +40,14 @@ public class EntityRelationshipAssertions {
     /**
      * Validates an entity relationship assertion.
      *
-     * @param target    the target object
-     * @param node      the node descriptor for this assertion
-     * @param assertion the assertion descriptor
+     * @param context the assertion context
      */
-    public static boolean validate(Object target, NodeDescriptor node,
-                                   AssertionDescriptor assertion) {
+    public static boolean validate(ActionContext context) {
         boolean result = false;
+        AssertionDescriptor assertion = context.getAssertion();
         if (assertion.getName().equals("uniqueEntityRelationship")) {
-            Collection<EntityRelationship> entries = getRelationships(target);
+            Collection<EntityRelationship> entries = getRelationships(
+                    context.getValue());
             if (entries != null) {
                 result = validateUnique(entries);
             }

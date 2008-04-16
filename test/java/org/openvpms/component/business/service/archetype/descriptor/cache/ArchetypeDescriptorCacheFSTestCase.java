@@ -155,8 +155,7 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
 
         ArchetypeDescriptorCacheFS cache = new ArchetypeDescriptorCacheFS(dir,
                 new String[] {extension}, assertionFile);
-        assertTrue("Count must be " + cache.getArchetypeDescriptors().size(),
-                cache.getArchetypeDescriptors().size() == recordCount1);
+        assertEquals(recordCount1, cache.getArchetypeDescriptors().size());
     }
 
     /**

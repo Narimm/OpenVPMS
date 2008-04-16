@@ -122,7 +122,7 @@
 			test-case="normal">
 			<params>
 				<param name="recordCount1" type="java.lang.Integer">
-					77
+					79
 				</param>
 			</params>
 		</method>

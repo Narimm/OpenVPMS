@@ -245,7 +245,7 @@ public class ArchetypeService implements IArchetypeService {
             // associated assertions
             if (descriptor.getNodeDescriptors().size() > 0) {
                 JXPathContext context = JXPathHelper.newContext(object);
-                validateObject(context, descriptor,
+                validateObject(object, context, descriptor,
                                descriptor.getNodeDescriptors(), errors);
             }
         }
@@ -654,7 +654,7 @@ public class ArchetypeService implements IArchetypeService {
      * @param nodes      the node to validate
      * @param errors     the errors are collected in this object
      */
-    private void validateObject(JXPathContext context,
+    private void validateObject(IMObject parent, JXPathContext context,
                                 ArchetypeDescriptor descriptor,
                                 Map<String, NodeDescriptor> nodes,
                                 List<ValidationError> errors) {
@@ -775,7 +775,7 @@ public class ArchetypeService implements IArchetypeService {
                             JXPathContext childContext = JXPathHelper.newContext(
                                     imobj);
                             childContext.setLenient(true);
-                            validateObject(childContext, adesc,
+                            validateObject(imobj, childContext, adesc,
                                            adesc.getNodeDescriptors(), errors);
                         }
                     }
@@ -797,7 +797,8 @@ public class ArchetypeService implements IArchetypeService {
                     }
 
                     try {
-                        if (!assertionType.validate(value, node, assertion)) {
+                        if (!assertionType.validate(value, parent, node,
+                                                    assertion)) {
                             errors.add(new ValidationError(shortName,
                                                            node.getName(),
                                                            assertion.getErrorMessage()));
@@ -820,8 +821,8 @@ public class ArchetypeService implements IArchetypeService {
 
             // if this node has other nodes then re-enter this method
             if (node.getNodeDescriptors().size() > 0) {
-                validateObject(context, descriptor, node.getNodeDescriptors(),
-                               errors);
+                validateObject(parent, context, descriptor,
+                               node.getNodeDescriptors(), errors);
             }
         }
     }

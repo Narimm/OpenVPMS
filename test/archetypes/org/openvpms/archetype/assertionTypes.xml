@@ -71,6 +71,12 @@
                     className="org.openvpms.component.business.service.archetype.assertion.EntityRelationshipAssertions"
                     methodName="validate"/>
     </assertionType>
+    <assertionType name="expression"
+                   propertyArchetype="assertion.expression.1.0">
+        <actionType name="validate"
+                    className="org.openvpms.component.business.service.archetype.assertion.ExpressionAssertions"
+                    methodName="validate"/>
+    </assertionType>
     <assertionType name="dummyAssertion1"
                    propertyArchetype="assertion.validateMethod.1.0">
         <actionType name="validate"
