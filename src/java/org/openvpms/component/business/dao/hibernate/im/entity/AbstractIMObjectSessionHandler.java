@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -59,13 +60,16 @@ abstract class AbstractIMObjectSessionHandler
     /**
      * Saves an object.
      *
-     * @param object  the object to save
-     * @param session the session to use
+     * @param object     the object to save
+     * @param session    the session to use
+     * @param newObjects used to collect new objects encountered during save
      * @return the result of <tt>Session.merge(object)</tt>
      */
-    public IMObject save(IMObject object, Session session) {
+    public IMObject save(IMObject object, Session session,
+                         Set<IMObject> newObjects) {
         if (object.isNew()) {
             session.saveOrUpdate(object);
+            newObjects.add(object);
         } else {
             try {
                 object = (IMObject) session.merge(object);
@@ -121,14 +125,17 @@ abstract class AbstractIMObjectSessionHandler
     /**
      * Helper to save any transient instances.
      *
-     * @param objects the objects to check
-     * @param session the session
+     * @param objects    the objects to check
+     * @param session    the session
+     * @param newObjects used to collect new objects encountered during save
      */
     protected <T extends IMObject> void saveNew(Collection<T> objects,
-                                                Session session) {
+                                                Session session,
+                                                Set<IMObject> newObjects) {
         for (T object : objects) {
             if (object.isNew()) {
                 session.save(object);
+                newObjects.add(object);
             }
         }
     }

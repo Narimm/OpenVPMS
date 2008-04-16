@@ -23,6 +23,8 @@ import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 
+import java.util.Set;
+
 
 /**
  * Implementation of {@link IMObjectSessionHandler} for {@link Product}
@@ -45,15 +47,17 @@ class ProductSessionHandler extends EntitySessionHandler {
     /**
      * Saves an object.
      *
-     * @param object  the object to merge
-     * @param session the session to use
+     * @param object     the object to merge
+     * @param session    the session to use
+     * @param newObjects used to collect new objects encountered during save
      * @return the result of <tt>Session.merge(object)</tt>
      */
     @Override
-    public IMObject save(IMObject object, Session session) {
+    public IMObject save(IMObject object, Session session,
+                         Set<IMObject> newObjects) {
         Product product = (Product) object;
-        saveNew(product.getProductPrices(), session);
-        return super.save(object, session);
+        saveNew(product.getProductPrices(), session, newObjects);
+        return super.save(object, session, newObjects);
     }
 
     /**

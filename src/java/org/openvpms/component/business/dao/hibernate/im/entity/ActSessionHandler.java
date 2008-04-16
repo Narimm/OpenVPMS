@@ -64,14 +64,16 @@ class ActSessionHandler extends AbstractIMObjectSessionHandler {
      *
      * @param object  the object to save
      * @param session the session to use
+     * @param newObjects used to collect new objects encountered during save
      * @return the result of <tt>Session.merge(object)</tt>
      */
     @Override
-    public IMObject save(IMObject object, Session session) {
+    public IMObject save(IMObject object, Session session,
+                         Set<IMObject> newObjects) {
         Act act = (Act) object;
-        saveNew(act.getActRelationships(), session);
-        saveNew(act.getParticipations(), session);
-        return super.save(object, session);
+        saveNew(act.getActRelationships(), session, newObjects);
+        saveNew(act.getParticipations(), session, newObjects);
+        return super.save(object, session, newObjects);
     }
 
     /**
@@ -168,9 +170,10 @@ class ActSessionHandler extends AbstractIMObjectSessionHandler {
         for (IMObject act : deleted) {
             removeRelationships((Act) act, related);
         }
+        Set<IMObject> newObjects = new HashSet<IMObject>();
         for (IMObject object : related.values()) {
             try {
-                save(object, session);
+                save(object, session, newObjects);
             } catch (ObjectDeletedException ignore) {
                 // object has been deleted elsewhere in the transaction
             }

@@ -663,6 +663,88 @@ public class ArchetypeServiceActTestCase
         assertTrue(reloaded.getActRelationships().isEmpty());
     }
 
+    /**
+     * Verifies that new objects can be subsequently saved if a rollback
+     * occurs, for OBF-186.
+     */
+    public void testResetNewIdsOnRollback() {
+        // Create 2 acts with the following relationships:
+        // act1 -- (parent/child) --> act2
+        final Act act1 = createSimpleAct("act1", "IN_POGRESS");
+        final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+        final ActRelationship rel
+                = addRelationship(act1, act2, "act1->act2", true);
+
+        // initial ids should be unset
+        assertEquals(-1, act1.getUid());
+        assertEquals(-1, act2.getUid());
+        assertEquals(-1, rel.getUid());
+
+        // save objects in a transaction, and rollback. Within the transaction,
+        // the objects should be assigned identifiers. After rollback, they
+        // should be reset to -1.
+        try {
+            template.execute(new TransactionCallback() {
+                public Object doInTransaction(TransactionStatus status) {
+                    service.save(act1);
+                    service.save(act2);
+
+                    // objects should have ids assigned now
+                    assertFalse(-1 == act1.getUid());
+                    assertFalse(-1 == act2.getUid());
+                    assertFalse(-1 == rel.getUid());
+                    throw new RuntimeException("Trigger rollback");
+                }
+            });
+            fail("Expected transaction to fail");
+        } catch (Exception expected) {
+            // expected behaviour
+        }
+
+        // id changes should be reverted on rollback
+        assertEquals(-1, act1.getUid());
+        assertEquals(-1, act2.getUid());
+        assertEquals(-1, rel.getUid());
+
+        // now verify the objects can be saved
+        try {
+            template.execute(new TransactionCallback() {
+                public Object doInTransaction(TransactionStatus status) {
+                    service.save(act1);
+                    service.save(act2);
+                    return null;
+                }
+            });
+        } catch (Exception error) {
+            fail("Expected transaction to succeed");
+        }
+
+        // objects should have ids assigned now
+        assertFalse(-1 == act1.getUid());
+        assertFalse(-1 == act2.getUid());
+        assertFalse(-1 == rel.getUid());
+
+        // now verfiy that a subsequent rollback of persistent objects
+        // doesn't reset the ids
+        try {
+            template.execute(new TransactionCallback() {
+                public Object doInTransaction(TransactionStatus status) {
+                    service.save(act1);
+                    service.save(act2);
+                    throw new RuntimeException("Trigger rollback");
+                }
+            });
+            fail("Expected transaction to fail");
+        } catch (Exception expected) {
+            // expected behaviour
+        }
+
+        // objects should have ids assigned still
+        assertFalse(-1 == act1.getUid());
+        assertFalse(-1 == act2.getUid());
+        assertFalse(-1 == rel.getUid());
+    }
+
     /*
     * (non-Javadoc)
     *

@@ -23,6 +23,8 @@ import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
+import java.util.Set;
+
 
 /**
  * Implementation of {@link IMObjectSessionHandler} for
@@ -54,13 +56,15 @@ class ArchetypeDescriptorSessionHandler extends AbstractIMObjectSessionHandler {
      *
      * @param object  the object to merge
      * @param session the session to use
+     * @param newObjects used to collect new objects encountered during save
      * @return the result of <tt>Session.merge(object)</tt>
      */
     @Override
-    public IMObject save(IMObject object, Session session) {
+    public IMObject save(IMObject object, Session session, 
+                         Set<IMObject> newObjects) {
         ArchetypeDescriptor descriptor = (ArchetypeDescriptor) object;
-        saveNew(descriptor.getAllNodeDescriptors(), session);
-        return super.save(object, session);
+        saveNew(descriptor.getAllNodeDescriptors(), session, newObjects);
+        return super.save(object, session, newObjects);
     }
 
     /**

@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.util.Collection;
+import java.util.Set;
 
 
 /**
@@ -54,16 +55,18 @@ class EntitySessionHandler extends AbstractIMObjectSessionHandler {
     /**
      * Saves an object.
      *
-     * @param object  the object to merge
-     * @param session the session to use
+     * @param object     the object to merge
+     * @param session    the session to use
+     * @param newObjects used to collect new objects encountered during save
      * @return the result of <tt>Session.merge(object)</tt>
      */
     @Override
-    public IMObject save(IMObject object, Session session) {
+    public IMObject save(IMObject object, Session session,
+                         Set<IMObject> newObjects) {
         Entity entity = (Entity) object;
-        saveNew(entity.getEntityRelationships(), session);
-        saveNew(entity.getIdentities(), session);
-        return super.save(object, session);
+        saveNew(entity.getEntityRelationships(), session, newObjects);
+        saveNew(entity.getIdentities(), session, newObjects);
+        return super.save(object, session, newObjects);
     }
 
     /**
