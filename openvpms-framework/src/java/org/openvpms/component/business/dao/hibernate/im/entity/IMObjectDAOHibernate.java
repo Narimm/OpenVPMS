@@ -53,8 +53,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -735,9 +737,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param session the session to use
      */
     private void save(IMObject object, Session session) {
+        Set<IMObject> newObjects = new HashSet<IMObject>();
+        CommitSync sync = new CommitSync(newObjects);
         IMObjectSessionHandler handler = handlerFactory.getHandler(object);
-        IMObject source = handler.save(object, session);
-        CommitSync sync = new CommitSync(handler, object, source);
+
+        IMObject source = handler.save(object, session, newObjects);
+        sync.add(handler, object, source);
         TransactionSynchronizationManager.registerSynchronization(sync);
     }
 
@@ -748,10 +753,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * @param session the session to use
      */
     private void save(Collection<IMObject> objects, Session session) {
-        CommitSync sync = new CommitSync();
+        Set<IMObject> newObjects = new HashSet<IMObject>();
+        CommitSync sync = new CommitSync(newObjects);
+
         for (IMObject object : objects) {
             IMObjectSessionHandler handler = handlerFactory.getHandler(object);
-            IMObject source = handler.save(object, session);
+            IMObject source = handler.save(object, session, newObjects);
             sync.add(handler, object, source);
         }
         TransactionSynchronizationManager.registerSynchronization(sync);
@@ -827,22 +834,15 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         private List<Sync> list = new ArrayList<Sync>();
 
         /**
-         * Creates a new <tt>CommitSync</tt>.
+         * The set of new objects encountered during save.
          */
-        public CommitSync() {
-        }
+        private final Set<IMObject> newObjects;
 
         /**
-         * Creates a new <tt>CommitSync</tt>, with an object to update at
-         * commit.
-         *
-         * @param handler the handler to perform the update
-         * @param target  the object to update
-         * @param source  the object to update from
+         * Creates a new <tt>CommitSync</tt>.
          */
-        public CommitSync(IMObjectSessionHandler handler, IMObject target,
-                          IMObject source) {
-            add(handler, target, source);
+        public CommitSync(Set<IMObject> newObjects) {
+            this.newObjects = newObjects;
         }
 
         /**
@@ -857,11 +857,27 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
             list.add(new Sync(handler, target, source));
         }
 
+        /**
+         * Invoked after completion of the transaction.
+         * <p/>
+         * If the transaction committed, identifiers and versions of the
+         * committed objects are propagated to their targets.
+         * <p/>
+         * If the transaction rolled back, identifiers assigned to new objects
+         * are reset to -1.
+         *
+         * @param status the transaction status
+         */
         @Override
         public void afterCompletion(int status) {
             if (status == STATUS_COMMITTED) {
                 for (Sync sync : list) {
                     sync.sync();
+                }
+            } else {
+                // STATUS_ROLLBACK or STATUS_UNKOWN
+                for (IMObject object : newObjects) {
+                    object.setUid(-1);
                 }
             }
         }

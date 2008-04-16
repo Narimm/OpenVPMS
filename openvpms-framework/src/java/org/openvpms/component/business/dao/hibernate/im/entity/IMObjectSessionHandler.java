@@ -21,10 +21,12 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 import org.hibernate.Session;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
+import java.util.Set;
+
 
 /**
  * Handles hibernate <tt>Session</tt> operations on {@link IMObject}s.
- * <p>
+ * <p/>
  * In particular, it handles saving detached instances of {@link IMObject}
  * object graphs, using <tt>Session.merge()</tt>, propagating the identifiers
  * and versions of the merged objects to their originals after commit.
@@ -36,15 +38,20 @@ interface IMObjectSessionHandler {
 
     /**
      * Saves an object.
-     * <p>
+     * <p/>
      * This makes any transient children persistent prior to invoking
      * <tt>Session.merge()</tt> on the supplied object.
+     * <p/>
+     * The <tt>newObjects</tt> argument is used to collect transient instances.
+     * If the transaction rolls back, any identifiers assigned to these
+     * must be reset, as hibernate doesn't do it automatically.
      *
-     * @param object the object to save
-     * @param session the session to use
+     * @param object     the object to save
+     * @param session    the session to use
+     * @param newObjects used to collect new objects encountered during save
      * @return the result of <tt>Session.merge(object)</tt>
      */
-    IMObject save(IMObject object, Session session);
+    IMObject save(IMObject object, Session session, Set<IMObject> newObjects);
 
     /**
      * Updates the target object with the identifier and version of the source,
@@ -58,7 +65,7 @@ interface IMObjectSessionHandler {
     /**
      * Deletes an object.
      *
-     * @param object the object to delete
+     * @param object  the object to delete
      * @param session
      */
     void delete(IMObject object, Session session);
