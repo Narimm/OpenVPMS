@@ -20,6 +20,7 @@ package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -30,7 +31,7 @@ import java.util.TreeSet;
 /**
  * This is used to define the assertion type. It is used to map an assertion to
  * its type information
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -83,7 +84,7 @@ public class AssertionTypeDescriptor extends Descriptor {
 
     /**
      * Retrieve the action types as an array
-     * 
+     *
      * @return ActionTypeDescriptor[]
      */
     public ActionTypeDescriptor[] getActionTypesAsArray() {
@@ -93,7 +94,7 @@ public class AssertionTypeDescriptor extends Descriptor {
 
     /**
      * Set the following array of action types
-     * 
+     *
      * @param actions
      */
     public void setActionTypesAsArray(ActionTypeDescriptor[] actions) {
@@ -104,7 +105,7 @@ public class AssertionTypeDescriptor extends Descriptor {
 
     /**
      * Add an action type
-     * 
+     *
      * @param actionType
      *            the action type to add
      */
@@ -115,7 +116,7 @@ public class AssertionTypeDescriptor extends Descriptor {
     /**
      * Retrieve the {@link ActionTypeDescriptor} with the specified name or
      * null if one doesn't exist.
-     * 
+     *
      * @param name
      *            the action name
      * @return ActionTypeDescriptor
@@ -132,7 +133,7 @@ public class AssertionTypeDescriptor extends Descriptor {
 
     /**
      * Remove the specified action type
-     * 
+     *
      * @param actionType
      *            the action type to remove
      */
@@ -163,7 +164,7 @@ public class AssertionTypeDescriptor extends Descriptor {
      * <p>
      * This method expects to fins the appropriate action defined on the
      * specified assertion
-     * 
+     *
      * @param action
      *            the name of the action.
      * @param target
@@ -180,7 +181,7 @@ public class AssertionTypeDescriptor extends Descriptor {
      *             evaluated.
      */
     public Object evaluateAction(String action, Object target,
-            NodeDescriptor node, AssertionDescriptor assertion) {
+            IMObject parent, NodeDescriptor node, AssertionDescriptor assertion) {
         ActionTypeDescriptor descriptor = getActionTypeDescriptorByName(action);
         if (descriptor == null) {
             throw new AssertionException(
@@ -188,15 +189,26 @@ public class AssertionTypeDescriptor extends Descriptor {
                     new Object[] { action, this.getName() });
         }
 
+
         try {
             Class clazz = Thread.currentThread().getContextClassLoader()
                     .loadClass(descriptor.getClassName());
-            Method method = clazz.getMethod(descriptor.getMethodName(),
-                    new Class[] { Object.class, NodeDescriptor.class,
-                            AssertionDescriptor.class });
+            Method method;
+            Object[] args;
+            try {
+                method = clazz.getMethod(descriptor.getMethodName(),
+                                         ActionContext.class);
+                args = new Object[]{new ActionContext(assertion, parent,
+                                                      node, target)};
+            } catch (NoSuchMethodException ignore) {
+                // try the old style binding
+                method = clazz.getMethod(descriptor.getMethodName(),
+                    Object.class, NodeDescriptor.class,
+                    AssertionDescriptor.class);
+                args = new Object[]{target, node, assertion};
+            }
 
-            return method
-                    .invoke(null, new Object[] { target, node, assertion });
+            return method.invoke(null, args);
         } catch (Exception exception) {
             throw new AssertionException(
                     AssertionException.ErrorCode.FailedToApplyAssertion,
@@ -208,7 +220,7 @@ public class AssertionTypeDescriptor extends Descriptor {
     /**
      * This is a convenience method that provides a way for assertions to hook
      * in to and extend the creation phase of an archetype
-     * 
+     *
      * @param target
      *            this is the object that is the subject of the assetion
      * @param node
@@ -229,7 +241,8 @@ public class AssertionTypeDescriptor extends Descriptor {
                 return;
             }
 
-            evaluateAction(Actions.create.toString(), target, node, assertion);
+            evaluateAction(Actions.create.toString(), target, null, node,
+                           assertion);
         } catch (Exception exception) {
             throw new AssertionException(
                     AssertionException.ErrorCode.FailedToApplyAssertion,
@@ -244,9 +257,10 @@ public class AssertionTypeDescriptor extends Descriptor {
      * The declared assertion is transformed into a method call, which takes the
      * target object as one parameter and a map of properties as the other
      * parameter.
-     * 
+     *
      * @param target
      *            this is the object that is the subject of the assetion
+     * @param parent the parent object
      * @param node
      *            the node descriptor
      * @param assertion
@@ -257,8 +271,8 @@ public class AssertionTypeDescriptor extends Descriptor {
      *             a runtime exception that is raised if the assertion cannot be
      *             evaluated.
      */
-    public boolean validate(Object target, NodeDescriptor node,
-            AssertionDescriptor assertion) {
+    public boolean validate(Object target, IMObject parent, NodeDescriptor node,
+                            AssertionDescriptor assertion) {
         try {
             ActionTypeDescriptor actionType = getActionType(Actions.validate
                     .toString());
@@ -267,7 +281,7 @@ public class AssertionTypeDescriptor extends Descriptor {
             }
 
             return (Boolean) evaluateAction(Actions.validate.toString(),
-                    target, node, assertion);
+                    target, parent, node, assertion);
         } catch (Exception exception) {
             throw new AssertionException(
                     AssertionException.ErrorCode.FailedToApplyAssertion,
@@ -278,7 +292,7 @@ public class AssertionTypeDescriptor extends Descriptor {
     /**
      * Return the {@link ActionTypeDescriptor} with the specified name or null
      * if one does not exist.
-     * 
+     *
      * @param action
      *            the name of the action
      * @return ActionTypeDescriptor
@@ -301,7 +315,7 @@ public class AssertionTypeDescriptor extends Descriptor {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
      */
     @Override

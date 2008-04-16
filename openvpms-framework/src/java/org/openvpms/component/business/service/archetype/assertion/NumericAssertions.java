@@ -18,10 +18,9 @@
 
 package org.openvpms.component.business.service.archetype.assertion;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ActionContext;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 
 
 /**
@@ -37,42 +36,33 @@ public class NumericAssertions {
     /**
      * Determines if a node value is positive (<tt>&gt; 0</tt>).
      *
-     * @param value     the node value
-     * @param node      the node
-     * @param assertion the assertion
+     * @param context the assertion context
      * @return <tt>true</tt> if value is positive, otherwise <tt>false</tt>
      */
-    public static boolean positive(Object value, NodeDescriptor node,
-                                   AssertionDescriptor assertion) {
-        Number number = (Number) value;
+    public static boolean positive(ActionContext context) {
+        Number number = (Number) context.getValue();
         return number.doubleValue() > 0.0;
     }
 
     /**
      * Determines if a node value is negative (<tt>&lt; 0</tt>).
      *
-     * @param value     the node value
-     * @param node      the node
-     * @param assertion the assertion
+     * @param context the assertion context
      * @return <tt>true</tt> if value is negative, otherwise <tt>false</tt>
      */
-    public static boolean negative(Object value, NodeDescriptor node,
-                                   AssertionDescriptor assertion) {
-        Number number = (Number) value;
+    public static boolean negative(ActionContext context) {
+        Number number = (Number) context.getValue();
         return number.doubleValue() < 0.0;
     }
 
     /**
      * Determines if a node value is non-negative (<tt>&gt;= 0</tt>).
      *
-     * @param value     the node value
-     * @param node      the node
-     * @param assertion the assertion
+     * @param context the assertion context
      * @return <tt>true</tt> if value is negative, otherwise <tt>false</tt>
      */
-    public static boolean nonNegative(Object value, NodeDescriptor node,
-                                      AssertionDescriptor assertion) {
-        Number number = (Number) value;
+    public static boolean nonNegative(ActionContext context) {
+        Number number = (Number) context.getValue();
         return number.doubleValue() >= 0.0;
     }
 }

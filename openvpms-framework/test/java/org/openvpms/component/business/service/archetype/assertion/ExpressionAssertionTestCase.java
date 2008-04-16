@@ -11,7 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
@@ -19,19 +19,22 @@
 package org.openvpms.component.business.service.archetype.assertion;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ActionContext;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+import java.math.BigDecimal;
 
 
 /**
- * Tests the {@link NumericAssertions} class.
+ * Tests the {@link ExpressionAssertions} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class NumericAssertionTestCase
+public class ExpressionAssertionTestCase
         extends AbstractDependencyInjectionSpringContextTests {
 
     /**
@@ -41,42 +44,28 @@ public class NumericAssertionTestCase
 
 
     /**
-     * Tests the {@link NumericAssertions} methods.
-     */
-    public void testNumericAssertions() {
-        assertTrue(NumericAssertions.negative(create(-1)));
-        assertFalse(NumericAssertions.negative(create(0)));
-        assertFalse(NumericAssertions.negative(create(1)));
-
-        assertFalse(NumericAssertions.positive(create(-1)));
-        assertFalse(NumericAssertions.positive(create(0)));
-        assertTrue(NumericAssertions.positive(create(1)));
-
-        assertFalse(NumericAssertions.nonNegative(create(-1)));
-        assertTrue(NumericAssertions.nonNegative(create(0)));
-        assertTrue(NumericAssertions.nonNegative(create(1)));
-    }
-
-    /**
-     * Tests the {@link NumericAssertions} methods when invoked via
+     * Tests the {@link ExpressionAssertions} methods when invoked via
      * archetype service validation.
      */
-    public void testNumericAssertionsValidation() {
-        Act act = (Act) service.create("act.numericAssertions");
+    public void testAssertions() {
+        Act act = (Act) service.create("act.expressionAssertions");
         assertNotNull(act);
-        service.validateObject(act);  // default values are all valid
-
-        act.getDetails().put("positive", 0.0);
-        act.getDetails().put("negative", 0.0);
-        act.getDetails().put("nonNegative", -1.0);
+        ActBean bean = new ActBean(act, service);
+        bean.setValue("amount", BigDecimal.ZERO);
         try {
             service.validateObject(act);
             fail("Expected validation to fail");
         } catch (ValidationException expected) {
-            // one error per node
             assertEquals(3, expected.getErrors().size());
+            checkError(expected, 0, "act.expressionAssertions", "amount",
+                       "Amount must be > 0");
+            checkError(expected, 1, "act.expressionAssertions", "value1",
+                       "Value1 must be < amount");
+            checkError(expected, 2, "act.expressionAssertions", "value2",
+                       "Value2 must be < amount");
         }
-
+        bean.setValue("amount", new BigDecimal("100.00"));
+        service.validateObject(act);
     }
 
     /**
@@ -84,7 +73,6 @@ public class NumericAssertionTestCase
      *
      * @throws Exception for any error
      */
-    @Override
     protected void onSetUp() throws Exception {
         service = (IArchetypeService) applicationContext.getBean(
                 "archetypeService");
@@ -101,13 +89,12 @@ public class NumericAssertionTestCase
         };
     }
 
-    /**
-     * Helper to create a new context with a value.
-     *
-     * @param value the value
-     * @return a new context
-     */
-    private ActionContext create(Object value) {
-        return new ActionContext(null, null, null, value);
+    private void checkError(ValidationException exception,
+                            int index, String archetype, String node,
+                            String message) {
+        ValidationError error = exception.getErrors().get(index);
+        assertEquals(archetype, error.getArchetype());
+        assertEquals(node, error.getNode());
+        assertEquals(message, error.getMessage());
     }
 }
