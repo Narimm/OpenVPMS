@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
@@ -162,10 +163,12 @@ public abstract class AbstractCollectionPropertyEditor
      * This removes any associated editor.
      *
      * @param object the object to remove
+     * @return <tt>true</tt> if the object was removed
      */
-    public void remove(IMObject object) {
-        property.remove(object);
-        removeEdited(object);
+    public boolean remove(IMObject object) {
+        boolean removed = removeEdited(object);
+        property.remove(object); // will notify listeners, so invoke last
+        return removed;
     }
 
     /**
@@ -231,6 +234,24 @@ public abstract class AbstractCollectionPropertyEditor
             }
         }
         return valid;
+    }
+
+    /**
+     * Adds a listener to be notified when this changes.
+     *
+     * @param listener the listener to add
+     */
+    public void addModifiableListener(ModifiableListener listener) {
+        property.addModifiableListener(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeModifiableListener(ModifiableListener listener) {
+        property.removeModifiableListener(listener);
     }
 
     /**
@@ -349,9 +370,10 @@ public abstract class AbstractCollectionPropertyEditor
      * This removes any associated editor.
      *
      * @param object the object to remove
+     * @return <tt>true</tt> if the object was removed
      */
-    protected void removeEdited(IMObject object) {
-        edited.remove(object);
+    protected boolean removeEdited(IMObject object) {
         editors.remove(object);
+        return edited.remove(object);
     }
 }

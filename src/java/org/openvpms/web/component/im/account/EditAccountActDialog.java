@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.account;
+package org.openvpms.web.component.im.account;
 
 import nextapp.echo2.app.Button;
 import org.openvpms.archetype.rules.act.ActStatus;

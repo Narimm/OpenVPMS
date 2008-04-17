@@ -75,7 +75,7 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new TillCRUDWindow(getChildArchetypes());
+        return new TillCRUDWindow();
     }
 
     /**

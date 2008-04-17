@@ -22,15 +22,9 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.table.IMTableModel;
-import org.openvpms.web.component.im.table.act.DefaultActTableModel;
-import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
 
 
@@ -44,7 +38,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @version $LastChangedDate$
  */
 public class InvoiceItemRelationshipCollectionEditor
-        extends ActRelationshipCollectionEditor {
+        extends AccountItemRelationshipCollectionEditor {
 
     /**
      * The medication manager.
@@ -95,20 +89,4 @@ public class InvoiceItemRelationshipCollectionEditor
         return set;
     }
 
-    /**
-     * Create a new table model.
-     *
-     * @param context the layout context
-     * @return a new table model
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
-        context = new DefaultLayoutContext(context);
-        context.setComponentFactory(new TableComponentFactory(context));
-        CollectionPropertyEditor editor = getCollectionPropertyEditor();
-        IMTableModel model = new DefaultActTableModel(
-                editor.getArchetypeRange(), context);
-        return (IMTableModel<IMObject>) model;
-    }
 }

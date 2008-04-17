@@ -249,36 +249,21 @@ public class EditIMObjectTask extends AbstractTask {
 
     /**
      * Edits an object.
+     * <p/>
+     * Creates a new editor via {@link #createEditor} before delegating
+     * to {@link #interactiveEdit}, if editing is interactive, or {@link #backgroundEdit} if
+     * not.
      *
      * @param object  the object to edit
      * @param context the task context
      */
     protected void edit(final IMObject object, TaskContext context) {
         try {
-            LayoutContext layout = new DefaultLayoutContext(true);
-            layout.setContext(context);
-            final IMObjectEditor editor
-                    = IMObjectEditorFactory.create(object, layout);
-            GlobalContext.getInstance().setCurrent(object);
+            final IMObjectEditor editor = createEditor(object, context);
             if (interactive) {
-                show(editor);
+                interactiveEdit(editor, context);
             } else {
-                editor.getComponent();
-                GlobalContext.getInstance().setCurrent(null);
-                edit(editor, context);
-                if (editor.isValid() || !showEditorOnError) {
-                    if (SaveHelper.save(editor)) {
-                        notifyCompleted();
-                    } else {
-                        if (deleteOnCancelOrSkip) {
-                            delete(object);
-                        }
-                        notifyCancelled();
-                    }
-                } else {
-                    // editor invalid. Pop up a dialog.
-                    show(editor);
-                }
+                backgroundEdit(editor, context);
             }
         } catch (OpenVPMSException exception) {
             if (deleteOnCancelOrSkip) {
@@ -289,21 +274,28 @@ public class EditIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Edits an object in the background.
-     * This implementation is a no-op.
+     * Creates a new editor for an object.
      *
-     * @param editor  the editor
+     * @param object  the object to edit
      * @param context the task context
+     * @return a new editor
      */
-    protected void edit(IMObjectEditor editor, TaskContext context) {
+    protected IMObjectEditor createEditor(IMObject object,
+                                          TaskContext context) {
+        LayoutContext layout = new DefaultLayoutContext(true);
+        layout.setContext(context);
+        return IMObjectEditorFactory.create(object, layout);
     }
 
     /**
      * Shows the editor in an edit dialog.
      *
-     * @param editor the editor
+     * @param editor  the editor
+     * @param context the task context
      */
-    protected void show(final IMObjectEditor editor) {
+    protected void interactiveEdit(final IMObjectEditor editor,
+                                   TaskContext context) {
+        GlobalContext.getInstance().setCurrent(object);
         final EditDialog dialog = createEditDialog(editor, skip);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
@@ -319,6 +311,46 @@ public class EditIMObjectTask extends AbstractTask {
 
         });
         dialog.show();
+    }
+
+    /**
+     * Attempts to edit an object in the background. Editing is delegated
+     * to {@link #edit(IMObjectEditor, TaskContext)}.
+     * <p/>
+     * If the editor is valid after editing, the object will be saved.
+     * If not,  and {@link #showEditorOnError} is <tt>true</tt>, an interactive
+     * edit will occur, otherwise the edit will be cancelled.
+     *
+     * @param editor  the editor
+     * @param context the task context
+     */
+    protected void backgroundEdit(IMObjectEditor editor, TaskContext context) {
+        GlobalContext.getInstance().setCurrent(null);
+        editor.getComponent();
+        edit(editor, context);
+        if (editor.isValid() || !showEditorOnError) {
+            if (SaveHelper.save(editor)) {
+                notifyCompleted();
+            } else {
+                if (deleteOnCancelOrSkip) {
+                    delete(editor.getObject());
+                }
+                notifyCancelled();
+            }
+        } else {
+            // editor invalid. Pop up a dialog.
+            interactiveEdit(editor, context);
+        }
+    }
+
+    /**
+     * Edits an object in the background.
+     * This implementation is a no-op.
+     *
+     * @param editor  the editor
+     * @param context the task context
+     */
+    protected void edit(IMObjectEditor editor, TaskContext context) {
     }
 
     /**

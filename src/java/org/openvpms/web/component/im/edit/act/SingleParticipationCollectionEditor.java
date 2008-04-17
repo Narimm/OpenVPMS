@@ -27,6 +27,7 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
@@ -184,6 +185,10 @@ public class SingleParticipationCollectionEditor
         String shortName = shortNames[0];
         if (objects.isEmpty()) {
             object = IMObjectCreator.create(shortName);
+            IMObjectCreationListener listener = getCreationListener();
+            if (object != null && listener != null) {
+                listener.created(object);
+            }
         } else {
             object = objects.get(0);
         }

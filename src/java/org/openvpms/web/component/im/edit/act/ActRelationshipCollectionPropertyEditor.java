@@ -157,14 +157,17 @@ public class ActRelationshipCollectionPropertyEditor
      * @param object the object to remove
      */
     @Override
-    public void remove(IMObject object) {
+    public boolean remove(IMObject object) {
         Act act = (Act) object;
+        boolean removed = queueRemove(object);
         ActRelationship relationship = getActs().remove(act);
         if (relationship != null) {
             parent.removeActRelationship(relationship);
+
+            // will generate events, so invoke last
             getProperty().remove(relationship);
         }
-        queueRemove(object);
+        return removed;
     }
 
     /**
@@ -245,12 +248,13 @@ public class ActRelationshipCollectionPropertyEditor
      * Flags an object for removal when the collection is saved.
      *
      * @param object the object to remove
+     * @return <tt>true</tt> if the object was removed
      */
-    protected void queueRemove(IMObject object) {
-        removeEdited(object);
+    protected boolean queueRemove(IMObject object) {
         if (!object.isNew()) {
             removed.add(object);
         }
+        return removeEdited(object);
     }
 
 }

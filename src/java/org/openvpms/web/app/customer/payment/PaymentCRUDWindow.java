@@ -22,9 +22,9 @@ package org.openvpms.web.app.customer.payment;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.account.EditAccountActDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.account.EditAccountActDialog;
 import org.openvpms.web.component.im.util.Archetypes;
 
 

@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.account;
+package org.openvpms.web.component.im.account;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;

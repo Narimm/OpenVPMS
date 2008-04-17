@@ -27,7 +27,7 @@ package org.openvpms.web.component.im.edit;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.Modifiable;
 
 import java.util.Collection;
 import java.util.List;
@@ -39,7 +39,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface CollectionPropertyEditor extends Saveable {
+public interface CollectionPropertyEditor extends Modifiable, Saveable {
 
     /**
      * Returns the collection property.
@@ -60,8 +60,7 @@ public interface CollectionPropertyEditor extends Saveable {
      * Adds an object to the collection, if it doesn't exist.
      *
      * @param object the object to add
-     * @return <code>true</code> if the object was added, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the object was added, otherwise <tt>false</tt>
      */
     boolean add(IMObject object);
 
@@ -69,8 +68,9 @@ public interface CollectionPropertyEditor extends Saveable {
      * Removes an object from the collection.
      *
      * @param object the object to remove
+     * @return <tt>true</tt> if the object was removed
      */
-    void remove(IMObject object);
+    boolean remove(IMObject object);
 
     /**
      * Associates an object in the collection with an editor. The editor
@@ -85,7 +85,7 @@ public interface CollectionPropertyEditor extends Saveable {
      * Returns the editor associated with an object in the collection.
      *
      * @param object the object
-     * @return the associated editor, or <code>null</code> if none is found
+     * @return the associated editor, or <tt>null</tt> if none is found
      */
     IMObjectEditor getEditor(IMObject object);
 
@@ -98,35 +98,6 @@ public interface CollectionPropertyEditor extends Saveable {
      * @return the editors
      */
     Collection<IMObjectEditor> getEditors();
-
-    /**
-     * Determines if the collection has been modified.
-     *
-     * @return <code>true</code> if the collection has been modified
-     */
-    boolean isModified();
-
-    /**
-     * Clears the modified status of the object.
-     */
-    void clearModified();
-
-    /**
-     * Determines if the collection is valid.
-     *
-     * @return <code>true</code> if the collection is valid; otherwise
-     *         <code>false</code>
-     */
-    boolean isValid();
-
-    /**
-     * Validates the object.
-     *
-     * @param validator thhe validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
-     */
-    boolean validate(Validator validator);
 
     /**
      * Returns the objects in the collection.
@@ -145,7 +116,7 @@ public interface CollectionPropertyEditor extends Saveable {
     /**
      * Returns the maximum cardinality.
      *
-     * @return the maximum cardinality, or <code>-1</code> if it is unbounded
+     * @return the maximum cardinality, or <tt>-1</tt> if it is unbounded
      */
     int getMaxCardinality();
 }

@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.edit;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
 
 
@@ -60,5 +61,11 @@ public interface IMObjectCollectionEditor extends PropertyEditor, Saveable {
      */
     boolean isCardinalityReadOnly();
 
+    /**
+     * Sets a listener to be notified when an object is created.
+     *
+     * @param listener the listener. May be <tt>null</tt>
+     */
+    void setCreationListener(IMObjectCreationListener listener);
 
 }
