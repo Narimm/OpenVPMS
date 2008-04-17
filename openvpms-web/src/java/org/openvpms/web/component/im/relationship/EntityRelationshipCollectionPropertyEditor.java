@@ -180,12 +180,13 @@ public class EntityRelationshipCollectionPropertyEditor
      * This removes any associated editor.
      *
      * @param object the object to remove
+     * @return <tt>true</tt> if the object was removed
      */
     @Override
     @SuppressWarnings("SuspiciousMethodCalls")
-    public void remove(IMObject object) {
-        super.remove(object);
+    public boolean remove(IMObject object) {
         states.remove(object);
+        return super.remove(object);
     }
 
     /**

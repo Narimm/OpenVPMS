@@ -19,8 +19,16 @@
 package org.openvpms.web.component.im.edit.payment;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectCreationListener;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -43,6 +51,32 @@ public class SupplierPaymentEditor extends PaymentEditor {
                                  LayoutContext context) {
         super(act, parent, context);
         initParticipant("supplier", context.getContext().getSupplier());
+        getEditor().setCreationListener(new IMObjectCreationListener() {
+            public void created(IMObject object) {
+                onCreated((FinancialAct) object);
+            }
+        });
+    }
+
+    /**
+     * Invoked when a child act is created.
+     * If the act is a payment, defaults the total to the outstanding balance.
+     *
+     * @param act the act
+     */
+    private void onCreated(FinancialAct act) {
+        if (TypeHelper.isA(act, "act.supplierAccountPayment*")) {
+            // Default the amount to the outstanding balance
+            Party supplier = (Party) getParticipant("supplier");
+            if (supplier != null) {
+                FinancialAct parent = (FinancialAct) getObject();
+                BigDecimal diff = ActHelper.sum(parent, "amount");
+                BigDecimal current = ActHelper.getSupplierAccountBalance(
+                        supplier);
+                BigDecimal balance = current.subtract(diff);
+                act.setTotal(new Money(balance));
+            }
+        }
     }
 
 }

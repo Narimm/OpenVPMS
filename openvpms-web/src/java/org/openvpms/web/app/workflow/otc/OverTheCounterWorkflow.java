@@ -113,8 +113,7 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
                                                              properties);
         addTask(postSale);
 
-        EditAccountActTask payment = new EditAccountActTask(ACCOUNT_PAYMENT,
-                                                            true);
+        EditAccountActTask payment = new OTCPaymentTask();
         payment.setDeleteOnCancelOrSkip(true);
         payment.addTaskListener(new TaskListener() {
             public void taskEvent(TaskEvent event) {

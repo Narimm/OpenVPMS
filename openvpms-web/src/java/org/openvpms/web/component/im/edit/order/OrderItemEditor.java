@@ -85,7 +85,11 @@ public class OrderItemEditor extends ActItemEditor {
             throw new IllegalArgumentException(
                     "Invalid act type: " + act.getArchetypeId().getShortName());
         }
-        posted = ActStatus.POSTED.equals(parent.getStatus());
+        if (parent != null) {
+            posted = ActStatus.POSTED.equals(parent.getStatus());
+        } else {
+            posted = false;
+        }
     }
 
     /**

@@ -115,11 +115,10 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
 
     /**
      * Creates a new <tt>TillCRUDWindow</tt>.
-     *
-     * @param archetypes the archetypes this may create
      */
-    public TillCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes);
+    public TillCRUDWindow() {
+        super(new Archetypes<FinancialAct>("act.tillBalanceAdjustment",
+                                           FinancialAct.class));
     }
 
     /**

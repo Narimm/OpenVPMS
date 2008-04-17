@@ -68,6 +68,9 @@ public class PaymentItemEditor extends AbstractIMObjectEditor {
                     onAmountChanged();
                 }
             });
+            if (act.isNew()) {
+                onAmountChanged();
+            }
         }
     }
 

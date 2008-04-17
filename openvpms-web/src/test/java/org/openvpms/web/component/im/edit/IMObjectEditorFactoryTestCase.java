@@ -43,9 +43,8 @@ import org.openvpms.web.component.im.edit.estimation.EstimationItemEditor;
 import org.openvpms.web.component.im.edit.order.OrderEditor;
 import org.openvpms.web.component.im.edit.order.OrderItemEditor;
 import org.openvpms.web.component.im.edit.payment.CustomerPaymentEditor;
-import org.openvpms.web.component.im.edit.payment.CustomerPaymentItemEditor;
+import org.openvpms.web.component.im.edit.payment.PaymentItemEditor;
 import org.openvpms.web.component.im.edit.payment.SupplierPaymentEditor;
-import org.openvpms.web.component.im.edit.payment.SupplierPaymentItemEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
@@ -201,24 +200,43 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verfies that a {@link CustomerPaymentItemEditor} is created for
-     * <em>act.customerAccountPayment.* and act.customerAccountRefund.*</em>
+     * Verfies that a {@link PaymentItemEditor} is created for
+     * <em>act.customerAccountPayment.*<em>,
+     * <em>act.customerAccountRefund.*</em>,
+     * <em>act.supplierAccountPayment.*</em> and
+     * <em>act.supplierAccountRefund.*</em>.
      */
-    public void testCreateCustomerPaymentItemEditor() {
+    public void testCreatePaymentItemEditor() {
         checkCreate("act.customerAccountPaymentCash",
-                    CustomerPaymentItemEditor.class);
+                    PaymentItemEditor.class);
         checkCreate("act.customerAccountPaymentCheque",
-                    CustomerPaymentItemEditor.class);
+                    PaymentItemEditor.class);
         checkCreate("act.customerAccountPaymentCredit",
-                    CustomerPaymentItemEditor.class);
+                    PaymentItemEditor.class);
         checkCreate("act.customerAccountPaymentEFT",
-                    CustomerPaymentItemEditor.class);
+                    PaymentItemEditor.class);
         checkCreate("act.customerAccountRefundCash",
-                    CustomerPaymentItemEditor.class);
+                    PaymentItemEditor.class);
         checkCreate("act.customerAccountRefundCredit",
-                    CustomerPaymentItemEditor.class);
+                    PaymentItemEditor.class);
         checkCreate("act.customerAccountRefundEFT",
-                    CustomerPaymentItemEditor.class);
+                    PaymentItemEditor.class);
+        checkCreate("act.supplierAccountPaymentCash",
+                    PaymentItemEditor.class);
+        checkCreate("act.supplierAccountPaymentCheque",
+                    PaymentItemEditor.class);
+        checkCreate("act.supplierAccountPaymentCredit",
+                    PaymentItemEditor.class);
+        checkCreate("act.supplierAccountPaymentEFT",
+                    PaymentItemEditor.class);
+        checkCreate("act.supplierAccountRefundCash",
+                    PaymentItemEditor.class);
+        checkCreate("act.supplierAccountRefundCheque",
+                    PaymentItemEditor.class);
+        checkCreate("act.supplierAccountRefundCredit",
+                    PaymentItemEditor.class);
+        checkCreate("act.supplierAccountRefundEFT",
+                    PaymentItemEditor.class);
     }
 
     /**
@@ -255,29 +273,6 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                     SupplierInvoiceItemEditor.class);
         checkCreate("act.supplierAccountCreditItem",
                     SupplierInvoiceItemEditor.class);
-    }
-
-    /**
-     * Verifies that a {@link SupplierPaymentItemEditor} is created for
-     * <em>act.supplierAccountPayment.* and act.supplierAccountRefund.*</em>
-     */
-    public void testCreateSupplierPaymentItemEditor() {
-        checkCreate("act.supplierAccountPaymentCash",
-                    SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCheque",
-                    SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCredit",
-                    SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentEFT",
-                    SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCash",
-                    SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCheque",
-                    SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCredit",
-                    SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundEFT",
-                    SupplierPaymentItemEditor.class);
     }
 
     /**

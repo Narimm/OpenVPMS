@@ -44,6 +44,7 @@ import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -164,11 +165,14 @@ public abstract class IMTableCollectionEditor<T>
     }
 
     /**
-     * Creates a new object, subjecf to a short name being selected, and
+     * Creates a new object, subject to a short name being selected, and
      * current collection cardinality. This must be registered with the
      * collection.
+     * <p/>
+     * If an {@link IMObjectCreationListener} is registered, it will be
+     * notified on successful creation of an object.
      *
-     * @return a new object, or <code>null</code> if the object can't be created
+     * @return a new object, or <tt>null</tt> if the object can't be created
      */
     public IMObject create() {
         IMObject object = null;
@@ -179,13 +183,17 @@ public abstract class IMTableCollectionEditor<T>
                 object = IMObjectCreator.create(shortName);
             }
         }
+        IMObjectCreationListener creationListener = getCreationListener();
+        if (creationListener != null) {
+            creationListener.created(object);
+        }
         return object;
     }
 
     /**
      * Returns the focus group.
      *
-     * @return the focus group, or <code>null</code> if the editor hasn't been
+     * @return the focus group, or <tt>null</tt> if the editor hasn't been
      *         rendered
      */
     public FocusGroup getFocusGroup() {
@@ -310,8 +318,7 @@ public abstract class IMTableCollectionEditor<T>
      * Adds the object being edited to the collection, if it doesn't exist.
      *
      * @param editor the editor
-     * @return <code>true</code> if the object was added, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the object was added, otherwise <tt>false</tt>
      */
     @Override
     protected boolean addEdited(IMObjectEditor editor) {
@@ -364,11 +371,19 @@ public abstract class IMTableCollectionEditor<T>
      * @param object the object to delete
      */
     protected void delete(IMObject object) {
-        getCollectionPropertyEditor().remove(object);
-        populateTable();
+        // remove the current editor if it matches the object being deleted.
+        // This won't generate any events.
         IMObjectEditor editor = getCurrentEditor();
         if (editor != null && editor.getObject() == object) {
             removeEditor();
+        }
+        // remove the object from the collection. May generate events
+        boolean removed = getCollectionPropertyEditor().remove(object);
+        populateTable();
+        if (!removed) {
+            // the object was not committed, so no notification has been
+            // generated yet
+            getListeners().notifyListeners(getProperty());
         }
         // workaround for OVPMS-629
         KeyStrokeHelper.reregisterKeyStrokeListeners(container);

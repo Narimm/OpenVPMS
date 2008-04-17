@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -71,6 +72,11 @@ public abstract class AbstractIMObjectCollectionEditor
     private boolean cardinalityReadOnly = false;
 
     /**
+     * The listener for creation events.
+     */
+    private IMObjectCreationListener creationListener;
+
+    /**
      * The event listeners.
      */
     private final ModifiableListeners listeners = new ModifiableListeners();
@@ -112,7 +118,7 @@ public abstract class AbstractIMObjectCollectionEditor
                 listeners.notifyListeners(modifiable);
             }
         };
-        collection.getProperty().addModifiableListener(broadcaster);
+        collection.addModifiableListener(broadcaster);
     }
 
     /**
@@ -131,6 +137,24 @@ public abstract class AbstractIMObjectCollectionEditor
      */
     public boolean isCardinalityReadOnly() {
         return cardinalityReadOnly;
+    }
+
+    /**
+     * Sets a listener to be notified when an object is created.
+     *
+     * @param listener the listener. May be <tt>null</tt>
+     */
+    public void setCreationListener(IMObjectCreationListener listener) {
+        creationListener = listener;
+    }
+
+    /**
+     * Returns the listener to be notified when an object is created.
+     *
+     * @return the listener, or <tt>null</tt> if none is registered
+     */
+    public IMObjectCreationListener getCreationListener() {
+        return creationListener;
     }
 
     /**
@@ -368,8 +392,7 @@ public abstract class AbstractIMObjectCollectionEditor
      * Adds the object being edited to the collection, if it doesn't exist.
      *
      * @param editor the editor
-     * @return <tt>true</tt> if the object was added, otherwise
-     *         <tt>false</tt>
+     * @return <tt>true</tt> if the object was added, otherwise <tt>false</tt>
      */
     protected boolean addEdited(IMObjectEditor editor) {
         IMObject object = editor.getObject();
@@ -377,7 +400,7 @@ public abstract class AbstractIMObjectCollectionEditor
     }
 
     /**
-     * Returnjs the listeners.
+     * Returns the listeners.
      *
      * @return the listeners
      */

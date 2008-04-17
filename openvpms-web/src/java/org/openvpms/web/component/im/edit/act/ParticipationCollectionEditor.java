@@ -27,6 +27,7 @@ import org.openvpms.web.component.im.edit.DefaultIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
@@ -103,6 +104,15 @@ public class ParticipationCollectionEditor
      */
     public boolean isCardinalityReadOnly() {
         return editor.isCardinalityReadOnly();
+    }
+
+    /**
+     * Sets a listener to be notified when an object is created.
+     *
+     * @param listener the listener. May be <tt>null</tt>
+     */
+    public void setCreationListener(IMObjectCreationListener listener) {
+        editor.setCreationListener(listener);
     }
 
     /**
