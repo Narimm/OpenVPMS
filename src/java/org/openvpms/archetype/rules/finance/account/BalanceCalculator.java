@@ -94,6 +94,34 @@ class BalanceCalculator {
     }
 
     /**
+     * Calculates the balance for a customer for all POSTED acts
+     * between two times, inclusive.
+     *
+     * @param customer       the customer
+     * @param from           the from time. If <tt>null</tt>, indicates that
+     *                       the time is unbounded
+     * @param to             the to time. If <tt>null</tt>, indicates that the
+     *                       time is unbounded
+     * @param openingBalance the opening balance
+     */
+    public BigDecimal getBalance(Party customer, Date from, Date to,
+                                 BigDecimal openingBalance) {
+        ArchetypeQuery query = CustomerAccountQueryFactory.createObjectSetQuery(
+                customer, DEBIT_CREDIT_SHORT_NAMES, true);
+        Iterator<ObjectSet> iterator
+                = new ObjectSetQueryIterator(service, query);
+        query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
+        if (from != null) {
+            query.add(new NodeConstraint("startTime", RelationalOp.GTE,
+                                         from));
+        }
+        if (to != null) {
+            query.add(new NodeConstraint("startTime", RelationalOp.LTE, to));
+        }
+        return calculateDefinitiveBalance(iterator, openingBalance);
+    }
+
+    /**
      * Calculates a definitive outstanding balance for a customer.
      * This sums total amounts for <em>all</em> POSTED acts associated with the
      * customer, rather than just using unallocated acts, and can be used
@@ -103,13 +131,7 @@ class BalanceCalculator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getDefinitiveBalance(Party customer) {
-        ArchetypeQuery query
-                = CustomerAccountQueryFactory.createObjectSetQuery(
-                customer, DEBIT_CREDIT_SHORT_NAMES);
-        query.add(new NodeConstraint("status", FinancialActStatus.POSTED));
-        Iterator<ObjectSet> iterator
-                = new ObjectSetQueryIterator(service, query);
-        return calculateDefinitiveBalance(iterator);
+        return getBalance(customer, null, null, BigDecimal.ZERO);
     }
 
     /**
@@ -230,18 +252,33 @@ class BalanceCalculator {
     }
 
     /**
-     * Calculates a definitive oustanding balance, using act totals.
+     * Calculates a definitive balance, using act totals.
      *
      * @param iterator an iterator over the collection
      * @return the outstanding balance
      */
-    protected BigDecimal calculateDefinitiveBalance(Iterator<ObjectSet> iterator) {
+    protected BigDecimal calculateDefinitiveBalance(
+            Iterator<ObjectSet> iterator) {
+        return calculateDefinitiveBalance(iterator, BigDecimal.ZERO);
+    }
+
+    /**
+     * Calculates a definitive balance, using act totals.
+     *
+     * @param iterator       an iterator over the collection
+     * @param openingBalance the opening balance
+     * @return the balance
+     */
+    protected BigDecimal calculateDefinitiveBalance(
+            Iterator<ObjectSet> iterator, BigDecimal openingBalance) {
         BigDecimal total = BigDecimal.ZERO;
         ActCalculator calculator = new ActCalculator(service);
+        boolean credit = (openingBalance.signum() == -1);
+        total = calculator.addAmount(total, openingBalance, credit);
         while (iterator.hasNext()) {
             ObjectSet set = iterator.next();
             BigDecimal amount = (BigDecimal) set.get("a.amount");
-            boolean credit = (Boolean) set.get("a.credit");
+            credit = (Boolean) set.get("a.credit");
             total = calculator.addAmount(total, amount, credit);
         }
         return total;

@@ -22,9 +22,11 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountQueryFactory;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.finance.statement.EndOfPeriodProcessor;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -245,13 +247,14 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         addInvoice(firstStartTime, eighty, from, fromPatient,
                    product);
         addPayment(getDatetime("2007-1-2 11:0:0"), forty, from, fromPatient);
-        rules.createPeriodEnd(from, getDatetime("2007-2-1 23:00:00"));
+
+        runEOP(from, getDate("2007-2-1"));
 
         // ... and the 'to' customer
-        rules.createPeriodEnd(to, getDatetime("2007-1-1 23:00:00"));
-        addInvoice(getDatetime("2007-1-6 10:0:0"), fifty, to, toPatient,
+        addInvoice(getDatetime("2007-1-1 10:0:0"), fifty, to, toPatient,
                    product);
-        rules.createPeriodEnd(to, getDatetime("2007-2-1 23:00:00"));
+        runEOP(to, getDate("2007-1-1"));
+        runEOP(to, getDate("2007-2-1"));
 
         // verify balances prior to merge
         assertEquals(0, forty.compareTo(rules.getBalance(from)));
@@ -292,6 +295,18 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         super.onSetUp();
         customerRules = new CustomerRules();
         patientRules = new PatientRules();
+    }
+
+    /**
+     * Runs end of period for a customer.
+     *
+     * @param customer      the customer
+     * @param statementDate the statement date
+     */
+    private void runEOP(Party customer, Date statementDate) {
+        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate,
+                                                            true);
+        eop.process(customer);
     }
 
     /**

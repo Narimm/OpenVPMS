@@ -20,16 +20,23 @@ package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.component.processor.Processor;
 import org.openvpms.archetype.rules.act.ActStatus;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.CLOSING_BALANCE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.OPENING_BALANCE;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -137,38 +144,98 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      * @throws OpenVPMSException for any error
      */
     public void process(Party customer) {
-        if (!acts.hasStatement(customer, timestamp)) {
-            Period period = new Period(customer);
+        StatementPeriod period = new StatementPeriod(customer, timestamp,
+                                                     acts);
+        if (!period.hasStatement()) {
             boolean needStatement = false;
+            Date open = period.getOpeningBalanceTimestamp();
+            Date close = period.getClosingBalanceTimestamp();
             if (postCompletedCharges) {
-                for (Act act : acts.getCompletedCharges(customer, timestamp,
-                                                        period.getOpen(),
-                                                        period.getClose())) {
-                    post(act);
+                for (Act act : acts.getCompletedCharges(
+                        customer, timestamp, open, close)) {
+                    post(act, period);
                     needStatement = true;
                 }
             }
+            BigDecimal balance = null;
             if (!needStatement) {
-                BigDecimal balance = account.getBalance(customer, timestamp);
+                balance = account.getBalance(customer, open, close,
+                                             period.getOpeningBalance());
                 if (balance.compareTo(BigDecimal.ZERO) == 0) {
-                    if (acts.hasAccountActivity(customer, period.getOpen(),
-                                                period.getClose())) {
+                    if (acts.hasAccountActivity(customer, open, close)) {
                         needStatement = true;
                     }
-
                 } else {
                     needStatement = true;
                 }
             }
             if (needStatement) {
-                BigDecimal fee = statement.getAccountFee(customer, timestamp);
-                if (fee.compareTo(BigDecimal.ZERO) != 0) {
-                    Date feeStartTime = getTimestamp(1);
-                    statement.applyAccountingFee(customer, fee, feeStartTime);
+                if (balance == null) {
+                    balance = account.getBalance(customer, open, close,
+                                                 period.getOpeningBalance());
                 }
-                Date endTimestamp = getTimestamp(2);
-                account.createPeriodEnd(customer, endTimestamp);
+                createPeriodEnd(customer, period, balance);
             }
+        }
+    }
+
+    /**
+     * Generates an <em>act.customerAccountClosingBalance</em> and
+     * <em>act.customerAccountOpeningBalance</em> for the specified customer.
+     *
+     * @param customer the customer
+     * @param period   the statement period
+     * @param balance  the closing balance
+     * @throws ArchetypeServiceException for any error
+     */
+    public void createPeriodEnd(Party customer, StatementPeriod period,
+                                BigDecimal balance) {
+        Date overdueDate = account.getOverdueDate(customer, timestamp);
+        BigDecimal overdue = account.getBalance(
+                customer, period.getOpeningBalanceTimestamp(),
+                overdueDate, period.getOpeningBalance());
+
+        BigDecimal accountFee = statement.getAccountFee(
+                customer, period.getOpeningBalanceTimestamp(),
+                period.getClosingBalanceTimestamp(),
+                period.getOpeningBalance());
+        FinancialAct fee = null;
+        if (accountFee.compareTo(BigDecimal.ZERO) != 0) {
+            Date feeStartTime = period.getFeeTimestamp();
+            fee = statement.createAccountingFeeAdjustment(customer, accountFee,
+                                                          feeStartTime);
+            balance = balance.add(accountFee);
+        }
+
+        boolean reverseCredit = false;
+        if (balance.signum() == -1) {
+            balance = balance.negate();
+            // need to switch the credit/debit flags on the closing and
+            // opening balances respectively.
+            reverseCredit = true;
+        }
+
+        FinancialAct close = createAct(CLOSING_BALANCE, customer, balance);
+        FinancialAct open = createAct(OPENING_BALANCE, customer, balance);
+
+        if (reverseCredit) {
+            close.setCredit(!close.isCredit());
+            open.setCredit(!open.isCredit());
+        }
+
+        ActBean bean = new ActBean(close, service);
+        bean.setValue("overdueBalance", overdue);
+
+        // ensure the acts are ordered correctly, ie. close before open
+        Date closeTime = period.getClosingBalanceTimestamp();
+        Date openTime = new Date(closeTime.getTime() + 1000);
+        close.setActivityStartTime(closeTime);
+        close.setActivityStartTime(closeTime);
+        open.setActivityStartTime(openTime);
+        if (fee != null) {
+            service.save(Arrays.asList((IMObject) fee, close, open));
+        } else {
+            service.save(Arrays.asList((IMObject) close, open));
         }
     }
 
@@ -179,53 +246,29 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      * @param act the act to post
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private void post(Act act) {
-        act.setActivityStartTime(getTimestamp(-1));
+    private void post(Act act, StatementPeriod period) {
+        act.setActivityStartTime(period.getCompletedChargeTimestamp());
         act.setStatus(ActStatus.POSTED);
         service.save(act);
     }
 
     /**
-     * Returns a timestamp relative to the statement timestamp.
+     * Helper to create an act for a customer.
      *
-     * @param addSeconds the no. of seconds to add
-     * @return the new timestamp
+     * @param shortName the act short name
+     * @param customer  the customer
+     * @param total     the act total
+     * @return a new act
      */
-    private Date getTimestamp(int addSeconds) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(timestamp);
-        calendar.add(Calendar.SECOND, addSeconds);
-        return calendar.getTime();
+    private FinancialAct createAct(String shortName, Party customer,
+                                   BigDecimal total) {
+        FinancialAct act = (FinancialAct) service.create(shortName);
+        Date startTime = new Date();
+        act.setActivityStartTime(startTime);
+        ActBean bean = new ActBean(act, service);
+        bean.addParticipation("participation.customer", customer);
+        act.setTotal(new Money(total));
+        return act;
     }
 
-    private class Period {
-        private Date open;
-        private Date close;
-        private final Party customer;
-        private boolean init;
-
-        public Period(Party customer) {
-            this.customer = customer;
-        }
-
-        public Date getOpen() {
-            if (!init) {
-                init();
-            }
-            return open;
-        }
-
-        public Date getClose() {
-            if (!init) {
-                init();
-            }
-            return close;
-        }
-
-        private void init() {
-            open = acts.getOpeningBalanceTimestamp(customer, timestamp);
-            close = acts.getClosingBalanceTimestamp(customer, timestamp, open);
-            init = true;
-        }
-    }
 }

@@ -46,8 +46,6 @@ import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -168,6 +166,22 @@ public class CustomerAccountRules {
      */
     public BigDecimal getBalance(Party customer, Date date) {
         return calculator.getBalance(customer, date);
+    }
+
+    /**
+     * Calculates the balance for a customer for all POSTED acts
+     * between two times, inclusive.
+     *
+     * @param customer       the customer
+     * @param from           the from time. If <tt>null</tt>, indicates that
+     *                       the time is unbounded
+     * @param to             the to time. If <tt>null</tt>, indicates that the
+     *                       time is unbounded
+     * @param openingBalance the opening balance
+     */
+    public BigDecimal getBalance(Party customer, Date from, Date to,
+                                 BigDecimal openingBalance) {
+        return calculator.getBalance(customer, from, to, openingBalance);
     }
 
     /**
@@ -352,48 +366,6 @@ public class CustomerAccountRules {
     }
 
     /**
-     * Generates an <em>act.customerAccountClosingBalance</em> and
-     * <em>act.customerAccountOpeningBalance</em> for the specified customer,
-     * using their account balance for the total of each act. The account
-     * balance only includes those acts prior to the timestamp.
-     *
-     * @param customer  the customer
-     * @param timestamp the date-time of the end-of-period
-     * @throws ArchetypeServiceException for any error
-     */
-    public void createPeriodEnd(Party customer, Date timestamp) {
-        BigDecimal total = calculator.getBalance(customer, timestamp);
-        BigDecimal overdue = calculator.getOverdueBalance(customer, timestamp);
-
-        boolean reverseCredit = false;
-        if (total.signum() == -1) {
-            total = total.negate();
-            // need to switch the credit/debit flags on the closing and
-            // opening balances respectively.
-            reverseCredit = true;
-        }
-
-        FinancialAct close = createAct(CLOSING_BALANCE, customer, total);
-        FinancialAct open = createAct(OPENING_BALANCE, customer, total);
-
-        if (reverseCredit) {
-            close.setCredit(!close.isCredit());
-            open.setCredit(!open.isCredit());
-        }
-
-        ActBean bean = new ActBean(close, service);
-        bean.setValue("overdueBalance", overdue);
-
-        // ensure the acts are ordered correctly, ie. close before open
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(timestamp);
-        close.setActivityStartTime(calendar.getTime());
-        calendar.add(Calendar.SECOND, 1);
-        open.setActivityStartTime(calendar.getTime());
-        service.save(Arrays.asList((IMObject) close, open));
-    }
-
-    /**
      * Calculates the balance for the supplied customer.
      *
      * @param act      the act that triggered the update.
@@ -535,26 +507,7 @@ public class CustomerAccountRules {
             }
         }
     }
-
-    /**
-     * Helper to create an act for a customer.
-     *
-     * @param shortName the act short name
-     * @param customer  the customer
-     * @param total     the act total
-     * @return a new act
-     */
-    private FinancialAct createAct(String shortName, Party customer,
-                                   BigDecimal total) {
-        FinancialAct act = (FinancialAct) service.create(shortName);
-        Date startTime = new Date();
-        act.setActivityStartTime(startTime);
-        ActBean bean = new ActBean(act, service);
-        bean.addParticipation("participation.customer", customer);
-        act.setTotal(new Money(total));
-        return act;
-    }
-
+    
     /**
      * Wrapper for performing operations on an act that affects the customer
      * account balance.

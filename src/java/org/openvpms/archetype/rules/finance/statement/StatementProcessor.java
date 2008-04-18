@@ -18,7 +18,6 @@
 
 package org.openvpms.archetype.rules.finance.statement;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.component.processor.AbstractProcessor;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -124,34 +123,22 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
      * @throws OpenVPMSException for any error
      */
     public void process(Party customer) {
-        Date open = actHelper.getOpeningBalanceTimestamp(
-                customer, statementDate);
-        StatementActHelper.ActState closeState
-                = actHelper.getClosingBalanceState(customer, statementDate, 
-                                                   open);
-        Date close = null;
-        boolean printed = false;
-        if (closeState != null) {
-            close = closeState.getStartTime();
-            printed = closeState.isPrinted();
-
-            // only include those acts up to the statement date to support
-            // back-dated statements
-            if (getDate(close).compareTo(getDate(statementDate)) > 0) {
-                close = statementDate;
-            }
-        }
-        if (!printed || reprint) {
+        StatementPeriod period = new StatementPeriod(customer, statementDate,
+                                                     actHelper);
+        if (!period.isPrinted() || reprint) {
             Iterable<Act> acts;
-            if (close == null) {
-                acts = getPreviewActs(customer, open);
+            Date open = period.getOpeningBalanceTimestamp();
+            Date close = period.getClosingBalanceTimestamp();
+            if (!period.hasStatement()) {
+                acts = getPreviewActs(customer, period);
             } else {
                 acts = actHelper.getPostedActs(customer, open, close, false);
             }
             List<Contact> contacts = getContacts(customer);
-            Date date = (close == null) ? statementDate : close;
-            Statement statement = new Statement(customer, contacts, date,
-                                                open, close, acts, printed);
+            Statement statement = new Statement(customer, contacts,
+                                                statementDate,
+                                                open, close, acts,
+                                                period.isPrinted());
             notifyListeners(statement);
         }
     }
@@ -163,22 +150,24 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
      * This adds (but does not save) an accounting fee act if an accounting fee
      * is required.
      *
-     * @param customer                the customer
-     * @param openingBalanceTimestamp the opening balance timestamp. May be
-     *                                <tt>null</tt>
+     * @param customer the customer
+     * @param period   the statement period
      * @return the statement acts
      * @throws ArchetypeServiceException for any archetype service error
      * @throws ArchetypeQueryException   for any archetype query error
      */
     private Iterable<Act> getPreviewActs(Party customer,
-                                         Date openingBalanceTimestamp) {
+                                         StatementPeriod period) {
+        Date openTimestamp = period.getOpeningBalanceTimestamp();
         Iterable<Act> result = actHelper.getPostedAndCompletedActs(
-                customer, statementDate, openingBalanceTimestamp);
+                customer, statementDate, openTimestamp);
 
-        BigDecimal fee = rules.getAccountFee(customer, statementDate);
+        BigDecimal fee = rules.getAccountFee(customer, openTimestamp,
+                                             statementDate,
+                                             period.getOpeningBalance());
         if (fee.compareTo(BigDecimal.ZERO) != 0) {
             Act feeAct = rules.createAccountingFeeAdjustment(
-                    customer, fee, statementDate);
+                    customer, fee, period.getFeeTimestamp());
             List<Act> toAdd = new ArrayList<Act>();
             toAdd.add(feeAct);
             result = new IterableChain<Act>(result, toAdd);
@@ -232,16 +221,5 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
             }
         }
     }
-
-    /**
-     * Returns the day/month/year part of a date-time.
-     *
-     * @param datetime the date/time
-     * @return the day/month/year part of the date
-     */
-    private Date getDate(Date datetime) {
-        return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);
-    }
-
 
 }

@@ -176,7 +176,7 @@ public class Statement {
      * Returns the statement acts for the statement period.
      * This represents all acts between the opening and closing balance,
      * inclusive. If this is a preview statement, a dummy
-     * <em>act.customerAccountDebitAdjust<em> containg any accounting fees
+     * <em>act.customerAccountDebitAdjust<em> containing any accounting fees
      * may be included.
      *
      * @return the statement acts.

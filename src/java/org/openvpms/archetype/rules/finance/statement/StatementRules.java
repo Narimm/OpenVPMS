@@ -132,17 +132,24 @@ public class StatementRules {
      * </ul></li>
      * </ul>
      *
-     * @param customer the customer
-     * @param date     the statement date
+     * @param customer                the customer
+     * @param openingBalanceTimestamp the customer's opening balance timestamp
+     * @param statementDate           the statement date
+     * @param openingBalance          the customer's opening balance
      * @return the account fee, or <tt>BigDecimal.ZERO</tt> if there is no fee
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal getAccountFee(Party customer, Date date) {
+    public BigDecimal getAccountFee(Party customer,
+                                    Date openingBalanceTimestamp,
+                                    Date statementDate,
+                                    BigDecimal openingBalance) {
         BigDecimal result = BigDecimal.ZERO;
         AccountType accountType = getAccountType(customer);
         if (accountType != null) {
-            Date feeDate = accountType.getAccountFeeDate(date);
-            BigDecimal overdue = account.getBalance(customer, feeDate);
+            Date feeDate = accountType.getAccountFeeDate(statementDate);
+            feeDate = acts.getStatementTimestamp(feeDate);
+            BigDecimal overdue = account.getBalance(
+                    customer, openingBalanceTimestamp, feeDate, openingBalance);
             BigDecimal feeBalance = accountType.getAccountFeeBalance();
             if (overdue.compareTo(BigDecimal.ZERO) != 0
                     && overdue.compareTo(feeBalance) >= 0) {
@@ -176,23 +183,6 @@ public class StatementRules {
         tax.calculateTax(act);
         bean.setValue("notes", "Accounting Fee"); // TODO - localise
         return act;
-    }
-
-    /**
-     * Applies an accounting fee to a customer account.
-     * This saves an <em>act.customerAccountDebitAdjust</em> for the customer
-     * with the specified fee.
-     *
-     * @param customer  the customer
-     * @param fee       the accounting fee
-     * @param startTime the fee start time
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public void applyAccountingFee(Party customer, BigDecimal fee,
-                                   Date startTime) {
-        FinancialAct act = createAccountingFeeAdjustment(customer, fee,
-                                                         startTime);
-        service.save(act);
     }
 
     /**
