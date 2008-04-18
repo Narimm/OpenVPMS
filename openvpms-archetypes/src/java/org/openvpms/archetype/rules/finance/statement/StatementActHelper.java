@@ -43,6 +43,7 @@ import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -62,15 +63,21 @@ class StatementActHelper {
 
     public class ActState {
         private final Date startTime;
+        private final BigDecimal amount;
         private final boolean printed;
 
-        public ActState(Date startTime, boolean printed) {
+        public ActState(Date startTime, BigDecimal amount, boolean printed) {
             this.startTime = startTime;
+            this.amount = amount;
             this.printed = printed;
         }
 
         public Date getStartTime() {
             return startTime;
+        }
+
+        public BigDecimal getAmount() {
+            return amount;
         }
 
         public boolean isPrinted() {
@@ -306,7 +313,9 @@ class StatementActHelper {
      * @return the opening balance, or <tt>null</tt> if none is found
      */
     public Date getOpeningBalanceTimestamp(Party customer, Date statementDate) {
-        return getOpeningBalanceTimestampBefore(customer, statementDate);
+        StatementActHelper.ActState state
+                = getOpeningBalanceState(customer, statementDate);
+        return (state != null) ? state.getStartTime() : null;
     }
 
     /**
@@ -325,6 +334,19 @@ class StatementActHelper {
                                                 openingBalanceTimestamp);
         return (state != null) ? state.getStartTime() : null;
     }
+
+    /**
+     * Returns the opening balance act state for a customer prior to  the
+     * specified statement date.
+     *
+     * @param customer      the customer
+     * @param statementDate the statement date
+     */
+    public ActState getOpeningBalanceState(Party customer, Date statementDate) {
+        return getActState(OPENING_BALANCE, customer, statementDate,
+                           RelationalOp.LT, false);
+    }
+
 
     /**
      * Returns the closing balance act state for a customer relative to a
@@ -397,6 +419,7 @@ class StatementActHelper {
             query.add(new NodeConstraint("a.startTime", operator, date));
         }
         query.add(new NodeSelectConstraint("a.startTime"));
+        query.add(new NodeSelectConstraint("a.amount"));
         query.add(new NodeSelectConstraint("a.printed"));
         query.add(new NodeSortConstraint("startTime", sortAscending));
         query.setMaxResults(1);
@@ -405,27 +428,11 @@ class StatementActHelper {
         if (iter.hasNext()) {
             ObjectSet set = iter.next();
             Date startTime = (Date) set.get("a.startTime");
+            BigDecimal amount = (BigDecimal) set.get("a.amount");
             boolean printed = (Boolean) set.get("a.printed");
-            return new ActState(startTime, printed);
+            return new ActState(startTime, amount, printed);
         }
         return null;
-    }
-
-    /**
-     * Returns the startTime of the first
-     * <tt>act.customerAccountOpeningBalance</tt> for a customer prior to
-     * the specified timestamp.
-     *
-     * @param customer  the customer
-     * @param timestamp the timestamp
-     * @return the opening balance act startTime, or <tt>null</tt> if none is
-     *         found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private Date getOpeningBalanceTimestampBefore(Party customer,
-                                                  Date timestamp) {
-        return getActStartTime(OPENING_BALANCE, customer, timestamp,
-                               RelationalOp.LT, false);
     }
 
     /**
@@ -458,27 +465,6 @@ class StatementActHelper {
     private ActState getClosingBalanceAfter(Party customer, Date timetamp) {
         return getActState(CLOSING_BALANCE, customer, timetamp,
                            RelationalOp.GT, true);
-    }
-
-    /**
-     * Returns the startTime of a customer act whose startTime is before/after
-     * the specified date, depending on the supplied operator.
-     *
-     * @param shortName     the act short name
-     * @param customer      the customer
-     * @param date          the date
-     * @param operator      the operator
-     * @param sortAscending if <tt>true</tt> sort acts on ascending startTime;
-     *                      otherwise sort them on descending startTime
-     * @return the startTime, or <tt>null</tt> if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private Date getActStartTime(String shortName, Party customer,
-                                 Date date, RelationalOp operator,
-                                 boolean sortAscending) {
-        ActState state = getActState(shortName, customer, date, operator,
-                                     sortAscending);
-        return (state != null) ? state.getStartTime() : null;
     }
 
     /**
