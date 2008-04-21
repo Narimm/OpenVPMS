@@ -78,6 +78,8 @@ public class IMObjectCopier {
     /**
      * Copy an object, returning a list containing the copy, and any copied
      * child references.
+     * <p/>
+     * Any derived values will be populated on the returned objects.
      *
      * @param object the object to copy
      * @return a copy of <tt>object</tt>, and any copied child references.
@@ -94,6 +96,8 @@ public class IMObjectCopier {
 
     /**
      * Copy an object.
+     * <p/>
+     * Any derived values will be populated on the returned objects.
      *
      * @param object the object to copy.
      * @return a copy of <tt>object</tt>
@@ -176,6 +180,8 @@ public class IMObjectCopier {
                 }
             }
         }
+        // derive any values in the target
+        service.deriveValues(target);
     }
 
     /**
