@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes.ACCOUNT_BALANCE_SHORTNAME;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
@@ -426,27 +427,60 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     public void testReverse() {
         checkReverse(createChargesInvoice(new Money(100)),
-                     "act.customerAccountChargesCredit");
+                     "act.customerAccountChargesCredit",
+                     "act.customerAccountCreditItem");
 
         checkReverse(createChargesCredit(new Money(50)),
-                     "act.customerAccountChargesInvoice");
+                     "act.customerAccountChargesInvoice",
+                     "act.customerAccountInvoiceItem");
 
         checkReverse(createChargesCounter(new Money(40)),
-                     "act.customerAccountChargesCredit");
+                     "act.customerAccountChargesCredit",
+                     "act.customerAccountCreditItem");
 
         checkReverse(createPaymentCash(new Money(75)),
-                     "act.customerAccountRefund");
+                     "act.customerAccountRefund",
+                     "act.customerAccountRefundCash");
 
-        checkReverse(createPaymentCheque(new Money(100)),
-                     "act.customerAccountRefund");
+        checkReverse(createPaymentCheque(new Money(23)),
+                     "act.customerAccountRefund",
+                     "act.customerAccountRefundCheque");
 
-        checkReverse(createPaymentDiscount(new Money(100)),
-                     "act.customerAccountRefund");
+        checkReverse(createPaymentCredit(new Money(24)),
+                     "act.customerAccountRefund",
+                     "act.customerAccountRefundCredit");
 
-        checkReverse(createRefund(new Money(10)), "act.customerAccountPayment");
+        checkReverse(createPaymentDiscount(new Money(25)),
+                     "act.customerAccountRefund",
+                     "act.customerAccountRefundDiscount");
+
+        checkReverse(createPaymentEFT(new Money(26)),
+                     "act.customerAccountRefund",
+                     "act.customerAccountRefundEFT");
+
+        checkReverse(createRefundCash(new Money(10)),
+                     "act.customerAccountPayment",
+                     "act.customerAccountPaymentCash");
+
+        checkReverse(createRefundCheque(new Money(11)),
+                     "act.customerAccountPayment",
+                     "act.customerAccountPaymentCheque");
+
+        checkReverse(createRefundCredit(new Money(12)),
+                     "act.customerAccountPayment",
+                     "act.customerAccountPaymentCredit");
+
+        checkReverse(createRefundDiscount(new Money(13)),
+                     "act.customerAccountPayment",
+                     "act.customerAccountPaymentDiscount");
+
+        checkReverse(createRefundEFT(new Money(15)),
+                     "act.customerAccountPayment",
+                     "act.customerAccountPaymentEFT");
 
         checkReverse(createDebitAdjust(new Money(5)),
                      "act.customerAccountCreditAdjust");
+
         checkReverse(createCreditAdjust(new Money(15)),
                      "act.customerAccountDebitAdjust");
 
@@ -686,6 +720,21 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * @param shortName the reversal act short name
      */
     private void checkReverse(FinancialAct act, String shortName) {
+        checkReverse(act, shortName, null);
+    }
+
+    /**
+     * Verifies that an act can be reversed by
+     * {@link CustomerAccountRules#reverse}, and has the correct child act,
+     * if any.
+     *
+     * @param act           the act to reverse
+     * @param shortName     the reversal act short name
+     * @param itemShortName the reversal act child short name.
+     *                      May be <tt>null</tt>
+     */
+    private void checkReverse(FinancialAct act, String shortName,
+                              String itemShortName) {
         BigDecimal amount = act.getTotal();
         save(act);
 
@@ -696,6 +745,26 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         Date now = new Date();
         FinancialAct reversal = rules.reverse(act, now);
         assertTrue(TypeHelper.isA(reversal, shortName));
+        ActBean bean = new ActBean(reversal);
+        if (itemShortName != null) {
+            List<Act> items = bean.getActsForNode("items");
+            assertEquals(1, items.size());
+            Act item = items.get(0);
+            assertTrue(TypeHelper.isA(item, itemShortName));
+            if (TypeHelper.isA(item, "act.customerAccountPaymentCash",
+                               "act.customerAccountRefundCash")) {
+                ActBean itemBean = new ActBean(item);
+                BigDecimal roundedAmount
+                        = (BigDecimal) itemBean.getValue("roundedAmount");
+                checkEquals(amount, roundedAmount);
+            }
+            checkEquals(amount, ((FinancialAct) item).getTotal());
+        } else {
+            if (bean.hasNode("items")) {
+                List<Act> items = bean.getActsForNode("items");
+                assertEquals(0, items.size());
+            }
+        }
 
         // check the balance
         checkBalance(BigDecimal.ZERO);

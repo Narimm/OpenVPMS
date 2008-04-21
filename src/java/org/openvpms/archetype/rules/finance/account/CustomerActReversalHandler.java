@@ -19,7 +19,12 @@
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
@@ -223,6 +228,28 @@ class CustomerActReversalHandler extends AbstractActReversalHandler {
     public CustomerActReversalHandler(Act act) {
         super(!TypeHelper.isA(act, CREDIT_TYPE, REFUND_TYPE, CREDIT_ADJUST_TYPE,
                               BADDEBT_ADJUST_TYPE), TYPE_MAP);
+    }
+
+    /**
+     * Determines how {@link IMObjectCopier} should treat an object.
+     *
+     * @param object  the source object
+     * @param service the archetype service
+     * @return <tt>object</tt> if the object shouldn't be copied,
+     *         <tt>null</tt> if it should be replaced with
+     *         <tt>null</tt>, or a new instance if the object should be
+     *         copied
+     */
+    @Override
+    public IMObject getObject(IMObject object, IArchetypeService service) {
+        IMObject result = super.getObject(object, service);
+        if (TypeHelper.isA(object, REFUND_CASH_TYPE)
+                && TypeHelper.isA(result, PAYMENT_CASH_TYPE)) {
+            FinancialAct refund = (FinancialAct) object;
+            ActBean payment = new ActBean((Act) result, service);
+            payment.setValue("tendered", refund.getTotal());
+        }
+        return result;
     }
 
     /**

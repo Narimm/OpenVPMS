@@ -201,8 +201,7 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a new payment
      */
     protected FinancialAct createPayment(Money amount, Party customer) {
-        return FinancialTestHelper.createPayment(amount, customer, getPatient(),
-                                                 getTill());
+        return FinancialTestHelper.createPayment(amount, customer, getTill());
     }
 
     /**
@@ -223,17 +222,8 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * <em>act.customerAccountPaymentCash</em>.
      */
     protected FinancialAct createPaymentCash(Money amount) {
-        FinancialAct payment = createPayment(amount);
-        FinancialAct cash = (FinancialAct) create(
-                "act.customerAccountPaymentCash");
-        ActBean cashBean = new ActBean(cash);
-        cashBean.setValue("amount", amount);
-        cashBean.setValue("tendered", amount);
-        cashBean.save();
-        ActBean bean = new ActBean(payment);
-        bean.addRelationship("actRelationship.customerAccountPaymentItem",
-                             cash);
-        return payment;
+        return FinancialTestHelper.createPaymentCash(amount, getCustomer(),
+                                                     getTill());
     }
 
     /**
@@ -241,15 +231,17 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * <em>act.customerAccountPaymentCheque</em>.
      */
     protected FinancialAct createPaymentCheque(Money amount) {
-        FinancialAct payment = createPayment(amount);
-        FinancialAct cheque = (FinancialAct) create(
-                "act.customerAccountPaymentCheque");
-        cheque.setTotal(amount);
-        save(cheque);
-        ActBean bean = new ActBean(payment);
-        bean.addRelationship("actRelationship.customerAccountPaymentItem",
-                             cheque);
-        return payment;
+        return FinancialTestHelper.createPaymentCheque(amount, getCustomer(),
+                                                       getTill());
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountPayment</em> containing an
+     * <em>act.customerAccountPaymentCredit</em>.
+     */
+    protected FinancialAct createPaymentCredit(Money amount) {
+        return FinancialTestHelper.createPaymentCredit(amount, getCustomer(),
+                                                       getTill());
     }
 
     /**
@@ -257,15 +249,17 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * <em>act.customerAccountPaymentDiscount</em>.
      */
     protected FinancialAct createPaymentDiscount(Money amount) {
-        FinancialAct payment = createPayment(amount);
-        FinancialAct cheque = (FinancialAct) create(
-                "act.customerAccountPaymentDiscount");
-        cheque.setTotal(amount);
-        save(cheque);
-        ActBean bean = new ActBean(payment);
-        bean.addRelationship("actRelationship.customerAccountPaymentItem",
-                             cheque);
-        return payment;
+        return FinancialTestHelper.createPaymentDiscount(amount, getCustomer(),
+                                                         getTill());
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountPayment</em> containing an
+     * <em>act.customerAccountPaymentEFT</em>.
+     */
+    protected FinancialAct createPaymentEFT(Money amount) {
+        return FinancialTestHelper.createPaymentEFT(amount, getCustomer(),
+                                                    getTill());
     }
 
     /**
@@ -276,7 +270,67 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      */
     protected FinancialAct createRefund(Money amount) {
         return FinancialTestHelper.createRefund(amount, getCustomer(),
-                                                getPatient(), getTill());
+                                                getTill());
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountRefund</em> containing an
+     * <em>act.customerAccountRefundCash</em>.
+     *
+     * @param amount the act total
+     * @return a new payment
+     */
+    protected FinancialAct createRefundCash(Money amount) {
+        return FinancialTestHelper.createRefundCash(amount, getCustomer(),
+                                                    getTill());
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountRefund</em> containing an
+     * <em>act.customerAccountRefundCheque</em>.
+     *
+     * @param amount the act total
+     * @return a new payment
+     */
+    protected FinancialAct createRefundCheque(Money amount) {
+        return FinancialTestHelper.createRefundCheque(amount, getCustomer(),
+                                                      getTill());
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountRefund</em> containing an
+     * <em>act.customerAccountRefundCredit</em>.
+     *
+     * @param amount the act total
+     * @return a new payment
+     */
+    protected FinancialAct createRefundCredit(Money amount) {
+        return FinancialTestHelper.createRefundCredit(amount, getCustomer(),
+                                                      getTill());
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountRefund</em> containing an
+     * <em>act.customerAccountRefundDiscount</em>.
+     *
+     * @param amount the act total
+     * @return a new payment
+     */
+    protected FinancialAct createRefundDiscount(Money amount) {
+        return FinancialTestHelper.createRefundDiscount(amount, getCustomer(),
+                                                        getTill());
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountRefund</em> containing an
+     * <em>act.customerAccountRefundEFT</em>.
+     *
+     * @param amount the act total
+     * @return a new payment
+     */
+    protected FinancialAct createRefundEFT(Money amount) {
+        return FinancialTestHelper.createRefundEFT(amount, getCustomer(),
+                                                   getTill());
     }
 
     /**
