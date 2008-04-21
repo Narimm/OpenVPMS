@@ -41,16 +41,29 @@ public class IMObjectCopierTestCase
      * Tests the {@link IMObjectCopier#apply method.
      */
     public void testApply() {
+        String description = "MALE BLACK PUG";
         IMObjectCopier copier
                 = new IMObjectCopier(new DefaultIMObjectCopyHandler());
         IMObjectBean bean = createBean("party.animalpet");
         bean.setValue("name", "Fido");
+        bean.setValue("sex", "MALE");
+        bean.setValue("colour", "BLACK");
+        bean.setValue("breed", "PUG");
+
+        // verify object description not set.
+        assertNull(bean.getObject().getDescription());
+
+        // verify description is derived when accessed via node.
+        assertEquals(description, bean.getValue("description"));
 
         List<IMObject> objects = copier.apply(bean.getObject());
         assertEquals(1, objects.size());
         IMObject copy = objects.get(0);
         assertTrue(copy != bean.getObject());
         assertEquals("Fido", copy.getName());
+
+        // verify the description in the copy has been derived
+        assertEquals(description, copy.getDescription());
     }
 
     /**
@@ -79,7 +92,7 @@ public class IMObjectCopierTestCase
         assertTrue(TypeHelper.isA(objects.get(1), "party.customerperson"));
 
         // make sure both objects were copied
-        Participation  participationCopy = (Participation) objects.get(0);
+        Participation participationCopy = (Participation) objects.get(0);
         Party partyCopy = (Party) objects.get(1);
         assertTrue(participationCopy != participation);
         assertTrue(partyCopy != party);

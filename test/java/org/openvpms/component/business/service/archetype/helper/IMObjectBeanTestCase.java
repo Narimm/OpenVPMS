@@ -341,17 +341,33 @@ public class IMObjectBeanTestCase
      * Tests the {@link IMObjectBean#save} method.
      */
     public void testSave() {
-        IMObjectBean bean = createBean("act.types");
-        IMObject object = bean.getObject();
+        String name = "Bar,Foo";
+
+        IMObjectBean bean = createBean("party.customerperson");
+        bean.setValue("firstName", "Foo");
+        bean.setValue("lastName", "Bar");
+        bean.setValue("title", "MR");
+
+        // name is derived, so should be null when accessed via the object
+        assertNull(bean.getObject().getName());
+
+        // ... but non-null when accessed via its node
+        assertEquals(name, bean.getValue("name"));
+
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        String name = getClass().getName() + bean.hashCode();
-        bean.setValue("name", name);
+
         bean.save();
-        object = ArchetypeQueryHelper.getByObjectReference(
-                service, object.getObjectReference());
-        bean = new IMObjectBean(object);
-        assertEquals(name, bean.getValue("name"));
+        // verify that the name has been set on the object
+        assertEquals(name, bean.getObject().getName());
+
+        // verify that the object saved
+        IMObject object = ArchetypeQueryHelper.getByObjectReference(
+                service, bean.getObject().getObjectReference());
+        assertEquals(bean.getObject(), object);
+
+        // verify that the name node was saved
+        assertEquals(object.getName(), name);
     }
 
     /**

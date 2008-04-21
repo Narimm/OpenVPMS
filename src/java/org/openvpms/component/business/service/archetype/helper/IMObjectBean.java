@@ -434,11 +434,17 @@ public class IMObjectBean {
 
     /**
      * Saves the object.
+     * <p/>
+     * Any derived nodes will have their values derived prior to the object
+     * being saved.
      *
      * @throws ArchetypeServiceException if the object can't be saved
      */
     public void save() {
-        getArchetypeService().save(getObject());
+        IMObject object = getObject();
+        IArchetypeService service = getArchetypeService();
+        service.deriveValues(object);
+        service.save(object);
     }
 
     /**
