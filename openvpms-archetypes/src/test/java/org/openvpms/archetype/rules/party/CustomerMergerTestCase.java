@@ -246,7 +246,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         Date firstStartTime = getDatetime("2007-1-2 10:0:0");
         addInvoice(firstStartTime, eighty, from, fromPatient,
                    product);
-        addPayment(getDatetime("2007-1-2 11:0:0"), forty, from, fromPatient);
+        addPayment(getDatetime("2007-1-2 11:0:0"), forty, from);
 
         runEOP(from, getDate("2007-2-1"));
 
@@ -351,12 +351,10 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      * @param startTime the payment start time
      * @param amount    the payment amount
      * @param customer  the customer
-     * @param patient   the patient
      */
-    private void addPayment(Date startTime, Money amount, Party customer,
-                            Party patient) {
+    private void addPayment(Date startTime, Money amount, Party customer) {
         Act act = FinancialTestHelper.createPayment(
-                amount, customer, patient, FinancialTestHelper.createTill());
+                amount, customer, FinancialTestHelper.createTill());
         act.setActivityStartTime(startTime);
         save(act);
     }

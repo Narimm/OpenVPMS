@@ -100,18 +100,104 @@ public class FinancialTestHelper extends TestHelper {
      *
      * @param amount   the act total
      * @param customer the customer
-     * @param patient  the patient
      * @param till     the till
      * @return a new act
      */
     public static FinancialAct createPayment(Money amount, Party customer,
-                                             Party patient, Party till) {
-        FinancialAct act = createAct("act.customerAccountPayment", amount,
-                                     customer);
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
-        bean.addParticipation("participation.till", till);
-        return act;
+                                             Party till) {
+        return createPaymentCash(amount, customer, till);
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountPayment</em>
+     * with a single <em>act.customerAccountPaymentCash</em> item.
+     * The <em>roundedAmount</em> and <em>tendered</em> nodes are set to
+     * the same value as <em>amount</em>.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createPaymentCash(Money amount,
+                                                 Party customer,
+                                                 Party till) {
+        return createPaymentRefund("act.customerAccountPayment",
+                                   "act.customerAccountPaymentCash",
+                                   "actRelationship.customerAccountPaymentItem",
+                                   amount, customer, till);
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountPayment</em>
+     * with a single <em>act.customerAccountPaymentCheque</em> item.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createPaymentCheque(Money amount,
+                                                   Party customer,
+                                                   Party till) {
+        return createPaymentRefund("act.customerAccountPayment",
+                                   "act.customerAccountPaymentCheque",
+                                   "actRelationship.customerAccountPaymentItem",
+                                   amount, customer, till);
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountPayment</em>
+     * with a single <em>act.customerAccountPaymentCredit</em> item.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createPaymentCredit(Money amount,
+                                                   Party customer,
+                                                   Party till) {
+        return createPaymentRefund("act.customerAccountPayment",
+                                   "act.customerAccountPaymentCredit",
+                                   "actRelationship.customerAccountPaymentItem",
+                                   amount, customer, till);
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountPayment</em>
+     * with a single <em>act.customerAccountPaymentDiscount</em> item.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createPaymentDiscount(Money amount,
+                                                     Party customer,
+                                                     Party till) {
+        return createPaymentRefund("act.customerAccountPayment",
+                                   "act.customerAccountPaymentDiscount",
+                                   "actRelationship.customerAccountPaymentItem",
+                                   amount, customer, till);
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountPayment</em>
+     * with a single <em>act.customerAccountPaymentEFT</em> item.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createPaymentEFT(Money amount,
+                                                Party customer,
+                                                Party till) {
+        return createPaymentRefund("act.customerAccountPayment",
+                                   "act.customerAccountPaymentEFT",
+                                   "actRelationship.customerAccountPaymentItem",
+                                   amount, customer, till);
     }
 
     /**
@@ -119,18 +205,100 @@ public class FinancialTestHelper extends TestHelper {
      *
      * @param amount   the act total
      * @param customer the customer
-     * @param patient  the patient
      * @param till     the till
      * @return a new act
      */
     public static FinancialAct createRefund(Money amount, Party customer,
-                                            Party patient, Party till) {
-        FinancialAct act = createAct("act.customerAccountRefund", amount,
-                                     customer);
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
-        bean.addParticipation("participation.till", till);
-        return act;
+                                            Party till) {
+        return createRefundCash(amount, customer, till);
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountRefund</em> with
+     * a single <em>act.customerAccountRefundCash</em> item.
+     * The <em>roundedAmount</em> node is set to the same value as
+     * <em>amount</em>.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createRefundCash(Money amount, Party customer,
+                                                Party till) {
+        return createPaymentRefund("act.customerAccountRefund",
+                                   "act.customerAccountRefundCash",
+                                   "actRelationship.customerAccountRefundItem",
+                                   amount, customer, till);
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountRefund</em> with
+     * a single <em>act.customerAccountRefundCheque</em> item.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createRefundCheque(Money amount, Party customer,
+                                                  Party till) {
+        return createPaymentRefund("act.customerAccountRefund",
+                                   "act.customerAccountRefundCheque",
+                                   "actRelationship.customerAccountRefundItem",
+                                   amount, customer, till);
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountRefund</em> with
+     * a single <em>act.customerAccountRefundCredit</em> item.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createRefundCredit(Money amount, Party customer,
+                                                  Party till) {
+        return createPaymentRefund("act.customerAccountRefund",
+                                   "act.customerAccountRefundCredit",
+                                   "actRelationship.customerAccountRefundItem",
+                                   amount, customer, till);
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountRefund</em> with
+     * a single <em>act.customerAccountRefundDiscount</em> item.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createRefundDiscount(Money amount,
+                                                    Party customer,
+                                                    Party till) {
+        return createPaymentRefund("act.customerAccountRefund",
+                                   "act.customerAccountRefundDiscount",
+                                   "actRelationship.customerAccountRefundItem",
+                                   amount, customer, till);
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountRefund</em> with
+     * a single <em>act.customerAccountRefundEFT</em> item.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createRefundEFT(Money amount, Party customer,
+                                               Party till) {
+        return createPaymentRefund("act.customerAccountRefund",
+                                   "act.customerAccountRefundEFT",
+                                   "actRelationship.customerAccountRefundItem",
+                                   amount, customer, till);
     }
 
     /**
@@ -205,7 +373,7 @@ public class FinancialTestHelper extends TestHelper {
         FinancialAct act = createAct(shortName, amount, customer);
         ActBean bean = new ActBean(act);
         FinancialAct item = (FinancialAct) create(itemShortName);
-        item.setTotal(amount);
+        item.setUnitAmount(amount);
         ActBean itemBean = new ActBean(item);
         if (patient != null) {
             itemBean.addParticipation("participation.patient", patient);
@@ -213,6 +381,37 @@ public class FinancialTestHelper extends TestHelper {
         if (product != null) {
             itemBean.addParticipation("participation.product", product);
         }
+        itemBean.save();
+        bean.addRelationship(relationshipShortName, item);
+        return act;
+    }
+
+    /**
+     * Helper to create a payment or refund act.
+     *
+     * @param shortName the act short name
+     * @param amount    the act total
+     * @param customer  the customer
+     * @param till      the till
+     * @return a new act
+     */
+    private static FinancialAct createPaymentRefund(
+            String shortName, String itemShortName,
+            String relationshipShortName, Money amount, Party customer,
+            Party till) {
+        FinancialAct act = createAct(shortName, amount, customer);
+        ActBean bean = new ActBean(act);
+        FinancialAct item = (FinancialAct) create(itemShortName);
+        item.setTotal(amount);
+        ActBean itemBean = new ActBean(item);
+        if (itemBean.isA("act.customerAccountPaymentCash",
+                         "act.customerAccountRefundCash")) {
+            itemBean.setValue("roundedAmount", amount);
+            if (itemBean.isA("act.customerAccountPaymentCash")) {
+                itemBean.setValue("tendered", amount);
+            }
+        }
+        bean.addParticipation("participation.till", till);
         itemBean.save();
         bean.addRelationship(relationshipShortName, item);
         return act;
