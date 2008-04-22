@@ -420,6 +420,7 @@ class StatementActHelper {
         }
         query.add(new NodeSelectConstraint("a.startTime"));
         query.add(new NodeSelectConstraint("a.amount"));
+        query.add(new NodeSelectConstraint("a.credit"));
         query.add(new NodeSelectConstraint("a.printed"));
         query.add(new NodeSortConstraint("startTime", sortAscending));
         query.setMaxResults(1);
@@ -429,7 +430,11 @@ class StatementActHelper {
             ObjectSet set = iter.next();
             Date startTime = (Date) set.get("a.startTime");
             BigDecimal amount = (BigDecimal) set.get("a.amount");
+            boolean credit = (Boolean) set.get("a.credit");
             boolean printed = (Boolean) set.get("a.printed");
+            if (credit) {
+                amount = amount.negate();
+            }
             return new ActState(startTime, amount, printed);
         }
         return null;

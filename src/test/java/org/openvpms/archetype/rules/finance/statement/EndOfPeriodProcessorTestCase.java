@@ -340,6 +340,19 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         FinancialAct opening = (FinancialAct) acts.get(0);
         checkAct(opening, CustomerAccountActTypes.OPENING_BALANCE, amount);
         assertTrue(opening.isCredit());
+
+        checkEquals(amount.negate(), rules.getBalance(customer));
+        processor = new EndOfPeriodProcessor(nextStatementDate, true);
+        processor.process(customer);
+        acts = getActs(customer, nextStatementDate);
+        assertEquals(2, acts.size());
+        opening = (FinancialAct) acts.get(0);
+        assertTrue(opening.isCredit());
+        closing = (FinancialAct) acts.get(1);
+        assertFalse(closing.isCredit());
+        checkAct(acts.get(0), CustomerAccountActTypes.OPENING_BALANCE, amount);
+        checkAct(acts.get(1), CustomerAccountActTypes.CLOSING_BALANCE, amount);
+
     }
 
     /**

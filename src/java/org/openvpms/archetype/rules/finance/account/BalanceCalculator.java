@@ -271,14 +271,12 @@ class BalanceCalculator {
      */
     protected BigDecimal calculateDefinitiveBalance(
             Iterator<ObjectSet> iterator, BigDecimal openingBalance) {
-        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal total = openingBalance;
         ActCalculator calculator = new ActCalculator(service);
-        boolean credit = (openingBalance.signum() == -1);
-        total = calculator.addAmount(total, openingBalance, credit);
         while (iterator.hasNext()) {
             ObjectSet set = iterator.next();
             BigDecimal amount = (BigDecimal) set.get("a.amount");
-            credit = (Boolean) set.get("a.credit");
+            boolean credit = (Boolean) set.get("a.credit");
             total = calculator.addAmount(total, amount, credit);
         }
         return total;
