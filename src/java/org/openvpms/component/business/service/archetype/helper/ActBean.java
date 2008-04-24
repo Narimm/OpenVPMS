@@ -21,7 +21,6 @@ package org.openvpms.component.business.service.archetype.helper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -233,13 +232,26 @@ public class ActBean extends IMObjectBean {
      * @return a list of the child acts
      * @throws ArchetypeServiceException for any archetype service error
      * @throws IMObjectBeanException     if the node doesn't exist
+     * @deprecated use {@link #getNodeActs} instead
      */
+    @Deprecated
     public List<Act> getActsForNode(String name) {
-        List<IMObject> relationships = getValues(name);
+        return getNodeActs(name);
+    }
+
+    /**
+     * Resolves and returns a list of the child acts for the specified node.
+     *
+     * @param name the node name
+     * @return a list of the child acts
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if the node doesn't exist
+     */
+    public List<Act> getNodeActs(String name) {
         List<Act> result = new ArrayList<Act>();
-        IMObjectReference ref = getObject().getObjectReference();
-        for (IMObject object : relationships) {
-            ActRelationship relationship = (ActRelationship) object;
+        IMObjectReference ref = getReference();
+        for (ActRelationship relationship
+                : getValues(name, ActRelationship.class)) {
             Act child = getSourceOrTarget(relationship, ref);
             if (child != null) {
                 result.add(child);
