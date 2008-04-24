@@ -133,7 +133,7 @@ public class InvoiceRules {
      */
     private void removeInvoiceItemReminders(FinancialAct item) {
         ActBean bean = new ActBean(item, service);
-        List<Act> acts = bean.getActsForNode("reminders");
+        List<Act> acts = bean.getNodeActs("reminders");
 
         for (Act act : acts) {
             ActRelationship r = bean.getRelationship(act);
@@ -155,7 +155,7 @@ public class InvoiceRules {
      */
     private void removeInvoiceItemDocuments(FinancialAct item) {
         ActBean bean = new ActBean(item, service);
-        List<Act> acts = bean.getActsForNode("documents");
+        List<Act> acts = bean.getNodeActs("documents");
 
         for (Act act : acts) {
             String status = act.getStatus();

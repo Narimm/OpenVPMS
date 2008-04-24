@@ -482,7 +482,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      */
     private void checkContains(Act event, Act ... acts) {
         ActBean bean = new ActBean(event);
-        List<Act> items = bean.getActsForNode("items");
+        List<Act> items = bean.getNodeActs("items");
         assertEquals(acts.length, items.size());
         for (Act act : acts) {
             boolean found = false;

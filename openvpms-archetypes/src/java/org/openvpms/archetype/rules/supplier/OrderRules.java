@@ -21,16 +21,24 @@ package org.openvpms.archetype.rules.supplier;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
+import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -220,5 +228,159 @@ public class OrderRules {
         }
         return result;
     }
+
+    /**
+     * Creates a new delivery item from an order item.
+     *
+     * @param orderItem the order item
+     * @return a new delivery item
+     */
+    public FinancialAct createDeliveryItem(FinancialAct orderItem) {
+        IMObjectCopier copier = new IMObjectCopier(new DeliveryItemHandler(),
+                                                   service);
+        return (FinancialAct) copier.apply(orderItem).get(0);
+    }
+
+    /**
+     * Updates orders associated with a delivery.
+     *
+     * @param delivery the delivery
+     */
+    public void updateOrders(Act delivery) {
+        ActBean bean = new ActBean(delivery, service);
+        Party supplier = (Party) bean.getParticipant("participation.supplier");
+        List<IMObject> toUpdate = new ArrayList<IMObject>();
+        for (Act deliveryItem : bean.getNodeActs("items")) {
+            ActBean deliveryItemBean = new ActBean(deliveryItem, service);
+            for (Act orderItem : deliveryItemBean.getNodeActs("items")) {
+                ActBean orderItemBean = new ActBean(orderItem, service);
+                BigDecimal quantity = deliveryItemBean.getBigDecimal(
+                        "quantity");
+                BigDecimal received = orderItemBean.getBigDecimal(
+                        "receivedQuantity");
+                BigDecimal total = received.add(quantity);
+                orderItemBean.setValue("receivedQuantity", total);
+                Product product = (Product) deliveryItemBean.getParticipant(
+                        "participation.product");
+                toUpdate.add(orderItemBean.getObject());
+                if (supplier != null && product != null) {
+                    EntityRelationship relationship = updateProductSupplier(
+                            supplier, product, deliveryItemBean);
+                    if (relationship != null) {
+                        toUpdate.add(relationship);
+                    }
+                }
+            }
+        }
+        if (!toUpdate.isEmpty()) {
+            service.save(toUpdate);
+        }
+    }
+
+    /**
+     * Updates an <em>entityRelationship.productSupplier</em> from a
+     * <em>act.supplierDeliveryItem</em>, if required.
+     *
+     * @param supplier the supplier
+     * @param product
+     * @param deliveryItemBean a bean wrapping the delivery item
+     * @return the relationship, if it needs to be saved
+     */
+    private EntityRelationship updateProductSupplier(Party supplier,
+                                                     Product product,
+                                                     ActBean deliveryItemBean) {
+        int size = deliveryItemBean.getInt("packageSize");
+        String units = deliveryItemBean.getString("packageUnits");
+        String reorderCode = deliveryItemBean.getString("reorderCode");
+        String reorderDesc = deliveryItemBean.getString("reorderDescription");
+        BigDecimal listPrice = deliveryItemBean.getBigDecimal("listPrice");
+        BigDecimal nettPrice = deliveryItemBean.getBigDecimal("nettPrice");
+        ProductSupplier ps = getProductSupplier(supplier, product,
+                                                size, units);
+        boolean save = true;
+        if (ps == null) {
+            // no product-supplier relationship, so create a new one
+            ps = createProductSupplier(product, supplier);
+            ps.setPackageSize(size);
+            ps.setPackageUnits(units);
+            ps.setReorderCode(reorderCode);
+            ps.setReorderDescription(reorderDesc);
+            ps.setListPrice(listPrice);
+            ps.setNettPrice(nettPrice);
+            ps.setPreferred(true);
+        } else if (size != ps.getPackageSize()
+                || !ObjectUtils.equals(units, ps.getPackageUnits())
+                || !equals(listPrice, ps.getListPrice())
+                || !equals(nettPrice, ps.getNettPrice())
+                || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
+                || !ObjectUtils.equals(ps.getReorderDescription(),
+                                       reorderDesc)) {
+            // properties are different to an existing relationship
+            ps.setPackageSize(size);
+            ps.setPackageUnits(units);
+            ps.setReorderCode(reorderCode);
+            ps.setReorderDescription(reorderDesc);
+            ps.setListPrice(listPrice);
+            ps.setNettPrice(nettPrice);
+        } else {
+            save = false;
+        }
+        return (save) ? ps.getRelationship() : null;
+    }
+
+    /**
+     * Helper to determine if two decimals are equal.
+     *
+     * @param lhs the left-hand side. May be <tt>null</tt>
+     * @param rhs right left-hand side. May be <tt>null</tt>
+     * @return <tt>true</t> if they are equal, otherwise <tt>false</tt>
+     */
+    private boolean equals(BigDecimal lhs, BigDecimal rhs) {
+        if (lhs != null && rhs != null) {
+            return lhs.compareTo(rhs) == 0;
+        }
+        return ObjectUtils.equals(lhs, rhs);
+    }
+
+
+    /**
+     * Helper to create an <em>act.supplierDeliveryItem</em> from an
+     * <em>act.supplierOrderItem</em>
+     */
+    private static class DeliveryItemHandler
+            extends AbstractIMObjectCopyHandler {
+
+        /**
+         * Determines how {@link IMObjectCopier} should treat an object.
+         *
+         * @param object  the source object
+         * @param service the archetype service
+         * @return <tt>object</tt> if the object shouldn't be copied,
+         *         <tt>null</tt> if it should be replaced with
+         *         <tt>null</tt>, or a new instance if the object should be
+         *         copied
+         */
+        public IMObject getObject(IMObject object, IArchetypeService service) {
+            IMObject result;
+            if (object instanceof Act || object instanceof Participation) {
+                String shortName = object.getArchetypeId().getShortName();
+                if ("act.supplierOrderItem".equals(shortName)) {
+                    shortName = "act.supplierDeliveryItem";
+                }
+                result = service.create(shortName);
+                if (result == null) {
+                    throw new ArchetypeServiceException(
+                            ArchetypeServiceException.ErrorCode.FailedToCreateArchetype,
+                            shortName);
+                }
+            } else if (object instanceof ActRelationship) {
+                result = null;
+            } else {
+                result = object;
+            }
+            return result;
+        }
+    }
+
 
 }
