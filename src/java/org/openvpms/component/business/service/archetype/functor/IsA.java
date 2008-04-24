@@ -19,13 +19,32 @@
 package org.openvpms.component.business.service.archetype.functor;
 
 import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections.Transformer;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 
 /**
  * A <tt>Predicate</tt> that evaluates <tt>true</tt> if an object is an
  * instance of one of a set of archetypes.
+ * <p/>
+ * Sample use:
+ * <ol>
+ * <li>Match all objects/object references that are
+ * <em>actRelationship.customerEstimationItem</em>s.
+ * <pre>
+ *     Predicate isA = new IsA("actRelationship.customerEstimationItem");
+ * </pre>
+ * </li>
+ * <li>Match all IMObjectRelationships that have a target reference of type
+ * <em>act.customerAccountPaymentCash</em>.
+ * <pre>
+ *     Predicate isA = new IsA(RelationshipRef.TARGET,
+ *                             "act.customerAccountPaymentCash");
+ * </pre>
+ * </li>
+ * </ul>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -38,11 +57,29 @@ public class IsA implements Predicate {
     private final String[] shortNames;
 
     /**
+     * The transformer to access the object. May be <tt>null</tt>
+     */
+    private final Transformer transformer;
+
+
+    /**
      * Creates a new <tt>IsA</tt>.
      *
      * @param shortNames the archetype short names
      */
     public IsA(String... shortNames) {
+        this(null, shortNames);
+    }
+
+    /**
+     * Creates a new <tt>IsA</tt>.
+     *
+     * @param transformer the transformer to access the object.
+     *                    May be <tt>null</tt>
+     * @param shortNames  the archetype short names
+     */
+    public IsA(Transformer transformer, String... shortNames) {
+        this.transformer = transformer;
         this.shortNames = shortNames;
     }
 
@@ -55,6 +92,12 @@ public class IsA implements Predicate {
      * @throws ClassCastException if the input is the wrong class
      */
     public boolean evaluate(Object object) {
-        return TypeHelper.isA((IMObject) object, shortNames);
+        if (transformer != null) {
+            object = transformer.transform(object);
+        }
+        if (object instanceof IMObject) {
+            return TypeHelper.isA((IMObject) object, shortNames);
+        }
+        return TypeHelper.isA((IMObjectReference) object, shortNames);
     }
 }
