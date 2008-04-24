@@ -18,16 +18,15 @@
 
 package org.openvpms.web.app.supplier;
 
-import java.math.BigDecimal;
-
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.im.edit.act.ActHelper;
+
+import java.math.BigDecimal;
 
 
 /**

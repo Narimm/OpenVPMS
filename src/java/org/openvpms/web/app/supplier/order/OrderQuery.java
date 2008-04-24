@@ -22,27 +22,23 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.app.supplier.SupplierActQuery;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ActStatuses;
-import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.select.IMObjectSelector;
-import org.openvpms.web.component.im.select.IMObjectSelectorListener;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,18 +50,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class OrderQuery extends DateRangeActQuery<FinancialAct> {
-
-
-    /**
-     * The supplier selector.
-     */
-    private final IMObjectSelector<Party> supplier;
-
-    /**
-     * The stock location selector.
-     */
-    private final IMObjectSelector<Party> stockLocation;
+public class OrderQuery extends SupplierActQuery<FinancialAct> {
 
     /**
      * The delivery status selector.
@@ -86,39 +71,6 @@ public class OrderQuery extends DateRangeActQuery<FinancialAct> {
      */
     public OrderQuery(String[] shortNames) {
         super(shortNames, STATUSES, FinancialAct.class);
-
-        supplier = new IMObjectSelector<Party>(
-                Messages.get("supplier.order.type"), "party.supplier*");
-        supplier.setListener(new IMObjectSelectorListener<Party>() {
-            public void selected(Party object) {
-                if (object == null) {
-                    // query all suppliers
-                    setParticipantConstraint(null, null, null);
-                } else {
-                    // limit query to the selected supplier
-                    setParticipantConstraint(object, "supplier",
-                                             "participation.supplier");
-                }
-                onQuery();
-            }
-
-            public void create() {
-                // no-op
-            }
-        });
-
-        stockLocation = new IMObjectSelector<Party>(
-                Messages.get("supplier.order.location"),
-                "party.organisationStockLocation");
-        stockLocation.setListener(new IMObjectSelectorListener<Party>() {
-            public void selected(Party object) {
-                onQuery();
-            }
-
-            public void create() {
-                // no-op
-            }
-        });
     }
 
     /**
@@ -166,35 +118,6 @@ public class OrderQuery extends DateRangeActQuery<FinancialAct> {
     }
 
     /**
-     * Creates a new result set.
-     *
-     * @param sort the sort constraint. May be <code>null</code>
-     * @return a new result set
-     */
-    @Override
-    protected ResultSet<FinancialAct> createResultSet(SortConstraint[] sort) {
-        List<ParticipantConstraint> list
-                = new ArrayList<ParticipantConstraint>();
-        ParticipantConstraint supplier = getParticipantConstraint();
-        if (supplier != null) {
-            list.add(supplier);
-        }
-        if (stockLocation.getObject() != null) {
-            ParticipantConstraint location = new ParticipantConstraint(
-                    "stockLocation", "participation.locationStockLocation",
-                    stockLocation.getObject());
-            list.add(location);
-        }
-        ParticipantConstraint[] participants
-                = list.toArray(new ParticipantConstraint[0]);
-        return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
-                                              participants, getFrom(), getTo(),
-                                              getStatuses(), excludeStatuses(),
-                                              getConstraints(), getMaxResults(),
-                                              sort);
-    }
-
-    /**
      * Lays out the component in a container, and sets focus on the instance
      * name.
      *
@@ -205,8 +128,8 @@ public class OrderQuery extends DateRangeActQuery<FinancialAct> {
         Row row1 = RowFactory.create("CellSpacing");
         Row row2 = RowFactory.create("CellSpacing");
 
-        addSelector(supplier, row1);
-        addSelector(stockLocation, row1);
+        addSupplierSelector(row1);
+        addStockLocationSelector(row1);
         addStatusSelector(row1);
         addDeliveryStatus(row1);
         addDateRange(row2);
@@ -222,21 +145,6 @@ public class OrderQuery extends DateRangeActQuery<FinancialAct> {
      */
     private String getDeliveryStatus() {
         return deliveryStatus.getSelectedCode();
-    }
-
-    /**
-     * Adds a selector component to a container.
-     *
-     * @param selector  the selector
-     * @param container the container
-     */
-    private void addSelector(IMObjectSelector<Party> selector,
-                             Component container) {
-        Label label = LabelFactory.create();
-        label.setText(selector.getType());
-        container.add(label);
-        container.add(selector.getComponent());
-        getFocusGroup().add(selector.getComponent());
     }
 
     /**
@@ -256,4 +164,21 @@ public class OrderQuery extends DateRangeActQuery<FinancialAct> {
         container.add(label);
         container.add(deliveryStatus);
     }
+
+    /**
+     * Creates a new result set.
+     *
+     * @param participants the participant constraints
+     * @param sort         the sort criteria
+     * @return a new result set
+     */
+    protected ResultSet<FinancialAct> createResultSet(
+            ParticipantConstraint[] participants, SortConstraint[] sort) {
+        return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
+                                              participants, getFrom(), getTo(),
+                                              getStatuses(), excludeStatuses(),
+                                              getConstraints(), getMaxResults(),
+                                              sort);
+    }
+
 }

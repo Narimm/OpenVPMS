@@ -34,14 +34,16 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
+import org.openvpms.web.app.supplier.SelectStockDetailsDialog;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
@@ -182,28 +184,23 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      * Invoked when a new order has been created.
      * <p/>
      * This implementation pops up a dialog to select the supplier and stock
-     * location, then displays an edit dialog for the order.
+     * location, then displays an edit dialog for the act.
      *
-     * @param act the new order
+     * @param act the new act
      */
     @Override
     protected void onCreated(final FinancialAct act) {
-        final SelectOrderDetailsDialog dialog = new SelectOrderDetailsDialog(
-                Messages.get("supplier.order.selectdetails.title"),
-                GlobalContext.getInstance());
+        String title = Messages.get("supplier.order.selectdetails.title",
+                                    DescriptorHelper.getDisplayName(act));
+        final SelectStockDetailsDialog dialog
+                = new SelectStockDetailsDialog(title,
+                                               GlobalContext.getInstance());
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent e) {
-                if (SelectOrderDetailsDialog.OK_ID.equals(dialog.getAction())) {
-                    try {
-                        ActBean bean = new ActBean(act);
-                        bean.addParticipation("participation.supplier",
-                                              dialog.getSupplier());
-                        bean.addParticipation("participation.stockLocation",
-                                              dialog.getStockLocation());
-                        edit(act);
-                    } catch (OpenVPMSException exception) {
-                        ErrorHelper.show(exception);
-                    }
+                if (SelectStockDetailsDialog.OK_ID.equals(dialog.getAction())) {
+                    Party supplier = dialog.getSupplier();
+                    Party location = dialog.getStockLocation();
+                    addParticipations(act, supplier, location);
                 }
             }
         });

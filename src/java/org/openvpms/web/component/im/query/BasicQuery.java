@@ -11,7 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
@@ -19,54 +19,41 @@
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 
 /**
- * Abstract implementation of the {@link Query} interface that queries
- * {@link IMObject}s on short name, instance name, and active/inactive status.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-11-27 05:30:20Z $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractIMObjectQuery<T extends IMObject>
-        extends AbstractArchetypeQuery<T> {
+public class BasicQuery<T extends IMObject> extends NonRenderingQuery<T> {
 
     /**
-     * Constructs a new <tt>AbstractIMObjectQuery</tt> that queries IMObjects
-     * with the specified short names.
+     * Construct a new <tt>BasicQuery</tt> that queries objects with
+     * the specified primary short names.
      *
-     * @param shortNames the short names
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
-     */
-    public AbstractIMObjectQuery(String[] shortNames) {
-        super(shortNames, true);
-    }
-
-    /**
-     * Constructs a new <tt>AbstractIMObjectQuery</tt> that queries IMObjects
-     * with the specified short names.
-     *
-     * @param shortNames the short names
+     * @param shortNames the archetype short names
      * @param type       the type that this query returns
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    public AbstractIMObjectQuery(String[] shortNames, Class type) {
+    public BasicQuery(String[] shortNames, Class type) {
         super(shortNames, type);
     }
 
     /**
-     * Creates the result set.
+     * Performs the query.
      *
-     * @param sort the sort criteria. May be <code>null</code>
-     * @return a new result set
+     * @param sort the sort constraint. May be <tt>null</tt>
+     * @return the query result set
+     * @throws ArchetypeServiceException if the query fails
      */
-    protected ResultSet<T> createResultSet(
-            SortConstraint[] sort) {
-        return new DefaultResultSet<T>(getArchetypeConstraint(), getName(),
+    public ResultSet<T> query(SortConstraint[] sort) {
+        return new DefaultResultSet<T>(getArchetypes(), getName(),
                                        getConstraints(), sort, getMaxResults(),
                                        isDistinct());
     }

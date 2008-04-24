@@ -20,7 +20,7 @@ package org.openvpms.web.component.im.table.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;

@@ -54,8 +54,7 @@ public class PatientRecordActTableModel extends AbstractActTableModel {
     /**
      * Returns the index to insert the archetype column.
      *
-     * @return the index to insert the archetype column, or <code>-1<code>
-     *         if it should not be inserted
+     * @return the index to insert the archetype column
      */
     @Override
     protected int getArchetypeColumnIndex() {

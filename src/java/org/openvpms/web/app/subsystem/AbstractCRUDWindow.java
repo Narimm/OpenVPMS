@@ -393,22 +393,31 @@ public class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
      */
     protected void edit(T object) {
         try {
-            final boolean isNew = object.isNew();
-
             LayoutContext context = createLayoutContext();
-            final IMObjectEditor editor = createEditor(object, context);
-            EditDialog dialog = createEditDialog(editor);
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    onEditCompleted(editor, isNew);
-                }
-            });
-
-            GlobalContext.getInstance().setCurrent(object);
-            dialog.show();
+            IMObjectEditor editor = createEditor(object, context);
+            edit(editor);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Edits an object.
+     *
+     * @param editor the object editor
+     */
+    @SuppressWarnings("unchecked")
+    protected void edit(final IMObjectEditor editor) {
+        T object = (T) editor.getObject();
+        final boolean isNew = object.isNew();
+        EditDialog dialog = createEditDialog(editor);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                onEditCompleted(editor, isNew);
+            }
+        });
+        GlobalContext.getInstance().setCurrent(object);
+        dialog.show();
     }
 
     /**

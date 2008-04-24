@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.table.act;
 
+import echopointng.layout.TableLayoutDataEx;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
@@ -34,7 +35,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -224,7 +225,7 @@ public class ActAmountTableModel<T extends Act>
         String result = NumberFormatter.format(amount);
         Label label = LabelFactory.create();
         label.setText(result);
-        TableLayoutData layout = new TableLayoutData();
+        TableLayoutData layout = new TableLayoutDataEx();
         Alignment right = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
         layout.setAlignment(right);
         label.setLayoutData(layout);

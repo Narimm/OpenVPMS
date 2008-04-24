@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.supplier.order;
+package org.openvpms.web.app.supplier;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;

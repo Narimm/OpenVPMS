@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.customer;
 
-import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -42,29 +41,12 @@ public abstract class CustomerActCRUDWindow<T extends Act>
         extends ActCRUDWindow<T> {
 
     /**
-     * Determines if the current act is posted or not.
-     */
-    private boolean posted;
-
-
-    /**
      * Create a new <tt>CustomerActCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
      */
     public CustomerActCRUDWindow(Archetypes<T> archetypes) {
         super(archetypes);
-    }
-
-    /**
-     * Sets the object.
-     *
-     * @param object the object. May be <tt>null</tt>
-     */
-    @Override
-    public void setObject(T object) {
-        posted = (object != null) && POSTED.equals(object.getStatus());
-        super.setObject(object);
     }
 
     /**
@@ -90,22 +72,6 @@ public abstract class CustomerActCRUDWindow<T extends Act>
             }
         }
         super.onCreated(act);
-    }
-
-    /**
-     * Invoked when the object has been saved.
-     *
-     * @param object the object
-     * @param isNew  determines if the object is a new instance
-     */
-    @Override
-    protected void onSaved(T object, boolean isNew) {
-        boolean prevPosted = posted;
-        super.onSaved(object, isNew);
-        String status = object.getStatus();
-        if (!prevPosted && POSTED.equals(status)) {
-            onPosted(object);
-        }
     }
 
     /**

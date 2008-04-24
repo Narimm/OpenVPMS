@@ -34,6 +34,7 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -216,8 +217,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
     /**
      * Creates a column model for one or more archetypes.
      * If there are multiple archetypes, the intersection of the descriptors
-     * will be used, and the archetype will be inserted at the column indicated
-     * by {@link #getArchetypeColumnIndex}.
+     * will be used.
      *
      * @param archetypes the archetypes
      * @param context    the layout context
@@ -229,15 +229,13 @@ public abstract class DescriptorTableModel<T extends IMObject>
         List<String> names = getDescriptorNames(archetypes, context);
         TableColumnModel columns = new DefaultTableColumnModel();
 
-        if (archetypes.size() > 1) {
+        if (showArchetypeColumn(archetypes)) {
             addColumns(archetypes, names, columns);
             int index = getArchetypeColumnIndex();
-            if (index != -1) {
-                TableColumn column = createTableColumn(
-                        ARCHETYPE_INDEX, "table.imobject.archetype");
-                columns.addColumn(column);
-                columns.moveColumn(columns.getColumnCount() - 1, index);
-            }
+            TableColumn column = createTableColumn(
+                    ARCHETYPE_INDEX, "table.imobject.archetype");
+            columns.addColumn(column);
+            columns.moveColumn(columns.getColumnCount() - 1, index);
         } else {
             addColumns(archetypes, names, columns);
         }
@@ -257,17 +255,69 @@ public abstract class DescriptorTableModel<T extends IMObject>
         int index = getNextModelIndex(columns);
 
         for (String name : names) {
-            Map<String, NodeDescriptor> descriptors
-                    = new HashMap<String, NodeDescriptor>();
-            for (ArchetypeDescriptor archetype : archetypes) {
-                NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
-                descriptors.put(archetype.getShortName(), descriptor);
-            }
-            TableColumn column = new DescriptorTableColumn(index, descriptors);
-            columns.addColumn(column);
+            addColumn(archetypes, name, index, columns);
             ++index;
         }
     }
+
+    /**
+     * Adds a column for a node.
+     *
+     * @param archetype the archetypes
+     * @param name      the node name
+     * @param columns   the columns to add to
+     * @return the new column, or <tt>null</tt> if the node is not found in
+     *         the archetypes
+     */
+    protected TableColumn addColumn(ArchetypeDescriptor archetype,
+                                    String name, TableColumnModel columns) {
+        return addColumn(Arrays.asList(archetype), name,
+                         getNextModelIndex(columns), columns);
+    }
+
+    /**
+     * Adds a column for a node.
+     *
+     * @param archetypes the archetypes
+     * @param name       the node name
+     * @param index      the index to assign the column
+     * @param columns    the columns to add to
+     * @return the new column, or <tt>null</tt> if the node is not found in
+     *         the archetypes
+     */
+    protected TableColumn addColumn(List<ArchetypeDescriptor> archetypes,
+                                    String name, int index,
+                                    TableColumnModel columns) {
+        TableColumn column = createColumn(archetypes, name, index);
+        if (column != null) {
+            columns.addColumn(column);
+        }
+        return column;
+    }
+
+    /**
+     * Creates a new column for a node.
+     *
+     * @param archetypes the archetypes
+     * @param name       the node name
+     * @param index      the index to assign the column
+     * @return a new column, or <tt>null</tt> if the node is not found in
+     *         the archetypes
+     */
+    protected TableColumn createColumn(List<ArchetypeDescriptor> archetypes,
+                                       String name, int index) {
+        Map<String, NodeDescriptor> descriptors
+                = new HashMap<String, NodeDescriptor>();
+        for (ArchetypeDescriptor archetype : archetypes) {
+            NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
+            if (descriptor != null) {
+                descriptors.put(archetype.getShortName(), descriptor);
+            }
+        }
+        return descriptors.isEmpty()
+                ? null : new DescriptorTableColumn(index, descriptors);
+    }
+
 
     /**
      * Returns the intersection of descriptor names for a set of archetypes.
@@ -330,10 +380,22 @@ public abstract class DescriptorTableModel<T extends IMObject>
     }
 
     /**
+     * Determines if the archetype column should be displayed.
+     * <p/>
+     * This implementation returns true if there is more than one archetype.
+     *
+     * @param archetypes the archetypes
+     * @return <tt>true</tt> if the archetype column should be displayed
+     */
+    protected boolean showArchetypeColumn(
+            List<ArchetypeDescriptor> archetypes) {
+        return archetypes.size() > 1;
+    }
+
+    /**
      * Returns the index to insert the archetype column.
      *
-     * @return the index to insert the archetype column, or <code>-1<code>
-     *         if it should not be inserted
+     * @return the index to insert the archetype column
      */
     protected int getArchetypeColumnIndex() {
         return 0;

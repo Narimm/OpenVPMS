@@ -16,38 +16,27 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.supplier.order;
+package org.openvpms.web.app.supplier;
 
-import nextapp.echo2.app.Grid;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.im.select.IMObjectSelector;
-import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * A dialog that prompts for the supplier and stock location when placing
- * orders.
+ * A dialog that prompts for the supplier and stock location when creating
+ * orders, deliveries or returns.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SelectOrderDetailsDialog extends PopupDialog {
+public class SelectStockDetailsDialog extends PopupDialog {
 
     /**
-     * The supplier selector.
+     * The stock details selector.
      */
-    private IMObjectSelector<Party> supplier;
-
-    /**
-     * The stock location selector.
-     */
-    private IMObjectSelector<Party> location;
-
+    private StockDetailsSelector selector;
 
     /**
      * Creates a new <tt>SelectOrderDetailsDialog</tt>.
@@ -55,27 +44,14 @@ public class SelectOrderDetailsDialog extends PopupDialog {
      * @param title   the window title
      * @param context the context
      */
-    public SelectOrderDetailsDialog(String title, Context context) {
+    public SelectStockDetailsDialog(String title, Context context) {
         super(title, OK_CANCEL);
         setModal(true);
 
-        supplier = new IMObjectSelector<Party>(
-                Messages.get("supplier.order.type"),
-                "party.supplier*");
-        location = new StockLocationSelector(
-                Messages.get("supplier.order.location"), context);
-
-        Grid grid = GridFactory.create(2);
-        grid.add(LabelFactory.create("supplier.order.type"));
-        grid.add(supplier.getComponent());
-        grid.add(LabelFactory.create("supplier.order.location"));
-        grid.add(location.getComponent());
-        getLayout().add(grid);
-
+        selector = new StockDetailsSelector(context);
+        getLayout().add(selector.getComponent());
         FocusGroup group = getFocusGroup();
-        group.add(0, supplier.getFocusGroup());
-        group.add(1, location.getFocusGroup());
-        group.setFocus();
+        group.add(selector.getFocusGroup());
     }
 
     /**
@@ -84,7 +60,7 @@ public class SelectOrderDetailsDialog extends PopupDialog {
      * @return the supplier, or <tt>null</tt> if none is selected
      */
     public Party getSupplier() {
-        return supplier.getObject();
+        return selector.getSupplier();
     }
 
     /**
@@ -93,7 +69,7 @@ public class SelectOrderDetailsDialog extends PopupDialog {
      * @return the stock location, or <tt>null</tt> if none is selected
      */
     public Party getStockLocation() {
-        return location.getObject();
+        return selector.getStockLocation();
     }
 
     /**
@@ -101,7 +77,7 @@ public class SelectOrderDetailsDialog extends PopupDialog {
      */
     @Override
     protected void onOK() {
-        if (supplier.getObject() != null && location.getObject() != null) {
+        if (getSupplier() != null && getStockLocation() != null) {
             super.onOK();
         }
     }

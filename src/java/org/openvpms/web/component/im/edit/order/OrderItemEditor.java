@@ -93,15 +93,6 @@ public class OrderItemEditor extends ActItemEditor {
     }
 
     /**
-     * Sets the product quantity.
-     *
-     * @param quantity the product quantity
-     */
-    public void setQuantity(BigDecimal quantity) {
-        getProperty("quantity").setValue(quantity);
-    }
-
-    /**
      * Sets the product supplier.
      *
      * @param supplier the product supplier. May be <tt>null</tt>

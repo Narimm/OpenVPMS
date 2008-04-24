@@ -84,6 +84,15 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
+     * Adds an act to the collection.
+     *
+     * @param act the act to add
+     */
+    public void add(Act act) {
+        getEditor().add(act);
+    }
+
+    /**
      * Returns the set of acts being edited, including that of the
      * {@link #getCurrentEditor()}.
      *

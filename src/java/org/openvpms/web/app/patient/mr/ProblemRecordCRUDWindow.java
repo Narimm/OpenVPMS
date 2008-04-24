@@ -28,7 +28,7 @@ import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLE
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;

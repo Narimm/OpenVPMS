@@ -70,15 +70,6 @@ public class SupplierInvoiceItemEditor extends ActItemEditor {
     }
 
     /**
-     * Sets the product quantity.
-     *
-     * @param quantity the product quantity
-     */
-    public void setQuantity(BigDecimal quantity) {
-        getProperty("quantity").setValue(quantity);
-    }
-
-    /**
      * Invoked when the participation product is changed, to update prices.
      *
      * @param participation the product participation instance

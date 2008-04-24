@@ -56,6 +56,11 @@ public class BrowserDialog<T extends IMObject> extends PopupDialog {
     private boolean createNew = false;
 
     /**
+     * The browser.
+     */
+    private final Browser<T> browser;
+
+    /**
      * Window style name.
      */
     private static final String STYLE = "BrowserDialog";
@@ -134,6 +139,16 @@ public class BrowserDialog<T extends IMObject> extends PopupDialog {
                 onSelected(object);
             }
         });
+        this.browser = browser;
+    }
+
+    /**
+     * Returns the browser.
+     *
+     * @return the browser
+     */
+    public Browser<T> getBrowser() {
+        return browser;
     }
 
     /**

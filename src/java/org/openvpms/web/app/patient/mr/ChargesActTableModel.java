@@ -18,23 +18,26 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 
+import java.util.List;
+
 /**
- * Table model for <em>act.customerChargesInvoiceItem</em> and 
+ * Table model for <em>act.customerChargesInvoiceItem</em> and
  * <em>act.customerChargesCreditItem</em>
  * acts.
  */
 public class ChargesActTableModel extends AbstractActTableModel {
 
-	/**
-     * Creates a new <tt>ReminderActTableModel</tt>.
+    /**
+     * Creates a new <tt>ChargesActTableModel</tt>.
      *
      * @param shortNames the act archetype short names
      */
-	public ChargesActTableModel(String[] shortNames) {
-		super(shortNames);
-	}
+    public ChargesActTableModel(String[] shortNames) {
+        super(shortNames);
+    }
 
     /**
      * Returns a list of descriptor names to include in the table.
@@ -43,18 +46,22 @@ public class ChargesActTableModel extends AbstractActTableModel {
      */
     @Override
     protected String[] getDescriptorNames() {
-        return new String[]{"startTime", "product", "clinician", "qty", "fixedPrice", "unitPrice", "discount", "tax", "total"};
+        return new String[]{"startTime", "product", "clinician", "qty",
+                            "fixedPrice", "unitPrice", "discount", "tax",
+                            "total"};
     }
 
     /**
-     * Returns the index to insert the archetype column.
+     * Determines if the archetype column should be displayed.
+     * <p/>
      *
-     * @return the index to insert the archetype column, or <code>-1<code>
-     *         if it should not be inserted
+     * @param archetypes the archetypes
+     * @return <tt>false</tt>
      */
     @Override
-    protected int getArchetypeColumnIndex() {
-        return -1;
+    protected boolean showArchetypeColumn(
+            List<ArchetypeDescriptor> archetypes) {
+        return false;
     }
 
 }

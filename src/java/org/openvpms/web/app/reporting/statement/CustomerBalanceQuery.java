@@ -43,7 +43,7 @@ import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.lookup.ArchetypeLookupQuery;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
-import org.openvpms.web.component.im.query.AbstractQuery;
+import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.util.CheckBoxFactory;
@@ -70,7 +70,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class CustomerBalanceQuery extends AbstractQuery<ObjectSet> {
+public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
 
     /**
      * The account type selector.
