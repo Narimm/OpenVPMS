@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.product;
 
+import echopointng.layout.TableLayoutDataEx;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -91,8 +92,10 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
         DefaultTableColumnModel model = new DefaultTableColumnModel();
         //createTableColumnModel(false, model);
         model.addColumn(createTableColumn(NAME_INDEX, "table.imobject.name"));
-        model.addColumn(createTableColumn(DESCRIPTION_INDEX, "table.imobject.description"));
-        model.addColumn(createTableColumn(ARCHETYPE_INDEX, "table.imobject.archetype"));
+        model.addColumn(createTableColumn(DESCRIPTION_INDEX,
+                                          "table.imobject.description"));
+        model.addColumn(
+                createTableColumn(ARCHETYPE_INDEX, "table.imobject.archetype"));
         fixedPriceIndex = getNextModelIndex(model);
         unitPriceIndex = fixedPriceIndex + 1;
         TableColumn fixedPrice = createTableColumn(
@@ -123,7 +126,7 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
                 String text = NumberFormatter.format(
                         value, NumberFormat.getCurrencyInstance());
                 label.setText(text);
-                TableLayoutData layout = new TableLayoutData();
+                TableLayoutData layout = new TableLayoutDataEx();
                 Alignment right = new Alignment(Alignment.RIGHT,
                                                 Alignment.DEFAULT);
                 layout.setAlignment(right);

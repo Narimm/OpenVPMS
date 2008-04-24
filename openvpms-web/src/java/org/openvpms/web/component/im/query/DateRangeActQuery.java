@@ -50,11 +50,12 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * Constructs a new <tt>DateRangeActQuery</tt>.
      *
      * @param shortNames the act short names to query
+     * @param statuses   the act status lookups. May be <tt>null</tt>
      * @param type       the type that this query returns
      */
-    public DateRangeActQuery(String[] shortNames, ActStatuses statusLookups,
+    public DateRangeActQuery(String[] shortNames, ActStatuses statuses,
                              Class type) {
-        this(null, null, null, shortNames, statusLookups, type);
+        this(null, null, null, shortNames, statuses, type);
     }
 
     /**
@@ -64,7 +65,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param participant   the partcipant node name
      * @param participation the entity participation short name
      * @param shortNames    the act short names
-     * @param statuses      the act status lookups
+     * @param statuses      the act status lookups. May be <tt>null</tt>
      * @param type          the type that this query returns
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
@@ -135,8 +136,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
     }
 
     /**
-     * Lays out the component in a container, and sets focus on the instance
-     * name.
+     * Lays out the component in a container.
      *
      * @param container the container
      */

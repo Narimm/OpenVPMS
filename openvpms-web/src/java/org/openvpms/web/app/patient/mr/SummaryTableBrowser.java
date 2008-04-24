@@ -19,6 +19,7 @@
 package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -39,7 +40,7 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
     /**
      * The table model that wraps the underlying model, to filter acts.
      */
-    private PagedSummaryTableModel pagedModel;
+    private PagedActHierarchyTableModel<Act> pagedModel;
 
 
     /**
@@ -75,8 +76,8 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
     @Override
     protected PagedIMTable<Act> createTable(IMTableModel<Act> model) {
         PatientSummaryQuery query = (PatientSummaryQuery) getQuery();
-        pagedModel = new PagedSummaryTableModel((IMObjectTableModel<Act>) model,
-                                                query.getActItemShortNames());
+        pagedModel = new PagedActHierarchyTableModel<Act>(
+                (IMObjectTableModel<Act>) model, query.getActItemShortNames());
         PagedIMObjectTable<Act> result
                 = new PagedIMObjectTable<Act>(pagedModel);
         IMTable<Act> table = result.getTable();

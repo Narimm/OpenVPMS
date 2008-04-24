@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.act;
+package org.openvpms.web.component.im.act;
 
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.FinancialActStatus;

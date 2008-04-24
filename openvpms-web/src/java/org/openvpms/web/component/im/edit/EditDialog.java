@@ -115,7 +115,7 @@ public class EditDialog extends PopupDialog {
      *
      * @return the editor
      */
-    protected IMObjectEditor getEditor() {
+    public IMObjectEditor getEditor() {
         return editor;
     }
 

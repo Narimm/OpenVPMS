@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.reporting.statement;
 
+import echopointng.layout.TableLayoutDataEx;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -229,7 +230,7 @@ public class CustomerBalanceSummaryTableModel
             String text = NumberFormatter.format(
                     amount, NumberFormat.getCurrencyInstance());
             label.setText(text);
-            TableLayoutData layout = new TableLayoutData();
+            TableLayoutData layout = new TableLayoutDataEx();
             Alignment right = new Alignment(Alignment.RIGHT,
                                             Alignment.DEFAULT);
             layout.setAlignment(right);

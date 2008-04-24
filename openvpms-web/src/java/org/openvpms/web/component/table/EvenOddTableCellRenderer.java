@@ -30,6 +30,27 @@ import nextapp.echo2.app.Table;
 public class EvenOddTableCellRenderer extends AbstractTableCellRenderer {
 
     /**
+     * The style of the even rows.
+     */
+    public static final String EVEN_STYLE = "Table.EvenRow";
+
+    /**
+     * The style of the inset even rows.
+     */
+    public static final String EVEN_STYLE_INSET = "Table.EvenRow-InsetX";
+
+    /**
+     * The style of the odd rows.
+     */
+    public static final String ODD_STYLE = "Table.OddRow";
+
+    /**
+     * The style of the inset odd rows.
+     */
+    public static final String ODD_STYLE_INSET = "Table.OddRow-InsetX";
+
+
+    /**
      * Returns the style name for a column and row.
      *
      * @param table  the <code>Table</code> for which the rendering is
@@ -41,7 +62,7 @@ public class EvenOddTableCellRenderer extends AbstractTableCellRenderer {
      * @return a style name for the given column and row.
      */
     protected String getStyle(Table table, Object value, int column, int row) {
-        return (row % 2 == 0) ? "Table.EvenRow" : "Table.OddRow";
+        return (row % 2 == 0) ? EVEN_STYLE : ODD_STYLE;
     }
 
 }

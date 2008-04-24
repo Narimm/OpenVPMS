@@ -48,21 +48,40 @@ public abstract class SupplierActCRUDWindow<T extends Act>
 
     /**
      * Invoked when a new object has been created.
+     * <p/>
+     * This implementation adds a supplier participation, if there is a
+     * supplier in the global context.
      *
      * @param act the new act
      */
     @Override
     protected void onCreated(final T act) {
         Party supplier = GlobalContext.getInstance().getSupplier();
-        if (supplier != null) {
-            try {
-                ActBean bean = new ActBean(act);
-                bean.addParticipation("participation.supplier", supplier);
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-        }
+        addParticipations(act, supplier, null);
         super.onCreated(act);
+    }
+
+    /**
+     * Helper to add supplier and stock location participations to an act.
+     *
+     * @param act      the act
+     * @param supplier the supplier. May be <tt>null</tt>
+     * @param location the stock location. May be <tt>null</tt>
+     */
+    protected void addParticipations(T act, Party supplier, Party location) {
+        try {
+            ActBean bean = new ActBean(act);
+            if (supplier != null) {
+                bean.addParticipation("participation.supplier",
+                                      supplier);
+            }
+            if (location != null) {
+                bean.addParticipation("participation.stockLocation",
+                                      location);
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
 }

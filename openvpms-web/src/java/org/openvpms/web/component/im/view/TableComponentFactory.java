@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.view;
 
+import echopointng.layout.TableLayoutDataEx;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -93,7 +94,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
         String value = getNumericValue(property);
         Label label = LabelFactory.create();
         label.setText(value);
-        TableLayoutData layout = new TableLayoutData();
+        TableLayoutData layout = new TableLayoutDataEx();
         Alignment right = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
         layout.setAlignment(right);
         label.setLayoutData(layout);

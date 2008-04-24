@@ -179,15 +179,6 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
     }
 
     /**
-     * Sets the product quantity.
-     *
-     * @param quantity the product quantity
-     */
-    public void setQuantity(BigDecimal quantity) {
-        getProperty("quantity").setValue(quantity);
-    }
-
-    /**
      * Validates the object.
      *
      * @param validator the validator

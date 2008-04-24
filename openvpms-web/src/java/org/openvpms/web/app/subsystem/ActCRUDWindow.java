@@ -55,6 +55,12 @@ public abstract class ActCRUDWindow<T extends Act>
         extends AbstractViewCRUDWindow<T> {
 
     /**
+     * Determines if the current act is posted or not.
+     */
+    private boolean posted;
+
+
+    /**
      * The 'post' button.
      */
     private Button post;
@@ -82,6 +88,17 @@ public abstract class ActCRUDWindow<T extends Act>
      */
     public ActCRUDWindow(Archetypes<T> archetypes) {
         super(archetypes);
+    }
+
+    /**
+     * Sets the object.
+     *
+     * @param object the object. May be <tt>null</tt>
+     */
+    @Override
+    public void setObject(T object) {
+        posted = (object != null) && POSTED.equals(object.getStatus());
+        super.setObject(object);
     }
 
     /**
@@ -171,7 +188,25 @@ public abstract class ActCRUDWindow<T extends Act>
     }
 
     /**
-     * Invoked when posting of an act is complete.
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(T object, boolean isNew) {
+        boolean prevPosted = posted && !isNew;
+        super.onSaved(object, isNew);
+        String status = object.getStatus();
+        if (!prevPosted && POSTED.equals(status)) {
+            onPosted(object);
+        }
+    }
+
+    /**
+     * Invoked when posting of an act is complete, either by saving the act
+     * with <em>POSTED</em> status, or invoking {@link #onPost()}.
+     * <p/>
      * This implementation does nothing.
      *
      * @param act the act

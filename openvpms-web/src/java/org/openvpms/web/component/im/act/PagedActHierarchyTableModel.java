@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.mr;
+package org.openvpms.web.component.im.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -27,27 +27,29 @@ import java.util.List;
 
 
 /**
- * Paged act summary table model.
+ * A paged table model that uses an {@link ActHierarchyFlattener} to view both
+ * parent and child acts in the one table.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PagedSummaryTableModel extends PagedIMObjectTableModel<Act> {
+public class PagedActHierarchyTableModel<T extends Act>
+        extends PagedIMObjectTableModel<T> {
 
     /**
-     * The archetype short names or the child acts to display.
+     * The archetype short names of the child acts to display.
      */
     private String[] shortNames;
 
 
     /**
-     * Construct a new <code>PagedSummaryTableModel</code>.
+     * Construct a new <tt>PagedActHierarchyTableModel</tt>.
      *
      * @param model      the underlying table model
      * @param shortNames the archetype short names of the child acts to display
      */
-    public PagedSummaryTableModel(IMObjectTableModel<Act> model,
-                                  String[] shortNames) {
+    public PagedActHierarchyTableModel(IMObjectTableModel<T> model,
+                                       String ... shortNames) {
         super(model);
         this.shortNames = shortNames;
     }
@@ -67,13 +69,24 @@ public class PagedSummaryTableModel extends PagedIMObjectTableModel<Act> {
      * @param objects the objects to set
      */
     @Override
-    protected void setPage(List<Act> objects) {
-        IterableSummary summary = new IterableSummary(objects, shortNames);
-        List<Act> acts = new ArrayList<Act>();
-        for (Act act : summary) {
+    protected void setPage(List<T> objects) {
+        Iterable<T> iterable = createFlattener(objects, shortNames);
+        List<T> acts = new ArrayList<T>();
+        for (T act : iterable) {
             acts.add(act);
         }
         getModel().setObjects(acts);
+    }
+
+    /**
+     * Creates a new {@link ActHierarchyFlattener}.
+     *
+     * @param objects    the acts
+     * @param shortNames the child archetype short names
+     */
+    protected ActHierarchyFlattener<T> createFlattener(List<T> objects,
+                                                       String[] shortNames) {
+        return new ActHierarchyFlattener<T>(objects, shortNames);
     }
 
 }

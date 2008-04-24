@@ -45,7 +45,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class ActQuery<T> extends AbstractQuery<T> {
+public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
 
     /**
      * The participant node name.
@@ -98,7 +98,7 @@ public abstract class ActQuery<T> extends AbstractQuery<T> {
      * @param participation the entity participation short name.
      *                      May be <tt>null</tt>
      * @param shortNames    the act short names
-     * @param statuses      the act status lookups
+     * @param statuses      the act status lookups. May be <tt>null</tt>
      * @param type          the type that this query returns
      */
     public ActQuery(Entity entity, String participant, String participation,

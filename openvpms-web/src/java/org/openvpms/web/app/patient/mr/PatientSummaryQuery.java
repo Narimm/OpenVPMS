@@ -25,7 +25,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.query.DateRangeActQuery;

@@ -35,7 +35,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
-import org.openvpms.web.component.im.query.AbstractQuery;
+import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
 import org.openvpms.web.component.im.query.ActDateRange;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.QueryFactory;
@@ -57,7 +57,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientReminderQuery extends AbstractQuery<Act> {
+public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
 
     /**
      * Reminder type filter.

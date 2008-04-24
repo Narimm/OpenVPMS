@@ -39,7 +39,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractEntityQuery<T> extends AbstractQuery<T> {
+public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
 
     /**
      * The identity search check box. If selected, name searches will be

@@ -30,6 +30,7 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Property;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -54,7 +55,22 @@ public class DescriptorTableColumn extends TableColumn {
 
 
     /**
-     * Construct a new <code>DescriptorTableColumn</code> with the specified
+     * Construct a new <tt>DescriptorTableColumn</tt> with the specified
+     * model index,undefined width, and undefined cell and header renderers.
+     *
+     * @param modelIndex the column index of model data visualized by this
+     *                   column
+     * @param descriptor the node descriptor
+     */
+    public DescriptorTableColumn(int modelIndex, NodeDescriptor descriptor) {
+        super(modelIndex);
+        this.descriptor = descriptor;
+        descriptors = new HashMap<String, NodeDescriptor>();
+        descriptors.put(descriptor.getName(), descriptor);
+    }
+
+    /**
+     * Construct a new <tt>DescriptorTableColumn</tt> with the specified
      * model index,undefined width, and undefined cell and header renderers.
      *
      * @param modelIndex  the column index of model data visualized by this
@@ -94,6 +110,15 @@ public class DescriptorTableColumn extends TableColumn {
     }
 
     /**
+     * Returns the descriptor's node name.
+     *
+     * @return the descriptor's node name
+     */
+    public String getName() {
+        return descriptor.getName();
+    }
+
+    /**
      * Returns the default descriptor.
      *
      * @return the default descriptor
@@ -106,7 +131,7 @@ public class DescriptorTableColumn extends TableColumn {
      * Returns the descriptor for a specific object.
      *
      * @param object the object
-     * @return the descriptor for <code>object</code>
+     * @return the descriptor for <tt>object</tt>
      */
     public NodeDescriptor getDescriptor(IMObject object) {
         String shortName = object.getArchetypeId().getShortName();

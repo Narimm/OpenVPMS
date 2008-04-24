@@ -16,12 +16,13 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.mr;
+package org.openvpms.web.component.im.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.app.patient.mr.PatientSummaryQuery;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.test.TestHelper;
 
@@ -31,15 +32,15 @@ import java.util.Random;
 
 
 /**
- * Tests the {@link IterableSummary} class.
+ * Tests the {@link ActHierarchyFlattener} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IterableSummaryTestCase extends AbstractAppTest {
+public class ActHierarchyFlattenerTestCase extends AbstractAppTest {
 
     /**
-     * Tests the {@link IterableSummary} class.
+     * Tests the {@link ActHierarchyFlattener} class.
      */
     public void test() {
         Party patient = TestHelper.createPatient(true);
@@ -64,7 +65,7 @@ public class IterableSummaryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that {@link IterableSummary} returns the expected acts,
+     * Verifies that {@link ActHierarchyFlattener} returns the expected acts,
      * in the correct order.
      *
      * @param query      the query
@@ -73,7 +74,8 @@ public class IterableSummaryTestCase extends AbstractAppTest {
      */
     private void checkIterator(PatientSummaryQuery query, int expected,
                                String ... shortNames) {
-        IterableSummary summary = new IterableSummary(query, shortNames);
+        Iterable<Act> summary = new ActHierarchyFlattener<Act>(query,
+                                                               shortNames);
         int acts = 0;
         Date lastItemTime = null;
         Act event = null;

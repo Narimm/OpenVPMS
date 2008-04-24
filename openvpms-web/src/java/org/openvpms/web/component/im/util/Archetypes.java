@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.util;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -88,8 +89,8 @@ public class Archetypes<T extends IMObject> {
         Class actual = IMObjectHelper.getType(expanded);
         if (!type.isAssignableFrom(actual)) {
             throw new IllegalStateException("Invalid type. Expected "
-                    + type + ", but got " + actual);
-
+                    + type + ", but got " + actual + " for archetypes "
+                    + StringUtils.join(shortNames, ", "));
         }
         this.shortNames = shortNames;
         this.type = type;
