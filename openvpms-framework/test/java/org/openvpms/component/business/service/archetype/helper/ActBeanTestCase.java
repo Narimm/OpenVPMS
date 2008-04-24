@@ -126,9 +126,9 @@ public class ActBeanTestCase
     }
 
     /**
-     * Tests the {@link ActBean#getActsForNode} method.
+     * Tests the {@link ActBean#getNodeActs} method.
      */
-    public void testGetActsForNode() {
+    public void testGetNodeActs() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         final String relName = "actRelationship.customerEstimationItem";
@@ -140,7 +140,7 @@ public class ActBeanTestCase
             bean.addRelationship(relName, target);
             expected[i] = target;
         }
-        List<Act> acts = bean.getActsForNode("items");
+        List<Act> acts = bean.getNodeActs("items");
         assertEquals(expected.length, acts.size());
         for (Act exp : expected) {
             assertTrue(acts.contains(exp));
