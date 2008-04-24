@@ -166,7 +166,7 @@ class InvoiceItemSaveRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void addReminders() {
-        List<Act> reminders = itemBean.getActsForNode("reminders");
+        List<Act> reminders = itemBean.getNodeActs("reminders");
 
         Set<IMObjectReference> actReminders         // reminderTypes referenced
                 = new HashSet<IMObjectReference>(); // by the acts
@@ -245,7 +245,7 @@ class InvoiceItemSaveRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void addDocuments() {
-        List<Act> documents = itemBean.getActsForNode("documents");
+        List<Act> documents = itemBean.getNodeActs("documents");
 
         Set<IMObjectReference> actDocs              // entity.documentTemplates
                 = new HashSet<IMObjectReference>(); // referenced by the acts
@@ -335,7 +335,7 @@ class InvoiceItemSaveRules {
      */
     private void addEventRelationships() {
         List<Act> acts = new ArrayList<Act>();
-        for (Act medication : itemBean.getActsForNode("dispensing")) {
+        for (Act medication : itemBean.getNodeActs("dispensing")) {
             acts.add(medication);
         }
         acts.addAll(newDocs);

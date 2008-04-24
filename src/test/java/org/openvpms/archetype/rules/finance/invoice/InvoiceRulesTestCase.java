@@ -96,7 +96,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         item = reload(item); // reload to ensure the item has saved correctly
 
         // make sure a reminder has been added
-        List<Act> reminders = item.getActsForNode("reminders");
+        List<Act> reminders = item.getNodeActs("reminders");
         assertEquals(1, reminders.size());
         Act reminder = reminders.get(0);
 
@@ -112,7 +112,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         assertEquals(endTime, reminder.getActivityEndTime());
 
         // make sure a document has been added
-        List<Act> documents = item.getActsForNode("documents");
+        List<Act> documents = item.getNodeActs("documents");
         assertEquals(1, documents.size());
         Act document = documents.get(0);
         assertTrue(TypeHelper.isA(document, "act.patientDocumentForm"));
@@ -150,10 +150,10 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         item.setParticipant("participation.product", createProduct(false));
         item.save();
         item = reload(item);
-        reminders = item.getActsForNode("reminders");
+        reminders = item.getNodeActs("reminders");
         assertTrue(reminders.isEmpty());
 
-        documents = item.getActsForNode("documents");
+        documents = item.getNodeActs("documents");
         assertTrue(documents.isEmpty());
     }
 
@@ -167,10 +167,10 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         item.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
-        List<Act> reminders = item.getActsForNode("reminders");
+        List<Act> reminders = item.getNodeActs("reminders");
         assertEquals(1, reminders.size());
 
-        List<Act> documents = item.getActsForNode("documents");
+        List<Act> documents = item.getNodeActs("documents");
         assertEquals(1, documents.size());
 
         // remove the item and verify it can't be retrieved
@@ -199,10 +199,10 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         item.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
-        List<Act> reminders = item.getActsForNode("reminders");
+        List<Act> reminders = item.getNodeActs("reminders");
         assertEquals(1, reminders.size());
 
-        List<Act> documents = item.getActsForNode("documents");
+        List<Act> documents = item.getNodeActs("documents");
         assertEquals(1, documents.size());
 
         // set the reminder status to 'Completed'
@@ -241,10 +241,10 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         invoice.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
-        List<Act> reminders = item.getActsForNode("reminders");
+        List<Act> reminders = item.getNodeActs("reminders");
         assertEquals(1, reminders.size());
 
-        List<Act> documents = item.getActsForNode("documents");
+        List<Act> documents = item.getNodeActs("documents");
         assertEquals(1, documents.size());
 
         // remove the invoice and verify it can't be retrieved
@@ -277,10 +277,10 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         invoice.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
-        List<Act> reminders = item.getActsForNode("reminders");
+        List<Act> reminders = item.getNodeActs("reminders");
         assertEquals(1, reminders.size());
 
-        List<Act> documents = item.getActsForNode("documents");
+        List<Act> documents = item.getNodeActs("documents");
         assertEquals(1, documents.size());
 
         // set the reminder status to 'Completed'

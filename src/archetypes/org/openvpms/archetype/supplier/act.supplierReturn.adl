@@ -11,13 +11,13 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $$Id$$
 -->
 <archetypes>
-    <archetype name="act.supplierOrder.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Order">
+    <archetype name="act.supplierReturn.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Return">
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
@@ -34,30 +34,13 @@
         <node name="startTime" displayName="Date" path="/activityStartTime"
               type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
         <node name="title" displayName="Notes" path="/title" type="java.lang.String" minCardinality="1" maxLength="30" defaultValue="'Enter notes ...'"/>
-        <node name="amount" path="/total"
-              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
-              defaultValue="'0.0'" readOnly="true">
-        </node>
-        <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" minCardinality="1"/>
         <node name="status" path="/status" type="java.lang.String"
               minCardinality="1" defaultValue="'IN_PROGRESS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="IN_PROGRESS" value="In Progress"/>
-                    <property name="COMPLETED" value="Completed"/>
-                    <property name="CANCELLED" value="Cancelled"/>
                     <property name="POSTED" value="Posted"/>
-                </propertyList>
-                <errorMessage>An error message</errorMessage>
-            </assertion>
-        </node>
-        <node name="deliveryStatus" path="/details/deliveryStatus" type="java.lang.String"
-              minCardinality="1" defaultValue="'PENDING'">
-            <assertion name="lookup.local">
-                <propertyList name="entries">
-                    <property name="PENDING" value="Pending"/>
-                    <property name="PART" value="Part"/>
-                    <property name="FULL" value="Full"/>
+                    <property name="CANCELLED" value="Cancelled"/>
                 </propertyList>
                 <errorMessage>An error message</errorMessage>
             </assertion>
@@ -68,7 +51,7 @@
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName"
-                                  value="actRelationship.supplierOrderItem"/>
+                                  value="actRelationship.supplierReturnItem"/>
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>

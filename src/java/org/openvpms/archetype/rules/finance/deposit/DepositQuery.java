@@ -18,7 +18,6 @@
 
 package org.openvpms.archetype.rules.finance.deposit;
 
-import org.apache.commons.collections.comparators.NullComparator;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -38,7 +37,6 @@ import java.util.List;
 
 /**
  * @author tony
- *
  */
 public class DepositQuery {
 
@@ -96,7 +94,7 @@ public class DepositQuery {
      * @param service the archetype service
      */
     public DepositQuery(FinancialAct bankDeposit,
-                            IArchetypeService service) {
+                        IArchetypeService service) {
         this.bankDeposit = bankDeposit;
         this.service = service;
         calculator = new ActCalculator(service);
@@ -104,7 +102,7 @@ public class DepositQuery {
 
     /**
      * Executes the query.
-     * 
+     *
      * @return the query results.
      * @throws ArchetypeServiceException if the query fails
      */
@@ -112,45 +110,49 @@ public class DepositQuery {
         List<ObjectSet> result = new ArrayList<ObjectSet>();
         ActBean bean = new ActBean(bankDeposit, service); //The bankDeposit Act
         for (Act tillBalance : bean.getActs()) { // Deposit Till Balances loop
-        	ActBean tillBalanceBean = new ActBean(tillBalance);
-	        for (Act tillBalanceItem : tillBalanceBean.getActs()) { // Till Balance Item loop
-	            ActBean tillBalanceItemBean = new ActBean(tillBalanceItem);
-	            if (tillBalanceItemBean.isA("act.tillBalanceAdjustment")) {
-	                ObjectSet set = new ObjectSet();
-	                set.add(BANK_DEPOSIT, bankDeposit);
-	                set.add(ACT, tillBalanceItem);
-	                Act item;
-	                if (tillBalanceItemBean.getBoolean("credit")) {
-		                item = (FinancialAct)service.create("act.customerAccountPaymentCash");	                	
-	                } else {
-		                item = (FinancialAct)service.create("act.customerAccountRefundCash");	                		                	
-	                }
-	                ActBean itemBean = new ActBean(item);
-	                BigDecimal actAmount = getAmount(tillBalanceItem);
+            ActBean tillBalanceBean = new ActBean(tillBalance);
+            for (Act tillBalanceItem : tillBalanceBean.getActs())
+            { // Till Balance Item loop
+                ActBean tillBalanceItemBean = new ActBean(tillBalanceItem);
+                if (tillBalanceItemBean.isA("act.tillBalanceAdjustment")) {
+                    ObjectSet set = new ObjectSet();
+                    set.add(BANK_DEPOSIT, bankDeposit);
+                    set.add(ACT, tillBalanceItem);
+                    Act item;
+                    if (tillBalanceItemBean.getBoolean("credit")) {
+                        item = (FinancialAct) service.create(
+                                "act.customerAccountPaymentCash");
+                    } else {
+                        item = (FinancialAct) service.create(
+                                "act.customerAccountRefundCash");
+                    }
+                    ActBean itemBean = new ActBean(item);
+                    BigDecimal actAmount = getAmount(tillBalanceItem);
 
-	                itemBean.setValue("amount", actAmount);
-	                item.setDescription(tillBalanceItem.getDescription());
+                    itemBean.setValue("amount", actAmount);
+                    item.setDescription(tillBalanceItem.getDescription());
                     set.add(ACT_ITEM, item);
-	                set.add(AMOUNT, actAmount.negate());
-	                result.add(set);
-	            } else {
-	                for (Act item : tillBalanceItemBean.getActsForNode("items")) { //Till Balance Item Items loop
-	                	// Skip any discounts
-	                	String shortName = item.getArchetypeId().getShortName();
-	                	if (shortName.endsWith("Discount")) {
-	                		continue;
-	                	}
-	                    ObjectSet set = new ObjectSet();
-		                set.add(BANK_DEPOSIT, bankDeposit);
-	                    set.add(ACT, tillBalanceItem);
-	                    set.add(ACT_ITEM, item);
-	                    set.add(AMOUNT, getAmount(item).negate());
-	                    result.add(set);
-	                   
-	                }
-	            }
-	        }
-    	}
+                    set.add(AMOUNT, actAmount.negate());
+                    result.add(set);
+                } else {
+                    for (Act item : tillBalanceItemBean.getNodeActs("items"))
+                    { //Till Balance Item Items loop
+                        // Skip any discounts
+                        String shortName = item.getArchetypeId().getShortName();
+                        if (shortName.endsWith("Discount")) {
+                            continue;
+                        }
+                        ObjectSet set = new ObjectSet();
+                        set.add(BANK_DEPOSIT, bankDeposit);
+                        set.add(ACT, tillBalanceItem);
+                        set.add(ACT_ITEM, item);
+                        set.add(AMOUNT, getAmount(item).negate());
+                        result.add(set);
+
+                    }
+                }
+            }
+        }
         // sort on item payment type
         Collections.sort(result, new Comparator<ObjectSet>() {
             public int compare(ObjectSet o1, ObjectSet o2) {
@@ -158,8 +160,10 @@ public class DepositQuery {
                 Act a2 = (Act) o2.get(ACT_ITEM);
                 ActBean ab1 = new ActBean(a1);
                 ActBean ab2 = new ActBean(a2);
-                return getPaymentTypeNumber(ab1.getObject().getArchetypeId().getShortName()) -
-                                        getPaymentTypeNumber(ab2.getObject().getArchetypeId().getShortName());
+                return getPaymentTypeNumber(
+                        ab1.getObject().getArchetypeId().getShortName()) -
+                        getPaymentTypeNumber(
+                                ab2.getObject().getArchetypeId().getShortName());
             }
         });
         return new Page<ObjectSet>(result, 0, result.size(), result.size());
@@ -175,30 +179,26 @@ public class DepositQuery {
     private BigDecimal getAmount(Act act) {
         return calculator.getAmount(act, "amount");
     }
-    
+
     /**
      * Returns a number based on the payment type extracted from the shortname
-     * 
+     *
      * @param shortName the archetype shortname
      * @return a number corresponding to the payment type
      */
-    
+
     private Integer getPaymentTypeNumber(String shortName) {
-    	if (shortName.endsWith("Cheque")){
-    		return 0;
-    	}
-    	else if (shortName.endsWith("Credit")) {
-    		return 1;
-    	}
-    	else if (shortName.endsWith("EFT")) {
-    		return 2;
-    	}
-    	else if (shortName.endsWith("Cash")) {
-    		return 3;
-    	}
-    	else {
-    		return 4;
-    	}
+        if (shortName.endsWith("Cheque")) {
+            return 0;
+        } else if (shortName.endsWith("Credit")) {
+            return 1;
+        } else if (shortName.endsWith("EFT")) {
+            return 2;
+        } else if (shortName.endsWith("Cash")) {
+            return 3;
+        } else {
+            return 4;
+        }
     }
-     
+
 }

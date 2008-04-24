@@ -747,7 +747,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         assertTrue(TypeHelper.isA(reversal, shortName));
         ActBean bean = new ActBean(reversal);
         if (itemShortName != null) {
-            List<Act> items = bean.getActsForNode("items");
+            List<Act> items = bean.getNodeActs("items");
             assertEquals(1, items.size());
             Act item = items.get(0);
             assertTrue(TypeHelper.isA(item, itemShortName));
@@ -761,7 +761,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
             checkEquals(amount, ((FinancialAct) item).getTotal());
         } else {
             if (bean.hasNode("items")) {
-                List<Act> items = bean.getActsForNode("items");
+                List<Act> items = bean.getNodeActs("items");
                 assertEquals(0, items.size());
             }
         }
