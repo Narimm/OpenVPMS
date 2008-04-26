@@ -201,6 +201,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
                     Party supplier = dialog.getSupplier();
                     Party location = dialog.getStockLocation();
                     addParticipations(act, supplier, location);
+                    edit(act);
                 }
             }
         });
