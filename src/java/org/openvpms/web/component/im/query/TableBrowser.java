@@ -18,14 +18,19 @@
 
 package org.openvpms.web.component.im.query;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.layout.ColumnLayoutData;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.component.util.LabelFactory;
 
 import java.util.List;
 
@@ -54,6 +59,17 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
      */
     private IMTableModel<T> model;
 
+    /**
+     * Determines if the component has been laid out.
+     */
+    private boolean initialLayout = true;
+
+    /**
+     * If true, denotes that the current layout is the 'results layout'.
+     * If false, denotes that the current layout is the 'no results layout'.
+     */
+    private boolean resultsLayout = false;
+
 
     /**
      * Construct a new <code>TableBrowser</code> that queries objects using the
@@ -72,8 +88,7 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
     /**
      * Returns the selected object.
      *
-     * @return the selected object, or <code>null</code> if none has been
-     *         selected.
+     * @return the selected object, or <tt>null</tt> if none has been selected.
      */
     public T getSelected() {
         return (table != null) ? table.getTable().getSelected() : null;
@@ -85,11 +100,7 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
      * @param object the object to select
      */
     public void setSelected(T object) {
-        Component component = getComponent();
-        if (table == null) {
-            doLayout(component);
-        }
-        table.getTable().setSelected(object);
+        getTable().getTable().setSelected(object);
     }
 
     /**
@@ -108,13 +119,13 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
         Component component = getComponent();
 
         ResultSet<T> set = doQuery();
-        if (table == null) {
-            doLayout(component);
-        }
+        boolean hasResults = (set != null && hasResults(set));
+        doLayout(component, hasResults);
 
         if (set == null) {
             set = new EmptyResultSet<T>(getQuery().getMaxResults());
         }
+        PagedIMTable<T> table = getTable();
         table.setResultSet(set);
         IMTable<T> imTable = table.getTable();
         if (!imTable.getObjects().isEmpty()
@@ -124,19 +135,45 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
     }
 
     /**
-     * Adds the table to the browser component.
+     * Determines if a result set has results.
      *
-     * @param component the browser component
+     * @param set the result set
+     * @return <tt>true</tt> if the result set has results
      */
-    protected void doLayout(Component component) {
-        table = createTable(model);
-        table.getTable().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onSelect();
+    protected boolean hasResults(ResultSet<T> set) {
+        boolean hasResults = false;
+        if (set != null) {
+            IPage<T> page = set.getPage(0);
+            if (page != null) {
+                hasResults = !page.getResults().isEmpty();
             }
-        });
-        component.add(table);
+        }
+        return hasResults;
+    }
+
+    /**
+     * Lays out the container to display results.
+     *
+     * @param container the container
+     */
+    protected void doLayoutForResults(Component container) {
+        PagedIMTable<T> table = getTable();
+        container.add(table);
         getFocusGroup().add(table);
+    }
+
+    /**
+     * Lays out the container when there are no results to display.
+     *
+     * @param container the container
+     */
+    protected void doLayoutForNoResults(Component container) {
+        Label label = LabelFactory.create("browser.noresults", "bold");
+        ColumnLayoutData layout = new ColumnLayoutData();
+        layout.setAlignment(Alignment.ALIGN_CENTER);
+        label.setLayoutData(layout);
+
+        container.add(label);
     }
 
     /**
@@ -150,11 +187,19 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
     }
 
     /**
-     * Returns the underlying table.
+     * Returns the underlying table, creating it if it doesn't exist.
      *
      * @return the table
      */
     protected PagedIMTable<T> getTable() {
+        if (table == null) {
+            table = createTable(model);
+            table.getTable().addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    onSelect();
+                }
+            });
+        }
         return table;
     }
 
@@ -165,6 +210,37 @@ public abstract class TableBrowser<T> extends AbstractBrowser<T> {
      */
     protected IMTableModel<T> getTableModel() {
         return model;
+    }
+
+    /**
+     * Adds the table to the browser container.
+     *
+     * @param container  the browser container
+     * @param hasResults
+     */
+    private void doLayout(Component container, boolean hasResults) {
+        if (initialLayout || (hasResults != resultsLayout)) {
+            switchLayout(container, hasResults);
+            initialLayout = false;
+        }
+        resultsLayout = hasResults;
+    }
+
+    /**
+     * Switches between the layout for displaying results and no results.
+     *
+     * @param container the container
+     * @param results   if <tt>true</tt> denotes that there are results to display
+     */
+    private void switchLayout(Component container, boolean results) {
+        container.removeAll();
+        getFocusGroup().remove(table);
+        doLayout(container);
+        if (results) {
+            doLayoutForResults(container);
+        } else {
+            doLayoutForNoResults(container);
+        }
     }
 
     /**

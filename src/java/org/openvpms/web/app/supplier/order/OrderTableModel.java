@@ -56,7 +56,7 @@ public class OrderTableModel extends AbstractActTableModel {
      * @return the list of descriptor names to include in the table
      */
     @Override
-    protected String[] getDescriptorNames() {
+    protected String[] getNodeNames() {
         return NODES;
     }
 }

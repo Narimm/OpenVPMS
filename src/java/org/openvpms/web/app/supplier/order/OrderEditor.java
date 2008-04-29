@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.order;
+package org.openvpms.web.app.supplier.order;
 
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.archetype.rules.act.ActStatus;

@@ -57,16 +57,15 @@ public abstract class DescriptorTableModel<T extends IMObject>
 
 
     /**
-     * Creates a new <code>DescriptorTableModel</code>.
+     * Creates a new <tt>DescriptorTableModel</tt>.
      * The column model must be set using {@link #setTableColumnModel}.
      */
     public DescriptorTableModel() {
         this((LayoutContext) null);
     }
 
-
     /**
-     * Creates a new <code>DescriptorTableModel</code>.
+     * Creates a new <tt>DescriptorTableModel</tt>.
      * The column model must be set using {@link #setTableColumnModel}.
      *
      * @param context the layout context. May be <tt>null</tt>
@@ -81,7 +80,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
     }
 
     /**
-     * Creates a new <code>DescriptorTableModel</code>.
+     * Creates a new <tt>DescriptorTableModel</tt>.
      *
      * @param shortNames the archetype short names
      */
@@ -90,7 +89,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
     }
 
     /**
-     * Creates a new <code>DescriptorTableModel</code>.
+     * Creates a new <tt>DescriptorTableModel</tt>.
      *
      * @param shortNames the archetype short names
      * @param context    the layout context. May be <tt>null</tt>
@@ -126,9 +125,9 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
-     * @return the sort criteria, or <code>null</code> if the column isn't
+     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
+     *                  sort in <tt>descending</tt> order
+     * @return the sort criteria, or <tt>null</tt> if the column isn't
      *         sortable
      */
     @Override
@@ -226,7 +225,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
     protected TableColumnModel createColumnModel(
             List<ArchetypeDescriptor> archetypes,
             LayoutContext context) {
-        List<String> names = getDescriptorNames(archetypes, context);
+        List<String> names = getNodeNames(archetypes, context);
         TableColumnModel columns = new DefaultTableColumnModel();
 
         if (showArchetypeColumn(archetypes)) {
@@ -320,17 +319,18 @@ public abstract class DescriptorTableModel<T extends IMObject>
 
 
     /**
-     * Returns the intersection of descriptor names for a set of archetypes.
+     * Returns the intersection of node descriptor names for a set of
+     * archetypes.
      *
      * @param archetypes the archetype descriptors
      * @param context    the layout context
      * @return the intersection of descriptors names for a set of archetypes
      */
-    protected List<String> getDescriptorNames(
+    protected List<String> getNodeNames(
             List<ArchetypeDescriptor> archetypes, LayoutContext context) {
         List<String> common = null;
         for (ArchetypeDescriptor archetype : archetypes) {
-            List<String> nodes = getDescriptorNames(archetype, context);
+            List<String> nodes = getNodeNames(archetype, context);
             if (common == null) {
                 common = nodes;
             } else {
@@ -341,27 +341,27 @@ public abstract class DescriptorTableModel<T extends IMObject>
     }
 
     /**
-     * Returns a list of descriptor names to include in the table.
-     * This implementation returns <code>null</code> to indicate that the
+     * Returns a list of node descriptor names to include in the table.
+     * This implementation returns <tt>null</tt> to indicate that the
      * intersection should be calculated from all descriptors.
      *
-     * @return the list of descriptor names to include in the table
+     * @return the list of node descriptor names to include in the table
      */
-    protected String[] getDescriptorNames() {
+    protected String[] getNodeNames() {
         return null;
     }
 
     /**
-     * Returns a filtered list of descriptor names for an archetype.
+     * Returns a filtered list of node descriptor names for an archetype.
      *
      * @param archetype the archetype
      * @param context   the layout context
-     * @return a filtered list of descriptor names for the archetype
+     * @return a filtered list of node descriptor names for the archetype
      */
-    protected List<String> getDescriptorNames(ArchetypeDescriptor archetype,
-                                              LayoutContext context) {
+    protected List<String> getNodeNames(ArchetypeDescriptor archetype,
+                                        LayoutContext context) {
         List<String> result = new ArrayList<String>();
-        String[] names = getDescriptorNames();
+        String[] names = getNodeNames();
         if (names != null && names.length != 0) {
             for (String name : names) {
                 NodeDescriptor descriptor = archetype.getNodeDescriptor(name);

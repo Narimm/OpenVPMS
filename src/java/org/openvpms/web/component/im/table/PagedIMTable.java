@@ -46,7 +46,7 @@ public class PagedIMTable<T> extends Column {
     private TableNavigator navigator;
 
     /**
-     * Constructs a new <code>PagedIMTable</code>.
+     * Constructs a new <tt>PagedIMTable</tt>.
      *
      * @param model the table model
      */
@@ -67,6 +67,18 @@ public class PagedIMTable<T> extends Column {
             }
         });
     }
+
+    /**
+     * Constructs a new <tt>PagedIMTable</tt>.
+     *
+     * @param model the model to render results
+     * @param set   the result set
+     */
+    public PagedIMTable(IMTableModel<T> model, ResultSet<T> set) {
+        this(model);
+        setResultSet(set);
+    }
+
 
     /**
      * Sets the result set.

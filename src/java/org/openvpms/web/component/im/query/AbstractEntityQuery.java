@@ -93,19 +93,18 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
      * Performs the query.
      *
      * @param sort the sort constraint. May be <tt>null</tt>
-     * @return the query result set
+     * @return the query result set. May be <tt>null</tt>
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
     public ResultSet<T> query(SortConstraint[] sort) {
-        ResultSet<T> result;
+        ResultSet<T> result = null;
 
         if (canQueryOnName()) {
             result = createResultSet(sort);
         } else {
             ErrorHelper.show(Messages.get("entityquery.error.nameLength",
                                           getNameMinLength()));
-            result = new EmptyResultSet<T>(getMaxResults());
         }
         return result;
     }

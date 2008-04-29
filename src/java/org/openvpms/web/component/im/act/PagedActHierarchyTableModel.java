@@ -27,7 +27,7 @@ import java.util.List;
 
 
 /**
- * A paged table model that uses an {@link ActHierarchyFlattener} to view both
+ * A paged table model that uses an {@link ActHierarchyIterator} to view both
  * parent and child acts in the one table.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -79,14 +79,14 @@ public class PagedActHierarchyTableModel<T extends Act>
     }
 
     /**
-     * Creates a new {@link ActHierarchyFlattener}.
+     * Creates a new {@link ActHierarchyIterator}.
      *
      * @param objects    the acts
      * @param shortNames the child archetype short names
      */
-    protected ActHierarchyFlattener<T> createFlattener(List<T> objects,
-                                                       String[] shortNames) {
-        return new ActHierarchyFlattener<T>(objects, shortNames);
+    protected ActHierarchyIterator<T> createFlattener(List<T> objects,
+                                                      String[] shortNames) {
+        return new ActHierarchyIterator<T>(objects, shortNames);
     }
 
 }

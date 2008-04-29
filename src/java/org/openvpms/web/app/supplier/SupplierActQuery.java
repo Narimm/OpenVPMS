@@ -23,6 +23,7 @@ import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
@@ -99,6 +100,10 @@ public abstract class SupplierActQuery<T extends Act>
                 // no-op
             }
         });
+
+        GlobalContext context = GlobalContext.getInstance();
+        supplier.setObject(context.getSupplier());
+        stockLocation.setObject(context.getStockLocation());
     }
 
     /**

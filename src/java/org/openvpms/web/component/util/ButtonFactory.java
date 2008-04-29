@@ -23,6 +23,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.MutableStyle;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.button.ShortcutButton;
+import org.openvpms.web.component.button.ShortcutHelper;
 
 
 /**
@@ -79,7 +80,11 @@ public final class ButtonFactory extends ComponentFactory {
         Button button = (enableShortcuts) ? new ShortcutButton()
                 : new ButtonEx();
         if (key != null) {
-            button.setText(getString(TYPE, key, false));
+            String text = getString(TYPE, key, false);
+            if (!enableShortcuts) {
+                text = ShortcutHelper.getText(text);
+            }
+            button.setText(text);
             button.setId(key);
             button.setActionCommand(key);
         }

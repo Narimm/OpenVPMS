@@ -24,7 +24,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.act.ActHierarchyFlattener;
+import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -130,7 +130,7 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
     protected void onPrint() {
         if (query != null) {
             try {
-                Iterable<Act> summary = new ActHierarchyFlattener<Act>(
+                Iterable<Act> summary = new ActHierarchyIterator<Act>(
                         query, query.getActItemShortNames());
                 IMObjectReportPrinter<Act> printer
                         = new IMObjectReportPrinter<Act>(

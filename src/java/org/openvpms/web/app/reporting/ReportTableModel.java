@@ -43,7 +43,7 @@ public class ReportTableModel extends DescriptorTableModel<Entity> {
      * @return the list of descriptor names to include in the table
      */
     @Override
-    protected String[] getDescriptorNames() {
+    protected String[] getNodeNames() {
         return new String[]{"name", "description", "reportType", "userLevel"};
     }
 }

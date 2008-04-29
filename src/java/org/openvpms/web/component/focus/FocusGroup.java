@@ -207,6 +207,15 @@ public class FocusGroup {
     }
 
     /**
+     * Removes a component.
+     *
+     * @param component the component to remove
+     */
+    public void remove(Component component) {
+        components.remove(component);
+    }
+
+    /**
      * Returns the number of immediate children in the tree.
      *
      * @return the number of immediate children in the tree

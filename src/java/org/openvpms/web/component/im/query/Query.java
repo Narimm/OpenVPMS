@@ -89,7 +89,7 @@ public interface Query<T> extends Iterable<T> {
      * Performs the query.
      *
      * @param sort the sort constraint. May be <tt>null</tt>
-     * @return the query result set
+     * @return the query result set. May be <tt>null</tt>
      * @throws ArchetypeServiceException if the query fails
      */
     ResultSet<T> query(SortConstraint[] sort);

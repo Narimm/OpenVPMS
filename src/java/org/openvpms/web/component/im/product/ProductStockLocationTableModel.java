@@ -24,23 +24,17 @@ import org.openvpms.web.component.im.relationship.RelationshipDescriptorTableMod
 
 
 /**
- * Table model for <em>entityRelationship.productSupplier</em> objects.
+ * Table model for <em>entityRelationship.productStockLocation</em>
+ * relationships.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ProductSupplierTableModel
+public class ProductStockLocationTableModel
         extends RelationshipDescriptorTableModel<EntityRelationship> {
 
     /**
-     * The nodes to include in the table.
-     */
-    private static final String[] NODES = {"description", "preferred",
-                                           "packageSize", "packageUnits",
-                                           "listPrice", "nettPrice"};
-
-    /**
-     * Creates a new <tt>ProductSupplierTableModel</tt>.
+     * Creates a new <tt>ProductStockLocationTableModel</tt>.
      * <p/>
      * Enables selection if the context is in edit mode, or <tt>null</tt>
      *
@@ -49,19 +43,9 @@ public class ProductSupplierTableModel
      * @param displayTarget if <tt>true</tt> display the target node,
      *                      otherwise display the source node
      */
-    public ProductSupplierTableModel(String[] shortNames,
-                                     LayoutContext context,
-                                     boolean displayTarget) {
+    public ProductStockLocationTableModel(String[] shortNames,
+                                          LayoutContext context,
+                                          boolean displayTarget) {
         super(shortNames, context, displayTarget);
-    }
-
-    /**
-     * Returns a list of node descriptor names to include in the table.
-     *
-     * @return the list of node descriptor names to include in the table
-     */
-    @Override
-    protected String[] getNodeNames() {
-        return NODES;
     }
 }
