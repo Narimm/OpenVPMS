@@ -159,7 +159,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      * Performs the query.
      *
      * @param sort the sort constraint. May be <tt>null</tt>
-     * @return the query result set
+     * @return the query result set. May be <tt>null</tt>
      */
     public ResultSet<T> query(SortConstraint[] sort) {
         return createResultSet(sort);

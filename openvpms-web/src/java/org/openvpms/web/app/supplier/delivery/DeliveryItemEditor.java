@@ -30,7 +30,8 @@ import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**
- * An editor for <em>act.supplierDeliveryItem</em> acts.
+ * An editor for <em>act.supplierDeliveryItem</em> and
+ * <em>act.supplierReturnItem</em> acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

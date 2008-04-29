@@ -18,17 +18,27 @@
 
 package org.openvpms.web.app.supplier.delivery;
 
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
+import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.Date;
 
 
 /**
@@ -38,7 +48,32 @@ import org.openvpms.web.resource.util.Messages;
  * @version $LastChangedDate: 2008-04-06 14:41:46Z $
  */
 public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
+
+    /**
+     * Invoice button identifier.
+     */
+    private static final String INVOICE_ID = "invoice";
+
+    /**
+     * Reverse button identifier.
+     */
+    private static final String REVERSE_ID = "reverse";
+
+    /**
+     * The invoice button.
+     */
+    private Button invoice;
+
+    /**
+     * The reverse button.
+     */
+    private Button reverse;
+
+    /**
+     * The order rules.
+     */
     private final OrderRules rules;
+
 
     /**
      * Create a new <tt>DeliveryCRUDWindow</tt>.
@@ -80,9 +115,13 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
     @Override
     protected void onCreated(final Act act) {
         final OrderTableBrowser browser = new OrderTableBrowser();
+        String displayName = DescriptorHelper.getDisplayName(act);
+        String title = Messages.get("supplier.delivery.selectorders.title",
+                                    displayName);
+        String message = Messages.get("supplier.delivery.selectorders.message",
+                                      displayName);
         final OrderSelectionBrowserDialog dialog
-                = new OrderSelectionBrowserDialog(
-                Messages.get("supplier.delivery.selectorders.title"), browser);
+                = new OrderSelectionBrowserDialog(title, message, browser);
         dialog.show();
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent e) {
@@ -103,8 +142,60 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
     protected void onPosted(Act act) {
         try {
             rules.updateOrders(act);
+            if (TypeHelper.isA(act, "act.supplierDelivery")) {
+                onInvoice(act);
+            } else {
+                onCredit(act);
+            }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        invoice = ButtonFactory.create(INVOICE_ID, new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onInvoice(getObject());
+            }
+        });
+        reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onReverse();
+            }
+        });
+        enableButtons(buttons, false);
+    }
+
+    /**
+     * Enables/disables the buttons that require an object to be selected.
+     *
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
+     */
+    @Override
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
+        buttons.removeAll();
+        if (enable) {
+            Act object = getObject();
+            if (canEdit(object)) {
+                buttons.add(getEditButton());
+            }
+            buttons.add(getCreateButton());
+            if (canDelete(object)) {
+                buttons.add(getDeleteButton());
+            }
+            if (ActStatus.POSTED.equals(object.getStatus())) {
+                buttons.add(invoice);
+                buttons.add(reverse);
+            }
+        } else {
+            buttons.add(getCreateButton());
         }
     }
 
@@ -120,5 +211,85 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
         edit(editor);
     }
 
+    private void onInvoice(final Act act) {
+        String title = Messages.get("supplier.delivery.invoice.title");
+        String message = Messages.get("supplier.delivery.invoice.message");
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    invoice(act);
+                }
+            }
+        });
+        dialog.show();
+    }
+
+    private void onCredit(final Act act) {
+        String title = Messages.get("supplier.delivery.credit.title");
+        String message = Messages.get("supplier.delivery.credit.message");
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    credit(act);
+                }
+            }
+        });
+        dialog.show();
+    }
+
+    private void onReverse() {
+        final Act act = getObject();
+        String title;
+        String message;
+        if (TypeHelper.isA(act, "act.supplierDelivery")) {
+            title = Messages.get("supplier.delivery.reverseDelivery.title");
+            message = Messages.get("supplier.delivery.reverseDelivery.message");
+        } else {
+            title = Messages.get("supplier.delivery.reverseReturn.title");
+            message = Messages.get("supplier.delivery.reverseReturn.message");
+        }
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    reverse(act);
+                }
+            }
+        });
+        dialog.show();
+    }
+
+    private void invoice(Act act) {
+        try {
+            rules.invoiceSupplier(act, new Date());
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    private void credit(Act act) {
+        try {
+            rules.creditSupplier(act, new Date());
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    private void reverse(Act act) {
+        try {
+            if (TypeHelper.isA(act, "act.supplierDelivery")) {
+                rules.reverseDelivery(act, new Date());
+            } else {
+                rules.reverseReturn(act, new Date());
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
 
 }

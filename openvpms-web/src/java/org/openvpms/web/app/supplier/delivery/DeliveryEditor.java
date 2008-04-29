@@ -27,7 +27,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
- * An editor for <em>act.supplierDelivery</em> acts.
+ * An editor for <em>act.supplierDelivery</em> and <em>act.supplierReturn</em>
+ * acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

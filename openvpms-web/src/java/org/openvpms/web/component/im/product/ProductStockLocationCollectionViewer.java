@@ -30,27 +30,28 @@ import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**
- * Viewer for collections of <em>entityRelationship.productSupplier</em>.
+ * Viewer for collections of <em>entityRelationship.productStockLocation</em>.
+ * <p/>
  * Hides any inactive relationships if the 'hide inactive' checkbox is
  * selected.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2008-03-19 07:02:38Z $
  */
-public class ProductSupplierCollectionViewer
+public class ProductStockLocationCollectionViewer
         extends EntityRelationshipCollectionViewer {
 
     /**
-     * Constructs a new <tt>ProductSupplierCollectionViewer</tt>.
+     * Constructs a new <tt>ProductStockLocationCollectionViewer</tt>.
      *
      * @param property the collection to view
      * @param parent   the parent object
      * @param context  the layout context. May be <tt>null</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public ProductSupplierCollectionViewer(CollectionProperty property,
-                                           Entity parent,
-                                           LayoutContext context) {
+    public ProductStockLocationCollectionViewer(CollectionProperty property,
+                                                Entity parent,
+                                                LayoutContext context) {
         super(property, parent, context);
     }
 
@@ -63,8 +64,10 @@ public class ProductSupplierCollectionViewer
     @Override
     protected IMTableModel<RelationshipState> createTableModel(
             LayoutContext context) {
-        IMTableModel<EntityRelationship> model = new ProductSupplierTableModel(
-                getProperty().getArchetypeRange(), context, parentIsSource());
+        String[] shortNames = getProperty().getArchetypeRange();
+        IMTableModel<EntityRelationship> model
+                = new ProductStockLocationTableModel(shortNames, context,
+                                                     parentIsSource());
         return new DelegatingRelationshipStateTableModel(model, context);
     }
 }

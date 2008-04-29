@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.product;
 
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.collections.Predicate;
@@ -45,7 +46,6 @@ import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.CollectionHelper;
-import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -343,12 +343,13 @@ class ProductReferenceEditor
         }
 
         /**
-         * Lay out this component.
+         * Lays out this component.
+         *
+         * @param container the container
          */
         @Override
-        protected void doLayout() {
-            setComponent(ColumnFactory.create());
+        protected void doLayout(Component container) {
+            // no-op
         }
-
     }
 }

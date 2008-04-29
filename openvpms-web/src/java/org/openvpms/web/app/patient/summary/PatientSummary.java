@@ -40,7 +40,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.table.PagedIMObjectTable;
+import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -101,7 +101,7 @@ public class PatientSummary {
             Label species = LabelFactory.create();
             species.setText(getPatientSpecies(patient));
             result.add(RowFactory.create("Inset.Small", species));
-            
+
             Label breed = LabelFactory.create();
             breed.setText(getPatientBreed(patient));
             result.add(RowFactory.create("Inset.Small", breed));
@@ -142,7 +142,7 @@ public class PatientSummary {
             Label weightTitle = LabelFactory.create("patient.weight");
             Label weight = LabelFactory.create();
             weight.setText(getPatientWeight(patient));
-            Grid grid = GridFactory.create(2,alertTitle, alertCount,
+            Grid grid = GridFactory.create(2, alertTitle, alertCount,
                                            reminderTitle, reminderCount,
                                            ageTitle, age, weightTitle, weight);
             result.add(grid);
@@ -156,7 +156,7 @@ public class PatientSummary {
      * @param patient the patient
      */
     private void onShowAlerts(Party patient) {
-        PagedIMObjectTable<Act> table = new PagedIMObjectTable<Act>(
+        PagedIMTable<Act> table = new PagedIMTable<Act>(
                 new AlertTableModel(), getAlerts(patient));
         new ViewerDialog(Messages.get("patient.summary.alerts"),
                          "PatientSummary.AlertDialog", table);
@@ -168,7 +168,7 @@ public class PatientSummary {
      * @param patient the patient
      */
     private void onShowReminders(Party patient) {
-        PagedIMObjectTable<Act> table = new PagedIMObjectTable<Act>(
+        PagedIMTable<Act> table = new PagedIMTable<Act>(
                 new ReminderTableModel(), getReminders(patient));
         table.getTable().setDefaultRenderer(Object.class,
                                             new ReminderTableCellRenderer());
@@ -290,7 +290,7 @@ public class PatientSummary {
          * @param style the window style
          */
         public ViewerDialog(String title, String style,
-                            PagedIMObjectTable<Act> table) {
+                            PagedIMTable<Act> table) {
             super(title, style, OK);
             setModal(true);
             getLayout().add(ColumnFactory.create("Inset", table));
@@ -313,7 +313,7 @@ public class PatientSummary {
          * @return the list of descriptor names to include in the table
          */
         @Override
-        protected String[] getDescriptorNames() {
+        protected String[] getNodeNames() {
             return new String[]{"alertType", "reason"};
         }
 
@@ -334,7 +334,7 @@ public class PatientSummary {
          * @return the list of descriptor names to include in the table
          */
         @Override
-        protected String[] getDescriptorNames() {
+        protected String[] getNodeNames() {
             return new String[]{"reminderType", "endTime", "product"};
         }
 

@@ -23,13 +23,14 @@ import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.im.act.ActHierarchyFlattener;
-import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
+import org.openvpms.web.component.im.act.ActHierarchyFilter;
+import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
-import org.openvpms.web.component.im.table.PagedIMObjectTable;
+import org.openvpms.web.component.im.table.PagedIMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 
 import java.util.ArrayList;
@@ -89,6 +90,25 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
     }
 
     /**
+     * Performs the query.
+     *
+     * @return the query result set
+     */
+    @Override
+    protected ResultSet<FinancialAct> doQuery() {
+        ResultSet<FinancialAct> set = super.doQuery();
+        return new AbstractFilteredResultSet<FinancialAct>(set) {
+            private Filter filter = new Filter();
+
+            protected void filter(FinancialAct act,
+                                  List<FinancialAct> results) {
+                List<FinancialAct> acts = filter.filter(act);
+                results.addAll(acts);
+            }
+        };
+    }
+
+    /**
      * Creates a new paged table.
      *
      * @param model the table model
@@ -102,8 +122,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
         IMObjectTableModel<FinancialAct> pagedModel
                 = new PagedModel(orderModel);
 
-        PagedIMObjectTable<FinancialAct> result
-                = new PagedIMObjectTable<FinancialAct>(pagedModel);
+        PagedIMTable<FinancialAct> result = super.createTable(pagedModel);
         IMTable<FinancialAct> table = result.getTable();
         OrderSelectionTableCellRenderer renderer
                 = new OrderSelectionTableCellRenderer(orderModel);
@@ -113,13 +132,16 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
         return result;
     }
 
+    /**
+     * A paged table model that tracks order selections.
+     */
     private static class PagedModel
-            extends PagedActHierarchyTableModel<FinancialAct> {
+            extends PagedIMObjectTableModel<FinancialAct> {
 
         private Set<FinancialAct> selections = new HashSet<FinancialAct>();
 
         /**
-         * Construct a new <tt>PagedActHierarchyTableModel</tt>.
+         * Construct a new <tt>PagedModel</tt>.
          *
          * @param model the underlying table model
          */
@@ -127,6 +149,11 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
             super(model);
         }
 
+        /**
+         * Returns the selected orders.
+         *
+         * @return the selected orders
+         */
         public Set<FinancialAct> getSelections() {
             OrderSelectionTableModel model
                     = (OrderSelectionTableModel) getModel();
@@ -152,6 +179,11 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
             }
         }
 
+        /**
+         * Updates selections from the model.
+         *
+         * @param model the model
+         */
         private void updateSelections(OrderSelectionTableModel model) {
             List<FinancialAct> selected = model.getSelected();
             List<FinancialAct> unselected
@@ -161,15 +193,13 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
             selections.removeAll(unselected);
         }
 
-        @Override
-        protected ActHierarchyFlattener<FinancialAct> createFlattener(
-                List<FinancialAct> objects, String[] shortNames) {
-            return new Flattener(objects);
-        }
-
     }
 
-    private static class Flattener extends ActHierarchyFlattener<FinancialAct> {
+    /**
+     * An {@link ActHierarchyFilter} that excludes all acts that have FULL
+     * delivery status.
+     */
+    private static class Filter extends ActHierarchyFilter<FinancialAct> {
 
         /**
          * The order rules.
@@ -179,11 +209,9 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
 
         /**
          * Creates a new <tt>Flattener</tt>.
-         *
-         * @param acts the collection of acts
          */
-        public Flattener(Iterable<FinancialAct> acts) {
-            super(acts);
+        public Filter() {
+            super(null);
             rules = new OrderRules();
         }
 
@@ -193,7 +221,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
          *
          * @param parent   the top level act
          * @param children the child acts
-         * @return <tt>true</tt> if the act should be included
+         * @return <tt>true</tt> if there are child acts
          */
         @Override
         protected boolean include(FinancialAct parent,

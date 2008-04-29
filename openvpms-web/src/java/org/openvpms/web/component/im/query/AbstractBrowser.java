@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.query;
 
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
@@ -113,6 +114,9 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
     public Component getComponent() {
         if (component == null) {
             doLayout();
+            if (query.isAuto()) {
+                query();
+            }
         }
         return component;
     }
@@ -139,6 +143,17 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      * Lay out this component.
      */
     protected void doLayout() {
+        Column container = ColumnFactory.create(STYLE);
+        doLayout(container);
+        setComponent(container);
+    }
+
+    /**
+     * Lays out this component.
+     *
+     * @param container the container
+     */
+    protected void doLayout(Component container) {
         // query component
         Component component = query.getComponent();
 
@@ -149,11 +164,7 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
                 onQuery();
             }
         });
-        setComponent(ColumnFactory.create(STYLE, row));
-
-        if (query.isAuto()) {
-            query();
-        }
+        container.add(row);
     }
 
     /**
@@ -162,12 +173,16 @@ public abstract class AbstractBrowser<T> implements Browser<T> {
      * @return the query result set
      */
     protected ResultSet<T> doQuery() {
+        ResultSet<T> result = null;
         try {
-            return (sort != null) ? query.query(sort) : query.query();
+            result = (sort != null) ? query.query(sort) : query.query();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
-        return new EmptyResultSet<T>(query.getMaxResults());
+        if (result == null) {
+            result = new EmptyResultSet<T>(query.getMaxResults());
+        }
+        return result;
     }
 
     /**

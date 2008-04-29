@@ -114,7 +114,7 @@ public class BrowserDialog<T extends IMObject> extends PopupDialog {
 
         Component component = browser.getComponent();
         if (message != null) {
-            Label label = LabelFactory.create();
+            Label label = LabelFactory.create(null, "bold");
             label.setText(message);
             Row inset = RowFactory.create("Inset", label);
             Column column = ColumnFactory.create("CellSpacing", inset,

@@ -25,7 +25,6 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
-import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.im.table.PagedIMTable;
 
 
@@ -78,8 +77,7 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
         PatientSummaryQuery query = (PatientSummaryQuery) getQuery();
         pagedModel = new PagedActHierarchyTableModel<Act>(
                 (IMObjectTableModel<Act>) model, query.getActItemShortNames());
-        PagedIMObjectTable<Act> result
-                = new PagedIMObjectTable<Act>(pagedModel);
+        PagedIMTable<Act> result = super.createTable(pagedModel);
         IMTable<Act> table = result.getTable();
         table.setDefaultRenderer(Object.class, new SummaryTableCellRenderer());
         table.setHeaderVisible(false);

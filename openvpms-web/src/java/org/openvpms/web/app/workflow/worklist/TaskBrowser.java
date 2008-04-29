@@ -57,7 +57,7 @@ public class TaskBrowser extends IMObjectTableBrowser<Act> {
     @Override
     protected PagedIMTable<Act> createTable(
             IMTableModel<Act> model) {
-        PagedIMTable<Act> result = new PagedIMTable<Act>(model);
+        PagedIMTable<Act> result = super.createTable(model);
         IMTable<Act> table = result.getTable();
         table.setDefaultRenderer(Object.class, new TaskTableCellRenderer());
         return result;

@@ -32,15 +32,15 @@ import java.util.Random;
 
 
 /**
- * Tests the {@link ActHierarchyFlattener} class.
+ * Tests the {@link ActHierarchyIterator} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActHierarchyFlattenerTestCase extends AbstractAppTest {
+public class ActHierarchyIteratorTestCase extends AbstractAppTest {
 
     /**
-     * Tests the {@link ActHierarchyFlattener} class.
+     * Tests the {@link ActHierarchyIterator} class.
      */
     public void test() {
         Party patient = TestHelper.createPatient(true);
@@ -65,7 +65,7 @@ public class ActHierarchyFlattenerTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that {@link ActHierarchyFlattener} returns the expected acts,
+     * Verifies that {@link ActHierarchyIterator} returns the expected acts,
      * in the correct order.
      *
      * @param query      the query
@@ -74,8 +74,8 @@ public class ActHierarchyFlattenerTestCase extends AbstractAppTest {
      */
     private void checkIterator(PatientSummaryQuery query, int expected,
                                String ... shortNames) {
-        Iterable<Act> summary = new ActHierarchyFlattener<Act>(query,
-                                                               shortNames);
+        Iterable<Act> summary = new ActHierarchyIterator<Act>(query,
+                                                              shortNames);
         int acts = 0;
         Date lastItemTime = null;
         Act event = null;

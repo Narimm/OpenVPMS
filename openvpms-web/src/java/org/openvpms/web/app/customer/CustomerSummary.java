@@ -42,7 +42,7 @@ import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
-import org.openvpms.web.component.im.table.PagedIMObjectTable;
+import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -223,8 +223,7 @@ public class CustomerSummary {
                         = IMObjectTableModelFactory.create(
                         new String[]{"act.customerNote"},
                         createLayoutContext());
-                PagedIMObjectTable<Act> table
-                        = new PagedIMObjectTable<Act>(model, acts);
+                PagedIMTable<Act> table = new PagedIMTable<Act>(model, acts);
                 noteCol.add(table);
                 column.add(noteCol);
             }

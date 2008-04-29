@@ -34,11 +34,12 @@ public class OrderSelectionBrowserDialog extends BrowserDialog<FinancialAct> {
      * Construct a new <tt>BrowserDialog</tt>.
      *
      * @param title   the dialog title
+     * @param message the dialog message. May be <tt>null</tt>
      * @param browser the browser
      */
-    public OrderSelectionBrowserDialog(String title,
+    public OrderSelectionBrowserDialog(String title, String message,
                                        OrderTableBrowser browser) {
-        super(title, OK_CANCEL, browser);
+        super(title, message, OK_CANCEL, browser, false);
     }
 
     /**

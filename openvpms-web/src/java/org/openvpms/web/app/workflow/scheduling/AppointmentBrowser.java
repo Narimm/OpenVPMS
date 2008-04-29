@@ -77,17 +77,16 @@ public class AppointmentBrowser extends TableBrowser<ObjectSet> {
     }
 
     /**
-     * Adds the table to the browser component.
+     * Lays out the container to display results.
      *
-     * @param component the browser component
+     * @param container the container
      */
     @Override
-    protected void doLayout(Component component) {
-        super.doLayout(component);
-        int index = component.indexOf(getTable());
+    protected void doLayoutForResults(Component container) {
+        int index = container.indexOf(getTable());
 
         // add the label before the table
-        component.add(selectedDate, index);
+        container.add(selectedDate, index);
     }
 
     /**
@@ -99,7 +98,7 @@ public class AppointmentBrowser extends TableBrowser<ObjectSet> {
     @Override
     protected PagedIMTable<ObjectSet> createTable(
             IMTableModel<ObjectSet> model) {
-        PagedIMTable<ObjectSet> result = new PagedIMTable<ObjectSet>(model);
+        PagedIMTable<ObjectSet> result = super.createTable(model);
         IMTable<ObjectSet> table = result.getTable();
         table.setDefaultRenderer(Object.class,
                                  new AppointmentTableCellRenderer());

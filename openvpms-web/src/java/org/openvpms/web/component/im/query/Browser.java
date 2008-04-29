@@ -69,7 +69,8 @@ public interface Browser<T> {
     void addQueryListener(QueryBrowserListener<T> listener);
 
     /**
-     * Query using the specified criteria, and populate the table with matches.
+     * Query using the specified criteria, and populate the browser with
+     * matches.
      */
     void query();
 
