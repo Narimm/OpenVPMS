@@ -19,12 +19,9 @@
 	<archetype name="act.supplierAccountChargesCredit.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Credit" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('Supplier Credit', '')" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="' '" />
+		<node name="name" type="java.lang.String" path="/name" hidden="true"/>
+		<node name="description" type="java.lang.String" path="/description"
+              hidden="true" />
 		<node name="startTime" path="/activityStartTime"
 			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="amount" path="/total" 
