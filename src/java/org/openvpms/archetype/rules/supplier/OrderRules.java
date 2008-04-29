@@ -457,7 +457,7 @@ public class OrderRules {
         if (bean.hasNode("stockLocations")) {
             Predicate predicate = AndPredicate.getInstance(
                     IsActiveRelationship.ACTIVE_NOW,
-                    RefEquals.getTargetEquals(product));
+                    RefEquals.getTargetEquals(stockLocation));
             relationship = bean.getNodeRelationship(
                     "stockLocations", predicate);
             if (relationship == null) {

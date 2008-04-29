@@ -21,12 +21,9 @@
                displayName="Return Item">
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
-        <node name="name" type="java.lang.String" path="/name"
-              hidden="true" minCardinality="1" derived="true"
-              derivedValue="' '"/>
-        <node name="description" type="java.lang.String"
-              path="/description" hidden="true" derived="true"
-              derivedValue="concat(' Description of the Order Product', ' ')"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true"/>
+		<node name="description" type="java.lang.String" path="/description"
+              hidden="true"/>
         <node name="startTime" displayName="Date" path="/activityStartTime"
               type="java.util.Date" hidden="true" minCardinality="0"
               defaultValue="java.util.Date.new()"/>
@@ -38,7 +35,7 @@
         <node name="reorderDescription" path="/details/reorderDescription" type="java.lang.String"
               minCardinality="0"/>
         <node name="packageSize" path="/details/packageSize"
-              type="java.lang.Integer" minCardinality="0"/>
+              type="java.lang.Integer" minCardinality="1" defaultValue="1.0"/>
         <node name="packageUnits" path="/details/packageUnits"
               type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
