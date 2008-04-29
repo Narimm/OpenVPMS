@@ -29,15 +29,7 @@
         <node name="activeStartTime" path="/activeStartTime"
               type="java.util.Date" minCardinality="1"
               hidden="true" defaultValue="java.util.Date.new()"/>
-        <node name="minimumQty" displayName="Minimum Qty" path="/details/minimumQty" type="java.lang.Integer" minCardinality="0"/>
-        <node name="reorderQty" displayName="Reorder Qty" path="/details/reorderQty" type="java.lang.Integer" minCardinality="0"/>
-        <node name="qtyUom" displayName="Units of Measure" path="/details/qtyUom" type="java.lang.String" minCardinality="0">
-            <assertion name="lookup">
-                <property name="type" value="lookup"/>
-                <property name="source" value="lookup.uom"/>
-                <errorMessage>An error message</errorMessage>
-            </assertion>
-        </node>
+        <node name="quantity" path="/details/quantity" type="java.math.BigDecimal" minCardinality="1" defaultValue="0.0"/>
         <node name="source" displayName="Product" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
