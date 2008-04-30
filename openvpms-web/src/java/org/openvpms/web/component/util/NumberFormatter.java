@@ -18,12 +18,16 @@
 
 package org.openvpms.web.component.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.util.Locale;
 
 
 /**
@@ -35,28 +39,29 @@ import java.text.NumberFormat;
 public class NumberFormatter {
 
     /**
-     * Decimal edit format.
+     * Decimal edit pattern key.
      */
-    private static final DecimalFormat DECIMAL_EDIT
-            = new DecimalFormat(Messages.get("decimal.format.edit"));
+    private static final String DECIMAL_EDIT = "decimal.format.edit";
 
     /**
-     * Decimal view format.
+     * Decimal view pattern key.
      */
-    private static final DecimalFormat DECIMAL_VIEW
-            = new DecimalFormat(Messages.get("decimal.format.view"));
+    private static final String DECIMAL_VIEW = "decimal.format.view";
 
     /**
-     * Integer edit format.
+     * Integer edit pattern key.
      */
-    private static final DecimalFormat INTEGER_EDIT
-            = new DecimalFormat(Messages.get("integer.format.edit"));
+    private static final String INTEGER_EDIT = "integer.format.edit";
 
     /**
-     * Integer view format.
+     * Integer view pattern key.
      */
-    private static final DecimalFormat INTEGER_VIEW
-            = new DecimalFormat(Messages.get("integer.format.view"));
+    private static final String INTEGER_VIEW = "integer.format.view";
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(NumberFormatter.class);
 
 
     /**
@@ -82,13 +87,17 @@ public class NumberFormatter {
     public static NumberFormat getFormat(Property property, boolean edit) {
         NumberFormat format;
         if (property.isMoney()) {
-            format = (edit) ? DECIMAL_EDIT : NumberFormat.getCurrencyInstance();
+            if (edit) {
+                format = getFormat(DECIMAL_EDIT);
+            } else {
+                format = NumberFormat.getCurrencyInstance(Messages.getLocale());
+            }
         } else if (property.getType().isAssignableFrom(Float.class)
                 || property.getType().isAssignableFrom(Double.class)
                 || property.getType().isAssignableFrom(BigDecimal.class)) {
-            format = (edit) ? DECIMAL_EDIT : DECIMAL_VIEW;
+            format = (edit) ? getFormat(DECIMAL_EDIT) : getFormat(DECIMAL_VIEW);
         } else {
-            format = (edit) ? INTEGER_EDIT : INTEGER_VIEW;
+            format = (edit) ? getFormat(INTEGER_EDIT) : getFormat(INTEGER_VIEW);
         }
         return format;
     }
@@ -103,9 +112,9 @@ public class NumberFormatter {
         NumberFormat format;
         if (value instanceof Long || value instanceof Integer ||
                 value instanceof Short || value instanceof Byte) {
-            format = INTEGER_VIEW;
+            format = getFormat(INTEGER_VIEW);
         } else {
-            format = DECIMAL_VIEW;
+            format = getFormat(DECIMAL_VIEW);
         }
         return format(value, format);
     }
@@ -127,6 +136,25 @@ public class NumberFormatter {
             result = value.toString();
         }
         return result;
+    }
+
+    /**
+     * Returns a number format for the specified key.
+     *
+     * @param key the key
+     * @return the corresponding locale
+     */
+    private static NumberFormat getFormat(String key) {
+        Locale locale = Messages.getLocale();
+        String pattern = Messages.get(key);
+        try {
+            DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
+            return new DecimalFormat(pattern, symbols);
+        } catch (Exception exception) {
+            log.error("Failed to create format for key=" + key + ", locale="
+                    + locale + ", pattern=" + pattern, exception);
+            return NumberFormat.getInstance();
+        }
     }
 
 }

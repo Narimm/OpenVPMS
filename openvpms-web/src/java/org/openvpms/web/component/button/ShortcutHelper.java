@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.button;
 
-import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
+import static org.apache.commons.lang.StringEscapeUtils.escapeXml;
 
 
 /**
@@ -118,28 +118,26 @@ public class ShortcutHelper {
                 if (text.charAt(keyIndex) == '&') {
                     // double ampersand
                     index = keyIndex;
-                    buf.append(escapeHtml(text.substring(lastIndex, index)));
+                    buf.append(escapeXml(text.substring(lastIndex, index)));
                 } else {
-                    buf.append(escapeHtml(text.substring(lastIndex, index)));
+                    buf.append(escapeXml(text.substring(lastIndex, index)));
                     if (first) {
                         buf.append(UNDERLINE_OPEN);
-                        buf.append(
-                                escapeHtml(text.substring(keyIndex,
-                                                          keyIndex + 1)));
+                        buf.append(escapeXml(text.substring(keyIndex,
+                                                            keyIndex + 1)));
                         buf.append(UNDERLINE_CLOSE);
                         first = false;
                     } else {
                         // only render one shortcut
-                        buf.append(
-                                escapeHtml(text.substring(keyIndex,
-                                                          keyIndex + 1)));
+                        buf.append(escapeXml(text.substring(keyIndex,
+                                                            keyIndex + 1)));
                     }
                 }
                 index = keyIndex;
             }
             lastIndex = index + 1;
         }
-        buf.append(escapeHtml(text.substring(lastIndex)));
+        buf.append(escapeXml(text.substring(lastIndex)));
         return buf.toString();
 
     }

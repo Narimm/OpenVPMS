@@ -82,6 +82,17 @@ public final class Messages {
     }
 
     /**
+     * Returns the current locale.
+     *
+     * @return the current locale
+     */
+    public static Locale getLocale() {
+        ApplicationInstance active = ApplicationInstance.getActive();
+        return (active != null) ? active.getLocale()
+                : Locale.getDefault();
+    }
+
+    /**
      * Returns localised text.
      *
      * @param key       the key of the text to be returned
@@ -94,11 +105,8 @@ public final class Messages {
     public static String get(String key, boolean allowNull) {
         String result = null;
         try {
-            ApplicationInstance active = ApplicationInstance.getActive();
-            Locale locale = (active != null) ? active.getLocale()
-                    : Locale.getDefault();
             ResourceBundle bundle = ResourceBundle.getBundle(BUNDLE_NAME,
-                                                             locale);
+                                                             getLocale());
             result = bundle.getString(key);
         } catch (MissingResourceException exception) {
             if (!allowNull) {
