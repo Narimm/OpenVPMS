@@ -848,12 +848,12 @@
         </unitTest>
         <resources>
             <resource>
+                <!-- NOTE: .properties files are copied by native2ascii -->
                 <directory>${basedir}/src/java</directory>
                 <includes>
                     <include>**/*.gif</include>
                     <include>**/*.png</include>
                     <include>**/*.stylesheet</include>
-                    <include>**/*.properties</include>
                     <include>**/*.js</include>
                 </includes>
             </resource>

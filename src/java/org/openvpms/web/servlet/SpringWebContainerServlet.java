@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Locale;
 
 
 /**
@@ -71,6 +72,11 @@ public class SpringWebContainerServlet extends WebContainerServlet {
             = new ThreadLocal<String>();
 
     /**
+     * The locale of the current thread.
+     */
+    private transient ThreadLocal<Locale> locale = new ThreadLocal<Locale>();
+
+    /**
      * Serialisation ID.
      */
     private static final long serialVersionUID = 1L;
@@ -109,6 +115,10 @@ public class SpringWebContainerServlet extends WebContainerServlet {
         }
         result = (SpringApplicationInstance) context.getBean(name);
         result.setApplicationContext(context);
+        Locale current = locale.get();
+        if (current != null) {
+            result.setLocale(current);
+        }
         return result;
     }
 
@@ -134,6 +144,7 @@ public class SpringWebContainerServlet extends WebContainerServlet {
 
         if (instance.getId() != -1 && instance.getId() < nextInstance) {
             servletName.set(instance.getServletName());
+            locale.set(request.getLocale());
             super.process(request, response);
         } else {
             // increase instance-counter

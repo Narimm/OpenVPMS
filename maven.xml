@@ -8,6 +8,13 @@
         <attainGoal name="generate-version-properties"/>
     </postGoal>
 
+    <postGoal name="java:jar-resources">
+        <echo message="jere"/>
+        <ant:native2ascii encoding="utf8" src="${maven.src.dir}/java"
+                          dest="${maven.build.dest}"
+                          includes="**/*.properties"/>
+    </postGoal>
+
     <goal name="generate-hibernate-properties">
         <copy tofile="${maven.build.dest}/hibernate.properties"
               file="${basedir}/src/conf/hibernate/hibernate.properties">
