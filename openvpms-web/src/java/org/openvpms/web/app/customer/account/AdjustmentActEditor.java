@@ -18,10 +18,12 @@
 
 package org.openvpms.web.app.customer.account;
 
-import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.account.AccountActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
@@ -68,11 +70,15 @@ public class AdjustmentActEditor extends AccountActEditor {
     private void recalculateTax() {
         FinancialAct act = (FinancialAct) getObject();
         BigDecimal previousTax = act.getTaxAmount();
-        TaxRules rules = new TaxRules();
-        BigDecimal tax = rules.calculateTax(act);
-        if (tax.compareTo(previousTax) != 0) {
-            Property property = getProperty("tax");
-            property.refresh();
+        Context context = getLayoutContext().getContext();
+        Party practice = context.getPractice();
+        if (practice != null) {
+            CustomerTaxRules rules = new CustomerTaxRules(practice);
+            BigDecimal tax = rules.calculateTax(act);
+            if (tax.compareTo(previousTax) != 0) {
+                Property property = getProperty("tax");
+                property.refresh();
+            }
         }
     }
 }

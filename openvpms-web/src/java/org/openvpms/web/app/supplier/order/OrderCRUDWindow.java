@@ -24,30 +24,22 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.ActStatus;
-import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
 import org.openvpms.archetype.rules.supplier.DeliveryStatus;
+import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.supplier.SelectStockDetailsDialog;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.edit.act.ActCopyHandler;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -153,20 +145,14 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      * Invoked when the 'copy' button is pressed.
      */
     protected void onCopy() {
-        IMObject object = getObject();
         try {
-            IMObjectCopier copier = new IMObjectCopier(new ActCopyHandler());
-            List<IMObject> objects = copier.apply(object);
-            FinancialAct act = (FinancialAct) objects.get(0);
-            act.setStatus(IN_PROGRESS);
-            act.setActivityStartTime(new Date());
-            act.setPrinted(false);
-            SaveHelper.save(objects);
-            setObject(act);
-            CRUDWindowListener<FinancialAct> listener = getListener();
-            if (listener != null) {
-                listener.saved(act, false);
-            }
+            OrderRules rules = new OrderRules();
+            FinancialAct object = getObject();
+            FinancialAct copy = rules.copyOrder(object);
+            String notes = Messages.get("supplier.order.copy.notes",
+                                        object.getTitle());
+            copy.setTitle(notes);
+            edit(copy);
         } catch (OpenVPMSException exception) {
             String title = Messages.get("supplier.order.copy.failed");
             ErrorHelper.show(title, exception);

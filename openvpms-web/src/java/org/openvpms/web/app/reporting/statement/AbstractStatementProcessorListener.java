@@ -22,6 +22,7 @@ import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.archetype.rules.finance.statement.StatementRules;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
 import java.math.BigDecimal;
@@ -53,10 +54,12 @@ public abstract class AbstractStatementProcessorListener
 
     /**
      * Creates a new <tt>AbstractStatementProcessorListener</tt>.
+     *
+     * @param practice the practice
      */
-    public AbstractStatementProcessorListener() {
+    public AbstractStatementProcessorListener(Party practice) {
         account = new CustomerAccountRules();
-        rules = new StatementRules();
+        rules = new StatementRules(practice);
     }
 
     /**

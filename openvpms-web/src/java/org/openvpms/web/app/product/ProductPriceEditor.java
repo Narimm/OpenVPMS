@@ -19,9 +19,11 @@
 package org.openvpms.web.app.product;
 
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
@@ -145,14 +147,13 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
             BigDecimal markup = getValue("markup");
             BigDecimal markupDec = getPercentRate(markup);
             Product product = (Product) getParent();
-            BigDecimal taxDec = BigDecimal.ZERO;
+            BigDecimal taxRate = BigDecimal.ZERO;
             if (product != null) {
-                TaxRules rules = new TaxRules();
-                taxDec = getPercentRate(rules.getTaxRate(product));
+                taxRate = getTaxRate(product);
             }
             price = cost.multiply(
                     BigDecimal.ONE.add(markupDec)).multiply(
-                    BigDecimal.ONE.add(taxDec));
+                    BigDecimal.ONE.add(taxRate));
         }
         return price;
     }
@@ -170,13 +171,12 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
         if (cost.compareTo(BigDecimal.ZERO) != 0) {
             BigDecimal price = getValue("price");
             Product product = (Product) getParent();
-            BigDecimal taxDec = BigDecimal.ZERO;
+            BigDecimal taxRate = BigDecimal.ZERO;
             if (product != null) {
-                TaxRules rules = new TaxRules();
-                taxDec = getPercentRate(rules.getTaxRate(product));
+                taxRate = getTaxRate(product);
             }
             markup = price.divide(
-                    cost.multiply(BigDecimal.ONE.add(taxDec)), 3,
+                    cost.multiply(BigDecimal.ONE.add(taxRate)), 3,
                     RoundingMode.HALF_UP).subtract(
                     BigDecimal.ONE).multiply(new BigDecimal(100));
             if (markup.compareTo(BigDecimal.ZERO) < 0) {
@@ -184,6 +184,23 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
             }
         }
         return markup;
+    }
+
+    /**
+     * Returns the tax rate of a product.
+     *
+     * @param product the product
+     * @return the product tax rate
+     */
+    private BigDecimal getTaxRate(Product product) {
+        BigDecimal result = BigDecimal.ZERO;
+        Context context = getLayoutContext().getContext();
+        Party practice = context.getPractice();
+        if (practice != null) {
+            TaxRules rules = new TaxRules(practice);
+            result = getPercentRate(rules.getTaxRate(product));
+        }
+        return result;
     }
 
     /**
@@ -205,7 +222,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      */
     private BigDecimal getPercentRate(BigDecimal percent) {
         if (percent.compareTo(BigDecimal.ZERO) != 0) {
-            return percent.divide(new BigDecimal(100));
+            return percent.divide(BigDecimal.valueOf(100));
         }
         return BigDecimal.ZERO;
     }

@@ -21,6 +21,7 @@ package org.openvpms.web.app.supplier.order;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -71,6 +72,7 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
      */
     public OrderQuery(String[] shortNames) {
         super(shortNames, STATUSES, FinancialAct.class);
+        setStatus(ActStatus.IN_PROGRESS);
     }
 
     /**

@@ -53,7 +53,7 @@ public class DeliveryItemEditor extends ActItemEditor {
      */
     public DeliveryItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
-        CollectionProperty order = (CollectionProperty) getProperty("items");
+        CollectionProperty order = (CollectionProperty) getProperty("order");
         orderEditor = new ActRelationshipCollectionEditor(order, act,
                                                           getLayoutContext());
         getEditors().add(orderEditor);
@@ -75,7 +75,7 @@ public class DeliveryItemEditor extends ActItemEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new ActLayoutStrategy(false);
+        return new ActLayoutStrategy("order", false);
     }
 
     /**

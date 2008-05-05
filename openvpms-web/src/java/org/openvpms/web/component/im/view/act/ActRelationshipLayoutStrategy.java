@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -44,25 +45,46 @@ public class ActRelationshipLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Apply the layout strategy.
      * <p/>
-     * This renders an object in a <code>Component</code>, using a factory to
+     * This renders an object in a <tt>Component</tt>, using a factory to
      * create the child components.
      *
      * @param object     the object to apply
      * @param properties the object's properties
-     * @param parent
+     * @param parent     the parent object
      * @param context    the layout context
-     * @return the component containing the rendered <code>object</code>
+     * @return the component containing the rendered <tt>object</tt>
      */
     public ComponentState apply(IMObject object, PropertySet properties,
                                 IMObject parent, LayoutContext context) {
-        Property property = properties.get("target");
-        ComponentState result;
+        String node;
+        if (parent == null) {
+            node = "target";
+        } else {
+            IMObjectRelationship relationship = (IMObjectRelationship) object;
+            IMObjectReference target = relationship.getTarget();
+            if (target != null && !target.equals(parent.getObjectReference())) {
+                node = "target";
+            } else {
+                node = "source";
+            }
+        }
+        Property property = properties.get(node);
+        ComponentState result = null;
         if (property != null) {
             IMObjectReference ref = (IMObjectReference) property.getValue();
-            IMObject target = IMObjectHelper.getObject(ref);
             IMObjectComponentFactory factory = context.getComponentFactory();
-            result = factory.create(target, parent);
-        } else {
+            if (!context.isRendered(ref)) {
+                IMObject toRender = IMObjectHelper.getObject(ref);
+                if (toRender != null) {
+                    result = factory.create(toRender, parent);
+                }
+            } else {
+                Component component = LabelFactory.create(
+                        "imobject.alreadyRendered");
+                result = new ComponentState(component);
+            }
+        }
+        if (result == null) {
             Component component = LabelFactory.create();
             result = new ComponentState(component);
         }

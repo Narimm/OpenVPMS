@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.layout;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
@@ -27,6 +29,9 @@ import org.openvpms.web.component.im.filter.ValueNodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 
+import java.util.HashSet;
+import java.util.Set;
+
 
 /**
  * Default implmentation of the {@link LayoutContext} interface.
@@ -35,6 +40,11 @@ import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
  * @version $LastChangedDate$
  */
 public class DefaultLayoutContext implements LayoutContext {
+
+    /**
+     * The parent layout context.
+     */
+    private LayoutContext parent;
 
     /**
      * The context.
@@ -66,6 +76,11 @@ public class DefaultLayoutContext implements LayoutContext {
      * The layout depth.
      */
     private int depth;
+
+    /**
+     * The set of rendered objects.
+     */
+    private Set<IMObjectReference> rendered = new HashSet<IMObjectReference>();
 
     /**
      * The default layout strategy factory.
@@ -110,6 +125,7 @@ public class DefaultLayoutContext implements LayoutContext {
      * @param context the context
      */
     public DefaultLayoutContext(LayoutContext context) {
+        this.parent = context;
         this.context = context.getContext();
         factory = context.getComponentFactory();
         filter = context.getDefaultNodeFilter();
@@ -230,5 +246,36 @@ public class DefaultLayoutContext implements LayoutContext {
      */
     public void setLayoutDepth(int depth) {
         this.depth = depth;
+    }
+
+    /**
+     * Marks an object as being rendered.
+     *
+     * @param object the rendered object
+     */
+    public void setRendered(IMObject object) {
+        rendered.add(object.getObjectReference());
+    }
+
+    /**
+     * Determines if a component has been created to display an object.
+     *
+     * @param object the object
+     */
+    public boolean isRendered(IMObject object) {
+        return isRendered(object.getObjectReference());
+    }
+
+    /**
+     * Determines if a component has been created to display an object.
+     *
+     * @param object the object
+     */
+    public boolean isRendered(IMObjectReference object) {
+        boolean result = rendered.contains(object);
+        if (!result && parent != null) {
+            result = parent.isRendered(object);
+        }
+        return result;
     }
 }
