@@ -21,7 +21,7 @@ package org.openvpms.archetype.rules.finance.statement;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
-import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -63,14 +63,14 @@ public class StatementRules {
     /**
      * Tax rules.
      */
-    private final TaxRules tax;
+    private final CustomerTaxRules tax;
 
 
     /**
      * Creates a new <tt>StatementRules</tt>.
      */
-    public StatementRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
+    public StatementRules(Party practice) {
+        this(practice, ArchetypeServiceHelper.getArchetypeService());
     }
 
     /**
@@ -78,11 +78,11 @@ public class StatementRules {
      *
      * @param service the archetype service
      */
-    public StatementRules(IArchetypeService service) {
+    public StatementRules(Party practice, IArchetypeService service) {
         this.service = service;
         account = new CustomerAccountRules(service);
         acts = new StatementActHelper(service);
-        tax = new TaxRules(service);
+        tax = new CustomerTaxRules(practice, service);
     }
 
     /**

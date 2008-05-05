@@ -60,14 +60,20 @@ import java.util.Set;
 public class OrderRules {
 
     /**
-     * The archetype service.
+     * Supplier order act short name.
      */
-    private final IArchetypeService service;
+    public static final String ORDER = "act.supplierOrder";
 
     /**
      * Supplier order item act short name.
      */
     public static final String ORDER_ITEM = "act.supplierOrderItem";
+
+    /**
+     * Supplier order item relationship short name.
+     */
+    public static final String ORDER_ITEM_RELATIONSHIP
+            = "actRelationship.supplierOrderItem";
 
     /**
      * Supplier delivery act short name.
@@ -143,6 +149,11 @@ public class OrderRules {
      * Stock location participation.
      */
     public static final String STOCK_LOCATION = "participation.stockLocation";
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
 
 
     /**
@@ -318,10 +329,27 @@ public class OrderRules {
     }
 
     /**
+     * Copies an order.
+     * <p/>
+     * The copied order will have an <em>IN_PROGRESS</em> status.
+     * The copy is saved.
+     *
+     * @param order the order to copy
+     * @return the copy of the order
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public FinancialAct copyOrder(FinancialAct order) {
+        List<IMObject> objects = copy(order, ORDER,
+                                      new OrderHandler(), new Date(), true);
+        return (FinancialAct) objects.get(0);
+    }
+
+    /**
      * Creates a new delivery item from an order item.
      *
      * @param orderItem the order item
      * @return a new delivery item
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct createDeliveryItem(FinancialAct orderItem) {
         List<IMObject> objects = copy(orderItem, ORDER_ITEM,
@@ -337,7 +365,8 @@ public class OrderRules {
      *
      * @param supplierDelivery the supplier delivery act
      * @param startTime        the start time of the invoice act
-     * @return the invoice corresponding delivery
+     * @return the invoice corresponding to the delivery
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct invoiceSupplier(Act supplierDelivery, Date startTime) {
         List<IMObject> objects = copy(supplierDelivery, DELIVERY,
@@ -353,6 +382,7 @@ public class OrderRules {
      * @param supplierReturn the supplier return act
      * @param startTime      the start time of the credit act
      * @return the credit corresponding to the return
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct creditSupplier(Act supplierReturn, Date startTime) {
         List<IMObject> objects = copy(supplierReturn, RETURN,
@@ -360,6 +390,14 @@ public class OrderRules {
         return (FinancialAct) objects.get(0);
     }
 
+    /**
+     * Reverses a delivery.
+     *
+     * @param supplierDelivery the delivery to reverse
+     * @param startTime        the time to assign the reversal
+     * @return a new return
+     * @throws ArchetypeServiceException for any archetype service error
+     */
     public Act reverseDelivery(Act supplierDelivery, Date startTime) {
         List<IMObject> objects = copy(supplierDelivery, DELIVERY,
                                       new ReverseHandler(true), startTime,
@@ -367,6 +405,14 @@ public class OrderRules {
         return (Act) objects.get(0);
     }
 
+    /**
+     * Reverses a return.
+     *
+     * @param supplierReturn the return to reverse
+     * @param startTime      the time to assign the reversal
+     * @return a new delivery
+     * @throws ArchetypeServiceException for any archetype service error
+     */
     public Act reverseReturn(Act supplierReturn, Date startTime) {
         List<IMObject> objects = copy(supplierReturn, RETURN,
                                       new ReverseHandler(false), startTime,
@@ -378,6 +424,7 @@ public class OrderRules {
      * Updates orders associated with a delivery or return.
      *
      * @param act the delivery or return act
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public void updateOrders(Act act) {
         ActBean bean = new ActBean(act, service);
@@ -649,6 +696,21 @@ public class OrderRules {
                         && !"printed".equals(name);
             }
             return result;
+        }
+    }
+
+    /**
+     * Helper to copy an <em>act.supplierOrder</em>.
+     */
+    private static class OrderHandler extends CopyHandler {
+
+        private static final String[][] TYPE_MAP
+                = {{ORDER, ORDER},
+                   {ORDER_ITEM_RELATIONSHIP, ORDER_ITEM_RELATIONSHIP},
+                   {ORDER_ITEM, ORDER_ITEM}};
+
+        public OrderHandler() {
+            super(TYPE_MAP);
         }
     }
 

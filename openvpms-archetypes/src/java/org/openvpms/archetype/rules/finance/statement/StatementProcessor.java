@@ -77,20 +77,24 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
      * Creates a new <tt>StatementProcessor</tt>.
      *
      * @param statementDate the statement date. Must be a date prior to today.
+     * @param practice      the practice
      * @throws StatementProcessorException if the statement date is invalid
      */
-    public StatementProcessor(Date statementDate) {
-        this(statementDate, ArchetypeServiceHelper.getArchetypeService());
+    public StatementProcessor(Date statementDate, Party practice) {
+        this(statementDate, practice,
+             ArchetypeServiceHelper.getArchetypeService());
     }
 
     /**
      * Creates a new <tt>StatementProcessor</tt>.
      *
      * @param statementDate the statement date. Must be a date prior to today.
+     * @param practice      the practice
      * @param service       the archetype service
      * @throws StatementProcessorException if the statement date is invalid
      */
-    public StatementProcessor(Date statementDate, IArchetypeService service) {
+    public StatementProcessor(Date statementDate, Party practice,
+                              IArchetypeService service) {
         this.service = service;
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
@@ -98,7 +102,7 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
             throw new StatementProcessorException(InvalidStatementDate,
                                                   statementDate);
         }
-        rules = new StatementRules(service);
+        rules = new StatementRules(practice, service);
         actHelper = new StatementActHelper(service);
         this.statementDate = actHelper.getStatementTimestamp(statementDate);
     }

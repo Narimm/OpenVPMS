@@ -103,11 +103,13 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      * @param statementDate        the statement date. Must be a date prior to
      *                             today.
      * @param postCompletedCharges if <tt>true</tt>, post completed charges
+     * @param practice             the practice
      * @throws StatementProcessorException if the statement date is invalid
      */
     public EndOfPeriodProcessor(Date statementDate,
-                                boolean postCompletedCharges) {
-        this(statementDate, postCompletedCharges,
+                                boolean postCompletedCharges,
+                                Party practice) {
+        this(statementDate, postCompletedCharges, practice,
              ArchetypeServiceHelper.getArchetypeService());
     }
 
@@ -117,12 +119,13 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      * @param statementDate        the statement date. Must be a date prior to
      *                             today.
      * @param postCompletedCharges if <tt>true</tt>, post completed charges
+     * @param practice             the practice
      * @param service              the archetype service
      * @throws StatementProcessorException if the statement date is invalid
      */
     public EndOfPeriodProcessor(Date statementDate,
                                 boolean postCompletedCharges,
-                                IArchetypeService service) {
+                                Party practice, IArchetypeService service) {
         this.service = service;
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
@@ -132,7 +135,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
         }
         acts = new StatementActHelper(service);
         account = new CustomerAccountRules(service);
-        statement = new StatementRules(service);
+        statement = new StatementRules(practice, service);
         timestamp = acts.getStatementTimestamp(statementDate);
         this.postCompletedCharges = postCompletedCharges;
     }
