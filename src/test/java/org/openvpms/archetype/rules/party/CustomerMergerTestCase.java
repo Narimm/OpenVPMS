@@ -61,6 +61,11 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      */
     private PatientRules patientRules;
 
+    /**
+     * The practice.
+     */
+    private Party practice;
+
 
     /**
      * Merges two customers and verifies the merged customer contains the
@@ -295,6 +300,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         super.onSetUp();
         customerRules = new CustomerRules();
         patientRules = new PatientRules();
+        practice = (Party) create("party.organisationPractice");
     }
 
     /**
@@ -305,7 +311,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      */
     private void runEOP(Party customer, Date statementDate) {
         EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate,
-                                                            true);
+                                                            true, practice);
         eop.process(customer);
     }
 

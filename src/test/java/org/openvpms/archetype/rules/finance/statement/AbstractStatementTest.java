@@ -41,6 +41,23 @@ import java.util.List;
 public class AbstractStatementTest extends AbstractCustomerAccountTest {
 
     /**
+     * The practice.
+     */
+    private Party practice;
+
+    /**
+     * Returns the practice.
+     *
+     * @return the practice
+     */
+    protected Party getPractice() {
+        if (practice == null) {
+            practice = (Party) create("party.organisationPractice");
+        }
+        return practice;
+    }
+
+    /**
      * Helper to create a date-time given a string of the form
      * <em>yyyy-mm-dd hh:mm:ss</em>.
      *

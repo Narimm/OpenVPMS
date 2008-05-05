@@ -51,7 +51,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
     public void testStatementDate() {
         Date now = new Date();
         try {
-            new StatementProcessor(now);
+            new StatementProcessor(now, getPractice());
             fail("Expected StatementProcessorException to be thrown");
         } catch (StatementProcessorException expected) {
             assertEquals(
@@ -62,7 +62,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
         try {
-            new StatementProcessor(calendar.getTime());
+            new StatementProcessor(calendar.getTime(), getPractice());
         } catch (StatementProcessorException exception) {
             fail("Construction failed with exception: " + exception);
         }
@@ -163,7 +163,8 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         // and a fee generated. COMPLETED acts should be posted.
         // The invoice4 invoice won't be included.
         EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate,
-                                                            true);
+                                                            true,
+                                                            getPractice());
         eop.process(customer);
 
         List<Act> acts = processStatement(statementDate, customer);
@@ -209,7 +210,8 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         // run EOP for 31/12/2007.
         Date statementDate1 = getDate("2007-12-31");
         EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate1,
-                                                            true);
+                                                            true,
+                                                            getPractice());
         eop.process(customer);
 
         // create a payment for 14/1/2008
@@ -234,7 +236,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
 
         // run EOP for the 31/1
         Date statementDate5 = getDate("2008-1-31");
-        eop = new EndOfPeriodProcessor(statementDate5, true);
+        eop = new EndOfPeriodProcessor(statementDate5, true, getPractice());
         eop.process(customer);
 
         // check statement for 1/2. Balance should  be zero.
@@ -278,8 +280,9 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
                                        boolean reprint,
                                        boolean expectStatement) {
         List<Act> acts;
-        StatementRules rules = new StatementRules();
-        StatementProcessor processor = new StatementProcessor(statementDate);
+        StatementRules rules = new StatementRules(getPractice());
+        StatementProcessor processor
+                = new StatementProcessor(statementDate, getPractice());
         processor.setReprint(reprint);
         Listener listener = new Listener();
         processor.addListener(listener);

@@ -35,6 +35,10 @@
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" readOnly="true">
         </node>
+        <node name="tax" path="/taxAmount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" readOnly="true">
+        </node>
         <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" minCardinality="1"/>
         <node name="status" path="/status" type="java.lang.String"
               minCardinality="1" defaultValue="'IN_PROGRESS'">
