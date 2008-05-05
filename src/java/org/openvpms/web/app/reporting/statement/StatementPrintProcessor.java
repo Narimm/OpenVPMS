@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountActTypes;
 import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
@@ -76,9 +77,12 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      * @param processor      the batch processor to invoke to process the next
      *                       statement, when printing interactively.
      * @param cancelListener the listener to cancel processing
+     * @param practice       the practice
      */
     public StatementPrintProcessor(StatementProgressBarProcessor processor,
-                                   VetoListener cancelListener) {
+                                   VetoListener cancelListener,
+                                   Party practice) {
+        super(practice);
         this.processor = processor;
         this.cancelListener = cancelListener;
     }

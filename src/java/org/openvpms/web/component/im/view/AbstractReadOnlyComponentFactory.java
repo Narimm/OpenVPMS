@@ -45,7 +45,7 @@ public abstract class AbstractReadOnlyComponentFactory
     /**
      * The layout strategy factory.
      */
-    private final IMObjectLayoutStrategyFactory _strategies;
+    private final IMObjectLayoutStrategyFactory strategies;
 
 
     /**
@@ -57,7 +57,7 @@ public abstract class AbstractReadOnlyComponentFactory
     public AbstractReadOnlyComponentFactory(
             LayoutContext context, IMObjectLayoutStrategyFactory strategies) {
         super(context);
-        _strategies = strategies;
+        this.strategies = strategies;
     }
 
     /**
@@ -108,9 +108,11 @@ public abstract class AbstractReadOnlyComponentFactory
      * @return a component to display <tt>object</tt>
      */
     public ComponentState create(IMObject object, IMObject context) {
-        IMObjectLayoutStrategy strategy = _strategies.create(object, context);
+        IMObjectLayoutStrategy strategy = strategies.create(object, context);
+        LayoutContext layout = getLayoutContext();
+        layout.setRendered(object);
         IMObjectViewer viewer = new IMObjectViewer(object, context, strategy,
-                                                   getLayoutContext());
+                                                   layout);
         return new ComponentState(viewer.getComponent(),
                                   viewer.getFocusGroup());
     }

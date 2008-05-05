@@ -172,19 +172,21 @@ class StatementGenerator extends AbstractStatementGenerator {
                             + " email contact address is empty");
         }
 
-        processor = new StatementProcessor(date);
+        processor = new StatementProcessor(date, practice);
         progressBarProcessor = new StatementProgressBarProcessor(
                 processor, customers);
 
         StatementPrintProcessor printer
                 = new StatementPrintProcessor(progressBarProcessor,
-                                              getCancelListener());
+                                              getCancelListener(),
+                                              practice);
         if (printOnly) {
             processor.addListener(printer);
             printer.setUpdatePrinted(false);
         } else {
             StatementEmailProcessor mailer = new StatementEmailProcessor(
-                    ServiceHelper.getMailSender(), address, name);
+                    ServiceHelper.getMailSender(), address, name,
+                    practice);
             processor.addListener(new StatementDelegator(printer, mailer));
         }
     }

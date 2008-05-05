@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -98,11 +99,14 @@ public class StatementEmailProcessor
      * @param sender       the mail sender
      * @param emailAddress the email address
      * @param emailName    the email name
+     * @param practice     the practice
      * @throws ArchetypeServiceException   for any archetype service error
      * @throws StatementProcessorException for any statement processor error
      */
     public StatementEmailProcessor(JavaMailSender sender,
-                                   String emailAddress, String emailName) {
+                                   String emailAddress, String emailName,
+                                   Party practice) {
+        super(practice);
         this.sender = sender;
         this.emailAddress = emailAddress;
         this.emailName = emailName;

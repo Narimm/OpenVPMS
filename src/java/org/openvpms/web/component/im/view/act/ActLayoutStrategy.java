@@ -37,51 +37,78 @@ import org.openvpms.web.component.property.Property;
 public class ActLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * The act item editor. May be <code>null</code>.
+     * The act item editor. May be <tt>null</tt>.
      */
-    private final IMObjectCollectionEditor _editor;
+    private final IMObjectCollectionEditor editor;
+
+    /**
+     * The collection items node.
+     */
+    private final String itemsNode;
 
     /**
      * Determines if the items node should be displayed.
      */
-    private final boolean _showItems;
+    private final boolean showItems;
 
 
     /**
-     * Construct a new <code>ActLayoutStrategy</code>.
+     * Construct a new <tt>ActLayoutStrategy</tt>.
      */
     public ActLayoutStrategy() {
         this(true);
     }
 
     /**
-     * Construct a new <code>ActLayoutStrategy</code>
+     * Construct a new <tt>ActLayoutStrategy</tt>
      *
-     * @param showItems if <code>true</code>, show the items node
+     * @param showItems if <tt>true</tt>, show the items node
      */
     public ActLayoutStrategy(boolean showItems) {
         this(null, showItems);
     }
 
     /**
-     * Construct a new <code>ActLayoutStrategy</code>.
+     * Construct a new <tt>ActLayoutStrategy</tt>
      *
-     * @param editor the act items editor. May be <code>null</code>.
+     * @param node      the act items node
+     * @param showItems if <tt>true</tt>, show the items node
      */
-    public ActLayoutStrategy(IMObjectCollectionEditor editor) {
-        this(editor, true);
+    public ActLayoutStrategy(String node, boolean showItems) {
+        this(null, node, showItems);
     }
 
     /**
-     * Construct a new <code>ActLayoutStrategy</code>.
+     * Construct a new <tt>ActLayoutStrategy</tt>.
      *
-     * @param editor    the act items editor. May be <code>null</code>.
-     * @param showItems if <code>true</code>, show the items node
+     * @param editor the act items editor
+     */
+    public ActLayoutStrategy(IMObjectCollectionEditor editor) {
+        this(editor, null);
+    }
+
+    /**
+     * Construct a new <tt>ActLayoutStrategy</tt>.
+     *
+     * @param editor the act items editor
+     * @param node   the node that the editor corresponds to
+     */
+    public ActLayoutStrategy(IMObjectCollectionEditor editor, String node) {
+        this(editor, node, true);
+    }
+
+    /**
+     * Construct a new <tt>ActLayoutStrategy</tt>.
+     *
+     * @param editor    the act items editor. May be <tt>null</tt>
+     * @param node      the node that editor corresponds to. May be <tt>null</tt>
+     * @param showItems if <tt>true</tt>, show the items node
      */
     private ActLayoutStrategy(IMObjectCollectionEditor editor,
-                              boolean showItems) {
-        _editor = editor;
-        _showItems = showItems;
+                              String node, boolean showItems) {
+        this.editor = editor;
+        this.showItems = showItems;
+        itemsNode = (node == null) ? "items" : node;
     }
 
     /**
@@ -90,17 +117,17 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
      * @param property the property
      * @param parent   the parent object
      * @param context  the layout context
-     * @return a component to display <code>property</code>
+     * @return a component to display <tt>property</tt>
      */
     @Override
     protected ComponentState createComponent(Property property, IMObject parent,
                                              LayoutContext context) {
         String name = property.getName();
         ComponentState component;
-        if (name.equals("items")) {
-            if (_editor != null) {
-                component = new ComponentState(_editor.getComponent(),
-                                               _editor.getFocusGroup());
+        if (name.equals(itemsNode)) {
+            if (editor != null) {
+                component = new ComponentState(editor.getComponent(),
+                                               editor.getFocusGroup());
             } else {
                 component = createItems(property, parent, context);
             }
@@ -116,7 +143,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
      * @param property the property
      * @param parent   the parent object
      * @param context  the layout context
-     * @return a component to display <code>property</code>
+     * @return a component to display <tt>property</tt>
      */
     protected ComponentState createItems(Property property, IMObject parent,
                                          LayoutContext context) {
@@ -133,8 +160,8 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     // @Override
     protected NodeFilter getNodeFilter(LayoutContext context) {
         NodeFilter filter;
-        if (!_showItems) {
-            filter = getNodeFilter(context, new NamedNodeFilter("items"));
+        if (!showItems) {
+            filter = getNodeFilter(context, new NamedNodeFilter(itemsNode));
         } else {
             filter = super.getNodeFilter(context);
         }

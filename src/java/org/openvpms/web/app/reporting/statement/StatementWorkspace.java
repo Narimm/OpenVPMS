@@ -229,7 +229,8 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
     private void doEndPeriod(boolean postCompletedInvoices) {
         try {
             EndOfPeriodGenerator generator = new EndOfPeriodGenerator(
-                    query.getDate(), postCompletedInvoices);
+                    query.getDate(), postCompletedInvoices,
+                    GlobalContext.getInstance());
             generator.setListener(new BatchProcessorListener() {
                 public void completed() {
                     browser.query();

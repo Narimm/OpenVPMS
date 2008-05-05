@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.layout;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
@@ -117,5 +119,26 @@ public interface LayoutContext {
      * @param depth the depth
      */
     void setLayoutDepth(int depth);
+
+    /**
+     * Marks an object as being rendered.
+     *
+     * @param object the rendered object
+     */
+    void setRendered(IMObject object);
+
+    /**
+     * Determines if a component has been created to display an object.
+     *
+     * @param object the object
+     */
+    boolean isRendered(IMObject object);
+
+    /**
+     * Determines if a component has been created to display an object.
+     *
+     * @param object the object
+     */
+    boolean isRendered(IMObjectReference object);
 
 }

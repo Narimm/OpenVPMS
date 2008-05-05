@@ -19,8 +19,8 @@
 package org.openvpms.web.component.im.account;
 
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
+import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
-import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -37,6 +37,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -323,10 +324,13 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
      */
     protected void calculateTax() {
         Party customer = (Party) IMObjectHelper.getObject(getCustomer());
-        if (customer != null && getProduct() != null) {
+        Context context = getLayoutContext().getContext();
+        Party practice = context.getPractice();
+        if (customer != null && getProduct() != null && practice != null) {
             FinancialAct act = (FinancialAct) getObject();
             BigDecimal previousTax = act.getTaxAmount();
-            TaxRules rules = new TaxRules();
+            CustomerTaxRules rules
+                    = new CustomerTaxRules(practice);
             BigDecimal tax = rules.calculateTax(act, customer);
             if (tax.compareTo(previousTax) != 0) {
                 Property property = getProperty("tax");

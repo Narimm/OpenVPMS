@@ -9,7 +9,6 @@
     </postGoal>
 
     <postGoal name="java:jar-resources">
-        <echo message="jere"/>
         <ant:native2ascii encoding="utf8" src="${maven.src.dir}/java"
                           dest="${maven.build.dest}"
                           includes="**/*.properties"/>

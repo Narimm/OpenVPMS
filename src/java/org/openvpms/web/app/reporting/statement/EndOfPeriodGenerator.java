@@ -20,6 +20,7 @@ package org.openvpms.web.app.reporting.statement;
 
 import org.openvpms.archetype.component.processor.Processor;
 import org.openvpms.archetype.rules.finance.statement.EndOfPeriodProcessor;
+import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -27,6 +28,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.IterableIMObjectQuery;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
@@ -51,12 +53,21 @@ class EndOfPeriodGenerator extends AbstractStatementGenerator {
      *
      * @param date                 the statement date
      * @param postCompletedCharges if <tt>true</tt> post completed charge acts
+     * @param context              the context
      */
-    public EndOfPeriodGenerator(Date date, boolean postCompletedCharges) {
+    public EndOfPeriodGenerator(Date date, boolean postCompletedCharges,
+                                Context context) {
         super(Messages.get("reporting.statements.eop.title"),
               Messages.get("reporting.statements.eop.cancel.title"),
               Messages.get("reporting.statements.eop.cancel.message"),
               Messages.get("reporting.statements.eop.retry.title"));
+        Party practice = context.getPractice();
+        if (practice == null) {
+            throw new StatementProcessorException(
+                    StatementProcessorException.ErrorCode.InvalidConfiguration,
+                    "Context has no practice");
+        }
+
         ArchetypeQuery query
                 = new ArchetypeQuery("party.customer*", false, false);
         int size = countCustomers(query);
@@ -65,7 +76,7 @@ class EndOfPeriodGenerator extends AbstractStatementGenerator {
         IterableIMObjectQuery<Party> customers
                 = new IterableIMObjectQuery<Party>(query);
         Processor<Party> processor = new EndOfPeriodProcessor(
-                date, postCompletedCharges);
+                date, postCompletedCharges, practice);
         progressBarProcessor
                 = new StatementProgressBarProcessor(processor, customers, size);
     }

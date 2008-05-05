@@ -125,6 +125,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * @param context the object's parent. May be <tt>null</tt>
      */
     public ComponentState create(IMObject object, IMObject context) {
+        getLayoutContext().setRendered(object);
         Editor editor = getObjectEditor(object, context);
         editors.add(editor);
         return new ComponentState(editor.getComponent(),
