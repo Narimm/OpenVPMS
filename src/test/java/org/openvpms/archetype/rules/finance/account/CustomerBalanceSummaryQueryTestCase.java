@@ -106,13 +106,13 @@ public class CustomerBalanceSummaryQueryTestCase
         BigDecimal invoiceAmount = (BigDecimal)
                 set.get(CustomerBalanceSummaryQuery.LAST_INVOICE_AMOUNT);
 
-        checkEquals(fifty, balance);
-        checkEquals(fifty, overdue);
-        checkEquals(BigDecimal.ZERO, credit);
+        assertEquals(fifty, balance);
+        assertEquals(fifty, overdue);
+        assertEquals(BigDecimal.ZERO, credit);
         assertEquals(paymentStartTime, paymentDate);
-        checkEquals(fifty, paymentAmount);
+        assertEquals(fifty, paymentAmount);
         assertEquals(startTime, invoiceDate);
-        checkEquals(hundred, invoiceAmount);
+        assertEquals(hundred, invoiceAmount);
 
         assertFalse(query.hasNext());
     }

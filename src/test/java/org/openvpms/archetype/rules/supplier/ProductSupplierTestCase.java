@@ -38,7 +38,7 @@ public class ProductSupplierTestCase extends ArchetypeServiceTest {
      * Tests the {@link ProductSupplier} accessors.
      */
     public void test() {
-        OrderRules rules = new OrderRules(getArchetypeService());
+        SupplierRules rules = new SupplierRules();
         Party supplier = TestHelper.createSupplier();
         Product product = TestHelper.createProduct();
         ProductSupplier ps = rules.createProductSupplier(product, supplier);

@@ -142,7 +142,7 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
                             String status) {
         assertTrue(TypeHelper.isA(act, shortName));
         assertEquals(status, act.getStatus());
-        checkEquals(amount, ((FinancialAct) act).getTotal());
+        assertEquals(amount, ((FinancialAct) act).getTotal());
     }
 
     /**

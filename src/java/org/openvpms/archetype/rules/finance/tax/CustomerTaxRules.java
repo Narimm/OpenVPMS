@@ -63,8 +63,7 @@ public class CustomerTaxRules extends TaxRules {
     /**
      * Constructs a new <tt>CustomerTaxRules</tt>.
      *
-     * @param practice the practice, for default tax classifications.
-     *                 May be <tt>null</tt>
+     * @param practice the practice, for default tax classifications
      */
     public CustomerTaxRules(Party practice) {
         this(practice, ArchetypeServiceHelper.getArchetypeService());

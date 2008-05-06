@@ -38,7 +38,7 @@
         <node name="reorderDescription" path="/details/reorderDescription" type="java.lang.String"
               minCardinality="0"/>
         <node name="packageSize" path="/details/packageSize"
-              type="java.lang.Integer" minCardinality="1" defaultValue="1.0"/>
+              type="java.lang.Integer" minCardinality="1" defaultValue="1"/>
         <node name="packageUnits" path="/details/packageUnits"
               type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
@@ -55,12 +55,16 @@
         <node name="listPrice" path="/details/listPrice"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               defaultValue="0.0" minCardinality="0"/>
+        <node name="tax" path="/taxAmount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" readOnly="true">
+        </node>
         <node name="total" path="/total"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               derived="true" derivedValue="/quantity * /unitAmount"/>
         <node name="order" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship"
-              minCardinality="0" maxCardinality="1">
+              minCardinality="0" maxCardinality="1" readOnly="true">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">

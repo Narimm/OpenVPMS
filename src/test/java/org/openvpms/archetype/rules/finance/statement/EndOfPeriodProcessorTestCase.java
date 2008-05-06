@@ -286,7 +286,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         // should be a zero balance
         CustomerAccountRules rules = new CustomerAccountRules();
-        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        assertEquals(BigDecimal.ZERO, rules.getBalance(customer));
 
         // now run end-of-period
         Date statementDate = getDate("2007-05-02");
@@ -320,7 +320,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         // should be a negative 100 balance
         CustomerAccountRules rules = new CustomerAccountRules();
-        checkEquals(amount.negate(), rules.getBalance(customer));
+        assertEquals(amount.negate(), rules.getBalance(customer));
 
         // now run end-of-period
         Date statementDate = getDate("2007-02-01");
@@ -341,7 +341,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         FinancialAct opening = (FinancialAct) acts.get(0);
         checkAct(opening, CustomerAccountActTypes.OPENING_BALANCE, amount);
         assertTrue(opening.isCredit());
-        checkEquals(amount.negate(), rules.getBalance(customer));
+        assertEquals(amount.negate(), rules.getBalance(customer));
 
         // run end of period again
         processor = new EndOfPeriodProcessor(nextStatementDate, true,
