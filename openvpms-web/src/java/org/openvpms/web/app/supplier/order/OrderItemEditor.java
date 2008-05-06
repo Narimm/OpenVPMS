@@ -20,8 +20,8 @@ package org.openvpms.web.app.supplier.order;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.archetype.rules.supplier.ProductSupplier;
+import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -269,7 +269,7 @@ public class OrderItemEditor extends ActItemEditor {
      * @param supplier the supplier
      */
     private void checkProductSupplier(Product product, Party supplier) {
-        OrderRules rules = new OrderRules();
+        SupplierRules rules = new SupplierRules();
         ProductSupplier ps = getProductSupplier();
         int size = getPackageSize();
         String units = getPackageUnits();
