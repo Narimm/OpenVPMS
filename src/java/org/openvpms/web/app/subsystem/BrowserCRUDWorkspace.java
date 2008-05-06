@@ -262,8 +262,16 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     @Override
     protected void onSaved(Child object, boolean isNew) {
         browser.query();
-        browser.setSelected(object);
-        getCRUDWindow().setObject(object);
+        CRUDWindow<Child> window = getCRUDWindow();
+        if (!browser.getObjects().isEmpty()) {
+            // there are objects to display. Not necessarily that just saved,
+            // but attempt to select it anyway.
+            browser.setSelected(object);
+            window.setObject(object);
+        } else {
+            // the query doesn't select the saved object
+            window.setObject(null);
+        }
         if (updateSummaryOnChildUpdate()) {
             firePropertyChange(SUMMARY_PROPERTY, null, null);
         }

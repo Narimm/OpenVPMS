@@ -141,7 +141,6 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
     @Override
     protected void onPosted(Act act) {
         try {
-            rules.updateOrders(act);
             if (TypeHelper.isA(act, "act.supplierDelivery")) {
                 onInvoice(act);
             } else {
@@ -190,7 +189,9 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
             if (canDelete(object)) {
                 buttons.add(getDeleteButton());
             }
-            if (ActStatus.POSTED.equals(object.getStatus())) {
+            if (!ActStatus.POSTED.equals(object.getStatus())) {
+                buttons.add(getPostButton());
+            } else {
                 buttons.add(invoice);
                 buttons.add(reverse);
             }
