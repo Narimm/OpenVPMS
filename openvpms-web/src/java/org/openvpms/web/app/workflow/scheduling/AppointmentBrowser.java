@@ -83,6 +83,7 @@ public class AppointmentBrowser extends TableBrowser<ObjectSet> {
      */
     @Override
     protected void doLayoutForResults(Component container) {
+        super.doLayoutForResults(container);
         int index = container.indexOf(getTable());
 
         // add the label before the table
