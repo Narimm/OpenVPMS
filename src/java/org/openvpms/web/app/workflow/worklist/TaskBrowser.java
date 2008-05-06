@@ -19,7 +19,6 @@
 package org.openvpms.web.app.workflow.worklist;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMTable;
@@ -40,12 +39,9 @@ public class TaskBrowser extends IMObjectTableBrowser<Act> {
      * specified query.
      *
      * @param query the query
-     * @param sort  the sort criteria. May be <code>null</code>
-     * @param model the table model
      */
-    public TaskBrowser(Query<Act> query, SortConstraint[] sort,
-                       IMTableModel<Act> model) {
-        super(query, sort, model);
+    public TaskBrowser(Query<Act> query) {
+        super(query, null, new TaskTableModel());
     }
 
     /**
