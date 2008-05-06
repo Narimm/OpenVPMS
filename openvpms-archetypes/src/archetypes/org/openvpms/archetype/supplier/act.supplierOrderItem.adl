@@ -65,8 +65,8 @@
         <node name="total" path="/total"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               derived="true" derivedValue="/quantity * /unitAmount"/>
-        <node name="delivery" path="/targetActRelationships"
-              type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="1"
+        <node name="deliveries" path="/targetActRelationships"
+              type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="*"
               filter="actRelationship.supplierDeliveryOrderItem" readOnly="true">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">

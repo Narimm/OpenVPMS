@@ -111,18 +111,6 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies two <code>BigDecimals</code> are equal.
-     *
-     * @param a the first value
-     * @param b the second value
-     */
-    protected void checkEquals(BigDecimal a, BigDecimal b) {
-        if (a.compareTo(b) != 0) {
-            fail("Expected " + a + ", but got " + b);
-        }
-    }
-
-    /**
      * Helper to create an <em>act.customerAccountChargesInvoice</em>.
      *
      * @param amount the act total

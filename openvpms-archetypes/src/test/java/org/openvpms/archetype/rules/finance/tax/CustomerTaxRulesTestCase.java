@@ -110,7 +110,9 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
     protected void onSetUp() throws Exception {
         super.onSetUp();
         taxType = createTaxType();
-        rules = new CustomerTaxRules(null);
+        Party practice = (Party) create("party.organisationPractice");
+
+        rules = new CustomerTaxRules(practice);
     }
 
     /**

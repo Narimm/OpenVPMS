@@ -26,6 +26,8 @@ import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+import java.math.BigDecimal;
+
 
 /**
  * Abstract base class for tests using the archetype service.
@@ -39,7 +41,8 @@ public abstract class ArchetypeServiceTest
     /**
      * The archetype service.
      */
-    private IArchetypeService _service;
+    private IArchetypeService service;
+
 
     /**
      * Returns the archetype service.
@@ -47,7 +50,7 @@ public abstract class ArchetypeServiceTest
      * @return the archetype service
      */
     protected IArchetypeService getArchetypeService() {
-        return _service;
+        return service;
     }
 
     /**
@@ -57,7 +60,7 @@ public abstract class ArchetypeServiceTest
      * @return the new object
      */
     protected IMObject create(String shortName) {
-        IMObject object = _service.create(shortName);
+        IMObject object = service.create(shortName);
         assertNotNull(object);
         return object;
     }
@@ -70,15 +73,14 @@ public abstract class ArchetypeServiceTest
      * @throws ValidationException       if the object cannot be validated
      */
     protected void save(IMObject object) {
-        _service.save(object);
+        service.save(object);
     }
 
     /**
      * Helper to reload an object from the archetype service.
      *
      * @param object the object to reload
-     * @return the corresponding object or <code>null</code> if no object
-     *         is found
+     * @return the corresponding object or <tt>null</tt> if no object is found
      */
     @SuppressWarnings("unchecked")
     protected <T extends IMObject> T get(T object) {
@@ -89,11 +91,10 @@ public abstract class ArchetypeServiceTest
      * Helper to retrieve an object from the archetype service.
      *
      * @param ref the object reference
-     * @return the corresponding object or <code>null</code> if no object
-     *         is found
+     * @return the corresponding object or <tt>null</tt> if no object is found
      */
     protected IMObject get(IMObjectReference ref) {
-        return ArchetypeQueryHelper.getByObjectReference(_service, ref);
+        return ArchetypeQueryHelper.getByObjectReference(service, ref);
     }
 
     /**
@@ -103,7 +104,19 @@ public abstract class ArchetypeServiceTest
      * @throws ArchetypeServiceException if the service cannot remove the object
      */
     protected void remove(IMObject object) {
-        _service.remove(object);
+        service.remove(object);
+    }
+
+    /**
+     * Verifies two <tt>BigDecimals</tt> are equal.
+     *
+     * @param a the first value
+     * @param b the second value
+     */
+    protected void assertEquals(BigDecimal a, BigDecimal b) {
+        if (a.compareTo(b) != 0) {
+            fail("Expected " + a + ", but got " + b);
+        }
     }
 
     /**
@@ -124,9 +137,9 @@ public abstract class ArchetypeServiceTest
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        _service = (IArchetypeService) applicationContext.getBean(
+        service = (IArchetypeService) applicationContext.getBean(
                 "archetypeService");
-        assertNotNull(_service);
+        assertNotNull(service);
     }
 
 }

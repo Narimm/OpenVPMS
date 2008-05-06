@@ -18,37 +18,22 @@
 
 package org.openvpms.archetype.rules.supplier;
 
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.functors.AndPredicate;
-import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
-import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -58,97 +43,6 @@ import java.util.Set;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class OrderRules {
-
-    /**
-     * Supplier order act short name.
-     */
-    public static final String ORDER = "act.supplierOrder";
-
-    /**
-     * Supplier order item act short name.
-     */
-    public static final String ORDER_ITEM = "act.supplierOrderItem";
-
-    /**
-     * Supplier order item relationship short name.
-     */
-    public static final String ORDER_ITEM_RELATIONSHIP
-            = "actRelationship.supplierOrderItem";
-
-    /**
-     * Supplier delivery act short name.
-     */
-    public static final String DELIVERY = "act.supplierDelivery";
-
-    /**
-     * Supplier delivery item act short name.
-     */
-    public static final String DELIVERY_ITEM = "act.supplierDeliveryItem";
-
-    /**
-     * Supplier delivery item relationship short name.
-     */
-    public static final String DELIVERY_ITEM_RELATIONSHIP
-            = "actRelationship.supplierDeliveryItem";
-
-    /**
-     * Supplier delivery-order item relationship short name.
-     */
-    public static final String DELIVERY_ORDER_ITEM_RELATIONSHIP
-            = "actRelationship.supplierDeliveryOrderItem";
-
-    /**
-     * Supplier invoice act short name.
-     */
-    public static final String INVOICE = "act.supplierAccountChargesInvoice";
-
-    /**
-     * Supplier invoice item act short name.
-     */
-    public static final String INVOICE_ITEM = "act.supplierAccountInvoiceItem";
-
-    /**
-     * Supplier invoice item relationship short name.
-     */
-    public static final String INVOICE_ITEM_RELATIONSHIP
-            = "actRelationship.supplierAccountInvoiceItem";
-
-    /**
-     * Supplier return act short name.
-     */
-    public static final String RETURN = "act.supplierReturn";
-
-    /**
-     * Supplier return item act short name.
-     */
-    public static final String RETURN_ITEM = "act.supplierReturnItem";
-
-    /**
-     * Supplier return item relationship short name.
-     */
-    public static final String RETURN_ITEM_RELATIONSHIP
-            = "actRelationship.supplierReturnItem";
-
-    /**
-     * Supplier credit act short name.
-     */
-    public static final String CREDIT = "act.supplierAccountChargesCredit";
-
-    /**
-     * Supplier credit item act short name.
-     */
-    public static final String CREDIT_ITEM = "act.supplierAccountCreditItem";
-
-    /**
-     * Supplier credit item relationship short name.
-     */
-    public static final String CREDIT_ITEM_RELATIONSHIP
-            = "actRelationship.supplierAccountCreditItem";
-
-    /**
-     * Stock location participation.
-     */
-    public static final String STOCK_LOCATION = "participation.stockLocation";
 
     /**
      * The archetype service.
@@ -173,159 +67,13 @@ public class OrderRules {
     }
 
     /**
-     * Determines if a supplier supplies a particular product.
-     *
-     * @param supplier the supplier
-     * @param product  the product
-     */
-    public boolean isSuppliedBy(Party supplier, Product product) {
-        EntityBean bean = new EntityBean(supplier, service);
-        Predicate predicate = AndPredicate.getInstance(
-                IsActiveRelationship.ACTIVE_NOW,
-                RefEquals.getSourceEquals(product));
-        return bean.getNodeRelationship("products", predicate) != null;
-    }
-
-    /**
-     * Returns all active <em>entityRelationship.productSupplier</em>
-     * relationships for a particular supplier.
-     *
-     * @param supplier the supplier
-     * @return the relationships, wrapped in {@link ProductSupplier} instances
-     */
-    public List<ProductSupplier> getProductSuppliers(Party supplier) {
-        List<ProductSupplier> result = new ArrayList<ProductSupplier>();
-        EntityBean bean = new EntityBean(supplier, service);
-        List<EntityRelationship> relationships
-                = bean.getNodeRelationships("products",
-                                            IsActiveRelationship.ACTIVE_NOW);
-        for (EntityRelationship relationship : relationships) {
-            result.add(new ProductSupplier(relationship, service));
-        }
-        return result;
-    }
-
-    /**
-     * Returns all active <em>entityRelationship.productSupplier</em>
-     * relationships for a particular supplier and product.
-     *
-     * @param supplier the supplier
-     * @param product  the product
-     * @return the relationships, wrapped in {@link ProductSupplier} instances
-     */
-    public List<ProductSupplier> getProductSuppliers(Party supplier,
-                                                     Product product) {
-        List<ProductSupplier> result = new ArrayList<ProductSupplier>();
-        EntityBean bean = new EntityBean(supplier, service);
-        Predicate predicate = AndPredicate.getInstance(
-                IsActiveRelationship.ACTIVE_NOW,
-                RefEquals.getSourceEquals(product));
-        List<EntityRelationship> relationships
-                = bean.getNodeRelationships("products", predicate);
-        for (EntityRelationship relationship : relationships) {
-            result.add(new ProductSupplier(relationship, service));
-        }
-        return result;
-    }
-
-    /**
-     * Returns an <em>entityRelationship.productSupplier</em> relationship
-     * for a supplier, product and package size and units.
-     * <p/>
-     * If there is a match on supplier and product, but no match on package
-     * size, but there is a relationship where the size is <tt>0</tt>, then
-     * this will be returned.
-     *
-     * @param supplier     the supplier
-     * @param product      the product
-     * @param packageSize  the package size
-     * @param packageUnits the package units
-     * @return the relationship, wrapped in a {@link ProductSupplier}, or
-     *         <tt>null</tt> if none is found
-     */
-    public ProductSupplier getProductSupplier(Party supplier, Product product,
-                                              int packageSize,
-                                              String packageUnits) {
-        for (ProductSupplier ps : getProductSuppliers(supplier, product)) {
-            if (ps.getPackageSize() == packageSize
-                    && ObjectUtils.equals(ps.getPackageUnits(),
-                                          packageUnits)) {
-                return ps;
-            } else if (ps.getPackageSize() == 0) {
-                return ps;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns all active <em>entityRelationship.productSupplier</em>
-     * relationships for a particular product.
-     *
-     * @param product the product
-     * @return the relationships, wrapped in {@link ProductSupplier} instances
-     */
-    public List<ProductSupplier> getProductSuppliers(Product product) {
-        List<ProductSupplier> result = new ArrayList<ProductSupplier>();
-        EntityBean bean = new EntityBean(product, service);
-        List<EntityRelationship> relationships
-                = bean.getNodeRelationships("suppliers",
-                                            IsActiveRelationship.ACTIVE_NOW);
-        for (EntityRelationship relationship : relationships) {
-            result.add(new ProductSupplier(relationship, service));
-        }
-        return result;
-    }
-
-    /**
-     * Creates a new <em>entityRelationship.productSupplier</em> relationship
-     * between a supplier and product.
-     *
-     * @param product  the product
-     * @param supplier the supplier
-     * @return the relationship, wrapped in a {@link ProductSupplier}
-     */
-    public ProductSupplier createProductSupplier(Product product,
-                                                 Party supplier) {
-
-        EntityBean bean = new EntityBean(product, service);
-        EntityRelationship rel = bean.addRelationship(
-                "entityRelationship.productSupplier", supplier);
-        return new ProductSupplier(rel, service);
-    }
-
-    /**
      * Determines the delivery status of an order item.
      *
      * @param orderItem an <em>act.supplierOrderItem</em>
      * @return the delivery status
      */
     public DeliveryStatus getDeliveryStatus(FinancialAct orderItem) {
-        DeliveryStatus result = DeliveryStatus.PENDING;
-        IMObjectBean bean = new IMObjectBean(orderItem, service);
-        BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
-        BigDecimal received = bean.getBigDecimal("receivedQuantity",
-                                                 BigDecimal.ZERO);
-        BigDecimal cancelled = bean.getBigDecimal("cancelledQuantity",
-                                                  BigDecimal.ZERO);
-        if (quantity.compareTo(BigDecimal.ZERO) != 0) {
-            // can only be PART or FULL delivery status if there is an expected
-            // quantity
-            BigDecimal sum = received.add(cancelled);
-            if (sum.compareTo(BigDecimal.ZERO) != 0) {
-                int status = sum.compareTo(quantity);
-                if (status == -1) {
-                    if (received.compareTo(BigDecimal.ZERO) != 0) {
-                        result = DeliveryStatus.PART;
-                    }
-                } else if (status == 0) {
-                    result = DeliveryStatus.FULL;
-                } else {
-                    // the sum should never be greater than the quantity
-                }
-            }
-        }
-        return result;
+        return DeliveryProcessor.getDeliveryStatus(orderItem, service);
     }
 
     /**
@@ -339,7 +87,7 @@ public class OrderRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct copyOrder(FinancialAct order) {
-        List<IMObject> objects = copy(order, ORDER,
+        List<IMObject> objects = copy(order, SupplierArchetypes.ORDER,
                                       new OrderHandler(), new Date(), true);
         return (FinancialAct) objects.get(0);
     }
@@ -352,7 +100,7 @@ public class OrderRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct createDeliveryItem(FinancialAct orderItem) {
-        List<IMObject> objects = copy(orderItem, ORDER_ITEM,
+        List<IMObject> objects = copy(orderItem, SupplierArchetypes.ORDER_ITEM,
                                       new DeliveryItemHandler(),
                                       orderItem.getActivityStartTime(), false);
         return (FinancialAct) objects.get(0);
@@ -369,7 +117,7 @@ public class OrderRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct invoiceSupplier(Act supplierDelivery, Date startTime) {
-        List<IMObject> objects = copy(supplierDelivery, DELIVERY,
+        List<IMObject> objects = copy(supplierDelivery, SupplierArchetypes.DELIVERY,
                                       new DeliveryHandler(), startTime, true);
         return (FinancialAct) objects.get(0);
     }
@@ -385,7 +133,7 @@ public class OrderRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct creditSupplier(Act supplierReturn, Date startTime) {
-        List<IMObject> objects = copy(supplierReturn, RETURN,
+        List<IMObject> objects = copy(supplierReturn, SupplierArchetypes.RETURN,
                                       new ReturnHandler(), startTime, true);
         return (FinancialAct) objects.get(0);
     }
@@ -399,7 +147,7 @@ public class OrderRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Act reverseDelivery(Act supplierDelivery, Date startTime) {
-        List<IMObject> objects = copy(supplierDelivery, DELIVERY,
+        List<IMObject> objects = copy(supplierDelivery, SupplierArchetypes.DELIVERY,
                                       new ReverseHandler(true), startTime,
                                       true);
         return (Act) objects.get(0);
@@ -414,163 +162,10 @@ public class OrderRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Act reverseReturn(Act supplierReturn, Date startTime) {
-        List<IMObject> objects = copy(supplierReturn, RETURN,
+        List<IMObject> objects = copy(supplierReturn, SupplierArchetypes.RETURN,
                                       new ReverseHandler(false), startTime,
                                       true);
         return (Act) objects.get(0);
-    }
-
-    /**
-     * Updates orders associated with a delivery or return.
-     *
-     * @param act the delivery or return act
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public void updateOrders(Act act) {
-        ActBean bean = new ActBean(act, service);
-        Party supplier = (Party) bean.getNodeParticipant("supplier");
-        Party stockLocation = (Party) bean.getNodeParticipant("stockLocation");
-        Set<IMObject> toUpdate = new LinkedHashSet<IMObject>();
-        boolean delivery = TypeHelper.isA(act, DELIVERY);
-        for (Act item : bean.getNodeActs("items")) {
-            ActBean itemBean = new ActBean(item, service);
-            BigDecimal receivedQuantity = itemBean.getBigDecimal("quantity");
-            int receivedPackSize = itemBean.getInt("packageSize");
-            if (!delivery) {
-                receivedQuantity = receivedQuantity.negate();
-            }
-            Product product = (Product) itemBean.getNodeParticipant("product");
-
-            for (Act orderItem : itemBean.getNodeActs("items")) {
-                updateReceivedQuantity(orderItem, receivedQuantity,
-                                       receivedPackSize);
-                toUpdate.add(orderItem);
-            }
-            if (delivery && supplier != null && product != null) {
-                EntityRelationship relationship = updateProductSupplier(
-                        supplier, product, itemBean);
-                if (relationship != null) {
-                    toUpdate.add(relationship);
-                }
-            }
-
-            if (product != null && stockLocation != null) {
-                EntityRelationship relationship = updateStockQuantity(
-                        product, stockLocation, receivedQuantity,
-                        receivedPackSize);
-                if (relationship != null) {
-                    if (relationship.isNew()) {
-                        toUpdate.add(product);
-                        toUpdate.add(stockLocation);
-                    } else {
-                        toUpdate.add(relationship);
-                    }
-                }
-            }
-        }
-        if (!toUpdate.isEmpty()) {
-            service.save(toUpdate);
-        }
-    }
-
-    private void updateReceivedQuantity(Act orderItem,
-                                        BigDecimal quantity,
-                                        int packageSize) {
-        ActBean orderItemBean = new ActBean(orderItem, service);
-        int orderedPackSize = orderItemBean.getInt("packageSize");
-        if (packageSize != orderedPackSize && orderedPackSize != 0) {
-            // need to convert the quantity to the order package quantity
-            quantity = quantity.multiply(BigDecimal.valueOf(packageSize));
-            quantity = quantity.divide(BigDecimal.valueOf(orderedPackSize));
-        }
-        BigDecimal received = orderItemBean.getBigDecimal(
-                "receivedQuantity");
-        BigDecimal total = received.add(quantity);
-        orderItemBean.setValue("receivedQuantity", total);
-    }
-
-    /**
-     * @param product
-     * @param stockLocation
-     * @param quantity
-     * @return the stock location relationship, or <tt>null</tt> if none exists
-     */
-    private EntityRelationship updateStockQuantity(Product product,
-                                                   Party stockLocation,
-                                                   BigDecimal quantity,
-                                                   int packageSize) {
-        EntityRelationship relationship = null;
-        EntityBean bean = new EntityBean(product, service);
-        if (bean.hasNode("stockLocations")) {
-            Predicate predicate = AndPredicate.getInstance(
-                    IsActiveRelationship.ACTIVE_NOW,
-                    RefEquals.getTargetEquals(stockLocation));
-            relationship = bean.getNodeRelationship(
-                    "stockLocations", predicate);
-            if (relationship == null) {
-                relationship = bean.addRelationship(
-                        "entityRelationship.productStockLocation",
-                        stockLocation);
-            }
-            BigDecimal units
-                    = quantity.multiply(BigDecimal.valueOf(packageSize));
-            IMObjectBean relBean = new IMObjectBean(relationship, service);
-            BigDecimal stockQuantity = relBean.getBigDecimal("quantity");
-            stockQuantity = stockQuantity.add(units);
-            relBean.setValue("quantity", stockQuantity);
-        }
-        return relationship;
-    }
-
-    /**
-     * Updates an <em>entityRelationship.productSupplier</em> from a
-     * <em>act.supplierDeliveryItem</em>, if required.
-     *
-     * @param supplier         the supplier
-     * @param product
-     * @param deliveryItemBean a bean wrapping the delivery item
-     * @return the relationship, if it needs to be saved
-     */
-    private EntityRelationship updateProductSupplier(Party supplier,
-                                                     Product product,
-                                                     ActBean deliveryItemBean) {
-        int size = deliveryItemBean.getInt("packageSize");
-        String units = deliveryItemBean.getString("packageUnits");
-        String reorderCode = deliveryItemBean.getString("reorderCode");
-        String reorderDesc = deliveryItemBean.getString("reorderDescription");
-        BigDecimal listPrice = deliveryItemBean.getBigDecimal("listPrice");
-        BigDecimal nettPrice = deliveryItemBean.getBigDecimal("nettPrice");
-        ProductSupplier ps = getProductSupplier(supplier, product,
-                                                size, units);
-        boolean save = true;
-        if (ps == null) {
-            // no product-supplier relationship, so create a new one
-            ps = createProductSupplier(product, supplier);
-            ps.setPackageSize(size);
-            ps.setPackageUnits(units);
-            ps.setReorderCode(reorderCode);
-            ps.setReorderDescription(reorderDesc);
-            ps.setListPrice(listPrice);
-            ps.setNettPrice(nettPrice);
-            ps.setPreferred(true);
-        } else if (size != ps.getPackageSize()
-                || !ObjectUtils.equals(units, ps.getPackageUnits())
-                || !equals(listPrice, ps.getListPrice())
-                || !equals(nettPrice, ps.getNettPrice())
-                || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
-                || !ObjectUtils.equals(ps.getReorderDescription(),
-                                       reorderDesc)) {
-            // properties are different to an existing relationship
-            ps.setPackageSize(size);
-            ps.setPackageUnits(units);
-            ps.setReorderCode(reorderCode);
-            ps.setReorderDescription(reorderDesc);
-            ps.setListPrice(listPrice);
-            ps.setNettPrice(nettPrice);
-        } else {
-            save = false;
-        }
-        return (save) ? ps.getRelationship() : null;
     }
 
     /**
@@ -602,19 +197,6 @@ public class OrderRules {
         return objects;
     }
 
-    /**
-     * Helper to determine if two decimals are equal.
-     *
-     * @param lhs the left-hand side. May be <tt>null</tt>
-     * @param rhs right left-hand side. May be <tt>null</tt>
-     * @return <tt>true</t> if they are equal, otherwise <tt>false</tt>
-     */
-    private boolean equals(BigDecimal lhs, BigDecimal rhs) {
-        if (lhs != null && rhs != null) {
-            return lhs.compareTo(rhs) == 0;
-        }
-        return ObjectUtils.equals(lhs, rhs);
-    }
 
     private abstract static class CopyHandler
             extends AbstractIMObjectCopyHandler {
@@ -705,9 +287,9 @@ public class OrderRules {
     private static class OrderHandler extends CopyHandler {
 
         private static final String[][] TYPE_MAP
-                = {{ORDER, ORDER},
-                   {ORDER_ITEM_RELATIONSHIP, ORDER_ITEM_RELATIONSHIP},
-                   {ORDER_ITEM, ORDER_ITEM}};
+                = {{SupplierArchetypes.ORDER, SupplierArchetypes.ORDER},
+                   {SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, SupplierArchetypes.ORDER_ITEM_RELATIONSHIP},
+                   {SupplierArchetypes.ORDER_ITEM, SupplierArchetypes.ORDER_ITEM}};
 
         public OrderHandler() {
             super(TYPE_MAP);
@@ -722,7 +304,7 @@ public class OrderRules {
             extends CopyHandler {
 
         private static final String[][] TYPE_MAP
-                = {{ORDER_ITEM, DELIVERY_ITEM}};
+                = {{SupplierArchetypes.ORDER_ITEM, SupplierArchetypes.DELIVERY_ITEM}};
 
         public DeliveryItemHandler() {
             super(TYPE_MAP);
@@ -757,11 +339,11 @@ public class OrderRules {
          * Map of delivery types to their corresponding invoice types.
          */
         private static final String[][] TYPE_MAP = {
-                {DELIVERY, INVOICE},
-                {DELIVERY_ITEM, INVOICE_ITEM},
-                {DELIVERY_ITEM_RELATIONSHIP, INVOICE_ITEM_RELATIONSHIP},
-                {DELIVERY_ORDER_ITEM_RELATIONSHIP, null},
-                {STOCK_LOCATION, null}};
+                {SupplierArchetypes.DELIVERY, SupplierArchetypes.INVOICE},
+                {SupplierArchetypes.DELIVERY_ITEM, SupplierArchetypes.INVOICE_ITEM},
+                {SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP, SupplierArchetypes.INVOICE_ITEM_RELATIONSHIP},
+                {SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, null},
+                {SupplierArchetypes.STOCK_LOCATION_PARTICIPATION, null}};
 
         public DeliveryHandler() {
             super(TYPE_MAP);
@@ -774,10 +356,10 @@ public class OrderRules {
          * Map of return types to their corresponding credit types.
          */
         private static final String[][] TYPE_MAP = {
-                {RETURN, CREDIT},
-                {RETURN_ITEM, CREDIT_ITEM},
-                {RETURN_ITEM_RELATIONSHIP, CREDIT_ITEM_RELATIONSHIP},
-                {STOCK_LOCATION, null}};
+                {SupplierArchetypes.RETURN, SupplierArchetypes.CREDIT},
+                {SupplierArchetypes.RETURN_ITEM, SupplierArchetypes.CREDIT_ITEM},
+                {SupplierArchetypes.RETURN_ITEM_RELATIONSHIP, SupplierArchetypes.CREDIT_ITEM_RELATIONSHIP},
+                {SupplierArchetypes.STOCK_LOCATION_PARTICIPATION, null}};
 
         public ReturnHandler() {
             super(TYPE_MAP);
@@ -787,9 +369,10 @@ public class OrderRules {
     private static class ReverseHandler extends CopyHandler {
 
         private static final String[][] TYPE_MAP = {
-                {DELIVERY, RETURN},
-                {DELIVERY_ITEM, RETURN_ITEM},
-                {DELIVERY_ITEM_RELATIONSHIP, RETURN_ITEM_RELATIONSHIP}};
+                {SupplierArchetypes.DELIVERY, SupplierArchetypes.RETURN},
+                {SupplierArchetypes.DELIVERY_ITEM, SupplierArchetypes.RETURN_ITEM},
+                {SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP, SupplierArchetypes.RETURN_ITEM_RELATIONSHIP},
+                {SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, SupplierArchetypes.RETURN_ITEM}};
 
         public ReverseHandler(boolean delivery) {
             super(TYPE_MAP, !delivery);
