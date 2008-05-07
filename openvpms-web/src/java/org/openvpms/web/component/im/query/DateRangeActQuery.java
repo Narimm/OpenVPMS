@@ -157,7 +157,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      */
     @Override
     protected Date getFrom() {
-        return dateRange.getFrom();
+        return getDateRange().getFrom();
     }
 
     /**
@@ -166,7 +166,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param date the 'from' date
      */
     protected void setFrom(Date date) {
-        dateRange.setFrom(date);
+        getDateRange().setFrom(date);
     }
 
     /**
@@ -176,7 +176,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      */
     @Override
     protected Date getTo() {
-        return dateRange.getTo();
+        return getDateRange().getTo();
     }
 
     /**
@@ -185,7 +185,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param date the 'to' date
      */
     protected void setTo(Date date) {
-        dateRange.setTo(date);
+        getDateRange().setTo(date);
     }
 
     /**
@@ -209,8 +209,28 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param container the container
      */
     protected void addDateRange(Component container) {
-        dateRange = new ActDateRange(getFocusGroup());
-        container.add(dateRange.getComponent());
+        container.add(getDateRange().getComponent());
+    }
+
+    /**
+     * Returns the date range.
+     *
+     * @return the date range
+     */
+    protected ActDateRange getDateRange() {
+        if (dateRange == null) {
+            dateRange = createDateRange();
+        }
+        return dateRange;
+    }
+
+    /**
+     * Creates the date range.
+     *
+     * @return a new date range
+     */
+    protected ActDateRange createDateRange() {
+        return new ActDateRange(getFocusGroup());
     }
 
 }

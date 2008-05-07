@@ -49,10 +49,23 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
 
 
     /**
-     * Creates a new <tt>OrderTableBrowser</tt>.
+     * Determines the types of order to query. If <tt>true</tt> query orders
+     * suitable for a delivery (i.e have a delivery status that is not
+     * {@link DeliveryStatus#FULL}. Otherwise query orders for a return,
+     * (i.e have delivery status of {@link DeliveryStatus#FULL}</em>
      */
-    public OrderTableBrowser() {
-        super(new PostedOrderQuery(), new OrderSelectionTableModel());
+    private final boolean delivery;
+
+
+    /**
+     * Creates a new <tt>OrderTableBrowser</tt>.
+     *
+     * @param delivery if <tt>true</tt> query orders for a delivery, otherwise
+     *                 query orders for a return
+     */
+    public OrderTableBrowser(boolean delivery) {
+        super(new PostedOrderQuery(!delivery), new OrderSelectionTableModel());
+        this.delivery = delivery;
     }
 
     /**
@@ -199,7 +212,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
      * An {@link ActHierarchyFilter} that excludes all acts that have FULL
      * delivery status.
      */
-    private static class Filter extends ActHierarchyFilter<FinancialAct> {
+    private class Filter extends ActHierarchyFilter<FinancialAct> {
 
         /**
          * The order rules.
@@ -231,8 +244,6 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
 
         /**
          * Determines if a child act should be included.
-         * <p/>
-         * This implementation always returns <tt>true</tt>
          *
          * @param child  the child act
          * @param parent the parent act
@@ -240,7 +251,9 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
         @Override
         protected boolean include(FinancialAct child, FinancialAct parent) {
             DeliveryStatus status = rules.getDeliveryStatus(child);
-            return DeliveryStatus.FULL != status;
+            return (delivery)
+                    ? status != DeliveryStatus.FULL
+                    : status == DeliveryStatus.FULL;
         }
     }
 }
