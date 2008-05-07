@@ -227,14 +227,7 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
                 }
             }
         }
-        // need to save children first, in order that the
-        // InvoiceRules.saveInvoiceItem() correctly links dispensing and
-        // document acts to the patient's visit
-        boolean saved = saveChildren();
-        if (saved) {
-            saved = saveObject();
-        }
-        return saved;
+        return super.doSave();
     }
 
     /**
