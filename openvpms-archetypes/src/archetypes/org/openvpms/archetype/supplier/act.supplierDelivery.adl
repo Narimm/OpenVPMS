@@ -37,7 +37,7 @@
               defaultValue="'0.0'" readOnly="true">
         </node>
         <node name="credit" path="/credit" type="java.lang.Boolean"
-              minCardinality="1" defaultValue="false()" readOnly="true" />
+              minCardinality="1" defaultValue="false()" readOnly="true" hidden="true"/>
         <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />
         <node name="title" displayName="Notes" path="/title" type="java.lang.String" minCardinality="1" maxLength="30" defaultValue="'Enter notes ...'"/>
         <node name="status" path="/status" type="java.lang.String"
