@@ -488,9 +488,9 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if the save was successful
      */
     protected boolean doSave() {
-        boolean saved = false;
-        if (saveObject()) {
-            saved = saveChildren();
+        boolean saved = saveChildren();
+        if (saved) {
+            saved = saveObject();
         }
         return saved;
     }
