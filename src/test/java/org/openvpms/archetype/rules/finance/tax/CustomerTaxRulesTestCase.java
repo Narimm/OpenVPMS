@@ -184,6 +184,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
         assertNotNull(product);
         IMObjectBean bean = new IMObjectBean(product);
         bean.setValue("name", "TaxRulesTestCase-product" + product.hashCode());
+        bean.save();
         return product;
     }
 
