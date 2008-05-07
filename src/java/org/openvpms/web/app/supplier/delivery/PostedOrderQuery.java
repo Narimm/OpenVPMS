@@ -19,14 +19,23 @@
 package org.openvpms.web.app.supplier.delivery;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.supplier.SupplierActQuery;
+import org.openvpms.web.component.im.query.ActDateRange;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.RowFactory;
+
+import java.util.Date;
 
 /**
  * Add description here.
@@ -36,14 +45,24 @@ import org.openvpms.web.component.im.query.ResultSet;
  */
 public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
 
-    private static final String[] ACTS = {"act.supplierOrder"};
+    /**
+     * Determines if the date range should be included.
+     */
+    private final boolean includeDateRange;
+
+    /**
+     * The acts to query.
+     */
+    private static final String[] ACTS = {SupplierArchetypes.ORDER};
+
 
     /**
      * Constructs a new <tt>PostedOrderQuery</tt>.
      */
-    public PostedOrderQuery() {
+    public PostedOrderQuery(boolean includeDateRange) {
         super(ACTS, null, FinancialAct.class);
         setStatus(ActStatus.POSTED);
+        this.includeDateRange = includeDateRange;
     }
 
     /**
@@ -70,8 +89,23 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
      */
     @Override
     protected void doLayout(Component container) {
-        addSupplierSelector(container);
-        addStockLocationSelector(container);
+        if (includeDateRange) {
+            // include the date range, and set the from date to 1 month prior
+            Row row1 = RowFactory.create("CellSpacing");
+            Row row2 = RowFactory.create("CellSpacing");
+
+            addSupplierSelector(row1);
+            addStockLocationSelector(row1);
+            addStatusSelector(row1);
+            addDateRange(row2);
+            container.add(ColumnFactory.create("CellSpacing", row1, row2));
+
+            Date date = DateRules.getDate(new Date(), -1, DateUnits.MONTHS);
+            setFrom(date);
+        } else {
+            addSupplierSelector(container);
+            addStockLocationSelector(container);
+        }
     }
 
     /**
@@ -100,6 +134,16 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
         if (canQuery()) {
             super.onQuery();
         }
+    }
+
+    /**
+     * Creates the date range.
+     *
+     * @return a new date range
+     */
+    @Override
+    protected ActDateRange createDateRange() {
+        return new ActDateRange(getFocusGroup(), false);
     }
 
     private boolean canQuery() {

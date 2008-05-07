@@ -23,6 +23,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -112,7 +113,8 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void onCreated(final FinancialAct act) {
-        final OrderTableBrowser browser = new OrderTableBrowser();
+        boolean delivery = TypeHelper.isA(act, SupplierArchetypes.DELIVERY);
+        final OrderTableBrowser browser = new OrderTableBrowser(delivery);
         String displayName = DescriptorHelper.getDisplayName(act);
         String title = Messages.get("supplier.delivery.selectorders.title",
                                     displayName);
