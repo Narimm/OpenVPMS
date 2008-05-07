@@ -33,12 +33,12 @@ import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 
 
 /**
- * Invoice workspace.
+ * Customer charges workspace.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InvoiceWorkspace extends CustomerActWorkspace<FinancialAct> {
+public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
 
     /**
      * The act statuses to query, excluding POSTED.
@@ -48,9 +48,9 @@ public class InvoiceWorkspace extends CustomerActWorkspace<FinancialAct> {
 
 
     /**
-     * Constructs a new <tt>InvoiceWorkspace</tt>.
+     * Constructs a new <tt>ChargeWorkspace</tt>.
      */
-    public InvoiceWorkspace() {
+    public ChargeWorkspace() {
         super("customer", "invoice");
         setChildArchetypes(FinancialAct.class, "act.customerAccountCharges*");
     }
@@ -61,7 +61,7 @@ public class InvoiceWorkspace extends CustomerActWorkspace<FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new InvoiceCRUDWindow(getChildArchetypes());
+        return new ChargeCRUDWindow(getChildArchetypes());
     }
 
     /**

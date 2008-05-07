@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.account;
+package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -36,19 +36,19 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InvoiceItemRelationshipCollectionViewer
+public class ChargeItemRelationshipCollectionViewer
         extends ActRelationshipCollectionViewer {
 
     /**
-     * Constructs a new <tt>InvoiceItemRelationshipCollectionViewer</tt>.
+     * Constructs a new <tt>ChargeItemRelationshipCollectionViewer</tt>.
      *
      * @param property the collection property
      * @param act      the parent act
      * @param context  the layout context
      */
-    public InvoiceItemRelationshipCollectionViewer(CollectionProperty property,
-                                                   Act act,
-                                                   LayoutContext context) {
+    public ChargeItemRelationshipCollectionViewer(CollectionProperty property,
+                                                  Act act,
+                                                  LayoutContext context) {
         super(property, act, context);
     }
 

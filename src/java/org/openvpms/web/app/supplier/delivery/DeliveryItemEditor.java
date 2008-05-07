@@ -21,7 +21,7 @@ package org.openvpms.web.app.supplier.delivery;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.web.component.im.edit.act.ActItemEditor;
+import org.openvpms.web.app.supplier.SupplierActItemEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -36,7 +36,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DeliveryItemEditor extends ActItemEditor {
+public class DeliveryItemEditor extends SupplierActItemEditor {
 
     /**
      * The order relationship editor.
@@ -51,7 +51,8 @@ public class DeliveryItemEditor extends ActItemEditor {
      * @param parent  the parent act.
      * @param context the layout context. May be <tt>null</tt>
      */
-    public DeliveryItemEditor(Act act, Act parent, LayoutContext context) {
+    public DeliveryItemEditor(FinancialAct act, Act parent,
+                              LayoutContext context) {
         super(act, parent, context);
         CollectionProperty order = (CollectionProperty) getProperty("order");
         orderEditor = new ActRelationshipCollectionEditor(order, act,

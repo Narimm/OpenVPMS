@@ -21,8 +21,6 @@ package org.openvpms.web.app.supplier.delivery;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -33,12 +31,12 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.Date;
 
 
 /**
@@ -47,7 +45,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2008-04-06 14:41:46Z $
  */
-public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
+public class DeliveryCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
     /**
      * Invoice button identifier.
@@ -80,7 +78,7 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
      *
      * @param archetypes the archetypes that this may create
      */
-    public DeliveryCRUDWindow(Archetypes<Act> archetypes) {
+    public DeliveryCRUDWindow(Archetypes<FinancialAct> archetypes) {
         super(archetypes);
         rules = new OrderRules();
     }
@@ -113,24 +111,21 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
      * @param act the new act
      */
     @Override
-    protected void onCreated(final Act act) {
+    protected void onCreated(final FinancialAct act) {
         final OrderTableBrowser browser = new OrderTableBrowser();
         String displayName = DescriptorHelper.getDisplayName(act);
         String title = Messages.get("supplier.delivery.selectorders.title",
                                     displayName);
         String message = Messages.get("supplier.delivery.selectorders.message",
                                       displayName);
-        final OrderSelectionBrowserDialog dialog
-                = new OrderSelectionBrowserDialog(title, message, browser);
-        dialog.show();
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (OrderSelectionBrowserDialog.OK_ID.equals(
-                        dialog.getAction())) {
-                    onCreated(act, browser);
-                }
+        PopupDialog dialog = new OrderSelectionBrowserDialog(title, message,
+                                                             browser);
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            public void onOK() {
+                onCreated(act, browser);
             }
         });
+        dialog.show();
     }
 
     /**
@@ -139,7 +134,7 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
      * @param act the act
      */
     @Override
-    protected void onPosted(Act act) {
+    protected void onPosted(FinancialAct act) {
         try {
             if (TypeHelper.isA(act, "act.supplierDelivery")) {
                 onInvoice(act);
@@ -200,7 +195,7 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
         }
     }
 
-    private void onCreated(Act act, OrderTableBrowser browser) {
+    private void onCreated(FinancialAct act, OrderTableBrowser browser) {
         addParticipations(act, browser.getSupplier(),
                           browser.getStockLocation());
         DeliveryEditor editor = new DeliveryEditor(act, null,
@@ -215,13 +210,10 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
     private void onInvoice(final Act act) {
         String title = Messages.get("supplier.delivery.invoice.title");
         String message = Messages.get("supplier.delivery.invoice.message");
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    invoice(act);
-                }
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            public void onOK() {
+                invoice(act);
             }
         });
         dialog.show();
@@ -230,13 +222,10 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
     private void onCredit(final Act act) {
         String title = Messages.get("supplier.delivery.credit.title");
         String message = Messages.get("supplier.delivery.credit.message");
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    credit(act);
-                }
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            public void onOK() {
+                credit(act);
             }
         });
         dialog.show();
@@ -253,13 +242,10 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
             title = Messages.get("supplier.delivery.reverseReturn.title");
             message = Messages.get("supplier.delivery.reverseReturn.message");
         }
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    reverse(act);
-                }
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            public void onOK() {
+                reverse(act);
             }
         });
         dialog.show();
@@ -267,7 +253,7 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
 
     private void invoice(Act act) {
         try {
-            rules.invoiceSupplier(act, new Date());
+            rules.invoiceSupplier(act);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -275,7 +261,7 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
 
     private void credit(Act act) {
         try {
-            rules.creditSupplier(act, new Date());
+            rules.creditSupplier(act);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -284,9 +270,9 @@ public class DeliveryCRUDWindow extends SupplierActCRUDWindow<Act> {
     private void reverse(Act act) {
         try {
             if (TypeHelper.isA(act, "act.supplierDelivery")) {
-                rules.reverseDelivery(act, new Date());
+                rules.reverseDelivery(act);
             } else {
-                rules.reverseReturn(act, new Date());
+                rules.reverseReturn(act);
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

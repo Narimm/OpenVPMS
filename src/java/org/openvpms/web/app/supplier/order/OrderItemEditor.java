@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -30,7 +31,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.im.edit.act.ActItemEditor;
+import org.openvpms.web.app.supplier.SupplierActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -55,7 +56,7 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class OrderItemEditor extends ActItemEditor {
+public class OrderItemEditor extends SupplierActItemEditor {
 
     /**
      * Determines if the act was posted at construction. If so, only a limited
@@ -68,7 +69,7 @@ public class OrderItemEditor extends ActItemEditor {
      * selected.
      */
     private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
-            "nettPrice", "total", "reorderCode", "reorderDescription",
+            "unitPrice", "total", "reorderCode", "reorderDescription",
             "quantity", "listPrice", "packageSize", "packageUnits");
 
 
@@ -79,7 +80,8 @@ public class OrderItemEditor extends ActItemEditor {
      * @param parent  the parent act
      * @param context the layout context
      */
-    public OrderItemEditor(Act act, Act parent, LayoutContext context) {
+    public OrderItemEditor(FinancialAct act, Act parent,
+                           LayoutContext context) {
         super(act, parent, context);
         if (!TypeHelper.isA(act, "act.supplierOrderItem")) {
             throw new IllegalArgumentException(
@@ -193,7 +195,7 @@ public class OrderItemEditor extends ActItemEditor {
                     getProperty("packageSize").setValue(ps.getPackageSize());
                     getProperty("packageUnits").setValue(ps.getPackageUnits());
                     getProperty("listPrice").setValue(ps.getListPrice());
-                    getProperty("nettPrice").setValue(ps.getNettPrice());
+                    getProperty("unitPrice").setValue(ps.getNettPrice());
                 }
             }
         }
@@ -280,7 +282,7 @@ public class OrderItemEditor extends ActItemEditor {
         String reorderDesc = getReorderDescription();
         String reorderCode = getReorderCode();
         BigDecimal listPrice = getListPrice();
-        BigDecimal nettPrice = getNettPrice();
+        BigDecimal unitPrice = getUnitPrice();
         if (ps == null) {
             // no product-supplier relationship, so create a new one
             ps = rules.createProductSupplier(product, supplier);
@@ -289,12 +291,12 @@ public class OrderItemEditor extends ActItemEditor {
             ps.setReorderCode(reorderCode);
             ps.setReorderDescription(reorderDesc);
             ps.setListPrice(listPrice);
-            ps.setNettPrice(nettPrice);
+            ps.setNettPrice(unitPrice);
             ps.setPreferred(true);
         } else if (size != ps.getPackageSize()
                 || !ObjectUtils.equals(units, ps.getPackageUnits())
                 || !equals(listPrice, ps.getListPrice())
-                || !equals(nettPrice, ps.getNettPrice())
+                || !equals(unitPrice, ps.getNettPrice())
                 || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
                 || !ObjectUtils.equals(ps.getReorderDescription(),
                                        reorderDesc)) {
@@ -304,7 +306,7 @@ public class OrderItemEditor extends ActItemEditor {
             ps.setReorderCode(reorderCode);
             ps.setReorderDescription(reorderDesc);
             ps.setListPrice(listPrice);
-            ps.setNettPrice(nettPrice);
+            ps.setNettPrice(unitPrice);
         } else {
             save = false;
         }
@@ -397,12 +399,12 @@ public class OrderItemEditor extends ActItemEditor {
     }
 
     /**
-     * Returns the nett price.
+     * Returns the unit price (also know as the nett price).
      *
-     * @return the nett price
+     * @return the unit price
      */
-    private BigDecimal getNettPrice() {
-        return (BigDecimal) getProperty("nettPrice").getValue();
+    private BigDecimal getUnitPrice() {
+        return (BigDecimal) getProperty("unitPrice").getValue();
     }
 
     /**

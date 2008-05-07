@@ -26,17 +26,17 @@ import org.openvpms.web.app.admin.template.DocumentTemplatePrinterEditor;
 import org.openvpms.web.app.customer.CustomerEditor;
 import org.openvpms.web.app.customer.PatientOwnerRelationshipEditor;
 import org.openvpms.web.app.customer.account.AdjustmentActEditor;
+import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
+import org.openvpms.web.app.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.app.patient.PatientEditor;
 import org.openvpms.web.app.patient.mr.PatientClinicalEventActEditor;
 import org.openvpms.web.app.patient.mr.PatientClinicalProblemActEditor;
 import org.openvpms.web.app.product.ProductPriceEditor;
+import org.openvpms.web.app.supplier.charge.SupplierChargeActEditor;
+import org.openvpms.web.app.supplier.charge.SupplierChargeActItemEditor;
 import org.openvpms.web.app.supplier.order.OrderEditor;
 import org.openvpms.web.app.supplier.order.OrderItemEditor;
 import org.openvpms.web.app.workflow.messaging.UserMessageActEditor;
-import org.openvpms.web.component.im.account.CustomerInvoiceEditor;
-import org.openvpms.web.component.im.account.CustomerInvoiceItemEditor;
-import org.openvpms.web.component.im.account.SupplierInvoiceEditor;
-import org.openvpms.web.component.im.account.SupplierInvoiceItemEditor;
 import org.openvpms.web.component.im.doc.DocumentTemplateEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
@@ -146,48 +146,48 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link CustomerInvoiceEditor} is returned for
+     * Verifies that a {@link CustomerChargeActEditor} is returned for
      * <em>act.customerAccountChargesInvoice, act.customerAccountChargesCredit,
      * act.customerAccountChargesCounter, act.supplierAccountChargesInvoice, and
      * act.supplierAccountChargesCredit</em>
      */
-    public void testCreateInvoiceEditor() {
+    public void testCreateChargeEditor() {
         checkCreate("act.customerAccountChargesInvoice",
-                    CustomerInvoiceEditor.class);
+                    CustomerChargeActEditor.class);
         checkCreate("act.customerAccountChargesCredit",
-                    CustomerInvoiceEditor.class);
+                    CustomerChargeActEditor.class);
         checkCreate("act.customerAccountChargesCounter",
-                    CustomerInvoiceEditor.class);
+                    CustomerChargeActEditor.class);
     }
 
     /**
-     * Verfies that a {@link CustomerInvoiceItemEditor} is created for
+     * Verfies that a {@link CustomerChargeActItemEditor} is created for
      * <em>act.customerAccountInvoiceItem, act.customerAccountCreditItem and
      * act.customerAccountCounterItem</em>
      */
     public void testCreateCustomerIvoiceItemEditor() {
         checkCreate("act.customerAccountInvoiceItem",
                     "act.customerAccountChargesInvoice",
-                    CustomerInvoiceItemEditor.class);
+                    CustomerChargeActItemEditor.class);
         checkCreate("act.customerAccountCreditItem",
                     "act.customerAccountChargesCredit",
-                    CustomerInvoiceItemEditor.class);
+                    CustomerChargeActItemEditor.class);
         checkCreate("act.customerAccountCounterItem",
                     "act.customerAccountChargesCounter",
-                    CustomerInvoiceItemEditor.class);
+                    CustomerChargeActItemEditor.class);
     }
 
     /**
-     * Verifies that a {@link SupplierInvoiceEditor} is returned for
+     * Verifies that a {@link SupplierChargeActEditor} is returned for
      * <em>act.customerAccountChargesInvoice, act.customerAccountChargesCredit,
      * act.customerAccountChargesCounter, act.supplierAccountChargesInvoice, and
      * act.supplierAccountChargesCredit</em>
      */
     public void testCreateSupplierInvoiceEditor() {
         checkCreate("act.supplierAccountChargesInvoice",
-                    SupplierInvoiceEditor.class);
+                    SupplierChargeActEditor.class);
         checkCreate("act.supplierAccountChargesCredit",
-                    SupplierInvoiceEditor.class);
+                    SupplierChargeActEditor.class);
     }
 
     /**
@@ -265,14 +265,14 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link SupplierInvoiceItemEditor} is created for
+     * Verifies that a {@link SupplierChargeActItemEditor} is created for
      * <em>act.supplierAccountInvoiceItem and act.supplierAccountCreditItem</em>
      */
     public void testCreateSupplierInvoiceItemEditor() {
         checkCreate("act.supplierAccountInvoiceItem",
-                    SupplierInvoiceItemEditor.class);
+                    SupplierChargeActItemEditor.class);
         checkCreate("act.supplierAccountCreditItem",
-                    SupplierInvoiceItemEditor.class);
+                    SupplierChargeActItemEditor.class);
     }
 
     /**

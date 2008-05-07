@@ -16,14 +16,15 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.account;
+package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.act.DefaultActTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
@@ -31,32 +32,50 @@ import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**
- * Editor for <em>actRelationship.customerAccount*Item</em> and
- * <em>actRelationship.supplierAccount*Item</em> act relationships.
+ * Editor for collections of {@link ActRelationship}s that displays
+ * items in a configurable table model.
  * <p/>
- * Displays items in a {@link DefaultActTableModel}.
+ * This is a workaround for the inability to create alternative models
+ * for an archetype via {@link IMObjectTableModelFactory}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AccountItemRelationshipCollectionEditor
+public class AltModelActRelationshipCollectionEditor
         extends ActRelationshipCollectionEditor {
 
     /**
-     * Creates a new <tt>AccountItemRelationshipCollectionEditor</tt>.
+     * The table model, or <tt>null</tt> if an {@link DefaultActTableModel}
+     * should be used.
+     */
+    private IMTableModel<IMObject> model;
+
+
+    /**
+     * Creates a new <tt>AltModelActRelationshipCollectionEditor</tt>.
      *
      * @param property the collection property
      * @param act      the parent act
      * @param context  the layout context
      */
-    public AccountItemRelationshipCollectionEditor(CollectionProperty property,
-                                                   Act act,
-                                                   LayoutContext context) {
+    public AltModelActRelationshipCollectionEditor(
+            CollectionProperty property, Act act, LayoutContext context) {
         super(property, act, context);
     }
 
     /**
-     * Create a new table model.
+     * Sets the table model.
+     * <p/>
+     * Defaults to {@link DefaultActTableModel}.
+     *
+     * @param model the model. May be <tt>null</tt>
+     */
+    public void setTableModel(IMTableModel<IMObject> model) {
+        this.model = model;
+    }
+
+    /**
+     * Creates a new table model.
      *
      * @param context the layout context
      * @return a new table model
@@ -64,11 +83,14 @@ public class AccountItemRelationshipCollectionEditor
     @Override
     @SuppressWarnings("unchecked")
     protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
-        context = new DefaultLayoutContext(context);
-        context.setComponentFactory(new TableComponentFactory(context));
-        CollectionPropertyEditor editor = getCollectionPropertyEditor();
-        IMTableModel model = new DefaultActTableModel(
-                editor.getArchetypeRange(), context);
-        return (IMTableModel<IMObject>) model;
+        IMTableModel result = model;
+        if (result == null) {
+            context = new DefaultLayoutContext(context);
+            context.setComponentFactory(new TableComponentFactory(context));
+            CollectionPropertyEditor editor = getCollectionPropertyEditor();
+            result = new DefaultActTableModel(
+                    editor.getArchetypeRange(), context);
+        }
+        return result;
     }
 }

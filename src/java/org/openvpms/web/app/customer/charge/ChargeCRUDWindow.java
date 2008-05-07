@@ -35,19 +35,19 @@ import org.openvpms.web.component.workflow.Tasks;
 
 
 /**
- * CRUD window for invoices.
+ * CRUD window for customer charges.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InvoiceCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
+public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
     /**
-     * Creates a new <tt>InvoiceCRUDWindow</tt>.
+     * Creates a new <tt>ChargeCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
      */
-    public InvoiceCRUDWindow(Archetypes<FinancialAct> archetypes) {
+    public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes) {
         super(archetypes);
     }
 

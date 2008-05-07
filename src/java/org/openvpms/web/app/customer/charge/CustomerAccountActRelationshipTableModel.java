@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.account;
+package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.act.ActHelper;
@@ -36,7 +36,7 @@ public class CustomerAccountActRelationshipTableModel
         extends AbstractActRelationshipTableModel<Act> {
 
     /**
-     * Constructs a new <tt>InvoiceItemActRelationshipTableModel</tt>
+     * Constructs a new <tt>CustomerAccountActRelationshipTableModel</tt>
      *
      * @param relationshipTypes the act relationship short names
      * @param context           the layout context. May be <tt>null</tt>

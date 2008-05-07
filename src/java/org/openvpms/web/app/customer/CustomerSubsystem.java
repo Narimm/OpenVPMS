@@ -19,7 +19,7 @@
 package org.openvpms.web.app.customer;
 
 import org.openvpms.web.app.customer.account.AccountWorkspace;
-import org.openvpms.web.app.customer.charge.InvoiceWorkspace;
+import org.openvpms.web.app.customer.charge.ChargeWorkspace;
 import org.openvpms.web.app.customer.document.CustomerDocumentWorkspace;
 import org.openvpms.web.app.customer.estimation.EstimationWorkspace;
 import org.openvpms.web.app.customer.info.InformationWorkspace;
@@ -44,7 +44,7 @@ public class CustomerSubsystem extends AbstractSubsystem {
         addWorkspace(new InformationWorkspace());
         addWorkspace(new CustomerDocumentWorkspace());
         addWorkspace(new EstimationWorkspace());
-        addWorkspace(new InvoiceWorkspace());
+        addWorkspace(new ChargeWorkspace());
         addWorkspace(new PaymentWorkspace());
         addWorkspace(new AccountWorkspace());
         addWorkspace(new NoteWorkspace());

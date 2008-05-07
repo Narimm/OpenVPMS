@@ -18,11 +18,10 @@
 
 package org.openvpms.web.app.supplier.delivery;
 
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -33,7 +32,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DeliveryEditor extends ActEditor {
+public class DeliveryEditor extends FinancialActEditor {
 
     /**
      * Construct a new <tt>ActEditor</tt>.
@@ -42,8 +41,9 @@ public class DeliveryEditor extends ActEditor {
      * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context. May be <tt>null</tt>
      */
-    public DeliveryEditor(Act act, IMObject parent, LayoutContext context) {
-        super(act, parent, true, context);
+    public DeliveryEditor(FinancialAct act, IMObject parent,
+                          LayoutContext context) {
+        super(act, parent, context);
     }
 
     /**
