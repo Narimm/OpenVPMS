@@ -413,7 +413,7 @@ public class DeliveryProcessor {
         String reorderCode = deliveryItemBean.getString("reorderCode");
         String reorderDesc = deliveryItemBean.getString("reorderDescription");
         BigDecimal listPrice = deliveryItemBean.getBigDecimal("listPrice");
-        BigDecimal nettPrice = deliveryItemBean.getBigDecimal("nettPrice");
+        BigDecimal nettPrice = deliveryItemBean.getBigDecimal("unitPrice");
         ProductSupplier ps = rules.getProductSupplier(supplier, product,
                                                       size, units);
         boolean save = true;

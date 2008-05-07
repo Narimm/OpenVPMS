@@ -46,7 +46,7 @@
         </node>
         <node name="quantity" path="/quantity" type="java.math.BigDecimal"
               defaultValue="1.0"/>
-        <node name="nettPrice" path="/unitAmount"
+        <node name="unitPrice" displayName="Nett Price" path="/unitAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               defaultValue="0.0"/>
         <node name="listPrice" path="/details/listPrice"
@@ -58,7 +58,7 @@
         </node>
         <node name="total" path="/total"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              derived="true" derivedValue="/quantity * /unitAmount"/>
+              derived="true" derivedValue="/quantity * /unitAmount + /taxAmount"/>
         <node name="order" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship"
               minCardinality="0" maxCardinality="1" readOnly="true">

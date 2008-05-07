@@ -91,29 +91,37 @@ public class TaxRules {
      * Calculates the tax for an amount using the tax rates associated with
      * a product.
      *
-     * @param amount  the amount
-     * @param product the product
+     * @param amount    the amount
+     * @param product   the product
+     * @param inclusive if <tt>true</tt> the amount is tax inclusive, otherwise
+     *                  it is tax exclusive
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal calculateTax(BigDecimal amount, Product product) {
-        return calculateTax(amount, getProductTaxRates(product));
+    public BigDecimal calculateTax(BigDecimal amount, Product product,
+                                   boolean inclusive) {
+        return calculateTax(amount, getProductTaxRates(product), inclusive);
     }
-
 
     /**
      * Calculates the tax for an amount, given a list of tax rate
      * classifications.
      *
-     * @param amount   the amount
-     * @param taxRates the tax rate classifications
+     * @param amount    the amount
+     * @param taxRates  the tax rate classifications
+     * @param inclusive if <tt>true</tt> the amount is tax inclusive, otherwise
+     *                  it is tax exclusive
      * @return the tax on the amount
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal calculateTax(BigDecimal amount,
-                                   Collection<Lookup> taxRates) {
+                                   Collection<Lookup> taxRates,
+                                   boolean inclusive) {
         BigDecimal rate = getTaxRate(taxRates);
         BigDecimal tax = amount.multiply(rate);
-        BigDecimal divisor = new BigDecimal(100).add(rate);
+        BigDecimal divisor = BigDecimal.valueOf(100);
+        if (inclusive) {
+            divisor = divisor.add(rate);
+        }
         tax = tax.divide(divisor, 3, RoundingMode.HALF_UP);
         return tax;
     }

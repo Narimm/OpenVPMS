@@ -21,13 +21,11 @@ package org.openvpms.archetype.rules.supplier;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -112,13 +110,13 @@ public class OrderRules {
      * The invoice is saved.
      *
      * @param supplierDelivery the supplier delivery act
-     * @param startTime        the start time of the invoice act
      * @return the invoice corresponding to the delivery
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public FinancialAct invoiceSupplier(Act supplierDelivery, Date startTime) {
-        List<IMObject> objects = copy(supplierDelivery, SupplierArchetypes.DELIVERY,
-                                      new DeliveryHandler(), startTime, true);
+    public FinancialAct invoiceSupplier(Act supplierDelivery) {
+        List<IMObject> objects = copy(supplierDelivery,
+                                      SupplierArchetypes.DELIVERY,
+                                      new DeliveryHandler(), new Date(), true);
         return (FinancialAct) objects.get(0);
     }
 
@@ -128,13 +126,12 @@ public class OrderRules {
      * The credit is saved.
      *
      * @param supplierReturn the supplier return act
-     * @param startTime      the start time of the credit act
      * @return the credit corresponding to the return
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public FinancialAct creditSupplier(Act supplierReturn, Date startTime) {
+    public FinancialAct creditSupplier(Act supplierReturn) {
         List<IMObject> objects = copy(supplierReturn, SupplierArchetypes.RETURN,
-                                      new ReturnHandler(), startTime, true);
+                                      new ReturnHandler(), new Date(), true);
         return (FinancialAct) objects.get(0);
     }
 
@@ -142,13 +139,13 @@ public class OrderRules {
      * Reverses a delivery.
      *
      * @param supplierDelivery the delivery to reverse
-     * @param startTime        the time to assign the reversal
      * @return a new return
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Act reverseDelivery(Act supplierDelivery, Date startTime) {
-        List<IMObject> objects = copy(supplierDelivery, SupplierArchetypes.DELIVERY,
-                                      new ReverseHandler(true), startTime,
+    public Act reverseDelivery(Act supplierDelivery) {
+        List<IMObject> objects = copy(supplierDelivery,
+                                      SupplierArchetypes.DELIVERY,
+                                      new ReverseHandler(true), new Date(),
                                       true);
         return (Act) objects.get(0);
     }
@@ -157,13 +154,12 @@ public class OrderRules {
      * Reverses a return.
      *
      * @param supplierReturn the return to reverse
-     * @param startTime      the time to assign the reversal
      * @return a new delivery
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Act reverseReturn(Act supplierReturn, Date startTime) {
+    public Act reverseReturn(Act supplierReturn) {
         List<IMObject> objects = copy(supplierReturn, SupplierArchetypes.RETURN,
-                                      new ReverseHandler(false), startTime,
+                                      new ReverseHandler(false), new Date(),
                                       true);
         return (Act) objects.get(0);
     }
@@ -198,98 +194,17 @@ public class OrderRules {
     }
 
 
-    private abstract static class CopyHandler
-            extends AbstractIMObjectCopyHandler {
-
-        private final String[][] typeMap;
-        private final boolean reverse;
-
-        public CopyHandler(String[][] typeMap) {
-            this(typeMap, false);
-        }
-
-        public CopyHandler(String[][] typeMap, boolean reverse) {
-            this.typeMap = typeMap;
-            this.reverse = reverse;
-        }
-
-        /**
-         * Determines how {@link IMObjectCopier} should treat an object. This
-         * implementation always returns a new instance, of the same archetype as
-         * <tt>object</tt>.
-         *
-         * @param object  the source object
-         * @param service the archetype service
-         * @return <tt>object</tt> if the object shouldn't be copied,
-         *         <tt>null</tt> if it should be replaced with <tt>null</tt>,
-         *         or a new instance if the object should be copied
-         */
-        @Override
-        public IMObject getObject(IMObject object, IArchetypeService service) {
-            IMObject result;
-            if (object instanceof Act || object instanceof ActRelationship
-                    || object instanceof Participation) {
-                String shortName = object.getArchetypeId().getShortName();
-                for (String[] map : typeMap) {
-                    String from;
-                    String to;
-                    if (!reverse) {
-                        from = map[0];
-                        to = map[1];
-                    } else {
-                        from = map[1];
-                        to = map[0];
-                    }
-                    if (from.equals(shortName)) {
-                        shortName = to;
-                        break;
-                    }
-                }
-                if (shortName != null) {
-                    result = service.create(shortName);
-                    if (result == null) {
-                        throw new ArchetypeServiceException(
-                                ArchetypeServiceException.ErrorCode.FailedToCreateArchetype,
-                                shortName);
-                    }
-                } else {
-                    result = null;
-                }
-            } else {
-                result = object;
-            }
-            return result;
-        }
-
-        /**
-         * Helper to determine if a node is copyable.
-         *
-         * @param node   the node descriptor
-         * @param source if <tt>true</tt> the node is the source; otherwise its
-         *               the target
-         * @return <tt>true</tt> if the node is copyable; otherwise <tt>false</tt>
-         */
-        @Override
-        protected boolean isCopyable(NodeDescriptor node, boolean source) {
-            boolean result = super.isCopyable(node, source);
-            if (result) {
-                String name = node.getName();
-                result = !"startTime".equals(name) && !"status".equals(name)
-                        && !"printed".equals(name);
-            }
-            return result;
-        }
-    }
-
     /**
      * Helper to copy an <em>act.supplierOrder</em>.
      */
-    private static class OrderHandler extends CopyHandler {
+    private static class OrderHandler extends ActCopyHandler {
 
         private static final String[][] TYPE_MAP
                 = {{SupplierArchetypes.ORDER, SupplierArchetypes.ORDER},
-                   {SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, SupplierArchetypes.ORDER_ITEM_RELATIONSHIP},
-                   {SupplierArchetypes.ORDER_ITEM, SupplierArchetypes.ORDER_ITEM}};
+                   {SupplierArchetypes.ORDER_ITEM_RELATIONSHIP,
+                    SupplierArchetypes.ORDER_ITEM_RELATIONSHIP},
+                   {SupplierArchetypes.ORDER_ITEM,
+                    SupplierArchetypes.ORDER_ITEM}};
 
         public OrderHandler() {
             super(TYPE_MAP);
@@ -301,10 +216,11 @@ public class OrderRules {
      * <em>act.supplierOrderItem</em>
      */
     private static class DeliveryItemHandler
-            extends CopyHandler {
+            extends ActCopyHandler {
 
         private static final String[][] TYPE_MAP
-                = {{SupplierArchetypes.ORDER_ITEM, SupplierArchetypes.DELIVERY_ITEM}};
+                = {{SupplierArchetypes.ORDER_ITEM,
+                    SupplierArchetypes.DELIVERY_ITEM}};
 
         public DeliveryItemHandler() {
             super(TYPE_MAP);
@@ -333,15 +249,17 @@ public class OrderRules {
         }
     }
 
-    private static class DeliveryHandler extends CopyHandler {
+    private static class DeliveryHandler extends ActCopyHandler {
 
         /**
          * Map of delivery types to their corresponding invoice types.
          */
         private static final String[][] TYPE_MAP = {
                 {SupplierArchetypes.DELIVERY, SupplierArchetypes.INVOICE},
-                {SupplierArchetypes.DELIVERY_ITEM, SupplierArchetypes.INVOICE_ITEM},
-                {SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP, SupplierArchetypes.INVOICE_ITEM_RELATIONSHIP},
+                {SupplierArchetypes.DELIVERY_ITEM,
+                 SupplierArchetypes.INVOICE_ITEM},
+                {SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP,
+                 SupplierArchetypes.INVOICE_ITEM_RELATIONSHIP},
                 {SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, null},
                 {SupplierArchetypes.STOCK_LOCATION_PARTICIPATION, null}};
 
@@ -350,15 +268,17 @@ public class OrderRules {
         }
     }
 
-    private static class ReturnHandler extends CopyHandler {
+    private static class ReturnHandler extends ActCopyHandler {
 
         /**
          * Map of return types to their corresponding credit types.
          */
         private static final String[][] TYPE_MAP = {
                 {SupplierArchetypes.RETURN, SupplierArchetypes.CREDIT},
-                {SupplierArchetypes.RETURN_ITEM, SupplierArchetypes.CREDIT_ITEM},
-                {SupplierArchetypes.RETURN_ITEM_RELATIONSHIP, SupplierArchetypes.CREDIT_ITEM_RELATIONSHIP},
+                {SupplierArchetypes.RETURN_ITEM,
+                 SupplierArchetypes.CREDIT_ITEM},
+                {SupplierArchetypes.RETURN_ITEM_RELATIONSHIP,
+                 SupplierArchetypes.CREDIT_ITEM_RELATIONSHIP},
                 {SupplierArchetypes.STOCK_LOCATION_PARTICIPATION, null}};
 
         public ReturnHandler() {
@@ -366,16 +286,39 @@ public class OrderRules {
         }
     }
 
-    private static class ReverseHandler extends CopyHandler {
+    private static class ReverseHandler extends ActCopyHandler {
 
         private static final String[][] TYPE_MAP = {
-                {SupplierArchetypes.DELIVERY, SupplierArchetypes.RETURN},
-                {SupplierArchetypes.DELIVERY_ITEM, SupplierArchetypes.RETURN_ITEM},
-                {SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP, SupplierArchetypes.RETURN_ITEM_RELATIONSHIP},
-                {SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, SupplierArchetypes.RETURN_ITEM}};
+                {SupplierArchetypes.DELIVERY,
+                 SupplierArchetypes.RETURN},
+                {SupplierArchetypes.DELIVERY_ITEM,
+                 SupplierArchetypes.RETURN_ITEM},
+                {SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP,
+                 SupplierArchetypes.RETURN_ITEM_RELATIONSHIP},
+                {SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP,
+                 SupplierArchetypes.RETURN_ORDER_ITEM_RELATIONSHIP}};
 
         public ReverseHandler(boolean delivery) {
             super(TYPE_MAP, !delivery);
+        }
+
+        /**
+         * Determines how {@link IMObjectCopier} should treat an object. This
+         * implementation always returns a new instance, of the same archetype
+         * as <tt>object</tt>.
+         *
+         * @param object  the source object
+         * @param service the archetype service
+         * @return <tt>object</tt> if the object shouldn't be copied,
+         *         <tt>null</tt> if it should be replaced with <tt>null</tt>,
+         *         or a new instance if the object should be copied
+         */
+        @Override
+        public IMObject getObject(IMObject object, IArchetypeService service) {
+            if (TypeHelper.isA(object, SupplierArchetypes.ORDER_ITEM)) {
+                return object;
+            }
+            return super.getObject(object, service);
         }
     }
 

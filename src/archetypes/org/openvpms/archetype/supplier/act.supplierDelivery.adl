@@ -17,14 +17,10 @@
 -->
 <archetypes>
     <archetype name="act.supplierDelivery.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.act.Act" displayName="Delivery">
+               type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Delivery">
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node name="name" type="java.lang.String" path="/name"
-              hidden="true" minCardinality="1" derived="true"
-              derivedValue="concat(/title, '')"/>
-        <node name="description" type="java.lang.String"
-              path="/description" hidden="true" derived="true"
-              derivedValue="concat(/title, ' ')"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true"/>
         <node name="supplier" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.supplier" readOnly="true"/>
@@ -33,6 +29,16 @@
               filter="participation.stockLocation" readOnly="true"/>
         <node name="startTime" displayName="Date" path="/activityStartTime"
               type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
+        <node name="amount" path="/total"
+                    type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+                    defaultValue="'0.0'" readOnly="true"/>
+        <node name="tax" path="/taxAmount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" readOnly="true">
+        </node>
+        <node name="credit" path="/credit" type="java.lang.Boolean"
+              minCardinality="1" defaultValue="false()" readOnly="true" />
+        <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />
         <node name="title" displayName="Notes" path="/title" type="java.lang.String" minCardinality="1" maxLength="30" defaultValue="'Enter notes ...'"/>
         <node name="status" path="/status" type="java.lang.String"
               minCardinality="1" defaultValue="'IN_PROGRESS'">

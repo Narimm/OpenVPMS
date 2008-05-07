@@ -69,6 +69,10 @@ public class TaxRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link TaxRules#calculateTax(BigDecimal, Product)} 
+     */
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error

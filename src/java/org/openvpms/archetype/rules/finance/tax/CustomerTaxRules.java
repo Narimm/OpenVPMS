@@ -136,7 +136,7 @@ public class CustomerTaxRules extends TaxRules {
         BigDecimal tax = BigDecimal.ZERO;
         BigDecimal total = act.getTotal();
         if (total != null) {
-            tax = calculateTax(total, taxRates);
+            tax = calculateTax(total, taxRates, true);
         }
         act.setTaxAmount(new Money(tax));
         return tax;
