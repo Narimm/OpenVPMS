@@ -16,9 +16,10 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.supplier;
+package org.openvpms.web.app.supplier.charge;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.util.Archetypes;
 
@@ -29,14 +30,14 @@ import org.openvpms.web.component.im.util.Archetypes;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InvoiceCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
+public class ChargeCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
     /**
-     * Create a new <tt>InvoiceCRUDWindow</tt>.
+     * Create a new <tt>ChargeCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
      */
-    public InvoiceCRUDWindow(Archetypes<FinancialAct> archetypes) {
+    public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes) {
         super(archetypes);
     }
 

@@ -16,35 +16,36 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.account;
+package org.openvpms.web.app.supplier.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerAccountChargesInvoice</em>,
- * <em>act.customerAccountChargesCredit</em>
- * or <em>act.customerAccountChargesCounter</em>.
+ * <em>act.supplierAccountChargesInvoice</em>
+ * or <em>act.supplierAccountChargesCredit</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class CustomerInvoiceEditor extends InvoiceEditor {
+public class SupplierChargeActEditor extends FinancialActEditor {
 
     /**
-     * Constructs a new <tt>CustomerInvoiceEditor</tt>.
+     * Construct a new <tt>SupplierChargeActEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context
      */
-    public CustomerInvoiceEditor(Act act, IMObject parent,
-                                 LayoutContext context) {
+    public SupplierChargeActEditor(FinancialAct act, IMObject parent,
+                                   LayoutContext context) {
         super(act, parent, context);
-        initParticipant("customer", context.getContext().getCustomer());
+        initParticipant("supplier", context.getContext().getSupplier());
     }
 
 }

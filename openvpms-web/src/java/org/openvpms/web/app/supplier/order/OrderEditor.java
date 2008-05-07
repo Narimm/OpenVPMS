@@ -27,9 +27,8 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
-import org.openvpms.web.component.im.edit.act.ActEditor;
+import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.lookup.LookupField;
@@ -43,7 +42,6 @@ import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Property;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -54,7 +52,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class OrderEditor extends ActEditor {
+public class OrderEditor extends FinancialActEditor {
 
     /**
      * Determines if the act was posted at construction. If so, only a limited
@@ -80,7 +78,8 @@ public class OrderEditor extends ActEditor {
      * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context
      */
-    public OrderEditor(Act act, IMObject parent, LayoutContext context) {
+    public OrderEditor(FinancialAct act, IMObject parent,
+                       LayoutContext context) {
         super(act, parent, context);
         if (!TypeHelper.isA(act, "act.supplierOrder")) {
             throw new IllegalArgumentException(
@@ -91,13 +90,11 @@ public class OrderEditor extends ActEditor {
     }
 
     /**
-     * Updates totals when an act item changes.
+     * Updates the amount, tax and delivery status when an act item changes
      */
     protected void onItemsChanged() {
-        Property total = getProperty("amount");
+        super.onItemsChanged();
         List<Act> acts = getEditor().getCurrentActs();
-        BigDecimal value = ActHelper.sum((Act) getObject(), acts, "total");
-        total.setValue(value);
         checkDeliveryStatus(acts);
     }
 

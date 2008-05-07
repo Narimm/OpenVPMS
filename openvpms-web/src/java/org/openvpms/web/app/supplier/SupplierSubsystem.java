@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.supplier;
 
+import org.openvpms.web.app.supplier.charge.ChargeWorkspace;
 import org.openvpms.web.app.supplier.delivery.DeliveryWorkspace;
 import org.openvpms.web.app.supplier.document.SupplierDocumentWorkspace;
 import org.openvpms.web.app.supplier.order.OrderWorkspace;
@@ -41,7 +42,7 @@ public class SupplierSubsystem extends AbstractSubsystem {
         addWorkspace(new SupplierDocumentWorkspace());
         addWorkspace(new OrderWorkspace());
         addWorkspace(new DeliveryWorkspace());
-        addWorkspace(new InvoiceWorkspace());
+        addWorkspace(new ChargeWorkspace());
         addWorkspace(new PaymentWorkspace());
         addWorkspace(new AccountWorkspace());
     }

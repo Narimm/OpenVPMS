@@ -16,13 +16,14 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.account;
+package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.AltModelActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -31,14 +32,14 @@ import org.openvpms.web.component.property.CollectionProperty;
 /**
  * Editor for <em>actRelationship.customerAccountInvoiceItem</em> and
  * <em>actRelationship.customerAccountCreditItem</em> act relationships.
- * Sets an {@link MedicationManager} on {@link CustomerInvoiceItemEditor}
+ * Sets an {@link MedicationManager} on {@link CustomerChargeActItemEditor}
  * instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InvoiceItemRelationshipCollectionEditor
-        extends AccountItemRelationshipCollectionEditor {
+public class ChargeItemRelationshipCollectionEditor
+        extends AltModelActRelationshipCollectionEditor {
 
     /**
      * The medication manager.
@@ -47,15 +48,15 @@ public class InvoiceItemRelationshipCollectionEditor
 
 
     /**
-     * Constructs a new <code>InvoiceItemRelationshipCollectionEditor</code>.
+     * Constructs a new <tt>ChargeItemRelationshipCollectionEditor</tt>.
      *
      * @param property the collection property
      * @param act      the parent act
      * @param context  the layout context
      */
-    public InvoiceItemRelationshipCollectionEditor(CollectionProperty property,
-                                                   Act act,
-                                                   LayoutContext context) {
+    public ChargeItemRelationshipCollectionEditor(CollectionProperty property,
+                                                  Act act,
+                                                  LayoutContext context) {
         super(property, act, context);
     }
 
@@ -64,13 +65,13 @@ public class InvoiceItemRelationshipCollectionEditor
      *
      * @param object  the object to edit
      * @param context the layout context
-     * @return an editor to edit <code>object</code>
+     * @return an editor to edit <tt>object</tt>
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
         IMObjectEditor editor = super.createEditor(object, context);
-        if (editor instanceof CustomerInvoiceItemEditor) {
-            ((CustomerInvoiceItemEditor) editor).setMedicationManager(
+        if (editor instanceof CustomerChargeActItemEditor) {
+            ((CustomerChargeActItemEditor) editor).setMedicationManager(
                     medicationMgr);
         }
         return editor;

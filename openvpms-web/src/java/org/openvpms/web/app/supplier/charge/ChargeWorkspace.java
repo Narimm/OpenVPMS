@@ -16,11 +16,12 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.supplier;
+package org.openvpms.web.app.supplier.charge;
 
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.app.supplier.SupplierActWorkspace;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.Browser;
@@ -37,7 +38,7 @@ import org.openvpms.web.component.im.table.act.ActAmountTableModel;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InvoiceWorkspace extends SupplierActWorkspace<FinancialAct> {
+public class ChargeWorkspace extends SupplierActWorkspace<FinancialAct> {
 
     /**
      * The act statuses to query, excluding POSTED.
@@ -47,9 +48,9 @@ public class InvoiceWorkspace extends SupplierActWorkspace<FinancialAct> {
 
 
     /**
-     * Constructs a new <tt>InvoiceWorkspace</tt>.
+     * Constructs a new <tt>ChargeWorkspace</tt>.
      */
-    public InvoiceWorkspace() {
+    public ChargeWorkspace() {
         super("supplier", "invoice");
         setChildArchetypes(FinancialAct.class, "act.supplierAccountCharges*");
     }
@@ -60,7 +61,7 @@ public class InvoiceWorkspace extends SupplierActWorkspace<FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new InvoiceCRUDWindow(getChildArchetypes());
+        return new ChargeCRUDWindow(getChildArchetypes());
     }
 
     /**

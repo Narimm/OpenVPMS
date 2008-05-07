@@ -16,42 +16,35 @@
  *  $Id:SupplierInvoiceItemEditor.java 2287 2007-08-13 07:56:33Z tanderson $
  */
 
-package org.openvpms.web.component.im.account;
+package org.openvpms.web.app.supplier.charge;
 
-import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.edit.act.ActItemEditor;
+import org.openvpms.web.app.supplier.SupplierActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.ErrorHelper;
 
 import java.math.BigDecimal;
 
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.supplierAccountInvoiceItem</em>, or <em>act.supplierAccountCreditItem</em>.
+ * <em>act.supplierAccountInvoiceItem</em>, or
+ * <em>act.supplierAccountCreditItem</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class SupplierInvoiceItemEditor extends ActItemEditor {
+public class SupplierChargeActItemEditor extends SupplierActItemEditor {
 
     /**
      * Node filter, used to disable properties when a product template is
@@ -62,30 +55,20 @@ public class SupplierInvoiceItemEditor extends ActItemEditor {
 
 
     /**
-     * Construct a new <code>SupplierInvoiceItemEdtor</code>.
+     * Construct a new <tt>SupplierChargeActItemEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent act
      * @param context the layout context
      */
-    public SupplierInvoiceItemEditor(Act act, Act parent,
-                                     LayoutContext context) {
+    public SupplierChargeActItemEditor(FinancialAct act, Act parent,
+                                       LayoutContext context) {
         super(act, parent, context);
         if (!TypeHelper.isA(act, "act.supplierAccountInvoiceItem",
                             "act.supplierAccountCreditItem")) {
             throw new IllegalArgumentException("Invalid act type:"
                     + act.getArchetypeId().getShortName());
         }
-        calculateTax();
-
-        // add a listener to update the tax amount when the total changes
-        ModifiableListener totalListener = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                updateTaxAmount();
-            }
-        };
-        getProperty("total").addModifiableListener(totalListener);
-
     }
 
     /**
@@ -102,52 +85,19 @@ public class SupplierInvoiceItemEditor extends ActItemEditor {
                 if (getFilter() != TEMPLATE_FILTER) {
                     changeLayout(TEMPLATE_FILTER);
                 }
-                // zero out the unit cost price.
-                Property unitCost = getProperty("unitCost");
-                unitCost.setValue(BigDecimal.ZERO);
+                // zero out the unit price.
+                Property unitPrice = getProperty("unitPrice");
+                unitPrice.setValue(BigDecimal.ZERO);
             } else {
                 if (getFilter() != null) {
                     changeLayout(null);
                 }
-                Property unitCost = getProperty("unitCost");
+                Property unitCost = getProperty("unitPrice");
                 ProductPrice unit = getPrice("productPrice.unitPrice", product);
                 if (unit != null) {
                     unitCost.setValue(unit.getPrice());
                 }
             }
-        }
-    }
-
-    /**
-     * Calculates the tax amount.
-     *
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    protected void calculateTax() {
-        FinancialAct act = (FinancialAct) getObject();
-        Context context = getLayoutContext().getContext();
-        Party practice = context.getPractice();
-        BigDecimal amount = act.getTotal();
-        Product product = (Product) IMObjectHelper.getObject(getProduct());
-        if (amount != null && product != null && practice != null) {
-            BigDecimal previousTax = act.getTaxAmount();
-            TaxRules rules = new TaxRules(practice);
-            BigDecimal tax = rules.calculateTax(amount, product);
-            if (tax.compareTo(previousTax) != 0) {
-                Property property = getProperty("tax");
-                property.setValue(tax);
-            }
-        }
-    }
-
-    /**
-     * Calculates the tax amount.
-     */
-    private void updateTaxAmount() {
-        try {
-            calculateTax();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
         }
     }
 

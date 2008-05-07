@@ -21,7 +21,7 @@ package org.openvpms.web.app.supplier.delivery;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.supplier.SupplierActQuery;
 import org.openvpms.web.component.im.query.ActResultSet;
@@ -39,7 +39,7 @@ import org.openvpms.web.component.util.RowFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2008-04-07 03:39:23Z $
  */
-public class DeliveryQuery extends SupplierActQuery<Act> {
+public class DeliveryQuery extends SupplierActQuery<FinancialAct> {
 
     /**
      * The act statuses.
@@ -54,7 +54,7 @@ public class DeliveryQuery extends SupplierActQuery<Act> {
      * @param shortNames the act short names to query
      */
     public DeliveryQuery(String[] shortNames) {
-        super(shortNames, STATUSES, Act.class);
+        super(shortNames, STATUSES, FinancialAct.class);
         setStatus(ActStatus.IN_PROGRESS);
     }
 
@@ -84,13 +84,13 @@ public class DeliveryQuery extends SupplierActQuery<Act> {
      * @param sort         the sort criteria
      * @return a new result set
      */
-    protected ResultSet<Act> createResultSet(
+    protected ResultSet<FinancialAct> createResultSet(
             ParticipantConstraint[] participants, SortConstraint[] sort) {
-        return new ActResultSet<Act>(getArchetypeConstraint(),
-                                     participants, getFrom(), getTo(),
-                                     getStatuses(), excludeStatuses(),
-                                     getConstraints(), getMaxResults(),
-                                     sort);
+        return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
+                                              participants, getFrom(), getTo(),
+                                              getStatuses(), excludeStatuses(),
+                                              getConstraints(), getMaxResults(),
+                                              sort);
     }
 
 }

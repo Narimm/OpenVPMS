@@ -91,6 +91,15 @@ public class AppointmentBrowser extends TableBrowser<ObjectSet> {
     }
 
     /**
+     * Lays out the container when there are no results to display.
+     *
+     * @param container the container
+     */
+    protected void doLayoutForNoResults(Component container) {
+        container.add(selectedDate);
+    }
+
+    /**
      * Creates a new paged table.
      *
      * @param model the table model

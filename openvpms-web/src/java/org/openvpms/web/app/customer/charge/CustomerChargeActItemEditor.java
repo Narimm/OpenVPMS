@@ -16,7 +16,7 @@
  *  $Id:CustomerInvoiceItemEditor.java 2287 2007-08-13 07:56:33Z tanderson $
  */
 
-package org.openvpms.web.component.im.account;
+package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
@@ -71,7 +71,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class CustomerInvoiceItemEditor extends ActItemEditor {
+public class CustomerChargeActItemEditor extends ActItemEditor {
 
     /**
      * Node filter, used to disable properties when a product template is
@@ -110,15 +110,15 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
 
 
     /**
-     * Construct a new <code>CustomerInvoiceItemEditor</tt>.
+     * Construct a new <code>CustomerChargeActItemEditor</tt>.
      * This recalculates the tax amount.
      *
      * @param act     the act to edit
      * @param parent  the parent act
      * @param context the layout context
      */
-    public CustomerInvoiceItemEditor(Act act, Act parent,
-                                     LayoutContext context) {
+    public CustomerChargeActItemEditor(Act act, Act parent,
+                                       LayoutContext context) {
         super(act, parent, context);
         if (!TypeHelper.isA(act, "act.customerAccountInvoiceItem",
                             "act.customerAccountCreditItem",

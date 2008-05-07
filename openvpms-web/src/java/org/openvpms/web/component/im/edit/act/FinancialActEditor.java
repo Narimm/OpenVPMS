@@ -11,18 +11,17 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id:InvoiceEditor.java 2287 2007-08-13 07:56:33Z tanderson $
+ *  $Id$
  */
 
-package org.openvpms.web.component.im.account;
+package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.act.ActHelper;
-import org.openvpms.web.component.im.edit.act.ActEditor;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
 
@@ -31,26 +30,26 @@ import java.util.List;
 
 
 /**
- * An editor for {@link Act}s which have an archetype of
- * <em>act.customerAccountChargesInvoice</em>, <em>act.customerAccountChargesCredit</em>
- * <em>act.customerAccountChargesCounter</em>, <em>act.supplierAccountChargesInvoice</em>
- * or <em>act.supplierAccountChargesCredit</em>.
+ * An editor for parent {@link FinancialAct}s.
+ * <p/>
+ * This is responsible for calculating the amount and tax when a child item
+ * changes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class InvoiceEditor extends ActEditor {
+public class FinancialActEditor extends ActEditor {
 
     /**
-     * Construct a new <code>InvoiceEditor</code>.
+     * Creates a new <tt>FinancialActEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context
+     * @param parent  the parent object. May be <tt>null</tt>
+     * @param context the layout context. May be <tt>null</tt>
      */
-    public InvoiceEditor(Act act, IMObject parent, LayoutContext context) {
+    protected FinancialActEditor(FinancialAct act, IMObject parent,
+                                 LayoutContext context) {
         super(act, parent, context);
-        initParticipant("location", context.getContext().getLocation());
         recalculateTax();
     }
 
@@ -67,7 +66,7 @@ public abstract class InvoiceEditor extends ActEditor {
     }
 
     /**
-     * Update totals when an act item changes.
+     * Updates the amount and tax when an act item changes.
      */
     protected void onItemsChanged() {
         Property amount = getProperty("amount");

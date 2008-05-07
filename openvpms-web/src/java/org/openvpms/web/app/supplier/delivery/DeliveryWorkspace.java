@@ -18,7 +18,7 @@
 
 package org.openvpms.web.app.supplier.delivery;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 
@@ -30,14 +30,15 @@ import org.openvpms.web.app.subsystem.CRUDWindow;
  * @version $LastChangedDate: 2008-03-19 10:19:58 +1100 (Wed, 19 Mar 2008) $
  */
 public class DeliveryWorkspace
-        extends BrowserCRUDWorkspace<Act, Act> {
+        extends BrowserCRUDWorkspace<FinancialAct, FinancialAct> {
 
     /**
      * Constructs a new <tt>DeliveryWorkspace</tt>.
      */
     public DeliveryWorkspace() {
         super("supplier", "delivery", false);
-        setArchetypes(Act.class, "act.supplierDelivery", "act.supplierReturn");
+        setArchetypes(FinancialAct.class, "act.supplierDelivery",
+                      "act.supplierReturn");
         setChildArchetypes(getArchetypes());
     }
 
@@ -46,7 +47,7 @@ public class DeliveryWorkspace
      *
      * @return a new CRUD window
      */
-    protected CRUDWindow<Act> createCRUDWindow() {
+    protected CRUDWindow<FinancialAct> createCRUDWindow() {
         return new DeliveryCRUDWindow(getArchetypes());
     }
 
