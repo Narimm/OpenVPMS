@@ -19,20 +19,15 @@
 	<archetype name="act.supplierAccountChargesInvoice.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Invoice" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('Supplier Invoice', '')" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="' '" />
-		<node name="startTime" path="/activityStartTime"
-			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
-		<node name="amount" path="/total" 
-                    type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
-                    defaultValue="'0.0'" readOnly="true"/>
-		<node name="credit" path="/credit" type="java.lang.Boolean"
-			defaultValue="false()" readOnly="true" />
-		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
+        <node name="name" type="java.lang.String" path="/name" hidden="true"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true" />
+        <node name="startTime" path="/activityStartTime" type="java.util.Date"
+              minCardinality="1" defaultValue="java.util.Date.new()" />
+        <node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+              minCardinality="1" defaultValue="'0.0'" readOnly="true"/>
+        <node name="credit" path="/credit" type="java.lang.Boolean"
+              minCardinality="1" defaultValue="false()" readOnly="true" />
+		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />
 		<node name="status" path="/status" type="java.lang.String"
 			minCardinality="1" defaultValue="'IN_PROGRESS'" >
 			<assertion name="lookup.local">

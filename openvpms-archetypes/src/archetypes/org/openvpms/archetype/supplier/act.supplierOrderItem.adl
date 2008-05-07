@@ -52,7 +52,7 @@
         <node name="cancelledQuantity" path="/details/cancelledQuantity"
               type="java.math.BigDecimal"
               defaultValue="0.0" minCardinality="1"/>
-        <node name="nettPrice" path="/unitAmount"
+        <node name="unitPrice" displayName="Nett Price" path="/unitAmount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
               defaultValue="0.0"/>
         <node name="listPrice" path="/details/listPrice"
@@ -64,7 +64,7 @@
         </node>
         <node name="total" path="/total"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              derived="true" derivedValue="/quantity * /unitAmount"/>
+              derived="true" derivedValue="/quantity * /unitAmount + /taxAmount"/>
         <node name="deliveries" path="/targetActRelationships"
               type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="*"
               filter="actRelationship.supplierDeliveryOrderItem" readOnly="true">

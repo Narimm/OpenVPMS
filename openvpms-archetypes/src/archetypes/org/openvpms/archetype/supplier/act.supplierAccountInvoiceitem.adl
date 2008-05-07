@@ -35,8 +35,12 @@
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
         <node name="quantity" path="/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
-        <node name="unitCost" path="/unitAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
-        <node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
-            derived="true" derivedValue="/quantity * /unitAmount"/>
+        <node name="unitPrice" path="/unitAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
+        <node name="tax" path="/taxAmount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" readOnly="true">
+        </node>
+        <node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+            derived="true" derivedValue="/quantity * /unitAmount + /taxAmount"/>
     </archetype>
 </archetypes>
