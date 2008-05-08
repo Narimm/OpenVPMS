@@ -225,10 +225,10 @@ public abstract class Selector<T extends IMObject> {
     protected void setObject(String name, String description, boolean active) {
         String text = null;
         String deactivated = null;
-        if (name != null || description != null) {
-            if (format == Format.NAME) {
+        if (name != null || description != null) {        		
+            if (format == Format.NAME || description == null) {
                 text = Messages.get("imobject.name", name);
-            } else if (format == Format.DESCRIPTION) {
+            } else if (format == Format.DESCRIPTION  || name == null) {
                 text = Messages.get("imobject.description", description);
             } else if (format == Format.SUMMARY) {
                 text = Messages.get("imobject.summary", name, description);
