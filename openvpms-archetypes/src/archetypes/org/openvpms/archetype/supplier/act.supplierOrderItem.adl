@@ -67,7 +67,7 @@
               derived="true" derivedValue="/quantity * /unitAmount + /taxAmount"/>
         <node name="deliveries" path="/targetActRelationships"
               type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="*"
-              filter="actRelationship.supplierDeliveryOrderItem" readOnly="true">
+              filter="actRelationship.supplierDeliveryOrderItem" readOnly="true" hidden="true">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
@@ -80,7 +80,7 @@
         </node>
         <node name="return" path="/targetActRelationships"
               type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="1"
-              filter="actRelationship.supplierReturnOrderItem" readOnly="true">
+              filter="actRelationship.supplierReturnOrderItem" readOnly="true" hidden="true">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
