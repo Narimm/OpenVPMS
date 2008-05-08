@@ -46,7 +46,7 @@
                 <propertyList name="entries">
                     <property name="IN_PROGRESS" value="In Progress"/>
                     <property name="ON_HOLD" value="On Hold"/>
-                    <property name="POSTED" value="Posted"/>
+                    <property name="POSTED" value="Finalised"/>
                 </propertyList>
                 <errorMessage>Invalid Payment Status</errorMessage>
             </assertion>

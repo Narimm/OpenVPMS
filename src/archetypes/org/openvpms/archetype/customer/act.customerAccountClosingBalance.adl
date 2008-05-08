@@ -36,7 +36,7 @@
 		<node name="status" path="/status" type="java.lang.String"	minCardinality="1" readOnly="true" defaultValue="'POSTED'" >
 			<assertion name="lookup.local">
 				<propertyList name="entries">
-					<property name="POSTED" value="Posted" />
+					<property name="POSTED" value="Finalised" />
 				</propertyList>
 				<errorMessage>Invalid Closing Balance Status</errorMessage>
 			</assertion>
