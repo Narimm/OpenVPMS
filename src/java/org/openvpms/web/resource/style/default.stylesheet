@@ -534,6 +534,20 @@
         </properties>
     </style>
 
+    <style name="TaskTable.CHECKED_IN" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="#ffffff"/>
+                        <property name="insets" value="8px 2px"/>
+                        <!-- white -->
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
     <style name="TaskTable.IN_PROGRESS" type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
