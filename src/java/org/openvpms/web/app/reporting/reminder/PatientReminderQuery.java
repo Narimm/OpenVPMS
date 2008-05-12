@@ -36,7 +36,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
-import org.openvpms.web.component.im.query.ActDateRange;
+import org.openvpms.web.component.im.query.DateRange;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -67,7 +67,7 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
     /**
      * The date range.
      */
-    private ActDateRange dateRange;
+    private DateRange dateRange;
 
 
     /**
@@ -116,7 +116,7 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
 
         container.add(reminderTypeRow);
 
-        dateRange = new ActDateRange(getFocusGroup(), false);
+        dateRange = new DateRange(getFocusGroup(), false);
         container.add(dateRange.getComponent());
 
         // default dueFrom to the 1st of next month

@@ -23,9 +23,9 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.im.account.EditAccountActDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.PrintActTask;
@@ -116,7 +116,7 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new EditAccountActDialog(editor);
+        return new ActEditDialog(editor);
     }
 
 }

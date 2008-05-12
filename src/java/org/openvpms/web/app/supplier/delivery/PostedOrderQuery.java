@@ -28,8 +28,8 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.supplier.SupplierActQuery;
-import org.openvpms.web.component.im.query.ActDateRange;
 import org.openvpms.web.component.im.query.ActResultSet;
+import org.openvpms.web.component.im.query.DateRange;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -142,8 +142,8 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
      * @return a new date range
      */
     @Override
-    protected ActDateRange createDateRange() {
-        return new ActDateRange(getFocusGroup(), false);
+    protected DateRange createDateRange() {
+        return new DateRange(getFocusGroup(), false);
     }
 
     private boolean canQuery() {

@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.account;
+package org.openvpms.web.component.im.edit.act;
 
 import nextapp.echo2.app.Button;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -28,32 +28,32 @@ import org.openvpms.web.component.property.Property;
 
 
 /**
- * A edit dialog for account acts that disables the Apply button for
+ * A edit dialog for acts that disables the Apply button for
  * <em>POSTED<em> acts, as a workaround for OVPMS-733.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class EditAccountActDialog extends EditDialog {
+public class ActEditDialog extends EditDialog {
 
     /**
-     * Constructs a new <tt>EditAccountActDialog</tt>.
+     * Constructs a new <tt>ActEditDialog</tt>.
      *
      * @param editor the editor
      */
-    public EditAccountActDialog(IMObjectEditor editor) {
+    public ActEditDialog(IMObjectEditor editor) {
         super(editor);
         init(editor);
     }
 
     /**
-     * Constructs a new <tt>EditAccountActDialog</tt>.
+     * Constructs a new <tt>ActEditDialog</tt>.
      *
      * @param editor the editor
      * @param save   if <tt>true</tt>, saves the editor when the 'OK' or
      *               'Apply' buttons are pressed.
      */
-    public EditAccountActDialog(IMObjectEditor editor, boolean save) {
+    public ActEditDialog(IMObjectEditor editor, boolean save) {
         super(editor, save);
         init(editor);
     }
@@ -67,8 +67,8 @@ public class EditAccountActDialog extends EditDialog {
      * @param skip   if <tt>true</tt> display a 'Skip' button that simply
      *               closes the dialog
      */
-    public EditAccountActDialog(IMObjectEditor editor, boolean save,
-                                boolean skip) {
+    public ActEditDialog(IMObjectEditor editor, boolean save,
+                         boolean skip) {
         super(editor, save, skip);
         init(editor);
     }

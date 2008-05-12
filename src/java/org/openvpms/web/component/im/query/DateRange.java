@@ -39,12 +39,12 @@ import java.util.Date;
 
 
 /**
- * Add description here.
+ * Component for selecting a range of dates.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActDateRange {
+public class DateRange {
 
     /**
      * The focus group.
@@ -57,7 +57,7 @@ public class ActDateRange {
     private final boolean showAll;
 
     /**
-     * Indicates if all dates should be queried. If so, the from and to dates
+     * Indicates if all dates should be selected. If so, the from and to dates
      * are ignored.
      */
     private CheckBox allDates;
@@ -88,33 +88,28 @@ public class ActDateRange {
     private Component component;
 
     /**
-     * Cell spacing row style.
+     * The comonent style.
      */
-    private static final String CELLSPACING_STYLE = "CellSpacing";
-
-    /**
-     * Row style name.
-     */
-    private static final String ROW_STYLE = "ControlRow";
+    private static final String STYLE = "CellSpacing";
 
 
     /**
-     * Constructs a new <tt>ActDateRange</tt>
+     * Constructs a new <tt>DateRange</tt>
      *
      * @param focus the focus group
      */
-    public ActDateRange(FocusGroup focus) {
+    public DateRange(FocusGroup focus) {
         this(focus, true);
     }
 
     /**
-     * Constructs a new <tt>ActDateRange</tt>
+     * Constructs a new <tt>DateRange</tt>
      *
      * @param focus   the focus group
      * @param showAll determines if an 'all' checkbox should be displayed
      *                to select all dates
      */
-    public ActDateRange(FocusGroup focus, boolean showAll) {
+    public DateRange(FocusGroup focus, boolean showAll) {
         this.focus = focus;
         this.showAll = showAll;
     }
@@ -175,7 +170,7 @@ public class ActDateRange {
      */
     protected Component doLayout() {
         if (showAll) {
-            allDates = CheckBoxFactory.create("actquery.all", true);
+            allDates = CheckBoxFactory.create("daterange.all", true);
             allDates.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     onAllDatesChanged();
@@ -183,7 +178,7 @@ public class ActDateRange {
             });
         }
 
-        fromLabel = LabelFactory.create("actquery.from");
+        fromLabel = LabelFactory.create("daterange.from");
         from = DateFieldFactory.create();
         from.getDateChooser().addPropertyChangeListener(
                 new PropertyChangeListener() {
@@ -192,7 +187,7 @@ public class ActDateRange {
                     }
                 });
 
-        toLabel = LabelFactory.create("actquery.to");
+        toLabel = LabelFactory.create("daterange.to");
         to = DateFieldFactory.create();
         to.getDateChooser().addPropertyChangeListener(
                 new PropertyChangeListener() {
@@ -200,15 +195,13 @@ public class ActDateRange {
                         onToChanged();
                     }
                 });
-        Row startRange = RowFactory.create(
-                CELLSPACING_STYLE,
-                fromLabel, from,
-                toLabel, to);
-        Row startRow = RowFactory.create(ROW_STYLE);
+        Row range = RowFactory.create(STYLE, fromLabel, from,
+                                      toLabel, to);
+        Row result = RowFactory.create(STYLE);
         if (showAll) {
-            startRow.add(allDates);
+            result.add(allDates);
         }
-        startRow.add(startRange);
+        result.add(range);
 
         onAllDatesChanged();
 
@@ -217,7 +210,7 @@ public class ActDateRange {
         }
         focus.add(from);
         focus.add(to);
-        return startRow;
+        return result;
     }
 
     /**
@@ -245,9 +238,9 @@ public class ActDateRange {
     }
 
     /**
-     * Determines if all dates are being queried.
+     * Determines if all dates are being selected.
      *
-     * @return <tt>true</tt> if all dates are being queried
+     * @return <tt>true</tt> if all dates are being seleced
      */
     private boolean getAllDates() {
         return showAll && allDates.isSelected();
@@ -268,7 +261,7 @@ public class ActDateRange {
      * Returns the date of the given field.
      *
      * @param field the date field
-     * @return the selected date from <code>field</code>
+     * @return the selected date from <tt>field</tt>
      */
     private Date getDate(DateField field) {
         return field.getDateChooser().getSelectedDate().getTime();
