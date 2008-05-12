@@ -43,7 +43,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
     /**
      * The date range.
      */
-    private ActDateRange dateRange;
+    private DateRange dateRange;
 
 
     /**
@@ -217,7 +217,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      *
      * @return the date range
      */
-    protected ActDateRange getDateRange() {
+    protected DateRange getDateRange() {
         if (dateRange == null) {
             dateRange = createDateRange();
         }
@@ -229,8 +229,8 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      *
      * @return a new date range
      */
-    protected ActDateRange createDateRange() {
-        return new ActDateRange(getFocusGroup());
+    protected DateRange createDateRange() {
+        return new DateRange(getFocusGroup());
     }
 
 }

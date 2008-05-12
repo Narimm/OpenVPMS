@@ -18,9 +18,9 @@
 
 package org.openvpms.web.component.workflow;
 
-import org.openvpms.web.component.im.account.EditAccountActDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.ActEditDialog;
 
 
 /**
@@ -62,7 +62,7 @@ public class EditAccountActTask extends EditIMObjectTask {
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor, boolean skip) {
-        return new EditAccountActDialog(editor, true, skip);
+        return new ActEditDialog(editor, true, skip);
     }
 
 }
