@@ -26,10 +26,12 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -92,6 +94,10 @@ public class OrderRules {
 
     /**
      * Creates a new delivery item from an order item.
+     * <p/>
+     * The quantity on the delivery item will default to the order's:
+     * <p/>
+     * <tt>quantity - (receivedQuantity + cancelledQuantity)</tt>
      *
      * @param orderItem the order item
      * @return a new delivery item
@@ -101,6 +107,16 @@ public class OrderRules {
         List<IMObject> objects = copy(orderItem, SupplierArchetypes.ORDER_ITEM,
                                       new DeliveryItemHandler(),
                                       orderItem.getActivityStartTime(), false);
+        ActBean order = new ActBean(orderItem, service);
+        BigDecimal quantity = orderItem.getQuantity();
+        BigDecimal received = order.getBigDecimal("receivedQuantity");
+        BigDecimal cancelled = order.getBigDecimal("cancelledQuantity");
+        BigDecimal remaining = quantity.subtract(received.add(cancelled));
+        if (remaining.compareTo(BigDecimal.ZERO) < 0) {
+            remaining = BigDecimal.ZERO;
+        }
+        FinancialAct delivery = (FinancialAct) objects.get(0);
+        delivery.setQuantity(remaining);
         return (FinancialAct) objects.get(0);
     }
 

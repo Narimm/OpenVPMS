@@ -94,11 +94,18 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
      */
     public void testCreateDeliveryItem() {
         BigDecimal quantity = new BigDecimal(50);
+        BigDecimal received = new BigDecimal(40);
+        BigDecimal cancelled = new BigDecimal(4);
+        BigDecimal expectedQuantity = new BigDecimal(6);
+
         int packageSize = 10;
         BigDecimal unitPrice = BigDecimal.ONE;
 
         FinancialAct orderItem = createOrderItem(quantity, packageSize,
                                                  unitPrice);
+        ActBean itemBean = new ActBean(orderItem);
+        itemBean.setValue("receivedQuantity", received);
+        itemBean.setValue("cancelledQuantity", cancelled);
         FinancialAct order = createOrder(orderItem);
         order.setStatus(ActStatus.POSTED);
         save(order);
@@ -106,7 +113,7 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
         FinancialAct item = rules.createDeliveryItem(orderItem);
 
         assertTrue(TypeHelper.isA(item, SupplierArchetypes.DELIVERY_ITEM));
-        assertEquals(quantity, item.getQuantity());
+        assertEquals(expectedQuantity, item.getQuantity());
 
         // the delivery item shouldn't have any relationships
         ActBean bean = new ActBean(item);
