@@ -30,6 +30,8 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 
@@ -54,10 +56,32 @@ public class FinancialTestHelper extends TestHelper {
                                                     Party customer,
                                                     Party patient,
                                                     Product product) {
+        List<FinancialAct> charges = createChargesInvoice(
+                amount, customer, patient, product, FinancialActStatus.POSTED);
+        save(charges.get(1));
+        return charges.get(0);
+    }
+
+    /**
+     * Helper to create a new <em>act.customerAccountChargesInvoice</em>
+     * and corresponding <em>act.customerAccountInvoiceItem</em>.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param patient  the patient
+     * @param product  the product
+     * @param status   the act status
+     * @return a list containing the invoice act and its item
+     */
+    public static List<FinancialAct> createChargesInvoice(Money amount,
+                                                          Party customer,
+                                                          Party patient,
+                                                          Product product,
+                                                          String status) {
         return createCharges("act.customerAccountChargesInvoice",
                              "act.customerAccountInvoiceItem",
                              "actRelationship.customerAccountInvoiceItem",
-                             amount, customer, patient, product);
+                             amount, customer, patient, product, status);
     }
 
     /**
@@ -71,10 +95,30 @@ public class FinancialTestHelper extends TestHelper {
     public static FinancialAct createChargesCounter(Money amount,
                                                     Party customer,
                                                     Product product) {
+        List<FinancialAct> charges = createChargesCounter(
+                amount, customer, product, FinancialActStatus.POSTED);
+        save(charges.get(1));
+        return charges.get(0);
+    }
+
+    /**
+     * Helper to create a new <em>act.customerAccountChargesCounter</em>
+     * and corresponding <em>act.customerAccountCounterItem</em>.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param product  the product
+     * @param status   the status
+     * @return a list containing the counter act and its item
+     */
+    public static List<FinancialAct> createChargesCounter(Money amount,
+                                                          Party customer,
+                                                          Product product,
+                                                          String status) {
         return createCharges("act.customerAccountChargesCounter",
                              "act.customerAccountCounterItem",
                              "actRelationship.customerAccountCounterItem",
-                             amount, customer, null, product);
+                             amount, customer, null, product, status);
     }
 
     /**
@@ -89,10 +133,31 @@ public class FinancialTestHelper extends TestHelper {
     public static FinancialAct createChargesCredit(Money amount, Party customer,
                                                    Party patient,
                                                    Product product) {
+        List<FinancialAct> charges = createChargesCredit(
+                amount, customer, patient, product, FinancialActStatus.POSTED);
+        save(charges.get(1));
+        return charges.get(0);
+    }
+
+    /**
+     * Helper to create a new <em>act.customerAccountChargesCredit</em>
+     * and corresponding <em>act.customerAccountCreditItem</em>.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param patient  the patient. May be <tt>null</tt>
+     * @param product  the product
+     * @return a list containing the credit act and its item
+     */
+    public static List<FinancialAct> createChargesCredit(Money amount,
+                                                         Party customer,
+                                                         Party patient,
+                                                         Product product,
+                                                         String status) {
         return createCharges("act.customerAccountChargesCredit",
                              "act.customerAccountCreditItem",
                              "actRelationship.customerAccountCreditItem",
-                             amount, customer, patient, product);
+                             amount, customer, patient, product, status);
     }
 
     /**
@@ -363,14 +428,14 @@ public class FinancialTestHelper extends TestHelper {
      * @param customer  the customer
      * @param patient   the patient. May be <tt>null</tt>
      * @param product   the product. May be <tt>null</tt>
-     * @return a new act
+     * @param status    the act status
+     * @return a list containing the charges act and its item
      */
-    private static FinancialAct createCharges(String shortName,
-                                              String itemShortName,
-                                              String relationshipShortName,
-                                              Money amount, Party customer,
-                                              Party patient, Product product) {
-        FinancialAct act = createAct(shortName, amount, customer);
+    private static List<FinancialAct> createCharges(
+            String shortName, String itemShortName,
+            String relationshipShortName, Money amount, Party customer,
+            Party patient, Product product, String status) {
+        FinancialAct act = createAct(shortName, amount, customer, status);
         ActBean bean = new ActBean(act);
         FinancialAct item = (FinancialAct) create(itemShortName);
         item.setUnitAmount(amount);
@@ -381,13 +446,12 @@ public class FinancialTestHelper extends TestHelper {
         if (product != null) {
             itemBean.addParticipation("participation.product", product);
         }
-        itemBean.save();
         bean.addRelationship(relationshipShortName, item);
-        return act;
+        return Arrays.asList(act, item);
     }
 
     /**
-     * Helper to create a payment or refund act.
+     * Helper to create a POSTED payment or refund act.
      *
      * @param shortName the act short name
      * @param amount    the act total
@@ -399,7 +463,8 @@ public class FinancialTestHelper extends TestHelper {
             String shortName, String itemShortName,
             String relationshipShortName, Money amount, Party customer,
             Party till) {
-        FinancialAct act = createAct(shortName, amount, customer);
+        FinancialAct act = createAct(shortName, amount, customer,
+                                     FinancialActStatus.POSTED);
         ActBean bean = new ActBean(act);
         FinancialAct item = (FinancialAct) create(itemShortName);
         item.setTotal(amount);
@@ -419,17 +484,18 @@ public class FinancialTestHelper extends TestHelper {
 
     /**
      * Helper to create a new act, setting the total, adding a customer
-     * participation and setting the status to 'POSTED'.
+     * participation and setting the status.
      *
      * @param shortName the act short name
      * @param amount    the act total
      * @param customer  the customer
+     * @param status    the status
      * @return a new act
      */
     private static FinancialAct createAct(String shortName, Money amount,
-                                          Party customer) {
+                                          Party customer, String status) {
         FinancialAct act = (FinancialAct) create(shortName);
-        act.setStatus(FinancialActStatus.POSTED);
+        act.setStatus(status);
         act.setTotal(amount);
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.customer", customer);
