@@ -18,27 +18,15 @@
 
 package org.openvpms.web.app.supplier.order;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.supplier.ProductSupplier;
-import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.app.supplier.SupplierActItemEditor;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.app.supplier.SupplierStockItemEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.product.ProductParticipationEditor;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Property;
@@ -56,21 +44,13 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class OrderItemEditor extends SupplierActItemEditor {
+public class OrderItemEditor extends SupplierStockItemEditor {
 
     /**
      * Determines if the act was posted at construction. If so, only a limited
      * set of properties may be edited.
      */
     private final boolean posted;
-
-    /**
-     * Node filter, used to disable properties when a product template is
-     * selected.
-     */
-    private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
-            "unitPrice", "total", "reorderCode", "reorderDescription",
-            "quantity", "listPrice", "packageSize", "packageUnits");
 
 
     /**
@@ -92,48 +72,6 @@ public class OrderItemEditor extends SupplierActItemEditor {
         } else {
             posted = false;
         }
-    }
-
-    /**
-     * Sets the product supplier.
-     *
-     * @param supplier the product supplier. May be <tt>null</tt>
-     */
-    public void setSupplier(Party supplier) {
-        ProductParticipationEditor editor = getProductEditor();
-        if (editor != null) {
-            editor.setSupplier(supplier);
-        }
-    }
-
-    /**
-     * Sets the stock location.
-     *
-     * @param location the stock location. May be <tt>null</tt>
-     */
-    public void setStockLocation(Party location) {
-        ProductParticipationEditor editor = getProductEditor();
-        if (editor != null) {
-            editor.setStockLocation(location);
-        }
-    }
-
-    /**
-     * Save any edits.
-     *
-     * @return <tt>true</tt> if the save was successful
-     */
-    @Override
-    protected boolean doSave() {
-        if (getObject().isNew()) {
-            ProductParticipationEditor editor = getProductEditor();
-            Party supplier = editor.getSupplier();
-            Product product = editor.getEntity();
-            if (supplier != null && product != null) {
-                checkProductSupplier(product, supplier);
-            }
-        }
-        return super.doSave();
     }
 
     /**
@@ -161,44 +99,6 @@ public class OrderItemEditor extends SupplierActItemEditor {
             }
         }
         return valid;
-    }
-
-    /**
-     * Invoked when the participation product is changed, to update prices.
-     *
-     * @param participation the product participation instance
-     */
-    protected void productModified(Participation participation) {
-        IMObjectReference entity = participation.getEntity();
-        IMObject object = IMObjectHelper.getObject(entity);
-        if (object instanceof Product) {
-            Product product = (Product) object;
-            if (TypeHelper.isA(product, "product.template")) {
-                if (getFilter() != TEMPLATE_FILTER) {
-                    changeLayout(TEMPLATE_FILTER);
-                }
-            } else {
-                ProductParticipationEditor editor = getProductEditor();
-                ProductSupplier ps = editor.getProductSupplier();
-                if (getFilter() != null) {
-                    // need to change the layout. This recreates the product
-                    // editor, so preserve any product-supplier relationship
-                    changeLayout(null);
-                    editor = getProductEditor();
-                    editor.setProductSupplier(ps);
-                }
-                if (ps != null) {
-                    Property reorderCode = getProperty("reorderCode");
-                    reorderCode.setValue(ps.getReorderCode());
-                    getProperty("reorderDescription").setValue(
-                            ps.getReorderDescription());
-                    getProperty("packageSize").setValue(ps.getPackageSize());
-                    getProperty("packageUnits").setValue(ps.getPackageUnits());
-                    getProperty("listPrice").setValue(ps.getListPrice());
-                    getProperty("unitPrice").setValue(ps.getNettPrice());
-                }
-            }
-        }
     }
 
     /**
@@ -240,82 +140,6 @@ public class OrderItemEditor extends SupplierActItemEditor {
     }
 
     /**
-     * Invoked when layout has completed.
-     */
-    @Override
-    protected void onLayoutCompleted() {
-        super.onLayoutCompleted();
-        Act parent = (Act) getParent();
-        if (parent != null) {
-            // propagate the parent's supplier and stock location. Can only do
-            // this once the product editor is created
-            ActBean bean = new ActBean(parent);
-            Party supplier = (Party) bean.getNodeParticipant("supplier");
-            Party location = (Party) bean.getNodeParticipant("stockLocation");
-            setSupplier(supplier);
-            setStockLocation(location);
-        }
-    }
-
-    /**
-     * Checks the product-supplier relationship for the specified product
-     * and supplier.
-     * <p/>
-     * If no relationship exists with the same package size and units, a new one
-     * will be added.
-     * <p/>
-     * If a relationship exists but the list price, nett price, reorder code
-     * or description have changed, it will be updated.
-     *
-     * @param product  the product
-     * @param supplier the supplier
-     */
-    private void checkProductSupplier(Product product, Party supplier) {
-        SupplierRules rules = new SupplierRules();
-        ProductSupplier ps = getProductSupplier();
-        int size = getPackageSize();
-        String units = getPackageUnits();
-        if (ps == null) {
-            ps = rules.getProductSupplier(supplier, product, size, units);
-        }
-        boolean save = true;
-        String reorderDesc = getReorderDescription();
-        String reorderCode = getReorderCode();
-        BigDecimal listPrice = getListPrice();
-        BigDecimal unitPrice = getUnitPrice();
-        if (ps == null) {
-            // no product-supplier relationship, so create a new one
-            ps = rules.createProductSupplier(product, supplier);
-            ps.setPackageSize(size);
-            ps.setPackageUnits(units);
-            ps.setReorderCode(reorderCode);
-            ps.setReorderDescription(reorderDesc);
-            ps.setListPrice(listPrice);
-            ps.setNettPrice(unitPrice);
-            ps.setPreferred(true);
-        } else if (size != ps.getPackageSize()
-                || !ObjectUtils.equals(units, ps.getPackageUnits())
-                || !equals(listPrice, ps.getListPrice())
-                || !equals(unitPrice, ps.getNettPrice())
-                || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
-                || !ObjectUtils.equals(ps.getReorderDescription(),
-                                       reorderDesc)) {
-            // properties are different to an existing relationship
-            ps.setPackageSize(size);
-            ps.setPackageUnits(units);
-            ps.setReorderCode(reorderCode);
-            ps.setReorderDescription(reorderDesc);
-            ps.setListPrice(listPrice);
-            ps.setNettPrice(unitPrice);
-        } else {
-            save = false;
-        }
-        if (save) {
-            ps.save();
-        }
-    }
-
-    /**
      * Returns the quantity.
      *
      * @return the quantity
@@ -342,82 +166,4 @@ public class OrderItemEditor extends SupplierActItemEditor {
         return (BigDecimal) getProperty("cancelledQuantity").getValue();
     }
 
-    /**
-     * Returns the product supplier relationship.
-     *
-     * @return the relationship. May be <tt>null</tt>
-     */
-    private ProductSupplier getProductSupplier() {
-        ProductParticipationEditor editor = getProductEditor();
-        return (editor != null) ? editor.getProductSupplier() : null;
-    }
-
-    /**
-     * Returns the package size.
-     *
-     * @return the package size
-     */
-    private int getPackageSize() {
-        Integer value = (Integer) getProperty("packageSize").getValue();
-        return (value != null) ? value : 0;
-    }
-
-    /**
-     * Returns the package units.
-     *
-     * @return the package units
-     */
-    private String getPackageUnits() {
-        return (String) getProperty("packageUnits").getValue();
-    }
-
-    /**
-     * Returns the reorder code.
-     *
-     * @return the reorder code
-     */
-    private String getReorderCode() {
-        return (String) getProperty("reorderCode").getValue();
-    }
-
-    /**
-     * Returns the reorder description.
-     *
-     * @return the reorder description
-     */
-    private String getReorderDescription() {
-        return (String) getProperty("reorderDescription").getValue();
-    }
-
-    /**
-     * Returns the list price.
-     *
-     * @return the list price
-     */
-    private BigDecimal getListPrice() {
-        return (BigDecimal) getProperty("listPrice").getValue();
-    }
-
-    /**
-     * Returns the unit price (also know as the nett price).
-     *
-     * @return the unit price
-     */
-    private BigDecimal getUnitPrice() {
-        return (BigDecimal) getProperty("unitPrice").getValue();
-    }
-
-    /**
-     * Helper to determine if two decimals are equal.
-     *
-     * @param lhs the left-hand side. May be <tt>null</tt>
-     * @param rhs right left-hand side. May be <tt>null</tt>
-     * @return <tt>true</t> if they are equal, otherwise <tt>false</tt>
-     */
-    private boolean equals(BigDecimal lhs, BigDecimal rhs) {
-        if (lhs != null && rhs != null) {
-            return lhs.compareTo(rhs) == 0;
-        }
-        return ObjectUtils.equals(lhs, rhs);
-    }
 }

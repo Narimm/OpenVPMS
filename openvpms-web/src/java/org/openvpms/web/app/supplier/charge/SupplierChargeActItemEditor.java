@@ -27,13 +27,9 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.supplier.SupplierActItemEditor;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
-
-import java.math.BigDecimal;
 
 
 /**
@@ -45,14 +41,6 @@ import java.math.BigDecimal;
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public class SupplierChargeActItemEditor extends SupplierActItemEditor {
-
-    /**
-     * Node filter, used to disable properties when a product template is
-     * selected.
-     */
-    private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
-            "quantity", "nettPrice", "listPrice", "total");
-
 
     /**
      * Construct a new <tt>SupplierChargeActItemEditor</tt>.
@@ -81,24 +69,11 @@ public class SupplierChargeActItemEditor extends SupplierActItemEditor {
         IMObject object = IMObjectHelper.getObject(entity);
         if (object instanceof Product) {
             Product product = (Product) object;
-            if (TypeHelper.isA(product, "product.template")) {
-                if (getFilter() != TEMPLATE_FILTER) {
-                    changeLayout(TEMPLATE_FILTER);
-                }
-                // zero out the unit price.
-                Property unitPrice = getProperty("unitPrice");
-                unitPrice.setValue(BigDecimal.ZERO);
-            } else {
-                if (getFilter() != null) {
-                    changeLayout(null);
-                }
-                Property unitCost = getProperty("unitPrice");
-                ProductPrice unit = getPrice("productPrice.unitPrice", product);
-                if (unit != null) {
-                    unitCost.setValue(unit.getPrice());
-                }
+            Property unitCost = getProperty("unitPrice");
+            ProductPrice unit = getPrice("productPrice.unitPrice", product);
+            if (unit != null) {
+                unitCost.setValue(unit.getPrice());
             }
         }
     }
-
 }
