@@ -18,20 +18,24 @@
 
 package org.openvpms.web.app.product;
 
-import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.math.Currency;
+import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 
 /**
@@ -52,6 +56,11 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      * The markup property listener.
      */
     private final ModifiableListener markupListener;
+
+    /**
+     * Product price calculator.
+     */
+    private final ProductPriceRules rules;
 
     /**
      * Flag to indicate that the price has been modified and therefore the
@@ -92,6 +101,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
             }
         };
         getProperty("price").addModifiableListener(priceListener);
+        rules = new ProductPriceRules();
     }
 
     /**
@@ -110,16 +120,18 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Updates the price using the following formula:
-     * <p/>
-     * <tt>price = (cost * (1 + markup/100) ) * (1 + tax/100)</tt>
+     * Updates the price.
      */
     private void updatePrice() {
         recalcMarkup = false;
-        Property property = getProperty("price");
-        property.removeModifiableListener(priceListener);
-        property.setValue(calculatePrice());
-        property.addModifiableListener(priceListener);
+        try {
+            Property property = getProperty("price");
+            property.removeModifiableListener(priceListener);
+            property.setValue(calculatePrice());
+            property.addModifiableListener(priceListener);
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**
@@ -127,10 +139,14 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      * Not currently used due to echo2 bug. See OVPMS-701
      */
     private void updateMarkup() {
-        Property property = getProperty("markup");
-        property.removeModifiableListener(markupListener);
-        property.setValue(calculateMarkup());
-        property.addModifiableListener(markupListener);
+        try {
+            Property property = getProperty("markup");
+            property.removeModifiableListener(markupListener);
+            property.setValue(calculateMarkup());
+            property.addModifiableListener(markupListener);
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**
@@ -142,18 +158,14 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
      */
     private BigDecimal calculatePrice() {
         BigDecimal cost = getValue("cost");
+        BigDecimal markup = getValue("markup");
         BigDecimal price = BigDecimal.ZERO;
-        if (cost.compareTo(BigDecimal.ZERO) != 0) {
-            BigDecimal markup = getValue("markup");
-            BigDecimal markupDec = getPercentRate(markup);
-            Product product = (Product) getParent();
-            BigDecimal taxRate = BigDecimal.ZERO;
-            if (product != null) {
-                taxRate = getTaxRate(product);
-            }
-            price = cost.multiply(
-                    BigDecimal.ONE.add(markupDec)).multiply(
-                    BigDecimal.ONE.add(taxRate));
+        Product product = (Product) getParent();
+        Context context = getLayoutContext().getContext();
+        Party practice = context.getPractice();
+        Currency currency = getCurrency();
+        if (product != null && practice != null && currency != null) {
+            price = rules.getPrice(product, cost, markup, practice, currency);
         }
         return price;
     }
@@ -168,39 +180,14 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     private BigDecimal calculateMarkup() {
         BigDecimal markup = BigDecimal.ZERO;
         BigDecimal cost = getValue("cost");
-        if (cost.compareTo(BigDecimal.ZERO) != 0) {
-            BigDecimal price = getValue("price");
-            Product product = (Product) getParent();
-            BigDecimal taxRate = BigDecimal.ZERO;
-            if (product != null) {
-                taxRate = getTaxRate(product);
-            }
-            markup = price.divide(
-                    cost.multiply(BigDecimal.ONE.add(taxRate)), 3,
-                    RoundingMode.HALF_UP).subtract(
-                    BigDecimal.ONE).multiply(new BigDecimal(100));
-            if (markup.compareTo(BigDecimal.ZERO) < 0) {
-                markup = BigDecimal.ZERO;
-            }
-        }
-        return markup;
-    }
-
-    /**
-     * Returns the tax rate of a product.
-     *
-     * @param product the product
-     * @return the product tax rate
-     */
-    private BigDecimal getTaxRate(Product product) {
-        BigDecimal result = BigDecimal.ZERO;
+        BigDecimal price = getValue("price");
+        Product product = (Product) getParent();
         Context context = getLayoutContext().getContext();
         Party practice = context.getPractice();
-        if (practice != null) {
-            TaxRules rules = new TaxRules(practice);
-            result = getPercentRate(rules.getTaxRate(product));
+        if (product != null && practice != null) {
+            markup = rules.getMarkup(product, cost, price, practice);
         }
-        return result;
+        return markup;
     }
 
     /**
@@ -215,16 +202,21 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Returns a percentage / 100.
+     * Returns the practice location currency.
      *
-     * @param percent the percent
-     * @return <tt>percent / 100 </tt>
+     * @return the practice location currency, or <tt>null</tt> if none can be found
      */
-    private BigDecimal getPercentRate(BigDecimal percent) {
-        if (percent.compareTo(BigDecimal.ZERO) != 0) {
-            return percent.divide(BigDecimal.valueOf(100));
+    private Currency getCurrency() {
+        Party location = getLayoutContext().getContext().getLocation();
+        if (location != null) {
+            IMObjectBean bean = new IMObjectBean(location);
+            String code = bean.getString("currency");
+            if (code != null) {
+                Currencies currencies = ServiceHelper.getCurrencies();
+                return currencies.getCurrency(code);
+            }
         }
-        return BigDecimal.ZERO;
+        return null;
     }
 
 }

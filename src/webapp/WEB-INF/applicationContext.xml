@@ -188,6 +188,12 @@
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="ruleEngine"/>
         <constructor-arg ref="txnManager"/>
+        <property name="facts">
+            <!-- make currencies available to rules -->
+            <list>
+                <ref bean="currencies"/>
+            </list>
+        </property>
     </bean>
 
     <!-- The Archetype service -->
@@ -407,7 +413,17 @@
     <!-- ================================================================== -->
     <!--                        MISC                                        -->
     <!-- ================================================================== -->
-    <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies"/>
+
+    <bean id="lookupService"
+          class="org.openvpms.component.business.service.lookup.LookupService">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
     <bean id="macroCache" class="org.openvpms.archetype.util.MacroCache"/>
 
     <!-- ================================================================== -->
