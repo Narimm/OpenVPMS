@@ -21,9 +21,14 @@ package org.openvpms.archetype.rules.supplier;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 
 /**
@@ -160,7 +165,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
 
     /**
      * Verifies that the <em>entityRelationship.productSupplier</em> is
-     * updated when a delivery is <em>POSTED</em>
+     * updated when a delivery is <em>POSTED</em>.
      */
     public void testProductSupplierUpdate() {
         BigDecimal quantity = BigDecimal.ONE;
@@ -188,6 +193,83 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
     }
 
     /**
+     * Verifies that <em>productPrice.unitPrice</em>s associated with a product
+     * are updated.
+     * <p/>
+     */
+    public void testUnitPriceUpdate() {
+        Product product = getProduct();
+        BigDecimal initialCost = BigDecimal.ZERO;
+        BigDecimal initialPrice = BigDecimal.ONE;
+
+        // add a new price
+        ProductPrice price = (ProductPrice) create("productPrice.unitPrice");
+        IMObjectBean priceBean = new IMObjectBean(price);
+        priceBean.setValue("cost", initialCost);
+        priceBean.setValue("markup", BigDecimal.valueOf(100));
+        priceBean.setValue("price", initialPrice);
+        product.addProductPrice(price);
+        save(product);
+
+        // create a product-supplier relationship.
+        // By default, it should not trigger auto price updates
+        int packageSize = 20;
+        ProductSupplier ps = createProductSupplier();
+        ps.setPackageSize(packageSize);
+        assertFalse(ps.isAutoPriceUpdate());
+        ps.save();
+
+        // post a delivery, and verify prices don't update
+        BigDecimal unitPrice1 = new BigDecimal("10.00");
+        BigDecimal quantity = BigDecimal.ONE;
+        BigDecimal listPrice = new BigDecimal("20.00");
+
+        Act delivery1 = createDelivery(quantity, packageSize, unitPrice1,
+                                      listPrice);
+        delivery1.setStatus(ActStatus.POSTED);
+        save(delivery1);
+
+        checkPrice(product, initialCost, initialPrice);
+
+        // reload product-supplier relationship and set to auto update prices
+        ps = getProductSupplier(packageSize);
+        assertNotNull(ps);
+        ps.setAutoPriceUpdate(true);
+        ps.save();
+
+        // post another delivery
+        Act delivery2 = createDelivery(quantity, packageSize, unitPrice1,
+                                      listPrice);
+
+        delivery2.setStatus(ActStatus.POSTED);
+        save(delivery2);
+
+        // verify that the price has updated
+        checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
+
+        // now post a return. The price shouldn't update
+        BigDecimal unitPrice2 = new BigDecimal("8.00");
+        BigDecimal listPrice2 = new BigDecimal("15.00");
+        Act delReturn = createReturn(quantity, packageSize, unitPrice2,
+                                     listPrice2);
+        delReturn.setStatus(ActStatus.POSTED);
+        save(delReturn);
+
+        // verify that the price has not updated
+        checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
+    }
+
+    private void checkPrice(Product product, BigDecimal cost, BigDecimal price) {
+        product = get(getProduct()); // reload product
+        Set<ProductPrice> prices = product.getProductPrices();
+        assertEquals(1, prices.size());
+        ProductPrice p = prices.toArray(new ProductPrice[0])[0];
+        IMObjectBean bean = new IMObjectBean(p);
+        assertEquals(cost, bean.getBigDecimal("cost"));
+        assertEquals(price, bean.getBigDecimal("price"));
+    }
+
+    /**
      * Verifies that the delivery status and received quantity on an order
      * and order item matches that expected.
      *
@@ -205,6 +287,51 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
 
         ActBean itemBean = new ActBean(orderItem);
         assertEquals(quantity, itemBean.getBigDecimal("receivedQuantity"));
+    }
+
+    /**
+     * Verifies that the <em>entityRelationship.productSupplier</em> associated
+     * with the supplier and product matches that expected.
+     *
+     * @param packageSize the expected package size, or <tt>-1</tt> if the
+     *                    relationship shouldn't exist
+     * @param nettPrice   the expected nett price
+     */
+    private void checkProductSupplier(int packageSize, BigDecimal nettPrice) {
+        if (packageSize < 0) {
+            assertNull(getProductSupplier(packageSize));
+        } else {
+            ProductSupplier ps = getProductSupplier(packageSize);
+            assertNotNull(ps);
+            assertEquals(nettPrice, ps.getNettPrice());
+        }
+    }
+
+    /**
+     * Returns product supplier for the specified package size.
+     *
+     * @param packageSize the package size
+     */
+    private ProductSupplier getProductSupplier(int packageSize) {
+        SupplierRules rules = new SupplierRules();
+        Party supplier = get(getSupplier()); // make sure using the latest
+        Product product = get(getProduct()); // instance of each
+        return rules.getProductSupplier(supplier, product, packageSize,
+                                        PACKAGE_UNITS);
+    }
+
+    /**
+     * Helper to create a new product supplier relationship.
+     *
+     * @return the new relationship
+     */
+    private ProductSupplier createProductSupplier() {
+        SupplierRules rules = new SupplierRules();
+        Party supplier = get(getSupplier()); // make sure using the latest
+        Product product = get(getProduct()); // instance of each
+        ProductSupplier ps = rules.createProductSupplier(product, supplier);
+        ps.setPackageUnits(PACKAGE_UNITS);
+        return ps;
     }
 
 }

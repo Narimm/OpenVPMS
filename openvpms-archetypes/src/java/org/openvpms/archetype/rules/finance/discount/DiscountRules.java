@@ -35,7 +35,6 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -186,13 +185,16 @@ public class DiscountRules {
      */
     private BigDecimal calcDiscount(BigDecimal amount, BigDecimal rate,
                                     String discountType) {
+        BigDecimal result;
         if (PERCENTAGE.equals(discountType)) {
-            final BigDecimal hundred = new BigDecimal(100);
-            return amount.multiply(rate).divide(hundred, 3,
-                                                RoundingMode.HALF_UP);
+            final BigDecimal hundred = BigDecimal.valueOf(100);
+            result = amount.multiply(rate);
+            result = MathRules.divide(result, hundred, 3);
+            return result;
         } else {
-            return rate;
+            result = rate;
         }
+        return result;
     }
 
     /**

@@ -50,4 +50,30 @@ public class MathRules {
     public static BigDecimal round(BigDecimal value, int scale) {
         return value.setScale(scale, RoundingMode.HALF_UP);
     }
+
+    /**
+     * Performs a division, rounding the result to the specified no. of places.
+     *
+     * @param dividend the value to divide
+     * @param divisor  the divisor
+     * @param scale    the no. of decimal places
+     * @return the divided value
+     */
+    public static BigDecimal divide(BigDecimal dividend, BigDecimal divisor,
+                                    int scale) {
+        return dividend.divide(divisor, scale, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Performs a division, rounding the result to the specified no. of places.
+     *
+     * @param dividend   the value to divide
+     * @param divisor the divisor
+     * @param scale   the no. of decimal places
+     * @return the divided value
+     */
+    public static BigDecimal divide(BigDecimal dividend, int divisor, int scale) {
+        return divide(dividend, BigDecimal.valueOf(divisor), scale);
+    }
+
 }

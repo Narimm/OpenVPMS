@@ -230,6 +230,28 @@ public class ProductSupplier {
     }
 
     /**
+     * Determines if changes to the list price should trigger recalculation
+     * of the <em>cost</em> and <em>price</em> nodes of any
+     * <em>productPrice.unitPrice</em> associated with the product.
+     *
+     * @return <tt>true</tt> if unit prices should be updated
+     */
+    public boolean isAutoPriceUpdate() {
+        return bean.getBoolean("autoPriceUpdate");
+    }
+
+    /**
+     * Determines if changes to the list price should trigger recalculation
+     * of the <em>cost</em> and <em>price</em> nodes of any
+     * <em>productPrice.unitPrice</em> associated with the product.
+     *
+     * @param autoUpdate if <tt>true</tt>, unit prices should be updated
+     */
+    public void setAutoPriceUpdate(boolean autoUpdate) {
+        bean.setValue("autoPriceUpdate", autoUpdate);
+    }
+
+    /**
      * Returns the underlying relationship.
      *
      * @return the underlying relationship
