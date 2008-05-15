@@ -75,6 +75,11 @@ public class ArchetypeRuleService implements IArchetypeRuleService {
     private final TransactionTemplate template;
 
     /**
+     * The facts to supply to all rules.
+     */
+    private List<Object> facts;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(
@@ -84,8 +89,8 @@ public class ArchetypeRuleService implements IArchetypeRuleService {
     /**
      * Creates a new <tt>ArchetypeRuleService</tt>.
      *
-     * @param service the archetype service to delegate requests to
-     * @param rules the rule engine
+     * @param service    the archetype service to delegate requests to
+     * @param rules      the rule engine
      * @param txnManager the transaction manager
      */
     public ArchetypeRuleService(IArchetypeService service, IRuleEngine rules,
@@ -94,6 +99,21 @@ public class ArchetypeRuleService implements IArchetypeRuleService {
         this.rules = rules;
         this.txnManager = txnManager;
         this.template = new TransactionTemplate(txnManager);
+    }
+
+    /**
+     * Sets a list of facts to pass to all rules.
+     * <p/>
+     * These are supplied in addition to the underlying archetype service
+     * and transaction manager.
+     * <p/>
+     * NOTE: this method is not thread safe. It is not intended to be used
+     * beyond the initialisation of the service
+     *
+     * @param facts the rule facts. May be <tt>null</tt>
+     */
+    public void setFacts(List<Object> facts) {
+        this.facts = facts;
     }
 
     /**
@@ -289,7 +309,7 @@ public class ArchetypeRuleService implements IArchetypeRuleService {
     }
 
     /**
-     * Save a collection of {@link IMObject} instances. executing any
+     * Save a collection of {@link IMObject} instances, executing any
      * <em>save</em> rules associated with their archetypes.
      *
      * @param objects  the objects to insert or update
@@ -524,11 +544,14 @@ public class ArchetypeRuleService implements IArchetypeRuleService {
             if (log.isDebugEnabled()) {
                 log.debug("Executing rules for uri=" + uri);
             }
-            List<Object> facts = new ArrayList<Object>();
-            facts.add(object);
-            facts.add(service);
-            facts.add(txnManager);
-            rules.executeRules(uri, facts);
+            List<Object> localFacts = new ArrayList<Object>();
+            localFacts.add(object);
+            localFacts.add(service);
+            localFacts.add(txnManager);
+            if (facts != null) {
+                localFacts.addAll(facts);
+            }
+            rules.executeRules(uri, localFacts);
         }
     }
 
