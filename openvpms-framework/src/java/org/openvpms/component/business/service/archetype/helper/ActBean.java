@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -248,13 +249,32 @@ public class ActBean extends IMObjectBean {
      * @throws IMObjectBeanException     if the node doesn't exist
      */
     public List<Act> getNodeActs(String name) {
-        List<Act> result = new ArrayList<Act>();
+        return getNodeActs(name, Act.class);
+    }
+
+    /**
+     * Returns the values of a collection node, converted to the supplied type.
+     *
+     * @param name the node name
+     * @param type the class type
+     * @return a list of the child acts
+     * @throws IMObjectBeanException if the node does't exist or an element
+     *                               is of the wrong type
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Act> List<T> getNodeActs(String name, Class<T> type) {
+        List<T> result = new ArrayList<T>();
         IMObjectReference ref = getReference();
         for (ActRelationship relationship
                 : getValues(name, ActRelationship.class)) {
             Act child = getSourceOrTarget(relationship, ref);
             if (child != null) {
-                result.add(child);
+                if (!type.isInstance(child)) {
+                    throw new IMObjectBeanException(
+                            InvalidClassCast, type.getName(),
+                            child.getClass().getName());
+                }
+                result.add((T) child);
             }
         }
         return result;
