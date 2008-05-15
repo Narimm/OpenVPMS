@@ -72,7 +72,8 @@ public class ProductParticipationEditor
     public ProductParticipationEditor(Participation participation,
                                       Act parent, LayoutContext context) {
         super(participation, parent, context);
-        if (!TypeHelper.isA(participation, "participation.product")) {
+        if (!TypeHelper.isA(participation, "participation.product",
+                            "participation.stock")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
                             + participation.getArchetypeId().getShortName());

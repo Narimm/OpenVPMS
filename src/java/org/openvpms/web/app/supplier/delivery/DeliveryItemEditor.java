@@ -20,8 +20,7 @@ package org.openvpms.web.app.supplier.delivery;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.web.app.supplier.SupplierActItemEditor;
+import org.openvpms.web.app.supplier.SupplierStockItemEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -36,7 +35,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DeliveryItemEditor extends SupplierActItemEditor {
+public class DeliveryItemEditor extends SupplierStockItemEditor {
 
     /**
      * The order relationship editor.
@@ -78,13 +77,4 @@ public class DeliveryItemEditor extends SupplierActItemEditor {
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new ActLayoutStrategy("order", false);
     }
-
-    /**
-     * Invoked when the participation product is changed, to update prices.
-     *
-     * @param participation the product participation instance
-     */
-    protected void productModified(Participation participation) {
-    }
-
 }
