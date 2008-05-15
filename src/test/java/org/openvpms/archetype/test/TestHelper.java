@@ -37,6 +37,7 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -307,7 +308,8 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Creates a new <tt>party.organisationLocation</tt>.
+     * Creates a new <tt>party.organisationLocation</tt>, setting the currency
+     * to <em>AUD</em>.
      *
      * @return a new location
      */
@@ -316,7 +318,12 @@ public class TestHelper extends Assert {
         party.setName("XLocation");
         Contact contact = (Contact) create("contact.phoneNumber");
         party.addContact(contact);
-        Lookup currency = getClassification("lookup.currency", "AUD");
+        Lookup currency = getClassification("lookup.currency", "AUD", false);
+        if (currency.isNew()) {
+            IMObjectBean bean = new IMObjectBean(currency);
+            bean.setValue("minDenomination", new BigDecimal("0.05"));
+            bean.save();
+        }
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("currency", currency.getCode());
         bean.save();
@@ -324,13 +331,26 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Gets a classification lookup, creating it if it doesn't exist.
+     * Gets a classification lookup, creating and saving it if it doesn't exist.
      *
      * @param shortName the clasification short name
      * @param code      the classification code
      * @return the classification
      */
     public static Lookup getClassification(String shortName, String code) {
+        return getClassification(shortName, code, true);
+    }
+
+    /**
+     * Gets a classification lookup, creating it if it doesn't exist.
+     *
+     * @param shortName the clasification short name
+     * @param code      the classification code
+     * @param save      if <tt>true</tt>, save the classification
+     * @return the classification
+     */
+    public static Lookup getClassification(String shortName, String code,
+                                           boolean save) {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
         query.add(new NodeConstraint("code", code));
         query.setMaxResults(1);
@@ -340,7 +360,9 @@ public class TestHelper extends Assert {
         }
         Lookup classification = (Lookup) create(shortName);
         classification.setCode(code);
-        save(classification);
+        if (save) {
+            save(classification);
+        }
         return classification;
     }
 

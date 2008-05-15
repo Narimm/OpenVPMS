@@ -23,9 +23,11 @@ import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 
 /**
@@ -41,6 +43,13 @@ public class ProductPriceRules {
      */
     private final IArchetypeService service;
 
+
+    /**
+     * Creates a new <tt>ProductPriceRules</tt>.
+     */
+    public ProductPriceRules() {
+        this(ArchetypeServiceHelper.getArchetypeService());
+    }
 
     /**
      * Creates a new <tt>ProductPriceRules</tt>.
@@ -77,6 +86,37 @@ public class ProductPriceRules {
             price = currency.round(price);
         }
         return price;
+    }
+
+    /**
+     * Calculates a product markup using the following formula:
+     * <p/>
+     * <tt>markup = ((price / (cost * ( 1 + tax/100))) - 1) * 100</tt>
+     *
+     * @param product  the product
+     * @param cost     the product cost
+     * @param price    the price
+     * @param practice the <em>party.organisationPractice</em> used to determine
+     *                 product taxes
+     * @return the markup
+     */
+    public BigDecimal getMarkup(Product product, BigDecimal cost,
+                                BigDecimal price, Party practice) {
+        BigDecimal markup = BigDecimal.ZERO;
+        if (cost.compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal taxRate = BigDecimal.ZERO;
+            if (product != null) {
+                taxRate = getTaxRate(product, practice);
+            }
+            markup = price.divide(
+                    cost.multiply(BigDecimal.ONE.add(taxRate)), 3,
+                    RoundingMode.HALF_UP).subtract(
+                    BigDecimal.ONE).multiply(new BigDecimal(100));
+            if (markup.compareTo(BigDecimal.ZERO) < 0) {
+                markup = BigDecimal.ZERO;
+            }
+        }
+        return markup;
     }
 
     /**
