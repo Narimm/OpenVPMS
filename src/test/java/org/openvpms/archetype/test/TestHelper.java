@@ -293,6 +293,20 @@ public class TestHelper extends Assert {
     }
 
     /**
+     * Creates a new <em>party.organisationPractice</em>.
+     *
+     * @return a new practice
+     */
+    public static Party createPractice() {
+        Party party = (Party) create("party.organisationPractice");
+        party.setName("XPractice");
+        Contact contact = (Contact) create("contact.phoneNumber");
+        party.addContact(contact);
+        save(party);
+        return party;
+    }
+
+    /**
      * Creates a new <tt>party.organisationLocation</tt>.
      *
      * @return a new location

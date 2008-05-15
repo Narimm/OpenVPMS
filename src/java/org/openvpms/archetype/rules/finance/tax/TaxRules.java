@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.finance.tax;
 
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -30,7 +31,6 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -81,6 +81,7 @@ public class TaxRules {
      *
      * @param product the product
      * @return the tax rate
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getTaxRate(Product product) {
         Collection<Lookup> rates = getProductTaxRates(product);
@@ -122,7 +123,7 @@ public class TaxRules {
         if (inclusive) {
             divisor = divisor.add(rate);
         }
-        tax = tax.divide(divisor, 3, RoundingMode.HALF_UP);
+        tax = MathRules.divide(tax, divisor, 3);
         return tax;
     }
 

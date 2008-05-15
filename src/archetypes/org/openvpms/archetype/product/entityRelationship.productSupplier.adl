@@ -59,6 +59,7 @@
         </node>
         <node name="listPrice" path="/details/listPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0"/>
         <node name="nettPrice" path="/details/nettPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0"/>
+        <node name="autoPriceUpdate" path="/details/autoPriceUpdate" type="java.lang.Boolean" defaultValue="false()" minCardinality="0"/>
         <node name="source" displayName="Product" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">

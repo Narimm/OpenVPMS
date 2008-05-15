@@ -21,7 +21,14 @@ package org.openvpms.archetype.rules.supplier;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.act.ActStatusHelper;
+import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.math.Currency;
+import org.openvpms.archetype.rules.math.CurrencyException;
+import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -30,6 +37,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
@@ -39,10 +47,6 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.ObjectRefConstraint;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -103,17 +107,61 @@ public class DeliveryProcessor {
      */
     private final IArchetypeService service;
 
+    /**
+     * Product price rules.
+     */
+    private final ProductPriceRules priceRules;
 
     /**
-     * Creates a new <tt>OrderUpdateHelper</tt>.
-     *
-     * @param act     the delivery/return act
-     * @param service the archetype service
+     * The currency cache.
      */
-    public DeliveryProcessor(Act act, IArchetypeService service) {
+    private Currencies currencies;
+
+    /**
+     * The supplier.
+     */
+    private Party supplier;
+
+    /**
+     * The stock location.
+     */
+    private Party stockLocation;
+
+    /**
+     * The organisation location associated with the stock location.
+     */
+    private Party location;
+
+    /**
+     * The practice associated with the location.
+     */
+    private Party practice;
+
+    /**
+     * The location currency.
+     */
+    private Currency currency;
+
+    /**
+     * The logger.
+     */
+    private final Log log = LogFactory.getLog(DeliveryProcessor.class);
+
+
+    /**
+     * Creates a new <tt>DeliveryProcessor</tt>.
+     *
+     * @param act        the delivery/return act
+     * @param service    the archetype service
+     * @param currencies the currency cache
+     */
+    public DeliveryProcessor(Act act, IArchetypeService service,
+                             Currencies currencies) {
         this.act = act;
         this.service = service;
         this.rules = new SupplierRules(service);
+        this.currencies = currencies;
+        priceRules = new ProductPriceRules(service);
     }
 
     /**
@@ -122,14 +170,14 @@ public class DeliveryProcessor {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void apply() {
-        if (ActStatus.POSTED.equals(act.getStatus()) && !alreadyPosted()) {
+        if (ActStatus.POSTED.equals(act.getStatus())
+                && !ActStatusHelper.isPosted(act, service)) {
             ActBean bean = new ActBean(act, service);
-            Party supplier = (Party) bean.getNodeParticipant("supplier");
-            Party stockLocation = (Party) bean.getNodeParticipant(
+            supplier = (Party) bean.getNodeParticipant("supplier");
+            stockLocation = (Party) bean.getNodeParticipant(
                     "stockLocation");
-            boolean delivery = TypeHelper.isA(act, SupplierArchetypes.DELIVERY);
             for (Act item : bean.getNodeActs("items")) {
-                processItem(item, delivery, supplier, stockLocation);
+                processItem(item);
             }
 
             // for each order that has order items that have changed, update
@@ -147,17 +195,14 @@ public class DeliveryProcessor {
     /**
      * Processes a delivery/return item.
      *
-     * @param item          the delivery/return item
-     * @param delivery      <tt>true</tt> if the item is a delivery
-     * @param supplier      the supplier
-     * @param stockLocation the stock location
+     * @param item the delivery/return item
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private void processItem(Act item, boolean delivery, Party supplier,
-                             Party stockLocation) {
+    private void processItem(Act item) {
         ActBean itemBean = new ActBean(item, service);
         BigDecimal receivedQuantity = itemBean.getBigDecimal("quantity");
         int receivedPackSize = itemBean.getInt("packageSize");
+        boolean delivery = TypeHelper.isA(act, SupplierArchetypes.DELIVERY);
         if (!delivery) {
             receivedQuantity = receivedQuantity.negate();
         }
@@ -171,7 +216,7 @@ public class DeliveryProcessor {
 
         // if its a delivery, update the product-supplier relationship
         if (delivery && supplier != null && product != null) {
-            updateProductSupplier(supplier, product, itemBean);
+            updateProductSupplier(product, itemBean);
         }
 
         // update the stock quantity for the product at the stock location
@@ -179,19 +224,6 @@ public class DeliveryProcessor {
             updateStockQuantity(product, stockLocation, receivedQuantity,
                                 receivedPackSize);
         }
-    }
-
-    /**
-     * Determines if the act was posted previously.
-     *
-     * @return <tt>true</tt> if the act was posted previously.
-     */
-    private boolean alreadyPosted() {
-        ArchetypeQuery query = new ArchetypeQuery(
-                new ObjectRefConstraint("act", act.getObjectReference()));
-        query.add(new NodeConstraint("act.status", ActStatus.POSTED));
-        query.add(new NodeSelectConstraint("act.uid"));
-        return !service.getObjects(query).getResults().isEmpty();
     }
 
     /**
@@ -401,12 +433,10 @@ public class DeliveryProcessor {
      * Updates an <em>entityRelationship.productSupplier</em> from an
      * <em>act.supplierDeliveryItem</em>, if required.
      *
-     * @param supplier         the supplier
      * @param product          the product
      * @param deliveryItemBean a bean wrapping the delivery item
      */
-    private void updateProductSupplier(Party supplier,
-                                       Product product,
+    private void updateProductSupplier(Product product,
                                        ActBean deliveryItemBean) {
         int size = deliveryItemBean.getInt("packageSize");
         String units = deliveryItemBean.getString("packageUnits");
@@ -444,8 +474,74 @@ public class DeliveryProcessor {
         } else {
             save = false;
         }
+        if (ps.isAutoPriceUpdate()
+                && !equals(listPrice, BigDecimal.ZERO) && size != 0) {
+            updateUnitPrices(product, listPrice, size);
+        }
+
         if (save) {
             toSave.add(ps.getRelationship());
+        }
+    }
+
+    /**
+     * Recalculates the cost node of any <em>productPrice.unitPrice</em>
+     * associated with the product.
+     *
+     * @param product     the product
+     * @param listPrice   the list price
+     * @param packageSize the package size
+     */
+    private void updateUnitPrices(Product product, BigDecimal listPrice,
+                                  int packageSize) {
+        IMObjectBean bean = new IMObjectBean(product, service);
+        if (getPractice() == null) {
+            log.error("Cannot update unit prices for product uid="
+                    + product.getUid() + ", name=" + product.getName()
+                    + ": " + " cannot determine the current practice");
+        } else {
+            Currency currency = getCurrency();
+            if (currency == null) {
+                log.error("Cannot update unit prices for product uid="
+                        + product.getUid() + ", name=" + product.getName()
+                        + ": " + " cannot determine the local currency");
+            } else {
+                List<ProductPrice> prices
+                        = bean.getValues("prices", ProductPrice.class);
+                if (!prices.isEmpty()) {
+                    BigDecimal cost = listPrice.divide(
+                            BigDecimal.valueOf(packageSize));
+                    cost = currency.round(cost);
+                    for (ProductPrice price : prices) {
+                        if (TypeHelper.isA(price, "productPrice.unitPrice")) {
+                            updateUnitPrice(price, product, cost);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Updates an <em>productPrice.unitPrice</em> if required.
+     *
+     * @param price   the price
+     * @param product the associated product
+     * @param cost    the cost price
+     */
+    private void updateUnitPrice(ProductPrice price, Product product,
+                                 BigDecimal cost) {
+        IMObjectBean priceBean = new IMObjectBean(price, service);
+        BigDecimal old = priceBean.getBigDecimal("cost", BigDecimal.ZERO);
+        if (!equals(old, cost)) {
+            priceBean.setValue("cost", cost);
+            BigDecimal markup
+                    = priceBean.getBigDecimal("markup", BigDecimal.ZERO);
+            BigDecimal newPrice = priceRules.getPrice(product, cost, markup,
+                                                      getPractice(),
+                                                      getCurrency());
+            price.setPrice(newPrice);
+            toSave.add(price);
         }
     }
 
@@ -462,4 +558,55 @@ public class DeliveryProcessor {
         }
         return ObjectUtils.equals(lhs, rhs);
     }
+
+    /**
+     * Returns the organisaton location associated with the stock location.
+     *
+     * @return an <em>party.organisationLocation</em> or <tt>null</tt> if none
+     *         can be found
+     */
+    private Party getLocation() {
+        if (location == null) {
+            EntityBean bean = new EntityBean(stockLocation, service);
+            location = (Party) bean.getNodeSourceEntity("locations");
+        }
+        return location;
+    }
+
+    /**
+     * Returns the practice associated with the organisation location.
+     *
+     * @return an <em>party.organisationPractice</em> or <tt>null</tt> if none
+     *         can be found
+     */
+    private Party getPractice() {
+        if (practice == null) {
+            Party location = getLocation();
+            if (location != null) {
+                EntityBean bean = new EntityBean(location, service);
+                practice = (Party) bean.getNodeSourceEntity("practice");
+            }
+        }
+        return practice;
+    }
+
+    /**
+     * Returns the currency associated with the organisation location.
+     *
+     * @return the currency, or <tt>null</tt> if the location is unknown
+     * @throws CurrencyException if the currency is invalid
+     */
+    private Currency getCurrency() {
+        if (currency == null) {
+            Party location = getLocation();
+            if (location != null) {
+                IMObjectBean bean = new IMObjectBean(location, service);
+                String code = bean.getString("currency");
+                currency = currencies.getCurrency(code);
+            }
+        }
+        return currency;
+    }
 }
+
+

@@ -183,6 +183,11 @@
         <constructor-arg ref="defaultArchetypeService"/>
         <constructor-arg ref="ruleEngine"/>
         <constructor-arg ref="txnManager"/>
+        <property name="facts">
+            <list>
+                <ref bean="currencies"/>
+            </list>
+        </property>
     </bean>
 
 
@@ -200,6 +205,7 @@
                 <entry key="lookup" value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
                 <entry key="party">
                     <bean class="org.openvpms.archetype.function.party.PartyFunctions"/>
+
                 </entry>
             </map>
         </constructor-arg>
@@ -243,6 +249,20 @@
   <bean id="ruleEngine"
     class="org.openvpms.component.business.service.ruleengine.RuleEngine">
     <constructor-arg ref="ruleSource" />
+  </bean>
+
+
+  <!-- ================================================================== -->
+  <!--                        MISC                                        -->
+  <!-- ================================================================== -->
+
+  <bean id="lookupService" class="org.openvpms.component.business.service.lookup.LookupService">
+      <constructor-arg ref="archetypeService"/>
+  </bean>
+
+  <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
+      <constructor-arg ref="archetypeService"/>
+      <constructor-arg ref="lookupService"/>
   </bean>
 
 </beans>

@@ -22,16 +22,19 @@
     xs:schemaLocation="http://drools.org/rules rules.xsd
     				   http://drools.org/semantics/java java.xsd">
     				   
-    <rule name="Post Delivery/Return">
+    <rule name="Post Return">
          <parameter identifier="act">
              <java:class>org.openvpms.component.business.domain.im.act.Act</java:class>
          </parameter>
          <parameter identifier="service">
              <java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
          </parameter>
+         <parameter identifier="currencies">
+            <java:class>org.openvpms.archetype.rules.math.Currencies</java:class>
+         </parameter>
          <java:consequence>
              import org.openvpms.archetype.rules.supplier.DeliveryProcessor;
-             DeliveryProcessor processor = new DeliveryProcessor(act, service);
+             DeliveryProcessor processor = new DeliveryProcessor(act, service, currencies);
              processor.apply();
          </java:consequence>
     </rule>

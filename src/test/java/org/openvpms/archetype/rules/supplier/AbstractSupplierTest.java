@@ -62,6 +62,24 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
 
 
     /**
+     * Returns the supplier.
+     *
+     * @return the supplier
+     */
+    protected Party getSupplier() {
+        return supplier;
+    }
+
+    /**
+     * Returns the product.
+     *
+     * @return the product
+     */
+    protected Product getProduct() {
+        return product;
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -71,6 +89,20 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         super.onSetUp();
         product = TestHelper.createProduct();
         stockLocation = createStockLocation();
+
+        // create location and practice relationships, for currency and
+        // tax calculation purposes
+        Party location = TestHelper.createLocation();
+        EntityBean locBean = new EntityBean(location);
+        locBean.addRelationship("entityRelationship.locationStockLocation",
+                                stockLocation);
+        Party practice = TestHelper.createPractice();
+        EntityBean pracBean = new EntityBean(practice);
+        pracBean.addRelationship("entityRelationship.practiceLocation",
+                                 location);
+        locBean.save();
+        pracBean.save();
+
         supplier = TestHelper.createSupplier();
         TestHelper.getClassification("lookup.uom", PACKAGE_UNITS);
     }
@@ -96,14 +128,14 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      *
      * @param quantity    the quantity
      * @param packageSize the package size
-     * @param unitPrice    the unit price
+     * @param unitPrice   the unit price
      * @return a new order item
      */
     protected FinancialAct createOrderItem(BigDecimal quantity,
                                            int packageSize,
                                            BigDecimal unitPrice) {
         return createItem(SupplierArchetypes.ORDER_ITEM, quantity, packageSize,
-                          unitPrice);
+                          unitPrice, BigDecimal.ZERO);
     }
 
     /**
@@ -119,7 +151,25 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         return createActs(SupplierArchetypes.DELIVERY,
                           SupplierArchetypes.DELIVERY_ITEM,
                           SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP,
-                          quantity, packageSize, unitPrice);
+                          quantity, packageSize, unitPrice, BigDecimal.ZERO);
+    }
+
+    /**
+     * Creates and saves a delivery.
+     *
+     * @param quantity    the delivery quantity
+     * @param packageSize the package size
+     * @param unitPrice   the unit price
+     * @param listPrice   the list price
+     * @return a new delivery
+     */
+    protected FinancialAct createDelivery(BigDecimal quantity, int packageSize,
+                                          BigDecimal unitPrice,
+                                          BigDecimal listPrice) {
+        return createActs(SupplierArchetypes.DELIVERY,
+                          SupplierArchetypes.DELIVERY_ITEM,
+                          SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP,
+                          quantity, packageSize, unitPrice, listPrice);
     }
 
     /**
@@ -196,10 +246,24 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      */
     protected Act createReturn(BigDecimal quantity, int packageSize,
                                BigDecimal unitPrice) {
+        return createReturn(quantity, packageSize, unitPrice, BigDecimal.ZERO);
+    }
+
+    /**
+     * Creates a return.
+     *
+     * @param quantity    the return quantity
+     * @param packageSize the return package size
+     * @param unitPrice   the unit price
+     * @param listPrice   the list price
+     * @return a new return
+     */
+    protected Act createReturn(BigDecimal quantity, int packageSize,
+                               BigDecimal unitPrice, BigDecimal listPrice) {
         return createActs(SupplierArchetypes.RETURN,
                           SupplierArchetypes.RETURN_ITEM,
                           SupplierArchetypes.RETURN_ITEM_RELATIONSHIP,
-                          quantity, packageSize, unitPrice);
+                          quantity, packageSize, unitPrice, listPrice);
     }
 
     /**
@@ -248,15 +312,17 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param quantity              the item quantity
      * @param packageSize           the item package size
      * @param unitPrice             the item unit price
+     * @param listPrice             the item list price
      * @return a new act
      */
     private FinancialAct createActs(String shortName, String itemShortName,
                                     String relationshipShortName,
                                     BigDecimal quantity, int packageSize,
-                                    BigDecimal unitPrice) {
+                                    BigDecimal unitPrice,
+                                    BigDecimal listPrice) {
         ActBean bean = createAct(shortName);
         FinancialAct item = createItem(itemShortName, quantity, packageSize,
-                                       unitPrice);
+                                       unitPrice, listPrice);
 
         bean.addRelationship(relationshipShortName, item);
         bean.save();
@@ -297,7 +363,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
                                       BigDecimal unitPrice,
                                       FinancialAct orderItem) {
         FinancialAct act = createItem(shortName, quantity, packageSize,
-                                      unitPrice);
+                                      unitPrice, BigDecimal.ZERO);
         ActBean bean = new ActBean(act);
         bean.addRelationship(relationshipShortName, orderItem);
         bean.save();
@@ -312,10 +378,12 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param quantity    the quantity
      * @param packageSize the package size
      * @param unitPrice   the unit price
+     * @param listPrice   the list price
      * @return a new act
      */
     protected FinancialAct createItem(String shortName, BigDecimal quantity,
-                                      int packageSize, BigDecimal unitPrice) {
+                                      int packageSize, BigDecimal unitPrice,
+                                      BigDecimal listPrice) {
         FinancialAct item = (FinancialAct) create(shortName);
         ActBean bean = new ActBean(item);
         bean.addParticipation(SupplierArchetypes.PRODUCT_PARTICIPATION,
@@ -324,6 +392,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         bean.setValue("packageSize", packageSize);
         bean.setValue("packageUnits", PACKAGE_UNITS);
         bean.setValue("unitPrice", unitPrice);
+        bean.setValue("listPrice", listPrice);
         getArchetypeService().deriveValues(item);
         return item;
     }
@@ -360,27 +429,4 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         }
     }
 
-    /**
-     * Verifies that the <em>entityRelationship.productSupplier</em> associated
-     * with the supplier and product matches that expected.
-     *
-     * @param packageSize the expected package size, or <tt>-1</tt> if the
-     *                    relationship shouldn't exist
-     * @param nettPrice   the expected nett price
-     */
-    protected void checkProductSupplier(int packageSize, BigDecimal nettPrice) {
-        SupplierRules rules = new SupplierRules();
-        supplier = get(supplier);
-        product = get(product);
-        if (packageSize < 0) {
-            assertNull(rules.getProductSupplier(supplier, product, packageSize,
-                                                PACKAGE_UNITS));
-        } else {
-            ProductSupplier ps
-                    = rules.getProductSupplier(supplier, product, packageSize,
-                                               PACKAGE_UNITS);
-            assertNotNull(ps);
-            assertEquals(nettPrice, ps.getNettPrice());
-        }
-    }
 }

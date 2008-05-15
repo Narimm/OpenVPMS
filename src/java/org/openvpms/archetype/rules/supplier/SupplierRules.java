@@ -56,7 +56,7 @@ public class SupplierRules {
      * @throws ArchetypeServiceException if the archetype service is not
      *                                   configured
      */
-    public SupplierRules() {
+    public SupplierRules() {               
         this(ArchetypeServiceHelper.getArchetypeService());
     }
 

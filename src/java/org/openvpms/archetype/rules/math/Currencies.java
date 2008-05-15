@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.math;
 
+import org.apache.commons.lang.StringUtils;
 import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.*;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -58,7 +59,8 @@ public class Currencies {
 
 
     /**
-     * Constructs a new <tt>Currencies</tt>.
+     * Constructs a new <tt>Currencies</tt>, using the default archetype service
+     * and lookup service.
      */
     public Currencies() {
         this(ArchetypeServiceHelper.getArchetypeService(),
@@ -87,6 +89,9 @@ public class Currencies {
      *                           currency
      */
     public synchronized Currency getCurrency(String code) {
+        if (StringUtils.isEmpty(code)) {
+            throw new CurrencyException(InvalidCurrencyCode, code);
+        }
         Currency currency = currencies.get(code);
         if (currency == null) {
             java.util.Currency c = java.util.Currency.getInstance(code);
