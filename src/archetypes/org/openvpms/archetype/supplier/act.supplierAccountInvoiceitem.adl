@@ -30,7 +30,7 @@
               defaultValue="java.util.Date.new()"/>
         <node name="product" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
-              filter="participation.product"/>
+              filter="participation.stock"/>
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
