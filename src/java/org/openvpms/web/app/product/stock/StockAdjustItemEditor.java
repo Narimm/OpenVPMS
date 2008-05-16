@@ -56,6 +56,11 @@ public class StockAdjustItemEditor extends ActItemEditor {
     private SimpleProperty currentQuantity;
 
     /**
+     * The stock location.
+     */
+    private Party stockLocation;
+
+    /**
      * The stock rules.
      */
     private final StockRules rules;
@@ -75,6 +80,17 @@ public class StockAdjustItemEditor extends ActItemEditor {
         currentQuantity.setDisplayName(Messages.get("product.stock.quantity"));
         currentQuantity.setValue(BigDecimal.ZERO);
         currentQuantity.setReadOnly(true);
+        ActBean bean = new ActBean(parent);
+        setStockLocation((Party) bean.getNodeParticipant("stockLocation"));
+    }
+
+    /**
+     * Sets the stock location.
+     *
+     * @param location the stock location
+     */
+    public void setStockLocation(Party location) {
+        stockLocation = location;
     }
 
     /**
@@ -115,19 +131,16 @@ public class StockAdjustItemEditor extends ActItemEditor {
     }
 
     private void updateCurrentStock() {
-        Product product = (Product) IMObjectHelper.getObject(getProduct());
-        ActBean bean = new ActBean((Act) getParent());
-        currentQuantity.setValue(getStock(bean, "stockLocation", product));
+        BigDecimal quantity = BigDecimal.ZERO;
+        try {
+            Product product = (Product) IMObjectHelper.getObject(getProduct());
+            if (stockLocation != null && product != null) {
+                quantity = rules.getStock(product, stockLocation);
+            }
+        } catch (OpenVPMSException error) {
+            ErrorHelper.show(error);
+        }
+        currentQuantity.setValue(quantity);
     }
 
-    private BigDecimal getStock(ActBean bean, String node, Product product) {
-        BigDecimal result = BigDecimal.ZERO;
-        if (product != null) {
-            Party location = (Party) bean.getParticipant(node);
-            if (location != null) {
-                result = rules.getStock(product, location);
-            }
-        }
-        return result;
-    }
 }

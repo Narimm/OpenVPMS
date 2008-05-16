@@ -143,7 +143,8 @@ public final class IMObjectDeletor {
             final IMObjectDeletorListener<T> listener, String messageKey) {
         String type = DescriptorHelper.getDisplayName(object);
         String title = Messages.get("imobject.delete.title", type);
-        String message = Messages.get(messageKey, object.getName());
+        String name = (object.getName() != null) ? object.getName() : type;
+        String message = Messages.get(messageKey, name);
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(title, message, true);
         dialog.addWindowPaneListener(new WindowPaneListener() {
