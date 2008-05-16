@@ -20,7 +20,6 @@ package org.openvpms.web.app.supplier.delivery;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.supplier.SupplierActQuery;
@@ -55,7 +54,6 @@ public class DeliveryQuery extends SupplierActQuery<FinancialAct> {
      */
     public DeliveryQuery(String[] shortNames) {
         super(shortNames, STATUSES, FinancialAct.class);
-        setStatus(ActStatus.IN_PROGRESS);
     }
 
     /**

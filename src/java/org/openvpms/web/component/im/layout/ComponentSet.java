@@ -20,8 +20,11 @@ package org.openvpms.web.component.im.layout;
 
 import org.openvpms.web.component.im.view.ComponentState;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -35,8 +38,15 @@ public class ComponentSet {
     /**
      * The components.
      */
-    private final LinkedHashMap<ComponentState, String> components
-            = new LinkedHashMap<ComponentState, String>();
+    private final List<ComponentState> components
+            = new ArrayList<ComponentState>();
+
+    /**
+     * The labels, keyed on component.
+     */
+    private final Map<ComponentState, String> labels
+            = new HashMap<ComponentState, String>();
+
 
     /**
      * Adds a component.
@@ -45,7 +55,21 @@ public class ComponentSet {
      * @param label     a label for the component
      */
     public void add(ComponentState component, String label) {
-        components.put(component, label);
+        add(components.size(), component, label);
+    }
+
+    /**
+     * Adds a component at the specified index.
+     *
+     * @param index     index at which the component is to be inserted.
+     * @param component the component
+     * @param label     a label for the component
+     * @throws IndexOutOfBoundsException if the index is out of range
+     *                                   (index &lt; 0 || index &gt; size()).
+     */
+    public void add(int index, ComponentState component, String label) {
+        components.add(index, component);
+        labels.put(component, label);
     }
 
     /**
@@ -54,7 +78,7 @@ public class ComponentSet {
      * @return the components
      */
     public Collection<ComponentState> getComponents() {
-        return components.keySet();
+        return components;
     }
 
     /**
@@ -65,7 +89,7 @@ public class ComponentSet {
      *         not found
      */
     public String getLabel(ComponentState component) {
-        return components.get(component);
+        return labels.get(component);
     }
 
 }

@@ -89,7 +89,7 @@ public abstract class SupplierActQuery<T extends Act>
         });
 
         stockLocation = new IMObjectSelector<Party>(
-                Messages.get("supplier.stockLocation"),
+                Messages.get("product.stockLocation"),
                 "party.organisationStockLocation");
         stockLocation.setListener(new IMObjectSelectorListener<Party>() {
             public void selected(Party object) {

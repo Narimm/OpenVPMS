@@ -71,9 +71,7 @@ public class LookupFieldFactory extends ComponentFactory {
     public static LookupField create(LookupQuery source, boolean all) {
         LookupField field = new LookupField(source, all);
         setDefaultStyle(field);
-        if (field.getModel().size() != 0) {
-            field.setSelectedIndex(0);
-        }
+        field.setSelected(source.getDefault());
         return field;
     }
 

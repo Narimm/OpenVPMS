@@ -24,7 +24,6 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -36,7 +35,6 @@ import org.openvpms.web.component.util.CollectionHelper;
 import org.openvpms.web.component.util.LabelFactory;
 
 import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -336,12 +334,12 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
     }
 
     /**
-     * Returns the act status lookups.
+     * Returns the act statuses lookups.
      *
      * @return the act status lookups. May be <tt>null</tt>
      */
-    protected List<Lookup> getStatusLookups() {
-        return (statusLookups != null) ? statusLookups.getLookups() : null;
+    protected ActStatuses getStatusLookups() {
+        return statusLookups;
     }
 
     /**
@@ -388,28 +386,15 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
      * @param container the container
      */
     protected void addStatusSelector(Component container) {
-        List<Lookup> lookups = getStatusLookups();
-        if (lookups != null) {
-            statusSelector = LookupFieldFactory.create(lookups, true);
+        if (statusLookups != null) {
+            statusSelector = LookupFieldFactory.create(statusLookups, true);
             statusSelector.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     onStatusChanged();
                 }
             });
-            String[] statuses = getStatuses();
-            String defaultStatus = null;
-            if (statuses.length != 0 && !excludeStatuses()) {
-                defaultStatus = statuses[0];
-            } else {
-                for (Lookup lookup : lookups) {
-                    if (lookup.isDefaultLookup()) {
-                        defaultStatus = lookup.getCode();
-                        break;
-                    }
-                }
-            }
+            String defaultStatus = statusSelector.getSelectedCode();
             if (defaultStatus != null) {
-                updateStatusSelector(defaultStatus);
                 setStatus(defaultStatus);
             }
         }

@@ -136,7 +136,7 @@ public class IMObjectProperty extends AbstractProperty
      */
     public boolean setValue(Object value) {
         boolean set = false;
-        checkReadOnly();
+        checkModifiable();
         try {
             value = getTransformer().apply(value);
             if (!ObjectHelper.equals(getValue(), value)) {
@@ -351,7 +351,7 @@ public class IMObjectProperty extends AbstractProperty
      * @param value the value to add
      */
     public void add(Object value) {
-        checkReadOnly();
+        checkModifiable();
         try {
             value = getTransformer().apply(value);
             descriptor.addChildToCollection(object, value);
@@ -371,7 +371,7 @@ public class IMObjectProperty extends AbstractProperty
      * @param value the value to remove
      */
     public void remove(Object value) {
-        checkReadOnly();
+        checkModifiable();
         try {
             value = getTransformer().apply(value);
             descriptor.removeChildFromCollection(object, value);
