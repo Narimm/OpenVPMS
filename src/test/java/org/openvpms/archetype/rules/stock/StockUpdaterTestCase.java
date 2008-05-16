@@ -20,7 +20,6 @@ package org.openvpms.archetype.rules.stock;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.PRODUCT_PARTICIPATION;
 import static org.openvpms.archetype.rules.stock.StockArchetypes.*;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -92,7 +91,7 @@ public class StockUpdaterTestCase extends ArchetypeServiceTest {
         Act item = (Act) create(STOCK_TRANSFER_ITEM);
         ActBean itemBean = new ActBean(item);
         bean.addRelationship(STOCK_TRANSFER_ITEM_RELATIONSHIP, item);
-        itemBean.addParticipation(PRODUCT_PARTICIPATION, product);
+        itemBean.addParticipation(STOCK_PARTICIPATION, product);
         itemBean.setValue("quantity", quantity);
         itemBean.save();
         bean.save();
@@ -128,7 +127,7 @@ public class StockUpdaterTestCase extends ArchetypeServiceTest {
         Act item = (Act) create(STOCK_ADJUST_ITEM);
         ActBean itemBean = new ActBean(item);
         bean.addRelationship(STOCK_ADJUST_ITEM_RELATIONSHIP, item);
-        itemBean.addParticipation(PRODUCT_PARTICIPATION, product);
+        itemBean.addParticipation(STOCK_PARTICIPATION, product);
         itemBean.setValue("quantity", quantity);
         itemBean.save();
         bean.save();

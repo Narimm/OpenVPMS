@@ -24,7 +24,7 @@
         <node name="startTime" path="/activityStartTime" type="java.util.Date"
               minCardinality="1" hidden="true" defaultValue="java.util.Date.new()"/>
         <node name="product" path="/participations" type="java.util.HashSet"
-              minCardinality="1" maxCardinality="1" filter="participation.product"/>
+              minCardinality="1" maxCardinality="1" filter="participation.stock"/>
         <node name="quantity" path="/details/quantity" type="java.math.BigDecimal" defaultValue="1.0"
               minCardinality="1" maxCardinality="1">
             <assertion name="positive">

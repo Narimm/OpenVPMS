@@ -25,7 +25,7 @@
               minCardinality="1" hidden="true" defaultValue="java.util.Date.new()"/>
         <node name="product" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
-              filter="participation.product"/>
+              filter="participation.stock"/>
         <node name="quantity" path="/details/quantity" type="java.math.BigDecimal" defaultValue="0.0"
               minCardinality="1" maxCardinality="1"/>
         <node name="author" path="/participations" type="java.util.HashSet"
