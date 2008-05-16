@@ -16,12 +16,15 @@
  *  $Id$
  */
 
-package org.openvpms.archetype.rules.supplier;
+package org.openvpms.archetype.rules.stock;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.PRODUCT_PARTICIPATION;
+import static org.openvpms.archetype.rules.stock.StockArchetypes.*;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
@@ -37,6 +40,8 @@ import java.util.List;
 
 /**
  * Tests the {@link StockUpdater} class, when invoked by the
+ * <em>archetypeService.save.act.stockTransfer.before</em>
+ * <em>archetypeService.save.act.stockAdjust.before</em>
  * <em>archetypeService.save.act.customerAccountChargesInvoice.before</em>,
  * <em>archetypeService.save.act.customerAccountChargesCredit.before</em> and
  * <em>archetypeService.save.act.customerAccountChargesCounter.before</em>
@@ -74,6 +79,76 @@ public class StockUpdaterTestCase extends ArchetypeServiceTest {
 
 
     /**
+     * Verifies that stock is updated when an <em>act.stockTransfer</em>
+     * is posted.
+     */
+    public void testTransfer() {
+        BigDecimal quantity = new BigDecimal(100);
+        Party xferLocation = createStockLocation();
+        Act act = (Act) create(STOCK_TRANSFER);
+        ActBean bean = new ActBean(act);
+        bean.addParticipation(STOCK_LOCATION_PARTICIPATION, stockLocation);
+        bean.addParticipation(STOCK_XFER_LOCATION_PARTICIPATION, xferLocation);
+        Act item = (Act) create(STOCK_TRANSFER_ITEM);
+        ActBean itemBean = new ActBean(item);
+        bean.addRelationship(STOCK_TRANSFER_ITEM_RELATIONSHIP, item);
+        itemBean.addParticipation(PRODUCT_PARTICIPATION, product);
+        itemBean.setValue("quantity", quantity);
+        itemBean.save();
+        bean.save();
+
+        // verify transfer doesn't take place till the act is posted
+        assertEquals(BigDecimal.ZERO, getStock(stockLocation));
+        assertEquals(BigDecimal.ZERO, getStock(xferLocation));
+
+        // post the transfer
+        bean.setValue("status", ActStatus.POSTED);
+        bean.save();
+
+        // verify stock at the from and to locations. Note that stock may
+        // go negative
+        assertEquals(quantity.negate(), getStock(stockLocation));
+        assertEquals(quantity, getStock(xferLocation));
+
+        // verify subsequent save doesn't change the stock
+        bean.save();
+        assertEquals(quantity.negate(), getStock(stockLocation));
+        assertEquals(quantity, getStock(xferLocation));
+    }
+
+    /**
+     * Verifies that stock is updated when an <em>act.stockAdjust</em>
+     * is posted.
+     */
+    public void testAdjust() {
+        BigDecimal quantity = new BigDecimal(100);
+        Act act = (Act) create(STOCK_ADJUST);
+        ActBean bean = new ActBean(act);
+        bean.addParticipation(STOCK_LOCATION_PARTICIPATION, stockLocation);
+        Act item = (Act) create(STOCK_ADJUST_ITEM);
+        ActBean itemBean = new ActBean(item);
+        bean.addRelationship(STOCK_ADJUST_ITEM_RELATIONSHIP, item);
+        itemBean.addParticipation(PRODUCT_PARTICIPATION, product);
+        itemBean.setValue("quantity", quantity);
+        itemBean.save();
+        bean.save();
+
+        // verify stock is not adjusted till the act is posted
+        assertEquals(BigDecimal.ZERO, getStock(stockLocation));
+
+        // post the act
+        bean.setValue("status", ActStatus.POSTED);
+        bean.save();
+
+        // verify stock adjusted
+        assertEquals(quantity, getStock(stockLocation));
+
+        // verify subsequent save doesn't change the stock
+        bean.save();
+        assertEquals(quantity, getStock(stockLocation));
+    }
+
+    /**
      * Verifies that stock is updated when an invoice, counter and credit
      * charge is posted.
      * <p/>
@@ -81,7 +156,7 @@ public class StockUpdaterTestCase extends ArchetypeServiceTest {
      * a delivery may be processed through after the stock itself is actually
      * used.
      */
-    public void testStockUpdate() {
+    public void testChargeUpdate() {
         BigDecimal initialQuantity = BigDecimal.ZERO;
         BigDecimal invoiceQuantity = BigDecimal.valueOf(5);
         BigDecimal counterQuantity = BigDecimal.valueOf(20);
@@ -153,9 +228,7 @@ public class StockUpdaterTestCase extends ArchetypeServiceTest {
         product = TestHelper.createProduct();
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient();
-        stockLocation = (Party) create(SupplierArchetypes.STOCK_LOCATION);
-        stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
-        save(stockLocation);
+        stockLocation = createStockLocation();
     }
 
     /**
@@ -175,26 +248,27 @@ public class StockUpdaterTestCase extends ArchetypeServiceTest {
 
         // saving un-POSTED act shouldn't cause stock update
         assertFalse(ActStatus.POSTED.equals(act.getStatus()));
-        BigDecimal current = getStock();
+        BigDecimal current = getStock(stockLocation);
         save(acts);
-        assertEquals(current, getStock());
+        assertEquals(current, getStock(stockLocation));
 
         // now post the act
         act.setStatus(ActStatus.POSTED);
         save(act);
 
-        assertEquals(expected, getStock());
+        assertEquals(expected, getStock(stockLocation));
     }
 
     /**
-     * Returns the stock in hand for the product.
+     * Returns the stock in hand for the product and specified stock location.
      *
+     * @param location the stock location
      * @return the stock in hand
      */
-    private BigDecimal getStock() {
+    private BigDecimal getStock(Party location) {
         product = get(product);
         EntityBean prodBean = new EntityBean(product);
-        EntityRelationship rel = prodBean.getRelationship(stockLocation);
+        EntityRelationship rel = prodBean.getRelationship(location);
         if (rel != null) {
             IMObjectBean relBean = new IMObjectBean(rel);
             return relBean.getBigDecimal("quantity");
@@ -202,5 +276,16 @@ public class StockUpdaterTestCase extends ArchetypeServiceTest {
         return BigDecimal.ZERO;
     }
 
+    /**
+     * Helper to create a stock location.
+     *
+     * @return a new stock location
+     */
+    private Party createStockLocation() {
+        Party result = (Party) create(StockArchetypes.STOCK_LOCATION);
+        result.setName("STOCK-LOCATION-" + result.hashCode());
+        save(result);
+        return result;
+    }
 
 }

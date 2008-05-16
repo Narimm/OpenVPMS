@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.supplier;
 
+import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -277,7 +278,7 @@ public class OrderRules {
                 {SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP,
                  SupplierArchetypes.INVOICE_ITEM_RELATIONSHIP},
                 {SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP, null},
-                {SupplierArchetypes.STOCK_LOCATION_PARTICIPATION, null}};
+                {StockArchetypes.STOCK_LOCATION_PARTICIPATION, null}};
 
         public DeliveryHandler() {
             super(TYPE_MAP);
@@ -295,7 +296,7 @@ public class OrderRules {
                  SupplierArchetypes.CREDIT_ITEM},
                 {SupplierArchetypes.RETURN_ITEM_RELATIONSHIP,
                  SupplierArchetypes.CREDIT_ITEM_RELATIONSHIP},
-                {SupplierArchetypes.STOCK_LOCATION_PARTICIPATION, null}};
+                {StockArchetypes.STOCK_LOCATION_PARTICIPATION, null}};
 
         public ReturnHandler() {
             super(TYPE_MAP);
