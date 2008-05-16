@@ -30,22 +30,22 @@ import org.openvpms.web.component.property.ModifiableListener;
 
 
 /**
- * Editor for <em>act.stockTransfer</em> acts.
+ * Editor for <em>act.stockAdjust</em> acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class StockTransferEditor extends ActEditor {
+public class StockAdjustEditor extends ActEditor {
 
     /**
-     * Construct a new <tt>StockTransferEditor</tt>.
+     * Construct a new <tt>StockAdjustEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context. May be <tt>null</tt>
      */
-    public StockTransferEditor(Act act, IMObject parent,
-                               LayoutContext context) {
+    public StockAdjustEditor(Act act, IMObject parent,
+                             LayoutContext context) {
         super(act, parent, context);
     }
 
@@ -54,46 +54,26 @@ public class StockTransferEditor extends ActEditor {
      */
     @Override
     protected void onLayoutCompleted() {
-        final AbstractParticipationEditor from
+        final AbstractParticipationEditor editor
                 = (AbstractParticipationEditor) getEditor("stockLocation");
-        final AbstractParticipationEditor to
-                = (AbstractParticipationEditor) getEditor("to");
-        from.addModifiableListener(new ModifiableListener() {
+        editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                transferFromChanged((Party) from.getEntity());
-            }
-        });
-
-        to.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                transferToChanged((Party) to.getEntity());
+                stockLocationChanged((Party) editor.getEntity());
             }
         });
     }
 
     /**
-     * Invoked when the 'transfer-from' location changes.
+     * Invoked when the stock location changes.
      *
-     * @param location the location. May be <tt>null</tt>
+     * @param location the new stock location. May be <tt>null</tt>
      */
-    private void transferFromChanged(Party location) {
+    private void stockLocationChanged(Party location) {
         for (IMObjectEditor itemEditor : getEditor().getCurrentEditors()) {
-            StockTransferItemEditor editor
-                    = (StockTransferItemEditor) itemEditor;
-            editor.setTransferFrom(location);
+            StockAdjustItemEditor editor
+                    = (StockAdjustItemEditor) itemEditor;
+            editor.setStockLocation(location);
         }
     }
 
-    /**
-     * Invoked when the 'transfer-to' location changes.
-     *
-     * @param location the location. May be <tt>null</tt>
-     */
-    private void transferToChanged(Party location) {
-        for (IMObjectEditor itemEditor : getEditor().getCurrentEditors()) {
-            StockTransferItemEditor editor
-                    = (StockTransferItemEditor) itemEditor;
-            editor.setTransferTo(location);
-        }
-    }
 }

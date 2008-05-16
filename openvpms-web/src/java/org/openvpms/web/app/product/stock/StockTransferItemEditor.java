@@ -157,14 +157,26 @@ public class StockTransferItemEditor extends ActItemEditor {
         };
     }
 
+    /**
+     * Updates the transfer-from stock quantity.
+     */
     private void updateFromQuantity() {
         fromQuantity.setValue(getStock(transferFrom));
     }
 
+    /**
+     * Updates the transfer-to stock quantity.
+     */
     private void updateToQuantity() {
         toQuantity.setValue(getStock(transferTo));
     }
 
+    /**
+     * Returns the stock at the specified stock location.
+     *
+     * @param stockLocation the stock location
+     * @return the stock quantity
+     */
     private BigDecimal getStock(Party stockLocation) {
         BigDecimal result = BigDecimal.ZERO;
         try {
