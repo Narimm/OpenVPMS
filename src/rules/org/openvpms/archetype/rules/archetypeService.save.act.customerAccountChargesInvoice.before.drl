@@ -44,7 +44,7 @@
         	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
         </parameter>
         <java:consequence>
-            import org.openvpms.archetype.rules.supplier.StockUpdater;
+            import org.openvpms.archetype.rules.stock.StockUpdater;
             StockUpdater updater = new StockUpdater(act, service);
             updater.update();
         </java:consequence>

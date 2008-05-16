@@ -125,20 +125,4 @@ public class SupplierArchetypes {
     public static final String SUPPLIER_PARTICIPATION
             = "participation.supplier";
 
-    /**
-     * Stock location short name.
-     */
-    public static final String STOCK_LOCATION
-            = "party.organisationStockLocation";
-
-    /**
-     * Stock location participation short name.
-     */
-    public static final String STOCK_LOCATION_PARTICIPATION
-            = "participation.stockLocation";
-
-    /**
-     * Product participation.
-     */
-    public static final String PRODUCT_PARTICIPATION = "participation.product";
 }

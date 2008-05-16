@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.supplier;
 
+import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -341,7 +343,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         ActBean bean = new ActBean(act);
         bean.addParticipation(SupplierArchetypes.SUPPLIER_PARTICIPATION,
                               supplier);
-        bean.addParticipation(SupplierArchetypes.STOCK_LOCATION_PARTICIPATION,
+        bean.addParticipation(StockArchetypes.STOCK_LOCATION_PARTICIPATION,
                               stockLocation);
         return bean;
     }
@@ -386,7 +388,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
                                       BigDecimal listPrice) {
         FinancialAct item = (FinancialAct) create(shortName);
         ActBean bean = new ActBean(item);
-        bean.addParticipation(SupplierArchetypes.PRODUCT_PARTICIPATION,
+        bean.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION,
                               product);
         item.setQuantity(quantity);
         bean.setValue("packageSize", packageSize);
@@ -403,7 +405,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @return a new stock location
      */
     protected Party createStockLocation() {
-        Party stockLocation = (Party) create(SupplierArchetypes.STOCK_LOCATION);
+        Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
         stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
         save(stockLocation);
         return stockLocation;

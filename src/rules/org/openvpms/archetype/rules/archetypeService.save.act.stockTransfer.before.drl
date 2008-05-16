@@ -15,30 +15,16 @@
  *
  *  $$Id$$
 -->
-<rule-set name="archetypeService.save.act.customerAccountChargesCounter.before"
+<rule-set name="archetypeService.save.act.stockTransfer.before"
     xmlns="http://drools.org/rules"    
     xmlns:java="http://drools.org/semantics/java"
     xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
     xs:schemaLocation="http://drools.org/rules rules.xsd
     				   http://drools.org/semantics/java java.xsd">
     				   
-    <rule name="Add to Customer Account Balance" salience="100">
+    <rule name="Transfer Stock">
         <parameter identifier="act">
-        	<java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
-        </parameter>
-        <parameter identifier="service">
-        	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
-        </parameter>
-        <java:consequence>
-            import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
-            CustomerAccountRules rules = new CustomerAccountRules(service);
-            rules.addToBalance(act);
-        </java:consequence>
-    </rule>
-
-    <rule name="Update Stock Onhand" salience="1">
-        <parameter identifier="act">
-        	<java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
+        	<java:class>org.openvpms.component.business.domain.im.act.Act</java:class>
         </parameter>
         <parameter identifier="service">
         	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
@@ -49,5 +35,4 @@
             updater.update();
         </java:consequence>
     </rule>
-    
 </rule-set>
