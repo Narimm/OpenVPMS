@@ -18,9 +18,11 @@
 
 package org.openvpms.web.component.im.lookup;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -36,7 +38,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class NodeLookupQuery implements LookupQuery {
+public class NodeLookupQuery extends AbstractLookupQuery {
 
     /**
      * The archetype short name, or <tt>null</tt> if an object was specified
@@ -97,5 +99,50 @@ public class NodeLookupQuery implements LookupQuery {
             ErrorHelper.show(error);
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * Returns the default lookup.
+     *
+     * @return the default lookup, or <tt>null</tt> if none is defined
+     */
+    @Override
+    public Lookup getDefault() {
+        Lookup result = null;
+        NodeDescriptor nodeDesc = getDescriptor();
+        if (nodeDesc != null) {
+            List<Lookup> lookups = getLookups();
+            String code = nodeDesc.getDefaultValue();
+            if (code != null) {
+                result = getLookup(code, lookups);
+            }
+            if (result == null) {
+                result = getDefault(lookups);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the node descriptor.
+     *
+     * @return the node descriptor, or <tt>null</tt> on error
+     */
+    private NodeDescriptor getDescriptor() {
+        NodeDescriptor result = null;
+        try {
+            if (shortName != null) {
+                ArchetypeDescriptor archetype
+                        = DescriptorHelper.getArchetypeDescriptor(shortName);
+                if (archetype != null) {
+                    result = archetype.getNodeDescriptor(node);
+                }
+            } else {
+                result = descriptor;
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+        return result;
     }
 }

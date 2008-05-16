@@ -37,4 +37,11 @@ public interface LookupQuery {
      * @return the lookups
      */
     List<Lookup> getLookups();
+
+    /**
+     * Returns the default lookup.
+     *
+     * @return the default lookup, or <tt>null</tt> if none is defined
+     */
+    Lookup getDefault();
 }

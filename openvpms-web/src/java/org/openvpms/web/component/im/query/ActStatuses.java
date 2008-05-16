@@ -32,7 +32,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActStatuses {
+public class ActStatuses implements LookupQuery {
 
     /**
      * The lookup source.
@@ -81,8 +81,13 @@ public class ActStatuses {
     }
 
     /**
-     * Returns the act status lookup source.
+     * Returns the default status.
+     *
+     * @return the default status, or <tt>null</tt> if none is defined
      */
+    public Lookup getDefault() {
+        return lookups.getDefault();
+    }
 
     /**
      * Returns the act status lookups.

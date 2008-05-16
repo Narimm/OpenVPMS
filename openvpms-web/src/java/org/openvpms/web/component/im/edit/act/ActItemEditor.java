@@ -135,7 +135,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
-     * Invoked when the participation product is changed, to update prices.
+     * Invoked when the participation product is changed.
      *
      * @param participation the product participation instance
      */

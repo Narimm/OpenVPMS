@@ -29,7 +29,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ListLookupQuery implements LookupQuery {
+public class ListLookupQuery extends AbstractLookupQuery {
 
     /**
      * The lookups.

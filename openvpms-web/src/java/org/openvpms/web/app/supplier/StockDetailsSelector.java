@@ -66,12 +66,12 @@ public class StockDetailsSelector {
         supplier = new IMObjectSelector<Party>(
                 Messages.get("supplier.type"), "party.supplier*");
         location = new StockLocationSelector(
-                Messages.get("supplier.stockLocation"), context);
+                Messages.get("product.stockLocation"), context);
 
         Grid grid = GridFactory.create(2);
         grid.add(LabelFactory.create("supplier.type"));
         grid.add(supplier.getComponent());
-        grid.add(LabelFactory.create("supplier.stockLocation"));
+        grid.add(LabelFactory.create("product.stockLocation"));
         grid.add(location.getComponent());
 
         component = grid;

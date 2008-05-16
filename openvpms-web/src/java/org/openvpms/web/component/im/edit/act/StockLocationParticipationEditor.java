@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_XFER_LOCATION_PARTICIPATION;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -53,10 +54,11 @@ public class StockLocationParticipationEditor
     public StockLocationParticipationEditor(Participation participation,
                                             Act parent, LayoutContext context) {
         super(participation, parent, context);
-        if (!TypeHelper.isA(participation, "participation.stockLocation")) {
-            throw new IllegalArgumentException(
-                    "Invalid participation type:"
-                            + participation.getArchetypeId().getShortName());
+        if (participation.getEntity() == null && parent.isNew()
+                && !TypeHelper.isA(participation,
+                                   STOCK_XFER_LOCATION_PARTICIPATION)) {
+            Party location = getLayoutContext().getContext().getStockLocation();
+            getEditor().setObject(location);
         }
     }
 

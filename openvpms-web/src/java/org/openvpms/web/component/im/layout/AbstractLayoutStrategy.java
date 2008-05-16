@@ -146,13 +146,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                   PropertySet properties, Component container,
                                   LayoutContext context) {
         if (!descriptors.isEmpty()) {
-            int size = descriptors.size();
-            Grid grid;
-            if (size <= 4) {
-                grid = GridFactory.create(2);
-            } else {
-                grid = GridFactory.create(4);
-            }
+            Grid grid = createGrid(descriptors);
             doGridLayout(object, descriptors, properties, grid, context);
             container.add(grid);
         }
@@ -409,6 +403,18 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                              LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
         return factory.create(property, parent);
+    }
+
+    /**
+     * Creates a grid with the no. of columns determined by the no. of
+     * node descriptors.
+     *
+     * @param descriptors the node descriptor
+     * @return a new grid
+     */
+    protected Grid createGrid(List<NodeDescriptor> descriptors) {
+        return (descriptors.size() <= 4) ? GridFactory.create(2)
+                : GridFactory.create(4);
     }
 
     /**

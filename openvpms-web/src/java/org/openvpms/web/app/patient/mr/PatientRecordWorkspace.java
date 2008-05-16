@@ -20,7 +20,6 @@ package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -303,7 +302,6 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
                 getObject(), "patient", "participation.patient", shortNames,
                 STATUSES);
-        query.setStatus(ActStatus.IN_PROGRESS);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         return query;
     }

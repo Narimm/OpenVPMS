@@ -18,7 +18,7 @@
 
 package org.openvpms.web.app.product;
 
-import org.openvpms.web.app.subsystem.DummyWorkspace;
+import org.openvpms.web.app.product.stock.StockWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
@@ -31,11 +31,11 @@ import org.openvpms.web.component.subsystem.AbstractSubsystem;
 public class ProductSubsystem extends AbstractSubsystem {
 
     /**
-     * Construct a new <code>ProductSubsystem</code>.
+     * Construct a new <tt>ProductSubsystem</tt>.
      */
     public ProductSubsystem() {
         super("product");
         addWorkspace(new InformationWorkspace());
-        addWorkspace(new DummyWorkspace("product", "inventory"));
+        addWorkspace(new StockWorkspace());
     }
 }

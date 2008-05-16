@@ -158,14 +158,12 @@ public abstract class AbstractProperty implements Property {
     /**
      * Verifies that the property can be modified.
      *
-     * @throws UnsupportedOperationException if the property is read-only or
-     *                                       derived
+     * @throws UnsupportedOperationException if the property is derived
      */
-    protected void checkReadOnly() {
+    protected void checkModifiable() {
         if (isDerived()) {
             throw new UnsupportedOperationException(
-                    "Attenpt to modify read-only property: "
-                            + getDisplayName());
+                    "Attenpt to modify derived property: " + getDisplayName());
         }
     }
 

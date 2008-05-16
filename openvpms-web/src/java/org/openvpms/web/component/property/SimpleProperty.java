@@ -175,7 +175,7 @@ public class SimpleProperty extends AbstractProperty {
      */
     public boolean setValue(Object value) {
         boolean set = false;
-        checkReadOnly();
+        checkModifiable();
         try {
             if (!ObjectUtils.equals(this.value, value)) {
                 value = getTransformer().apply(value);
