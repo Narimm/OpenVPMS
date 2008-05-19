@@ -27,7 +27,7 @@
               filter="participation.patient" hidden="true"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="note" path="/details/note" type="java.lang.String" maxLength="2000"/>
+        <node name="note" path="/details/note" type="java.lang.String" maxLength="4500"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.clinician"/>
     </archetype>
