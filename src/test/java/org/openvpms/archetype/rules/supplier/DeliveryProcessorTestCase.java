@@ -19,6 +19,8 @@
 package org.openvpms.archetype.rules.supplier;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -225,7 +227,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
         BigDecimal listPrice = new BigDecimal("20.00");
 
         Act delivery1 = createDelivery(quantity, packageSize, unitPrice1,
-                                      listPrice);
+                                       listPrice);
         delivery1.setStatus(ActStatus.POSTED);
         save(delivery1);
 
@@ -239,7 +241,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
 
         // post another delivery
         Act delivery2 = createDelivery(quantity, packageSize, unitPrice1,
-                                      listPrice);
+                                       listPrice);
 
         delivery2.setStatus(ActStatus.POSTED);
         save(delivery2);
@@ -259,7 +261,8 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
         checkPrice(product, new BigDecimal("1.00"), new BigDecimal("2.00"));
     }
 
-    private void checkPrice(Product product, BigDecimal cost, BigDecimal price) {
+    private void checkPrice(Product product, BigDecimal cost,
+                            BigDecimal price) {
         product = get(getProduct()); // reload product
         Set<ProductPrice> prices = product.getProductPrices();
         assertEquals(1, prices.size());
@@ -313,10 +316,10 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * @param packageSize the package size
      */
     private ProductSupplier getProductSupplier(int packageSize) {
-        SupplierRules rules = new SupplierRules();
+        ProductRules rules = new ProductRules();
         Party supplier = get(getSupplier()); // make sure using the latest
         Product product = get(getProduct()); // instance of each
-        return rules.getProductSupplier(supplier, product, packageSize,
+        return rules.getProductSupplier(product, supplier, packageSize,
                                         PACKAGE_UNITS);
     }
 
@@ -326,7 +329,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * @return the new relationship
      */
     private ProductSupplier createProductSupplier() {
-        SupplierRules rules = new SupplierRules();
+        ProductRules rules = new ProductRules();
         Party supplier = get(getSupplier()); // make sure using the latest
         Product product = get(getProduct()); // instance of each
         ProductSupplier ps = rules.createProductSupplier(product, supplier);

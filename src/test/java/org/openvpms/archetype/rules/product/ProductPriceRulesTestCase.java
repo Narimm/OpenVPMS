@@ -28,7 +28,6 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
-import java.util.Random;
 
 
 /**
@@ -92,21 +91,31 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     protected void onSetUp() throws Exception {
         super.onSetUp();
         product = TestHelper.createProduct();
-        practice = TestHelper.createPractice();
-        Party location = TestHelper.createLocation();
+        practice = createPractice();
         rules = new ProductPriceRules();
-        IMObjectBean bean = new IMObjectBean(location);
+        IMObjectBean bean = new IMObjectBean(practice);
         Currencies currencies = new Currencies();
         currency = currencies.getCurrency(bean.getString("currency"));
+    }
 
-        Lookup tax = (Lookup) create("lookup.taxType");
-        IMObjectBean taxBean = new IMObjectBean(tax);
-        taxBean.setValue("code", "XTAXTYPE" + Math.abs(new Random().nextInt()));
-        taxBean.setValue("rate", new BigDecimal(10));
-        taxBean.save();
+    /**
+     * Helper to create an <em>party.organisationPractice</em> with a 10%
+     * tax rate.
+     *
+     * @return the practice
+     */
+    private Party createPractice() {
+        Party practice = TestHelper.getPractice();
 
         // add a 10% tax rate
+        Lookup tax = (Lookup) create("lookup.taxType");
+        IMObjectBean taxBean = new IMObjectBean(tax);
+        taxBean.setValue("code", "XTAXTYPE-" + tax.hashCode());
+        taxBean.setValue("rate", new BigDecimal(10));
+        taxBean.save();
         practice.addClassification(tax);
         save(practice);
+
+        return practice;
     }
 }

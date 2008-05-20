@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.archetype.rules.supplier;
+package org.openvpms.archetype.rules.product;
 
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;

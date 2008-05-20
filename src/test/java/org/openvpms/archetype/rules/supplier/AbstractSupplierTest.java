@@ -18,7 +18,6 @@
 
 package org.openvpms.archetype.rules.supplier;
 
-import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -92,13 +91,12 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         product = TestHelper.createProduct();
         stockLocation = createStockLocation();
 
-        // create location and practice relationships, for currency and
-        // tax calculation purposes
+        // create a practice for currency and tax calculation purposes
         Party location = TestHelper.createLocation();
         EntityBean locBean = new EntityBean(location);
         locBean.addRelationship("entityRelationship.locationStockLocation",
                                 stockLocation);
-        Party practice = TestHelper.createPractice();
+        Party practice = TestHelper.getPractice();
         EntityBean pracBean = new EntityBean(practice);
         pracBean.addRelationship("entityRelationship.practiceLocation",
                                  location);
@@ -388,8 +386,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
                                       BigDecimal listPrice) {
         FinancialAct item = (FinancialAct) create(shortName);
         ActBean bean = new ActBean(item);
-        bean.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION,
-                              product);
+        bean.addParticipation(StockArchetypes.STOCK_PARTICIPATION, product);
         item.setQuantity(quantity);
         bean.setValue("packageSize", packageSize);
         bean.setValue("packageUnits", PACKAGE_UNITS);

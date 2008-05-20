@@ -20,14 +20,21 @@ package org.openvpms.archetype.rules.product;
 
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.math.Currency;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -72,6 +79,7 @@ public class ProductPriceRules {
      *                 product taxes
      * @param currency the currency, for rounding conventions
      * @return the price
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getPrice(Product product, BigDecimal cost,
                                BigDecimal markup, Party practice,
@@ -99,6 +107,7 @@ public class ProductPriceRules {
      * @param practice the <em>party.organisationPractice</em> used to determine
      *                 product taxes
      * @return the markup
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getMarkup(Product product, BigDecimal cost,
                                 BigDecimal price, Party practice) {
@@ -117,6 +126,71 @@ public class ProductPriceRules {
             }
         }
         return markup;
+    }
+
+    /**
+     * Updates the cost node of any <em>productPrice.unitPrice</em>
+     * associated with a product, and recalculates its price.
+     * <p/>
+     * Returns a list of unit prices whose cost and price have changed.
+     *
+     * @param product  the product
+     * @param practice the <em>party.organisationPractice</em> used to determine
+     *                 product taxes
+     * @param currency the currency, for rounding conventions
+     * @return the list of any updated prices
+     */
+    public List<ProductPrice> updateUnitPrices(Product product,
+                                               BigDecimal cost,
+                                               Party practice,
+                                               Currency currency) {
+        List<ProductPrice> result = null;
+        IMObjectBean bean = new IMObjectBean(product, service);
+        List<ProductPrice> prices
+                = bean.getValues("prices", ProductPrice.class);
+        if (!prices.isEmpty()) {
+            cost = currency.round(cost);
+            for (ProductPrice price : prices) {
+                if (TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)) {
+                    if (updateUnitPrice(price, product, cost, practice,
+                                        currency)) {
+                        if (result == null) {
+                            result = new ArrayList<ProductPrice>();
+                        }
+                        result.add(price);
+                    }
+                }
+            }
+        }
+        if (result == null) {
+            result = Collections.emptyList();
+        }
+        return result;
+    }
+
+    /**
+     * Updates an <em>productPrice.unitPrice</em> if required.
+     *
+     * @param price   the price
+     * @param product the associated product
+     * @param cost    the cost price
+     * @return <tt>true</tt> if the price was updated
+     */
+    private boolean updateUnitPrice(ProductPrice price, Product product,
+                                    BigDecimal cost, Party practice,
+                                    Currency currency) {
+        IMObjectBean priceBean = new IMObjectBean(price, service);
+        BigDecimal old = priceBean.getBigDecimal("cost", BigDecimal.ZERO);
+        if (!MathRules.equals(old, cost)) {
+            priceBean.setValue("cost", cost);
+            BigDecimal markup
+                    = priceBean.getBigDecimal("markup", BigDecimal.ZERO);
+            BigDecimal newPrice = getPrice(product, cost, markup,
+                                           practice, currency);
+            price.setPrice(newPrice);
+            return true;
+        }
+        return false;
     }
 
     /**

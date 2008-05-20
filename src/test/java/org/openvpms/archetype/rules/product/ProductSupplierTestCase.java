@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.archetype.rules.supplier;
+package org.openvpms.archetype.rules.product;
 
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -38,7 +38,7 @@ public class ProductSupplierTestCase extends ArchetypeServiceTest {
      * Tests the {@link ProductSupplier} accessors.
      */
     public void test() {
-        SupplierRules rules = new SupplierRules();
+        ProductRules rules = new ProductRules();
         Party supplier = TestHelper.createSupplier();
         Product product = TestHelper.createProduct();
         ProductSupplier ps = rules.createProductSupplier(product, supplier);

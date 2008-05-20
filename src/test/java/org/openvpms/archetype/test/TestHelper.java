@@ -40,6 +40,7 @@ import org.openvpms.component.system.common.query.QueryIterator;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -294,16 +295,41 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Creates a new <em>party.organisationPractice</em>.
+     * Returns the <em>party.organisationPractice</em> singleton,
+     * creating one if it doesn't exist.
+     * <p/>
+     * If it exists, any tax rates will be removed.
      *
-     * @return a new practice
+     * @return the practice
      */
-    public static Party createPractice() {
-        Party party = (Party) create("party.organisationPractice");
-        party.setName("XPractice");
-        Contact contact = (Contact) create("contact.phoneNumber");
-        party.addContact(contact);
-        save(party);
+    public static Party getPractice() {
+        Party party;
+        ArchetypeQuery query = new ArchetypeQuery("party.organisationPractice", false, false);
+        query.setMaxResults(1);
+        QueryIterator<Party> iter = new IMObjectQueryIterator<Party>(query);
+        if (iter.hasNext()) {
+            party = iter.next();
+
+            // remove any taxes
+            IMObjectBean bean = new IMObjectBean(party);
+            List<Lookup> taxes = bean.getValues("taxes", Lookup.class);
+            if (!taxes.isEmpty()) {
+                for (Lookup tax : taxes) {
+                    bean.removeValue("taxes", tax);
+                }
+                bean.save();
+            }
+
+        } else {
+            party = (Party) create("party.organisationPractice");
+            party.setName("XPractice");
+            Contact contact = (Contact) create("contact.phoneNumber");
+            party.addContact(contact);
+        }
+        IMObjectBean bean = new IMObjectBean(party);
+        Lookup currency = getClassification("lookup.currency", "AUD");
+        bean.setValue("currency", currency.getCode());
+        bean.save();
         return party;
     }
 

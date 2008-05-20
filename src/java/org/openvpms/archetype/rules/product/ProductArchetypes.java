@@ -28,8 +28,28 @@ package org.openvpms.archetype.rules.product;
 public class ProductArchetypes {
 
     /**
+     * Medication short name.
+     */
+    public static final String MEDICATION = "product.medication";
+
+    /**
+     * Merchandise short name.
+     */
+    public static final String MERCHANDISE = "product.merchandise";
+
+    /**
      * Product participation short name.
      */
     public static final String PRODUCT_PARTICIPATION = "participation.product";
 
+    /**
+     * Product unit price short name.
+     */
+    public static final String UNIT_PRICE = "productPrice.unitPrice";
+
+    /**
+     * Product-supplier entity relationship short name.
+     */
+    public static final String PRODUCT_SUPPLIER_RELATIONSHIP
+            = "entityRelationship.productSupplier";
 }
