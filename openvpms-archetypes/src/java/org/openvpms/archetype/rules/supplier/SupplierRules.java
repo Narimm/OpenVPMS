@@ -20,7 +20,7 @@ package org.openvpms.archetype.rules.supplier;
 
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
-import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -56,7 +56,7 @@ public class SupplierRules {
      * @throws ArchetypeServiceException if the archetype service is not
      *                                   configured
      */
-    public SupplierRules() {               
+    public SupplierRules() {
         this(ArchetypeServiceHelper.getArchetypeService());
     }
 
@@ -115,95 +115,6 @@ public class SupplierRules {
             result.add(new ProductSupplier(relationship, service));
         }
         return result;
-    }
-
-    /**
-     * Returns all active <em>entityRelationship.productSupplier</em>
-     * relationships for a particular supplier and product.
-     *
-     * @param supplier the supplier
-     * @param product  the product
-     * @return the relationships, wrapped in {@link ProductSupplier} instances
-     */
-    public List<ProductSupplier> getProductSuppliers(Party supplier,
-                                                     Product product) {
-        List<ProductSupplier> result = new ArrayList<ProductSupplier>();
-        EntityBean bean = new EntityBean(supplier, service);
-        Predicate predicate = AndPredicate.getInstance(
-                IsActiveRelationship.ACTIVE_NOW,
-                RefEquals.getSourceEquals(product));
-        List<EntityRelationship> relationships
-                = bean.getNodeRelationships("products", predicate);
-        for (EntityRelationship relationship : relationships) {
-            result.add(new ProductSupplier(relationship, service));
-        }
-        return result;
-    }
-
-    /**
-     * Returns an <em>entityRelationship.productSupplier</em> relationship
-     * for a supplier, product and package size and units.
-     * <p/>
-     * If there is a match on supplier and product, but no match on package
-     * size, but there is a relationship where the size is <tt>0</tt>, then
-     * this will be returned.
-     *
-     * @param supplier     the supplier
-     * @param product      the product
-     * @param packageSize  the package size
-     * @param packageUnits the package units
-     * @return the relationship, wrapped in a {@link ProductSupplier}, or
-     *         <tt>null</tt> if none is found
-     */
-    public ProductSupplier getProductSupplier(Party supplier, Product product,
-                                              int packageSize,
-                                              String packageUnits) {
-        for (ProductSupplier ps : getProductSuppliers(supplier, product)) {
-            if (ps.getPackageSize() == packageSize
-                    && ObjectUtils.equals(ps.getPackageUnits(),
-                                          packageUnits)) {
-                return ps;
-            } else if (ps.getPackageSize() == 0) {
-                return ps;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns all active <em>entityRelationship.productSupplier</em>
-     * relationships for a particular product.
-     *
-     * @param product the product
-     * @return the relationships, wrapped in {@link ProductSupplier} instances
-     */
-    public List<ProductSupplier> getProductSuppliers(Product product) {
-        List<ProductSupplier> result = new ArrayList<ProductSupplier>();
-        EntityBean bean = new EntityBean(product, service);
-        List<EntityRelationship> relationships
-                = bean.getNodeRelationships("suppliers",
-                                            IsActiveRelationship.ACTIVE_NOW);
-        for (EntityRelationship relationship : relationships) {
-            result.add(new ProductSupplier(relationship, service));
-        }
-        return result;
-    }
-
-    /**
-     * Creates a new <em>entityRelationship.productSupplier</em> relationship
-     * between a supplier and product.
-     *
-     * @param product  the product
-     * @param supplier the supplier
-     * @return the relationship, wrapped in a {@link ProductSupplier}
-     */
-    public ProductSupplier createProductSupplier(Product product,
-                                                 Party supplier) {
-
-        EntityBean bean = new EntityBean(product, service);
-        EntityRelationship rel = bean.addRelationship(
-                "entityRelationship.productSupplier", supplier);
-        return new ProductSupplier(rel, service);
     }
 
 }

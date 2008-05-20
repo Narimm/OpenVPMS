@@ -19,16 +19,14 @@
 package org.openvpms.archetype.rules.math;
 
 import org.apache.commons.lang.StringUtils;
-import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.*;
+import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.InvalidCurrencyCode;
+import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.NoLookupForCode;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -94,23 +92,11 @@ public class Currencies {
         }
         Currency currency = currencies.get(code);
         if (currency == null) {
-            java.util.Currency c = java.util.Currency.getInstance(code);
-            if (c == null) {
-                throw new CurrencyException(InvalidCurrencyCode, code);
-            }
             Lookup lookup = lookupService.getLookup("lookup.currency", code);
             if (lookup == null) {
                 throw new CurrencyException(NoLookupForCode, code);
             }
-            IMObjectBean bean = new IMObjectBean(lookup, service);
-            String roundingMode = bean.getString("roundingMode");
-            RoundingMode mode = RoundingMode.valueOf(roundingMode);
-            if (mode == null) {
-                throw new CurrencyException(InvalidRoundingMode, roundingMode,
-                                            code);
-            }
-            BigDecimal minDenomination = bean.getBigDecimal("minDenomination");
-            currency = new Currency(c, mode, minDenomination);
+            currency = new Currency(lookup, service);
             currencies.put(code, currency);
         }
         return currency;

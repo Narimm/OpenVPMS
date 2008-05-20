@@ -21,14 +21,13 @@ package org.openvpms.archetype.rules.supplier;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.ActStatusHelper;
 import org.openvpms.archetype.rules.math.Currencies;
-import org.openvpms.archetype.rules.math.Currency;
-import org.openvpms.archetype.rules.math.CurrencyException;
-import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.rules.math.MathRules;
+import org.openvpms.archetype.rules.product.ProductPriceUpdater;
+import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -82,9 +81,9 @@ public class DeliveryProcessor {
     private final Act act;
 
     /**
-     * Supplier rules.
+     * Product rules.
      */
-    private final SupplierRules rules;
+    private final ProductRules rules;
 
     /**
      * The set of objects to save on completion.
@@ -108,14 +107,9 @@ public class DeliveryProcessor {
     private final IArchetypeService service;
 
     /**
-     * Product price rules.
+     * Product price updater.
      */
-    private final ProductPriceRules priceRules;
-
-    /**
-     * The currency cache.
-     */
-    private Currencies currencies;
+    private final ProductPriceUpdater priceUpdater;
 
     /**
      * The supplier.
@@ -126,26 +120,6 @@ public class DeliveryProcessor {
      * The stock location.
      */
     private Party stockLocation;
-
-    /**
-     * The organisation location associated with the stock location.
-     */
-    private Party location;
-
-    /**
-     * The practice associated with the location.
-     */
-    private Party practice;
-
-    /**
-     * The location currency.
-     */
-    private Currency currency;
-
-    /**
-     * The logger.
-     */
-    private final Log log = LogFactory.getLog(DeliveryProcessor.class);
 
 
     /**
@@ -159,9 +133,8 @@ public class DeliveryProcessor {
                              Currencies currencies) {
         this.act = act;
         this.service = service;
-        this.rules = new SupplierRules(service);
-        this.currencies = currencies;
-        priceRules = new ProductPriceRules(service);
+        this.rules = new ProductRules(service);
+        priceUpdater = new ProductPriceUpdater(currencies, service);
     }
 
     /**
@@ -444,7 +417,7 @@ public class DeliveryProcessor {
         String reorderDesc = deliveryItemBean.getString("reorderDescription");
         BigDecimal listPrice = deliveryItemBean.getBigDecimal("listPrice");
         BigDecimal nettPrice = deliveryItemBean.getBigDecimal("unitPrice");
-        ProductSupplier ps = rules.getProductSupplier(supplier, product,
+        ProductSupplier ps = rules.getProductSupplier(product, supplier,
                                                       size, units);
         boolean save = true;
         if (ps == null) {
@@ -459,8 +432,8 @@ public class DeliveryProcessor {
             ps.setPreferred(true);
         } else if (size != ps.getPackageSize()
                 || !ObjectUtils.equals(units, ps.getPackageUnits())
-                || !equals(listPrice, ps.getListPrice())
-                || !equals(nettPrice, ps.getNettPrice())
+                || !MathRules.equals(listPrice, ps.getListPrice())
+                || !MathRules.equals(nettPrice, ps.getNettPrice())
                 || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
                 || !ObjectUtils.equals(ps.getReorderDescription(),
                                        reorderDesc)) {
@@ -474,9 +447,8 @@ public class DeliveryProcessor {
         } else {
             save = false;
         }
-        if (ps.isAutoPriceUpdate()
-                && !equals(listPrice, BigDecimal.ZERO) && size != 0) {
-            updateUnitPrices(product, listPrice, size);
+        if (ps.isAutoPriceUpdate()) {
+            updateUnitPrices(product, ps);
         }
 
         if (save) {
@@ -488,125 +460,17 @@ public class DeliveryProcessor {
      * Recalculates the cost node of any <em>productPrice.unitPrice</em>
      * associated with the product.
      *
-     * @param product     the product
-     * @param listPrice   the list price
-     * @param packageSize the package size
+     * @param product         the product
+     * @param productSupplier the product supplier
      */
-    private void updateUnitPrices(Product product, BigDecimal listPrice,
-                                  int packageSize) {
-        IMObjectBean bean = new IMObjectBean(product, service);
-        if (getPractice() == null) {
-            log.error("Cannot update unit prices for product uid="
-                    + product.getUid() + ", name=" + product.getName()
-                    + ": " + " cannot determine the current practice");
-        } else {
-            Currency currency = getCurrency();
-            if (currency == null) {
-                log.error("Cannot update unit prices for product uid="
-                        + product.getUid() + ", name=" + product.getName()
-                        + ": " + " cannot determine the local currency");
-            } else {
-                List<ProductPrice> prices
-                        = bean.getValues("prices", ProductPrice.class);
-                if (!prices.isEmpty()) {
-                    BigDecimal cost = listPrice.divide(
-                            BigDecimal.valueOf(packageSize));
-                    cost = currency.round(cost);
-                    for (ProductPrice price : prices) {
-                        if (TypeHelper.isA(price, "productPrice.unitPrice")) {
-                            updateUnitPrice(price, product, cost);
-                        }
-                    }
-                }
-            }
-        }
+    private void updateUnitPrices(Product product,
+                                  ProductSupplier productSupplier) {
+        List<ProductPrice> prices
+                = priceUpdater.update(product, productSupplier, false);
+        toSave.addAll(prices);
     }
 
-    /**
-     * Updates an <em>productPrice.unitPrice</em> if required.
-     *
-     * @param price   the price
-     * @param product the associated product
-     * @param cost    the cost price
-     */
-    private void updateUnitPrice(ProductPrice price, Product product,
-                                 BigDecimal cost) {
-        IMObjectBean priceBean = new IMObjectBean(price, service);
-        BigDecimal old = priceBean.getBigDecimal("cost", BigDecimal.ZERO);
-        if (!equals(old, cost)) {
-            priceBean.setValue("cost", cost);
-            BigDecimal markup
-                    = priceBean.getBigDecimal("markup", BigDecimal.ZERO);
-            BigDecimal newPrice = priceRules.getPrice(product, cost, markup,
-                                                      getPractice(),
-                                                      getCurrency());
-            price.setPrice(newPrice);
-            toSave.add(price);
-        }
-    }
 
-    /**
-     * Helper to determine if two decimals are equal.
-     *
-     * @param lhs the left-hand side. May be <tt>null</tt>
-     * @param rhs right left-hand side. May be <tt>null</tt>
-     * @return <tt>true</t> if they are equal, otherwise <tt>false</tt>
-     */
-    private boolean equals(BigDecimal lhs, BigDecimal rhs) {
-        if (lhs != null && rhs != null) {
-            return lhs.compareTo(rhs) == 0;
-        }
-        return ObjectUtils.equals(lhs, rhs);
-    }
-
-    /**
-     * Returns the organisaton location associated with the stock location.
-     *
-     * @return an <em>party.organisationLocation</em> or <tt>null</tt> if none
-     *         can be found
-     */
-    private Party getLocation() {
-        if (location == null) {
-            EntityBean bean = new EntityBean(stockLocation, service);
-            location = (Party) bean.getNodeSourceEntity("locations");
-        }
-        return location;
-    }
-
-    /**
-     * Returns the practice associated with the organisation location.
-     *
-     * @return an <em>party.organisationPractice</em> or <tt>null</tt> if none
-     *         can be found
-     */
-    private Party getPractice() {
-        if (practice == null) {
-            Party location = getLocation();
-            if (location != null) {
-                EntityBean bean = new EntityBean(location, service);
-                practice = (Party) bean.getNodeSourceEntity("practice");
-            }
-        }
-        return practice;
-    }
-
-    /**
-     * Returns the currency associated with the organisation location.
-     *
-     * @return the currency, or <tt>null</tt> if the location is unknown
-     * @throws CurrencyException if the currency is invalid
-     */
-    private Currency getCurrency() {
-        if (currency == null) {
-            Party location = getLocation();
-            if (location != null) {
-                IMObjectBean bean = new IMObjectBean(location, service);
-                String code = bean.getString("currency");
-                currency = currencies.getCurrency(code);
-            }
-        }
-        return currency;
-    }
 }
 
 

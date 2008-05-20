@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.rules.math;
 
+import org.apache.commons.lang.ObjectUtils;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -76,4 +78,17 @@ public class MathRules {
         return divide(dividend, BigDecimal.valueOf(divisor), scale);
     }
 
+    /**
+     * Helper to determine if two decimals are equal.
+     *
+     * @param lhs the left-hand side. May be <tt>null</tt>
+     * @param rhs right left-hand side. May be <tt>null</tt>
+     * @return <tt>true</t> if they are equal, otherwise <tt>false</tt>
+     */
+    public static boolean equals(BigDecimal lhs, BigDecimal rhs) {
+        if (lhs != null && rhs != null) {
+            return lhs.compareTo(rhs) == 0;
+        }
+        return ObjectUtils.equals(lhs, rhs);
+    }
 }

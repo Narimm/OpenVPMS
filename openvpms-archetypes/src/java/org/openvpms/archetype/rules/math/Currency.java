@@ -18,7 +18,11 @@
 
 package org.openvpms.archetype.rules.math;
 
+import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.InvalidCurrencyCode;
 import static org.openvpms.archetype.rules.math.CurrencyException.ErrorCode.InvalidRoundingMode;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -57,6 +61,27 @@ public class Currency {
     private static final BigDecimal NEG_HALF = new BigDecimal("-0.5");
     private static final BigDecimal TWO = BigDecimal.valueOf(2);
 
+
+    /**
+     * Creates a new <tt>Currency</tt> from an <em>lookup.currency</em>.
+     *
+     * @throws CurrencyException if the currency code or rounding mode is
+     *                           invalid
+     */
+    public Currency(Lookup lookup, IArchetypeService service) {
+        String code = lookup.getCode();
+        currency = java.util.Currency.getInstance(code);
+        if (currency == null) {
+            throw new CurrencyException(InvalidCurrencyCode, code);
+        }
+        IMObjectBean bean = new IMObjectBean(lookup, service);
+        String mode = bean.getString("roundingMode");
+        roundingMode = RoundingMode.valueOf(mode);
+        if (roundingMode == null) {
+            throw new CurrencyException(InvalidRoundingMode, mode, code);
+        }
+        minDenomination = bean.getBigDecimal("minDenomination");
+    }
 
     /**
      * Creates a new <tt>Currency</tt>.
@@ -121,19 +146,19 @@ public class Currency {
      * specified.
      * Uses the following algorithm:
      * <tt>
-     *   roundCash = integer(value / minDenomination) * minDenomination
-     *   temp = value * minDenomination
-     *   intTemp = integer(temp + 0.5 + sign(value))
-     *   if temp - integer(temp) == 0.5 then
-     *     if roundingMode == HALF_DOWN then
-     *       intTemp = intTemp - sign(value)
-     *     else if roundingMode == HALF_EVEN then
-     *       if intTemp / 2 == integer(intTemp / 2) then
-     *         intTemp = intTemp - sign(value)
-     *       end
-     *     end
-     *   end
-     *   roundCash = intTemp * minDenomination
+     * roundCash = integer(value / minDenomination) * minDenomination
+     * temp = value * minDenomination
+     * intTemp = integer(temp + 0.5 + sign(value))
+     * if temp - integer(temp) == 0.5 then
+     * if roundingMode == HALF_DOWN then
+     * intTemp = intTemp - sign(value)
+     * else if roundingMode == HALF_EVEN then
+     * if intTemp / 2 == integer(intTemp / 2) then
+     * intTemp = intTemp - sign(value)
+     * end
+     * end
+     * end
+     * roundCash = intTemp * minDenomination
      * </tt>
      *
      * @param value the value to round

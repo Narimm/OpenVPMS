@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.stock;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.ActStatusHelper;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -191,7 +192,9 @@ public class StockUpdater {
     }
 
     /**
-     * Updates stock quantities at the location used by the charge item.
+     * Updates stock quantities at the location used by the charge item,
+     * if the associated product is a <em>product.medication</em>
+     * or <em>product.merchandise</em>.
      *
      * @param item     the charge item
      * @param location an <em>party.organisationLocation</em>
@@ -199,13 +202,16 @@ public class StockUpdater {
      */
     private void updateChargeItemStock(FinancialAct item, Party location) {
         BigDecimal quantity = item.getQuantity();
-        ActBean itemBean = new ActBean(item, service);
-        Product product = (Product) itemBean.getNodeParticipant("product");
-        if (product != null && quantity.compareTo(BigDecimal.ZERO) != 0) {
-            if (!((FinancialAct) act).isCredit()) {
-                quantity = quantity.negate();
+        if (quantity.compareTo(BigDecimal.ZERO) != 0) {
+            ActBean itemBean = new ActBean(item, service);
+            Product product = (Product) itemBean.getNodeParticipant("product");
+            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION,
+                               ProductArchetypes.MERCHANDISE)) {
+                if (!((FinancialAct) act).isCredit()) {
+                    quantity = quantity.negate();
+                }
+                updateProductStockLocation(product, location, quantity);
             }
-            updateProductStockLocation(product, location, quantity);
         }
     }
 

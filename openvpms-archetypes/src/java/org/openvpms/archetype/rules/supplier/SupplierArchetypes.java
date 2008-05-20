@@ -28,6 +28,17 @@ package org.openvpms.archetype.rules.supplier;
 public class SupplierArchetypes {
 
     /**
+     * Supplier person short name.
+     */
+    public static final String SUPPLIER_PERSON = "party.supplierperson";
+
+    /**
+     * Supplier organisation short name.
+     */
+    public static final String SUPPLIER_ORGANISATION
+            = "party.supplierorganisation";
+
+    /**
      * Supplier order act short name.
      */
     public static final String ORDER = "act.supplierOrder";

@@ -24,6 +24,13 @@
 			path="/description" hidden="true" derived="true"
 			derivedValue="/details/companyName" />
 		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+        <node name="currency" path="/details/currency" type="java.lang.String" minCardinality="1">
+           <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.currency"/>
+                <errorMessage>Invalid currency</errorMessage>
+            </assertion>
+        </node>
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="1" maxCardinality="*">
 			<assertion name="archetypeRange">
