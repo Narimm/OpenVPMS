@@ -116,6 +116,13 @@ public class ParticipationCollectionEditor
     }
 
     /**
+     * Refreshes the collection display.
+     */
+    public void refresh() {
+        editor.refresh();
+    }
+
+    /**
      * Returns the property being edited.
      *
      * @return the property being edited

@@ -38,9 +38,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -112,24 +110,6 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
-     * Returns all current editors.
-     * <p/>
-     * These include any editors that have been created for objects in the
-     * collection, and the {@link #getCurrentEditor() current editor}, which
-     * may be for an uncommitted object.
-     *
-     * @return all current editors
-     */
-    public Collection<IMObjectEditor> getCurrentEditors() {
-        Set<IMObjectEditor> editors = new HashSet<IMObjectEditor>();
-        editors.addAll(getCollectionPropertyEditor().getEditors());
-        if (getCurrentEditor() != null) {
-            editors.add(getCurrentEditor());
-        }
-        return editors;
-    }
-
-    /**
      * Returns an editor for an object, creating one if it doesn't exist.
      *
      * @param object the object to edit
@@ -181,13 +161,6 @@ public class ActRelationshipCollectionEditor
             result = super.addEdited(editor);
         }
         return result;
-    }
-
-    /**
-     * Refreshes the table.
-     */
-    public void refresh() {
-        populateTable();
     }
 
     /**

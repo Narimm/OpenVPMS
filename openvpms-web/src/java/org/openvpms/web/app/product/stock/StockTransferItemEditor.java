@@ -80,7 +80,7 @@ public class StockTransferItemEditor extends ActItemEditor {
      * Creates a new <tt>StockTransferItemEditor</tt>.
      *
      * @param act     the act to edit
-     * @param parent  the parent act.
+     * @param parent  the parent act
      * @param context the layout context. May be <tt>null</tt>
      */
     public StockTransferItemEditor(Act act, Act parent, LayoutContext context) {
@@ -95,9 +95,12 @@ public class StockTransferItemEditor extends ActItemEditor {
         toQuantity.setDisplayName(Messages.get("product.stock.toQuantity"));
         toQuantity.setValue(BigDecimal.ZERO);
         toQuantity.setReadOnly(true);
-        ActBean bean = new ActBean(parent);
-        setTransferFrom((Party) bean.getNodeParticipant("stockLocation"));
-        setTransferTo((Party) bean.getNodeParticipant("to"));
+
+        if (parent != null) {
+            ActBean bean = new ActBean(parent);
+            setTransferFrom((Party) bean.getNodeParticipant("stockLocation"));
+            setTransferTo((Party) bean.getNodeParticipant("to"));
+        }
     }
 
     /**

@@ -32,8 +32,14 @@ import org.openvpms.web.app.patient.PatientEditor;
 import org.openvpms.web.app.patient.mr.PatientClinicalEventActEditor;
 import org.openvpms.web.app.patient.mr.PatientClinicalProblemActEditor;
 import org.openvpms.web.app.product.ProductPriceEditor;
+import org.openvpms.web.app.product.stock.StockAdjustEditor;
+import org.openvpms.web.app.product.stock.StockAdjustItemEditor;
+import org.openvpms.web.app.product.stock.StockTransferEditor;
+import org.openvpms.web.app.product.stock.StockTransferItemEditor;
 import org.openvpms.web.app.supplier.charge.SupplierChargeActEditor;
 import org.openvpms.web.app.supplier.charge.SupplierChargeActItemEditor;
+import org.openvpms.web.app.supplier.delivery.DeliveryEditor;
+import org.openvpms.web.app.supplier.delivery.DeliveryItemEditor;
 import org.openvpms.web.app.supplier.order.OrderEditor;
 import org.openvpms.web.app.supplier.order.OrderItemEditor;
 import org.openvpms.web.app.workflow.messaging.UserMessageActEditor;
@@ -47,6 +53,7 @@ import org.openvpms.web.component.im.edit.payment.PaymentItemEditor;
 import org.openvpms.web.component.im.edit.payment.SupplierPaymentEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.product.ProductEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.system.ServiceHelper;
@@ -249,6 +256,16 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
+     * Verifies that an {@link ProductEditor} is created for each
+     * <em>product.*</em> archetype.
+     */
+    public void testCreateProductEditor() {
+        for (String shortName : DescriptorHelper.getShortNames("product.*")) {
+            checkCreate(shortName, ProductEditor.class);
+        }
+    }
+
+    /**
      * Verifies that an {@link OrderEditor} is created for
      * <em>act.supplierOrder</em>
      */
@@ -265,6 +282,24 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
+     * Verifies that an {@link DeliveryEditor} is created for
+     * <em>act.supplierDelivery</em> and <em>act.supplierReturn</em>.
+     */
+    public void testCreateDeliveryEditor() {
+        checkCreate("act.supplierDelivery", DeliveryEditor.class);
+        checkCreate("act.supplierReturn", DeliveryEditor.class);
+    }
+
+    /**
+     * Verifies that an {@link DeliveryItemEditor} is created for
+     * <em>act.supplierDeliveryItem</em> and <em>act.supplierReturnItem</em>.
+     */
+    public void testCreateDeliveryItemEditor() {
+        checkCreate("act.supplierDeliveryItem", DeliveryItemEditor.class);
+        checkCreate("act.supplierReturnItem", DeliveryItemEditor.class);
+    }
+
+    /**
      * Verifies that a {@link SupplierChargeActItemEditor} is created for
      * <em>act.supplierAccountInvoiceItem and act.supplierAccountCreditItem</em>
      */
@@ -273,6 +308,38 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                     SupplierChargeActItemEditor.class);
         checkCreate("act.supplierAccountCreditItem",
                     SupplierChargeActItemEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link StockAdjustEditor} is created for
+     * <em>act.stockAdjust</em>.
+     */
+    public void testCreateStockAdjustEditor() {
+        checkCreate("act.stockAdjust", StockAdjustEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link StockAdjustItemEditor} is created for
+     * <em>act.stockAdjustItem</em>.
+     */
+    public void testCreateStockAdjustItemEditor() {
+        checkCreate("act.stockAdjustItem", StockAdjustItemEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link StockTransferEditor} is created for
+     * <em>act.stockTransfer</em>.
+     */
+    public void testCreateStockTransferEditor() {
+        checkCreate("act.stockTransfer", StockTransferEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link StockTransferItemEditor} is created for
+     * <em>act.stockTransferItem</em>.
+     */
+    public void testCreateStockTransferItemEditor() {
+        checkCreate("act.stockTransferItem", StockTransferItemEditor.class);
     }
 
     /**

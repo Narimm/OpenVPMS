@@ -23,7 +23,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
-import org.openvpms.archetype.rules.supplier.ProductSupplier;
+import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;

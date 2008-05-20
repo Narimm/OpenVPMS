@@ -68,4 +68,9 @@ public interface IMObjectCollectionEditor extends PropertyEditor, Saveable {
      */
     void setCreationListener(IMObjectCreationListener listener);
 
+    /**
+     * Refreshes the collection display.
+     */
+    void refresh();
+
 }

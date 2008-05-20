@@ -80,8 +80,10 @@ public class StockAdjustItemEditor extends ActItemEditor {
         currentQuantity.setDisplayName(Messages.get("product.stock.quantity"));
         currentQuantity.setValue(BigDecimal.ZERO);
         currentQuantity.setReadOnly(true);
-        ActBean bean = new ActBean(parent);
-        setStockLocation((Party) bean.getNodeParticipant("stockLocation"));
+        if (parent != null) {
+            ActBean bean = new ActBean(parent);
+            setStockLocation((Party) bean.getNodeParticipant("stockLocation"));
+        }
     }
 
     /**

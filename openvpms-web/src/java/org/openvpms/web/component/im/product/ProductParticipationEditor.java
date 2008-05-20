@@ -18,7 +18,9 @@
 
 package org.openvpms.web.component.im.product;
 
-import org.openvpms.archetype.rules.supplier.ProductSupplier;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductSupplier;
+import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -72,8 +74,9 @@ public class ProductParticipationEditor
     public ProductParticipationEditor(Participation participation,
                                       Act parent, LayoutContext context) {
         super(participation, parent, context);
-        if (!TypeHelper.isA(participation, "participation.product",
-                            "participation.stock")) {
+        if (!TypeHelper.isA(participation,
+                            ProductArchetypes.PRODUCT_PARTICIPATION,
+                            StockArchetypes.STOCK_PARTICIPATION)) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
                             + participation.getArchetypeId().getShortName());

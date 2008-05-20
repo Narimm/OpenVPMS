@@ -164,8 +164,25 @@
     </bean>
 
 
-    <!-- The macro cache -->
+    <!-- ================================================================== -->
+    <!--                        MISC                                        -->
+    <!-- ================================================================== -->
+
+    <bean id="lookupService"
+          class="org.openvpms.component.business.service.lookup.LookupService">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
     <bean id="macroCache" class="org.openvpms.archetype.util.MacroCache"/>
+
+    <!-- ================================================================== -->
+    <!--                        APPLICATION                                 -->
+    <!-- ================================================================== -->
 
     <!-- The app -->
     <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp"
