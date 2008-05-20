@@ -191,6 +191,13 @@ public abstract class IMTableCollectionEditor<T>
     }
 
     /**
+     * Refreshes the collection display.
+     */
+    public void refresh() {
+        populateTable();
+    }
+
+    /**
      * Returns the focus group.
      *
      * @return the focus group, or <tt>null</tt> if the editor hasn't been

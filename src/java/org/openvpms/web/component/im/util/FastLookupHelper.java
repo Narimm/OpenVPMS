@@ -56,7 +56,7 @@ public class FastLookupHelper {
      * The nodes to return.
      */
     private static final List<String> NODES = Arrays.asList("code", "name",
-                                                            "default");
+                                                            "defaultLookup");
 
     /**
      * Returns a list of lookups for the specified short name.

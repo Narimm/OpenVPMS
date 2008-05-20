@@ -19,8 +19,8 @@
 package org.openvpms.web.app.supplier;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.supplier.ProductSupplier;
-import org.openvpms.archetype.rules.supplier.SupplierRules;
+import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -166,12 +166,12 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
      * @param supplier the supplier
      */
     private void checkProductSupplier(Product product, Party supplier) {
-        SupplierRules rules = new SupplierRules();
+        ProductRules rules = new ProductRules();
         ProductSupplier ps = getProductSupplier();
         int size = getPackageSize();
         String units = getPackageUnits();
         if (ps == null) {
-            ps = rules.getProductSupplier(supplier, product, size, units);
+            ps = rules.getProductSupplier(product, supplier, size, units);
         }
         boolean save = true;
         String reorderDesc = getReorderDescription();

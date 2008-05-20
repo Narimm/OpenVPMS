@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.property;
 
+import org.openvpms.web.component.util.ErrorHelper;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +35,7 @@ public class ModifiableListeners {
     /**
      * The listeners.
      */
-    private List<ModifiableListener> _listeners;
+    private List<ModifiableListener> listeners;
 
 
     /**
@@ -42,10 +44,10 @@ public class ModifiableListeners {
      * @param listener the listener to add
      */
     public void addListener(ModifiableListener listener) {
-        if (_listeners == null) {
-            _listeners = new ArrayList<ModifiableListener>();
+        if (listeners == null) {
+            listeners = new ArrayList<ModifiableListener>();
         }
-        _listeners.add(listener);
+        listeners.add(listener);
     }
 
     /**
@@ -54,8 +56,8 @@ public class ModifiableListeners {
      * @param listener the listener to remove
      */
     public void removeListener(ModifiableListener listener) {
-        if (_listeners != null) {
-            _listeners.remove(listener);
+        if (listeners != null) {
+            listeners.remove(listener);
         }
     }
 
@@ -65,12 +67,16 @@ public class ModifiableListeners {
      * @param modifiable the modifiable to pass to the listeners
      */
     public void notifyListeners(Modifiable modifiable) {
-        if (_listeners != null) {
-            ModifiableListener[] listeners =
-                    _listeners.toArray(new ModifiableListener[0]);
-            for (ModifiableListener listener : listeners) {
-                listener.modified(modifiable);
+        try {
+            if (listeners != null) {
+                ModifiableListener[] list =
+                        listeners.toArray(new ModifiableListener[0]);
+                for (ModifiableListener listener : list) {
+                    listener.modified(modifiable);
+                }
             }
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
         }
     }
 }

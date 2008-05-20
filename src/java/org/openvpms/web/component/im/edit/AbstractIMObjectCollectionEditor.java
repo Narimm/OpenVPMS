@@ -30,6 +30,10 @@ import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 
 /**
  * Abstract implementation of the {@link IMObjectCollectionEditor} interface.
@@ -302,6 +306,24 @@ public abstract class AbstractIMObjectCollectionEditor
      */
     public IMObjectEditor getCurrentEditor() {
         return editor;
+    }
+
+    /**
+     * Returns all current editors.
+     * <p/>
+     * These include any editors that have been created for objects in the
+     * collection, and the {@link #getCurrentEditor() current editor}, which
+     * may be for an uncommitted object.
+     *
+     * @return all current editors
+     */
+    public Collection<IMObjectEditor> getCurrentEditors() {
+        Set<IMObjectEditor> editors = new HashSet<IMObjectEditor>();
+        editors.addAll(getCollectionPropertyEditor().getEditors());
+        if (getCurrentEditor() != null) {
+            editors.add(getCurrentEditor());
+        }
+        return editors;
     }
 
     /**

@@ -51,7 +51,7 @@ public class SingleParticipationCollectionEditor
         extends AbstractIMObjectCollectionEditor {
 
     /**
-     * Constructs a new <code>SingleParticipationCollectionEditor</code>.
+     * Constructs a new <tt>SingleParticipationCollectionEditor</tt>.
      *
      * @param property the collection property
      * @param object   the parent object
@@ -67,8 +67,8 @@ public class SingleParticipationCollectionEditor
      * Validates the object.
      *
      * @param validator the validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the object and its descendents are valid
+     *         otherwise <tt>false</tt>
      */
     @Override
     public boolean validate(Validator validator) {
@@ -83,9 +83,15 @@ public class SingleParticipationCollectionEditor
     }
 
     /**
+     * Refreshes the collection display.
+     */
+    public void refresh() {
+    }
+
+    /**
      * Returns the focus group.
      *
-     * @return the focus group, or <code>null</code> if the editor hasn't been
+     * @return the focus group, or <tt>null</tt> if the editor hasn't been
      *         rendered
      */
     public FocusGroup getFocusGroup() {
@@ -116,8 +122,8 @@ public class SingleParticipationCollectionEditor
     /**
      * Saves any current edits.
      *
-     * @return <code>true</code> if edits were saved successfully, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if edits were saved successfully, otherwise
+     *         <tt>false</tt>
      */
     @Override
     protected boolean doSave() {
@@ -132,10 +138,10 @@ public class SingleParticipationCollectionEditor
     }
 
     /**
-     * Returns the participation editor, or <code>null</code> if there is
+     * Returns the participation editor, or <tt>null</tt> if there is
      * no current participation editor
      *
-     * @return the participation editor. May be <code>null</code>
+     * @return the participation editor. May be <tt>null</tt>
      */
     protected AbstractParticipationEditor getParticipationEditor() {
         IMObjectEditor editor = getCurrentEditor();
@@ -163,7 +169,7 @@ public class SingleParticipationCollectionEditor
      * Determines if the participation is null. This returns true if
      * the participation entity is null and the participation is optional.
      *
-     * @return <code>true</code> if the participation is null
+     * @return <tt>true</tt> if the participation is null
      */
     private boolean isNull() {
         AbstractParticipationEditor editor = getParticipationEditor();
