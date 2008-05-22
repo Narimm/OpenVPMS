@@ -21,6 +21,9 @@ package org.openvpms.web.app.customer.charge;
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.*;
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
+import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -108,6 +111,11 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
      */
     private final ModifiableListener medicationQuantityListener;
 
+    /**
+     * Stock rules.
+     */
+    private StockRules rules;
+
 
     /**
      * Construct a new <code>CustomerChargeActItemEditor</tt>.
@@ -126,6 +134,7 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
             throw new IllegalArgumentException("Invalid act type:"
                     + act.getArchetypeId().getShortName());
         }
+        rules = new StockRules();
 
         if (act.isNew()) {
             // default the act start time to today
@@ -135,7 +144,7 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
         calculateTax();
 
         IMObjectReference ref = getProduct();
-        if (!TypeHelper.isA(ref, "product.medication")) {
+        if (!TypeHelper.isA(ref, MEDICATION)) {
             setFilter(DISPENSING_FILTER);
         }
 
@@ -210,8 +219,7 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
     protected boolean doSave() {
         CollectionProperty dispensing
                 = (CollectionProperty) getProperty("dispensing");
-        if (dispensing != null
-                && !TypeHelper.isA(getProduct(), "product.medication")) {
+        if (dispensing != null && !TypeHelper.isA(getProduct(), MEDICATION)) {
             // need to remove any redundant dispensing act
             if (!dispensing.getValues().isEmpty()) {
                 Object[] values = dispensing.getValues().toArray();
@@ -274,7 +282,7 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
         IMObject object = IMObjectHelper.getObject(entity);
         if (object instanceof Product) {
             Product product = (Product) object;
-            if (TypeHelper.isA(product, "product.template")) {
+            if (TypeHelper.isA(product, TEMPLATE)) {
                 if (getFilter() != TEMPLATE_FILTER) {
                     changeLayout(TEMPLATE_FILTER);
                 }
@@ -284,7 +292,7 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
                 fixedPrice.setValue(BigDecimal.ZERO);
                 unitPrice.setValue(BigDecimal.ZERO);
             } else {
-                if (TypeHelper.isA(product, "product.medication")) {
+                if (TypeHelper.isA(product, MEDICATION)) {
                     if (getFilter() != null) {
                         changeLayout(null);
                     }
@@ -296,15 +304,15 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
                 }
                 Property fixedPrice = getProperty("fixedPrice");
                 Property unitPrice = getProperty("unitPrice");
-                ProductPrice fixed = getPrice("productPrice.fixedPrice",
-                                              product);
-                ProductPrice unit = getPrice("productPrice.unitPrice", product);
+                ProductPrice fixed = getPrice(FIXED_PRICE, product);
+                ProductPrice unit = getPrice(UNIT_PRICE, product);
                 if (fixed != null) {
                     fixedPrice.setValue(fixed.getPrice());
                 }
                 if (unit != null) {
                     unitPrice.setValue(unit.getPrice());
                 }
+                updateStockLocation(product);
             }
         }
     }
@@ -592,6 +600,33 @@ public class CustomerChargeActItemEditor extends ActItemEditor {
      */
     private ActRelationshipCollectionEditor getMedicationEditors() {
         return (ActRelationshipCollectionEditor) getEditor("dispensing");
+    }
+
+
+    /**
+     * Updates the stock location associated with the product.
+     * <p/>
+     *
+     * @param product the new product
+     */
+    private void updateStockLocation(Product product) {
+        Party stockLocation = null;
+        if (TypeHelper.isA(product, MEDICATION, MERCHANDISE)) {
+            Act parent = (Act) getParent();
+            if (parent != null) {
+                ActBean bean = new ActBean(parent);
+                Party location = (Party) bean.getNodeParticipant("location");
+                if (location != null) {
+                    stockLocation = rules.getStockLocation(product, location);
+                }
+            }
+        }
+        ActBean bean = new ActBean((Act) getObject());
+        if (stockLocation != null) {
+            bean.setParticipant(STOCK_LOCATION_PARTICIPATION, stockLocation);
+        } else {
+            bean.removeParticipation(STOCK_LOCATION_PARTICIPATION);
+        }
     }
 
 }
