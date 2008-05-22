@@ -62,7 +62,7 @@ class LookupSessionHandler extends AbstractIMObjectSessionHandler {
     public IMObject save(IMObject object, Session session,
                          Set<IMObject> newObjects) {
         Lookup lookup = (Lookup) object;
-        saveNew(lookup.getLookupRelationships(), session, newObjects);
+        saveNew(object, lookup.getLookupRelationships(), session, newObjects);
         return super.save(object, session, newObjects);
     }
 

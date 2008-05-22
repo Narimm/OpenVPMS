@@ -59,7 +59,7 @@ class NodeDescriptorSessionHandler extends AbstractIMObjectSessionHandler {
     public IMObject save(IMObject object, Session session,
                          Set<IMObject> newObjects) {
         NodeDescriptor descriptor = (NodeDescriptor) object;
-        saveNew(descriptor.getAssertionDescriptors().values(), session,
+        saveNew(object, descriptor.getAssertionDescriptors().values(), session,
                 newObjects);
         return super.save(object, session, newObjects);
     }

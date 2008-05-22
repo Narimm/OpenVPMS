@@ -745,6 +745,53 @@ public class ArchetypeServiceActTestCase
         assertFalse(-1 == rel.getUid());
     }
 
+    /**
+     * Tests the fix for OBF-190.
+     */
+    public void testOBF190() {
+        // Create 2 acts with the following relationship:
+        // act1 -- (parent/child) --> act2
+        final Act act1 = createSimpleAct("act1", "IN_POGRESS");
+        final Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+
+        String name = "act1->act2";
+        final ActRelationship rel = addRelationship(act1, act2, name, true);
+        service.save(act2);
+
+        final String newName = "act1->act2 changed";
+
+        template.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                // reload act2 and verify it contains the relationship
+                Act reloaded = reload(act2);
+                assertTrue(reloaded.getTargetActRelationships().contains(rel));
+
+                // update the relationship and save act1
+                rel.setName(newName);
+                service.save(act1);
+                return null;
+            }
+        });
+
+        // reload act1 and verify it contains the relationship
+        Act reloaded = reload(act1);
+        assertNotNull(reloaded);
+        Set<ActRelationship> relationships
+                = reloaded.getSourceActRelationships();
+        assertEquals(1, relationships.size());
+        ActRelationship reloadedRel
+                = relationships.toArray(new ActRelationship[0])[0];
+
+        // verify the relationship was updated
+        assertEquals(reloadedRel, rel);
+        assertEquals(reloadedRel.getVersion(), rel.getVersion());
+        assertEquals(newName, reloadedRel.getName());
+
+        // verify the acts can be saved again
+        service.save(act1);
+        service.save(act2);
+    }
+
     /*
     * (non-Javadoc)
     *

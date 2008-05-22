@@ -55,7 +55,7 @@ class PartySessionHandler extends EntitySessionHandler {
     public IMObject save(IMObject object, Session session,
                          Set<IMObject> newObjects) {
         Party party = (Party) object;
-        saveNew(party.getContacts(), session, newObjects);
+        saveNew(object, party.getContacts(), session, newObjects);
         return super.save(object, session, newObjects);
     }
 

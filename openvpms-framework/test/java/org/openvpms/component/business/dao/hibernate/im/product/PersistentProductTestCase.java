@@ -21,7 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.product;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
-import org.openvpms.component.business.dao.hibernate.im.party.HibernatePartyUtil;
+import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -41,38 +41,11 @@ import java.util.HashMap;
 @SuppressWarnings("HardCodedStringLiteral")
 public class PersistentProductTestCase extends HibernateInfoModelTestCase {
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(PersistentProductTestCase.class);
-    }
-
-    /**
-     * Constructor for PersistentProductTestCase.
-     * 
-     * @param name
-     */
-    public PersistentProductTestCase(String name) {
-        super(name);
-    }
-
-    /*
-     * @see HibernateInfoModelTestCase#setUp()
-     */
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    /*
-     * @see HibernateInfoModelTestCase#tearDown()
-     */
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     /**
      * Test the simple creation of a product
      */
     public void testSimpleProductCreation() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -105,7 +78,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
      * Test the creation of a product with some dynamic attributes
      */
     public void testProductCreationWithDynamicAttributes() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -145,7 +118,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
      * Test the lifecycle of a product
      */
     public void testProductLifecycle() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -193,7 +166,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
      */
     public void testOVPMS134()
     throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -231,7 +204,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
      */
     public void testProductCreationWithProductPrices()
     throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -285,7 +258,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
      */
     public void testProductPricesLifecycle()
     throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -340,7 +313,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
      */
     public void testProductPricesClassificationLifecycle()
     throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -383,8 +356,8 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             tx.commit();
 
             // check that there is only one productprice and two classifications 
-            ppcount1 = HibernatePartyUtil.getTableRowCount(session, "productPrice");
-            pppcount1 = HibernatePartyUtil.getTableRowCount(session, "lookup");
+            ppcount1 = HibernateUtil.getTableRowCount(session, "productPrice");
+            pppcount1 = HibernateUtil.getTableRowCount(session, "lookup");
             assertTrue(ppcount1 == ppcount + 1);
             assertTrue(pppcount1 == pppcount + 2);
 

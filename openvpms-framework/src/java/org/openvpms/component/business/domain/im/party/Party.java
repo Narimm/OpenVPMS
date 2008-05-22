@@ -23,8 +23,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -59,14 +59,30 @@ public class Party extends Entity {
      * @param archetypeId the archetype id constraining this object
      * @param name        the name of the entity
      * @param description the description of the party
+     */
+    public Party(ArchetypeId archetypeId, String name,
+                 String description) {
+        super(archetypeId, name, description);
+    }
+
+    /**
+     * Construct a Party object.
+     *
+     * @param archetypeId the archetype id constraining this object
+     * @param name        the name of the entity
+     * @param description the description of the party
      * @param contacts    a collection of contacts for this actor
      * @param details     party details
+     * @deprecated no replacement
      */
+    @Deprecated
     public Party(ArchetypeId archetypeId, String name,
                  String description, Set<Contact> contacts,
                  Map<String, Object> details) {
         super(archetypeId, name, description, details);
-        this.contacts = (contacts == null) ? new HashSet<Contact>() : contacts;
+        if (contacts != null) {
+            this.contacts = contacts;
+        }
     }
 
     /**

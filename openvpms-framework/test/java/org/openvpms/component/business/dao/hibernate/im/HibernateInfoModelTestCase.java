@@ -19,6 +19,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im;
 
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -41,7 +42,6 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.system.common.test.BaseTestCase;
-import org.openvpms.component.system.service.uuid.JUGGenerator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,16 +49,11 @@ import java.util.Map;
 
 /**
  * This is the base class for all hibernate persistence test cases.
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public abstract class HibernateInfoModelTestCase extends BaseTestCase {
-
-    /**
-     * A UUID generator.
-     */
-    private JUGGenerator generator;
 
     /**
      * A Hibernate session factory.
@@ -66,27 +61,16 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
     private SessionFactory sessionFactory;
 
     /**
-     * static to hold all session
+     * The current session.
      */
-    public static final ThreadLocal<Session> session = new ThreadLocal<Session>();
+    private Session session;
 
-
-    /**
-     * Constructor for HibernateInfoModelTestCase.
-     *
-     * @param name
-     */
-    protected HibernateInfoModelTestCase(String name) {
-        super(name);
-    }
 
     /*
      * @see BaseTestCase#setUp()
      */
     protected void setUp() throws Exception {
         super.setUp();
-
-        generator = new JUGGenerator();
 
         // create the hibernate session factory
         Configuration config = new Configuration();
@@ -111,58 +95,40 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         this.sessionFactory = config.buildSessionFactory();
     }
 
+
     /*
-     * @see BaseTestCase#tearDown()
-     */
+    * @see BaseTestCase#tearDown()
+    */
     protected void tearDown() throws Exception {
         super.tearDown();
+        closeSession();
     }
 
     /**
-     * @return Returns the generator.
+     * Returns current hibernate session.
+     *
+     * @return the current hibernate session
      */
-    protected JUGGenerator getGenerator() {
-        return generator;
-    }
-
-    /**
-     * @return Returns the sessionFactory.
-     */
-    protected SessionFactory getSessionFactory() {
-        return sessionFactory;
-    }
-
-    /**
-     * Get the current hibernate session
-     * 
-     * @return Session
-     * @throws Exception
-     */
-    public Session currentSession() throws Exception {
-        Session s = session.get();
-        // Open a new Session, if this Thread has none yet
-        if (s == null) {
-            s = getSessionFactory().openSession();
-            session.set(s);
+    public Session getSession() {
+        if (session == null) {
+            session = sessionFactory.openSession();
         }
-        return s;
+        return session;
     }
 
     /**
-     * Close the current hibernate session
-     * 
-     * @throws Exception
+     * Close the current hibernate session.
      */
-    public void closeSession() throws Exception {
-        Session s = session.get();
-        session.set(null);
-        if (s != null)
-            s.close();
+    public void closeSession() {
+        if (session != null) {
+            session.close();
+            session = null;
+        }
     }
 
     /**
      * Creates a simple detail object.
-     * 
+     *
      * @return a new map
      */
     @SuppressWarnings("HardCodedStringLiteral")
@@ -171,5 +137,29 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         map.put("dummy", "dummy");
         map.put("dummy1", "dummy1");
         return map;
+    }
+
+    /**
+     * Counts instances of the specified type.
+     *
+     * @param type the type
+     * @return the instance count
+     */
+    protected int count(Class type) {
+        String hql = "select count(o) from " + type.getName() + " as o";
+        Query query = getSession().createQuery(hql);
+        return ((Number) query.list().get(0)).intValue();
+    }
+
+    /**
+     * Counts the total no. of 'details' elements for a type.
+     *
+     * @param type the type
+     */
+    protected int countDetails(Class type) {
+        String hql = "select count(elements(p)) from "
+                + type.getName() + " o right outer join o.details as p";
+        Query query = session.createQuery(hql);
+        return ((Number) query.list().get(0)).intValue();
     }
 }

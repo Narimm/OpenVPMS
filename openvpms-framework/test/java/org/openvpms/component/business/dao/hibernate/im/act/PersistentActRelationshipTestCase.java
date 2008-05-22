@@ -22,515 +22,376 @@ package org.openvpms.component.business.dao.hibernate.im.act;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
-import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 
+
 /**
  * Exercise the act and act relationships.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCase {
+public class PersistentActRelationshipTestCase
+        extends HibernateInfoModelTestCase {
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(PersistentActRelationshipTestCase.class);
+    /**
+     * Test the creation of an act relationship.
+     */
+    public void testActRelationshipCreation() {
+        Session session = getSession();
+
+        // get initial number of entries in tables
+        int acount = count(Act.class);
+        int arcount = count(ActRelationship.class);
+
+        // execute the test
+        Transaction tx = session.beginTransaction();
+        Act src = createAct("act1");
+        Act tar = createAct("act2");
+        session.save(src);
+        session.save(tar);
+
+        ActRelationship actRel = createActRelationship("dummy", src, tar);
+        session.save(actRel);
+        tx.commit();
+
+        // retest the counts
+        assertEquals(acount + 2, count(Act.class));
+        assertEquals(arcount + 1, count(ActRelationship.class));
     }
 
     /**
-     * Constructor for PersistentParticipationTestCase.
-     * 
-     * @param name
+     * Test the deletion of an act relationship.
      */
-    public PersistentActRelationshipTestCase(String name) {
-        super(name);
+    public void testActRelationshipDeletion() {
+        Session session = getSession();
+
+        // get initial number of entries in tables
+        int acount = count(Act.class);
+        int arcount = count(ActRelationship.class);
+
+        // execute the test
+        Transaction tx = session.beginTransaction();
+        Act src = createAct("act1");
+        Act tar = createAct("act2");
+        session.save(src);
+        session.save(tar);
+
+        ActRelationship actRel1 = createActRelationship("dummy", src, tar);
+        ActRelationship actRel2 = createActRelationship("dummy1", tar, src);
+        session.save(actRel1);
+        session.save(actRel2);
+        tx.commit();
+
+        // retest the counts
+        assertEquals(acount + 2, count(Act.class));
+        assertEquals(arcount + 2, count(ActRelationship.class));
+
+        tx = session.beginTransaction();
+        session.delete(actRel1);
+        tx.commit();
+
+        // retest the counts
+        assertEquals(acount + 2, count(Act.class));
+        assertEquals(arcount + 1, count(ActRelationship.class));
     }
 
     /**
-     * Test the creation of an act relationship
+     * Test the modification of an act relationship.
      */
-    public void testActRelationshipCreation()
-    throws Exception {
-        Session session = currentSession();
-        Transaction tx = null;
+    public void testActRelationshipModification() {
+        Session session = getSession();
+        // get initial number of entries in tables
+        int acount = count(Act.class);
+        int arcount = count(ActRelationship.class);
 
-        try {
-            // get initial numbr of entries in tables
-            int acount = HibernateUtil.getTableRowCount(session, "act");
-            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
+        // execute the test
+        Transaction tx = session.beginTransaction();
+        Act src = createAct("act1");
+        Act tar = createAct("act2");
+        session.save(src);
+        session.save(tar);
 
-            // execute the test
-            tx = session.beginTransaction();
-            Act src = createAct("act1");
-            Act tar = createAct("act2");
-            session.save(src);
-            session.save(tar);
-            
-            ActRelationship actRel = createActRelationship("dummy", src, tar);
-            session.save(actRel);
-            tx.commit();
-            
-            // test the counts
-            int acount1 = HibernateUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 2);
-            assertTrue(arcount1 == arcount + 1);
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
-    }
-    
-    /**
-     * Test the deletion of an act relationship
-     */
-    public void testActRelationshipDeletion()
-    throws Exception {
-        Session session = currentSession();
-        Transaction tx = null;
+        ActRelationship actRel1 = createActRelationship("dummy", src, tar);
+        session.save(actRel1);
+        tx.commit();
 
-        try {
-            // get initial numbr of entries in tables
-            int acount = HibernateUtil.getTableRowCount(session, "act");
-            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
+        // test the counts
+        assertEquals(acount + 2, count(Act.class));
+        assertEquals(arcount + 1, count(ActRelationship.class));
 
-            // execute the test
-            tx = session.beginTransaction();
-            Act src = createAct("act1");
-            Act tar = createAct("act2");
-            session.save(src);
-            session.save(tar);
-            
-            ActRelationship actRel1 = createActRelationship("dummy", src, tar);
-            ActRelationship actRel2 = createActRelationship("dummy1", tar, src);
-            session.save(actRel1);
-            session.save(actRel2);
-            tx.commit();
-            
-            // test the counts
-            int acount1 = HibernateUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 2);
-            assertTrue(arcount1 == arcount + 2);
-            
-            tx = session.beginTransaction();
-            session.delete(actRel1);
-            tx.commit();
-            
-            // retest the counts
-            acount1 = HibernateUtil.getTableRowCount(session, "act");
-            arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 2);
-            assertTrue(arcount1 == arcount + 1);
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
-    }
-    
-    /**
-     * Test the modification of an act relationship
-     */
-    public void testActRelationshipModification()
-    throws Exception {
-        Session session = currentSession();
-        Transaction tx = null;
+        tx = session.beginTransaction();
+        actRel1 = (ActRelationship) session.load(ActRelationship.class,
+                                                 actRel1.getUid());
+        assertNotNull(actRel1);
+        actRel1.setSource(tar.getObjectReference());
+        actRel1.setTarget(src.getObjectReference());
+        session.saveOrUpdate(actRel1);
+        tx.commit();
 
-        try {
-            // get initial numbr of entries in tables
-            int acount = HibernateUtil.getTableRowCount(session, "act");
-            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
-
-            // execute the test
-            tx = session.beginTransaction();
-            Act src = createAct("act1");
-            Act tar = createAct("act2");
-            session.save(src);
-            session.save(tar);
-            
-            ActRelationship actRel1 = createActRelationship("dummy", src, tar);
-            session.save(actRel1);
-            tx.commit();
-            
-            // test the counts
-            int acount1 = HibernateUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 2);
-            assertTrue(arcount1 == arcount + 1);
-            
-            tx = session.beginTransaction();
-            actRel1 = (ActRelationship)session.load(ActRelationship.class, actRel1.getUid());
-            assertTrue(actRel1 != null);
-            actRel1.setSource(tar.getObjectReference());
-            actRel1.setTarget(src.getObjectReference());
-            session.saveOrUpdate(actRel1);
-            tx.commit();
-            
-            // retest the counts
-            acount1 = HibernateUtil.getTableRowCount(session, "act");
-            arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 2);
-            assertTrue(arcount1 == arcount + 1);
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
-    }
-    
-    /**
-     * Test adding an act relationship to an act
-     */
-    public void testModActRelationshipToAct()
-    throws Exception {
-        Session session = currentSession();
-        Transaction tx = null;
-
-        try {
-            // get initial numbr of entries in tables
-            int acount = HibernateUtil.getTableRowCount(session, "act");
-            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
-
-            // execute the test
-            tx = session.beginTransaction();
-            Act src = createAct("act1");
-            Act tar = createAct("act2");
-            session.save(src);
-            session.save(tar);
-
-            ActRelationship actRel1 = createActRelationship("dummy", src, tar);
-            src.addActRelationship(actRel1);
-            src.addActRelationship(createActRelationship("dummy1", tar, src));
-            session.save(src);
-            tx.commit();
-            
-            // test the counts
-            int acount1 = HibernateUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 2);
-            assertTrue(arcount1 == arcount + 2);
-            
-            session.clear();
-            tx = session.beginTransaction();
-            src = (Act)session.load(Act.class, src.getUid());
-            assertTrue(src != null);
-            assertTrue(src.getActRelationships().size() == 2);
-            src.removeActRelationship(actRel1);
-            tx.commit();
-            
-            // retest the counts;
-            acount1 = HibernateUtil.getTableRowCount(session, "act");
-            arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 2);
-            assertTrue(arcount1 == arcount + 1);
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
+        // retest the counts
+        assertEquals(acount + 2, count(Act.class));
+        assertEquals(arcount + 1, count(ActRelationship.class));
     }
 
     /**
-     * Test adding an act relationship to an act
+     * Test adding an act relationship to an act.
      */
-    public void testAddingActRelationshipToAct()
-    throws Exception {
-        Session session = currentSession();
-        Transaction tx = null;
+    public void testModActRelationshipToAct() {
+        Session session = getSession();
 
-        try {
-            // get initial numbr of entries in tables
-            int acount = HibernateUtil.getTableRowCount(session, "act");
-            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
+        // get initial number of entries in tables
+        int acount = count(Act.class);
+        int arcount = count(ActRelationship.class);
 
-            // execute the test
-            tx = session.beginTransaction();
-            Act src = createAct("act1");
-            Act tar = createAct("act2");
-            session.save(src);
-            session.save(tar);
-            src.addActRelationship(createActRelationship("dummy", src, tar));
-            session.save(src);
-            tx.commit();
-            
-            // test the counts
-            int acount1 = HibernateUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 2);
-            assertTrue(arcount1 == arcount + 1);
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
+        Transaction tx = session.beginTransaction();
+        Act src = createAct("act1");
+        Act tar = createAct("act2");
+        session.save(src);
+        session.save(tar);
+
+        ActRelationship actRel1 = createActRelationship("dummy", src, tar);
+        ActRelationship actRel2 = createActRelationship("dummy1", tar, src);
+        src.addActRelationship(actRel1);
+        src.addActRelationship(actRel2);
+        session.save(src);
+        session.save(actRel1);
+        session.save(actRel2);
+        tx.commit();
+
+        // test the counts
+        assertEquals(acount + 2, count(Act.class));
+        assertEquals(arcount + 2, count(ActRelationship.class));
+
+        session.clear();
+        tx = session.beginTransaction();
+        src = (Act) session.load(Act.class, src.getUid());
+        assertNotNull(src);
+        assertEquals(2, src.getActRelationships().size());
+        src.removeActRelationship(actRel1);
+        tx.commit();
+
+        // retest the counts
+        assertEquals(acount + 2, count(Act.class));
+        assertEquals(arcount + 1, count(ActRelationship.class));
     }
-    
+
     /**
-     * Test that we can set the actrelationships without first saving the 
-     * acts
+     * Test adding an act relationship to an act.
      */
-    public void testActRelationshipsToActsBeforeSave()
-    throws Exception {
-        Session session = currentSession();
-        Transaction tx = null;
+    public void testAddingActRelationshipToAct() {
+        Session session = getSession();
 
-        try {
-            // get initial numbr of entries in tables
-            int acount = HibernateUtil.getTableRowCount(session, "act");
-            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
+        // get initial number of entries in tables
+        int acount = count(Act.class);
+        int arcount = count(ActRelationship.class);
 
-            // execute the test
-            tx = session.beginTransaction();
-            Act src = createAct("act11");
-            Act tar = createAct("act22");
-            src.addActRelationship(createActRelationship("dummy", src, tar));
-            session.save(src);
-            session.save(tar);
-            tx.commit();
-            
-            // test the counts
-            int acount1 = HibernateUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 2);
-            assertTrue(arcount1 == arcount + 1);
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
+        Transaction tx = session.beginTransaction();
+
+        Act src = createAct("act1");
+        Act tar = createAct("act2");
+        session.save(src);
+        session.save(tar);
+        ActRelationship rel = createActRelationship("dummy", src, tar);
+        src.addActRelationship(rel);
+        session.save(src);
+        session.save(rel);
+        tx.commit();
+
+        // test the counts
+        assertEquals(acount + 2, count(Act.class));
+        assertEquals(arcount + 1, count(ActRelationship.class));
     }
-    
+
     /**
-     * Test that OVPMS-219 bug
+     * Test that we can set the actrelationships without first saving the
+     * acts.
      */
-    public void testOVPMS219()
-    throws Exception {
-        Session session = currentSession();
-        Transaction tx = null;
+    public void testActRelationshipsToActsBeforeSave() {
+        Session session = getSession();
 
-        try {
-            // step 1
-            tx = session.beginTransaction();
-            Act src = createAct("act11");
-            session.save(src);
-            tx.commit();
-            
-            // step 2
-            tx = session.beginTransaction();
-            Act tar = createAct("act22");
-            session.save(tar);
-            tx.commit();
-            
-            // step 3, 4 and 5
-            tx = session.beginTransaction();
-            src.addActRelationship(createActRelationship("dummy", src, tar));
-            session.save(src);
-            tx.commit();
-            
-            // step 6
-            tx = session.beginTransaction();
-            session.save(tar);
-            tx.commit();
-            
-            // step 7
-            tx = session.beginTransaction();
-            session.save(src);
-            tx.commit();
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
+        // get initial number of entries in tables
+        int acount = count(Act.class);
+        int arcount = count(ActRelationship.class);
+
+        Transaction tx = session.beginTransaction();
+        Act src = createAct("act11");
+        Act tar = createAct("act22");
+        ActRelationship rel = createActRelationship("dummy", src, tar);
+        src.addActRelationship(rel);
+        session.save(rel);
+        session.save(src);
+        session.save(tar);
+        tx.commit();
+
+        // test the counts
+        assertEquals(acount + 2, count(Act.class));
+        assertEquals(arcount + 1, count(ActRelationship.class));
     }
-    
+
     /**
-     * Test adding an act relationship to an act
+     * Test the OVPMS-219 bug.
      */
-    public void testMod2ActRelationshipToAct()
-    throws Exception {
-        Session session = currentSession();
-        Transaction tx = null;
+    public void testOVPMS219() {
+        Session session = getSession();
+        Transaction tx;
 
-        try {
-            // get initial numbr of entries in tables
-            int acount = HibernateUtil.getTableRowCount(session, "act");
-            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
+        // step 1
+        tx = session.beginTransaction();
+        Act src = createAct("act11");
+        session.save(src);
+        tx.commit();
 
-            // execute the test
-            tx = session.beginTransaction();
-            Act src = createAct("act1");
-            Act tar = createAct("act2");
-            session.save(src);
-            session.save(tar);
+        // step 2
+        tx = session.beginTransaction();
+        Act tar = createAct("act22");
+        session.save(tar);
+        tx.commit();
 
-            ActRelationship actRel1 = createActRelationship("dummy", src, tar);
-            src.addActRelationship(actRel1);
-            src.addActRelationship(createActRelationship("dummy1", tar, src));
-            session.save(src);
-            tx.commit();
-            
-            // test the counts
-            int acount1 = HibernateUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 2);
-            assertTrue(arcount1 == arcount + 2);
-            
-            session.clear();
-            tx = session.beginTransaction();
-            tar = (Act)session.load(Act.class, tar.getUid());
-            assertTrue(tar != null);
-            assertTrue(tar.getActRelationships().size() == 2);
-            tar.removeActRelationship(actRel1);
-            tx.commit();
-            
-            // retest the counts;
-            acount1 = HibernateUtil.getTableRowCount(session, "act");
-            arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 2);
-            assertTrue(arcount1 == arcount + 1);
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
+        // step 3, 4 and 5
+        tx = session.beginTransaction();
+        ActRelationship rel = createActRelationship("dummy", src, tar);
+        src.addActRelationship(rel);
+        session.save(src);
+        session.save(rel);
+        tx.commit();
+
+        // step 6
+        tx = session.beginTransaction();
+        session.save(tar);
+        tx.commit();
+
+        // step 7
+        tx = session.beginTransaction();
+        session.save(src);
+        tx.commit();
     }
 
-    
+    /**
+     * Test adding an act relationship to an act.
+     */
+    public void testMod2ActRelationshipToAct() {
+        Session session = getSession();
+
+        // get initial number of entries in tables
+        int acount = count(Act.class);
+        int arcount = count(ActRelationship.class);
+
+        Transaction tx = session.beginTransaction();
+        Act src = createAct("act1");
+        Act tar = createAct("act2");
+        session.save(src);
+        session.save(tar);
+
+        ActRelationship actRel1 = createActRelationship("dummy", src, tar);
+        ActRelationship actRel2 = createActRelationship("dummy1", tar, src);
+        src.addActRelationship(actRel1);
+        src.addActRelationship(actRel2);
+        session.save(src);
+        session.save(actRel1);
+        session.save(actRel2);
+        tx.commit();
+
+        // test the counts
+        assertEquals(acount + 2, count(Act.class));
+        assertEquals(arcount + 2, count(ActRelationship.class));
+
+        session.clear();
+        tx = session.beginTransaction();
+        tar = (Act) session.load(Act.class, tar.getUid());
+        assertNotNull(tar);
+        assertEquals(2, tar.getActRelationships().size());
+        tar.removeActRelationship(actRel1);
+        tx.commit();
+
+        // retest the counts
+        assertEquals(acount + 2, count(Act.class));
+        assertEquals(arcount + 1, count(ActRelationship.class));
+    }
+
+
     /**
      * Test deletion of an act when act relationships are associated with it.
      */
-    public void testDeleteActRelationshipAndAct()
-    throws Exception {
-        Session session = currentSession();
-        Transaction tx = null;
+    public void testDeleteActRelationshipAndAct() {
+        Session session = getSession();
 
-        try {
-            // get initial numbr of entries in tables
-            int acount = HibernateUtil.getTableRowCount(session, "act");
-            int arcount = HibernateUtil.getTableRowCount(session, "actRelationship");
+        // get initial number of entries in tables
+        int acount = count(Act.class);
+        int arcount = count(ActRelationship.class);
 
-            // execute the test
-            tx = session.beginTransaction();
-            Act src = createAct("act1");
-            Act tar = createAct("act2");
-            session.save(src);
-            session.save(tar);
+        Transaction tx = session.beginTransaction();
+        Act src = createAct("act1");
+        Act tar = createAct("act2");
+        session.save(src);
+        session.save(tar);
 
-            ActRelationship actRel1 = createActRelationship("dummy", src, tar);
-            src.addActRelationship(actRel1);
-            src.addActRelationship(createActRelationship("dummy1", tar, src));
-            session.save(src);
-            tx.commit();
-            
-            // test the counts
-            int acount1 = HibernateUtil.getTableRowCount(session, "act");
-            int arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 2);
-            assertTrue(arcount1 == arcount + 2);
-            
-            // now delete the src act. We are hoping that one act remains but 
-            // that both relationships are also deleted
-            session.clear();
-            tx = session.beginTransaction();
-            src = (Act)session.load(Act.class, src.getUid());
-            session.delete(src);
-            tx.commit();
-            
-            // retest the counts;
-            acount1 = HibernateUtil.getTableRowCount(session, "act");
-            arcount1 = HibernateUtil.getTableRowCount(session, "actRelationship");
-            assertTrue(acount1 == acount + 1);
-            assertTrue(arcount1 == arcount);
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
+        ActRelationship actRel1 = createActRelationship("dummy", src, tar);
+        ActRelationship actRel2 = createActRelationship("dummy1", tar, src);
+        src.addActRelationship(actRel1);
+        src.addActRelationship(actRel2);
+        session.save(src);
+        session.save(actRel1);
+        session.save(actRel2);
+        tx.commit();
+
+        // test the counts
+        assertEquals(acount + 2, count(Act.class));
+        assertEquals(arcount + 2, count(ActRelationship.class));
+
+        // now delete the src act. We are hoping that one act remains but
+        // that both relationships are also deleted
+        session.clear();
+        tx = session.beginTransaction();
+        src = (Act) session.load(Act.class, src.getUid());
+        session.delete(src);
+        tx.commit();
+
+        // retest the counts
+        assertEquals(acount + 1, count(Act.class));
+        assertEquals(arcount, count(ActRelationship.class));
     }
 
-    /*
-     * @see HibernateInfoModelTestCase#setUp()
-     */
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    /*
-     * @see HibernateInfoModelTestCase#tearDown()
-     */
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
     /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.test.BaseTestCase#setUpTestData()
-     */
+    * @see org.openvpms.component.system.common.test.BaseTestCase#setUpTestData()
+    */
     @Override
     protected void setUpTestData() throws Exception {
         // no test data for this
     }
 
-    
+
     /**
      * Create a simple actrelation
      *
-     * @param name
-     *          the name of the act
+     * @param name the name of the act
      * @return Act
      */
     private Act createAct(String name) {
         Act act = new Act();
         act.setArchetypeId(new ArchetypeId("act.simple.1.0"));
         act.setName(name);
-        
+
         return act;
     }
-    
+
     /**
      * Create an act relationship between the source and target acts
-     * 
+     *
      * @param source
      * @param target
      * @return ActRelationship
      */
-    private ActRelationship createActRelationship(String name, Act source, Act target) {
+    private ActRelationship createActRelationship(String name, Act source,
+                                                  Act target) {
         ActRelationship rel = new ActRelationship();
         rel.setArchetypeId(new ArchetypeId("act.simpleRel.1.0"));
         rel.setName(name);
         rel.setSource(source.getObjectReference());
         rel.setTarget(target.getObjectReference());
-        
+
         return rel;
     }
 }

@@ -33,38 +33,11 @@ import org.openvpms.component.business.domain.im.security.User;
  */
 public class PersistentUserTestCase extends HibernateInfoModelTestCase {
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(PersistentUserTestCase.class);
-    }
-
-    /**
-     * Constructor for PersistentUserTestCase.
-     * 
-     * @param name
-     */
-    public PersistentUserTestCase(String name) {
-        super(name);
-    }
-
-    /*
-     * @see HibernateInfoModelTestCase#setUp()
-     */
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    /*
-     * @see HibernateInfoModelTestCase#tearDown()
-     */
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     /**
      * Test the simple creation of a user
      */
     public void testSimpleUserCreation() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -97,7 +70,7 @@ public class PersistentUserTestCase extends HibernateInfoModelTestCase {
      * Test the creation of mutliple users
      */
     public void testMultipleUserCreaton() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -131,7 +104,7 @@ public class PersistentUserTestCase extends HibernateInfoModelTestCase {
      * Test the modification of a user
      */
     public void testModificationOfUser() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -174,7 +147,7 @@ public class PersistentUserTestCase extends HibernateInfoModelTestCase {
      * Test the deletion of a user
      */
     public void testDeletionOfUser() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -216,7 +189,7 @@ public class PersistentUserTestCase extends HibernateInfoModelTestCase {
      */
     public void testDeletionOfMultipleUsers() throws Exception {
         final int count = 10;
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -266,7 +239,7 @@ public class PersistentUserTestCase extends HibernateInfoModelTestCase {
      * Test the creation of a user with a role
      */
     public void testUserWithRoleCreation() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {

@@ -56,7 +56,7 @@ class ProductSessionHandler extends EntitySessionHandler {
     public IMObject save(IMObject object, Session session,
                          Set<IMObject> newObjects) {
         Product product = (Product) object;
-        saveNew(product.getProductPrices(), session, newObjects);
+        saveNew(object, product.getProductPrices(), session, newObjects);
         return super.save(object, session, newObjects);
     }
 

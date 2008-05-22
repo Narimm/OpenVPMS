@@ -19,7 +19,6 @@
 
 package org.openvpms.component.business.dao.hibernate.im.act;
 
-// hibernate
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
@@ -35,25 +34,12 @@ import org.openvpms.component.business.domain.im.act.Act;
  */
 public class PersistentActTestCase extends HibernateInfoModelTestCase {
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(PersistentActTestCase.class);
-    }
-
-    /**
-     * Constructor for PersistentParticipationTestCase.
-     * 
-     * @param name
-     */
-    public PersistentActTestCase(String name) {
-        super(name);
-    }
-
     /**
      * Test the creation of an act
      */
     public void testActCreation()
     throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -87,7 +73,7 @@ public class PersistentActTestCase extends HibernateInfoModelTestCase {
      */
     public void testActModification()
     throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -131,7 +117,7 @@ public class PersistentActTestCase extends HibernateInfoModelTestCase {
      */
     public void testActDeletion()
     throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {

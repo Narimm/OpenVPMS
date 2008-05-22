@@ -78,7 +78,10 @@ abstract class AbstractNodeResultCollector<T>
         } else {
             result = new ArrayList<NodeDescriptor>();
             for (String name : names) {
-                result.add(archetype.getNodeDescriptor(name));
+                NodeDescriptor node = archetype.getNodeDescriptor(name);
+                if (node != null) {
+                    result.add(node);
+                }
             }
         }
         return result;

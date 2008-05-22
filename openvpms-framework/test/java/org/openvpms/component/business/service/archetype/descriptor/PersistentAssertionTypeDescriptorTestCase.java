@@ -21,8 +21,6 @@ package org.openvpms.component.business.service.archetype.descriptor;
 // hibernate
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-
-// openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
@@ -36,36 +34,11 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoModelTestCase {
 
     /**
-     * main line
-     * 
-     * @param args
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(PersistentAssertionTypeDescriptorTestCase.class);
-    }
-
-    /**
-     * Constructor for PersistentArchetypeDescriptorTestCase.
-     * 
-     * @param name
-     */
-    public PersistentAssertionTypeDescriptorTestCase(String name) {
-        super(name);
-    }
-
-    /*
-     * @see BaseTestCase#setUp()
-     */
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    /**
      * Test the creation of a simple assertion type descriptor
      */
     public void testCreateSimpleAssertionTypeDescriptor() throws Exception {
 
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
         
         try {
@@ -97,7 +70,7 @@ public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoMode
      */
     public void testCreateMultipleAssertionTypeDescriptor() throws Exception {
 
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
         
         try {
@@ -150,7 +123,7 @@ public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoMode
     public void testDeletionAssertionTypeDescriptor()
     throws Exception {
 
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
         
         try {
@@ -196,7 +169,7 @@ public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoMode
     public void testUpdateAssertionTypeDescriptor()
     throws Exception {
 
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
         
         try {
@@ -245,7 +218,7 @@ public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoMode
      */
     protected void tearDown() throws Exception {
         super.tearDown();
-        currentSession().flush();
+        getSession().flush();
     }
 
     /*
@@ -278,7 +251,7 @@ public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoMode
      *            the source descriptor
      * @param name
      *            the action name
-     * @param class
+     * @param clazz
      *            the action class name
      * @param method
      *            the action method name
