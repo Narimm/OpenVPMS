@@ -59,6 +59,8 @@ abstract class AbstractIMObjectSessionHandler
 
     /**
      * Saves an object.
+     * <p/>
+     * This implementation delegates to {@link #saveMerge}.
      *
      * @param object     the object to save
      * @param session    the session to use
@@ -67,17 +69,7 @@ abstract class AbstractIMObjectSessionHandler
      */
     public IMObject save(IMObject object, Session session,
                          Set<IMObject> newObjects) {
-        if (object.isNew()) {
-            session.saveOrUpdate(object);
-            newObjects.add(object);
-        } else {
-            try {
-                object = (IMObject) session.merge(object);
-            } catch (ObjectDeletedException exception) {
-                throw exception;
-            }
-        }
-        return object;
+        return saveMerge(object, session, newObjects);
     }
 
     /**
@@ -123,13 +115,18 @@ abstract class AbstractIMObjectSessionHandler
     }
 
     /**
-     * Helper to save any transient instances.
+     * Saves unsaved objects in a collection.
+     * <p/>
+     * This calls {@link Session#save} for each non-persistent object in the
+     * collection, and adds them to <tt>newObjects</tt>.
      *
+     * @param parent     the parent object
      * @param objects    the objects to check
      * @param session    the session
      * @param newObjects used to collect new objects encountered during save
      */
-    protected <T extends IMObject> void saveNew(Collection<T> objects,
+    protected <T extends IMObject> void saveNew(IMObject parent,
+                                                Collection<T> objects,
                                                 Session session,
                                                 Set<IMObject> newObjects) {
         for (T object : objects) {
@@ -138,6 +135,58 @@ abstract class AbstractIMObjectSessionHandler
                 newObjects.add(object);
             }
         }
+    }
+
+    /**
+     * Saves objects in a collection.
+     * <p/>
+     * This uses {@link #saveMerge(IMObject, Session, Set<IMObject>)} to
+     * save objects.
+     * <p/>
+     * It should only be used where cascade="save-update" is not being used
+     * to cascade saves to associated instances.
+     *
+     * @param parent     the parent object
+     * @param objects    the objects to check
+     * @param session    the session
+     * @param newObjects used to collect new objects encountered during save
+     */
+    protected <T extends IMObject> void saveMerge(IMObject parent,
+                                                  Collection<T> objects,
+                                                  Session session,
+                                                  Set<IMObject> newObjects) {
+        for (T object : objects) {
+            saveMerge(object, session, newObjects);
+        }
+    }
+
+    /**
+     * Saves an object.
+     * <p/>
+     * If the object is not persistent, it will be saved using
+     * {@link Session#save(Object)}, and added to <tt>newObjects</tt>.
+     * <p/>
+     * If it is persistent, it will be saved using
+     * {@link Session#merge(Object)}.
+     *
+     * @param object     the object to save
+     * @param session    the session
+     * @param newObjects used to collect new objects encountered during save
+     * @return the saved object
+     */
+    protected IMObject saveMerge(IMObject object, Session session,
+                                 Set<IMObject> newObjects) {
+        if (object.isNew()) {
+            session.save(object);
+            newObjects.add(object);
+        } else {
+            try {
+                object = (IMObject) session.merge(object);
+            } catch (ObjectDeletedException exception) {
+                throw exception;
+            }
+        }
+        return object;
     }
 
     /**

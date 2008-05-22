@@ -43,37 +43,11 @@ public class PersistentArchetypeDescriptorTestCase
         extends HibernateInfoModelTestCase {
 
     /**
-     * main line
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(
-                PersistentArchetypeDescriptorTestCase.class);
-    }
-
-    /**
-     * Constructor for PersistentArchetypeDescriptorTestCase.
-     *
-     * @param name
-     */
-    public PersistentArchetypeDescriptorTestCase(String name) {
-        super(name);
-    }
-
-    /*
-     * @see BaseTestCase#setUp()
-     */
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    /**
      * Test the creation of a simple archetype
      */
     public void testCreateSimpleArchetype() throws Exception {
 
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -111,7 +85,7 @@ public class PersistentArchetypeDescriptorTestCase
      */
     public void testSimpleArchetypeDeletion()
             throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -155,7 +129,7 @@ public class PersistentArchetypeDescriptorTestCase
     public void testSimpleArchetypeWithNodeDescriptors()
             throws Exception {
 
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -232,7 +206,7 @@ public class PersistentArchetypeDescriptorTestCase
     public void testArchetypeWithNestedNodeDescriptors()
             throws Exception {
 
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -327,7 +301,7 @@ public class PersistentArchetypeDescriptorTestCase
     public void testArchetypeWithAssertionDescriptors()
             throws Exception {
 
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -408,7 +382,7 @@ public class PersistentArchetypeDescriptorTestCase
     public void testArchetypeWithUpdateNodeDescriptors()
             throws Exception {
 
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -482,7 +456,7 @@ public class PersistentArchetypeDescriptorTestCase
     public void testArchetypeWithUpdateAssertionDescriptors()
             throws Exception {
 
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -596,7 +570,7 @@ public class PersistentArchetypeDescriptorTestCase
      * @throws Exception for any error
      */
     public void testOBF112() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -634,7 +608,7 @@ public class PersistentArchetypeDescriptorTestCase
      */
     protected void tearDown() throws Exception {
         super.tearDown();
-        currentSession().flush();
+        getSession().flush();
     }
 
     /*

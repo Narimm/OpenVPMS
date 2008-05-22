@@ -23,7 +23,7 @@ package org.openvpms.component.business.dao.hibernate.im.common;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
-import org.openvpms.component.business.dao.hibernate.im.party.HibernatePartyUtil;
+import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -39,30 +39,17 @@ import org.openvpms.component.business.domain.im.common.Participation;
  */
 public class PersistentParticipationTestCase extends HibernateInfoModelTestCase {
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(PersistentParticipationTestCase.class);
-    }
-
-    /**
-     * Constructor for PersistentParticipationTestCase.
-     *
-     * @param name
-     */
-    public PersistentParticipationTestCase(String name) {
-        super(name);
-    }
-
     /**
      * Test the creation of a simple participation from the act end
      */
     public void testCreateParticipationFromActEnd()
     throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
             // get initial number of entries in participations table
-            int acount = HibernatePartyUtil.getTableRowCount(session, "participation");
+            int acount = HibernateUtil.getTableRowCount(session, "participation");
 
             // execute the test
             tx = session.beginTransaction();
@@ -76,7 +63,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             tx.commit();
 
             // check the no. of participations
-            int acount1 = HibernatePartyUtil.getTableRowCount(session, "participation");
+            int acount1 = HibernateUtil.getTableRowCount(session, "participation");
             assertTrue(acount1 == acount + 1);
 
             // clear the session otherwise it does not go back to the database
@@ -100,12 +87,12 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      */
     public void testDeleteParticipantFromActEnd()
     throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
             // get initial numbr of entries in address tabel
-            int acount = HibernatePartyUtil.getTableRowCount(session, "participation");
+            int acount = HibernateUtil.getTableRowCount(session, "participation");
 
             // execute the test
             tx = session.beginTransaction();
@@ -118,7 +105,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             tx.commit();
 
             // ensure that there is still one more add participation
-            int acount1 = HibernatePartyUtil.getTableRowCount(session, "participation");
+            int acount1 = HibernateUtil.getTableRowCount(session, "participation");
             assertTrue(acount1 == acount + 1);
 
             session.clear();
@@ -132,7 +119,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             tx.commit();
 
             // ensure that the participation has been removed
-            acount1 = HibernatePartyUtil.getTableRowCount(session, "participation");
+            acount1 = HibernateUtil.getTableRowCount(session, "participation");
             assertTrue(acount1 == acount);
             act = (Act)session.load(Act.class, act.getUid());
             assertTrue(act != null);
@@ -152,12 +139,12 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      */
     public void testMultipleParticipationCreation()
     throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
             // get initial numbr of entries in address tabel
-            int acount = HibernatePartyUtil.getTableRowCount(session, "participation");
+            int acount = HibernateUtil.getTableRowCount(session, "participation");
 
             // retrieve the number of participation creation count
             int pcount = (Integer) this.getTestData().getTestCaseParameter(
@@ -179,7 +166,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             tx.commit();
 
             // check the no. of participations
-            int acount1 = HibernatePartyUtil.getTableRowCount(session, "participation");
+            int acount1 = HibernateUtil.getTableRowCount(session, "participation");
             assertTrue(acount1 == acount + pcount);
         } catch (Exception exception) {
             if (tx != null) {
@@ -196,12 +183,12 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      */
     public void testParticiaptionCreationAndDeletion()
     throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
             // get initial numbr of entries in address tabel
-            int acount = HibernatePartyUtil.getTableRowCount(session, "participation");
+            int acount = HibernateUtil.getTableRowCount(session, "participation");
 
             // retrieve the number of participation creation count
             int pcount = (Integer) this.getTestData().getTestCaseParameter(
@@ -222,7 +209,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             tx.commit();
 
             // check the no. of rows
-            int acount1 = HibernatePartyUtil.getTableRowCount(session, "participation");
+            int acount1 = HibernateUtil.getTableRowCount(session, "participation");
             assertTrue(acount1 == (acount + pcount));
         } catch (Exception exception) {
             if (tx != null) {
@@ -258,7 +245,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      * @return Entity
      */
     private Entity createEntity(String name) {
-        return new Entity(new ArchetypeId("role.role.1.0"), name, null, null);
+        return new Entity(new ArchetypeId("role.role.1.0"), name, null);
     }
 
     /**

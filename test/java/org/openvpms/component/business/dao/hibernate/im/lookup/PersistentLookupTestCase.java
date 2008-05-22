@@ -36,23 +36,10 @@ import org.openvpms.component.business.service.lookup.LookupUtil;
 public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
 
     /**
-     * The current session.
-     */
-    private Session session;
-
-    /**
-     * Constructor for PersistentParticipationTestCase.
-     *
-     * @param name
-     */
-    public PersistentLookupTestCase(String name) {
-        super(name);
-    }
-
-    /**
      * Test the creation of a simple lookup.
      */
     public void testSimpleLookupCreation() throws Exception {
+        Session session = getSession();
         Transaction tx;
 
         // get initial count of lookups.
@@ -73,6 +60,7 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
      * Test the creation, find and update of a lookup entity
      */
     public void testSimpleLookupUpdate() throws Exception {
+        Session session = getSession();
         Transaction tx;
 
         // get initial number of entries in lookup table
@@ -106,7 +94,7 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
      */
     public void testSimpleLookupDeletion()
             throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx;
 
         // get initial number of entries in lookup table
@@ -138,6 +126,7 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
      * Test the creation of a simple lookup.
      */
     public void testCategoryLookupCreation() throws Exception {
+        Session session = getSession();
         Transaction tx;
 
         // get initial number of lookups
@@ -182,14 +171,14 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
      * Test persistent lookup equality.
      */
     public void testPersistentLookupEquality() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx;
         tx = session.beginTransaction();
         Lookup lookup = LookupUtil.createLookup("lookup.equality", "FOO");
         session.save(lookup);
         tx.commit();
         closeSession();
-        session = currentSession();
+        session = getSession();
         Lookup lookup2 = (Lookup) session.load(Lookup.class, lookup.getUid());
         assertEquals(lookup, lookup2);
     }
@@ -199,7 +188,7 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
      */
     public void testMultipleCategoryLookupCreation()
             throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx;
 
         // get initial no. of lookups
@@ -224,22 +213,6 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
         // check expected count of lookups
         int acount1 = HibernateUtil.getTableRowCount(session, "lookup");
         assertEquals(acount + 6, acount1);
-    }
-
-    /*
-    * @see HibernateInfoModelTestCase#setUp()
-    */
-    protected void setUp() throws Exception {
-        super.setUp();
-        session = currentSession();
-    }
-
-    /*
-     * @see HibernateInfoModelTestCase#tearDown()
-     */
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        closeSession();
     }
 
     /* (non-Javadoc)

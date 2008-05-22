@@ -39,10 +39,10 @@ interface IMObjectSessionHandler {
     /**
      * Saves an object.
      * <p/>
-     * This makes any transient children persistent prior to invoking
+     * This makes any unsaved children persistent prior to invoking
      * <tt>Session.merge()</tt> on the supplied object.
      * <p/>
-     * The <tt>newObjects</tt> argument is used to collect transient instances.
+     * The <tt>newObjects</tt> argument is used to collect unsaved instances.
      * If the transaction rolls back, any identifiers assigned to these
      * must be reset, as hibernate doesn't do it automatically.
      *

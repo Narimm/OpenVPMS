@@ -64,8 +64,8 @@ class EntitySessionHandler extends AbstractIMObjectSessionHandler {
     public IMObject save(IMObject object, Session session,
                          Set<IMObject> newObjects) {
         Entity entity = (Entity) object;
-        saveNew(entity.getEntityRelationships(), session, newObjects);
-        saveNew(entity.getIdentities(), session, newObjects);
+        saveNew(object, entity.getEntityRelationships(), session, newObjects);
+        saveNew(object, entity.getIdentities(), session, newObjects);
         return super.save(object, session, newObjects);
     }
 

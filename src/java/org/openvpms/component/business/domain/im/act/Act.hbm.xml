@@ -60,14 +60,14 @@
     </map>
     <set name="sourceActRelationships" access="property" inverse="true"
          lazy="true" batch-size="50"
-         cascade="all,delete-orphan">
+         cascade="merge,delete,lock,refresh,evict,replicate,delete-orphan">
       <key column="source_linkId" not-null="true" property-ref="linkId" />
       <one-to-many
         class="org.openvpms.component.business.domain.im.act.ActRelationship" />
     </set>
     <set name="targetActRelationships" access="property" inverse="true"
          lazy="true" batch-size="50"
-         cascade="all,delete-orphan">
+         cascade="merge,delete,lock,refresh,evict,replicate,delete-orphan">
       <key column="target_linkId" not-null="true" property-ref="linkId" />
       <one-to-many
         class="org.openvpms.component.business.domain.im.act.ActRelationship" />

@@ -40,7 +40,7 @@ public class EntityException extends OpenVPMSException {
      * An enumeration of error codes
      */
     public enum ErrorCode {
-        NoNameSpecified,
+        @Deprecated NoNameSpecified,
         NullClassificationSpecified,
         NullChildClassificationSpecified,
         FailedToAddEntityRelationship,

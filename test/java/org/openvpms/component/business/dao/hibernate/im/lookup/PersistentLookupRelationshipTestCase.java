@@ -37,26 +37,13 @@ import org.openvpms.component.business.service.lookup.LookupUtil;
 public class PersistentLookupRelationshipTestCase
         extends HibernateInfoModelTestCase {
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(PersistentLookupRelationshipTestCase.class);
-    }
-
-    /**
-     * Constructor for PersistentParticipationTestCase.
-     *
-     * @param name
-     */
-    public PersistentLookupRelationshipTestCase(String name) {
-        super(name);
-    }
-
     /**
      * Test the creation of a simple lookup relationship between country and
      * state
      */
     public void testSimpleLookupRelationshipCreation()
             throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -116,7 +103,7 @@ public class PersistentLookupRelationshipTestCase
      */
     public void testSimpleLookupRelationshipDeletion()
             throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {

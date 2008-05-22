@@ -21,293 +21,203 @@ package org.openvpms.component.business.dao.hibernate.im.party;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.lookup.LookupUtil;
 
 import java.util.HashSet;
 import java.util.Set;
 
+
 /**
+ * Tests {@link Contact} persistence via hibernate.
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PersistentContactTestCase extends HibernateInfoModelTestCase {
+public class PersistentContactTestCase extends AbstractPersistentPartyTest {
 
     /**
-     * main line
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(PersistentContactTestCase.class);
-    }
-
-    /**
-     * Constructor for PersistentContactTestCase.
-     *
-     * @param name
-     */
-    public PersistentContactTestCase(String name) {
-        super(name);
-    }
-
-    /**
-     * Test the creation of a simple contact
+     * Test the creation of a simple contact.
      */
     public void testCreateSimpleContact() throws Exception {
+        Session session = getSession();
 
-        Session session = currentSession();
-        Transaction tx = null;
+        // count the initial contacts
+        int count = count(Contact.class);
 
-        try {
-            // get initial numbr of entries in address tabel
-            int ccount = HibernatePartyUtil.getTableRowCount(session,
-                                                             "contact");
-            // execute the test
-            tx = session.beginTransaction();
-            Lookup purpose = createClassification("purpose");
-            session.save(purpose);
-            Contact contact = createContact();
-            Party person = createPerson();
-            person.addContact(contact);
-            contact.addClassification(purpose);
-            session.save(person);
-            tx.commit();
+        // execute the test
+        Transaction tx = session.beginTransaction();
+        Lookup purpose = createClassification("purpose");
+        session.save(purpose);
+        Contact contact = createContact();
+        Party person = createPerson();
+        person.addContact(contact);
+        contact.addClassification(purpose);
+        session.save(person);
+        tx.commit();
 
-            // ensure that the correct rows have been inserted
-            int ccount1 = HibernatePartyUtil.getTableRowCount(session,
-                                                              "contact");
-            assertTrue(ccount1 == ccount + 1);
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
+        // ensure that the correct rows have been inserted
+        assertEquals(count + 1, count(Contact.class));
     }
 
     /**
-     * Test the addition of a contact purpose for a contact
+     * Test the addition of a contact purpose for a contact.
      */
-    public void testContactPurposeAdditionForContact() throws Exception {
+    public void testContactPurposeAdditionForContact() {
+        Session session = getSession();
 
-        Session session = currentSession();
-        Transaction tx = null;
+        // get initial contact count
+        int contacts = count(Contact.class);
+        int lookups = count(Lookup.class);
 
-        try {
-            // get initial contact count
-            int acount = HibernatePartyUtil.getTableRowCount(session,
-                                                             "contact");
-            int bcount = HibernatePartyUtil.getTableRowCount(session, "lookup");
-            // execute the test
-            tx = session.beginTransaction();
+        Transaction tx = session.beginTransaction();
 
-            Party person = createPerson();
-            Contact contact = createContact();
-            person.addContact(contact);
-            session.save(person);
-            tx.commit();
+        Party person = createPerson();
+        Contact contact = createContact();
+        person.addContact(contact);
+        session.save(person);
+        tx.commit();
 
-            // Retrieve the person and add a contact purpose to the contact
-            person = (Party) session.get(Party.class, person.getUid());
+        // Retrieve the person and add a contact purpose to the contact
+        person = (Party) session.get(Party.class, person.getUid());
 
-            tx = session.beginTransaction();
-            Lookup purpose = createClassification("now");
-            session.save(purpose);
-            contact = person.getContacts().iterator().next();
-            contact.addClassification(purpose);
-            session.save(person);
-            tx.commit();
+        tx = session.beginTransaction();
+        Lookup purpose = createClassification("now");
+        session.save(purpose);
+        contact = person.getContacts().iterator().next();
+        contact.addClassification(purpose);
+        session.save(person);
+        tx.commit();
 
-            // Retrieve the contact check that  there is one contact purpose
-            contact = (Contact) session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getClassifications().size() == 1);
-            int acount1 = HibernatePartyUtil.getTableRowCount(session,
-                                                              "contact");
-            int bcount1 = HibernatePartyUtil.getTableRowCount(session,
-                                                              "lookup");
-            assertTrue(acount1 == acount + 1);
-            assertTrue(bcount1 == bcount + 1);
+        // Retrieve the contact check that  there is one contact purpose
+        contact = (Contact) session.get(Contact.class, contact.getUid());
+        assertEquals(1, contact.getClassifications().size());
+        assertEquals(contacts + 1, count(Contact.class));
+        assertEquals(lookups + 1, count(Lookup.class));
 
-            // add another contract purpose
-            tx = session.beginTransaction();
-            Lookup purpose1 = createClassification("now1");
-            session.save(purpose1);
-            contact.addClassification(purpose1);
-            session.save(contact);
-            tx.commit();
+        // add another contract purpose
+        tx = session.beginTransaction();
+        Lookup purpose1 = createClassification("now1");
+        session.save(purpose1);
+        contact.addClassification(purpose1);
+        session.save(contact);
+        tx.commit();
 
-            // check that there is only one contact added to the database
-            acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
-            bcount1 = HibernatePartyUtil.getTableRowCount(session, "lookup");
-            assertTrue(acount1 == acount + 1);
-            assertTrue(bcount1 == bcount + 2);
+        // check that there is only one contact added to the database
+        assertEquals(contacts + 1, count(Contact.class));
+        assertEquals(lookups + 2, count(Lookup.class));
 
-            // retrieve the contact and make sure there are 2 purposes
-            contact = (Contact) session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getClassifications().size() == 2);
+        // retrieve the contact and make sure there are 2 purposes
+        contact = (Contact) session.get(Contact.class, contact.getUid());
+        assertEquals(2, contact.getClassifications().size());
 
-            // retrieve the person and ensure that there is only one address
-            person = (Party) session.get(Party.class, person.getUid());
-            assertTrue(person.getContacts().size() == 1);
-
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
+        // retrieve the person and ensure that there is only one address
+        person = (Party) session.get(Party.class, person.getUid());
+        assertEquals(1, person.getContacts().size());
     }
 
     /**
-     * Test the removal of an address for a contact
+     * Test the removal of an address for a contact.
      */
-    public void testContactPurposeDeletionForContact()
-            throws Exception {
+    public void testContactPurposeDeletionForContact() {
+        Session session = getSession();
 
-        Session session = currentSession();
-        Transaction tx = null;
+        // get initial contact count
+        int contacts = count(Contact.class);
+        int lookups = count(Lookup.class);
 
-        try {
-            // get initial contact count
-            int acount = HibernatePartyUtil.getTableRowCount(session,
-                                                             "contact");
-            int bcount = HibernatePartyUtil.getTableRowCount(session, "lookup");
+        Transaction tx = session.beginTransaction();
 
-            tx = session.beginTransaction();
+        Lookup purpose = createClassification("now");
+        session.save(purpose);
+        Party person = createPerson();
+        Contact contact = createContact();
+        contact.addClassification(purpose);
+        person.addContact(contact);
+        session.save(person);
+        tx.commit();
 
-            Lookup purpose = createClassification("now");
-            session.save(purpose);
-            Party person = createPerson();
-            Contact contact = createContact();
-            contact.addClassification(purpose);
-            person.addContact(contact);
-            session.save(person);
-            tx.commit();
+        // check the row counts
+        assertEquals(contacts + 1, count(Contact.class));
+        assertEquals(lookups + 1, count(Lookup.class));
 
-            // check the row counts
-            int acount1 = HibernatePartyUtil.getTableRowCount(session,
-                                                              "contact");
-            int bcount1 = HibernatePartyUtil.getTableRowCount(session,
-                                                              "lookup");
-            assertTrue(acount1 == acount + 1);
-            assertTrue(bcount1 == bcount + 1);
+        // retrieve the person and delete a contact purpose from the contact
+        tx = session.beginTransaction();
+        person = (Party) session.get(Party.class, person.getUid());
+        assertNotNull(person);
+        assertEquals(1, person.getContacts().size());
 
-            // retrieve the person and delete a contact purpose from the contact
-            tx = session.beginTransaction();
-            person = (Party) session.get(Party.class, person.getUid());
-            assertTrue(person != null);
-            assertTrue(person.getContacts().size() == 1);
-            assertTrue(
-                    person.getContacts().iterator().next().getClassifications().size() == 1);
+        contact = person.getContacts().iterator().next();
+        assertEquals(1, contact.getClassifications().size());
 
-            contact = person.getContacts().iterator().next();
-            contact.getClassifications().clear();
-            session.save(person);
+        contact.getClassifications().clear();
+        session.save(person);
 
-            // retrieve the contact and check the contact purposes
-            contact = (Contact) session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getClassifications().size() == 0);
+        // retrieve the contact and check the contact purposes
+        contact = (Contact) session.get(Contact.class, contact.getUid());
+        assertEquals(0, contact.getClassifications().size());
+        tx.commit();
 
-            // check the row counts
-            acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
-            bcount1 = HibernatePartyUtil.getTableRowCount(session, "lookup");
-            assertTrue(acount1 == acount + 1);
-            assertTrue(bcount1 == bcount + 1);
-
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
-
+        // check the row counts
+        assertEquals(contacts + 1, count(Contact.class));
+        assertEquals(lookups + 1, count(Lookup.class));
     }
 
     /**
-     * Test the update of an address for a contact
+     * Test the update of an address for a contact.
      */
-    public void testContactPurposeUpdateForContact()
-            throws Exception {
+    public void testContactPurposeUpdateForContact() {
+        Session session = getSession();
 
-        Session session = currentSession();
-        Transaction tx = null;
+        // get initial contact count
+        int contacts = count(Contact.class);
+        int lookups = count(Lookup.class);
 
-        try {
-            // get initial contact count
-            int acount = HibernatePartyUtil.getTableRowCount(session,
-                                                             "contact");
-            int bcount = HibernatePartyUtil.getTableRowCount(session, "lookup");
+        Transaction tx = session.beginTransaction();
 
-            tx = session.beginTransaction();
+        Lookup purpose = createClassification("now");
+        session.save(purpose);
+        Party person = createPerson();
+        Contact contact = createContact();
+        contact.addClassification(purpose);
+        person.addContact(contact);
+        session.save(person);
+        tx.commit();
 
-            Lookup purpose = createClassification("now");
-            session.save(purpose);
-            Party person = createPerson();
-            Contact contact = createContact();
-            contact.addClassification(purpose);
-            person.addContact(contact);
-            session.save(person);
-            tx.commit();
+        // check row counts
+        assertEquals(contacts + 1, count(Contact.class));
+        assertEquals(lookups + 1, count(Lookup.class));
 
-            // check row counts
-            int acount1 = HibernatePartyUtil.getTableRowCount(session,
-                                                              "contact");
-            int bcount1 = HibernatePartyUtil.getTableRowCount(session,
-                                                              "lookup");
-            assertTrue(acount1 == acount + 1);
-            assertTrue(bcount1 == bcount + 1);
+        // retrieve the person and delete a contact purpose from the contact
+        tx = session.beginTransaction();
+        person = (Party) session.get(Party.class, person.getUid());
+        assertNotNull(person);
+        assertEquals(1, person.getContacts().size());
+        contact = person.getContacts().iterator().next();
+        assertEquals(1, contact.getClassifications().size());
 
-            // retrieve the person and delete a contact purpose from the contact
-            tx = session.beginTransaction();
-            person = (Party) session.get(Party.class, person.getUid());
-            assertTrue(person != null);
-            assertTrue(person.getContacts().size() == 1);
-            assertTrue(
-                    person.getContacts().iterator().next().getClassifications().size() == 1);
+        Lookup classification = contact.getClassifications().iterator().next();
+        classification.setName("later");
+        session.save(person);
+        tx.commit();
 
-            contact = person.getContacts().iterator().next();
-            contact.getClassifications().iterator().next().setName("later");
-            session.save(person);
+        // retrieve the contact and check the contact purposes
+        contact = (Contact) session.get(Contact.class, contact.getUid());
+        assertEquals(1, contact.getClassifications().size());
+        classification = contact.getClassifications().iterator().next();
+        assertEquals("later", classification.getName());
 
-            // retrieve the contact and check the contact purposes
-            contact = (Contact) session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getClassifications().size() == 1);
-            assertTrue(
-                    contact.getClassifications().iterator().next().getName().equals(
-                            "later"));
-
-            // check row counts
-            acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
-            bcount1 = HibernatePartyUtil.getTableRowCount(session, "lookup");
-            assertTrue(acount1 == acount + 1);
-            assertTrue(bcount1 == bcount + 1);
-
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
+        // check row counts
+        assertEquals(contacts + 1, count(Contact.class));
+        assertEquals(lookups + 1, count(Lookup.class));
     }
 
     /**
      * Tests the {@link Party#setContacts} method.
      */
-    public void testSetContacts() throws Exception {
-        Session session = currentSession();
+    public void testSetContacts() {
+        Session session = getSession();
 
         Transaction txn = session.beginTransaction();
         Party person = createPerson();
@@ -325,140 +235,56 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
     }
 
     /**
-     * Test deletion of Contact and associated ContactPurposes
+     * Test deletion of Contact and associated classifications and details.
      */
-    public void testContactDeletion()
-            throws Exception {
-        Session session = currentSession();
-        Transaction tx = null;
+    public void testContactDeletion() {
+        Session session = getSession();
 
-        try {
-            // get initial contact count
-            int acount = HibernatePartyUtil.getTableRowCount(session,
-                                                             "contact");
-            int bcount = HibernatePartyUtil.getTableRowCount(session, "lookup");
+        // get initial counts
+        int contacts = count(Contact.class);
+        int lookups = count(Lookup.class);
+        int details = countDetails(Contact.class);
 
-            tx = session.beginTransaction();
+        Transaction tx = session.beginTransaction();
 
-            Lookup purpose = createClassification("now");
-            session.save(purpose);
-            Lookup purpose1 = createClassification("later");
-            session.save(purpose1);
-            Party person = createPerson();
-            Contact contact = createContact();
-            contact.addClassification(purpose);
-            contact.addClassification(purpose1);
-            person.addContact(contact);
-            session.saveOrUpdate(person);
-            tx.commit();
+        Lookup purpose = createClassification("now");
+        session.save(purpose);
+        Lookup purpose1 = createClassification("later");
+        session.save(purpose1);
+        Party person = createPerson();
+        Contact contact = createContact();
+        contact.addClassification(purpose);
+        contact.addClassification(purpose1);
+        person.addContact(contact);
+        session.saveOrUpdate(person);
+        tx.commit();
 
-            // check row counts
-            int acount1 = HibernatePartyUtil.getTableRowCount(session,
-                                                              "contact");
-            int bcount1 = HibernatePartyUtil.getTableRowCount(session,
-                                                              "lookup");
-            assertTrue(acount1 == acount + 1);
-            assertTrue(bcount1 == bcount + 2);
+        // check row counts
+        assertEquals(contacts + 1, count(Contact.class));
+        assertEquals(lookups + 2, count(Lookup.class));
+        assertEquals(details + 2, countDetails(Contact.class));
 
-            // retrieve the person and delete all contacts
-            tx = session.beginTransaction();
-            person = (Party) session.get(Party.class, person.getUid());
-            assertTrue(person != null);
-            assertTrue(person.getContacts().size() == 1);
-            assertTrue(
-                    person.getContacts().iterator().next().getClassifications().size() == 2);
+        // retrieve the person and delete all contacts
+        tx = session.beginTransaction();
+        person = (Party) session.get(Party.class, person.getUid());
+        assertNotNull(person);
+        assertEquals(1, person.getContacts().size());
+        contact = person.getContacts().iterator().next();
+        assertEquals(2, contact.getClassifications().size());
 
-            person.getContacts().clear();
-            session.saveOrUpdate(person);
+        person.getContacts().clear();
+        session.saveOrUpdate(person);
+        tx.commit();
 
-            // retrieve and check the contacts
-            person = (Party) session.get(Party.class, person.getUid());
-            assertTrue(person != null);
-            assertTrue(person.getContacts().size() == 0);
+        // retrieve and check the contacts
+        person = (Party) session.get(Party.class, person.getUid());
+        assertNotNull(person);
+        assertEquals(0, person.getContacts().size());
 
-            // check row counts
-            acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
-            bcount1 = HibernatePartyUtil.getTableRowCount(session, "lookup");
-            assertTrue(acount1 == acount);
-            assertTrue(bcount1 == bcount + 2);
-        } catch (Exception exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            closeSession();
-        }
-    }
-
-
-    /*
-    * @see BaseTestCase#tearDown()
-    */
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        currentSession().flush();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.openvpms.component.system.common.test.BaseTestCase#setUpTestData()
-     */
-    @Override
-    protected void setUpTestData() throws Exception {
-        // no test data
-    }
-
-    /**
-     * Create a simple contact
-     *
-     * @return Contact
-     */
-    private Contact createContact() throws Exception {
-        Contact contact = new Contact();
-        contact.setArchetypeId(createContactArchetypeId());
-        contact.setDetails(createSimpleAttributeMap());
-
-        return contact;
-    }
-
-    /**
-     * Create a simple classification lookup with the specified code.
-     *
-     * @param code the code of the classification
-     * @return a new classification
-     */
-    private Lookup createClassification(String code) throws Exception {
-        return LookupUtil.createLookup("lookup.classification", code);
-    }
-
-    /**
-     * Create a simple person
-     *
-     * @return person
-     */
-    private Party createPerson() throws Exception {
-        return new Party(createPersonArchetypeId(), "party", "person", null,
-                         null);
-    }
-
-    /**
-     * Return a person archetype id
-     *
-     * @return a new person archetype id
-     */
-    private ArchetypeId createPersonArchetypeId() {
-        return new ArchetypeId("party.person.1.0");
-    }
-
-    /**
-     * Return a contact archetype Id
-     *
-     * @return ArchetypeId
-     */
-    private ArchetypeId createContactArchetypeId() {
-        return new ArchetypeId("contact.contact.1.0");
+        // check row counts
+        assertEquals(contacts, count(Contact.class));
+        assertEquals(lookups + 2, count(Lookup.class));
+        assertEquals(details, countDetails(Contact.class));
     }
 
 }

@@ -34,38 +34,11 @@ import org.openvpms.component.business.domain.im.security.User;
  */
 public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(PersistentSecurityRoleTestCase.class);
-    }
-
-    /**
-     * Constructor for PersistentUserTestCase.
-     *
-     * @param name
-     */
-    public PersistentSecurityRoleTestCase(String name) {
-        super(name);
-    }
-
-    /*
-     * @see HibernateInfoModelTestCase#setUp()
-     */
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    /*
-     * @see HibernateInfoModelTestCase#tearDown()
-     */
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     /**
      * Test the simple creation of a user
      */
     public void testSimpleRoleCreation() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -98,7 +71,7 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
      * Test the deletion of a role
      */
     public void testRoleDeletion() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -138,7 +111,7 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
      * Test the modification of a role
      */
     public void testRoleModification() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -186,7 +159,7 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
      * Test the creation and addition of a grant authority
      */
     public void testAdditionOfGrantAuthorities() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -234,7 +207,7 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
      */
     public void testRemovalOfGrantAuthorities() throws Exception {
         final int count = 10;
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -294,7 +267,7 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
      * Test the modification of grant authorities
      */
     public void testModificationOfGrantAuthorities() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -350,7 +323,7 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
      * Test the addition of a role to a user
      */
     public void testAdditionOfRoleToUser() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {
@@ -387,7 +360,7 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
      * Test the removal of a role from a user
      */
     public void testRemovalOfRoleFromUser() throws Exception {
-        Session session = currentSession();
+        Session session = getSession();
         Transaction tx = null;
 
         try {

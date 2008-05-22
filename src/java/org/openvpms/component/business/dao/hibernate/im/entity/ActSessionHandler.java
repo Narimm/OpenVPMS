@@ -62,8 +62,8 @@ class ActSessionHandler extends AbstractIMObjectSessionHandler {
     /**
      * Saves an object.
      *
-     * @param object  the object to save
-     * @param session the session to use
+     * @param object     the object to save
+     * @param session    the session to use
      * @param newObjects used to collect new objects encountered during save
      * @return the result of <tt>Session.merge(object)</tt>
      */
@@ -71,8 +71,8 @@ class ActSessionHandler extends AbstractIMObjectSessionHandler {
     public IMObject save(IMObject object, Session session,
                          Set<IMObject> newObjects) {
         Act act = (Act) object;
-        saveNew(act.getActRelationships(), session, newObjects);
-        saveNew(act.getParticipations(), session, newObjects);
+        saveMerge(object, act.getActRelationships(), session, newObjects);
+        saveNew(object, act.getParticipations(), session, newObjects);
         return super.save(object, session, newObjects);
     }
 
