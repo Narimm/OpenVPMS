@@ -172,4 +172,17 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
         return !DeliveryStatus.FULL.equals(bean.getString("deliveryStatus"));
     }
 
+    /**
+     * Invoked when posting of an act is complete, either by saving the act
+     * with <em>POSTED</em> status, or invoking {@link #onPost()}.
+     * <p/>
+     * This implementation does nothing.
+     *
+     * @param act the act
+     */
+    @Override
+    protected void onPosted(FinancialAct act) {
+        print(act);
+    }
+
 }

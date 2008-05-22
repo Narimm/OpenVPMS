@@ -187,7 +187,11 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
             ps.setReorderDescription(reorderDesc);
             ps.setListPrice(listPrice);
             ps.setNettPrice(unitPrice);
-            ps.setPreferred(true);
+            if (rules.getProductSuppliers(product, supplier).isEmpty()) {
+                // if there are no relationships for the supplier, mark the
+                // new one as the preferred
+                ps.setPreferred(true);
+            }
         } else if (size != ps.getPackageSize()
                 || !ObjectUtils.equals(units, ps.getPackageUnits())
                 || !equals(listPrice, ps.getListPrice())
