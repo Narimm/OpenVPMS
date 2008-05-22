@@ -38,6 +38,16 @@ public class ProductArchetypes {
     public static final String MERCHANDISE = "product.merchandise";
 
     /**
+     * Service short name.
+     */
+    public static final String SERVICE = "product.service";
+
+    /**
+     * Template short name.
+     */
+    public static final String TEMPLATE = "product.template";
+
+    /**
      * Product participation short name.
      */
     public static final String PRODUCT_PARTICIPATION = "participation.product";
@@ -46,6 +56,11 @@ public class ProductArchetypes {
      * Product unit price short name.
      */
     public static final String UNIT_PRICE = "productPrice.unitPrice";
+
+    /**
+     * Product fixed price short name.
+     */
+    public static final String FIXED_PRICE = "productPrice.fixedPrice";
 
     /**
      * Product-supplier entity relationship short name.

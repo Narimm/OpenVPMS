@@ -4,9 +4,17 @@
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountBadDebt.after.drl"/>
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesCounter.before.drl"/>
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesCounter.after.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.remove.act.customerAccountChargesCounter.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountCounterItem.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.remove.act.customerAccountCounterItem.before.drl"/>
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesCredit.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.remove.act.customerAccountChargesCredit.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountCreditItem.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.remove.act.customerAccountCreditItem.before.drl"/>
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesCredit.after.drl"/>
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesInvoice.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountInvoiceItem.before.drl"/>
+  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.remove.act.customerAccountInvoiceItem.before.drl"/>
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesInvoice.after.drl"/>
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.remove.act.customerAccountChargesInvoice.before.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountCreditAdjust.before.drl"/>

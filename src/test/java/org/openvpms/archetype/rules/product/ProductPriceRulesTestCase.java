@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 
 /**
@@ -110,7 +111,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         // add a 10% tax rate
         Lookup tax = (Lookup) create("lookup.taxType");
         IMObjectBean taxBean = new IMObjectBean(tax);
-        taxBean.setValue("code", "XTAXTYPE-" + tax.hashCode());
+        taxBean.setValue("code", "XTAXTYPE" + Math.abs(new Random().nextInt()));
         taxBean.setValue("rate", new BigDecimal(10));
         taxBean.save();
         practice.addClassification(tax);

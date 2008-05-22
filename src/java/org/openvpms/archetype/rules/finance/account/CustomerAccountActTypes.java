@@ -39,16 +39,52 @@ public class CustomerAccountActTypes {
             = "act.customerAccountChargesCounter";
 
     /**
+     * Counter charge item act short name.
+     */
+    public static final String CHARGES_COUNTER_ITEM
+            = "act.customerAccountCounterItem";
+
+    /**
+     * Counter charge item act relationship short name.
+     */
+    public static final String CHARGES_COUNTER_RELATIONSHIP
+            = "actRelationship.customerAccountCounterItem";
+
+    /**
      * Invoice charge act short name.
      */
     public static final String CHARGES_INVOICE
             = "act.customerAccountChargesInvoice";
 
     /**
+     * Invoice charge item act short name.
+     */
+    public static final String CHARGES_INVOICE_ITEM
+            = "act.customerAccountInvoiceItem";
+
+    /**
+     * Invoice charge item act relationship short name.
+     */
+    public static final String CHARGES_INVOICE_RELATIONSHIP
+            = "actRelationship.customerAccountInvoiceItem";
+
+    /**
      * Credit charge act short name.
      */
     public static final String CHARGES_CREDIT
             = "act.customerAccountChargesCredit";
+
+    /**
+     * Credit charge item act short name.
+     */
+    public static final String CHARGES_CREDIT_ITEM
+            = "act.customerAccountCreditItem";
+
+    /**
+     * Credit charge item act relationship short name.
+     */
+    public static final String CHARGES_CREDIT_RELATIONSHIP
+            = "actRelationship.customerAccountCreditItem";
 
     /**
      * Credit adjust act short name.

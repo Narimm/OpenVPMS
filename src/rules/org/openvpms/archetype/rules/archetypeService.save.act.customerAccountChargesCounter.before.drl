@@ -22,7 +22,7 @@
     xs:schemaLocation="http://drools.org/rules rules.xsd
     				   http://drools.org/semantics/java java.xsd">
     				   
-    <rule name="Add to Customer Account Balance" salience="100">
+    <rule name="Add to Customer Account Balance">
         <parameter identifier="act">
         	<java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
         </parameter>
@@ -36,18 +36,4 @@
         </java:consequence>
     </rule>
 
-    <rule name="Update Stock Onhand" salience="1">
-        <parameter identifier="act">
-        	<java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
-        </parameter>
-        <parameter identifier="service">
-        	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
-        </parameter>
-        <java:consequence>
-            import org.openvpms.archetype.rules.stock.StockUpdater;
-            StockUpdater updater = new StockUpdater(act, service);
-            updater.update();
-        </java:consequence>
-    </rule>
-    
 </rule-set>

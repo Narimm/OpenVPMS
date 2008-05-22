@@ -22,7 +22,7 @@
     xs:schemaLocation="http://drools.org/rules rules.xsd
     				   http://drools.org/semantics/java java.xsd">
     				   
-    <rule name="Add Reminders to Invoice item">
+    <rule name="Remove Invoice" salience="100">
         <parameter identifier="act">
         	<java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
         </parameter>
@@ -33,6 +33,20 @@
             import org.openvpms.archetype.rules.finance.invoice.InvoiceRules;
             InvoiceRules rules = new InvoiceRules(service);
             rules.removeInvoice(act);
+        </java:consequence>
+    </rule>
+
+    <rule name="Update Stock Onhand" salience="1">
+        <parameter identifier="act">
+        	<java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
+        </parameter>
+        <parameter identifier="service">
+        	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
+        </parameter>
+        <java:consequence>
+            import org.openvpms.archetype.rules.stock.ChargeStockUpdater;
+            ChargeStockUpdater updater = new ChargeStockUpdater(service);
+            updater.remove(act);
         </java:consequence>
     </rule>
 

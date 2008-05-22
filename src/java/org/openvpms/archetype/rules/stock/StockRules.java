@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.stock;
 
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -57,7 +58,6 @@ public class StockRules {
         this(ArchetypeServiceHelper.getArchetypeService());
     }
 
-
     /**
      * Creates a new <tt>StockRules</tt>.
      *
@@ -65,6 +65,44 @@ public class StockRules {
      */
     public StockRules(IArchetypeService service) {
         this.service = service;
+    }
+
+    /**
+     * Returns the stock location for a product at a practice location.
+     * <p/>
+     * Looks for an <em>party.organisationStockLocation</em> associated with
+     * the supplied <em>party.organisationLocation</em>. If a stock location
+     * exists that has a relationship to the supplied product, this will
+     * be returned.
+     * <p/>
+     * If there are stock locations, but none have a relationship to the
+     * product, then an arbitrary one will be selected.
+     *
+     * @param product  the product
+     * @param location the practice location
+     * @return the stock location, or <tt>null</tt> if none is found or
+     *         the <em>stockControl</em> flag of the practice location is
+     *         <tt>false</tt>
+     */
+    public Party getStockLocation(Product product, Party location) {
+        Party result = null;
+        EntityBean locBean = new EntityBean(location, service);
+        if (locBean.getBoolean("stockControl")) {
+            List<Entity> entities = locBean.getNodeTargetEntities(
+                    "stockLocations");
+            Party stockLocation = null;
+            for (Entity stockLoc : entities) {
+                stockLocation = (Party) stockLoc;
+                if (getStockRelationship(product, stockLocation) != null) {
+                    result = stockLocation;
+                    break;
+                }
+            }
+            if (result == null) {
+                result = stockLocation;
+            }
+        }
+        return result;
     }
 
     /**

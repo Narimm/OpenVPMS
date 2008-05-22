@@ -11,18 +11,18 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $$Id$$
 -->
-<rule-set name="archetypeService.save.act.customerAccountChargesCredit.before"
+<rule-set name="archetypeService.save.act.customerAccountCreditItem.before"
     xmlns="http://drools.org/rules"    
     xmlns:java="http://drools.org/semantics/java"
     xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
     xs:schemaLocation="http://drools.org/rules rules.xsd
     				   http://drools.org/semantics/java java.xsd">
     				   
-    <rule name="Add to Customer Account Balance">
+    <rule name="Update Stock Onhand">
         <parameter identifier="act">
         	<java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
         </parameter>
@@ -30,10 +30,10 @@
         	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
         </parameter>
         <java:consequence>
-            import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
-            CustomerAccountRules rules = new CustomerAccountRules(service);
-            rules.addToBalance(act);
+            import org.openvpms.archetype.rules.stock.ChargeStockUpdater;
+            ChargeStockUpdater updater = new ChargeStockUpdater(service);
+            updater.update(act);
         </java:consequence>
     </rule>
-
+    
 </rule-set>
