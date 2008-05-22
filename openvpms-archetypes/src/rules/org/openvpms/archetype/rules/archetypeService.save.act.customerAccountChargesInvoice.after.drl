@@ -36,7 +36,7 @@
         </java:consequence>
     </rule>
 
-    <rule name="Process demographic updates">
+    <rule name="Process demographic updates" salience="2">
         <parameter identifier="act">
         	<java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
         </parameter>

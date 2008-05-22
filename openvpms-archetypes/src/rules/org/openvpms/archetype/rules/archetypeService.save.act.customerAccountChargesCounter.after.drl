@@ -35,4 +35,5 @@
             rules.updateBalance(act);
         </java:consequence>
     </rule>
+    
 </rule-set>
