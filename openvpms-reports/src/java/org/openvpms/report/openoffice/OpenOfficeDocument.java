@@ -74,9 +74,10 @@ public class OpenOfficeDocument {
 
     /**
      * Prefix for user fields.
+     * NOTE: in OO 2.1, <em>fieldmaster</em> was named <em>FieldMaster</em>.
      */
     private static final String USER_FIELD_PREFIX
-            = "com.sun.star.text.FieldMaster.User.";
+            = "com.sun.star.text.fieldmaster.User.";
 
     /**
      * The logger.
@@ -166,7 +167,9 @@ public class OpenOfficeDocument {
         List<String> result = new ArrayList<String>();
         XNameAccess fields = getTextFieldMasters();
         for (String name : fields.getElementNames()) {
-            if (name.startsWith(USER_FIELD_PREFIX)) {
+            // need to do a case insensitive comparison for OVPMS-749
+            if (name.regionMatches(true, 0, USER_FIELD_PREFIX, 0,
+                                   USER_FIELD_PREFIX.length())) {
                 result.add(name.substring(USER_FIELD_PREFIX.length()));
             }
         }
@@ -184,10 +187,17 @@ public class OpenOfficeDocument {
         Object content;
         try {
             XNameAccess fields = getTextFieldMasters();
-            Object fieldMaster = fields.getByName(USER_FIELD_PREFIX + name);
-            XPropertySet propertySet = (XPropertySet) UnoRuntime.queryInterface(
+            String fieldName = getFieldName(fields, name);
+            if (fieldName == null) {
+                throw new OpenOfficeException(FailedToSetField, name);
+            }
+            Object fieldMaster = fields.getByName(fieldName);
+            XPropertySet propertySet
+                    = (XPropertySet) UnoRuntime.queryInterface(
                     XPropertySet.class, fieldMaster);
             content = propertySet.getPropertyValue("Content");
+        } catch (OpenOfficeException exception) {
+            throw exception;
         } catch (Exception exception) {
             throw new OpenOfficeException(exception, FailedToGetField, name);
         }
@@ -204,10 +214,16 @@ public class OpenOfficeDocument {
     public void setUserField(String name, String value) {
         try {
             XNameAccess fields = getTextFieldMasters();
-            Object fieldMaster = fields.getByName(USER_FIELD_PREFIX + name);
+            String fieldName = getFieldName(fields, name);
+            if (fieldName == null) {
+                throw new OpenOfficeException(FailedToSetField, name);
+            }
+            Object fieldMaster = fields.getByName(fieldName);
             XPropertySet propertySet = (XPropertySet) UnoRuntime.queryInterface(
                     XPropertySet.class, fieldMaster);
             propertySet.setPropertyValue("Content", value);
+        } catch (OpenOfficeException exception) {
+            throw exception;
         } catch (Exception exception) {
             throw new OpenOfficeException(exception, FailedToSetField, name);
         }
@@ -334,6 +350,23 @@ public class OpenOfficeDocument {
         property.Name = name;
         property.Value = value;
         return property;
+    }
+
+    /**
+     * Returns the field name for the specified name.
+     *
+     * @param fields the document fields
+     * @param name   the name
+     * @return the field name, or <tt>null</tt> if it doesn't exist
+     */
+    private String getFieldName(XNameAccess fields, String name) {
+        String cmp = USER_FIELD_PREFIX + name;
+        for (String elementName : fields.getElementNames()) {
+            if (elementName.equalsIgnoreCase(cmp)) {
+                return elementName;
+            }
+        }
+        return null;
     }
 
 }
