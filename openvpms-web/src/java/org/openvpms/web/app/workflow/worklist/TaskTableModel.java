@@ -21,14 +21,10 @@ package org.openvpms.web.app.workflow.worklist;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
-import org.openvpms.web.component.im.view.TableComponentFactory;
-import org.openvpms.web.component.property.IMObjectProperty;
-import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateHelper;
 
 import java.util.Date;
@@ -80,14 +76,11 @@ public class TaskTableModel extends AbstractActTableModel {
      */
     @Override
     protected Object getValue(Act object, DescriptorTableColumn column) {
-        NodeDescriptor descriptor = column.getDescriptor();
-        if (descriptor.getName().equals("taskType")) {
-            LayoutContext context = new DefaultLayoutContext();
-            TableComponentFactory factory = new TableComponentFactory(context);
-            context.setComponentFactory(factory);
+        if (column.getName().equals("taskType")) {
+            LayoutContext context
+                    = new DefaultLayoutContext(getLayoutContext());
             context.setEdit(true);
-            Property property = new IMObjectProperty(object, descriptor);
-            return factory.create(property, object).getComponent();
+            return column.getValue(object, context);
         } else {
             return super.getValue(object, column);
         }

@@ -27,7 +27,6 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypeCache;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -150,8 +149,9 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     @Override
     protected Object getValue(Act object, DescriptorTableColumn column) {
         Object result = null;
-        String name = column.getDescriptor(object).getName();
-        if (name.equals("reminderType")) {
+        if (column.getName().equals("reminderType")) {
+            // todo - should be able to disable hyperlinks in a more
+            // straightforward manner
             ActBean bean = new ActBean(object);
             IMObjectReference ref = bean.getParticipantRef(
                     "participation.reminderType");
@@ -204,8 +204,6 @@ public class PatientReminderTableModel extends AbstractActTableModel {
 
     /**
      * Returns a list of descriptor names to include in the table.
-     * This implementation returns <code>null</code> to indicate that the
-     * intersection should be calculated from all descriptors.
      *
      * @return the list of descriptor names to include in the table
      */
@@ -230,9 +228,9 @@ public class PatientReminderTableModel extends AbstractActTableModel {
         while (iterator.hasNext()) {
             TableColumn col = (TableColumn) iterator.next();
             if (col instanceof DescriptorTableColumn) {
-                NodeDescriptor descriptor
-                        = ((DescriptorTableColumn) col).getDescriptor();
-                if (name.equals(descriptor.getName())) {
+                DescriptorTableColumn descriptorCol
+                        = (DescriptorTableColumn) col;
+                if (descriptorCol.getName().equals(name)) {
                     result = offset;
                     break;
                 }

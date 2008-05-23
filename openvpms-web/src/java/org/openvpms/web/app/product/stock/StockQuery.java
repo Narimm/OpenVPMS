@@ -23,9 +23,12 @@ import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.select.IMObjectSelectorListener;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -82,6 +85,18 @@ public class StockQuery extends DateRangeActQuery<Act> {
         Party location = context.getStockLocation();
         stockLocation.setObject(location);
         setEntity(location);
+    }
+
+    /**
+     * Performs the query.
+     *
+     * @param sort the sort constraint. May be <tt>null</tt>
+     * @return the query result set
+     * @throws ArchetypeServiceException if the query fails
+     */
+    @Override
+    public ResultSet<Act> query(SortConstraint[] sort) {
+        return createResultSet(sort);
     }
 
     /**

@@ -192,7 +192,7 @@ public class DelegatingRelationshipStateTableModel
             TableColumn next = (TableColumn) iter.next();
             if (next instanceof DescriptorTableColumn) {
                 DescriptorTableColumn col = (DescriptorTableColumn) next;
-                if (col.getDescriptor().getName().equals(node)) {
+                if (col.getName().equals(node)) {
                     return col.getModelIndex();
                 }
             }

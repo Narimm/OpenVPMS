@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.lookup;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -114,6 +115,9 @@ public class NodeLookupQuery extends AbstractLookupQuery {
             List<Lookup> lookups = getLookups();
             String code = nodeDesc.getDefaultValue();
             if (code != null) {
+                // defaultValue is an xpath expression. Rather than evaluating
+                // it, just support the simple case of a quoted string.
+                code = StringUtils.strip(code, "'");
                 result = getLookup(code, lookups);
             }
             if (result == null) {

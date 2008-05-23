@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.table;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.TableColumn;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -31,11 +32,12 @@ import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Property;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 /**
- * Table column associated with a {@link NodeDescriptor}.
+ * Table column associated with one or more {@link NodeDescriptor}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -44,57 +46,57 @@ import java.util.Map;
 public class DescriptorTableColumn extends TableColumn {
 
     /**
-     * The default node descriptor.
+     * The node name.
      */
-    private final NodeDescriptor descriptor;
+    private final String name;
 
     /**
      * Node descriptors, keyed on short name.
      */
-    private final Map<String, NodeDescriptor> descriptors;
+    private final Map<String, NodeDescriptor> descriptors
+            = new HashMap<String, NodeDescriptor>();
 
 
     /**
-     * Construct a new <tt>DescriptorTableColumn</tt> with the specified
-     * model index,undefined width, and undefined cell and header renderers.
+     * Creates a new <tt>DescriptorTableColumn</tt>.
      *
      * @param modelIndex the column index of model data visualized by this
      *                   column
-     * @param descriptor the node descriptor
+     * @param name       the node name
+     * @param archetypes the archetype descriptors
      */
-    public DescriptorTableColumn(int modelIndex, NodeDescriptor descriptor) {
+    public DescriptorTableColumn(int modelIndex, String name,
+                                 List<ArchetypeDescriptor> archetypes) {
         super(modelIndex);
-        this.descriptor = descriptor;
-        descriptors = new HashMap<String, NodeDescriptor>();
-        descriptors.put(descriptor.getName(), descriptor);
+        for (ArchetypeDescriptor archetype : archetypes) {
+            NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
+            if (descriptor != null) {
+                descriptors.put(archetype.getShortName(), descriptor);
+                if (getHeaderValue() == null) {
+                    setHeaderValue(descriptor.getDisplayName());
+                }
+            }
+        }
+        this.name = name;
     }
 
     /**
-     * Construct a new <tt>DescriptorTableColumn</tt> with the specified
-     * model index,undefined width, and undefined cell and header renderers.
+     * Creates a new <tt>DescriptorTableColumn</tt>.
      *
-     * @param modelIndex  the column index of model data visualized by this
-     *                    column
-     * @param descriptors the node descriptors
+     * @param modelIndex the column index of model data visualized by this
+     *                   column
+     * @param name       the node name
+     * @param archetype  the archetype descriptor
      */
-    public DescriptorTableColumn(int modelIndex,
-                                 Map<String, NodeDescriptor> descriptors) {
+    public DescriptorTableColumn(int modelIndex, String name,
+                                 ArchetypeDescriptor archetype) {
         super(modelIndex);
-        this.descriptors = descriptors;
-        this.descriptor = descriptors.values().toArray(
-                new NodeDescriptor[0])[0];
-    }
-
-    /**
-     * Returns the header value for this column.  The header value is the object
-     * that will be provided to the header renderer to produce a component that
-     * will be used as the table header for this column.
-     *
-     * @return the header value for this column
-     */
-    @Override
-    public Object getHeaderValue() {
-        return descriptor.getDisplayName();
+        NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
+        if (descriptor != null) {
+            descriptors.put(archetype.getShortName(), descriptor);
+            setHeaderValue(descriptor.getDisplayName());
+        }
+        this.name = name;
     }
 
     /**
@@ -104,9 +106,16 @@ public class DescriptorTableColumn extends TableColumn {
      * @return the value of the cell
      */
     public Component getValue(IMObject object, LayoutContext context) {
-        IMObjectComponentFactory factory = context.getComponentFactory();
-        Property property = new IMObjectProperty(object, descriptor);
-        return factory.create(property, object).getComponent();
+        Component result;
+        NodeDescriptor node = getDescriptor(object);
+        if (node != null) {
+            IMObjectComponentFactory factory = context.getComponentFactory();
+            Property property = new IMObjectProperty(object, node);
+            result = factory.create(property, object).getComponent();
+        } else {
+            result = null;
+        }
+        return result;
     }
 
     /**
@@ -115,28 +124,7 @@ public class DescriptorTableColumn extends TableColumn {
      * @return the descriptor's node name
      */
     public String getName() {
-        return descriptor.getName();
-    }
-
-    /**
-     * Returns the default descriptor.
-     *
-     * @return the default descriptor
-     */
-    public NodeDescriptor getDescriptor() {
-        return descriptor;
-    }
-
-    /**
-     * Returns the descriptor for a specific object.
-     *
-     * @param object the object
-     * @return the descriptor for <tt>object</tt>
-     */
-    public NodeDescriptor getDescriptor(IMObject object) {
-        String shortName = object.getArchetypeId().getShortName();
-        NodeDescriptor result = descriptors.get(shortName);
-        return (result != null) ? result : descriptor;
+        return name;
     }
 
     /**
@@ -146,10 +134,19 @@ public class DescriptorTableColumn extends TableColumn {
      *         <tt>false</tt>
      */
     public boolean isSortable() {
-        // can only sort on top-level or participation nodes
-        return (!descriptor.isCollection() &&
-                descriptor.getPath().lastIndexOf("/") <= 0)
-                || QueryHelper.isParticipationNode(descriptor);
+        boolean sortable = true;
+        for (NodeDescriptor descriptor : descriptors.values()) {
+            // can only sort on top-level or participation nodes
+            if (descriptor.isCollection()
+                    && !QueryHelper.isParticipationNode(descriptor)) {
+                sortable = false;
+                break;
+            } else if (descriptor.getPath().lastIndexOf("/") > 0) {
+                sortable = false;
+                break;
+            }
+        }
+        return sortable;
     }
 
     /**
@@ -159,7 +156,19 @@ public class DescriptorTableColumn extends TableColumn {
      * @return a new sort cosntraint
      */
     public SortConstraint createSortConstraint(boolean ascending) {
-        return new NodeSortConstraint(descriptor.getName(), ascending);
+        return new NodeSortConstraint(name, ascending);
+    }
+
+    /**
+     * Returns the descriptor for a specific object.
+     *
+     * @param object the object
+     * @return the descriptor for <tt>object</tt>, or <tt>null</tt> if
+     *         no descriptor is registered
+     */
+    protected NodeDescriptor getDescriptor(IMObject object) {
+        String shortName = object.getArchetypeId().getShortName();
+        return descriptors.get(shortName);
     }
 
 }

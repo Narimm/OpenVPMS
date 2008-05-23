@@ -21,7 +21,6 @@ package org.openvpms.web.component.im.table;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -35,9 +34,7 @@ import org.openvpms.web.component.im.view.TableComponentFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -102,23 +99,6 @@ public abstract class DescriptorTableModel<T extends IMObject>
         }
         this.context = context;
         setTableColumnModel(createColumnModel(shortNames, context));
-    }
-
-    /**
-     * @see TableModel#getColumnName
-     */
-    @Override
-    public String getColumnName(int column) {
-        String result;
-        TableColumn col = getColumn(column);
-        if (col instanceof DescriptorTableColumn) {
-            NodeDescriptor descriptor
-                    = ((DescriptorTableColumn) col).getDescriptor();
-            result = descriptor.getDisplayName();
-        } else {
-            result = super.getColumnName(column);
-        }
-        return result;
     }
 
     /**
@@ -281,16 +261,13 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * @param name       the node name
      * @param index      the index to assign the column
      * @param columns    the columns to add to
-     * @return the new column, or <tt>null</tt> if the node is not found in
-     *         the archetypes
+     * @return the new column
      */
     protected TableColumn addColumn(List<ArchetypeDescriptor> archetypes,
                                     String name, int index,
                                     TableColumnModel columns) {
         TableColumn column = createColumn(archetypes, name, index);
-        if (column != null) {
-            columns.addColumn(column);
-        }
+        columns.addColumn(column);
         return column;
     }
 
@@ -300,44 +277,42 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * @param archetypes the archetypes
      * @param name       the node name
      * @param index      the index to assign the column
-     * @return a new column, or <tt>null</tt> if the node is not found in
-     *         the archetypes
+     * @return a new column
      */
     protected TableColumn createColumn(List<ArchetypeDescriptor> archetypes,
                                        String name, int index) {
-        Map<String, NodeDescriptor> descriptors
-                = new HashMap<String, NodeDescriptor>();
-        for (ArchetypeDescriptor archetype : archetypes) {
-            NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
-            if (descriptor != null) {
-                descriptors.put(archetype.getShortName(), descriptor);
-            }
-        }
-        return descriptors.isEmpty()
-                ? null : new DescriptorTableColumn(index, descriptors);
+        return new DescriptorTableColumn(index, name, archetypes);
     }
 
 
     /**
-     * Returns the intersection of node descriptor names for a set of
-     * archetypes.
+     * Returns the node names for a set of archetypes.
+     * <p/>
+     * If {@link #getNodeNames()} returns a non-empty list, then
+     * these names will be used, otherwise the node names common to each
+     * archetype will be returned.
      *
      * @param archetypes the archetype descriptors
      * @param context    the layout context
-     * @return the intersection of descriptors names for a set of archetypes
+     * @return the node names for the archetypes
      */
     protected List<String> getNodeNames(
             List<ArchetypeDescriptor> archetypes, LayoutContext context) {
-        List<String> common = null;
-        for (ArchetypeDescriptor archetype : archetypes) {
-            List<String> nodes = getNodeNames(archetype, context);
-            if (common == null) {
-                common = nodes;
-            } else {
-                common = getIntersection(common, nodes);
+        List<String> result = null;
+        String[] names = getNodeNames();
+        if (names != null && names.length != 0) {
+            result = Arrays.asList(names);
+        } else {
+            for (ArchetypeDescriptor archetype : archetypes) {
+                List<String> nodes = getNodeNames(archetype, context);
+                if (result == null) {
+                    result = nodes;
+                } else {
+                    result = getIntersection(result, nodes);
+                }
             }
         }
-        return common;
+        return result;
     }
 
     /**
@@ -352,7 +327,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
     }
 
     /**
-     * Returns a filtered list of node descriptor names for an archetype.
+     * Returns a filtered list of simple node descriptor names for an archetype.
      *
      * @param archetype the archetype
      * @param context   the layout context
@@ -361,20 +336,10 @@ public abstract class DescriptorTableModel<T extends IMObject>
     protected List<String> getNodeNames(ArchetypeDescriptor archetype,
                                         LayoutContext context) {
         List<String> result = new ArrayList<String>();
-        String[] names = getNodeNames();
-        if (names != null && names.length != 0) {
-            for (String name : names) {
-                NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
-                if (descriptor != null) {
-                    result.add(descriptor.getName());
-                }
-            }
-        } else {
-            List<NodeDescriptor> descriptors
-                    = filter(archetype.getSimpleNodeDescriptors(), context);
-            for (NodeDescriptor descriptor : descriptors) {
-                result.add(descriptor.getName());
-            }
+        List<NodeDescriptor> descriptors
+                = filter(archetype.getSimpleNodeDescriptors(), context);
+        for (NodeDescriptor descriptor : descriptors) {
+            result.add(descriptor.getName());
         }
         return result;
     }
